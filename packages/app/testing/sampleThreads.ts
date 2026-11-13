@@ -61,6 +61,8 @@ export type ThreadRowSample =
       }
     | {
           readonly kind: 'fileTop';
+          /** Its half in split, or `unified`; the file's width if not given. */
+          readonly inline?: ReviewThreadRow['inline'];
           readonly diffHunk: string;
           readonly commit?: ThreadCommit;
           readonly fileDeleted?: boolean;
@@ -82,7 +84,7 @@ export function createThreadRowSample(sample: ThreadRowSample): ReviewThreadRow 
     return {
         kind: 'thread',
         key: `thread ${thread.id}`,
-        inline: sample.kind === 'onLine' ? sample.inline : null,
+        inline: sample.kind === 'onLine' || sample.kind === 'fileTop' ? (sample.inline ?? null) : null,
         placement: createPlacement(sample, thread),
         replies: [],
     };
@@ -103,6 +105,7 @@ function createPlacement(sample: ThreadRowSample, thread: ReviewThread): ThreadP
             return {
                 kind: 'fileTop',
                 thread,
+                side: sample.inline === 'left' || sample.fileDeleted ? 'before' : 'after',
                 diffHunk: sample.diffHunk,
                 commit: sample.commit ?? null,
                 fileDeleted: sample.fileDeleted ?? false,
