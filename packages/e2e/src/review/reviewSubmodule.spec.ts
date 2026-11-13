@@ -57,7 +57,7 @@ test('a submodule moved forward shows its commits, the files they change and the
     await expect(files.filter({ hasText: 'src/batch.ts' })).toContainText(/\+4\s*−0/);
 
     await review.diff
-        .getByRole('list', { name: 'Pull requests with the new commit' })
+        .getByRole('region', { name: 'Pull requests with the new commit' })
         .getByRole('link', { name: ENGINE_PULL_REQUEST })
         .click();
     await expect(new ItemViewHarness(page).title).toHaveText(ENGINE_PULL_REQUEST);
