@@ -232,6 +232,43 @@ test('a split inside the pane of another, one column shown: the same width, and 
     expect(ids.length).toBeGreaterThanOrEqual(3);
 });
 
+test('with flow, the split is as tall as its taller panel inside a scroller, and a sticky element in the column sticks to the scroller', async () => {
+    await page.viewport(1400, 800);
+    window.localStorage.removeItem(WIDTH_KEY);
+    const container = createContainer();
+    container.set(LanguageContext, () => APP_LANGUAGE);
+    const host = document.createElement('div');
+    host.style.cssText = 'position: fixed; inset: 0; overflow-y: auto';
+    document.body.append(host);
+
+    const app = createApp({
+        setup: () => () =>
+            h('div', { style: { display: 'flex', flexDirection: 'column', minHeight: '100%' } }, [
+                h(
+                    ColumnSplit,
+                    { shown: true, width: WIDTH, label: LABEL, flow: true },
+                    {
+                        column: () =>
+                            h('div', { tid: 'sticky', style: { position: 'sticky', top: 0, height: '100px' } }),
+                        default: () => h('div', { tid: 'pane', style: { height: '2000px' } }),
+                    },
+                ),
+            ]),
+    });
+    app.use(IocPlugin, { container });
+    app.mount(host);
+    onTestFinished(async () => {
+        app.unmount();
+        host.remove();
+        await page.viewport(414, 896);
+    });
+
+    await expect.poll(() => host.scrollHeight).toBe(2000);
+    host.scrollTop = 1000;
+    await expect.poll(() => page.getByTestId('sticky').element().getBoundingClientRect().top).toBe(0);
+    expect(page.getByTestId('pane').element().getBoundingClientRect().top).toBe(-1000);
+});
+
 interface MountOptions {
     /** The window's width. */
     readonly window: number;

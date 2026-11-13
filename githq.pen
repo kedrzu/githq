@@ -6355,6 +6355,14 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "id": "nLZjy",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "NjMaL",
+                      "name": "Item / Summary · pull request · panel",
+                      "padding": 24
                     }
                   ]
                 },
@@ -48799,7 +48807,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Expanded from the panel (⇧↵, ↵ on the open row, or the header's button); ⇧↵, the button or Esc goes back to it. When the item view is at least 1000 px wide on a page (1300 px in the panel, F20) it splits in two. Unlike the app's other columns, the two are one $bg-item surface with no line between them. Left, the summary column, 440 px by default: title, state, where the pull request stands, reviews, checks, what it closes, properties, projects. Its right edge is invisible at rest and lights up $accent only while hovered; it is dragged, as the review's file list, from 360 to 560 px, kept on this device. Both columns' content sits 32 px from that edge, so it lies midway, and their first lines align 32 px under the header. The summary stays put while the timeline scrolls, and scrolls on its own only when it's taller than the window (here Projects runs off the bottom). Right, the timeline: description, the whole thread and the composer, capped at 920 px. Here it has 700 px and is scrolled past the description, a review cut by the header. 440 px holds the merge standing's three buttons on one line once they drop their key hints (⇧M, O and D stay in the tooltips and the command menu), and the reviews line drops '1 approval · dkim' (Reviews says it right below). A line that still doesn't fit gives way at its end with an ellipsis: a check's name first.",
+                      "content": "Expanded from the panel (⇧↵, ↵ on the open row, or the header's button); ⇧↵, the button or Esc goes back to it. When the item view is at least 1000 px wide on a page (1300 px in the panel, F20) it splits in two. Unlike the app's other columns, the two are one $bg-item surface with no line between them. Left, the summary column, 440 px by default: title, state, where the pull request stands, reviews, checks, what it closes, properties, projects. Right, the timeline: description, the whole thread and the composer, the thread filling the column. The two scroll as one, the wheel scrolling them wherever the pointer is; the summary is sticky in that scroll: at the top while it fits the view, and once taller (here Projects runs off the bottom) scrolled until its bottom meets the view's, then kept there. Here the timeline is scrolled past the description, a review cut by the header. On a page the two columns stand in a box of their own, 1424 px by default; this item area is narrower than that, so the box takes the whole width (F19 shows it centred). Its side edges and the edge between the columns are drawn only while hovered, dragged or focused, $accent then, nothing at rest. The summary's edge is dragged from 360 to 560 px, kept on this device. Both columns' content sits 32 px from every edge, so the edge between them lies midway, and their first lines align 32 px under the header. 440 px holds the merge standing's three buttons on one line once they drop their key hints (⇧M, O and D stay in the tooltips and the command menu), and the reviews line drops '1 approval · dkim' (Reviews says it right below). A line that still doesn't fit gives way at its end with an ellipsis: a check's name first.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -49255,7 +49263,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same layout in a 1920 × 1080 window. The summary keeps its 440 px; the timeline grows until its 920 px cap and stops there, starting 32 px from the summary's invisible edge, so the 292 px left over stays empty on the right. Aligned to the summary rather than centred: the thread doesn't drift away from the summary as the window widens, and the line from a check or a review to the comment about it stays short. A pull request in a stack shows the stack map at the top of the summary (Stack / Map, as SP35 draws it). Scrolled to the end: the composer closes the thread.",
+                      "content": "The same layout in a 1920 × 1080 window. The item area is wider than the box, so the box stands centred at its default 1424 px (the summary's 440 px beside a timeline at the 920 px reading width, 32 px either side), the 260 px left over split evenly, 130 px either side, on the same $bg-item surface. Either side edge is dragged to resize the box symmetrically, from 920 px to the width there is, kept on this device; the summary's edge splits it inside (360–560 px). The thread fills the timeline column. No line on the box's edges: they're drawn only while hovered, dragged or focused. A pull request in a stack shows the stack map at the top of the summary (Stack / Map, as SP35 draws it). Scrolled to the end: the composer closes the thread.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -49339,351 +49347,361 @@
                               "name": "Columns",
                               "width": "fill_container",
                               "height": "fill_container",
+                              "justifyContent": "center",
                               "children": [
                                 {
-                                  "id": "t4CTZx",
-                                  "type": "ref",
-                                  "ref": "NjMaL",
-                                  "name": "Summary",
-                                  "height": "fill_container",
-                                  "descendants": {
-                                    "m5QwD": {
-                                      "enabled": true
-                                    },
-                                    "m5QwD/TvTuK": {
-                                      "content": "IndexedDB store"
-                                    },
-                                    "m5QwD/F9Y04p": {
-                                      "content": "2 of 2"
-                                    },
-                                    "m5QwD/Q1zvo": {
-                                      "content": "#1186"
-                                    },
-                                    "m5QwD/SUgSz": {
-                                      "content": "Schema and migrations for the local store"
-                                    },
-                                    "m5QwD/w2pApr": {
-                                      "icon": "circle-x",
-                                      "fill": "$red"
-                                    },
-                                    "m5QwD/AqrM4": {
-                                      "content": "#1187"
-                                    },
-                                    "m5QwD/ci0GE": {
-                                      "content": "IndexedDB store for issues and pull requests"
-                                    },
-                                    "m5QwD/jzh3r": {
-                                      "icon": "circle-x",
-                                      "fill": "$red"
-                                    },
-                                    "m5QwD/l5ggW": {
-                                      "content": "#1187 can't merge yet: 2 checks failing"
-                                    }
-                                  }
-                                },
-                                {
                                   "type": "frame",
-                                  "id": "GXvmg",
-                                  "name": "Timeline column",
-                                  "clip": true,
-                                  "width": "fill_container",
+                                  "id": "POHbt",
+                                  "name": "Box",
+                                  "width": 1424,
                                   "height": "fill_container",
-                                  "layout": "vertical",
-                                  "padding": [
-                                    -798,
-                                    32,
-                                    32,
-                                    32
-                                  ],
                                   "children": [
                                     {
+                                      "id": "t4CTZx",
+                                      "type": "ref",
+                                      "ref": "NjMaL",
+                                      "name": "Summary",
+                                      "height": "fill_container",
+                                      "descendants": {
+                                        "m5QwD": {
+                                          "enabled": true
+                                        },
+                                        "m5QwD/TvTuK": {
+                                          "content": "IndexedDB store"
+                                        },
+                                        "m5QwD/F9Y04p": {
+                                          "content": "2 of 2"
+                                        },
+                                        "m5QwD/Q1zvo": {
+                                          "content": "#1186"
+                                        },
+                                        "m5QwD/SUgSz": {
+                                          "content": "Schema and migrations for the local store"
+                                        },
+                                        "m5QwD/w2pApr": {
+                                          "icon": "circle-x",
+                                          "fill": "$red"
+                                        },
+                                        "m5QwD/AqrM4": {
+                                          "content": "#1187"
+                                        },
+                                        "m5QwD/ci0GE": {
+                                          "content": "IndexedDB store for issues and pull requests"
+                                        },
+                                        "m5QwD/jzh3r": {
+                                          "icon": "circle-x",
+                                          "fill": "$red"
+                                        },
+                                        "m5QwD/l5ggW": {
+                                          "content": "#1187 can't merge yet: 2 checks failing"
+                                        }
+                                      }
+                                    },
+                                    {
                                       "type": "frame",
-                                      "id": "rK9we",
-                                      "name": "Timeline",
-                                      "width": 920,
+                                      "id": "GXvmg",
+                                      "name": "Timeline column",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "height": "fill_container",
                                       "layout": "vertical",
-                                      "gap": 22,
+                                      "padding": [
+                                        -798,
+                                        32,
+                                        32,
+                                        32
+                                      ],
                                       "children": [
                                         {
-                                          "id": "W1XLy",
-                                          "type": "ref",
-                                          "ref": "bJhAe",
-                                          "width": "fill_container",
-                                          "name": "Body",
-                                          "descendants": {
-                                            "MrJvR": {
-                                              "content": "commented 4 days ago"
-                                            },
-                                            "r8lpm": {
-                                              "content": "Moves issues, pull requests and project items into IndexedDB so lists render before the network answers. It is the first of four in the offline stack."
-                                            },
-                                            "VxGG5": {
-                                              "enabled": true
-                                            },
-                                            "ZMrV4": {
-                                              "enabled": true
-                                            },
-                                            "styOz": {
-                                              "enabled": true
-                                            }
-                                          }
-                                        },
-                                        {
                                           "type": "frame",
-                                          "id": "aIp3w",
-                                          "name": "Feed",
+                                          "id": "rK9we",
+                                          "name": "Timeline",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 8,
+                                          "gap": 22,
                                           "children": [
                                             {
-                                              "type": "rectangle",
-                                              "id": "Z4jBFR",
-                                              "layoutPosition": "absolute",
-                                              "x": 55,
-                                              "y": -22,
-                                              "name": "Rail line",
-                                              "fill": "$border",
-                                              "width": 2,
-                                              "height": 1364
-                                            },
-                                            {
-                                              "id": "wqMWD",
+                                              "id": "W1XLy",
                                               "type": "ref",
-                                              "ref": "lkjfC",
-                                              "name": "Push · 6 commits",
+                                              "ref": "bJhAe",
                                               "width": "fill_container",
+                                              "name": "Body",
                                               "descendants": {
-                                                "B34xq": {
-                                                  "content": "pushed 6 commits"
+                                                "MrJvR": {
+                                                  "content": "commented 4 days ago"
                                                 },
-                                                "Umt2E": {
-                                                  "content": "4d"
+                                                "r8lpm": {
+                                                  "content": "Moves issues, pull requests and project items into IndexedDB so lists render before the network answers. It is the first of four in the offline stack."
                                                 },
-                                                "b1Q2dt/M39SI": {
-                                                  "content": "Open the IndexedDB store on sign-in"
-                                                },
-                                                "b1Q2dt/GhMha": {
-                                                  "icon": "circle-check",
-                                                  "fill": "$green"
-                                                },
-                                                "b1Q2dt/X0yIB0": {
-                                                  "content": "91ac0de"
-                                                },
-                                                "UPp5m/M39SI": {
-                                                  "content": "Keep issues and pull requests in one store"
-                                                },
-                                                "UPp5m/X0yIB0": {
-                                                  "content": "c3e8b17"
-                                                },
-                                                "ddvDC/M39SI": {
-                                                  "content": "Read the list from the store before the network"
-                                                },
-                                                "ddvDC/X0yIB0": {
-                                                  "content": "7d0f2aa"
-                                                },
-                                                "kt6I8": {
-                                                  "enabled": true
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "kqasS",
-                                              "type": "ref",
-                                              "ref": "umLcQ",
-                                              "name": "Event · added",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "zBUpf": {
-                                                  "icon": "tag",
-                                                  "fill": "$fg-2"
-                                                },
-                                                "Yl9EU": {
-                                                  "content": "mlaine"
-                                                },
-                                                "xlFny": {
-                                                  "content": "added"
-                                                },
-                                                "uSG4o": {
+                                                "VxGG5": {
                                                   "enabled": true
                                                 },
-                                                "LHum1": {
-                                                  "content": "and asked sofiab and dkim for a review",
+                                                "ZMrV4": {
                                                   "enabled": true
                                                 },
-                                                "K9lUQx": {
-                                                  "content": "4d"
+                                                "styOz": {
+                                                  "enabled": true
                                                 }
                                               }
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "F8z7ug",
-                                              "name": "Indent",
+                                              "id": "aIp3w",
+                                              "name": "Feed",
                                               "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 8,
                                               "children": [
                                                 {
-                                                  "id": "S88S4",
+                                                  "type": "rectangle",
+                                                  "id": "Z4jBFR",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 55,
+                                                  "y": -22,
+                                                  "name": "Rail line",
+                                                  "fill": "$border",
+                                                  "width": 2,
+                                                  "height": 1364
+                                                },
+                                                {
+                                                  "id": "wqMWD",
                                                   "type": "ref",
-                                                  "ref": "lshuQ",
-                                                  "name": "Divider",
+                                                  "ref": "lkjfC",
+                                                  "name": "Push · 6 commits",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "B34xq": {
+                                                      "content": "pushed 6 commits"
+                                                    },
+                                                    "Umt2E": {
+                                                      "content": "4d"
+                                                    },
+                                                    "b1Q2dt/M39SI": {
+                                                      "content": "Open the IndexedDB store on sign-in"
+                                                    },
+                                                    "b1Q2dt/GhMha": {
+                                                      "icon": "circle-check",
+                                                      "fill": "$green"
+                                                    },
+                                                    "b1Q2dt/X0yIB0": {
+                                                      "content": "91ac0de"
+                                                    },
+                                                    "UPp5m/M39SI": {
+                                                      "content": "Keep issues and pull requests in one store"
+                                                    },
+                                                    "UPp5m/X0yIB0": {
+                                                      "content": "c3e8b17"
+                                                    },
+                                                    "ddvDC/M39SI": {
+                                                      "content": "Read the list from the store before the network"
+                                                    },
+                                                    "ddvDC/X0yIB0": {
+                                                      "content": "7d0f2aa"
+                                                    },
+                                                    "kt6I8": {
+                                                      "enabled": true
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "kqasS",
+                                                  "type": "ref",
+                                                  "ref": "umLcQ",
+                                                  "name": "Event · added",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "zBUpf": {
+                                                      "icon": "tag",
+                                                      "fill": "$fg-2"
+                                                    },
+                                                    "Yl9EU": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "xlFny": {
+                                                      "content": "added"
+                                                    },
+                                                    "uSG4o": {
+                                                      "enabled": true
+                                                    },
+                                                    "LHum1": {
+                                                      "content": "and asked sofiab and dkim for a review",
+                                                      "enabled": true
+                                                    },
+                                                    "K9lUQx": {
+                                                      "content": "4d"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "F8z7ug",
+                                                  "name": "Indent",
+                                                  "width": "fill_container",
+                                                  "children": [
+                                                    {
+                                                      "id": "S88S4",
+                                                      "type": "ref",
+                                                      "ref": "lshuQ",
+                                                      "name": "Divider",
+                                                      "width": "fill_container"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "id": "UDCSS",
+                                                  "type": "ref",
+                                                  "ref": "b1us0",
+                                                  "name": "Review · sofiab",
+                                                  "width": "fill_container"
+                                                },
+                                                {
+                                                  "id": "thNCz",
+                                                  "type": "ref",
+                                                  "ref": "NXXMN",
+                                                  "name": "Code comment · dkim, resolved",
+                                                  "width": "fill_container"
+                                                },
+                                                {
+                                                  "id": "z5nJ4",
+                                                  "type": "ref",
+                                                  "ref": "lkjfC",
+                                                  "name": "Push · 3 commits",
+                                                  "width": "fill_container"
+                                                },
+                                                {
+                                                  "id": "vJTFd",
+                                                  "type": "ref",
+                                                  "ref": "umLcQ",
+                                                  "name": "Event · 2 of 9 checks failed on",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "zBUpf": {
+                                                      "icon": "circle-x",
+                                                      "fill": "$red"
+                                                    },
+                                                    "smi7i": {
+                                                      "enabled": false
+                                                    },
+                                                    "Yl9EU": {
+                                                      "content": "CI"
+                                                    },
+                                                    "xlFny": {
+                                                      "content": "2 of 9 checks failed on"
+                                                    },
+                                                    "uSG4o": {
+                                                      "enabled": false
+                                                    },
+                                                    "LHum1": {
+                                                      "content": "e81f0a3: e2e, typecheck",
+                                                      "enabled": true
+                                                    },
+                                                    "K9lUQx": {
+                                                      "content": "1d"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "evAtn",
+                                                  "type": "ref",
+                                                  "ref": "umLcQ",
+                                                  "name": "Event · asked sofiab for another review",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "zBUpf": {
+                                                      "icon": "refresh-cw",
+                                                      "fill": "$fg-2"
+                                                    },
+                                                    "Yl9EU": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "xlFny": {
+                                                      "content": "asked"
+                                                    },
+                                                    "uSG4o": {
+                                                      "enabled": false
+                                                    },
+                                                    "LHum1": {
+                                                      "content": "sofiab for another review",
+                                                      "enabled": true
+                                                    },
+                                                    "K9lUQx": {
+                                                      "content": "3h"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "WTAmo",
+                                                  "type": "ref",
+                                                  "ref": "WHy4W",
+                                                  "name": "Comment · mlaine",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "N5FNN": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "N5FNN/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "my8kv": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "bCJbH": {
+                                                      "content": "2h"
+                                                    },
+                                                    "BujgM": {
+                                                      "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "wqMJP",
+                                                  "name": "Indent",
+                                                  "width": "fill_container",
+                                                  "padding": [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    40
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "id": "fpCFs",
+                                                      "type": "ref",
+                                                      "ref": "t2x5CU",
+                                                      "name": "Divider",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "cMld2": {
+                                                          "content": "1 new since you looked"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "id": "u3FhR",
+                                                  "type": "ref",
+                                                  "ref": "WHy4W",
+                                                  "name": "Comment · dkim",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "bCJbH": {
+                                                      "content": "1h"
+                                                    },
+                                                    "BujgM": {
+                                                      "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "JQ82h",
+                                                  "type": "ref",
+                                                  "ref": "sWprg",
+                                                  "name": "Composer",
                                                   "width": "fill_container"
                                                 }
                                               ]
-                                            },
-                                            {
-                                              "id": "UDCSS",
-                                              "type": "ref",
-                                              "ref": "b1us0",
-                                              "name": "Review · sofiab",
-                                              "width": "fill_container"
-                                            },
-                                            {
-                                              "id": "thNCz",
-                                              "type": "ref",
-                                              "ref": "NXXMN",
-                                              "name": "Code comment · dkim, resolved",
-                                              "width": "fill_container"
-                                            },
-                                            {
-                                              "id": "z5nJ4",
-                                              "type": "ref",
-                                              "ref": "lkjfC",
-                                              "name": "Push · 3 commits",
-                                              "width": "fill_container"
-                                            },
-                                            {
-                                              "id": "vJTFd",
-                                              "type": "ref",
-                                              "ref": "umLcQ",
-                                              "name": "Event · 2 of 9 checks failed on",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "zBUpf": {
-                                                  "icon": "circle-x",
-                                                  "fill": "$red"
-                                                },
-                                                "smi7i": {
-                                                  "enabled": false
-                                                },
-                                                "Yl9EU": {
-                                                  "content": "CI"
-                                                },
-                                                "xlFny": {
-                                                  "content": "2 of 9 checks failed on"
-                                                },
-                                                "uSG4o": {
-                                                  "enabled": false
-                                                },
-                                                "LHum1": {
-                                                  "content": "e81f0a3: e2e, typecheck",
-                                                  "enabled": true
-                                                },
-                                                "K9lUQx": {
-                                                  "content": "1d"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "evAtn",
-                                              "type": "ref",
-                                              "ref": "umLcQ",
-                                              "name": "Event · asked sofiab for another review",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "zBUpf": {
-                                                  "icon": "refresh-cw",
-                                                  "fill": "$fg-2"
-                                                },
-                                                "Yl9EU": {
-                                                  "content": "mlaine"
-                                                },
-                                                "xlFny": {
-                                                  "content": "asked"
-                                                },
-                                                "uSG4o": {
-                                                  "enabled": false
-                                                },
-                                                "LHum1": {
-                                                  "content": "sofiab for another review",
-                                                  "enabled": true
-                                                },
-                                                "K9lUQx": {
-                                                  "content": "3h"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "WTAmo",
-                                              "type": "ref",
-                                              "ref": "WHy4W",
-                                              "name": "Comment · mlaine",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "N5FNN": {
-                                                  "fill": "#C9A26B"
-                                                },
-                                                "N5FNN/zeZzP": {
-                                                  "content": "ML"
-                                                },
-                                                "my8kv": {
-                                                  "content": "mlaine"
-                                                },
-                                                "bCJbH": {
-                                                  "content": "2h"
-                                                },
-                                                "BujgM": {
-                                                  "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "wqMJP",
-                                              "name": "Indent",
-                                              "width": "fill_container",
-                                              "padding": [
-                                                0,
-                                                0,
-                                                0,
-                                                40
-                                              ],
-                                              "children": [
-                                                {
-                                                  "id": "fpCFs",
-                                                  "type": "ref",
-                                                  "ref": "t2x5CU",
-                                                  "name": "Divider",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "cMld2": {
-                                                      "content": "1 new since you looked"
-                                                    }
-                                                  }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "id": "u3FhR",
-                                              "type": "ref",
-                                              "ref": "WHy4W",
-                                              "name": "Comment · dkim",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "bCJbH": {
-                                                  "content": "1h"
-                                                },
-                                                "BujgM": {
-                                                  "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "JQ82h",
-                                              "type": "ref",
-                                              "ref": "sWprg",
-                                              "name": "Composer",
-                                              "width": "fill_container"
                                             }
                                           ]
                                         }
@@ -49753,7 +49771,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The panel dragged to 1300 px beside My work in a 1920 × 1080 window (sidebar on its rail, so the list keeps 564 px). The item view measures itself, not the window: in the panel it splits from 1300 px of its own width, on a page from 1000 px, so a panel dragged only a little wider stays in one column. Split, it takes the same two columns as the full screen, on one surface with no line between them: the summary 440 px and the timeline the remaining 860 (796 of thread), each one's content 32 px from the edge. The header is the panel's: ⇧↵ or the expand button opens it full screen. Not scrolled: the description opens the timeline. Narrower than 1300 px, the panel goes back to one column (F21).",
+                      "content": "The panel dragged to 1300 px beside My work in a 1920 × 1080 window (sidebar on its rail, so the list keeps 564 px). The item view measures itself, not the window: in the panel it splits from 1300 px of its own width, on a page from 1000 px, so a panel dragged only a little wider stays in one column. Split, it takes the same two columns as the full screen, on one surface with no line between them, but no box: the two take the panel's width. Both columns' content sits 24 px from every edge, 48 px between them: the summary 440 px and the timeline the remaining 860 (812 of thread; the thread at most 920 px, left-aligned). One scroll, the summary sticky in it. The header is the panel's: ⇧↵ or the expand button opens it full screen. Not scrolled: the description opens the timeline. Narrower than 1300 px, the panel goes back to one column (F21).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -49850,9 +49868,9 @@
                               "height": "fill_container",
                               "children": [
                                 {
-                                  "id": "YV3yO",
+                                  "id": "c3xHr",
                                   "type": "ref",
-                                  "ref": "NjMaL",
+                                  "ref": "nLZjy",
                                   "name": "Summary",
                                   "height": "fill_container"
                                 },
@@ -49864,7 +49882,7 @@
                                   "width": "fill_container",
                                   "height": "fill_container",
                                   "layout": "vertical",
-                                  "padding": 32,
+                                  "padding": 24,
                                   "children": [
                                     {
                                       "type": "frame",
