@@ -2,6 +2,7 @@ import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AccountScreenHarness } from '../harnesses/AccountScreen.harness.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import type { MyWorkGroupName } from '../harnesses/MyWorkScreen.harness.js';
@@ -41,7 +42,11 @@ test("GitHub's dashboard lists open my work narrowed to their group", async ({ p
         await expect(page).toHaveURL(address);
     }
 
+    // The bare address opens the screen shown last; "My work" in the sidebar is the whole of it.
     await page.goto('/');
+    await expect(myWork.groups).toHaveCount(1);
+    await expect(page).toHaveURL('/pulls/mentioned');
+    await new AppShellHarness(page).myWorkLink('My work').click();
     await expect(myWork.groups).toHaveCount(4);
     await expect(page).toHaveURL('/');
 });
