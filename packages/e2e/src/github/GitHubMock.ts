@@ -227,6 +227,8 @@ export class GitHubMock {
     }[] = [];
     private tokenExchangeAnswer: GitHubTokenExchange | GitHubHttpError | null = null;
     private readonly revoked: string[] = [];
+    private readonly revocations: object[] = [];
+    private readonly exchanges: object[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
     /** While answers are held: settles when they are released. */
@@ -258,6 +260,16 @@ export class GitHubMock {
     /** The tokens the app asked the Worker to revoke (`POST /api/auth/revoke`), oldest first. */
     get revokedTokens(): readonly string[] {
         return this.revoked;
+    }
+
+    /** The whole bodies of the app's revocations (`POST /api/auth/revoke`), oldest first: the token and what else it says. */
+    get revocationBodies(): readonly object[] {
+        return this.revocations;
+    }
+
+    /** The whole bodies of the app's token exchanges (`POST /api/auth/token`), oldest first. */
+    get tokenExchangeBodies(): readonly object[] {
+        return this.exchanges;
     }
 
     /**
@@ -563,17 +575,20 @@ export class GitHubMock {
         }
 
         this.revoked.push(String(body.token));
+        this.revocations.push(body);
         await route.fulfill({ status: 204 });
     }
 
     private async handleTokenExchange(route: Route) {
         const request = route.request();
         const answer = this.tokenExchangeAnswer;
-        if (request.method() !== 'POST' || !answer) {
+        const body: unknown = parseJson(request.postData());
+        if (request.method() !== 'POST' || !answer || typeof body !== 'object' || body === null) {
             await this.reject(route, describe(request));
             return;
         }
 
+        this.exchanges.push(body);
         await route.fulfill(
             answer instanceof GitHubHttpError
                 ? { status: answer.status, json: { error: answer.message } }

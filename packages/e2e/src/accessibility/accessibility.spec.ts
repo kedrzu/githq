@@ -203,7 +203,15 @@ test('every screen of Settings', async ({ page, github }) => {
     const settings = new SettingsScreenHarness(page);
     await expect(settings.heading).toBeVisible();
 
-    for (const section of ['Account', 'Repositories', 'Projects', 'Display', 'Code review', 'Sync settings'] as const) {
+    for (const section of [
+        'Account',
+        'Repositories',
+        'Projects',
+        'Display',
+        'Code review',
+        'Privacy',
+        'Sync settings',
+    ] as const) {
         await settings.section(section).click();
         await expect(settings.section(section)).toHaveAttribute('aria-pressed', 'true');
         await expectAccessible(page, `Settings: ${section}`);

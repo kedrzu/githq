@@ -282,6 +282,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
       <div
         :class="[
           css.workflowAlertsBlock_row,
+          css.workflowAlertsBlock_default,
           selection.selectedKey === DEFAULT_KEY && css.workflowAlertsBlock_selected,
         ]"
         :data-alert-key="DEFAULT_KEY"
@@ -503,6 +504,11 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 
 .workflowAlertsBlock_pattern {
   border-top: 1px solid $color-border;
+}
+
+// `Workflow alerts / Default branch · hover`: a click on it selects it; once selected, the selection shows.
+.workflowAlertsBlock_default:not(.workflowAlertsBlock_selected):hover {
+  background: $color-bg-3;
 }
 
 .workflowAlertsBlock_selected {

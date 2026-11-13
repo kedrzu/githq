@@ -17,12 +17,16 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { UsageStatisticsFlag } from './UsageStatisticsFlag.js';
 
 test('the flag follows the setting only once the account’s settings are loaded, and stays after signing out', async () => {
-    // A flag an earlier session set; this account's setting is on (the default), which only its loaded settings say.
+    // A flag an earlier session set; this account chose statistics on, which only its loaded settings say.
     const login = uniqueLogin();
+    const document: SettingsDocument = { version: 1, repositories: [], projects: [], usageStatistics: true };
     const session = createTestSession({
         login,
         answer: () => undefined,
-        localStorage: new Map([[USAGE_STATISTICS_OFF_KEY, USAGE_STATISTICS_OFF_VALUE]]),
+        localStorage: new Map([
+            [USAGE_STATISTICS_OFF_KEY, USAGE_STATISTICS_OFF_VALUE],
+            [`githq.settings.${login}`, JSON.stringify({ chosen: true, document, saving: { state: 'off' } })],
+        ]),
     });
     setIndexedDbPersistence(session.container);
     session.container.resolve(ItemStore);
@@ -67,4 +71,38 @@ test('an account whose kept settings have statistics off sets the flag when they
     await tracking.ready();
     await nextTick();
     expect(session.localStorage.get(USAGE_STATISTICS_OFF_KEY)).toBe(USAGE_STATISTICS_OFF_VALUE);
+});
+
+test('an account that never chose takes the flag’s off, so signing in again does not turn statistics back on', async () => {
+    const login = uniqueLogin();
+    const session = createTestSession({
+        login,
+        answer: () => undefined,
+        localStorage: new Map([[USAGE_STATISTICS_OFF_KEY, USAGE_STATISTICS_OFF_VALUE]]),
+    });
+    setIndexedDbPersistence(session.container);
+    session.container.resolve(ItemStore);
+    session.container.resolve(UsageStatisticsFlag);
+    const tracking = session.container.resolve(TrackingStore);
+
+    await tracking.ready();
+    await nextTick();
+    expect(tracking.usageStatistics).toBe(false);
+    expect(tracking.document.usageStatistics).toBe(false);
+    expect(session.localStorage.get(USAGE_STATISTICS_OFF_KEY)).toBe(USAGE_STATISTICS_OFF_VALUE);
+});
+
+test('an account that never chose, on a device without the flag, stays on and sets no flag', async () => {
+    const login = uniqueLogin();
+    const session = createTestSession({ login, answer: () => undefined });
+    setIndexedDbPersistence(session.container);
+    session.container.resolve(ItemStore);
+    session.container.resolve(UsageStatisticsFlag);
+    const tracking = session.container.resolve(TrackingStore);
+
+    await tracking.ready();
+    await nextTick();
+    expect(tracking.usageStatistics).toBe(true);
+    expect('usageStatistics' in tracking.document).toBe(false);
+    expect(session.localStorage.get(USAGE_STATISTICS_OFF_KEY)).toBeUndefined();
 });

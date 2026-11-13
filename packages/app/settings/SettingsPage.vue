@@ -11,6 +11,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import CodeReviewSection from './CodeReviewSection.vue';
 import DisplaySection from './DisplaySection.vue';
+import PrivacySection from './PrivacySection.vue';
 import SavingSection from './SavingSection.vue';
 import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
 import SettingsView from './SettingsView.vue';
@@ -49,6 +50,7 @@ const section = computed({
     />
     <AccountSection v-else-if="section === 'account'" />
     <SavingSection v-else-if="section === 'sync'" />
+    <PrivacySection v-else-if="section === 'privacy'" />
     <CodeReviewSection v-else-if="section === 'review'" />
     <DisplaySection v-else-if="section === 'display'" />
     <TrackedProjectsSection

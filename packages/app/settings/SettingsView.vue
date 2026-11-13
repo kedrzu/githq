@@ -8,6 +8,7 @@ import {
   FileDiff,
   PanelsTopLeft,
   ScrollText,
+  Shield,
   SquareKanban,
   User,
 } from 'lucide-vue-next';
@@ -29,6 +30,7 @@ const SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon>> = {
   projects: SquareKanban,
   display: PanelsTopLeft,
   review: FileDiff,
+  privacy: Shield,
   sync: Cloud,
   account: User,
   updates: CircleArrowDown,
