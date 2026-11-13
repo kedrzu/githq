@@ -118886,7 +118886,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own.",
+                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It counts visits and sign-ins anonymously, never your work, and you can turn that off in Settings.",
                               "lineHeight": 1.55,
                               "fontFamily": "Inter",
                               "fontSize": 15,
@@ -127226,7 +127226,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own.",
+                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It counts visits and sign-ins anonymously, never your work, and you can turn that off in Settings.",
                               "lineHeight": 1.55,
                               "fontFamily": "Inter",
                               "fontSize": 15,
@@ -165520,6 +165520,14 @@
                   ]
                 },
                 {
+                  "id": "ltWOr",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "bIbPS",
+                  "name": "Workflow alerts / Default branch · hover",
+                  "fill": "$bg-3"
+                },
+                {
                   "type": "frame",
                   "id": "qzyaU",
                   "name": "Workflow alerts / Pattern row",
@@ -198095,7 +198103,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "One screen with a column of six sections, as the repository's column layout: Repositories, Projects, Display, Code review, Sync settings, Account. Keys 1 to 6 switch between them, and it opens from the menu on the signed-in user, the command menu or the , key. It is the only place to start tracking. Repositories and Projects list only what is tracked, grouped by owner, each row opening its own settings page (T16 for a repository) and untracked from the row; adding is a separate step, a picker opened with Track repositories or Track projects (T18–T22; first sign-in keeps its chooser, G2). The account stays a section rather than a page of its own, so the user menu needs one entry and there is one place to look. An organisation that hides its private data is flagged in the picker and in Account. Where settings are saved shows in the status bar, not on the page.",
+              "content": "One screen with a column of seven sections, as the repository's column layout: Repositories, Projects, Display, Code review, Privacy, Sync settings, Account. Keys 1 to 7 switch between them, and it opens from the menu on the signed-in user, the command menu or the , key. It is the only place to start tracking. Repositories and Projects list only what is tracked, grouped by owner, each row opening its own settings page (T16 for a repository) and untracked from the row; adding is a separate step, a picker opened with Track repositories or Track projects (T18–T22; first sign-in keeps its chooser, G2). The account stays a section rather than a page of its own, so the user menu needs one entry and there is one place to look. An organisation that hides its private data is flagged in the picker and in Account. Where settings are saved shows in the status bar, not on the page.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -198107,6 +198115,7 @@
           "type": "frame",
           "id": "q9BSr",
           "name": "Components · Settings",
+          "width": 6331,
           "gap": 48,
           "children": [
             {
@@ -200067,6 +200076,24 @@
                       }
                     },
                     {
+                      "id": "nTco9",
+                      "type": "ref",
+                      "ref": "N8UMD",
+                      "name": "Section Privacy",
+                      "width": "fill_container",
+                      "descendants": {
+                        "kk8BQ": {
+                          "icon": "shield"
+                        },
+                        "upTOT": {
+                          "content": "Privacy"
+                        },
+                        "v5Hae9/luKkY": {
+                          "content": "5"
+                        }
+                      }
+                    },
+                    {
                       "id": "L2bl9",
                       "type": "ref",
                       "ref": "N8UMD",
@@ -200080,7 +200107,7 @@
                           "content": "Sync settings"
                         },
                         "v5Hae9/luKkY": {
-                          "content": "5"
+                          "content": "6"
                         }
                       }
                     },
@@ -200098,7 +200125,7 @@
                           "content": "Account"
                         },
                         "v5Hae9/luKkY": {
-                          "content": "6"
+                          "content": "7"
                         }
                       }
                     },
@@ -200117,7 +200144,7 @@
                           "content": "Updates"
                         },
                         "v5Hae9/luKkY": {
-                          "content": "7"
+                          "content": "8"
                         }
                       }
                     },
@@ -200136,7 +200163,7 @@
                           "content": "Changelog"
                         },
                         "v5Hae9/luKkY": {
-                          "content": "8"
+                          "content": "9"
                         }
                       }
                     }
@@ -200264,67 +200291,252 @@
             },
             {
               "type": "frame",
-              "id": "AQNxV",
-              "name": "Settings / Switch row",
-              "reusable": true,
-              "width": 560,
-              "gap": 24,
+              "id": "t2fEAy",
+              "name": "Settings / Toggle card · states",
+              "fill": "$bg",
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 24,
               "children": [
                 {
                   "type": "frame",
-                  "id": "vD3ev",
-                  "name": "Text",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 6,
+                  "id": "j4quX",
+                  "name": "State · On (base)",
+                  "gap": 24,
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "rPvpU",
-                      "name": "Title",
-                      "fill": "$fg",
-                      "content": "Setting",
+                      "id": "CndOZ",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "On (base)",
                       "fontFamily": "$font",
-                      "fontSize": 13.5,
+                      "fontSize": 12,
                       "fontWeight": "500"
                     },
                     {
-                      "type": "text",
-                      "id": "SScER",
-                      "name": "Explanation",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "What it does.",
-                      "lineHeight": 1.5,
-                      "fontFamily": "$font",
-                      "fontSize": 12.5,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "AQNxV",
+                      "name": "Settings / Toggle card",
+                      "reusable": true,
+                      "width": 560,
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 16,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vD3ev",
+                          "name": "Text",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rPvpU",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "Setting",
+                              "fontFamily": "$font",
+                              "fontSize": 13.5,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SScER",
+                              "name": "Explanation",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "What it does.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Xve0U",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Link",
+                              "enabled": false,
+                              "gap": 5,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "XO9HU",
+                                  "name": "Label",
+                                  "fill": "$accent",
+                                  "content": "Learn more",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "Axiqd",
+                                  "name": "icon arrow-up-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "arrow-up-right",
+                                  "library": "lucide",
+                                  "fill": "$accent"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "dBU9c",
+                          "type": "ref",
+                          "ref": "sh74L",
+                          "name": "Switch"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "id": "dBU9c",
-                  "type": "ref",
-                  "ref": "sh74L",
-                  "name": "Switch"
+                  "type": "frame",
+                  "id": "WnenD",
+                  "name": "State · Off",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aadds",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Off",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "W2FH3n",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · off",
+                      "descendants": {
+                        "dBU9c": {
+                          "id": "rBzrf",
+                          "type": "ref",
+                          "ref": "XYL25",
+                          "name": "Switch"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RdJJU",
+                  "name": "State · Hover",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QYmXg",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Hover",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "B8viX",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · hover",
+                      "stroke": "$border-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S7wFI",
+                  "name": "State · Focus",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qMEQ0",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Focus",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "n1uY0V",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · focus",
+                      "stroke": "$accent",
+                      "strokeWidth": 2,
+                      "strokeAlignment": "outer"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BM2b9",
+                  "name": "State · With link",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "xPbVp",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "With link",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "iahCE",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · with link",
+                      "descendants": {
+                        "Xve0U": {
+                          "enabled": true
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
-            },
-            {
-              "id": "W2FH3n",
-              "type": "ref",
-              "reusable": true,
-              "ref": "AQNxV",
-              "name": "Settings / Switch row · off",
-              "descendants": {
-                "dBU9c": {
-                  "id": "rBzrf",
-                  "type": "ref",
-                  "ref": "XYL25",
-                  "name": "Switch"
-                }
-              }
             }
           ]
         },
@@ -206066,6 +206278,209 @@
                     },
                     {
                       "id": "scLuh",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "cloud",
+                          "fill": "$fg-3"
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Up to date · settings saved in mlaine/githq-settings",
+                          "fill": "$fg-dim"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aDEzM",
+              "name": "Slot · T23 · Settings · Privacy",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ODcs3",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lHJb8",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "T23 · Settings · Privacy",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "iSmsD",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Privacy holds one switch: whether githq counts its use. It is on by default. The Worker counts successful sign-ins, token renewals, sign-outs and installer downloads, each as an event name and the client, web or desktop, and nothing about the user, their code or repositories. Turned off, it stops for the account, not just this device. The link opens the docs page that lists what is counted.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HcYRX",
+                  "name": "T23 · Settings · Privacy",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L9etqp",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "yWUvb",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "id": "rfGaZ",
+                          "type": "ref",
+                          "ref": "Hx88c",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "nTco9": {
+                              "fill": "$bg-3"
+                            },
+                            "nTco9/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "nTco9/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OE4bS",
+                          "name": "Page pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uaGbE",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "WUl3J",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Privacy",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "u9sd4L",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 32,
+                              "padding": [
+                                28,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "YEWMf",
+                                  "name": "Usage statistics",
+                                  "width": 560,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "id": "eYLKE",
+                                      "type": "ref",
+                                      "ref": "iahCE",
+                                      "name": "Share usage statistics",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "rPvpU": {
+                                          "content": "Share usage statistics"
+                                        },
+                                        "SScER": {
+                                          "content": "githq counts sign-ins and visits anonymously, so we know how many people use it. Nothing about your code, your repositories or who you are is ever sent."
+                                        },
+                                        "XO9HU": {
+                                          "content": "What githq counts"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "bQ6H5",
                       "type": "ref",
                       "ref": "BFhwj",
                       "name": "Status bar",
@@ -401885,6 +402300,25 @@
                             },
                             "Jsnjd": {
                               "content": "Send at once"
+                            }
+                          }
+                        },
+                        {
+                          "id": "WNwK3",
+                          "type": "ref",
+                          "ref": "saAOr",
+                          "name": "Privacy",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GvBwY": {
+                              "icon": "shield"
+                            },
+                            "FELdG": {
+                              "content": "Privacy"
+                            },
+                            "Jsnjd": {
+                              "enabled": true,
+                              "content": "Statistics on"
                             }
                           }
                         },

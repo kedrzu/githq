@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test';
 import type { Mock } from 'bun:test';
 
 import worker from './worker.js';
-import type { WorkerEnv } from './WorkerEnv.js';
+import type { AnalyticsEngineDataPoint, WorkerEnv } from './WorkerEnv.js';
 
 // GitHub is the system boundary: its answer to `releases/latest` is a stubbed global `fetch`.
 
@@ -24,8 +24,8 @@ function githubRedirectsTo(location: string) {
     github.mockResolvedValue(new Response(null, { status: 302, headers: { location } }));
 }
 
-function download(path: string) {
-    return worker.fetch(new Request(`${ORIGIN}${path}`), ENV);
+function download(path: string, env: WorkerEnv = ENV) {
+    return worker.fetch(new Request(`${ORIGIN}${path}`), env);
 }
 
 test.each([
@@ -79,3 +79,41 @@ test.each([
     expect(response.headers.get('location')).toBe(`${RELEASES}/latest`);
     expect(response.headers.get('set-cookie')).toBeNull();
 });
+
+test('counts a redirect to an installer, with the installer as the platform and nothing about the visitor', async () => {
+    const usage = usageBinding();
+    githubRedirectsTo(`${RELEASES}/tag/v0.3.0`);
+
+    await worker.fetch(
+        new Request(`${ORIGIN}/download/macos-silicon`, {
+            headers: { 'cf-connecting-ip': '203.0.113.7', 'user-agent': 'Mozilla/5.0', 'cf-ipcountry': 'PL' },
+        }),
+        { ...ENV, USAGE: usage.binding },
+    );
+
+    const expected: AnalyticsEngineDataPoint[] = [
+        { blobs: ['installer_download', '', 'macos-silicon'], doubles: [1], indexes: ['installer_download'] },
+    ];
+    expect(usage.points).toEqual(expected);
+});
+
+test('counts neither an unknown build nor the fallback to the release page', async () => {
+    const usage = usageBinding();
+    github.mockRejectedValue(new TypeError('network'));
+
+    await download('/download/amiga', { ...ENV, USAGE: usage.binding });
+    await download('/download/windows', { ...ENV, USAGE: usage.binding });
+
+    expect(usage.points).toEqual([]);
+});
+
+/** A fake Analytics Engine binding that keeps every data point written to it. */
+function usageBinding() {
+    const points: AnalyticsEngineDataPoint[] = [];
+    const binding: WorkerEnv['USAGE'] = {
+        writeDataPoint(point) {
+            points.push(point);
+        },
+    };
+    return { points, binding };
+}

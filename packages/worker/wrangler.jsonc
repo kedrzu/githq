@@ -62,6 +62,9 @@
         "host": "localhost:8787",
         "upstream_protocol": "http",
     },
+    // Opt-out usage statistics (`src/usage.ts`): anonymous counts of sign-ins, sign-outs and installer downloads,
+    // written to Workers Analytics Engine. Write-only, so the Worker stays stateless; no identifier is written.
+    "analytics_engine_datasets": [{ "binding": "USAGE", "dataset": "githq_usage" }],
     // Workers Logs and per-request CPU time in the dashboard.
     "observability": {
         "enabled": true,

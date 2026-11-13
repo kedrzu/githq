@@ -3,8 +3,9 @@ import path from 'node:path';
 
 import { checkAppSiteAssociation } from './checkAppSiteAssociation.js';
 import { appFiles, checkDocsPresent } from './checkDocs.js';
-import { checkPrerenderedPages } from './checkPrerenderedPages.js';
+import { checkPrerenderedPages, hasBeaconLoader } from './checkPrerenderedPages.js';
 import { readBuiltFiles, readBuiltPaths } from './readBuiltFiles.js';
+import type { BuiltFile } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
 // what the Worker will serve has nothing of local development or of the desktop app in it — the prerendered landing
@@ -68,10 +69,15 @@ export const WEB_MARKERS: readonly { text: string; what: string }[] = [
 export const APP_MARKER = '/api/auth/authorize';
 
 async function checkProductionBuild() {
-    const files = appFiles(await readBuiltFiles(OUTPUT));
+    const builtFiles = await readBuiltFiles(OUTPUT);
+    const files = appFiles(builtFiles);
     const paths = new Set(await readBuiltPaths(OUTPUT));
 
-    const problems = [...checkPrerenderedPages(files, paths), ...checkDocsPresent(paths)];
+    const problems = [
+        ...checkPrerenderedPages(files, paths),
+        ...checkDocsPresent(paths),
+        ...checkDocsBeaconLoader(builtFiles),
+    ];
     // Read here: it has no extension, so it is not among `files`, and a build without it fails the read.
     const association = await readFile(path.join(OUTPUT, '.well-known/apple-app-site-association'), 'utf8');
     problems.push(...checkAppSiteAssociation(association, [...paths]));
@@ -96,8 +102,18 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell, the landing page and the docs, no development sign-in, no desktop code, the web's own, the Universal Links file.`,
+        `Production build checked: ${files.length} files, the shell, the landing page and the docs, the beacon loader on the landing page and the docs only, no development sign-in, no desktop code, the web's own, the Universal Links file.`,
     );
+}
+
+/**
+ * Checks that every page of the docs inlines the loader of the usage statistics beacon (`packages/docs/.vitepress/config.ts`),
+ * by its site token: VitePress minifies the script. Read apart from the app's files, which leave the docs out (`appFiles`).
+ */
+function checkDocsBeaconLoader(builtFiles: readonly BuiltFile[]) {
+    return builtFiles
+        .filter(file => file.path.startsWith('docs/') && file.path.endsWith('.html') && !hasBeaconLoader(file))
+        .map(file => `${file.path}: the loader of the usage statistics beacon is missing`);
 }
 
 if (import.meta.main) {

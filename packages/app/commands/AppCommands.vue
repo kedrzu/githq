@@ -21,6 +21,7 @@ import {
   RotateCcw,
   ScrollText,
   Settings,
+  Shield,
   SquareKanban,
   SquarePen,
 } from 'lucide-vue-next';
@@ -71,6 +72,7 @@ const SETTINGS_SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon>> = {
   projects: SquareKanban,
   display: PanelsTopLeft,
   review: FileDiff,
+  privacy: Shield,
   sync: CloudUpload,
   account: CircleUser,
   updates: CircleArrowDown,

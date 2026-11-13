@@ -9,7 +9,7 @@ import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test('`1` to `6` and the tabs switch the sections, kept in the address', async ({ page, github }) => {
+test('`1` to `7` and the tabs switch the sections, kept in the address', async ({ page, github }) => {
     const { world } = createSampleTrackedWork();
     world.repository(`${SAMPLE_VIEWER.viewer.login}/docs`);
     const shell = await openTrackedWork(page, github, world);
@@ -53,6 +53,12 @@ test('`1` to `6` and the tabs switch the sections, kept in the address', async (
     await expect(shell.statusBar).toContainText('Up to date · saving is off');
 
     await page.keyboard.press('5');
+    await expect(page).toHaveURL('/settings?tab=privacy');
+    await expect(settings.section('Privacy')).toHaveAttribute('aria-pressed', 'true');
+    await expect(settings.usageStatisticsSwitch).toBeChecked();
+    await expect(shell.statusBar).toContainText('Up to date · saving is off');
+
+    await page.keyboard.press('6');
     await expect(page).toHaveURL('/settings?tab=sync');
     await expect(shell.statusBar).not.toContainText('saving is off');
     await expect(settings.section('Sync settings')).toHaveAttribute('aria-pressed', 'true');
@@ -60,7 +66,7 @@ test('`1` to `6` and the tabs switch the sections, kept in the address', async (
     await expect(tracking.openButton).toHaveCount(0);
     await expect(account.signOutButton).toHaveCount(0);
 
-    await page.keyboard.press('6');
+    await page.keyboard.press('7');
     await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.signOutButton).toBeVisible();
     await expect(tracking.openButton).toHaveCount(0);

@@ -1,13 +1,13 @@
-<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and under it whether things animate (D36, a `Switch` with its explanation). Both apply at once; where it is saved shows in the status bar. -->
+<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and under it whether things animate (D36, a `SettingsToggleCard`). Both apply at once; where it is saved shows in the status bar. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, useId } from 'vue';
 
 import ChoiceCards from '@/components/ChoiceCards.vue';
 import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
-import Switch from '@/components/Switch.vue';
 
 import * as l from './DisplayView.loc.js';
+import SettingsToggleCard from './SettingsToggleCard.vue';
 import type { RepositoryLayout } from './sync/SettingsDocument.js';
 
 /** The list's rows in a sketch, by how far each reaches; the first is the one selected. */
@@ -92,27 +92,11 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
           </template>
         </ChoiceCards>
       </section>
-      <section :class="css.displayView_row">
-        <div :class="css.displayView_text">
-          <h2
-            :id="`${id}-animations`"
-            :class="css.displayView_rowTitle"
-          >
-            {{ t(l.animationsTitle) }}
-          </h2>
-          <p
-            :id="`${id}-animations-description`"
-            :class="css.displayView_rowDescription"
-          >
-            {{ t(l.animationsDescription) }}
-          </p>
-        </div>
-        <Switch
-          v-model="animations"
-          :label="t(l.animationsTitle)"
-          :aria-describedby="`${id}-animations-description`"
-        />
-      </section>
+      <SettingsToggleCard
+        v-model="animations"
+        :title="t(l.animationsTitle)"
+        :description="t(l.animationsDescription)"
+      />
     </div>
   </div>
 </template>
@@ -129,31 +113,6 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
 
   gap: $spacing-32;
   max-width: 560px;
-}
-
-.displayView_row {
-  display: flex;
-  gap: $spacing-24;
-  align-items: flex-start;
-}
-
-.displayView_text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: $spacing-6;
-  min-width: 0;
-}
-
-.displayView_rowTitle {
-  font-size: $font-size-row-title;
-  font-weight: $font-weight-medium;
-}
-
-.displayView_rowDescription {
-  font-size: $font-size-sm;
-  line-height: $line-height-normal;
-  color: $color-fg-2;
 }
 
 .displayView_title {

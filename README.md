@@ -69,7 +69,10 @@ Your token stays in your browser's `localStorage`, and your data goes from the b
 When you review a pull request, the contents of the files it changes stay in your browser until you sign out, so
 that it reopens at once.
 The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
-Cloudflare's own request logs still record that a request happened. The app has no analytics. You can revoke
+Cloudflare's own request logs still record that a request happened. githq counts sign-ins, token renewals, sign-outs,
+installer downloads and visits to the landing page and the docs, as anonymous totals — never your login, your token or
+anything about your repositories — and you can turn that off in Settings → Privacy
+([what is counted](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)). You can revoke
 access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
 restricts OAuth Apps keeps its private repositories hidden until an owner approves githq.
 
@@ -150,17 +153,20 @@ Updates are signed with the project's updater key, and the app refuses an update
 
 Members of these roles use multi-factor authentication on GitHub and on any signing service.
 
-**Privacy.** The desktop app talks only to GitHub, and never to githq's own servers or anyone else's:
+**Privacy.** The desktop app talks to these hosts and no others:
 
 - `api.github.com`, for your issues, pull requests, the code they change and projects, and for any change you make, on your behalf
   with your token;
 - `github.com`, to sign in with a device code, and to check for and download updates from this repository's
   GitHub Releases;
 - GitHub's image hosts (`avatars.githubusercontent.com` and other `*.githubusercontent.com` hosts), for avatars
-  and images in issues.
+  and images in issues;
+- `githq.dev`, only to renew your token, which GitHub makes expire after 8 hours, and to revoke it at GitHub when you
+  sign out. Unless you turned **Share usage statistics** off in Settings → Privacy, each adds one to an anonymous
+  count of renewals or sign-outs that holds only that it came from the desktop app ([what githq counts](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)).
 
 Your token stays in your system's keychain. The copy of your GitHub data stays on your computer. Links you open
-go to your own browser. githq collects no analytics or telemetry. What GitHub does with these requests is
+go to your own browser. What GitHub does with these requests is
 covered by the [GitHub General Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
 ## License

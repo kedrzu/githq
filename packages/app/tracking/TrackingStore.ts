@@ -20,6 +20,7 @@ import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
     readAnimations,
+    readUsageStatistics,
     readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
@@ -182,6 +183,10 @@ export const TrackingStore = defineService({
             get animations() {
                 return readAnimations(keptRef.value.document);
             },
+            /** Whether usage statistics are shared; reactive. */
+            get usageStatistics() {
+                return readUsageStatistics(keptRef.value.document);
+            },
             /** How a code review's comment goes out with no draft open (code-review D34); reactive. */
             get reviewCommentChoice() {
                 return readReviewCommentChoice(keptRef.value.document);
@@ -207,6 +212,7 @@ export const TrackingStore = defineService({
             setWorkflowSettings,
             setRepositoryLayout,
             setAnimations,
+            setUsageStatistics,
             setReviewCommentChoice,
             onUntrack,
             onLocalChange,
@@ -338,6 +344,18 @@ export const TrackingStore = defineService({
                 readAnimations(kept.document) === on
                     ? null
                     : { ...kept, document: { ...kept.document, animations: on } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /** The user's choice of whether usage statistics are shared. Nothing when it reads as that already (absent reads as on). */
+        function setUsageStatistics(on: boolean) {
+            const written = write(kept =>
+                readUsageStatistics(kept.document) === on
+                    ? null
+                    : { ...kept, document: { ...kept.document, usageStatistics: on } },
             );
             if (written) {
                 changedHere();

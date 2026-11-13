@@ -236,9 +236,11 @@ export class GitHubMock {
     }[] = [];
     private tokenExchangeAnswer: GitHubTokenExchange | GitHubHttpError | null = null;
     private readonly revoked: string[] = [];
+    private readonly revocations: object[] = [];
+    private readonly exchanges: object[] = [];
     /** What each refresh token not spent yet is renewed with ({@link tokenRefresh}). */
     private readonly refreshAnswers = new Map<string, GitHubTokenExchange>();
-    private readonly refreshed: string[] = [];
+    private readonly refreshes: object[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
     /** While answers are held: settles when they are released. */
@@ -277,9 +279,22 @@ export class GitHubMock {
         return this.revoked;
     }
 
-    /** The refresh tokens the app sent the Worker to renew its token with (`POST /api/auth/refresh`), oldest first. */
-    get refreshedTokens(): readonly string[] {
-        return this.refreshed;
+    /** The whole bodies of the app's revocations (`POST /api/auth/revoke`), oldest first: the token and what else it says. */
+    get revocationBodies(): readonly object[] {
+        return this.revocations;
+    }
+
+    /** The whole bodies of the app's token exchanges (`POST /api/auth/token`), oldest first. */
+    get tokenExchangeBodies(): readonly object[] {
+        return this.exchanges;
+    }
+
+    /**
+     * The whole bodies of the app's renewals (`POST /api/auth/refresh`) that were answered, oldest first: the refresh
+     * token and what else it says.
+     */
+    get refreshBodies(): readonly object[] {
+        return this.refreshes;
     }
 
     /**
@@ -594,21 +609,22 @@ export class GitHubMock {
         }
 
         this.revoked.push(String(body.token));
+        this.revocations.push(body);
         await route.fulfill({ status: 204 });
     }
 
     private async handleRefresh(route: Route) {
         const request = route.request();
         const body = parseJson(request.postData());
-        const refreshToken = isPlainObject(body) && typeof body.refreshToken === 'string' ? body.refreshToken : null;
-        if (request.method() !== 'POST' || refreshToken === null) {
+        if (request.method() !== 'POST' || !isPlainObject(body) || typeof body.refreshToken !== 'string') {
             await this.reject(route, describe(request));
             return;
         }
 
+        const refreshToken = body.refreshToken;
         const answer = this.refreshAnswers.get(refreshToken);
         if (answer) {
-            this.refreshed.push(refreshToken);
+            this.refreshes.push(body);
             this.refreshAnswers.delete(refreshToken);
             await route.fulfill({ status: 200, json: toTokenExchangeBody(answer) });
             return;
@@ -620,11 +636,13 @@ export class GitHubMock {
     private async handleTokenExchange(route: Route) {
         const request = route.request();
         const answer = this.tokenExchangeAnswer;
-        if (request.method() !== 'POST' || !answer) {
+        const body: unknown = parseJson(request.postData());
+        if (request.method() !== 'POST' || !answer || typeof body !== 'object' || body === null) {
             await this.reject(route, describe(request));
             return;
         }
 
+        this.exchanges.push(body);
         await route.fulfill(
             answer instanceof GitHubHttpError
                 ? { status: answer.status, json: { error: answer.message } }

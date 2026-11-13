@@ -9,6 +9,11 @@ import {
     SIGNED_IN_HINT_COOKIE,
 } from '@githq/github/oauth.js';
 import type { OAuthCredentials, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
+import {
+    USAGE_STATISTICS_FIELD,
+    USAGE_STATISTICS_OFF_KEY,
+    USAGE_STATISTICS_OFF_VALUE,
+} from '@githq/github/usageStatistics.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
@@ -532,7 +537,7 @@ export const AuthStore = defineService({
                 response = await browser.fetch(__WORKER_ORIGIN__ + OAUTH_REFRESH_PATH, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refreshToken }),
+                    body: JSON.stringify(withUsageStatisticsChoice({ refreshToken })),
                 });
                 text = await response.text();
             } catch (error) {
@@ -608,7 +613,7 @@ export const AuthStore = defineService({
                 const response = await browser.fetch(__WORKER_ORIGIN__ + OAUTH_REVOKE_PATH, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token }),
+                    body: JSON.stringify(withUsageStatisticsChoice({ token })),
                 });
                 if (!response.ok) {
                     logger.warn('The Worker could not revoke the token', { status: response.status });
@@ -616,6 +621,13 @@ export const AuthStore = defineService({
             } catch (error) {
                 logger.warn('The token revocation could not be reached', { error });
             }
+        }
+
+        /** Marks an OAuth request's body for the Worker not to count when this device has usage statistics off. */
+        function withUsageStatisticsChoice(body: Record<string, string>): Record<string, string | boolean> {
+            return browser.localStorage.getItem(USAGE_STATISTICS_OFF_KEY) === USAGE_STATISTICS_OFF_VALUE
+                ? { ...body, [USAGE_STATISTICS_FIELD]: false }
+                : body;
         }
 
         async function fetchViewer(token: string): Promise<Viewer> {
@@ -698,7 +710,9 @@ export const AuthStore = defineService({
                 response = await browser.fetch(OAUTH_TOKEN_PATH, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, redirectUri: browser.origin + OAUTH_CALLBACK_PATH }),
+                    body: JSON.stringify(
+                        withUsageStatisticsChoice({ code, redirectUri: browser.origin + OAUTH_CALLBACK_PATH }),
+                    ),
                 });
                 // Read here too: a connection dropped while the answer arrives rejects the read.
                 text = await response.text();
