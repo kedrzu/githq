@@ -503,6 +503,13 @@ read like the folder icons; the grey count, owner, 2026-11-04: a past discussion
   like one more icon, and both read alike (owner).
 - Colour only, or the box only (CR44, CR45) — dropped with the box.
 
+**Amended (2026-11-13, owner).** The list, the diff, the cursor and `[` `]` keep a new order: the folders first, in
+GitHub's tree order, then the files at the repository's root (not indented), then a last group of the submodule changes
+under a "Submodules" label with a git-folder icon, styled like a folder's. Within a folder nothing changes. A submodule
+row is indented under that label and followed by its folder when it has one (`tiptap`, then `vendor` quietly), a root
+submodule by nothing. A file counts as a submodule once its patch says so: until then, and when gone from the diff, it
+stays in its folder. While a filter is on the list stays flat, in the same order (CR136).
+
 ## D28
 
 **A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,

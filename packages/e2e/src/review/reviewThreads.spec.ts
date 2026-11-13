@@ -11,7 +11,8 @@ import type { AnsweredReview, SampleReviewFile, SampleReviewThread } from './ans
 const REVIEW_ADDRESS = '/acme/web/pull/15/files';
 
 const ENGINE = 'src/engine.ts';
-const LOCK = 'bun.lock';
+// In a folder, to come first: the root's files come after the folders (D27).
+const LOCK = 'app/bun.lock';
 const VIEWED = 'src/viewed.ts';
 const RENAMED = 'src/renamed.ts';
 const GONE = 'src/removed.ts';

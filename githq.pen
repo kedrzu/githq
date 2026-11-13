@@ -51152,7 +51152,7 @@
       "type": "frame",
       "id": "D27jC",
       "x": 0,
-      "y": 60550,
+      "y": 66255,
       "name": "App · Command menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -59494,7 +59494,7 @@
       "type": "frame",
       "id": "uWch5",
       "x": 8080,
-      "y": 60550,
+      "y": 66255,
       "name": "App · Context menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -64102,7 +64102,7 @@
       "type": "frame",
       "id": "xgYRz",
       "x": 14640,
-      "y": 60550,
+      "y": 66255,
       "name": "App · Item menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -66724,7 +66724,7 @@
       "type": "frame",
       "id": "pgCGV",
       "x": 18160,
-      "y": 60550,
+      "y": 66255,
       "name": "App · Repository and project menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -71179,7 +71179,7 @@
       "type": "frame",
       "id": "Zk4sa",
       "x": 0,
-      "y": 64466,
+      "y": 70171,
       "name": "App · First sign-in and choosing what to track",
       "fill": "#08090B",
       "layout": "vertical",
@@ -79568,7 +79568,7 @@
       "type": "frame",
       "id": "gvCqI",
       "x": 5040,
-      "y": 64466,
+      "y": 70171,
       "name": "App · Creating an issue",
       "fill": "#08090B",
       "layout": "vertical",
@@ -89145,7 +89145,7 @@
       "type": "frame",
       "id": "epLfx",
       "x": 17152,
-      "y": 64466,
+      "y": 70171,
       "name": "App · States",
       "fill": "#08090B",
       "layout": "vertical",
@@ -98051,7 +98051,7 @@
       "type": "frame",
       "id": "iZkBN",
       "x": 22192,
-      "y": 64466,
+      "y": 70171,
       "name": "App · Freshness",
       "fill": "#08090B",
       "layout": "vertical",
@@ -100626,7 +100626,7 @@
       "type": "frame",
       "id": "rV6qN",
       "x": 0,
-      "y": 77223,
+      "y": 82928,
       "name": "Desktop · Sign in with a device code",
       "fill": "#08090B",
       "layout": "vertical",
@@ -102594,7 +102594,7 @@
       "type": "frame",
       "id": "ohwJa",
       "x": 6560,
-      "y": 77223,
+      "y": 82928,
       "name": "Desktop · Updates",
       "fill": "#08090B",
       "layout": "vertical",
@@ -111697,7 +111697,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 113527,
+      "y": 119232,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -119818,7 +119818,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 113527,
+      "y": 119232,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -128177,7 +128177,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 113527,
+      "y": 119232,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -128810,7 +128810,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 113527,
+      "y": 119232,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -132095,7 +132095,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 113527,
+      "y": 119232,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -133945,7 +133945,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 113527,
+      "y": 119232,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -198071,7 +198071,7 @@
       "type": "frame",
       "id": "i3VkT",
       "x": 10080,
-      "y": 64466,
+      "y": 70171,
       "name": "App · Settings",
       "fill": "#08090B",
       "layout": "vertical",
@@ -289080,7 +289080,7 @@
       "type": "frame",
       "id": "Ri8IR",
       "x": 16160,
-      "y": 77223,
+      "y": 82928,
       "name": "Desktop · Commits",
       "fill": "#08090B",
       "layout": "vertical",
@@ -300526,6 +300526,1829 @@
                           "enabled": false
                         }
                       }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QyRE7",
+              "name": "Submodule parts",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DxLgv",
+                  "name": "Header and atoms",
+                  "width": 640,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "iKVFx",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "pAbDY",
+                      "name": "Diff / File header · submodule",
+                      "width": "fill_container",
+                      "descendants": {
+                        "fUGop": {
+                          "enabled": false
+                        },
+                        "GyXLB": {
+                          "content": "nzyme"
+                        },
+                        "ucpAx": {
+                          "enabled": true
+                        },
+                        "VuCGY": {
+                          "content": "Submodule"
+                        },
+                        "x8dPO": {
+                          "enabled": false
+                        },
+                        "yHDS8": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "y76Cn",
+                      "name": "PR states",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yr6PW",
+                          "name": "Submodule / PR state",
+                          "reusable": true,
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "HKm0V",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "git-pull-request",
+                              "library": "lucide",
+                              "fill": "$green"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZbMq3",
+                              "name": "Word",
+                              "fill": "$green",
+                              "content": "Open",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "of2rQ",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "yr6PW",
+                          "name": "Submodule / PR state · draft",
+                          "descendants": {
+                            "HKm0V": {
+                              "icon": "git-pull-request-draft",
+                              "fill": "$fg-dim"
+                            },
+                            "ZbMq3": {
+                              "content": "Draft",
+                              "fill": "$fg-dim"
+                            }
+                          }
+                        },
+                        {
+                          "id": "yXxFM",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "yr6PW",
+                          "name": "Submodule / PR state · merged",
+                          "descendants": {
+                            "HKm0V": {
+                              "icon": "git-merge",
+                              "fill": "$purple"
+                            },
+                            "ZbMq3": {
+                              "content": "Merged",
+                              "fill": "$purple"
+                            }
+                          }
+                        },
+                        {
+                          "id": "ZGFwo",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "yr6PW",
+                          "name": "Submodule / PR state · closed",
+                          "descendants": {
+                            "HKm0V": {
+                              "icon": "git-pull-request-closed",
+                              "fill": "$red"
+                            },
+                            "ZbMq3": {
+                              "content": "Closed",
+                              "fill": "$red"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zbHGJ",
+                      "name": "Submodule / Show more",
+                      "reusable": true,
+                      "cornerRadius": 5,
+                      "gap": 6,
+                      "padding": [
+                        4,
+                        6
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "G64oz",
+                          "name": "Icon",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ndViK",
+                          "name": "Label",
+                          "fill": "$fg-2",
+                          "content": "Show 18 more commits",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t1uGB",
+                      "name": "Submodule / Cap note",
+                      "reusable": true,
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        6
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "tt8Yp",
+                          "name": "Icon",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "external-link",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NxyQG",
+                          "name": "Label",
+                          "fill": "$fg-dim",
+                          "content": "212 more commits on GitHub",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Xx5WX",
+                  "name": "Rows",
+                  "width": 520,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ad2zp",
+                      "name": "Submodule / Commit row",
+                      "reusable": true,
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 24,
+                      "cornerRadius": 5,
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        6
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "a7EoWf",
+                          "name": "Id",
+                          "fill": "$fg-2",
+                          "content": "d4f7b21",
+                          "fontFamily": "$mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uZtEQ",
+                          "name": "Subject",
+                          "fill": "$fg",
+                          "textGrowth": "fixed-width-height",
+                          "width": "fill_container",
+                          "height": 17,
+                          "content": "feat(ioc): resolve child containers lazily",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Me4EA",
+                          "name": "Author",
+                          "fill": "$fg-dim",
+                          "content": "kedrzu",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lDSIq",
+                      "name": "Submodule / File row",
+                      "reusable": true,
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 24,
+                      "cornerRadius": 5,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        6
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PXKhF",
+                          "name": "Change",
+                          "fill": "$fg-dim",
+                          "textGrowth": "fixed-width",
+                          "width": 9,
+                          "content": "M",
+                          "fontFamily": "$mono",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "t5FzS",
+                          "name": "Path",
+                          "fill": "$fg",
+                          "textGrowth": "fixed-width-height",
+                          "width": "fill_container",
+                          "height": 16,
+                          "content": "packages/ioc/src/Container.ts",
+                          "fontFamily": "$mono",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "id": "m4eBKm",
+                          "type": "ref",
+                          "ref": "N3LF3s",
+                          "name": "Size",
+                          "descendants": {
+                            "PfWbP": {
+                              "content": "+38"
+                            },
+                            "AyEQi": {
+                              "content": "−61"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oVyqD",
+                      "name": "Submodule / Commit rows",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "QRTvM",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 1",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "d4f7b21"
+                            },
+                            "uZtEQ": {
+                              "content": "feat(ioc): resolve child containers lazily"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "uukU9",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 2",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "9e03c4a"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(ioc): keep a scope's disposal order on lazy children"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "w2BSO",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 3",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "71b2d0e"
+                            },
+                            "uZtEQ": {
+                              "content": "test(ioc): cover lazy resolution three levels deep"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "GTGZX",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 4",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "c58a1f3"
+                            },
+                            "uZtEQ": {
+                              "content": "refactor(ioc): split Container into a resolver and a registry"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "D2QleW",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 5",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "0bd7e94"
+                            },
+                            "uZtEQ": {
+                              "content": "docs(ioc): describe lazy child containers"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "QHolQ",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 6",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "e2f6a18"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(vue-ioc): inject from the nearest lazy container"
+                            },
+                            "Me4EA": {
+                              "content": "anowak"
+                            }
+                          }
+                        },
+                        {
+                          "id": "s1B6hH",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 7",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "4a9c7d2"
+                            },
+                            "uZtEQ": {
+                              "content": "chore(deps): bump vitest to 3.2.4"
+                            },
+                            "Me4EA": {
+                              "content": "renovate[bot]"
+                            }
+                          }
+                        },
+                        {
+                          "id": "dynvT",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 8",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "b6e10f5"
+                            },
+                            "uZtEQ": {
+                              "content": "feat(validation): add a nullable date schema"
+                            },
+                            "Me4EA": {
+                              "content": "anowak"
+                            }
+                          }
+                        },
+                        {
+                          "id": "fyNXS",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 9",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "f3d82c7"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(validation): report the path of a nested union"
+                            },
+                            "Me4EA": {
+                              "content": "anowak"
+                            }
+                          }
+                        },
+                        {
+                          "id": "cLgDX",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 10",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "18c4e9a"
+                            },
+                            "uZtEQ": {
+                              "content": "feat(pen): render single nodes to PNG"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "bZXN6",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 11",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "5a7f0b3"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(pen): keep instance overrides on a moved node"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "z0iKpz",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 12",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "d09e6b1"
+                            },
+                            "uZtEQ": {
+                              "content": "chore(deps): bump oxlint to 1.14.0"
+                            },
+                            "Me4EA": {
+                              "content": "renovate[bot]"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Xr3zK",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 13",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "7c3a5e8"
+                            },
+                            "uZtEQ": {
+                              "content": "feat(cli): add a --tail option to quiet-run"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "uWp38",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 14",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "2e8b9f4"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(i18n-compiler): plural keys in nested files"
+                            },
+                            "Me4EA": {
+                              "content": "mwisniewska"
+                            }
+                          }
+                        },
+                        {
+                          "id": "oS74V",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 15",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "9f1c6a0"
+                            },
+                            "uZtEQ": {
+                              "content": "refactor(utils): move assertNever to its own file"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "az83O",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 16",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "64d2a7c"
+                            },
+                            "uZtEQ": {
+                              "content": "test(logging): only scalar fields in a log line"
+                            },
+                            "Me4EA": {
+                              "content": "mwisniewska"
+                            }
+                          }
+                        },
+                        {
+                          "id": "eXHs8",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 17",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "a07e3d9"
+                            },
+                            "uZtEQ": {
+                              "content": "feat(vue-forms): submit on ⌘Enter"
+                            },
+                            "Me4EA": {
+                              "content": "mwisniewska"
+                            }
+                          }
+                        },
+                        {
+                          "id": "nNDHH",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 18",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "3b5f8c1"
+                            },
+                            "uZtEQ": {
+                              "content": "fix(secrets): read the store once per process"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        },
+                        {
+                          "id": "jKr3A",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 19",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "c1e4b72"
+                            },
+                            "uZtEQ": {
+                              "content": "chore: release 0.48.0"
+                            },
+                            "Me4EA": {
+                              "content": "github-actions[bot]"
+                            }
+                          }
+                        },
+                        {
+                          "id": "z5gfGe",
+                          "type": "ref",
+                          "ref": "ad2zp",
+                          "name": "Commit 20",
+                          "width": "fill_container",
+                          "descendants": {
+                            "a7EoWf": {
+                              "content": "8a6d2f0"
+                            },
+                            "uZtEQ": {
+                              "content": "ci: cache bun's install folder"
+                            },
+                            "Me4EA": {
+                              "content": "kedrzu"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ww057",
+                      "name": "Submodule / File rows",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "L66Wxg",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 1",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/LazyContainer.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+142"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "v1nwxF",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 2",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/Container.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+38"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−61"
+                            }
+                          }
+                        },
+                        {
+                          "id": "eyK3l",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 3",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/Resolver.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+96"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "d9A6G",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 4",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/Registry.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+74"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "STWkb",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 5",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/Scope.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+12"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−4"
+                            }
+                          }
+                        },
+                        {
+                          "id": "bBW50",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 6",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/index.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+3"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "hCUWs",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 7",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/src/LazyContainer.test.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+188"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "FJeY9",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 8",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/ioc/README.md"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+41"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−6"
+                            }
+                          }
+                        },
+                        {
+                          "id": "hocTh",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 9",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/vue-ioc/src/useService.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+9"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−5"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Hi293",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 10",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/validation/src/schemas/date.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+27"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−3"
+                            }
+                          }
+                        },
+                        {
+                          "id": "HpYPW",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 11",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/validation/src/union.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+14"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−8"
+                            }
+                          }
+                        },
+                        {
+                          "id": "JMpIF",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 12",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "t5FzS": {
+                              "content": "packages/pen/src/render.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+118"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "U0q8uR",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 13",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/pen/src/merge/overrides.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+22"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−9"
+                            }
+                          }
+                        },
+                        {
+                          "id": "xDInl",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 14",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "D",
+                              "fill": "$red"
+                            },
+                            "t5FzS": {
+                              "content": "packages/pen/src/legacy/flatten.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+0"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−57"
+                            }
+                          }
+                        },
+                        {
+                          "id": "WPW2G",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 15",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/cli/src/commands/QuietRun.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+31"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−7"
+                            }
+                          }
+                        },
+                        {
+                          "id": "yRPy9",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 16",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/i18n-compiler/src/plural.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+18"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−11"
+                            }
+                          }
+                        },
+                        {
+                          "id": "V8B28",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 17",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "R",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/utils/src/assertNever.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+4"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−2"
+                            }
+                          }
+                        },
+                        {
+                          "id": "vtuvH",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 18",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/vue-forms/src/useForm.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+16"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−2"
+                            }
+                          }
+                        },
+                        {
+                          "id": "cmsqw",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 19",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "packages/secrets/src/loadSecrets.ts"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+7"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−12"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Wjnll",
+                          "type": "ref",
+                          "ref": "lDSIq",
+                          "name": "File 20",
+                          "width": "fill_container",
+                          "descendants": {
+                            "PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "t5FzS": {
+                              "content": "bun.lock"
+                            },
+                            "m4eBKm/PfWbP": {
+                              "content": "+64"
+                            },
+                            "m4eBKm/AyEQi": {
+                              "content": "−58"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A8DBA",
+                  "name": "Block",
+                  "width": 1100,
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jW49B",
+                      "name": "Submodule / PR card",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "fill": "$bg-2",
+                      "cornerRadius": 8,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "gap": 14,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dPmbn",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "VMaEg",
+                              "name": "Eyebrow",
+                              "fill": "$fg-dim",
+                              "content": "Pull request with the new commit",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "q8EnSQ",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Resolve child containers lazily",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nT7zJ",
+                              "name": "Meta",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "U2clkS",
+                                  "name": "State pill",
+                                  "fill": "#3FB9501F",
+                                  "cornerRadius": 10,
+                                  "stroke": "#3FB95066",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    2,
+                                    8,
+                                    2,
+                                    6
+                                  ],
+                                  "children": [
+                                    {
+                                      "id": "ytdC9",
+                                      "type": "ref",
+                                      "ref": "yr6PW",
+                                      "name": "State"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "AZ9Dh",
+                                  "name": "Reference",
+                                  "fill": "$fg-2",
+                                  "content": "kedrzu/nzyme#412",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z6RR1",
+                              "x": 0,
+                              "y": 0,
+                              "name": "None",
+                              "enabled": false,
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "w86ku",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "git-pull-request",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "evUp6",
+                                  "name": "Text",
+                                  "fill": "$fg-2",
+                                  "content": "No pull request carries 7d20e5a",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mGQjP",
+                          "name": "Open",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "S3o9J6",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Open",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "F9u9xe",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "arrow-right",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "cVDhC",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "jW49B",
+                      "name": "Submodule / PR card · none",
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "stroke": "$border",
+                      "descendants": {
+                        "VMaEg": {
+                          "enabled": false
+                        },
+                        "q8EnSQ": {
+                          "enabled": false
+                        },
+                        "nT7zJ": {
+                          "enabled": false
+                        },
+                        "z6RR1": {
+                          "enabled": true
+                        },
+                        "mGQjP": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hpMBi",
+                      "name": "Submodule / Pointers line",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        2
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G0GQxr",
+                          "name": "Pointers",
+                          "fill": "$fg-2",
+                          "content": "a1c9e2f → d4f7b21",
+                          "fontFamily": "$mono",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "KKXRr",
+                          "name": "Dot",
+                          "fill": "$fg-3",
+                          "content": "·",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "vNP17",
+                          "name": "Relation",
+                          "fill": "$fg-2",
+                          "content": "38 commits ahead",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "N6e2E9",
+                          "name": "Dot",
+                          "fill": "$fg-3",
+                          "content": "·",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "id": "FfUFF",
+                          "type": "ref",
+                          "ref": "BVme8",
+                          "name": "Total diff",
+                          "descendants": {
+                            "g9LUX": {
+                              "content": "+1,268"
+                            },
+                            "Cb3Zq": {
+                              "content": "−402"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qQYRG",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "id": "s3uQel",
+                          "type": "ref",
+                          "ref": "gQ61z",
+                          "name": "Open comparison",
+                          "descendants": {
+                            "tzW1W": {
+                              "content": "Open comparison on GitHub"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yyn4j",
+                      "name": "Submodule / Commits panel",
+                      "reusable": true,
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T128w",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "fill": "$bg-2",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            7,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "fUMob",
+                              "name": "Icon",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "git-commit-horizontal",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BvZzp",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "Commits",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uq8vy",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "Q9KOJ",
+                              "name": "Count",
+                              "fill": "$fg-dim",
+                              "content": "38 ahead",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Pj94F",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": 4,
+                          "children": [
+                            {
+                              "id": "HfA5M",
+                              "type": "ref",
+                              "ref": "oVyqD",
+                              "name": "Rows",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OA6PT",
+                          "name": "Foot",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 10,
+                          "padding": [
+                            5,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "xdAl4",
+                              "type": "ref",
+                              "ref": "zbHGJ",
+                              "name": "Show more",
+                              "descendants": {
+                                "ndViK": {
+                                  "content": "Show 18 more commits"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "b8MeI",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "Z3gBB",
+                              "type": "ref",
+                              "ref": "t1uGB",
+                              "name": "Cap note",
+                              "enabled": false,
+                              "descendants": {
+                                "NxyQG": {
+                                  "content": "212 more commits on GitHub"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "X2gdqH",
+                      "name": "Submodule / Files panel",
+                      "reusable": true,
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "d1C21T",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "fill": "$bg-2",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 8,
+                          "padding": [
+                            7,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "pz10j",
+                              "name": "Icon",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "file-diff",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wXtKF",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "Files",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TiEXt",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "EtfsO",
+                              "name": "Count",
+                              "fill": "$fg-dim",
+                              "content": "48 changed",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "b86yS",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": 4,
+                          "children": [
+                            {
+                              "id": "lERbb",
+                              "type": "ref",
+                              "ref": "Ww057",
+                              "name": "Rows",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "CRs1a",
+                          "name": "Foot",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 10,
+                          "padding": [
+                            5,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "v6JgZA",
+                              "type": "ref",
+                              "ref": "zbHGJ",
+                              "name": "Show more",
+                              "descendants": {
+                                "ndViK": {
+                                  "content": "Show 28 more files"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WUFXp",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "rkIwj",
+                              "type": "ref",
+                              "ref": "t1uGB",
+                              "name": "Cap note",
+                              "enabled": false,
+                              "descendants": {
+                                "NxyQG": {
+                                  "content": "More files may have changed"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZBbVO",
+                      "name": "Submodule / Block · wide",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        16,
+                        16,
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "iMA1M",
+                          "name": "Pull requests",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "BmalH",
+                              "type": "ref",
+                              "ref": "jW49B",
+                              "name": "Pull request",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "JsPFh",
+                          "type": "ref",
+                          "ref": "hpMBi",
+                          "name": "Identity",
+                          "width": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "V2GUL",
+                          "name": "Lists",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "id": "dZTiN",
+                              "type": "ref",
+                              "ref": "yyn4j",
+                              "name": "Commits",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "yGoxs",
+                              "type": "ref",
+                              "ref": "X2gdqH",
+                              "name": "Files",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pJoWz",
+                      "name": "Submodule / Block · narrow",
+                      "reusable": true,
+                      "width": 640,
+                      "fill": "$bg",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        16,
+                        16,
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UD4HF",
+                          "name": "Pull requests",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "JcXjY",
+                              "type": "ref",
+                              "ref": "jW49B",
+                              "name": "Pull request",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "P5pXgP",
+                          "type": "ref",
+                          "ref": "hpMBi",
+                          "name": "Identity",
+                          "width": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g5OzXn",
+                          "name": "Lists",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "id": "uqM4v",
+                              "type": "ref",
+                              "ref": "yyn4j",
+                              "name": "Commits",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "IgXd0",
+                              "type": "ref",
+                              "ref": "X2gdqH",
+                              "name": "Files",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -362892,6 +364715,1191 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "fXXNW",
+          "name": "Group header",
+          "width": 1400,
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            40,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "lAOio",
+              "name": "Group title",
+              "fill": "$fg",
+              "content": "Submodules",
+              "fontFamily": "$font",
+              "fontSize": 22,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "dhnKK",
+              "name": "Group note",
+              "fill": "$fg-2",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "A submodule has no diff: in its place the block shows what changed between its two pointers. The pull request in the submodule's repository that carries the new commit comes first and is the strongest text; then the two commits, how they stand and the total diff; then the commits and the files in two bordered panels, at most 20 rows each with the rest behind one control, side by side once the block is 760 px wide. Then the file list with submodules last.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jwKxw",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "h8v8z",
+              "name": "Slot · CR127 · The pull request as a card — wide",
+              "width": 1100,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Rm7Ra",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NN2UX",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR127 · The pull request as a card — wide",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nYcLD",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The pull request that carries the new commit is a card of its own, the only raised surface in the block, so it is what the eye lands on: a 16 px title, its state as a tinted pill, owner/name#number, and Open on the right; the whole card is one link into githq. Under it one quiet line: the two commits, how they stand, the submodule's total diff (the sum of its files' lines), and the comparison on GitHub at its end. The file header right above already names the submodule, so the line doesn't repeat it. Then the commits and the files in two bordered panels side by side, each with its count in the head, 20 rows, and the rest behind Show more in the foot.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AgupS",
+                  "name": "CR127 · The pull request as a card — wide",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YXpKB",
+                      "name": "File nzyme",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "EVvCA",
+                          "type": "ref",
+                          "ref": "iKVFx",
+                          "name": "Header",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "qys1u",
+                          "type": "ref",
+                          "ref": "ZBbVO",
+                          "name": "Submodule block",
+                          "width": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P1scL",
+                      "name": "File ReviewView.vue",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "j5VQqd",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "packages/app/review/"
+                            },
+                            "GyXLB": {
+                              "content": "ReviewView.vue"
+                            },
+                            "x8dPO": {
+                              "content": "+12"
+                            },
+                            "yHDS8": {
+                              "content": "−4"
+                            }
+                          }
+                        },
+                        {
+                          "id": "J9mnZv",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 1",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "1"
+                            },
+                            "AIddd": {
+                              "content": "1"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "<script setup lang=\"ts\">"
+                            }
+                          }
+                        },
+                        {
+                          "id": "CH7eS",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 2",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "2"
+                            },
+                            "AIddd": {
+                              "content": "2"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "import { computed } from 'vue';"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fNMWk",
+              "name": "Slot · CR128 · The pull request as a card — narrow",
+              "width": 672,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Lv1ek",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "S5BzN5",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR128 · The pull request as a card — narrow",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "W3uRP9",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Under 760 px the panels stack, commits above files; the card and the line keep their shape, the title wrapping if it must.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "G2JtY",
+                  "name": "CR128 · The pull request as a card — narrow",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dWYwS",
+                      "name": "File nzyme",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "yz6RV",
+                          "type": "ref",
+                          "ref": "iKVFx",
+                          "name": "Header",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "w8eU7K",
+                          "type": "ref",
+                          "ref": "pJoWz",
+                          "name": "Submodule block",
+                          "width": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K8K2P",
+                      "name": "File ReviewView.vue",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "Famp3",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "packages/app/review/"
+                            },
+                            "GyXLB": {
+                              "content": "ReviewView.vue"
+                            },
+                            "x8dPO": {
+                              "content": "+12"
+                            },
+                            "yHDS8": {
+                              "content": "−4"
+                            }
+                          }
+                        },
+                        {
+                          "id": "RB66Y",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 1",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "1"
+                            },
+                            "AIddd": {
+                              "content": "1"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "<script setup lang=\"ts\">"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Ah9ee",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 2",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "2"
+                            },
+                            "AIddd": {
+                              "content": "2"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "import { computed } from 'vue';"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lP42v",
+              "name": "Slot · CR129 · A small bump, no pull request — wide",
+              "width": 1100,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kjbP9",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V7Sff",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR129 · A small bump, no pull request — wide",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "B2Gea",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "No pull request carries the new commit: the card turns quiet, no surface of its own, and says so. Three commits and four files: nothing to show more, so the panels have no foot.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FNbo5",
+                  "name": "CR129 · A small bump, no pull request — wide",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jFwvV",
+                      "name": "File nzyme",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "n7YcO",
+                          "type": "ref",
+                          "ref": "iKVFx",
+                          "name": "Header",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "QzyRB",
+                          "type": "ref",
+                          "ref": "ZBbVO",
+                          "name": "Submodule block",
+                          "width": "fill_container",
+                          "descendants": {
+                            "iMA1M": {
+                              "children": [
+                                {
+                                  "id": "RzXO0",
+                                  "type": "ref",
+                                  "ref": "cVDhC",
+                                  "name": "Pull request",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            },
+                            "JsPFh/G0GQxr": {
+                              "content": "4be91c0 → 7d20e5a"
+                            },
+                            "JsPFh/vNP17": {
+                              "content": "3 commits ahead"
+                            },
+                            "JsPFh/FfUFF/g9LUX": {
+                              "content": "+44"
+                            },
+                            "JsPFh/FfUFF/Cb3Zq": {
+                              "content": "−6"
+                            },
+                            "dZTiN/Q9KOJ": {
+                              "content": "3 ahead"
+                            },
+                            "dZTiN/HfA5M/QRTvM/a7EoWf": {
+                              "content": "7d20e5a"
+                            },
+                            "dZTiN/HfA5M/QRTvM/uZtEQ": {
+                              "content": "fix(dom-utils): ignore clicks on detached nodes"
+                            },
+                            "dZTiN/HfA5M/QRTvM/Me4EA": {
+                              "content": "kedrzu"
+                            },
+                            "dZTiN/HfA5M/uukU9/a7EoWf": {
+                              "content": "3f6a8b2"
+                            },
+                            "dZTiN/HfA5M/uukU9/uZtEQ": {
+                              "content": "test(dom-utils): a click outside a removed node"
+                            },
+                            "dZTiN/HfA5M/uukU9/Me4EA": {
+                              "content": "kedrzu"
+                            },
+                            "dZTiN/HfA5M/w2BSO/a7EoWf": {
+                              "content": "e91c04d"
+                            },
+                            "dZTiN/HfA5M/w2BSO/uZtEQ": {
+                              "content": "chore(deps): bump happy-dom to 18.0.1"
+                            },
+                            "dZTiN/HfA5M/w2BSO/Me4EA": {
+                              "content": "renovate[bot]"
+                            },
+                            "dZTiN/HfA5M/GTGZX": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/D2QleW": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/QHolQ": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/s1B6hH": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/dynvT": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/fyNXS": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/cLgDX": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/bZXN6": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/z0iKpz": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/Xr3zK": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/uWp38": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/oS74V": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/az83O": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/eXHs8": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/nNDHH": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/jKr3A": {
+                              "enabled": false
+                            },
+                            "dZTiN/HfA5M/z5gfGe": {
+                              "enabled": false
+                            },
+                            "dZTiN/OA6PT": {
+                              "enabled": false
+                            },
+                            "yGoxs/EtfsO": {
+                              "content": "4 changed"
+                            },
+                            "yGoxs/lERbb/L66Wxg/PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "yGoxs/lERbb/L66Wxg/t5FzS": {
+                              "content": "packages/dom-utils/src/onClickOutside.ts"
+                            },
+                            "yGoxs/lERbb/L66Wxg/m4eBKm/PfWbP": {
+                              "content": "+6"
+                            },
+                            "yGoxs/lERbb/L66Wxg/m4eBKm/AyEQi": {
+                              "content": "−2"
+                            },
+                            "yGoxs/lERbb/v1nwxF/PXKhF": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "yGoxs/lERbb/v1nwxF/t5FzS": {
+                              "content": "packages/dom-utils/src/onClickOutside.test.ts"
+                            },
+                            "yGoxs/lERbb/v1nwxF/m4eBKm/PfWbP": {
+                              "content": "+34"
+                            },
+                            "yGoxs/lERbb/v1nwxF/m4eBKm/AyEQi": {
+                              "content": "−0"
+                            },
+                            "yGoxs/lERbb/eyK3l/PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "yGoxs/lERbb/eyK3l/t5FzS": {
+                              "content": "packages/dom-utils/package.json"
+                            },
+                            "yGoxs/lERbb/eyK3l/m4eBKm/PfWbP": {
+                              "content": "+1"
+                            },
+                            "yGoxs/lERbb/eyK3l/m4eBKm/AyEQi": {
+                              "content": "−1"
+                            },
+                            "yGoxs/lERbb/d9A6G/PXKhF": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "yGoxs/lERbb/d9A6G/t5FzS": {
+                              "content": "bun.lock"
+                            },
+                            "yGoxs/lERbb/d9A6G/m4eBKm/PfWbP": {
+                              "content": "+3"
+                            },
+                            "yGoxs/lERbb/d9A6G/m4eBKm/AyEQi": {
+                              "content": "−3"
+                            },
+                            "yGoxs/lERbb/STWkb": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/bBW50": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/hCUWs": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/FJeY9": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/hocTh": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/Hi293": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/HpYPW": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/JMpIF": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/U0q8uR": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/xDInl": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/WPW2G": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/yRPy9": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/V8B28": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/vtuvH": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/cmsqw": {
+                              "enabled": false
+                            },
+                            "yGoxs/lERbb/Wjnll": {
+                              "enabled": false
+                            },
+                            "yGoxs/CRs1a": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EuNI2",
+                      "name": "File ReviewView.vue",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "G4q8pt",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "packages/app/review/"
+                            },
+                            "GyXLB": {
+                              "content": "ReviewView.vue"
+                            },
+                            "x8dPO": {
+                              "content": "+12"
+                            },
+                            "yHDS8": {
+                              "content": "−4"
+                            }
+                          }
+                        },
+                        {
+                          "id": "h48Bz",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 1",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "1"
+                            },
+                            "AIddd": {
+                              "content": "1"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "<script setup lang=\"ts\">"
+                            }
+                          }
+                        },
+                        {
+                          "id": "yVpJl",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 2",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "2"
+                            },
+                            "AIddd": {
+                              "content": "2"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "import { computed } from 'vue';"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "U4Oym1",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "mlSdU",
+              "name": "Slot · CR136 · Submodules last in the file list",
+              "width": 420,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "V2Ftr",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fDZRG",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR136 · Submodules last in the file list",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "g9tgm",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Folders first, then the root's files, then one last group under a Submodules header, its icon the git folder. A submodule is named by its last segment, its folder after the name, quietly, as a filter shows folders; in place of a size, the commits its block has read.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "R8CuP8",
+                  "name": "CR136 · Submodules last in the file list",
+                  "clip": true,
+                  "width": 300,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "ipdzn",
+                      "type": "ref",
+                      "ref": "RM5R0",
+                      "name": "Head",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gLkps",
+                      "name": "Rows",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 1,
+                      "padding": 6,
+                      "children": [
+                        {
+                          "id": "eLIp9",
+                          "type": "ref",
+                          "ref": "l3WAY",
+                          "name": "Folder docs",
+                          "width": "fill_container",
+                          "descendants": {
+                            "m5uui": {
+                              "content": "docs"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xThOM",
+                          "name": "Files in docs",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "id": "Xrc3Y",
+                              "type": "ref",
+                              "ref": "Nid8j",
+                              "name": "docs/architecture.md",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "architecture.md"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "+12"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "content": "−3"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "AV77j",
+                          "type": "ref",
+                          "ref": "l3WAY",
+                          "name": "Folder src/sync",
+                          "width": "fill_container",
+                          "descendants": {
+                            "m5uui": {
+                              "content": "src/sync"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JuB0h",
+                          "name": "Files in src/sync",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "id": "Y0Si4E",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "src/sync/conflicts.ts",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "A",
+                                  "fill": "$green"
+                                },
+                                "ykvzO": {
+                                  "content": "conflicts.ts"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "+84"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "content": "−0"
+                                }
+                              }
+                            },
+                            {
+                              "id": "cWG37",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "src/sync/engine.ts",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "engine.ts"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "+62"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "content": "−18"
+                                }
+                              }
+                            },
+                            {
+                              "id": "GVe7M",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "src/sync/queue.ts",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "queue.ts"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "+4"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "content": "−2"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "G9tDr",
+                          "type": "ref",
+                          "ref": "l3WAY",
+                          "name": "Folder src/ui",
+                          "width": "fill_container",
+                          "descendants": {
+                            "m5uui": {
+                              "content": "src/ui"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OVJlt",
+                          "name": "Files in src/ui",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "id": "U2u6Hx",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "src/ui/SyncStatus.vue",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "SyncStatus.vue"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "+9"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "content": "−3"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "KmGF8",
+                          "type": "ref",
+                          "ref": "M1pbc",
+                          "name": "README.md",
+                          "width": "fill_container",
+                          "descendants": {
+                            "CD1kM": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "ykvzO": {
+                              "content": "README.md"
+                            },
+                            "LBgg9/PfWbP": {
+                              "content": "+6"
+                            },
+                            "LBgg9/AyEQi": {
+                              "content": "−0"
+                            }
+                          }
+                        },
+                        {
+                          "id": "W31FkK",
+                          "type": "ref",
+                          "ref": "LDC0g",
+                          "name": "bun.lock",
+                          "width": "fill_container",
+                          "descendants": {
+                            "CD1kM": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "ykvzO": {
+                              "content": "bun.lock"
+                            },
+                            "e13Mi": {
+                              "enabled": true,
+                              "content": "lock file"
+                            },
+                            "LBgg9/PfWbP": {
+                              "content": "+812"
+                            },
+                            "LBgg9/AyEQi": {
+                              "content": "−640"
+                            }
+                          }
+                        },
+                        {
+                          "id": "ANgge",
+                          "type": "ref",
+                          "ref": "M1pbc",
+                          "name": "package.json",
+                          "width": "fill_container",
+                          "descendants": {
+                            "CD1kM": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "ykvzO": {
+                              "content": "package.json"
+                            },
+                            "LBgg9/PfWbP": {
+                              "content": "+3"
+                            },
+                            "LBgg9/AyEQi": {
+                              "content": "−1"
+                            }
+                          }
+                        },
+                        {
+                          "id": "x3xH42",
+                          "type": "ref",
+                          "ref": "l3WAY",
+                          "name": "Folder Submodules",
+                          "width": "fill_container",
+                          "descendants": {
+                            "e9LlCz": {
+                              "icon": "folder-git-2"
+                            },
+                            "m5uui": {
+                              "content": "Submodules"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "K1Wx1",
+                          "name": "Files in Submodules",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 1,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            10
+                          ],
+                          "children": [
+                            {
+                              "id": "RmPFx",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "Submodule nzyme",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "nzyme"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "38 commits",
+                                  "fill": "$fg-dim"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "YeoRk",
+                              "type": "ref",
+                              "ref": "M1pbc",
+                              "name": "Submodule vendor/tiptap",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CD1kM": {
+                                  "content": "M",
+                                  "fill": "$fg-dim"
+                                },
+                                "ykvzO": {
+                                  "content": "tiptap"
+                                },
+                                "Y2HkbP": {
+                                  "enabled": true,
+                                  "content": "vendor"
+                                },
+                                "LBgg9/PfWbP": {
+                                  "content": "3 commits",
+                                  "fill": "$fg-dim"
+                                },
+                                "LBgg9/AyEQi": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -362899,7 +365907,7 @@
       "type": "text",
       "id": "BnN7r",
       "x": 17870.178661448972,
-      "y": 66827.65929019575,
+      "y": 72532.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
       "fontFamily": "Inter",
@@ -362910,7 +365918,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 113527,
+      "y": 119232,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -365715,7 +368723,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 113527,
+      "y": 119232,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -365843,7 +368851,7 @@
       "type": "frame",
       "id": "O6Vuj8",
       "x": 24192,
-      "y": 64466,
+      "y": 70171,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -378578,7 +381586,7 @@
       "type": "frame",
       "id": "Sz7Bf",
       "x": 31444,
-      "y": 64466,
+      "y": 70171,
       "name": "App · Toasts",
       "fill": "#08090B",
       "layout": "vertical",
@@ -382547,7 +385555,7 @@
       "type": "frame",
       "id": "jy6bO",
       "x": 19680,
-      "y": 77223,
+      "y": 82928,
       "name": "App · Mobile",
       "fill": "#08090B",
       "layout": "vertical",
@@ -422140,7 +425148,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 113527,
+      "y": 119232,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",

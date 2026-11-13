@@ -210,7 +210,7 @@ test("a remembered line whose file is not here holds its place in the patch's pl
     await expect(review.code('const engine0 = 0;').first()).toBeAttached();
     await page.waitForTimeout(100);
     expect(await review.diff.evaluate(diff => diff.scrollTop)).toBe(0);
-    expect(await review.headerOffset('README.md')).toBe(0);
+    expect(await review.headerOffset(ENGINE)).toBe(0);
 });
 
 test('what was done in a pull request comes back on a reload: collapsed, hide viewed, the filter, expanded context; another pull request has its own', async ({

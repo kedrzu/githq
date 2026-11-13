@@ -16,7 +16,8 @@ const ISSUE_ADDRESS = '/acme/web/issues/12';
 
 const ENGINE = 'src/sync/engine.ts';
 const CLIENT = 'src/api/client.ts';
-const README = 'README.md';
+// In a folder, to come first: the root's files come after the folders (D27).
+const README = 'docs/README.md';
 const LOGO = 'public/logo.png';
 const SCHEMA = 'src/api/schema.json';
 
@@ -52,7 +53,7 @@ test('D opens the review of the pull request open, at its GitHub address, in the
     await expect(review.fileHeader(LOGO)).toBeInViewport();
 
     await page.keyboard.press('[');
-    await expect(review.currentFileRow).toContainText(README);
+    await expect(review.currentFileRow).toContainText('README.md');
 
     await page.keyboard.press(']');
     await expect(review.currentFileRow).toContainText('logo.png');
@@ -729,12 +730,13 @@ test('a lock file shows only its header, saying why, and is not fetched until Sp
         repository: 'acme/web',
         number: 15,
         files: [
-            { path: 'bun.lock', before: 'lock before\n', after: 'lock after\n' },
+            // In a folder, to come first: the root's files come after the folders (D27).
+            { path: 'app/bun.lock', before: 'lock before\n', after: 'lock after\n' },
             { path: 'src/app.ts', before: 'const app = 1;\n', after: 'const app = 2;\n' },
         ],
     });
     const review = new ReviewScreenHarness(page);
-    const askedForLock = () => answered.asked.filter(expression => expression.endsWith(':bun.lock'));
+    const askedForLock = () => answered.asked.filter(expression => expression.endsWith(':app/bun.lock'));
 
     await page.goto(REVIEW_ADDRESS);
     await expect(review.code('const app = 2;')).toBeVisible();
@@ -760,7 +762,7 @@ test('a lock file shows only its header, saying why, and is not fetched until Sp
     await expect(review.code('lock after')).toHaveCount(0);
     await expect(review.diff.getByText('lock file').first()).toBeVisible();
 
-    await review.topHeader('bun.lock').click();
+    await review.topHeader('app/bun.lock').click();
     await expect(review.code('lock after')).toBeVisible();
     expect(askedForLock()).toHaveLength(2);
 });

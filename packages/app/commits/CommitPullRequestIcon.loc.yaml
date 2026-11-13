@@ -6,3 +6,11 @@ merged:
   en: Merged pull request
 closed:
   en: Closed pull request
+openWord:
+  en: Open
+draftWord:
+  en: Draft
+mergedWord:
+  en: Merged
+closedWord:
+  en: Closed
