@@ -13,6 +13,7 @@ import { CHANGES_REQUESTED_REVIEW, DB_THREAD, SCHEMA_THREAD } from '@/testing/sa
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { pressWidthHandle } from '@/testing/pressWidthHandle.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 import type { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -473,7 +474,7 @@ test("on a page the columns stand in a box centred in the width: its edge widens
     expect(space().left).toBeGreaterThan(0);
     expect(Math.abs(space().left - space().right)).toBeLessThanOrEqual(1);
 
-    const drag = pressEdge(page.getByRole('separator', { name: 'Resize the item' }).last().element());
+    const drag = pressWidthHandle(page.getByRole('separator', { name: 'Resize the item' }).last().element());
     drag.moveBy(50);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(1300);
     drag.release();
@@ -515,7 +516,7 @@ test('the box is at most as wide as the width there is, never narrower than the 
 
     tracking.setMaxWidth('itemPageWidth', 1200);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(1200);
-    const drag = pressEdge(page.getByRole('separator', { name: 'Resize the item' }).last().element());
+    const drag = pressWidthHandle(page.getByRole('separator', { name: 'Resize the item' }).last().element());
     drag.moveBy(columns.clientWidth);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(columns.clientWidth);
     drag.release();
@@ -530,7 +531,7 @@ test("a click on the box's edge, or Tab through it, keeps nothing; an arrow key 
     const width = Math.min(440 + 920 + 2 * 32, getColumnsScroll().clientWidth);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(width);
 
-    const click = pressEdge(edges.last().element());
+    const click = pressWidthHandle(edges.last().element());
     click.moveBy(0);
     click.release();
     // Tab from the left edge to the right one: the key is let go of on the right edge.
@@ -829,23 +830,6 @@ function getScrollingAncestor(element: Element) {
     }
 
     return null;
-}
-
-/** Presses the primary button on a box's edge (`WidthHandle`), as the mouse does (pointer 1). */
-function pressEdge(handle: Element) {
-    const { left: x, top, height } = handle.getBoundingClientRect();
-    const init = { pointerId: 1, button: 0, bubbles: true, clientY: top + height / 2 };
-    handle.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
-
-    return {
-        /** Moves the pointer `by` pixels from where it was pressed. */
-        moveBy(by: number) {
-            handle.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x + by }));
-        },
-        release() {
-            handle.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x }));
-        },
-    };
 }
 
 /** Presses the mouse on `handle`, as Reka hears it: it listens on the body and takes no width to be clicked by a tool. */

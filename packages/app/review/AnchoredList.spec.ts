@@ -1,12 +1,19 @@
 import { composeStories } from '@storybook/vue3-vite';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { nextTick } from 'vue';
 
 import * as stories from './AnchoredList.stories.jsx';
 
-const { Default, PinnedHeaders, PinnedHeadersWithRoom, PinnedHeadersWithTopRoom, TwoHundredThousandRows, Wrapping } =
-    composeStories(stories);
+const {
+    Default,
+    PinnedHeaders,
+    PinnedHeadersWithRoom,
+    PinnedHeadersWithTopRoom,
+    PinnedWrappingWithTopRoom,
+    TwoHundredThousandRows,
+    Wrapping,
+} = composeStories(stories);
 
 const ESTIMATE = 24;
 /** What the browser's own rounding of the scroll position to its pixels may leave: our sums keep the fractions. */
@@ -121,6 +128,45 @@ test('a change of width that re-wraps the rows moves nothing you see', async () 
     await frames(3);
     expect(heightOf('row-999')).toBe(heightBefore);
     expectWithin(topOf('row-1000'), before, ONE_PIXEL);
+});
+
+test('an inset draws the rows, the pinned header and its top room in from both sides, re-wrapping them as a change of width does and moving nothing you see; the gaps are the list, the wheel scrolling it', async () => {
+    // Wide enough for the toolbar: a click scrolling the window sideways would move the list.
+    await page.viewport(1000, 896);
+    onTestFinished(() => page.viewport(414, 896));
+    await PinnedWrappingWithTopRoom.run();
+    await clickButton('Jump');
+    await frames(3);
+    const list = scroller();
+    const box = list.getBoundingClientRect();
+    const before = topOf('row-250');
+    const heightBefore = heightOf('row-248');
+
+    await clickButton('Change inset');
+    await frames(3);
+
+    expect(heightOf('row-248')).toBeGreaterThan(heightBefore);
+    expectWithin(topOf('row-250'), before, ONE_PIXEL);
+    expect(list.querySelector('[tid="row-200"]')).not.toBeNull();
+    for (const key of ['row-200', 'row-250']) {
+        const row = rowElement(key).getBoundingClientRect();
+        expect(row.left).toBe(box.left + 100);
+        expect(row.right).toBe(box.left + list.clientWidth - 100);
+    }
+
+    // The top room's background reaches only as far as the pinned header; the gap beside it is the list's own.
+    const pinnedAt = rowElement('row-200');
+    expect(document.elementFromPoint(box.left + 150, box.top + 5)?.contains(pinnedAt)).toBe(true);
+    for (const y of [box.top + 5, box.top + 200]) {
+        const hit = document.elementFromPoint(box.left + 50, y);
+        expect(hit?.closest('[tid]')).toBeNull();
+        expect(list.contains(hit)).toBe(true);
+    }
+
+    await clickButton('Change inset');
+    await frames(3);
+    expect(heightOf('row-248')).toBe(heightBefore);
+    expectWithin(topOf('row-250'), before, ONE_PIXEL);
 });
 
 test('200,000 rows leave a few dozen in the DOM, wherever you are', async () => {

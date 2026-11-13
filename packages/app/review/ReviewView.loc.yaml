@@ -122,3 +122,5 @@ resizeFileList:
   en: Resize the file list
 resizeConversation:
   en: Resize the conversation
+resizeDiff:
+  en: Resize the diff
