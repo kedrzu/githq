@@ -1,6 +1,9 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { parseOAuthCredentials } from '@githq/app/auth/utils/parseOAuthCredentials.js';
+import type { OAuthCredentials } from '@githq/github/oauth.js';
+
 import type { GitHubMock } from './github/GitHubMock.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from './github/sampleViewer.js';
 import { AppShellHarness } from './harnesses/AppShell.harness.js';
@@ -12,7 +15,7 @@ import { answerTrackingCandidates } from './tracking/answerTracking.js';
 const TOKEN_KEY = 'githq.token';
 
 /**
- * Lets the app finish checking a token GitHub answered 401 for: it signs out only after checking again a few seconds
+ * Lets the app finish checking a token GitHub answered 401 for, in a session without a refresh token: it signs out only after checking again a few seconds
  * later (`REJECTION_RECHECK_DELAYS_MS` in `packages/app/auth/AuthStore.ts`), waits the page's clock skips. The clock
  * must be installed (`page.clock.install()`) before the page loads.
  */
@@ -23,9 +26,15 @@ export async function skipTokenRechecks(page: Page) {
     }).toPass();
 }
 
-/** The token the app keeps in this browser, or `null` signed out. */
-export async function readStoredToken(page: Page): Promise<string | null> {
-    return await page.evaluate(key => localStorage.getItem(key), TOKEN_KEY);
+/** The credentials the app keeps in this browser, or `null` signed out; throws on anything else kept there. */
+export async function readStoredCredentials(page: Page): Promise<OAuthCredentials | null> {
+    const text = await page.evaluate(key => localStorage.getItem(key), TOKEN_KEY);
+    const credentials = parseOAuthCredentials(text);
+    if (text !== null && credentials === null) {
+        throw new Error(`The app keeps something other than credentials under ${TOKEN_KEY}: ${text}`);
+    }
+
+    return credentials;
 }
 
 /**

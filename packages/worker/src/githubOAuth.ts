@@ -12,7 +12,9 @@ import type { WorkerEnv } from './WorkerEnv.js';
  *    ({@link authorize}), which redirects to GitHub's consent screen.
  * 2. GitHub sends the browser to the SPA's route `/auth/callback?code=…&state=…`; the SPA checks the state.
  * 3. The SPA calls `POST /api/auth/token` with `{ code, redirectUri }` ({@link exchangeToken}) and keeps the
- *    token it gets back. The Worker stores nothing.
+ *    token it gets back, with its refresh token and expiry. The Worker stores nothing.
+ * 4. GitHub's access tokens expire after 8 hours: the app trades the refresh token for new ones at
+ *    `POST /api/auth/refresh` ({@link refreshAccessToken}), which needs the client secret as well.
  *
  * The paths, the scopes and what `state` may be are the contract shared with the app (`@githq/github/oauth.js`).
  *
@@ -34,11 +36,21 @@ const GITHUB_API_URL = 'https://api.github.com';
 /** GitHub's codes are 20 hex characters; the bound only keeps a junk body from being forwarded whole. */
 const MAX_CODE_LENGTH = 256;
 
-/** An OAuth App's user token: `gho_` and base62 (40 characters today; GitHub allows for up to 255). */
-const OAUTH_APP_TOKEN_PATTERN = /^gho_[A-Za-z0-9]{1,251}$/;
+/**
+ * An OAuth App's user token: a prefix and base62 (40 characters today; GitHub allows for up to 255). `gho_` is the
+ * OAuth App token's documented prefix; `ghu_` (a GitHub App's expiring user token) is accepted too, since which prefix
+ * an OAuth App's expiring token carries is unverified.
+ */
+const OAUTH_APP_TOKEN_PATTERN = /^gh[ou]_[A-Za-z0-9]{1,251}$/;
 
-/** What {@link revokeToken} answers every origin with: a plain JSON `POST`, no credentials. */
-const REVOKE_CORS_HEADERS = {
+/** A refresh token: `ghr_` and base62 (the prefix GitHub Apps' refresh tokens carry; unverified for OAuth Apps). */
+const REFRESH_TOKEN_PATTERN = /^ghr_[A-Za-z0-9]{1,251}$/;
+
+/**
+ * What {@link refreshAccessToken} and {@link revokeToken} answer every origin with: a plain JSON `POST`, no
+ * credentials.
+ */
+const OPEN_CORS_HEADERS = {
     'access-control-allow-origin': '*',
     'access-control-allow-methods': 'POST',
     'access-control-allow-headers': 'content-type',
@@ -139,7 +151,53 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
         });
     }
 
-    return await requestToken({ clientId, clientSecret, code, redirectUri });
+    return await requestToken({ clientId, clientSecret, grant: { code, redirect_uri: redirectUri } });
+}
+
+/**
+ * `POST /api/auth/refresh` with JSON `{ refreshToken }`: trades a refresh token for a new access token and a new
+ * refresh token at GitHub, which needs the client secret. Answers like {@link exchangeToken}; a refresh token GitHub
+ * no longer accepts is a `400` with GitHub's `bad_refresh_token`.
+ *
+ * It answers CORS for any origin, like {@link revokeToken} and for the same reasons: the desktop app's webview calls
+ * it, only a refresh token the caller holds can be used, the token travels in the body only, and anything not shaped
+ * like a refresh token is refused before GitHub is asked.
+ */
+export async function refreshAccessToken(request: Request, env: WorkerEnv): Promise<Response> {
+    if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: OPEN_CORS_HEADERS });
+    }
+
+    if (request.method !== 'POST') {
+        return withOpenCors(methodNotAllowed('POST, OPTIONS'));
+    }
+
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
+    const clientSecret = env.GITHUB_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+        return withOpenCors(notConfigured());
+    }
+
+    const contentType = request.headers.get('content-type') ?? '';
+    if (!/^application\/json\s*(;|$)/i.test(contentType)) {
+        return withOpenCors(authError(415, { error: 'unsupported_media_type', description: 'Send application/json' }));
+    }
+
+    const body = parseJson(await request.text().catch(() => null));
+    const token = typeof body === 'object' && body !== null && 'refreshToken' in body ? body.refreshToken : undefined;
+    if (typeof token !== 'string' || !REFRESH_TOKEN_PATTERN.test(token)) {
+        return withOpenCors(
+            authError(400, { error: 'invalid_request', description: 'refreshToken is missing or malformed' }),
+        );
+    }
+
+    return withOpenCors(
+        await requestToken({
+            clientId,
+            clientSecret,
+            grant: { grant_type: 'refresh_token', refresh_token: token },
+        }),
+    );
 }
 
 /**
@@ -154,30 +212,28 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
  */
 export async function revokeToken(request: Request, env: WorkerEnv): Promise<Response> {
     if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: REVOKE_CORS_HEADERS });
+        return new Response(null, { status: 204, headers: OPEN_CORS_HEADERS });
     }
 
     if (request.method !== 'POST') {
-        return withRevokeCors(methodNotAllowed('POST, OPTIONS'));
+        return withOpenCors(methodNotAllowed('POST, OPTIONS'));
     }
 
     const clientId = getOAuthClientId(env.GITHQ_ENV);
     const clientSecret = env.GITHUB_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
-        return withRevokeCors(notConfigured());
+        return withOpenCors(notConfigured());
     }
 
     const contentType = request.headers.get('content-type') ?? '';
     if (!/^application\/json\s*(;|$)/i.test(contentType)) {
-        return withRevokeCors(
-            authError(415, { error: 'unsupported_media_type', description: 'Send application/json' }),
-        );
+        return withOpenCors(authError(415, { error: 'unsupported_media_type', description: 'Send application/json' }));
     }
 
     const body = parseJson(await request.text().catch(() => null));
     const token = typeof body === 'object' && body !== null && 'token' in body ? body.token : undefined;
     if (typeof token !== 'string' || !OAUTH_APP_TOKEN_PATTERN.test(token)) {
-        return withRevokeCors(
+        return withOpenCors(
             authError(400, { error: 'invalid_request', description: 'token is missing or not an OAuth App token' }),
         );
     }
@@ -196,16 +252,16 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
         });
     } catch {
         console.error('GitHub token revocation unreachable');
-        return withRevokeCors(authError(502, { error: 'github_unreachable' }));
+        return withOpenCors(authError(502, { error: 'github_unreachable' }));
     }
 
     // 404: GitHub no longer knows the token (revoked already); undocumented, observed.
     if (response.status === 204 || response.status === 404) {
-        return new Response(null, { status: 204, headers: { ...REVOKE_CORS_HEADERS, 'cache-control': 'no-store' } });
+        return new Response(null, { status: 204, headers: { ...OPEN_CORS_HEADERS, 'cache-control': 'no-store' } });
     }
 
     console.error(`GitHub token revocation answered ${response.status}`);
-    return withRevokeCors(
+    return withOpenCors(
         authError(502, {
             error: 'github_bad_response',
             description: `GitHub answered ${response.status}`,
@@ -216,14 +272,15 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
 interface RequestTokenParams {
     clientId: string;
     clientSecret: string;
-    code: string;
-    redirectUri: string;
+    /** The form fields of the grant: the code and its redirect URI, or the refresh grant and its refresh token. */
+    grant: Record<string, string>;
 }
 
 /**
- * The call to GitHub's token endpoint and the reading of its answer. GitHub reports a bad or expired code
- * with HTTP 200 and `{ error, error_description }`, so success is the presence of `access_token`, not the
- * status. Logs carry only statuses and error codes: the code, the token and the secret are never logged.
+ * The call to GitHub's token endpoint and the reading of its answer, for the code exchange and the refresh alike.
+ * GitHub reports a bad or expired code or refresh token with HTTP 200 and `{ error, error_description }`, so success
+ * is the presence of `access_token`, not the status. Logs carry only statuses and error codes: the code, the tokens
+ * and the secret are never logged.
  */
 async function requestToken(params: RequestTokenParams): Promise<Response> {
     let response: Response;
@@ -235,8 +292,7 @@ async function requestToken(params: RequestTokenParams): Promise<Response> {
             body: new URLSearchParams({
                 client_id: params.clientId,
                 client_secret: params.clientSecret,
-                code: params.code,
-                redirect_uri: params.redirectUri,
+                ...params.grant,
             }),
         });
         // Read here too: a connection dropped while the answer arrives rejects the read.
@@ -260,7 +316,7 @@ async function requestToken(params: RequestTokenParams): Promise<Response> {
             'error_description' in answer && typeof answer.error_description === 'string'
                 ? answer.error_description
                 : undefined;
-        console.warn(`GitHub token endpoint refused the code: ${answer.error}`);
+        console.warn(`GitHub token endpoint refused the grant: ${answer.error}`);
         // A wrong client ID or secret is the Worker's configuration, not anything the user can retry.
         return authError(answer.error === 'incorrect_client_credentials' ? 500 : 400, {
             error: answer.error,
@@ -280,7 +336,16 @@ async function requestToken(params: RequestTokenParams): Promise<Response> {
         .map(item => item.trim())
         .filter(item => item !== '');
 
-    return Response.json({ accessToken, scopes } satisfies OAuthTokenExchangeResult, {
+    const refreshToken =
+        'refresh_token' in answer && typeof answer.refresh_token === 'string' && answer.refresh_token !== ''
+            ? answer.refresh_token
+            : null;
+    const expiresIn =
+        'expires_in' in answer && typeof answer.expires_in === 'number' && answer.expires_in > 0
+            ? answer.expires_in
+            : null;
+
+    return Response.json({ accessToken, refreshToken, expiresIn, scopes } satisfies OAuthTokenExchangeResult, {
         headers: { 'cache-control': 'no-store' },
     });
 }
@@ -303,8 +368,8 @@ function methodNotAllowed(allow: string): Response {
     });
 }
 
-function withRevokeCors(response: Response): Response {
-    for (const [name, value] of Object.entries(REVOKE_CORS_HEADERS)) {
+function withOpenCors(response: Response): Response {
+    for (const [name, value] of Object.entries(OPEN_CORS_HEADERS)) {
         response.headers.set(name, value);
     }
     return response;

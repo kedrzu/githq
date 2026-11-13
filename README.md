@@ -50,8 +50,8 @@ githq is a single-page app that talks to GitHub's GraphQL API straight from your
 kept in IndexedDB as a cache that can always be rebuilt from GitHub; tracked repositories and projects are
 refreshed with conditional REST requests, which cost nothing from your rate limit when nothing changed.
 
-The app is static files on Cloudflare. The only code that runs on a server is one stateless Worker that trades
-GitHub's OAuth code for a token, because GitHub's token endpoint needs the client secret. It has no database and never sees your
+The app is static files on Cloudflare. The only code that runs on a server is one stateless Worker that serves
+GitHub's OAuth token endpoints (sign-in, refresh, revoke), because they need the client secret. It has no database and never sees your
 issues. The design and every decision behind it, with the evidence, are in
 [`docs/design/githq/`](docs/design/githq/README.md) and [`DECISIONS.md`](docs/design/githq/DECISIONS.md).
 

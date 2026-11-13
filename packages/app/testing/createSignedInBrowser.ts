@@ -5,6 +5,7 @@ import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 
+import { storedToken } from './storedToken.js';
 import { uniqueLogin } from './uniqueLogin.js';
 
 /**
@@ -16,7 +17,7 @@ import { uniqueLogin } from './uniqueLogin.js';
 export function createSignedInBrowser(fetch?: BrowserShape['fetch']): BrowserShape {
     const login = uniqueLogin();
     const stored = new Map([
-        [TOKEN_KEY, `gho_${login}`],
+        [TOKEN_KEY, storedToken(`gho_${login}`)],
         [VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' })],
     ]);
     return {

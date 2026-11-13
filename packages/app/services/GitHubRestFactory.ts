@@ -14,7 +14,7 @@ export const GitHubRestFactory = defineFactory({
         browser: Browser,
         rateLimit: GitHubRateLimitStore,
     },
-    setup({ browser, rateLimit }, getToken: () => string) {
+    setup({ browser, rateLimit }, getToken: () => string | Promise<string>) {
         return createGitHubRestRequester({
             getToken,
             fetch: browser.fetch,

@@ -22,6 +22,7 @@ import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
 import { fakeOnline } from '@/testing/fakeOnline.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
+import { storedToken } from '@/testing/storedToken.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import type { PersistedItems } from '@/store/ItemPersistence.js';
@@ -619,7 +620,7 @@ test("an answer for a session that has ended — another account took over in an
 
     github.found.assigned = [];
     github.hold = null;
-    fromAnotherTab({ [TOKEN_KEY]: 'gho_bob', [VIEWER_KEY]: JSON.stringify(viewerOf('bob')) });
+    fromAnotherTab({ [TOKEN_KEY]: storedToken('gho_bob'), [VIEWER_KEY]: JSON.stringify(viewerOf('bob')) });
     await items.ready();
     await clock.advance(0);
 
@@ -1182,7 +1183,7 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
     }
 
     const local = new Map<string, string>([
-        [TOKEN_KEY, `gho_${login}`],
+        [TOKEN_KEY, storedToken(`gho_${login}`)],
         [VIEWER_KEY, JSON.stringify(viewerOf(login))],
         ...(tracked.length > 0 ? ([[`githq.settings.${login}`, TRACKING_SLOT]] as const) : []),
     ]);
