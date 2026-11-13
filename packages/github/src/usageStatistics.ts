@@ -25,9 +25,8 @@ export const USAGE_STATISTICS_FIELD = 'telemetry';
 
 /**
  * The public Cloudflare Web Analytics site token of githq.dev. It is public (it ships in every page), not a secret.
- * TODO: replace the placeholder with the real token from the Cloudflare dashboard.
  */
-export const CLOUDFLARE_WEB_ANALYTICS_TOKEN = 'REPLACE_WITH_CLOUDFLARE_WEB_ANALYTICS_TOKEN';
+export const CLOUDFLARE_WEB_ANALYTICS_TOKEN = '19145241c47d474eb24fb8e4f2169d17';
 
 /** The host that is counted; any other (localhost, previews, the desktop webview) loads nothing. */
 const COUNTED_HOST = 'githq.dev';
