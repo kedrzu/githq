@@ -305829,189 +305829,220 @@
                                           "strokeWidth": {
                                             "bottom": 1
                                           },
-                                          "layout": "vertical",
-                                          "gap": 10,
-                                          "padding": [
-                                            12,
-                                            14,
-                                            14,
-                                            14
-                                          ],
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "beqcG",
-                                              "name": "Head",
+                                              "id": "X3BRn",
+                                              "name": "Before side",
                                               "width": "fill_container",
-                                              "gap": 6,
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "v9xb3",
-                                                  "name": "icon history",
-                                                  "width": 13,
-                                                  "height": 13,
-                                                  "icon": "history",
-                                                  "library": "lucide",
-                                                  "fill": "$amber"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "YXKoZ",
-                                                  "name": "State",
-                                                  "fill": "$amber",
-                                                  "content": "Outdated, its line is gone",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "500"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "p5EmyT",
-                                                  "name": "Where",
-                                                  "fill": "$fg-dim",
-                                                  "content": "written on line 31 two pushes ago (a91d03b); that line isn't in the file any more",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
+                                              "height": 1,
+                                              "layout": "vertical"
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "k7pzD",
-                                              "name": "Code as commented",
-                                              "opacity": 0.85,
-                                              "clip": true,
+                                              "id": "tvCep",
+                                              "name": "After side",
                                               "width": "fill_container",
-                                              "cornerRadius": 6,
                                               "stroke": "$border",
-                                              "strokeWidth": 1,
+                                              "strokeWidth": {
+                                                "left": 1
+                                              },
                                               "layout": "vertical",
+                                              "gap": 10,
+                                              "padding": [
+                                                12,
+                                                14,
+                                                14,
+                                                14
+                                              ],
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "mFSiD",
-                                                  "name": "Label",
+                                                  "id": "beqcG",
+                                                  "name": "Head",
                                                   "width": "fill_container",
-                                                  "height": 24,
-                                                  "fill": "$bg-2",
-                                                  "stroke": "$border",
-                                                  "strokeWidth": {
-                                                    "bottom": 1
-                                                  },
+                                                  "layout": "vertical",
                                                   "gap": 6,
-                                                  "padding": [
-                                                    0,
-                                                    10
-                                                  ],
-                                                  "alignItems": "center",
                                                   "children": [
                                                     {
-                                                      "type": "icon",
-                                                      "id": "Mi6np",
-                                                      "name": "icon file-clock",
-                                                      "width": 12,
-                                                      "height": 12,
-                                                      "icon": "file-clock",
-                                                      "library": "lucide",
-                                                      "fill": "$fg-3"
+                                                      "type": "frame",
+                                                      "id": "u4UtAs",
+                                                      "name": "Title",
+                                                      "gap": 6,
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "v9xb3",
+                                                          "name": "icon history",
+                                                          "width": 13,
+                                                          "height": 13,
+                                                          "icon": "history",
+                                                          "library": "lucide",
+                                                          "fill": "$amber"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "YXKoZ",
+                                                          "name": "State",
+                                                          "fill": "$amber",
+                                                          "content": "Outdated, its line is gone",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "500"
+                                                        }
+                                                      ]
                                                     },
                                                     {
                                                       "type": "text",
-                                                      "id": "WKL3k",
-                                                      "name": "Text",
+                                                      "id": "p5EmyT",
+                                                      "name": "Where",
                                                       "fill": "$fg-dim",
-                                                      "content": "The code it was written on, at a91d03b",
+                                                      "textGrowth": "fixed-width",
+                                                      "width": "fill_container",
+                                                      "content": "written on line 31 two pushes ago (a91d03b); that line isn't in the file any more",
                                                       "fontFamily": "$font",
-                                                      "fontSize": 11.5,
+                                                      "fontSize": 12,
                                                       "fontWeight": "normal"
                                                     }
                                                   ]
                                                 },
                                                 {
-                                                  "id": "QKnOa",
-                                                  "type": "ref",
-                                                  "ref": "UtCoP",
-                                                  "name": "Old line",
+                                                  "type": "frame",
+                                                  "id": "k7pzD",
+                                                  "name": "Code as commented",
+                                                  "opacity": 0.85,
+                                                  "clip": true,
                                                   "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "29"
+                                                  "cornerRadius": 6,
+                                                  "stroke": "$border",
+                                                  "strokeWidth": 1,
+                                                  "layout": "vertical",
+                                                  "children": [
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "mFSiD",
+                                                      "name": "Label",
+                                                      "width": "fill_container",
+                                                      "height": 24,
+                                                      "fill": "$bg-2",
+                                                      "stroke": "$border",
+                                                      "strokeWidth": {
+                                                        "bottom": 1
+                                                      },
+                                                      "gap": 6,
+                                                      "padding": [
+                                                        0,
+                                                        10
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "Mi6np",
+                                                          "name": "icon file-clock",
+                                                          "width": 12,
+                                                          "height": 12,
+                                                          "icon": "file-clock",
+                                                          "library": "lucide",
+                                                          "fill": "$fg-3"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "WKL3k",
+                                                          "name": "Text",
+                                                          "fill": "$fg-dim",
+                                                          "content": "The code it was written on, at a91d03b",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
                                                     },
-                                                    "AIddd": {
-                                                      "content": "29"
+                                                    {
+                                                      "id": "QKnOa",
+                                                      "type": "ref",
+                                                      "ref": "UtCoP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "29"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "29"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  for (const local of pending) {"
+                                                        }
+                                                      }
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  for (const local of pending) {"
+                                                    {
+                                                      "id": "jaclZ",
+                                                      "type": "ref",
+                                                      "ref": "UtCoP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "30"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "30"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "    const remote = byId.get(local.id)"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "hHYDG",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "31"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "    if (remote && remote.updatedAt > local.updatedAt) continue"
+                                                        }
+                                                      }
                                                     }
-                                                  }
+                                                  ]
                                                 },
                                                 {
-                                                  "id": "jaclZ",
+                                                  "id": "Xssat",
                                                   "type": "ref",
-                                                  "ref": "UtCoP",
-                                                  "name": "Old line",
+                                                  "ref": "Ypl9I",
+                                                  "name": "Thread",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "30"
+                                                    "rXu8y": {
+                                                      "content": "shown at the top of the file with the code it was written on"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "30"
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#7FB3D5"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "    const remote = byId.get(local.id)"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "hHYDG",
-                                                  "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "SB"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "31"
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "sofiab"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "    if (remote && remote.updatedAt > local.updatedAt) continue"
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "2d"
+                                                    },
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "Skipping silently loses the local edit. Can we keep it and flag a conflict instead?"
                                                     }
                                                   }
                                                 }
                                               ]
-                                            },
-                                            {
-                                              "id": "Xssat",
-                                              "type": "ref",
-                                              "ref": "Ypl9I",
-                                              "name": "Thread",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "rXu8y": {
-                                                  "content": "shown at the top of the file with the code it was written on"
-                                                },
-                                                "WFYVj/J1oko": {
-                                                  "fill": "#7FB3D5"
-                                                },
-                                                "WFYVj/J1oko/zeZzP": {
-                                                  "content": "SB"
-                                                },
-                                                "WFYVj/m8e7t": {
-                                                  "content": "sofiab"
-                                                },
-                                                "WFYVj/LkH3H": {
-                                                  "content": "2d"
-                                                },
-                                                "WFYVj/o6hbQ": {
-                                                  "content": "Skipping silently loses the local edit. Can we keep it and flag a conflict instead?"
-                                                }
-                                              }
                                             }
                                           ]
                                         },
@@ -307283,152 +307314,162 @@
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "KTS0t",
-                                              "name": "Code as commented",
-                                              "clip": true,
-                                              "width": "fill_container",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
+                                              "id": "oOzm2",
+                                              "name": "Content",
+                                              "width": 760,
                                               "layout": "vertical",
+                                              "gap": 8,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "gSkUC",
-                                                  "name": "Label",
+                                                  "id": "KTS0t",
+                                                  "name": "Code as commented",
+                                                  "clip": true,
                                                   "width": "fill_container",
-                                                  "height": 24,
-                                                  "fill": "$bg-2",
+                                                  "cornerRadius": 6,
                                                   "stroke": "$border",
-                                                  "strokeWidth": {
-                                                    "bottom": 1
-                                                  },
-                                                  "gap": 6,
-                                                  "padding": [
-                                                    0,
-                                                    10
-                                                  ],
-                                                  "alignItems": "center",
+                                                  "strokeWidth": 1,
+                                                  "layout": "vertical",
                                                   "children": [
                                                     {
-                                                      "type": "icon",
-                                                      "id": "T1CP95",
-                                                      "name": "icon file-clock",
-                                                      "width": 12,
-                                                      "height": 12,
-                                                      "icon": "file-clock",
-                                                      "library": "lucide",
-                                                      "fill": "$fg-3"
+                                                      "type": "frame",
+                                                      "id": "gSkUC",
+                                                      "name": "Label",
+                                                      "width": "fill_container",
+                                                      "height": 24,
+                                                      "fill": "$bg-2",
+                                                      "stroke": "$border",
+                                                      "strokeWidth": {
+                                                        "bottom": 1
+                                                      },
+                                                      "gap": 6,
+                                                      "padding": [
+                                                        0,
+                                                        10
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "T1CP95",
+                                                          "name": "icon file-clock",
+                                                          "width": 12,
+                                                          "height": 12,
+                                                          "icon": "file-clock",
+                                                          "library": "lucide",
+                                                          "fill": "$fg-3"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "gVQsu",
+                                                          "name": "Text",
+                                                          "fill": "$fg-dim",
+                                                          "content": "Line 214, as it was when commented · the file isn't loaded while collapsed",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
                                                     },
                                                     {
-                                                      "type": "text",
-                                                      "id": "gVQsu",
-                                                      "name": "Text",
-                                                      "fill": "$fg-dim",
-                                                      "content": "Line 214, as it was when commented · the file isn't loaded while collapsed",
-                                                      "fontFamily": "$font",
-                                                      "fontSize": 11.5,
-                                                      "fontWeight": "normal"
+                                                      "id": "HRgWv",
+                                                      "type": "ref",
+                                                      "ref": "UtCoP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "212"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "212"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "export interface WorkoutPatch {"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "cGk3U",
+                                                      "type": "ref",
+                                                      "ref": "UtCoP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "213"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "213"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  title?: string"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "alw8p",
+                                                      "type": "ref",
+                                                      "ref": "D8ZJtP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "214"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": ""
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  notes?: string"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "TvObm",
+                                                      "type": "ref",
+                                                      "ref": "UtCoP",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": "215"
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "214"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  durationMin?: number"
+                                                        }
+                                                      }
                                                     }
                                                   ]
                                                 },
                                                 {
-                                                  "id": "HRgWv",
+                                                  "id": "cft90",
                                                   "type": "ref",
-                                                  "ref": "UtCoP",
-                                                  "name": "Old line",
+                                                  "ref": "ce2EO",
+                                                  "name": "Thread",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "212"
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#8FBF9F"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "212"
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "DK"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "export interface WorkoutPatch {"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "cGk3U",
-                                                  "type": "ref",
-                                                  "ref": "UtCoP",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "213"
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "dkim"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "213"
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "1h"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  title?: string"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "alw8p",
-                                                  "type": "ref",
-                                                  "ref": "D8ZJtP",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "214"
-                                                    },
-                                                    "AIddd": {
-                                                      "content": ""
-                                                    },
-                                                    "txzt7": {
-                                                      "content": "  notes?: string"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "TvObm",
-                                                  "type": "ref",
-                                                  "ref": "UtCoP",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": "215"
-                                                    },
-                                                    "AIddd": {
-                                                      "content": "214"
-                                                    },
-                                                    "txzt7": {
-                                                      "content": "  durationMin?: number"
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "Generated from the old schema? WorkoutPatch lost notes, so offline edits to notes won't sync."
                                                     }
                                                   }
                                                 }
                                               ]
-                                            },
-                                            {
-                                              "id": "cft90",
-                                              "type": "ref",
-                                              "ref": "ce2EO",
-                                              "name": "Thread",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "WFYVj/J1oko": {
-                                                  "fill": "#8FBF9F"
-                                                },
-                                                "WFYVj/J1oko/zeZzP": {
-                                                  "content": "DK"
-                                                },
-                                                "WFYVj/m8e7t": {
-                                                  "content": "dkim"
-                                                },
-                                                "WFYVj/LkH3H": {
-                                                  "content": "1h"
-                                                },
-                                                "WFYVj/o6hbQ": {
-                                                  "content": "Generated from the old schema? WorkoutPatch lost notes, so offline edits to notes won't sync."
-                                                }
-                                              }
                                             }
                                           ]
                                         }
@@ -308432,152 +308473,162 @@
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "Qoelr",
-                                              "name": "Code as commented",
-                                              "clip": true,
-                                              "width": "fill_container",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
+                                              "id": "P70lk",
+                                              "name": "Content",
+                                              "width": 760,
                                               "layout": "vertical",
+                                              "gap": 8,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "FZW8Z",
-                                                  "name": "Label",
+                                                  "id": "Qoelr",
+                                                  "name": "Code as commented",
+                                                  "clip": true,
                                                   "width": "fill_container",
-                                                  "height": 24,
-                                                  "fill": "$bg-2",
+                                                  "cornerRadius": 6,
                                                   "stroke": "$border",
-                                                  "strokeWidth": {
-                                                    "bottom": 1
-                                                  },
-                                                  "gap": 6,
-                                                  "padding": [
-                                                    0,
-                                                    10
-                                                  ],
-                                                  "alignItems": "center",
+                                                  "strokeWidth": 1,
+                                                  "layout": "vertical",
                                                   "children": [
                                                     {
-                                                      "type": "icon",
-                                                      "id": "eC12R",
-                                                      "name": "icon file-clock",
-                                                      "width": 12,
-                                                      "height": 12,
-                                                      "icon": "file-clock",
-                                                      "library": "lucide",
-                                                      "fill": "$fg-3"
+                                                      "type": "frame",
+                                                      "id": "FZW8Z",
+                                                      "name": "Label",
+                                                      "width": "fill_container",
+                                                      "height": 24,
+                                                      "fill": "$bg-2",
+                                                      "stroke": "$border",
+                                                      "strokeWidth": {
+                                                        "bottom": 1
+                                                      },
+                                                      "gap": 6,
+                                                      "padding": [
+                                                        0,
+                                                        10
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "eC12R",
+                                                          "name": "icon file-clock",
+                                                          "width": 12,
+                                                          "height": 12,
+                                                          "icon": "file-clock",
+                                                          "library": "lucide",
+                                                          "fill": "$fg-3"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "CRz75",
+                                                          "name": "Text",
+                                                          "fill": "$fg-dim",
+                                                          "content": "Line 8, as it was when commented at 3f0c2aa",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
                                                     },
                                                     {
-                                                      "type": "text",
-                                                      "id": "CRz75",
-                                                      "name": "Text",
-                                                      "fill": "$fg-dim",
-                                                      "content": "Line 8, as it was when commented at 3f0c2aa",
-                                                      "fontFamily": "$font",
-                                                      "fontSize": 11.5,
-                                                      "fontWeight": "normal"
+                                                      "id": "IZHPO",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "7"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "export const retryPolicy = {"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "S5xjqm",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "8"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  maxAttempts: Infinity,"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "aFYDn",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "9"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  backoffMs: (n: number) => Math.min(30_000, 2 ** n * 250),"
+                                                        }
+                                                      }
                                                     }
                                                   ]
                                                 },
                                                 {
-                                                  "id": "IZHPO",
+                                                  "id": "UileD",
                                                   "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
+                                                  "ref": "ce2EO",
+                                                  "name": "Thread",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#7FB3D5"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "7"
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "SB"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "export const retryPolicy = {"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "S5xjqm",
-                                                  "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "sofiab"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "8"
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "yesterday"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  maxAttempts: Infinity,"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "aFYDn",
-                                                  "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "Infinity attempts means a bad item blocks the outbox forever. Cap it?"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "9"
+                                                    "qrcqS": {
+                                                      "enabled": true
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  backoffMs: (n: number) => Math.min(30_000, 2 ** n * 250),"
+                                                    "qrcqS/J1oko": {
+                                                      "fill": "#D97757"
+                                                    },
+                                                    "qrcqS/J1oko/zeZzP": {
+                                                      "content": "CL"
+                                                    },
+                                                    "qrcqS/m8e7t": {
+                                                      "content": "claude[bot]"
+                                                    },
+                                                    "qrcqS/LkH3H": {
+                                                      "content": "20h"
+                                                    },
+                                                    "qrcqS/o6hbQ": {
+                                                      "content": "Moved into queue.ts with a cap of 8, deleted this file. See queue.ts line 61."
                                                     }
                                                   }
                                                 }
                                               ]
-                                            },
-                                            {
-                                              "id": "UileD",
-                                              "type": "ref",
-                                              "ref": "ce2EO",
-                                              "name": "Thread",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "WFYVj/J1oko": {
-                                                  "fill": "#7FB3D5"
-                                                },
-                                                "WFYVj/J1oko/zeZzP": {
-                                                  "content": "SB"
-                                                },
-                                                "WFYVj/m8e7t": {
-                                                  "content": "sofiab"
-                                                },
-                                                "WFYVj/LkH3H": {
-                                                  "content": "yesterday"
-                                                },
-                                                "WFYVj/o6hbQ": {
-                                                  "content": "Infinity attempts means a bad item blocks the outbox forever. Cap it?"
-                                                },
-                                                "qrcqS": {
-                                                  "enabled": true
-                                                },
-                                                "qrcqS/J1oko": {
-                                                  "fill": "#D97757"
-                                                },
-                                                "qrcqS/J1oko/zeZzP": {
-                                                  "content": "CL"
-                                                },
-                                                "qrcqS/m8e7t": {
-                                                  "content": "claude[bot]"
-                                                },
-                                                "qrcqS/LkH3H": {
-                                                  "content": "20h"
-                                                },
-                                                "qrcqS/o6hbQ": {
-                                                  "content": "Moved into queue.ts with a cap of 8, deleted this file. See queue.ts line 61."
-                                                }
-                                              }
                                             }
                                           ]
                                         }
@@ -330015,16 +330066,26 @@
                                               }
                                             },
                                             {
-                                              "id": "l52c38",
-                                              "type": "ref",
-                                              "ref": "ce2EO",
-                                              "name": "Thread",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "WFYVj/o6hbQ": {
-                                                  "content": "Every flush reads the outbox by createdAt. Do we need an index on (workoutId, createdAt)?"
+                                              "type": "frame",
+                                              "id": "pBmg1",
+                                              "name": "Content",
+                                              "width": 760,
+                                              "layout": "vertical",
+                                              "gap": 8,
+                                              "children": [
+                                                {
+                                                  "id": "l52c38",
+                                                  "type": "ref",
+                                                  "ref": "ce2EO",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "Every flush reads the outbox by createdAt. Do we need an index on (workoutId, createdAt)?"
+                                                    }
+                                                  }
                                                 }
-                                              }
+                                              ]
                                             }
                                           ]
                                         }
@@ -340624,152 +340685,162 @@
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "kVqEy",
-                                              "name": "Code as commented",
-                                              "clip": true,
-                                              "width": "fill_container",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
+                                              "id": "tNV49",
+                                              "name": "Content",
+                                              "width": 760,
                                               "layout": "vertical",
+                                              "gap": 8,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "GheC7",
-                                                  "name": "Label",
+                                                  "id": "kVqEy",
+                                                  "name": "Code as commented",
+                                                  "clip": true,
                                                   "width": "fill_container",
-                                                  "height": 24,
-                                                  "fill": "$bg-2",
+                                                  "cornerRadius": 6,
                                                   "stroke": "$border",
-                                                  "strokeWidth": {
-                                                    "bottom": 1
-                                                  },
-                                                  "gap": 6,
-                                                  "padding": [
-                                                    0,
-                                                    10
-                                                  ],
-                                                  "alignItems": "center",
+                                                  "strokeWidth": 1,
+                                                  "layout": "vertical",
                                                   "children": [
                                                     {
-                                                      "type": "icon",
-                                                      "id": "Mp522",
-                                                      "name": "icon file-clock",
-                                                      "width": 12,
-                                                      "height": 12,
-                                                      "icon": "file-clock",
-                                                      "library": "lucide",
-                                                      "fill": "$fg-3"
+                                                      "type": "frame",
+                                                      "id": "GheC7",
+                                                      "name": "Label",
+                                                      "width": "fill_container",
+                                                      "height": 24,
+                                                      "fill": "$bg-2",
+                                                      "stroke": "$border",
+                                                      "strokeWidth": {
+                                                        "bottom": 1
+                                                      },
+                                                      "gap": 6,
+                                                      "padding": [
+                                                        0,
+                                                        10
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "Mp522",
+                                                          "name": "icon file-clock",
+                                                          "width": 12,
+                                                          "height": 12,
+                                                          "icon": "file-clock",
+                                                          "library": "lucide",
+                                                          "fill": "$fg-3"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "O23eR1",
+                                                          "name": "Text",
+                                                          "fill": "$fg-dim",
+                                                          "content": "Line 8, as it was when commented at 3f0c2aa",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
                                                     },
                                                     {
-                                                      "type": "text",
-                                                      "id": "O23eR1",
-                                                      "name": "Text",
-                                                      "fill": "$fg-dim",
-                                                      "content": "Line 8, as it was when commented at 3f0c2aa",
-                                                      "fontFamily": "$font",
-                                                      "fontSize": 11.5,
-                                                      "fontWeight": "normal"
+                                                      "id": "xhr52",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "7"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "export const retryPolicy = {"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "X4eSdv",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "8"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  maxAttempts: Infinity,"
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "YI1Is",
+                                                      "type": "ref",
+                                                      "ref": "qDLAj",
+                                                      "name": "Old line",
+                                                      "width": "fill_container",
+                                                      "descendants": {
+                                                        "GP2HC": {
+                                                          "content": ""
+                                                        },
+                                                        "AIddd": {
+                                                          "content": "9"
+                                                        },
+                                                        "txzt7": {
+                                                          "content": "  backoffMs: (n: number) => Math.min(30_000, 2 ** n * 250),"
+                                                        }
+                                                      }
                                                     }
                                                   ]
                                                 },
                                                 {
-                                                  "id": "xhr52",
+                                                  "id": "cJOay",
                                                   "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
+                                                  "ref": "ce2EO",
+                                                  "name": "Thread",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#7FB3D5"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "7"
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "SB"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "export const retryPolicy = {"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "X4eSdv",
-                                                  "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "sofiab"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "8"
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "yesterday"
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  maxAttempts: Infinity,"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "YI1Is",
-                                                  "type": "ref",
-                                                  "ref": "qDLAj",
-                                                  "name": "Old line",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "GP2HC": {
-                                                      "content": ""
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "Infinity attempts means a bad item blocks the outbox forever. Cap it?"
                                                     },
-                                                    "AIddd": {
-                                                      "content": "9"
+                                                    "qrcqS": {
+                                                      "enabled": true
                                                     },
-                                                    "txzt7": {
-                                                      "content": "  backoffMs: (n: number) => Math.min(30_000, 2 ** n * 250),"
+                                                    "qrcqS/J1oko": {
+                                                      "fill": "#D97757"
+                                                    },
+                                                    "qrcqS/J1oko/zeZzP": {
+                                                      "content": "CL"
+                                                    },
+                                                    "qrcqS/m8e7t": {
+                                                      "content": "claude[bot]"
+                                                    },
+                                                    "qrcqS/LkH3H": {
+                                                      "content": "20h"
+                                                    },
+                                                    "qrcqS/o6hbQ": {
+                                                      "content": "Moved into queue.ts with a cap of 8, deleted this file. See queue.ts line 61."
                                                     }
                                                   }
                                                 }
                                               ]
-                                            },
-                                            {
-                                              "id": "cJOay",
-                                              "type": "ref",
-                                              "ref": "ce2EO",
-                                              "name": "Thread",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "WFYVj/J1oko": {
-                                                  "fill": "#7FB3D5"
-                                                },
-                                                "WFYVj/J1oko/zeZzP": {
-                                                  "content": "SB"
-                                                },
-                                                "WFYVj/m8e7t": {
-                                                  "content": "sofiab"
-                                                },
-                                                "WFYVj/LkH3H": {
-                                                  "content": "yesterday"
-                                                },
-                                                "WFYVj/o6hbQ": {
-                                                  "content": "Infinity attempts means a bad item blocks the outbox forever. Cap it?"
-                                                },
-                                                "qrcqS": {
-                                                  "enabled": true
-                                                },
-                                                "qrcqS/J1oko": {
-                                                  "fill": "#D97757"
-                                                },
-                                                "qrcqS/J1oko/zeZzP": {
-                                                  "content": "CL"
-                                                },
-                                                "qrcqS/m8e7t": {
-                                                  "content": "claude[bot]"
-                                                },
-                                                "qrcqS/LkH3H": {
-                                                  "content": "20h"
-                                                },
-                                                "qrcqS/o6hbQ": {
-                                                  "content": "Moved into queue.ts with a cap of 8, deleted this file. See queue.ts line 61."
-                                                }
-                                              }
                                             }
                                           ]
                                         }
@@ -344546,7 +344617,7 @@
                               "id": "S7brmA",
                               "type": "ref",
                               "ref": "p3KpyQ",
-                              "width": "fill_container",
+                              "width": 760,
                               "name": "Comment box",
                               "descendants": {
                                 "l9iHy": {
@@ -344663,7 +344734,7 @@
                               "id": "JBhyD",
                               "type": "ref",
                               "ref": "QNL7n",
-                              "width": "fill_container",
+                              "width": 760,
                               "name": "Comment box",
                               "descendants": {
                                 "l9iHy": {
@@ -346134,7 +346205,7 @@
                               "type": "ref",
                               "ref": "SAmev",
                               "name": "Comment box",
-                              "width": "fill_container"
+                              "width": 760
                             }
                           ]
                         },

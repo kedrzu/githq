@@ -1,4 +1,4 @@
-<!-- A thread's row in the diff, by where it was placed (D12, D13, D30): under its line on its own half in split, indented to the code in unified (D24); at the file's top with its old code and the commit, closed off before the diff begins; under a collapsed file's or a gone file's header with the code "as it was when commented", which a resolved thread keeps folded with the rest. -->
+<!-- A thread's row in the diff, by where it was placed (D12, D13, D30): under its line on its own half in split, indented to the code in unified (D24); at the file's top with its old code and the commit, closed off before the diff begins, on its side's half likewise; under a collapsed file's or a gone file's header with the code "as it was when commented", which a resolved thread keeps folded with the rest. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';

@@ -27,6 +27,7 @@ import {
     getReviewThreadKey,
 } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReviewRows.js';
+import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile } from './ReviewFiles.js';
@@ -193,12 +194,27 @@ test('Expand to here brings out the lines between the nearest row and the thread
     ]);
 });
 
+test('a thread whose line is gone sits on the half of its side in split and indented in unified', () => {
+    const fileTop = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [
+        threadOnLine(1, { isOutdated: true, comments: [] }),
+        { ...threadOnLine(2, { isOutdated: true, comments: [] }), diffSide: 'LEFT' },
+    ]);
+    expect(getInline('split')).toEqual(['right', 'left']);
+    expect(getInline('unified')).toEqual(['unified', 'unified']);
+
+    function getInline(layout: DiffLayout) {
+        return buildFileLineRows({ path: A.path, diff: DIFF, layout, threads: fileTop })
+            .slice(0, 2)
+            .map(row => row.kind === 'thread' && row.inline);
+    }
+});
+
 test("a thread that found no line comes first, closed off from the diff; one in a collapsed file under the header, the end then the open file's", () => {
     const fileTop = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [
         threadOnLine(1, { isOutdated: true, comments: [] }),
     ]);
     const open = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads: fileTop });
-    expect(open[0]).toMatchObject({ kind: 'thread', inline: null });
+    expect(open[0]).toMatchObject({ kind: 'thread', inline: 'right' });
 
     const placements = placeThreads({ kind: 'collapsed', notLoaded: false }, [threadOnLine(1)]);
     const rows = buildReviewRows({

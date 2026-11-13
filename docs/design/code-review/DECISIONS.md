@@ -461,6 +461,10 @@ status bar already says how fresh things are and serves for loading and the API 
 with ←/→, from 200 to 480 px, the width kept on this device. It is the same split as a repository's left column
 (`ColumnSplit`): the diff keeps at least 400 px, the column giving way down to its minimum on a narrow window.
 
+**Amended (2026-11-13, owner).** A thread or a comment box among the diff's lines is at most 760 px wide in every
+layout: at the left of its half in split, indented to the code in unified, from the file's left edge under a collapsed
+or gone file's header. On a wide screen the text otherwise runs in lines too long to read.
+
 ## D25
 
 **The stack sits at the top of the left column, above the file list: a head with its name and "2 of 4", then one row
@@ -546,6 +550,10 @@ only its threads; its row in the list says "not in the diff".** (2026-11-04, own
 
 - Naming the commits that added and deleted it — about 150 lines and one more query for a sentence
   ([history](history/DECISIONS.md#d30)).
+
+**Amended (2026-11-13, owner).** The box of a thread whose line is gone sits, like any thread, on the half of the side
+it was written on in split (the old side's for a deleted file) and indented to the code in unified, its border still
+closing it off across the file. It used to take the file's whole width.
 
 ## D31
 
