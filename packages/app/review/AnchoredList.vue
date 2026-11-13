@@ -1,4 +1,4 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says when the pinned row is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
@@ -9,9 +9,11 @@ export interface AnchoredListSlotProps<T> {
   row: T;
   /** The row is the pinned one, and the next pinned row is pushing it up. */
   pushed: boolean;
+  /** The row is the pinned one's copy in the overlay, the row in its place being drawn too. */
+  pinned: boolean;
 }
 
-/** What the viewport shows, for the reading line (`getReadingLine`). */
+/** What the viewport shows: for the line cursor's scrolling and the reading line (`getReadingLine`). */
 export interface AnchoredListViewport {
   readonly height: number;
   /** How far down from its top the pinned row's overlay reaches. */
@@ -42,6 +44,8 @@ export interface AnchoredListExposed<T = AnchoredListRow> {
   scrollBy(distance: number): void;
   /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
   getRowOffset(key: string): number | null;
+  /** A drawn row's edges from the viewport's top, on screen or not; `null` for one not drawn. */
+  getRowBox(key: string): AnchoredListShownRow<T> | null;
   /** Reactive: it changes with the scroll and the layout, at most once a frame. */
   getViewport(): AnchoredListViewport;
   /**
@@ -66,7 +70,7 @@ const SCROLL_EPSILON = 0.01;
  * a `<slot>` inside `v-for` compiles to dynamic slots, which update the child every time.
  */
 function AnchoredListCell<T>(props: AnchoredListCellProps<T>) {
-  return props.render({ row: props.row, pushed: props.pushed });
+  return props.render({ row: props.row, pushed: props.pushed, pinned: props.pinned });
 }
 
 interface AnchoredListCellProps<T> extends AnchoredListSlotProps<T> {
@@ -173,7 +177,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getViewport, getShownRows, anchor, firstVisibleKey });
+defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getRowBox, getViewport, getShownRows, anchor, firstVisibleKey });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -201,6 +205,18 @@ function scrollBy(distance: number) {
 function getRowOffset(key: string) {
   const placed = placedRows.value.find(({ row }) => row.key === key);
   return placed ? placed.top - knownScrollTop : null;
+}
+
+function getRowBox(key: string): AnchoredListShownRow<T> | null {
+  const placed = placedRows.value;
+  const index = placed.findIndex(({ row }) => row.key === key);
+  const found = placed[index];
+  if (!found) {
+    return null;
+  }
+
+  const bottom = placed[index + 1]?.top ?? model.total;
+  return { row: found.row, top: found.top - knownScrollTop, bottom: bottom - knownScrollTop };
 }
 
 function getViewport(): AnchoredListViewport {
@@ -353,6 +369,7 @@ function showWindow(layoutChanged: boolean) {
         <AnchoredListCell
           :row="pinnedRow.row"
           :pushed="pinnedRow.pushUp > 0"
+          :pinned="true"
           :render="slots.default"
         />
       </div>
@@ -371,6 +388,7 @@ function showWindow(layoutChanged: boolean) {
         <AnchoredListCell
           :row="placed.row"
           :pushed="false"
+          :pinned="false"
           :render="slots.default"
         />
       </div>

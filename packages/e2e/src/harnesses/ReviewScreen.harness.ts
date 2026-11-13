@@ -109,9 +109,69 @@ export class ReviewScreenHarness {
         return this.page.getByRole('dialog', { name: /^Discard your pending review/ });
     }
 
-    /** A line's number on a side of the file in view: `Comment on line 50`, the newer side last in split. */
+    /**
+     * A line's number on a side of the file in view: `Comment on line 50`, the newer side last in split. The number, not
+     * the comment button the cursor's row has after it under the same name, which shows no number.
+     */
     lineNumber(line: number): Locator {
-        return this.diff.getByRole('button', { name: `Comment on line ${line}`, exact: true }).last();
+        return this.diff
+            .getByRole('button', { name: `Comment on line ${line}`, exact: true })
+            .filter({ hasText: new RegExp(`^${line}$`, 'u') })
+            .last();
+    }
+
+    /** The row holding the line cursor (D44), both halves of it in split. */
+    get cursorRow(): Locator {
+        return this.diff.locator('[data-cursor="true"]');
+    }
+
+    /** The key of the stop holding the line cursor: a header's, a line's, a thread's or a gap's. */
+    async cursorKey(): Promise<string> {
+        const key = await this.cursorRow.getAttribute('data-cursor-key');
+        if (key === null) {
+            throw new Error('No row holds the cursor');
+        }
+
+        return key;
+    }
+
+    /** The file the line cursor is in: its key's first part. */
+    async cursorPath(): Promise<string> {
+        const key = await this.cursorKey();
+        return key.slice(0, key.indexOf('\0'));
+    }
+
+    /** The key of the first stop wholly under the pinned header, where a scroll down brings a cursor it took off the top. */
+    async firstStopKey(): Promise<string> {
+        return await this.diff.evaluate(diff => {
+            const top = diff.getBoundingClientRect().top + 38;
+            const rows = [...diff.querySelectorAll('[data-cursor-key]')]
+                .map(row => ({ key: row.getAttribute('data-cursor-key'), top: row.getBoundingClientRect().top }))
+                .toSorted((a, b) => a.top - b.top);
+            const first = rows.find(row => row.top >= top - 1);
+            if (first?.key) {
+                return first.key;
+            }
+
+            throw new Error('No stop is under the pinned header');
+        });
+    }
+
+    /**
+     * Moves the pointer onto `target`, by a real move: the first pointer event a page sees is not taken for one (D44), nor
+     * one where the pointer already was.
+     */
+    async pointAt(target: Locator): Promise<void> {
+        await target.scrollIntoViewIfNeeded();
+        const box = await target.boundingBox();
+        if (!box) {
+            throw new Error('What to point at is not on screen');
+        }
+
+        const x = box.x + Math.min(box.width / 2, 40);
+        const y = box.y + box.height / 2;
+        await this.page.mouse.move(x - 2, y);
+        await this.page.mouse.move(x, y, { steps: 2 });
     }
 
     /** A comment box; by the line it says, or the only one. */

@@ -9,6 +9,11 @@ import * as stories from './ReviewDiffRow.stories.js';
 const {
     CodeKinds,
     Collapsed,
+    CursorSplit,
+    CursorSplitAdded,
+    CursorSplitChanged,
+    CursorSplitDeleted,
+    CursorUnifiedDeleted,
     ExpansionReset,
     ExpansionResetNothingHidden,
     FourDigitsSplit,
@@ -247,33 +252,6 @@ function getCode(text: string) {
 }
 
 test.each([
-    ['split', Split],
-    ['unified', Unified],
-])(
-    "a line's number under the pointer is underlined with a comment icon before it, the code untouched, %s",
-    async (_layout, Story) => {
-        await Story.run();
-        const number = page.getByRole('button', { name: 'Comment on line 3' }).first().element();
-        const marker = () => number.querySelector('svg')!;
-        const code = number.closest('div')!.querySelector('code')!;
-        const background = getComputedStyle(code.closest('div')!).backgroundColor;
-
-        expect(getComputedStyle(marker()).display).toBe('none');
-
-        await userEvent.hover(number);
-        expect(getComputedStyle(marker()).display).toBe('block');
-        expect(getComputedStyle(number).textDecorationLine).toBe('underline');
-        expect(marker().getBoundingClientRect().right).toBeLessThanOrEqual(
-            number.querySelector('span')!.getBoundingClientRect().left,
-        );
-        expect(getComputedStyle(code.closest('div')!).backgroundColor).toBe(background);
-
-        await userEvent.hover(code);
-        expect(getComputedStyle(marker()).display).toBe('none');
-    },
-);
-
-test.each([
     ['split', SplitCommented],
     ['unified', UnifiedCommented],
 ])('the lines a comment is being written on have their numbers on that side in accent, %s', async (_layout, Story) => {
@@ -292,16 +270,129 @@ test.each([
 test.each([
     ['split', FourDigitsSplit],
     ['unified', FourDigitsUnified],
-])("a four-digit number's comment icon stays inside its cell, %s", async (_layout, Story) => {
-    await Story.run();
-    const numbers = page.getByRole('button', { name: 'Comment on line 1100' }).elements();
-    expect(numbers).toHaveLength(2);
+])(
+    "on the cursor's row a four-digit number's comment button sits between it and the code, %s",
+    async (_layout, Story) => {
+        await Story.run();
+        const row = getCursorRow();
+        const buttons = getCommentButtons(row);
+        expect(buttons.length).toBeGreaterThan(0);
 
-    for (const number of numbers) {
-        await userEvent.hover(number);
-        const marker = number.querySelector('svg')!.getBoundingClientRect();
-        const cell = number.parentElement!.getBoundingClientRect();
-        expect(marker.left).toBeGreaterThanOrEqual(cell.left);
-        expect(marker.right).toBeLessThanOrEqual(number.querySelector('span')!.getBoundingClientRect().left);
+        for (const button of buttons) {
+            const box = button.getBoundingClientRect();
+            const half = button.closest('[class*="diffRowSplit_cell"]') ?? row;
+            const numbers = [...half.querySelectorAll('button:not([aria-keyshortcuts])')];
+            const code = half.querySelector('code')!.getBoundingClientRect();
+            expect(numbers.length).toBeGreaterThan(0);
+            for (const number of numbers) {
+                expect(number.getBoundingClientRect().right).toBeLessThanOrEqual(box.left);
+            }
+            expect(box.right).toBeLessThanOrEqual(code.left);
+        }
+    },
+);
+
+test.each([
+    ['an unchanged line', CursorSplit, ['before', 'after']],
+    ['an added line alone', CursorSplitAdded, ['after', 'after']],
+    ['a deleted line alone', CursorSplitDeleted, ['before', 'before']],
+    ['unified, a deleted line', CursorUnifiedDeleted, ['before']],
+] as const)(
+    "on the cursor's row each comment button comments on its half's line, an empty half's on the row's: %s",
+    async (_name, Story, sides) => {
+        await Story.run();
+        const row = getCursorRow();
+        const numbers = new Map(
+            [...row.querySelectorAll('button:not([aria-keyshortcuts])')].map(number => [
+                number.closest('[class*="diffRowSplit_cell"]')?.matches(':first-child') === false ? 'after' : 'before',
+                Number(number.textContent),
+            ]),
+        );
+        const buttons = getCommentButtons(row);
+        expect(buttons).toHaveLength(sides.length);
+
+        for (const [index, side] of sides.entries()) {
+            // The unified row's numbers are one cell: the deleted line has only its older one.
+            const line = numbers.get(side) ?? numbers.get('before');
+            expect(line).toBeGreaterThan(0);
+            await userEvent.click(buttons[index]!);
+            expect(Story.args.onGutter).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'pointerdown' }),
+                side,
+                line,
+            );
+            expect(Story.args.onGutter).toHaveBeenLastCalledWith(
+                expect.objectContaining({ type: 'click' }),
+                side,
+                line,
+            );
+
+            await userEvent.click(buttons[index]!, { modifiers: ['Shift'] });
+            expect(Story.args.onGutter).toHaveBeenLastCalledWith(
+                expect.objectContaining({ type: 'click', shiftKey: true }),
+                side,
+                line,
+            );
+        }
+    },
+);
+
+test.each([
+    ['split', Split, CursorSplitChanged],
+    ['unified', Unified, CursorUnifiedDeleted],
+])(
+    "the cursor's row is tinted and its code neither moves nor stops being selectable, %s",
+    async (_layout, Plain, Cursor) => {
+        await Plain.run();
+        const before = readCodeStarts();
+        await Cursor.run();
+        const after = readCodeStarts();
+        const row = getCursorRow();
+
+        expect(after).toEqual(before);
+        for (const code of row.querySelectorAll('code')) {
+            expect(getComputedStyle(code).userSelect).not.toBe('none');
+        }
+        const drawn = (line: Element) => line.querySelector('[class*="diffRowSplit"], [class*="diffRowUnified"]')!;
+        const other = [...document.querySelectorAll('[data-cursor-key]')].find(
+            line => line !== row && line.querySelector('code') !== null,
+        )!;
+        expect(getComputedStyle(drawn(row)).backgroundColor).not.toBe(getComputedStyle(drawn(other)).backgroundColor);
+        expect(document.querySelectorAll('[data-cursor="true"]')).toHaveLength(1);
+    },
+);
+
+test('every row names the cursor stop it is part of: a line its own, a row of a file on its way its header', async () => {
+    await CursorSplit.run();
+    const keys = [...document.querySelectorAll('[data-cursor-key]')].map(row => row.getAttribute('data-cursor-key'));
+    expect(keys.length).toBeGreaterThan(10);
+    expect(new Set(keys).size).toBe(keys.length);
+    // A file's end is passed over.
+    expect(document.querySelector('[class*="reviewDiffRow_end"]')!.parentElement!.hasAttribute('data-cursor-key')).toBe(
+        false,
+    );
+
+    await PatchPlaceholderSplit.run();
+    const header = document.querySelector('[data-cursor-key]')!.getAttribute('data-cursor-key');
+    const placeholders = document.querySelectorAll('[class*="reviewDiffRow_block"]');
+    expect(placeholders.length).toBeGreaterThan(20);
+    for (const placeholder of placeholders) {
+        expect(placeholder.parentElement!.getAttribute('data-cursor-key')).toBe(header);
     }
 });
+
+function getCursorRow() {
+    const row = document.querySelector('[data-cursor="true"]');
+    expect(row).not.toBeNull();
+    return row!;
+}
+
+/** The comment buttons, told from the numbers of the same name by the key they name. */
+function getCommentButtons(row: Element) {
+    return [...row.querySelectorAll('button[aria-keyshortcuts]')];
+}
+
+/** Where the code of every line starts, the first line's halves apart. */
+function readCodeStarts() {
+    return [...document.querySelectorAll('code')].map(code => code.getBoundingClientRect().left);
+}

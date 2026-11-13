@@ -1,9 +1,9 @@
 import type { AnchoredListViewport } from '../AnchoredList.vue';
 
 /**
- * Where the diff is being read, as a distance from its viewport's top (D42, D44): a third of the way down what shows
- * under the pinned header. It is never drawn; it decides the current file, which way a gap's lines come and which gap
- * E opens.
+ * Where the diff is being read, as a distance from its viewport's top (D42): a third of the way down what shows under
+ * the pinned header. It is never drawn; it decides which way a click on a gap's row shows its lines. The current file and
+ * what C, V and E act on are the line cursor's (D44).
  *
  * Near either end of the diff it slides, so that scrolling through passes it over every row, the first and the last
  * too: once the list can scroll less than the distance from the line to the viewport's bottom, the line moves down by

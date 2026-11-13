@@ -13,8 +13,9 @@ import {
     getReviewHeaderKey,
     getReviewRowPath,
 } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
-import type { DiffLayout } from './diff/buildDiffRows.js';
+import type { ReviewFileContent, ReviewGapDirection, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
+import type { DiffLayout, DiffLineSide, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
+import type { FileDiff } from './diff/computeFileDiff.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
 import ReviewDiffRow from './ReviewDiffRow.vue';
@@ -51,6 +52,8 @@ import { replayQueue } from './queue'`,
         `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has', badge: '<img src=x>' })`,
     );
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
+/** The change undone: two lines become one, which leaves a deleted line alone on its row. */
+const UNDONE_DIFF = computeFileDiff({ before: AFTER, after: BEFORE, ignoreWhitespace: false });
 
 const FILE = file('src/sync/engine.ts', 6, 3);
 /** 120 lines in a class, changed at 30, 70 and 85: a gap at its top, a long and a short one between hunks, one at its end. */
@@ -385,28 +388,95 @@ export const ExpansionResetNothingHidden: Story = {
     },
 };
 
-/** D43: a file of four-digit line numbers, split: the number column widens for the comment icon to stay inside it. */
-export const FourDigitsSplit: Story = {
-    render: () =>
-        renderRows(
-            fileRows(LONG_FILE, {
-                kind: 'lines',
-                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'split' }),
-            }),
-            { layout: 'split' },
+/** D43: a file of four-digit line numbers, split, the cursor on line 1100: the number column widens, the buttons after it. */
+export const FourDigitsSplit: Story = { render: () => renderLongRows('split') };
+
+/** D43: the same, unified: both number columns widen. */
+export const FourDigitsUnified: Story = { render: () => renderLongRows('unified') };
+
+/** CR120, D43: the line cursor on an unchanged line, split: the whole row tinted, a comment button in each half. */
+export const CursorSplit: Story = {
+    args: { onGutter: fn() },
+    render: args =>
+        renderCursor(lines('split'), line => line.layout === 'split' && line.left?.kind === 'context', args.onGutter),
+};
+
+/** A changed line under the cursor: both halves tinted over their red and green. */
+export const CursorSplitChanged: Story = {
+    args: { onGutter: fn() },
+    render: args =>
+        renderCursor(
+            lines('split'),
+            line => line.layout === 'split' && line.left?.kind === 'deleted' && line.right?.kind === 'added',
+            args.onGutter,
         ),
 };
 
-/** D43: the same, unified: both number columns widen. */
-export const FourDigitsUnified: Story = {
-    render: () =>
-        renderRows(
-            fileRows(LONG_FILE, {
-                kind: 'lines',
-                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'unified' }),
-            }),
-            { layout: 'unified' },
+/** An added line alone: the empty left half tinted too, its button at the same place, on the added line. */
+export const CursorSplitAdded: Story = {
+    args: { onGutter: fn() },
+    render: args => renderCursor(lines('split'), line => line.layout === 'split' && line.left === null, args.onGutter),
+};
+
+/** CR121: a deleted line alone: the empty right half's button on the deleted line, the one C takes. */
+export const CursorSplitDeleted: Story = {
+    args: { onGutter: fn() },
+    render: args =>
+        renderCursor(
+            lines('split', undefined, UNDONE_DIFF),
+            line => line.layout === 'split' && line.right === null,
+            args.onGutter,
         ),
+};
+
+/** CR123: unified, a deleted line: one button after the numbers, before the sign, on its older number. */
+export const CursorUnifiedDeleted: Story = {
+    args: { onGutter: fn() },
+    render: args =>
+        renderCursor(lines('unified'), line => line.layout === 'unified' && line.sign === '-', args.onGutter),
+};
+
+/** Unified, an added line under the cursor. */
+export const CursorUnifiedAdded: Story = {
+    args: { onGutter: fn() },
+    render: args =>
+        renderCursor(lines('unified'), line => line.layout === 'unified' && line.sign === '+', args.onGutter),
+};
+
+/** A line a comment is being written on under the cursor: its own tint, which the cursor's doesn't darken past AA. */
+export const CursorCommented: Story = {
+    render: () => {
+        const rows = fileRows(FILE, { kind: 'lines', rows: lines('split') });
+        return renderRows(rows, {
+            commented: [{ side: 'after', start: 3, end: 5 }],
+            cursorKey: findLineKey(rows, line => line.layout === 'split' && line.right?.line === 4),
+        });
+    },
+};
+
+/** CR126: the cursor on a gap between hunks: the arrow a click and E take lit, the count saying what it shows. */
+export const CursorGap: Story = {
+    render: () => {
+        const rows = fileRows(GAPS_FILE, {
+            kind: 'lines',
+            rows: buildFileLineRows({ path: GAPS_FILE.path, diff: GAPS_DIFF, layout: 'unified' }),
+        });
+        return renderRows(rows, {
+            cursorKey: rows.find(row => row.kind === 'gap' && row.hidden === 33)?.key,
+            towardGap: () => 'up',
+        });
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Show 20 above line 67', { exact: true })).toBeVisible();
+    },
+};
+
+/** CR124: the cursor on a thread: its focused look. */
+export const CursorThread: Story = {
+    render: () => {
+        const thread = { ...createThreadRowSample({ kind: 'onLine', inline: 'right' }), key: 'thread' };
+        return renderRows([thread], { cursorKey: thread.key });
+    },
 };
 
 /** CR62: GitHub took its viewed mark off since the last visit. */
@@ -614,8 +684,34 @@ export const OnlyWhitespace: Story = {
 /** A new file with nothing in it. */
 export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
 
-function lines(layout: DiffLayout, syntax?: FileSyntax) {
-    return buildFileLineRows({ path: FILE.path, diff: DIFF, layout, syntax });
+function lines(layout: DiffLayout, syntax?: FileSyntax, diff: FileDiff = DIFF) {
+    return buildFileLineRows({ path: FILE.path, diff, layout, syntax });
+}
+
+/** {@link LONG_FILE}'s rows, the cursor on its changed line. */
+function renderLongRows(layout: DiffLayout) {
+    const rows = fileRows(LONG_FILE, {
+        kind: 'lines',
+        rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout }),
+    });
+    const changed = (line: DiffSplitRow | DiffUnifiedRow) =>
+        line.layout === 'split' ? line.right?.kind === 'added' : line.sign === '+';
+    return renderRows(rows, { layout, cursorKey: findLineKey(rows, changed) });
+}
+
+/** {@link FILE}'s rows with the line cursor on the first line that matches, its comment buttons reporting. */
+function renderCursor(
+    lineRows: readonly ReviewRow[],
+    match: (line: DiffSplitRow | DiffUnifiedRow) => boolean,
+    onGutter: GutterHandler | undefined,
+) {
+    const rows = fileRows(FILE, { kind: 'lines', rows: lineRows });
+    return renderRows(rows, { cursorKey: findLineKey(rows, match), onGutter });
+}
+
+/** The key of the first line row that matches. */
+function findLineKey(rows: readonly ReviewRow[], match: (line: DiffSplitRow | DiffUnifiedRow) => boolean) {
+    return rows.find(row => row.kind === 'line' && match(row.line))?.key;
 }
 
 async function loadTokens() {
@@ -680,11 +776,19 @@ interface RenderRowsOptions {
     readonly pushed?: boolean;
     /** The change a submodule's row shows. */
     readonly submodule?: ReviewSubmoduleChange;
+    /** The row holding the line cursor (D44). */
+    readonly cursorKey?: string;
+    /** The hunk a click on a gap shows lines toward. */
+    readonly towardGap?: () => ReviewGapDirection;
+    /** Told what happens to a line's number or a comment button. */
+    readonly onGutter?: GutterHandler;
 }
+
+type GutterHandler = (event: MouseEvent, side: DiffLineSide, line: number) => void;
 
 function renderRows(
     rows: readonly ReviewRow[],
-    { commented, layout, currentPath, pushed, submodule }: RenderRowsOptions = {},
+    { commented, layout, currentPath, pushed, submodule, cursorKey, towardGap, onGutter }: RenderRowsOptions = {},
 ) {
     return {
         components: { ReviewDiffRow },
@@ -695,9 +799,12 @@ function renderRows(
             layout,
             pushed,
             submodule,
+            cursorKey,
+            towardGap,
             isCurrent,
+            onGutter,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :submodule="row.kind === 'submodule' ? submodule : null" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :cursor="row.key === cursorKey" :toward-gap="towardGap" :submodule="row.kind === 'submodule' ? submodule : null" @gutter="onGutter" /></div>`,
     };
 
     function isCurrent(row: ReviewRow) {
