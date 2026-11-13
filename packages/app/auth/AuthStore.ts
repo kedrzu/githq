@@ -478,7 +478,12 @@ export const AuthStore = defineService({
             }
 
             const scopes = body.scopes.filter(scope => typeof scope === 'string');
-            return { accessToken: body.accessToken, scopes };
+            return {
+                accessToken: body.accessToken,
+                refreshToken: typeof body.refreshToken === 'string' ? body.refreshToken : null,
+                expiresIn: typeof body.expiresIn === 'number' ? body.expiresIn : null,
+                scopes,
+            };
         }
 
         function fail(failure: SignInFailure): SignInResult {
