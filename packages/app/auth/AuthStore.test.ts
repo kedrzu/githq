@@ -11,6 +11,11 @@ import {
     OAUTH_TOKEN_PATH,
     SIGNED_IN_HINT_COOKIE,
 } from '@githq/github/oauth.js';
+import {
+    USAGE_STATISTICS_FIELD,
+    USAGE_STATISTICS_OFF_KEY,
+    USAGE_STATISTICS_OFF_VALUE,
+} from '@githq/github/usageStatistics.js';
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
@@ -227,6 +232,24 @@ test('signing out revokes the token at GitHub through the Worker, behind the sig
     auth.signOut();
     await Promise.resolve();
     expect(github.revoked).toHaveLength(1);
+});
+
+test('with usage statistics off on this device, the token exchange and the revocation tell the Worker not to count them', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES });
+    const { auth, browser } = setup(github, { [USAGE_STATISTICS_OFF_KEY]: USAGE_STATISTICS_OFF_VALUE });
+
+    auth.startSignIn('/');
+    const state = new URL(browser.navigatedTo[0] ?? '', ORIGIN).searchParams.get('state') ?? '';
+    await auth.completeSignIn({ code: 'the-code', state });
+    expect(github.exchanges).toEqual([
+        { code: 'the-code', redirectUri: `${ORIGIN}${OAUTH_CALLBACK_PATH}`, [USAGE_STATISTICS_FIELD]: false },
+    ]);
+
+    auth.signOut();
+    await waitUntil(() => github.revoked.length > 0);
+    expect(github.revoked).toEqual([{ method: 'POST', body: { token: 'gho_new', [USAGE_STATISTICS_FIELD]: false } }]);
+    // The flag is the device's, not the account's: signing out keeps it.
+    expect(browser.local.get(USAGE_STATISTICS_OFF_KEY)).toBe(USAGE_STATISTICS_OFF_VALUE);
 });
 
 test('signing out works offline: a revocation that cannot reach the Worker neither throws nor keeps the session', async () => {

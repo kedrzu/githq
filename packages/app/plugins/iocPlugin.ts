@@ -10,6 +10,7 @@ import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
+import { UsageStatisticsFlag } from '@/settings/UsageStatisticsFlag.js';
 import { NewVersion } from '@/shell/NewVersion.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
@@ -77,4 +78,6 @@ function startServices(container: Container) {
     container.resolve(ProjectViewAnswers);
     // Keeps the settings in the user's settings repository once they turn it on; quiet while it is off.
     container.resolve(SettingsSync);
+    // Keeps the device's usage statistics opt-out in step with the account's setting, for the pages without one.
+    container.resolve(UsageStatisticsFlag);
 }
