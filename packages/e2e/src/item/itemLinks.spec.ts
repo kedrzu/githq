@@ -183,13 +183,13 @@ test('a link to a comment of a pull request keeps it in view while the review th
     await expect(item.linkedComment).toBeInViewport();
 
     // The user scrolls: the comment lets go, and the thread stays where they put it.
-    const anchored = await getScrollTop(item.timeline);
-    await item.timeline.hover();
+    const anchored = await getScrollTop(item.columns);
+    await item.columns.hover();
     await page.mouse.wheel(0, -400);
-    await expect.poll(() => getScrollTop(item.timeline)).toBeLessThan(anchored);
-    const scrolled = await getScrollTop(item.timeline);
+    await expect.poll(() => getScrollTop(item.columns)).toBeLessThan(anchored);
+    const scrolled = await getScrollTop(item.columns);
     await page.evaluate(() => new Promise(requestAnimationFrame));
-    expect(await getScrollTop(item.timeline)).toBe(scrolled);
+    expect(await getScrollTop(item.columns)).toBe(scrolled);
 });
 
 test('a link to a comment on the code opens its resolved thread once the threads are in, in view and marked; one to a review its card', async ({
@@ -251,9 +251,9 @@ test('Back to an address naming a comment returns to where the item was scrolled
 
     // The user scrolls, which lets the comment go, up near the top: the description's link still in full view, so
     // clicking it scrolls nothing.
-    await item.timeline.hover();
+    await item.columns.hover();
     await page.mouse.wheel(0, -100);
-    await item.timeline.evaluate((element, top) => {
+    await item.columns.evaluate((element, top) => {
         element.scrollTop = top;
     }, SCROLLED);
     const link = item.root.getByRole('link', { name: '#30' });
@@ -267,10 +267,10 @@ test('Back to an address naming a comment returns to where the item was scrolled
     await expect(page).toHaveURL(`/acme/web/issues/31#${folded}`);
     await expect(item.title).toHaveText(LINKED);
     await expect(item.linkedComment).toBeAttached();
-    await expect.poll(() => getScrollTop(item.timeline)).toBe(SCROLLED);
+    await expect.poll(() => getScrollTop(item.columns)).toBe(SCROLLED);
     // And no scroll to the comment after it.
     await page.evaluate(() => new Promise(requestAnimationFrame));
-    expect(await getScrollTop(item.timeline)).toBe(SCROLLED);
+    expect(await getScrollTop(item.columns)).toBe(SCROLLED);
 });
 
 function getIds(elements: Locator) {

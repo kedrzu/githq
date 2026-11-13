@@ -243,3 +243,33 @@ is ticked. This supersedes round 4's right line on the summary (the line is gone
 - [x] Captions: F18 (`NyyOn`) one surface, the edge unseen until hovered, 32 px either side, 1000 px on a page and 1300
   px in the panel; F19 (`JyZIA`) 40 → 32 px from the edge; F20 (`r2WqoI`) the 1300 px panel; the overview
   (`hbsg2`, `App · Overview — Direction D`) "from 1000 px" → "from 1000 px on a page (1300 px in the panel)".
+
+## Round 6 · agent brief
+
+Asked by the owner (`.context/specs/2026-11-13-item-two-columns-one-scroll.md`, brief
+`.context/item-one-scroll-brief.md`): in two columns the summary and the timeline scrolled on their own, the wheel
+doing nothing over a summary that fit; in the panel 64 px between the columns read as too far; on a page the pair
+hugged the left edge. Now the two scroll as one, the summary sticky in that scroll (at the top while it fits, its
+bottom kept at the view's bottom once taller), which a static screen doesn't show, so the captions say it. In the
+panel both columns' content sits 24 px from every edge, 48 px between them, the thread still at most 920 px. A page
+stands the two in a box of its own, centred, 1424 px by default (440 + 920 + 2·32), from 920 px to the width there
+is, its side edges dragged symmetrically and kept on this device, the summary's split inside it, the thread filling
+the timeline. The box's edges are drawn like the edge between the columns, only while hovered, dragged or focused, so
+nothing is drawn for them. Built in the same PR: every entry is ticked.
+
+- [x] New `Item / Summary · pull request · panel` (`nLZjy`): an instance of `NjMaL` with padding 32 → 24, in
+  `Item view arrangements` (`a2Q8PJ`) rather than under `NjMaL` in `Item sections` (`Pstd6`), where it would have
+  grown `App · Components` into the row below. No issue variant: no panel screen shows the issue summary.
+- [x] F20 (`uAkdB`): summary `YV3yO` (an instance of `NjMaL`) → `c3xHr` (an instance of `nLZjy`, height fill); timeline
+  column `KQb49` padding 32 → 24, its thread (`abZLC`) 796 → 812 px.
+- [x] F19: `Columns` (`N8qyY0`) justify start → center; new `Box` (`POHbt`), 1424 px wide, full height, no stroke,
+  holding the summary (`t4CTZx`) and the timeline column (`GXvmg`, its scroll `[-798,32,32,32]` kept), 130 px of
+  `$bg-item` either side; `Timeline` (`rK9we`) width 920 → fill (920 px at the box's default width).
+- [x] F18 (`lsBpS`): no change, its item area is narrower than 1424 px, so the box takes the whole width and the thread
+  (`H5vD8C`) already fills the timeline.
+- [x] Captions: F18 (`NyyOn`) one scroll and the sticky summary, the thread filling the timeline (was "capped at 920
+  px"), the 1424 px box here taking the whole width, the edges drawn only while hovered, dragged or focused; F19
+  (`JyZIA`) the box centred, 130 + 130 px, its side edges dragged symmetrically from 920 px to the width there is,
+  kept on this device, the summary's edge splitting it (360–560), the thread filling the timeline (was "grows to the
+  920 px cap, 292 px empty on the right"); F20 (`r2WqoI`) 32 → 24 px from every edge, 48 px between the columns, the
+  thread 812 px (at most 920, left-aligned), one scroll, no box in the panel.

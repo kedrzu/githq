@@ -2,12 +2,14 @@ import { composeStories } from '@storybook/vue3';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import {
     D1_ISSUE_DETAIL,
     F1_PULL_REQUEST,
     F1_PULL_REQUEST_DETAIL,
     F3_PULL_REQUEST,
 } from '@/testing/sampleItemDetails.js';
+import { CHANGES_REQUESTED_REVIEW, DB_THREAD, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
@@ -17,6 +19,7 @@ import * as stories from './ItemView.stories.js';
 const {
     ContributorView,
     IssueInPanel,
+    IssueLongThreadOnPage,
     IssueOnNarrowPage,
     IssueOnPage,
     IssueOnPageNoRoomForPanel,
@@ -36,6 +39,7 @@ const {
     PullRequestAutoMergeOffered,
     PullRequestAutoMergeOn,
     PullRequestInQueue,
+    PullRequestLongThreadOnShortPage,
     PullRequestOptionalFailing,
     PullRequestRerunNamesActions,
     PullRequestRerunOutsideActions,
@@ -368,42 +372,84 @@ test('R brings the composer into view leaving the space the end of the scroll le
 });
 
 test.each([
-    ['F18: a page', () => PullRequestFailingPage],
-    ['F20: a panel dragged to 1400px', () => PullRequestFailingWidePanel],
+    ['F18: a page', () => PullRequestFailingPage, 32],
+    ['F20: a panel dragged to 1400px', () => PullRequestFailingWidePanel, 24],
 ])(
-    '%s, 1000px wide or more on a page, 1300px in the panel: the summary and the timeline stand side by side on one surface, the summary pinned while the timeline scrolls',
-    async (_, story) => {
+    '%s, 1000px wide or more on a page, 1300px in the panel: the summary and the timeline stand side by side on one surface and scroll as one, wherever the pointer is',
+    async (_, story, inset) => {
         await useShortWideWindow();
         await story().run();
-        const summary = getScrollContainer('item-summary');
-        const timeline = getScrollContainer('item-timeline');
+        const columns = getColumnsScroll();
+        const summary = getColumn('summary');
+        const timeline = getColumn('timeline');
         const [left, right] = [getSummaryColumn().getBoundingClientRect(), timeline.getBoundingClientRect()];
         expect(left.width).toBe(440);
         expect(right.left).toBe(left.right);
         expect(right.top).toBe(left.top);
-        // One surface, no line between the columns, the edge midway between their content.
+        // One surface, no line between the columns, the edge midway between their content, as far as from every edge.
         expect(getComputedStyle(getSummaryColumn()).borderRightWidth).toBe('0px');
         expect(getComputedStyle(getSummaryColumn()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
         expect(summary.getBoundingClientRect().right).toBe(left.right);
-        expect(getComputedStyle(summary).paddingRight).toBe('32px');
-        expect(getComputedStyle(timeline).paddingLeft).toBe('32px');
+        for (const column of [summary, timeline]) {
+            const style = getComputedStyle(column);
+            expect([style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]).toEqual(
+                Array.from({ length: 4 }, () => `${inset}px`),
+            );
+        }
         // The heading and the merge block in the summary, the thread in the timeline.
-        expect(summary.contains(page.getByRole('heading', { level: 1 }).element())).toBe(true);
-        expect(timeline.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
-
         const title = page.getByRole('heading', { level: 1 }).element();
-        const titleTop = title.getBoundingClientRect().top;
-        timeline.scrollTop = 400;
-        expect(timeline.scrollTop).toBeGreaterThan(0);
-        expect(getContentScroll().scrollTop).toBe(0);
-        expect(title.getBoundingClientRect().top).toBe(titleTop);
+        const box = page.getByRole('textbox', { name: 'Comment' }).element();
+        expect(summary.contains(title)).toBe(true);
+        expect(timeline.contains(box)).toBe(true);
+
+        // One scroll: under the pointer, over the summary or the thread, nothing else scrolls first.
+        expect(document.querySelectorAll('[data-route-scroll]')).toHaveLength(1);
+        expect(getScrollingAncestor(elementAtCentre(title))).toBe(columns);
+        expect(getScrollingAncestor(elementAtCentre(timeline.querySelector('p') ?? timeline))).toBe(columns);
+        const threadTop = box.getBoundingClientRect().top;
+        columns.scrollTop = 100;
+        expect(columns.scrollTop).toBe(100);
+        expect(box.getBoundingClientRect().top).toBe(threadTop - 100);
     },
 );
 
-test('F19: in two columns the timeline stays at the reading width, 32px from the summary, the rest of the width empty', async () => {
+test('a summary shorter than the view stays at the top while the thread scrolls', async () => {
+    await IssueLongThreadOnPage.run();
+    const columns = getColumnsScroll();
+    const summary = getColumn('summary');
+    expect(summary.getBoundingClientRect().height).toBeLessThan(columns.clientHeight);
+    const summaryTop = summary.getBoundingClientRect().top;
+
+    columns.scrollTop = columns.scrollHeight;
+    expect(columns.scrollTop).toBeGreaterThan(0);
+    expect(summary.getBoundingClientRect().top).toBe(summaryTop);
+});
+
+test('a summary taller than the view scrolls with the thread until its bottom meets the bottom of the view, then stays there', async () => {
+    await PullRequestLongThreadOnShortPage.run();
+    const columns = getColumnsScroll();
+    const summary = getColumn('summary');
+    const view = columns.getBoundingClientRect();
+    const height = summary.getBoundingClientRect().height;
+    expect(height).toBeGreaterThan(columns.clientHeight);
+    const summaryTop = summary.getBoundingClientRect().top;
+
+    columns.scrollTop = 50;
+    await expect.poll(() => summary.getBoundingClientRect().top).toBe(summaryTop - 50);
+
+    // Past where its bottom shows: it stays there however far the thread goes.
+    const stuckAt = height - columns.clientHeight;
+    expect(columns.scrollHeight - columns.clientHeight).toBeGreaterThan(stuckAt + 100);
+    columns.scrollTop = stuckAt + 50;
+    await expect.poll(() => summary.getBoundingClientRect().bottom).toBeCloseTo(view.top + columns.clientHeight, 0);
+    columns.scrollTop = columns.scrollHeight;
+    await expect.poll(() => summary.getBoundingClientRect().bottom).toBeCloseTo(view.top + columns.clientHeight, 0);
+});
+
+test('F19: in two columns on a page the thread fills the timeline, at the reading width in the default box, 32px from the summary', async () => {
+    window.localStorage.removeItem(PAGE_WIDTH_KEY);
     await StackOfTenOnPage.run();
-    const timeline = getScrollContainer('item-timeline');
-    const thread = timeline.firstElementChild;
+    const thread = getColumn('timeline').firstElementChild;
     if (!thread) {
         throw new Error('The timeline holds no thread.');
     }
@@ -412,12 +458,54 @@ test('F19: in two columns the timeline stays at the reading width, 32px from the
     expect(thread.getBoundingClientRect().left - getSummaryColumn().getBoundingClientRect().right).toBe(32);
 });
 
+test("on a page the columns stand in a box centred in the width: its edge widens it on both sides, the width kept on this device; the summary's edge moves neither side", async () => {
+    window.localStorage.setItem(PAGE_WIDTH_KEY, '1200');
+    onTestFinished(() => window.localStorage.removeItem(PAGE_WIDTH_KEY));
+    onTestFinished(() => window.localStorage.removeItem(SUMMARY_WIDTH_KEY));
+    await PullRequestFailingPage.run();
+    const columns = getColumnsScroll();
+    const box = getPageBox();
+    const space = () => {
+        const outer = columns.getBoundingClientRect();
+        const inner = box.getBoundingClientRect();
+        return { left: inner.left - outer.left, right: outer.left + columns.clientWidth - inner.right };
+    };
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(1200);
+    expect(space().left).toBeGreaterThan(0);
+    expect(Math.abs(space().left - space().right)).toBeLessThanOrEqual(1);
+
+    const drag = pressEdge(page.getByRole('separator', { name: 'Resize the item' }).last().element());
+    drag.moveBy(50);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(1300);
+    drag.release();
+    expect(Math.abs(space().left - space().right)).toBeLessThanOrEqual(1);
+    await expect.poll(() => window.localStorage.getItem(PAGE_WIDTH_KEY)).toBe('1300');
+
+    // The summary's edge moves only the edge between the columns. Once the split has laid its panels out in the wider
+    // box (a frame for its observer, a tick for the width put back).
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    const { left, right } = box.getBoundingClientRect();
+    const split = press(page.getByRole('separator', { name: 'Resize the summary' }).element());
+    split.moveBy(60);
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(500);
+    split.release();
+    expect(box.getBoundingClientRect().left).toBe(left);
+    expect(box.getBoundingClientRect().right).toBe(right);
+
+    // Opened again, the item has the box's width kept.
+    await PullRequestFailingPage.run();
+    await expect.poll(() => getPageBox().getBoundingClientRect().width).toBe(1300);
+});
+
 test("the summary's column is resized by dragging its edge or by the arrow keys on it, from 360 to 560 px, the width kept on this device and the timeline following it", async () => {
     window.localStorage.removeItem(SUMMARY_WIDTH_KEY);
+    window.localStorage.removeItem(PAGE_WIDTH_KEY);
     onTestFinished(() => window.localStorage.removeItem(SUMMARY_WIDTH_KEY));
     await PullRequestFailingPage.run();
     const edge = page.getByRole('separator', { name: 'Resize the summary' });
-    const threadLeft = () => getScrollContainer('item-timeline').firstElementChild?.getBoundingClientRect().left;
+    const threadLeft = () => getColumn('timeline').firstElementChild?.getBoundingClientRect().left;
+    const boxLeft = getPageBox().getBoundingClientRect().left;
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(440);
 
     const drag = press(edge.element());
@@ -425,9 +513,9 @@ test("the summary's column is resized by dragging its edge or by the arrow keys 
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(500);
     drag.release();
     await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('500');
-    expect(threadLeft()).toBe(500 + 32);
+    expect(threadLeft()).toBe(boxLeft + 500 + 32);
 
-    // A tenth of the 1440 px a press, within the range.
+    // A tenth of the box a press, within the range.
     edge.element().focus();
     await userEvent.keyboard('{ArrowRight}');
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(560);
@@ -449,28 +537,76 @@ test.each([
     '%s, narrower than 1000px on a page or 1300px in the panel: the summary comes first and the timeline under it, scrolling as one',
     async (_, story) => {
         await story().run();
-        const summary = getScrollContainer('item-summary');
-        const timeline = getScrollContainer('item-timeline');
+        const summary = getColumn('summary');
+        const timeline = getColumn('timeline');
         expect(timeline.getBoundingClientRect().top).toBeGreaterThan(summary.getBoundingClientRect().bottom);
         expect(timeline.getBoundingClientRect().left).toBe(summary.getBoundingClientRect().left);
         const scroll = getContentScroll();
         expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
         expect(getComputedStyle(timeline).overflowY).toBe('visible');
+        expect(document.querySelectorAll('[data-route-scroll]')).toHaveLength(1);
     },
 );
 
-test('in two columns R brings the composer into view in the timeline, which scrolls, not the summary', async () => {
+test('in two columns R brings the composer into view in the one scroll, leaving the space the end of the scroll leaves', async () => {
     await useShortWideWindow();
     await IssueOnPage.run();
-    const timeline = getScrollContainer('item-timeline');
-    timeline.scrollTop = 0;
+    const columns = getColumnsScroll();
+    columns.scrollTop = 0;
 
     await userEvent.keyboard('r');
     const box = page.getByRole('textbox', { name: 'Comment' });
     await expect.element(box).toHaveFocus();
-    expect(timeline.scrollTop).toBeGreaterThan(0);
-    expect(isInView(box.element(), timeline)).toBe(true);
-    expect(getScrollContainer('item-summary').scrollTop).toBe(0);
+    expect(columns.scrollTop).toBeGreaterThan(0);
+    expect(isInView(box.element(), columns)).toBe(true);
+    expect(columns.scrollTop).toBeCloseTo(columns.scrollHeight - columns.clientHeight, 0);
+});
+
+test('in two columns J on a code thread brings the next one into view in the one scroll', async () => {
+    await PullRequestLongThreadOnShortPage.run({
+        args: {
+            ...PullRequestLongThreadOnShortPage.args,
+            detail: {
+                ...F1_PULL_REQUEST_DETAIL,
+                reviewSummaries: [...F1_PULL_REQUEST_DETAIL.reviewSummaries, CHANGES_REQUESTED_REVIEW.review],
+            },
+            reviewThreads: [DB_THREAD, SCHEMA_THREAD],
+            reviewWriting: new FakeReviewWriting(),
+        },
+    });
+    // dkim's code comment, resolved: opened, a code thread too.
+    await userEvent.click(page.getByRole('button', { name: /^Resolved/u }));
+    const columns = getColumnsScroll();
+    const first = page.getByRole('group', { name: 'Thread by sofiab on src/store/db.ts' }).element();
+    const next = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' }).element();
+    if (!(first instanceof HTMLElement)) {
+        throw new TypeError('The code thread is no element to focus.');
+    }
+    // The first in view at the bottom of the scroll, the next under it out of view.
+    columns.scrollTop += first.getBoundingClientRect().bottom - columns.getBoundingClientRect().bottom;
+    first.focus({ preventScroll: true });
+    expect(isInView(next, columns)).toBe(false);
+
+    await userEvent.keyboard('j');
+    await expect.element(next).toHaveFocus();
+    expect(isInView(next, columns)).toBe(true);
+});
+
+test('the summary moves between one column and two as it is: a picker open in it stays open', async () => {
+    await IssueOnNarrowPage.run();
+    await userEvent.keyboard('l');
+    const picker = page.getByRole('dialog');
+    await expect.element(picker).toBeVisible();
+    const summary = getColumn('summary');
+
+    const frame = document.querySelector('article')?.parentElement;
+    if (!frame) {
+        throw new Error('The item is in no frame.');
+    }
+    frame.style.width = '1440px';
+    await expect.poll(() => document.querySelector('[data-route-scroll^="item-columns:"]')).not.toBeNull();
+    expect(getSummaryColumn().contains(summary)).toBe(true);
+    await expect.element(picker).toBeVisible();
 });
 
 test('Quote reply of a long comment leaves its HTML comments out and brings the end of the box, where the cursor is, into view', async () => {
@@ -594,10 +730,12 @@ async function useShortWideWindow() {
 
 /** Where `LocalPreferences` keeps the summary's width. */
 const SUMMARY_WIDTH_KEY = 'githq.panelWidth.itemSummary';
+/** Where it keeps the width of a page's box. */
+const PAGE_WIDTH_KEY = 'githq.panelWidth.itemPage';
 
-/** In two columns, the summary's column: the panel of the split holding the summary. */
+/** In two columns, the summary's column: the panel of the split holding the summary (its place, sticky in it). */
 function getSummaryColumn() {
-    const column = getScrollContainer('item-summary').parentElement?.parentElement;
+    const column = getColumn('summary').parentElement?.parentElement?.parentElement;
     if (!column) {
         throw new Error('The summary is in no column.');
     }
@@ -605,10 +743,61 @@ function getSummaryColumn() {
     return column;
 }
 
+/** On a page in two columns, the box the columns stand in: what its edges are drawn in. */
+function getPageBox() {
+    const box = page.getByRole('separator', { name: 'Resize the item' }).first().element().parentElement;
+    if (!box) {
+        throw new Error('The page has no box.');
+    }
+
+    return box;
+}
+
+/** The element the pointer is over at the centre of `element`, as the wheel finds it. */
+function elementAtCentre(element: Element) {
+    const { left, top, width, height } = element.getBoundingClientRect();
+    const found = document.elementFromPoint(left + width / 2, top + height / 2);
+    if (!found) {
+        throw new Error('Nothing is under the pointer.');
+    }
+
+    return found;
+}
+
+/** The nearest element around `element`, itself included, that scrolls vertically: what the wheel over it scrolls. */
+function getScrollingAncestor(element: Element) {
+    for (let current: Element | null = element; current; current = current.parentElement) {
+        const { overflowY } = getComputedStyle(current);
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+            return current;
+        }
+    }
+
+    return null;
+}
+
+/** Presses the primary button on a box's edge (`WidthHandle`), as the mouse does (pointer 1). */
+function pressEdge(handle: Element) {
+    const { left: x, top, height } = handle.getBoundingClientRect();
+    const init = { pointerId: 1, button: 0, bubbles: true, clientY: top + height / 2 };
+    handle.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
+
+    return {
+        /** Moves the pointer `by` pixels from where it was pressed. */
+        moveBy(by: number) {
+            handle.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x + by }));
+        },
+        release() {
+            handle.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x }));
+        },
+    };
+}
+
 /** Presses the mouse on `handle`, as Reka hears it: it listens on the body and takes no width to be clicked by a tool. */
 function press(handle: Element) {
-    const { left: x, top, height } = handle.getBoundingClientRect();
-    const y = top + height / 2;
+    const { left: x, top, bottom } = handle.getBoundingClientRect();
+    // Within the window: an edge running the whole scroll goes on below it.
+    const y = (top + Math.min(bottom, window.innerHeight)) / 2;
     document.body.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
     handle.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
 
@@ -628,7 +817,22 @@ function getContentScroll() {
     return getScrollContainer('item-main');
 }
 
-/** The content's container `kind` (`item-main`, `item-summary`, `item-timeline`), by what it shows. */
+/** In two columns, the one scroll of both columns. */
+function getColumnsScroll() {
+    return getScrollContainer('item-columns');
+}
+
+/** The summary or the timeline, wherever the layout has them. */
+function getColumn(kind: 'summary' | 'timeline') {
+    const column = document.querySelector<HTMLElement>(`[data-item-column="${kind}"]`);
+    if (!column) {
+        throw new Error(`The item has no ${kind}.`);
+    }
+
+    return column;
+}
+
+/** The content's scrolling container `kind` (`item-main` in one column, `item-columns` in two), by what it shows. */
 function getScrollContainer(kind: string) {
     const container = document.querySelector<HTMLElement>(`[data-route-scroll^="${kind}:"]`);
     if (!container) {
@@ -780,7 +984,7 @@ test('the stack map shows only for a pull request in a stack: in two columns at 
     const map = page.getByRole('region', { name: 'The stack' });
     await expect.element(map).toBeVisible();
     expect(map.all()).toHaveLength(1);
-    expect(getScrollContainer('item-summary').contains(map.element())).toBe(true);
+    expect(getColumn('summary').contains(map.element())).toBe(true);
     expect(stackBarToggle().query()).toBeNull();
 
     await PullRequestFailing.run();

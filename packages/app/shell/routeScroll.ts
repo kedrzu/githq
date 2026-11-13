@@ -177,8 +177,8 @@ function scrollToAnchor() {
 
 /**
  * The container around the element that scrolls in the layout on screen: one may hold another that scrolls only in
- * another layout (an opened item's timeline, its own column only when the item is wide, `item/ItemView.vue`). `null`
- * when it is in none.
+ * another layout (a list's columns, each scrolling on its own on a board, `lists/ListView.vue`). `null` when it is in
+ * none.
  */
 function findScrollingContainer(element: Element) {
     let container = element.closest<HTMLElement>(`[${ATTRIBUTE}]`);
