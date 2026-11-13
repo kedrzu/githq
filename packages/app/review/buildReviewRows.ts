@@ -545,7 +545,9 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads, expansion
         placement => placement.gap.afterStart,
     );
     for (const placement of threads) {
-        if (placement.kind !== 'onLine' && placement.kind !== 'hiddenLine') {
+        if (placement.kind === 'fileTop') {
+            result.push(createThreadRow(path, placement, getInlineSide(placement.side, layout)));
+        } else if (placement.kind !== 'onLine' && placement.kind !== 'hiddenLine') {
             result.push(createThreadRow(path, placement, null));
         }
     }

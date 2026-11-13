@@ -31,6 +31,7 @@ const {
     PullRequestFailing,
     PullRequestFailingPage,
     PullRequestFailingWidePanel,
+    PullRequestFailingWiderPanel,
     PullRequestMergeabilityUnknown,
     PullRequestAutoMergeOffered,
     PullRequestAutoMergeOn,
@@ -368,9 +369,9 @@ test('R brings the composer into view leaving the space the end of the scroll le
 
 test.each([
     ['F18: a page', () => PullRequestFailingPage],
-    ['F20: a panel dragged to 1100px', () => PullRequestFailingWidePanel],
+    ['F20: a panel dragged to 1400px', () => PullRequestFailingWidePanel],
 ])(
-    '%s, 1000px wide or more: the summary and the timeline stand side by side, the summary pinned while the timeline scrolls',
+    '%s, 1000px wide or more on a page, 1300px in the panel: the summary and the timeline stand side by side on one surface, the summary pinned while the timeline scrolls',
     async (_, story) => {
         await useShortWideWindow();
         await story().run();
@@ -380,7 +381,12 @@ test.each([
         expect(left.width).toBe(440);
         expect(right.left).toBe(left.right);
         expect(right.top).toBe(left.top);
-        expect(getComputedStyle(getSummaryColumn()).borderRightWidth).toBe('1px');
+        // One surface, no line between the columns, the edge midway between their content.
+        expect(getComputedStyle(getSummaryColumn()).borderRightWidth).toBe('0px');
+        expect(getComputedStyle(getSummaryColumn()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+        expect(summary.getBoundingClientRect().right).toBe(left.right);
+        expect(getComputedStyle(summary).paddingRight).toBe('32px');
+        expect(getComputedStyle(timeline).paddingLeft).toBe('32px');
         // The heading and the merge block in the summary, the thread in the timeline.
         expect(summary.contains(page.getByRole('heading', { level: 1 }).element())).toBe(true);
         expect(timeline.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
@@ -394,7 +400,7 @@ test.each([
     },
 );
 
-test('F19: in two columns the timeline stays at the reading width, 40px from the summary, the rest of the width empty', async () => {
+test('F19: in two columns the timeline stays at the reading width, 32px from the summary, the rest of the width empty', async () => {
     await StackOfTenOnPage.run();
     const timeline = getScrollContainer('item-timeline');
     const thread = timeline.firstElementChild;
@@ -403,7 +409,7 @@ test('F19: in two columns the timeline stays at the reading width, 40px from the
     }
 
     expect(thread.getBoundingClientRect().width).toBe(920);
-    expect(thread.getBoundingClientRect().left - getSummaryColumn().getBoundingClientRect().right).toBe(40);
+    expect(thread.getBoundingClientRect().left - getSummaryColumn().getBoundingClientRect().right).toBe(32);
 });
 
 test("the summary's column is resized by dragging its edge or by the arrow keys on it, from 360 to 560 px, the width kept on this device and the timeline following it", async () => {
@@ -419,7 +425,7 @@ test("the summary's column is resized by dragging its edge or by the arrow keys 
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(500);
     drag.release();
     await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('500');
-    expect(threadLeft()).toBe(500 + 40);
+    expect(threadLeft()).toBe(500 + 32);
 
     // A tenth of the 1440 px a press, within the range.
     edge.element().focus();
@@ -437,9 +443,10 @@ test("the summary's column is resized by dragging its edge or by the arrow keys 
 
 test.each([
     ['F21: the panel', () => PullRequestFailing],
+    ['the panel dragged to 1100px', () => PullRequestFailingWiderPanel],
     ['F22: a page of a 900px window', () => IssueOnNarrowPage],
 ])(
-    '%s, narrower than 1000px: the summary comes first and the timeline under it, scrolling as one',
+    '%s, narrower than 1000px on a page or 1300px in the panel: the summary comes first and the timeline under it, scrolling as one',
     async (_, story) => {
         await story().run();
         const summary = getScrollContainer('item-summary');
@@ -588,7 +595,7 @@ async function useShortWideWindow() {
 /** Where `LocalPreferences` keeps the summary's width. */
 const SUMMARY_WIDTH_KEY = 'githq.panelWidth.itemSummary';
 
-/** In two columns, the summary's column: the panel of the split holding the summary, its line included. */
+/** In two columns, the summary's column: the panel of the split holding the summary. */
 function getSummaryColumn() {
     const column = getScrollContainer('item-summary').parentElement?.parentElement;
     if (!column) {

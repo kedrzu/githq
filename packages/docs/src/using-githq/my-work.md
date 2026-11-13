@@ -74,8 +74,8 @@ same.
 
 While an item is open, <kbd>J</kbd> and <kbd>K</kbd> step to the next and previous item of the list, and <kbd>Esc</kbd>
 in the panel closes it and takes you back to the list, with the item still selected. Wide enough, the item shows in two
-columns: where it stands, its reviews, checks and properties on the left, staying in place (drag its edge to widen
-it), and its history on the right. [Pull requests and reviews](./pull-requests-and-reviews.md) describes what a pull
+columns: where it stands, its reviews, checks and properties on the left, staying in place (drag the gap between
+the two to widen it), and its history on the right. [Pull requests and reviews](./pull-requests-and-reviews.md) describes what a pull
 request's page shows.
 
 ## Act from the list
