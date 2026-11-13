@@ -63,6 +63,8 @@ export interface ThreadOnHiddenLine extends PlacedOnLine {
 export interface ThreadAtFileTop {
     readonly kind: 'fileTop';
     readonly thread: ReviewThread;
+    /** The side it was written on: the half it sits on in split, as a thread on a line does. */
+    readonly side: DiffLineSide;
     /** Empty on a `FILE` thread, which GitHub gives no code. */
     readonly diffHunk: string;
     readonly commit: ReviewThread['comments'][number]['originalCommit'];
@@ -173,6 +175,7 @@ function placeInDiff(
             return {
                 kind: 'fileTop',
                 thread,
+                side,
                 diffHunk: getDiffHunk(thread),
                 commit: thread.comments[0]?.originalCommit ?? null,
                 fileDeleted: deleted,

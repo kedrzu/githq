@@ -188,6 +188,19 @@ export const FileTopLineGone: Story = {
     },
 };
 
+/** CR10 in split: the box sits on the half of the side it was written on, as any thread does. */
+export const FileTopLineGoneSplit: Story = {
+    args: {
+        row: createThreadRowSample({
+            kind: 'fileTop',
+            inline: 'right',
+            diffHunk: HUNK,
+            commit: COMMIT,
+            thread: sampleThread({ isOutdated: true }),
+        }),
+    },
+};
+
 /** A thread on the file itself: GitHub gives it no code, and none is drawn. */
 export const FileThread: Story = {
     args: {
