@@ -199987,7 +199987,6 @@
                         12,
                         14
                       ],
-                      "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",

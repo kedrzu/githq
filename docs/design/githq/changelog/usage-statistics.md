@@ -72,3 +72,12 @@ of the border; in code `focus-ring` outside it, the Switch's own ring hidden).
 
 Not changed: "Open links in the desktop app" is drawn on no Settings screen; `Phone / Settings / Switch row` stays a
 row of the phone's grouped list, the whole row already the target; the code review toolbar switch.
+
+## Round 4 · agent brief
+
+Asked (owner): the Switch of the toggle card goes to the top-right corner, aligned to the title's line, not centred
+vertically in the card. Changed: the base only; the variants and every instance inherit it.
+
+- [ ] `Settings / Toggle card` (`AQNxV`): `alignItems` `center` → `start`; the Switch (`dBU9c`, 16 px) sits at the top
+      padding, its centre on the title's 16 px line. `· off` (`W2FH3n`), `· hover` (`B8viX`), `· focus` (`n1uY0V`),
+      `· with link` (`iahCE`) and the instances (T23 `eYLKE`, `CH43` `QuuTp`, `CH49` `LJ76b`) follow.
