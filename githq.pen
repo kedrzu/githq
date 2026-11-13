@@ -118542,7 +118542,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It only counts sign-ins, anonymously, and you can turn even that off in Settings.",
+                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It counts visits and sign-ins anonymously, never your work, and you can turn that off in Settings.",
                               "lineHeight": 1.55,
                               "fontFamily": "Inter",
                               "fontSize": 15,
@@ -126882,7 +126882,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It only counts sign-ins, anonymously, and you can turn even that off in Settings.",
+                              "content": "You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It counts visits and sign-ins anonymously, never your work, and you can turn that off in Settings.",
                               "lineHeight": 1.55,
                               "fontFamily": "Inter",
                               "fontSize": 15,
@@ -165176,6 +165176,14 @@
                   ]
                 },
                 {
+                  "id": "ltWOr",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "bIbPS",
+                  "name": "Workflow alerts / Default branch · hover",
+                  "fill": "$bg-3"
+                },
+                {
                   "type": "frame",
                   "id": "qzyaU",
                   "name": "Workflow alerts / Pattern row",
@@ -197763,6 +197771,7 @@
           "type": "frame",
           "id": "q9BSr",
           "name": "Components · Settings",
+          "width": 6331,
           "gap": 48,
           "children": [
             {
@@ -199938,67 +199947,253 @@
             },
             {
               "type": "frame",
-              "id": "AQNxV",
-              "name": "Settings / Switch row",
-              "reusable": true,
-              "width": 560,
-              "gap": 24,
+              "id": "t2fEAy",
+              "name": "Settings / Toggle card · states",
+              "fill": "$bg",
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 24,
               "children": [
                 {
                   "type": "frame",
-                  "id": "vD3ev",
-                  "name": "Text",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 6,
+                  "id": "j4quX",
+                  "name": "State · On (base)",
+                  "gap": 24,
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "rPvpU",
-                      "name": "Title",
-                      "fill": "$fg",
-                      "content": "Setting",
+                      "id": "CndOZ",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "On (base)",
                       "fontFamily": "$font",
-                      "fontSize": 13.5,
+                      "fontSize": 12,
                       "fontWeight": "500"
                     },
                     {
-                      "type": "text",
-                      "id": "SScER",
-                      "name": "Explanation",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "What it does.",
-                      "lineHeight": 1.5,
-                      "fontFamily": "$font",
-                      "fontSize": 12.5,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "AQNxV",
+                      "name": "Settings / Toggle card",
+                      "reusable": true,
+                      "width": 560,
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 16,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vD3ev",
+                          "name": "Text",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rPvpU",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "Setting",
+                              "fontFamily": "$font",
+                              "fontSize": 13.5,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SScER",
+                              "name": "Explanation",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "What it does.",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Xve0U",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Link",
+                              "enabled": false,
+                              "gap": 5,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "XO9HU",
+                                  "name": "Label",
+                                  "fill": "$accent",
+                                  "content": "Learn more",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "Axiqd",
+                                  "name": "icon arrow-up-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "arrow-up-right",
+                                  "library": "lucide",
+                                  "fill": "$accent"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "dBU9c",
+                          "type": "ref",
+                          "ref": "sh74L",
+                          "name": "Switch"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "id": "dBU9c",
-                  "type": "ref",
-                  "ref": "sh74L",
-                  "name": "Switch"
+                  "type": "frame",
+                  "id": "WnenD",
+                  "name": "State · Off",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "aadds",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Off",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "W2FH3n",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · off",
+                      "descendants": {
+                        "dBU9c": {
+                          "id": "rBzrf",
+                          "type": "ref",
+                          "ref": "XYL25",
+                          "name": "Switch"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RdJJU",
+                  "name": "State · Hover",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QYmXg",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Hover",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "B8viX",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · hover",
+                      "stroke": "$border-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S7wFI",
+                  "name": "State · Focus",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qMEQ0",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "Focus",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "n1uY0V",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · focus",
+                      "stroke": "$accent",
+                      "strokeWidth": 2,
+                      "strokeAlignment": "outer"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BM2b9",
+                  "name": "State · With link",
+                  "gap": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "xPbVp",
+                      "name": "Caption",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 110,
+                      "content": "With link",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "id": "iahCE",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "AQNxV",
+                      "name": "Settings / Toggle card · with link",
+                      "descendants": {
+                        "Xve0U": {
+                          "enabled": true
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
-            },
-            {
-              "id": "W2FH3n",
-              "type": "ref",
-              "reusable": true,
-              "ref": "AQNxV",
-              "name": "Settings / Switch row · off",
-              "descendants": {
-                "dBU9c": {
-                  "id": "rBzrf",
-                  "type": "ref",
-                  "ref": "XYL25",
-                  "name": "Switch"
-                }
-              }
             }
           ]
         },
@@ -205916,9 +206111,9 @@
                                   "gap": 14,
                                   "children": [
                                     {
-                                      "id": "ptsdC",
+                                      "id": "eYLKE",
                                       "type": "ref",
-                                      "ref": "AQNxV",
+                                      "ref": "iahCE",
                                       "name": "Share usage statistics",
                                       "width": "fill_container",
                                       "descendants": {
@@ -205926,38 +206121,12 @@
                                           "content": "Share usage statistics"
                                         },
                                         "SScER": {
-                                          "content": "githq counts sign-ins, anonymously, so we know how many people use it. Nothing about your code, your repositories or who you are is ever sent."
+                                          "content": "githq counts sign-ins and visits anonymously, so we know how many people use it. Nothing about your code, your repositories or who you are is ever sent."
+                                        },
+                                        "XO9HU": {
+                                          "content": "What githq counts"
                                         }
                                       }
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "p8est3",
-                                      "name": "Link what githq counts",
-                                      "gap": 5,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "Diz4l",
-                                          "name": "Label",
-                                          "fill": "$accent",
-                                          "content": "What githq counts",
-                                          "fontFamily": "$font",
-                                          "fontSize": 12.5,
-                                          "fontWeight": "normal"
-                                        },
-                                        {
-                                          "type": "icon",
-                                          "id": "jLivI",
-                                          "name": "icon arrow-up-right",
-                                          "width": 13,
-                                          "height": 13,
-                                          "icon": "arrow-up-right",
-                                          "library": "lucide",
-                                          "fill": "$accent"
-                                        }
-                                      ]
                                     }
                                   ]
                                 }
