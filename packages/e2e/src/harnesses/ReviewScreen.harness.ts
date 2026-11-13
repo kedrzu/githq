@@ -140,6 +140,14 @@ export class ReviewScreenHarness {
             .last();
     }
 
+    /** The comment button on the line cursor's row (D43), the newer side's in split: the `+`, no number. */
+    commentButton(line: number): Locator {
+        return this.diff
+            .getByRole('button', { name: `Comment on line ${line}`, exact: true })
+            .filter({ has: this.page.locator('svg') })
+            .last();
+    }
+
     /** The row holding the line cursor (D44), both halves of it in split. */
     get cursorRow(): Locator {
         return this.diff.locator('[data-cursor="true"]');

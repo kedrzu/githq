@@ -1,4 +1,4 @@
-<!-- The comment button on the line cursor's row, between a line's number and its code, as on github.com (D43): a small accent square with a `+`, whose tooltip names the line and the key C. It tells what happens to it as the number does, a click starting a comment and a press and drag or ⇧click making a range (CR73), so whoever decides treats the two alike. Out of the Tab order, as the number: `C` does the same from the keyboard. -->
+<!-- The comment button on the line cursor's row, between a line's number and its code, as on github.com (D43): a small accent square with a `+`, whose tooltip names the line and the key C. It tells what happens to it as the number does, a click starting a comment and a press and drag along the lines or ⇧click making a range (CR73), so whoever decides treats the two alike. Out of the Tab order, as the number: `C` does the same from the keyboard. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus } from 'lucide-vue-next';
@@ -33,7 +33,6 @@ const t = useTranslate();
       :aria-keyshortcuts="REVIEW_KEYS.comment"
       @click="emit('gutter', $event)"
       @pointerdown="emit('gutter', $event)"
-      @pointerenter="emit('gutter', $event)"
     >
       <Plus
         :class="css.diffCommentButton_icon"

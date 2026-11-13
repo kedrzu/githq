@@ -1,4 +1,4 @@
-<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag or ⇧click for a range (CR73), all told by the event to whoever decides. A line a comment is being written on has it in accent; the comment button after it is the row's (`DiffCommentButton`, D43). The column is as wide as the file's largest number needs. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. A still one, of a file on its way (D45), is the number alone, as wide. -->
+<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag along the lines or ⇧click for a range (CR73), all told by the event to whoever decides. A line a comment is being written on has it in accent; the comment button after it is the row's (`DiffCommentButton`, D43). The column is as wide as the file's largest number needs. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. A still one, of a file on its way (D45), is the number alone, as wide. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
@@ -35,7 +35,6 @@ const t = useTranslate();
       :aria-label="t(l.commentOn, { line })"
       @click="emit('gutter', $event)"
       @pointerdown="emit('gutter', $event)"
-      @pointerenter="emit('gutter', $event)"
     >
       <!-- In an element of its own: no space beside the number, which the column fits alone. -->
       <span>{{ line }}</span>

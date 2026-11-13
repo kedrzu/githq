@@ -98,8 +98,12 @@ discardReview:
   en: Discard review
 replyInThread:
   en: Reply to the thread
-extendComment:
-  en: Take the next line into the comment
+rangeDown:
+  en: Choose lines for a comment, a line down
+rangeUp:
+  en: Choose lines for a comment, a line up
+clearRange:
+  en: Let go of the lines chosen for a comment
 backToPullRequest:
   en: Back to the pull request
 lineDown:

@@ -93,6 +93,35 @@ test('hovering either half of a split row puts the cursor on the row and makes i
     await expect(review.viewedButton(FIRST)).toHaveAttribute('aria-pressed', 'false');
 });
 
+test('with the keys in a text field the cursor shows only by its comment button, the row untinted; back in the diff it is tinted again (D44)', async ({
+    page,
+    github,
+}) => {
+    const review = await openCursor(page, github, [FIRST_FILE, SECOND_FILE]);
+    const tint = () =>
+        review.cursorRow
+            .locator(':scope > div > div')
+            .first()
+            .evaluate(row => getComputedStyle(row).backgroundColor);
+    const plain = () =>
+        review.diff
+            .locator('[data-cursor-key]', { has: page.getByText('const line18 = 18;') })
+            .locator(':scope > div > div')
+            .first()
+            .evaluate(row => getComputedStyle(row).backgroundColor);
+
+    await review.pointAt(review.code('const line19 = 19;').last());
+    expect(await tint()).not.toBe(await plain());
+
+    await review.filterField.focus();
+    await review.pointAt(review.code('const line19 = 19;').first());
+    await expect(review.commentButton(19)).toBeVisible();
+    expect(await tint()).toBe(await plain());
+
+    await review.diff.focus();
+    expect(await tint()).not.toBe(await plain());
+});
+
 test('↓ moves the cursor to the next stop and onto the thread under a line, where R replies; ↑ moves it back (D44)', async ({
     page,
     github,

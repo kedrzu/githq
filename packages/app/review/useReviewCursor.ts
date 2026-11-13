@@ -49,6 +49,8 @@ export interface ReviewCursorActions {
     page(direction: 1 | -1): void;
     /** A jump put it there, moving nothing itself; a key not among the rows leaves it. */
     setTo(key: string): void;
+    /** The keys took it to that row a step away, as ↓ ↑ do: the diff follows as for them. */
+    stepTo(key: string, direction: 1 | -1): void;
     /** A wheel, trackpad or scrollbar scroll of so many pixels, down if positive. */
     followScroll(distance: number): void;
     /** Lines are coming out of a gap that way: the rows they change say where a cursor on it goes. */
@@ -108,7 +110,7 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
         heldSince = null;
     });
 
-    return { move, page, setTo, followScroll, noteExpanding };
+    return { move, page, setTo, stepTo, followScroll, noteExpanding };
 
     function move(direction: 1 | -1) {
         const now = clock.now();
@@ -159,6 +161,10 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
         if (toValue(options.rows).some(row => row.key === key)) {
             cursor.value = { key };
         }
+    }
+
+    function stepTo(key: string, direction: 1 | -1) {
+        moveTo({ key }, direction);
     }
 
     function followScroll(distance: number) {
