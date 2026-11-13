@@ -1,21 +1,25 @@
-<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for. It scrolls on its own, opening at the newest and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments and reviews not read yet come on asking, what is being read staying where it is. At its foot a comment on the pull request itself, which goes out at once as it does on an opened item, draft review or not (D17), and which with a draft open says so where it is written. -->
+<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for — each the same card as on the pull request's thread (`CommentEntry`, `ReviewSummary`, CR120), narrow as its column is (`CommentCard`), with the same ⋯: Edit in place, Quote reply into the composer here, Copy link, Delete…, where GitHub says the user may (`useCommentActions`). It scrolls on its own, opening at the newest and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments and reviews not read yet come on asking, what is being read staying where it is. At its foot a comment on the pull request itself, which goes out at once as it does on an opened item, draft review or not (D17), and which with a draft open says so where it is written; it shows at once, "Sending…", and one GitHub did not take stays with why, Discard and Retry (`CommentFailedCard`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue';
 
-import Avatar from '@/components/Avatar.vue';
+import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
+import CommentEntry from '@/comments/CommentEntry.vue';
+import CommentFailedCard from '@/comments/CommentFailedCard.vue';
+import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
+import { useCommentActions } from '@/comments/useCommentActions.js';
 import Button from '@/components/Button.vue';
+import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
+import type { EditRequest } from '@/edits/EditTypes.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import ItemComposer from '@/item/ItemComposer.vue';
 import { useNow } from '@/services/useNow.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
-import type { Item } from '@/store/ItemTypes.js';
-import { formatAge } from '@/utils/formatAge.js';
+import type { Item, ItemUser } from '@/store/ItemTypes.js';
 
-import ReviewThreadComment from '../threads/ReviewThreadComment.vue';
 import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 
 import { buildConversation } from './buildConversation.js';
@@ -38,12 +42,28 @@ const props = defineProps<{
   draftOpen?: boolean;
   /** The user may not comment here. */
   commentDisabled?: boolean;
+  /** Who is signed in: their comments GitHub did not take are theirs. */
+  viewer?: ItemUser | null;
+  /** The user's comments GitHub did not take, in the order they were written. */
+  failedComments?: readonly FailedComment[];
+  /** The user's edits of the comments and the description GitHub did not take. */
+  failedEdits?: readonly FailedTextEdit[];
+  /** Whom `@` suggests first in an editor. */
+  people?: readonly ItemUser[];
 }>();
 
 const emit = defineEmits<{
   close: [];
   jumpToThreads: [reviewId: string];
   comment: [body: string];
+  /** A comment or the description edited, or a comment deleted. */
+  edit: [request: EditRequest];
+  /** An edit GitHub did not take was cancelled: of the comment, or (`null`) the description. */
+  discardEdit: [commentId: string | null];
+  /** Send the failed comment again. */
+  retry: [id: number];
+  /** Drop the failed comment. */
+  discard: [id: number];
 }>();
 
 /** What is typed in its composer. */
@@ -59,8 +79,17 @@ const now = useNow(TICK_MS);
 const scroller = useTemplateRef<HTMLElement>('scroller');
 const content = useTemplateRef<HTMLElement>('content');
 const fold = useTemplateRef<HTMLElement>('fold');
+const composer = useTemplateRef('composer');
 const unfolded = shallowRef(false);
 const folding = shallowRef(false);
+
+const actions = useCommentActions({
+  subject: () => props.item?.id ?? '',
+  failedEdits: () => props.failedEdits,
+  onEdit: request => emit('edit', request),
+  onDiscardEdit: commentId => emit('discardEdit', commentId),
+  onQuote: quote,
+});
 
 const entries = computed(() =>
   props.detail
@@ -68,6 +97,7 @@ const entries = computed(() =>
         comments: props.detail.comments.nodes,
         summaries: props.detail.reviewSummaries,
         threads: props.reviewThreads,
+        failedComments: props.failedComments,
       })
     : [],
 );
@@ -78,8 +108,6 @@ const olderCount = computed(() => {
 // Not counted: some of them say nothing, and those aren't entries.
 const hasOlderReviews = computed(() => (props.detail?.olderReviewCursor ?? null) !== null);
 const count = computed(() => entries.value.length + olderCount.value);
-const description = computed(() => props.detail?.bodyHtml ?? '');
-const openedAge = computed(() => (props.item ? formatAge(Date.parse(props.item.createdAt), now.value) : ''));
 
 /** Until the reader scrolls away from it, or asks for something above it. */
 let atNewest = true;
@@ -139,6 +167,16 @@ function onComment(body: string) {
   emit('comment', body);
 }
 
+/** Quote reply: into the composer here, the cursor after it. */
+function quote(body: string) {
+  if (props.commentDisabled) {
+    return;
+  }
+
+  commentDraft.value = quoteIntoDraft(body, commentDraft.value);
+  composer.value?.focus();
+}
+
 async function showOlder(load: () => Promise<void>) {
   atNewest = false;
   const before = scroller.value?.scrollHeight ?? 0;
@@ -182,40 +220,49 @@ async function showOlder(load: () => Promise<void>) {
         ref="content"
         :class="css.reviewConversation_items"
       >
-        <div
-          v-if="item"
-          :class="css.reviewConversation_description"
+        <CommentEntry
+          v-if="item && detail"
+          :id="null"
+          :actions="actions"
+          :author="item.author"
+          :created-at="item.createdAt"
+          :now="now"
+          :html="detail.bodyHtml"
+          :body="detail.body"
+          :pending-body="detail.pendingBody"
+          :url="item.url"
+          :edited="detail.lastEditedAt !== null"
+          :can-edit="detail.viewerCanUpdate"
+          :can-quote="!commentDisabled"
+          :repository="item.repository.nameWithOwner"
+          :item-number="item.number"
+          :people="people"
         >
-          <p :class="css.reviewConversation_meta">
-            <Avatar
-              :name="item.author?.login ?? t(l.ghost)"
-              :src="item.author?.avatarUrl"
-              decorative
-            />
-            <span :class="css.reviewConversation_author">{{ item.author?.login ?? t(l.ghost) }}</span>
-            <span :class="css.reviewConversation_what">{{ t(l.opened, { age: openedAge }) }}</span>
-          </p>
-          <div
-            v-if="description !== ''"
-            ref="fold"
-            :class="[!unfolded && css.reviewConversation_fold]"
+          <template
+            v-if="detail.bodyHtml !== ''"
+            #body
           >
-            <GitHubHtml :html="description" />
-          </div>
-          <Button
-            v-if="folding && !unfolded"
-            variant="link"
-            tone="accent"
-            size="sm"
-            @click="showDescription"
-          >
-            {{ t(l.showDescription) }}
-          </Button>
-        </div>
-        <hr
-          v-if="item && (count > 0 || hasOlderReviews)"
-          :class="css.reviewConversation_rule"
-        />
+            <div
+              ref="fold"
+              :class="[!unfolded && css.reviewConversation_fold]"
+            >
+              <GitHubHtml
+                :class="css.reviewConversation_text"
+                :html="detail.bodyHtml"
+              />
+            </div>
+            <Button
+              v-if="folding && !unfolded"
+              :class="css.reviewConversation_unfold"
+              variant="link"
+              tone="accent"
+              size="sm"
+              @click="showDescription"
+            >
+              {{ t(l.showDescription) }}
+            </Button>
+          </template>
+        </CommentEntry>
         <Button
           v-if="olderCount > 0"
           variant="link"
@@ -252,15 +299,43 @@ async function showOlder(load: () => Promise<void>) {
             v-for="entry in entries"
             :key="entry.id"
           >
-            <ReviewThreadComment
-              v-if="entry.kind === 'comment'"
-              :comment="entry.comment"
+            <CommentEntry
+              v-if="entry.kind === 'comment' && item"
+              :id="entry.comment.id"
+              :actions="actions"
+              :author="entry.comment.author"
+              :created-at="entry.comment.createdAt"
+              :now="now"
+              :html="entry.comment.bodyHtml"
+              :body="entry.comment.body"
+              :pending-body="entry.comment.pendingBody"
+              :url="entry.comment.url"
+              :edited="entry.comment.lastEditedAt !== null"
+              :can-edit="entry.comment.viewerCanUpdate"
+              :can-delete="entry.comment.viewerCanDelete"
+              :can-quote="!commentDisabled"
+              :repository="item.repository.nameWithOwner"
+              :item-number="item.number"
+              :people="people"
             />
             <ReviewSummary
-              v-else
+              v-else-if="entry.kind === 'summary'"
               :review="entry.review"
               :threads="entry.threads"
+              :now="now"
+              :actions="actions"
+              :can-quote="!commentDisabled"
               @jump-to-threads="emit('jumpToThreads', entry.review.id)"
+            />
+            <CommentFailedCard
+              v-else-if="entry.kind === 'failedComment'"
+              :author="viewer ?? null"
+              :now="now"
+              :body="entry.failed.body"
+              :reason="entry.failed.reason"
+              :can-retry="!commentDisabled"
+              @discard="emit('discard', entry.failed.id)"
+              @retry="emit('retry', entry.failed.id)"
             />
           </li>
         </ol>
@@ -268,12 +343,18 @@ async function showOlder(load: () => Promise<void>) {
     </div>
     <footer :class="css.reviewConversation_composer">
       <ItemComposer
+        ref="composer"
         v-model:text="commentDraft"
         :disabled="commentDisabled"
         :placeholder="draftOpen ? t(l.composerWithDraft) : t(l.composer)"
         @submit="onComment"
       />
     </footer>
+    <CommentDeleteDialog
+      :open="actions.deletingId !== null"
+      @update:open="actions.cancelDelete()"
+      @delete="actions.confirmDelete()"
+    />
   </section>
 </template>
 
@@ -333,50 +414,29 @@ async function showOlder(load: () => Promise<void>) {
   }
 }
 
+// The cards 8 apart, as on the pull request's thread.
 .reviewConversation_items {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 14px;
+  gap: $spacing-8;
+  padding: $spacing-8 $spacing-14 $spacing-14;
 }
 
-.reviewConversation_description {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-6;
-  align-items: flex-start;
+// GitHub's rendering, at the reading size of every card.
+.reviewConversation_text {
+  --github-html-font-size: #{$font-size-reading};
+  --github-html-line-height: #{$line-height-reading};
+  --github-html-color: #{$color-fg};
 }
 
-.reviewConversation_meta {
-  display: flex;
-  gap: $spacing-6;
-  align-items: center;
-  margin: 0;
+.reviewConversation_unfold {
+  align-self: flex-start;
 }
 
-.reviewConversation_author {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-}
-
-.reviewConversation_what {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
-}
-
-// Five lines of `GitHubHtml`.
+// Five lines of `GitHubHtml` at the reading size.
 .reviewConversation_fold {
-  max-height: 100px;
+  max-height: calc(5 * #{$font-size-reading} * #{$line-height-reading});
   overflow: hidden;
-}
-
-.reviewConversation_rule {
-  width: 100%;
-  height: 1px;
-  margin: 0;
-  background: $color-border;
-  border: 0;
 }
 
 .reviewConversation_note {
@@ -388,7 +448,7 @@ async function showOlder(load: () => Promise<void>) {
 .reviewConversation_entries {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: $spacing-8;
   padding: 0;
   margin: 0;
   list-style: none;

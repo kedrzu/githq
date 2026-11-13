@@ -2,9 +2,9 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
+import CommentReply from '@/comments/CommentReply.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
-import ReviewCommentFrame from '../threads/ReviewCommentFrame.vue';
 import ReviewPendingPill from '../threads/ReviewPendingPill.vue';
 import type { ReviewSentStatus } from './ReviewWriting.js';
 import * as l from './ReviewSentComment.loc.js';
@@ -20,7 +20,7 @@ const sentAt = new Date().toISOString();
 </script>
 
 <template>
-  <ReviewCommentFrame
+  <CommentReply
     :author="author"
     :created-at="sentAt"
   >
@@ -33,7 +33,7 @@ const sentAt = new Date().toISOString();
       >
     </template>
     <p :class="css.reviewSentComment_body">{{ status.body }}</p>
-  </ReviewCommentFrame>
+  </CommentReply>
 </template>
 
 <style lang="scss" module="css">

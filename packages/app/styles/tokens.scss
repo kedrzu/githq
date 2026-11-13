@@ -210,7 +210,6 @@ $item-reading-width: 920px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;
-$review-conversation-width: 340px;
 // The column a screen of Settings keeps its content in.
 $settings-column-width: 680px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
@@ -281,7 +280,7 @@ $commit-row-narrow-width: 640px;
 // The item's thread (`item/thread/`)
 // ---------------------------------------------------------------------------------------------------
 
-// The column of avatars on the left of the thread's cards and of the composer (`ItemThreadCard`,
+// The column of avatars on the left of the thread's cards and of the composer (`CommentCard`,
 // `ItemThreadComposer`): as wide as a large avatar, this far from the card beside it.
 $item-thread-gutter-width: 28px;
 $item-thread-gutter-gap: $spacing-12;
@@ -290,6 +289,10 @@ $item-thread-rail-offset: 55px;
 $item-thread-rail-width: 2px;
 // A fold's break (`ItemThreadFold`): the dashed stretch of rail beside a folded band, centred on the rail.
 $item-thread-rail-break-width: 28px;
+// A comment card (`CommentCard`) narrower than this has no gutter: its avatar starts its head (`Activity / Comment ·
+// narrow`); narrower than the second, the description's Author chip gives way too.
+$comment-card-narrow: 480px;
+$comment-card-tight: 300px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
@@ -555,8 +558,8 @@ $row-surface-inset: $spacing-2 $spacing-8;
     container-type: inline-size;
 }
 
-// A card of the item's thread with its avatar in the thread's gutter (`ItemThreadCard`, `ItemThreadComposer`,
-// `ItemThreadEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
+// A card of the item's thread with its avatar in the thread's gutter (`CommentCard`, `ItemThreadComposer`,
+// `CommentEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
 @mixin item-thread-row {
     display: flex;
     gap: $item-thread-gutter-gap;

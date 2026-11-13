@@ -828,3 +828,19 @@ Open: MODIFIED, ADDED or DELETED with 0/0 lines and no patch is also a mode chan
 
 - A compact band with the files after it held back until it is drawn (CR112, agent's recommendation).
 - A compact band with the next files shown (CR114) — the biggest jump when it is drawn.
+
+## D46
+
+**The conversation is the pull request's own comment cards (`Activity / Comment`, `Activity / Review`), with their ⋯:
+Edit in place, Quote reply into the conversation's composer, Copy link and Delete…, where GitHub says the viewer may; a
+review's offers Quote reply and Copy link. Its column is resized by its inner edge like the file list's, from 340 px
+(its least and its default) to 720 px, the width kept on the device. A card narrower than 480 px lays itself out narrow
+by its own width (a container query): no gutter, the avatar starting the head, the age without the verb, a review's
+threads on a line under its text.** (2026-11-13, owner: "the same comment components everywhere", the sidebar
+resizable, container queries; CR120–CR126; amends D24's fixed 340 px)
+
+**Rejected.**
+
+- The phone's flat comment row (`Phone / Comment`) as the narrow card — it is not the same component as the pull
+  request's.
+- A narrow card with its avatar beside it as on the pull request's thread — about 260 px left for the text at 340 px.
