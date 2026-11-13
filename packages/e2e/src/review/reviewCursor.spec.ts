@@ -126,11 +126,7 @@ test('the keys move the cursor without scrolling until it reaches two thirds of 
     const review = await openCursor(page, github, [LONG_FILE]);
     const scrollTop = () => review.diff.evaluate(element => element.scrollTop);
     const start = await scrollTop();
-    const diff = await review.diff.boundingBox();
-    if (!diff) {
-        throw new Error('The diff is not on screen');
-    }
-
+    const diff = await review.rowsBox();
     const band = (diff.height - PINNED) / 3;
     const bandTop = diff.y + PINNED + band;
     const bandBottom = diff.y + diff.height - band;
