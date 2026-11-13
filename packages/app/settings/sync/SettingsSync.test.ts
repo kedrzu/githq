@@ -818,6 +818,44 @@ test('a comment choice of a newer build reads as single and stays in the file un
     });
 });
 
+test('a max width chosen here is written, one chosen elsewhere comes in, and one not understood stays until the user really changes it', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    await sync.sync();
+    expect(tracking.itemPageWidth).toBeNull();
+
+    tracking.setMaxWidth('itemPageWidth', 1200);
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { itemPageWidth: 1200 },
+    });
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), itemPageWidth: 'full', reviewDiffWidth: 'wide' });
+    await sync.sync();
+    expect(tracking.itemPageWidth).toBe('full');
+    expect(tracking.reviewDiffWidth).toBeNull();
+
+    session.github.requests.length = 0;
+    tracking.setMaxWidth('itemPageWidth', 'full');
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+
+    tracking.setMaxWidth('itemPageWidth', 1440);
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { itemPageWidth: 1440, reviewDiffWidth: 'wide' },
+    });
+
+    tracking.setMaxWidth('reviewDiffWidth', 960);
+    await sync.sync();
+    expect(tracking.reviewDiffWidth).toBe(960);
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { itemPageWidth: 1440, reviewDiffWidth: 960 },
+    });
+});
+
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
 async function open(login = uniqueLogin(), localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);

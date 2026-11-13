@@ -5,6 +5,7 @@ import {
     DEFAULT_WORKFLOW_SETTINGS,
     parseSettings,
     readAnimations,
+    readMaxWidth,
     readUsageStatistics,
     readRepositoryLayout,
     readReviewCommentChoice,
@@ -13,6 +14,7 @@ import {
     writeWorkflowSettings,
 } from './SettingsDocument.js';
 import type {
+    MaxWidth,
     RepositoryLayout,
     ReviewCommentChoice,
     SettingsDocument,
@@ -250,4 +252,29 @@ test.each<[unknown, ReviewCommentChoice]>([
 
     expect(readReviewCommentChoice(parsed.document)).toBe(reads);
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, reviewCommentChoice: written });
+});
+
+test.each<[unknown, MaxWidth | null]>([
+    [1200, 1200],
+    ['full', 'full'],
+    [undefined, null],
+    [0, null],
+    [-5, null],
+    // Pixels are whole: a fractional width is not understood rather than rounded, so it stays as written.
+    [12.5, null],
+    ['wide', null],
+    ['1200', null],
+])('a file with the item page width %j is readable, reads as %j and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, itemPageWidth: written, reviewDiffWidth: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readMaxWidth(parsed.document.itemPageWidth)).toBe(reads);
+    expect(readMaxWidth(parsed.document.reviewDiffWidth)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({
+        ...DOCUMENT,
+        itemPageWidth: written,
+        reviewDiffWidth: written,
+    });
 });

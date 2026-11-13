@@ -20,6 +20,7 @@ import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
     readAnimations,
+    readMaxWidth,
     readUsageStatistics,
     readRepositoryLayout,
     readReviewCommentChoice,
@@ -27,6 +28,7 @@ import {
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
 import type {
+    MaxWidth,
     RepositoryLayout,
     ReviewCommentChoice,
     SettingsDocument,
@@ -191,6 +193,14 @@ export const TrackingStore = defineService({
             get reviewCommentChoice() {
                 return readReviewCommentChoice(keptRef.value.document);
             },
+            /** The full-screen item page box's maximum width, `null` for the view's default; reactive. */
+            get itemPageWidth() {
+                return readMaxWidth(keptRef.value.document.itemPageWidth);
+            },
+            /** A code review diff box's maximum width, `null` for the view's default; reactive. */
+            get reviewDiffWidth() {
+                return readMaxWidth(keptRef.value.document.reviewDiffWidth);
+            },
             /**
              * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
              * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
@@ -214,6 +224,7 @@ export const TrackingStore = defineService({
             setAnimations,
             setUsageStatistics,
             setReviewCommentChoice,
+            setMaxWidth,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -372,6 +383,21 @@ export const TrackingStore = defineService({
                 readReviewCommentChoice(kept.document) === choice
                     ? null
                     : { ...kept, document: { ...kept.document, reviewCommentChoice: choice } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's maximum width for the item page's or the code review's box, in the settings as the slot holds them
+         * now. Nothing when it reads as that already: a value not understood stays until the user really changes it.
+         */
+        function setMaxWidth(setting: 'itemPageWidth' | 'reviewDiffWidth', width: MaxWidth) {
+            const written = write(kept =>
+                readMaxWidth(kept.document[setting]) === width
+                    ? null
+                    : { ...kept, document: { ...kept.document, [setting]: width } },
             );
             if (written) {
                 changedHere();

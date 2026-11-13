@@ -38,6 +38,16 @@ export interface SettingsDocument {
      * the file: a newer build's value is kept until the user changes it, so read it with {@link readReviewCommentChoice}.
      */
     readonly reviewCommentChoice?: unknown;
+    /**
+     * The maximum width of the full-screen item page's box, as written in the file: a value not understood is kept
+     * until the user changes it, so read it with {@link readMaxWidth}.
+     */
+    readonly itemPageWidth?: unknown;
+    /**
+     * The maximum width of a code review's diff box, as written in the file: a value not understood is kept until the
+     * user changes it, so read it with {@link readMaxWidth}.
+     */
+    readonly reviewDiffWidth?: unknown;
     readonly [field: string]: unknown;
 }
 
@@ -46,6 +56,9 @@ export type RepositoryLayout = 'tabs' | 'column';
 
 /** How a code review's comment goes out with no draft open: as a single comment, or into a draft review (code-review D17). */
 export type ReviewCommentChoice = 'single' | 'draft';
+
+/** A box's maximum width: a whole number of pixels, or `'full'` for no maximum. */
+export type MaxWidth = number | 'full';
 
 /** A repository of {@link SettingsDocument}, named by `nameWithOwner`. */
 export interface SettingsRepository extends TrackedRepository {
@@ -152,6 +165,8 @@ export function serializeSettings(document: SettingsDocument): string {
         projects,
         repositoryLayout,
         reviewCommentChoice,
+        itemPageWidth,
+        reviewDiffWidth,
         animations,
         usageStatistics,
         ...rest
@@ -175,6 +190,8 @@ export function serializeSettings(document: SettingsDocument): string {
         })),
         repositoryLayout,
         reviewCommentChoice,
+        itemPageWidth,
+        reviewDiffWidth,
         animations,
         usageStatistics,
         ...rest,
@@ -284,6 +301,19 @@ export function readUsageStatistics(document: SettingsDocument): boolean {
  */
 export function readReviewCommentChoice(document: SettingsDocument): ReviewCommentChoice {
     return document.reviewCommentChoice === 'draft' ? 'draft' : 'single';
+}
+
+/**
+ * A maximum width as written in the file: a positive whole number of pixels or `'full'`; `null` for absent or not
+ * understood (`0`, a negative or fractional number, another string), so the view falls back to its default.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readMaxWidth(value: unknown): MaxWidth | null {
+    if (value === 'full') {
+        return 'full';
+    }
+
+    return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
 }
 
 function hasDuplicates(keys: readonly string[]) {
