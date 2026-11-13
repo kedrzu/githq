@@ -136,9 +136,10 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
     const saving = new SavingScreenHarness(page);
     await saving.choice.click();
     await expect(saving.on).toBeVisible();
-    await page.goto('/');
-
     const shell = new AppShellHarness(page);
+    await shell.myWorkLink('My work').click();
+    await expect(page).toHaveURL('/');
+
     repository.exists = false;
     repository.file = null;
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
