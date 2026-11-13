@@ -1,3 +1,5 @@
+import { CLOUDFLARE_WEB_ANALYTICS_TOKEN, getBeaconLoaderScript } from '@githq/github/usageStatistics.js';
+
 import type { BuiltFile } from './readBuiltFiles.js';
 
 /** The landing page's heading, as the server renders it (`landing/LandingScreen.loc.yaml`). */
@@ -28,6 +30,10 @@ const LANDING_MARKERS: readonly { text: string; what: string }[] = [
     { text: "font-family:'Inter Fallback'", what: 'the fallback faces that keep the page still as its fonts arrive' },
     { text: '<meta name="twitter:card" content="summary_large_image">', what: 'the Twitter card' },
     { text: '<meta name="twitter:image" content="https://githq.dev/og.png">', what: 'the Twitter card image' },
+    {
+        text: `<script>${getBeaconLoaderScript({ spa: false })}</script>`,
+        what: 'the loader of the usage statistics beacon',
+    },
 ];
 
 /** A resized image the landing page links to (`/_ipx/s_1200x750/landing/hero-my-work.webp`). */
@@ -61,6 +67,14 @@ export function checkPrerenderedPages(files: readonly BuiltFile[], paths: Readon
     return problems;
 }
 
+/**
+ * Whether `file` carries the loader of the usage statistics beacon, in either of its forms: by the site token every
+ * form holds. Meant for HTML files, where the loader is inlined; the app's scripts may hold the token without loading it.
+ */
+export function hasBeaconLoader(file: BuiltFile): boolean {
+    return file.content.includes(CLOUDFLARE_WEB_ANALYTICS_TOKEN);
+}
+
 /** Checks `index.html`, the SPA shell every build loads deep links with. Returns what is wrong, empty when nothing is. */
 export function checkAppShell(files: readonly BuiltFile[]): string[] {
     const problems: string[] = [];
@@ -77,6 +91,11 @@ export function checkAppShell(files: readonly BuiltFile[]): string[] {
         }
         if (shell.content.includes(LANDING_HEADING)) {
             problems.push('index.html: holds the landing page, deep links would paint it');
+        }
+        if (hasBeaconLoader(shell)) {
+            problems.push(
+                'index.html: loads the usage statistics beacon, which would count app addresses (repo names)',
+            );
         }
     }
 

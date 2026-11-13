@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { getBeaconLoaderScript } from '@githq/github/usageStatistics.js';
 import { defineConfig } from 'vitepress';
 
 import { assertFullGitHistory, gitIn } from '../lib/gitHistory.js';
@@ -33,6 +34,9 @@ export default defineConfig({
     cleanUrls: true,
     // Left at the default on purpose: a dead link fails the build.
     ignoreDeadLinks: false,
+
+    // The loader of the usage statistics beacon, on every page; the beacon counts the client-side navigations too.
+    head: [['script', {}, getBeaconLoaderScript({ spa: true })]],
 
     appearance: 'force-dark',
     // "Updated" dates come from git; `assertFullGitHistory` above keeps a shallow clone from faking them.

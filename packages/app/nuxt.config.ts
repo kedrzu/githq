@@ -1,4 +1,5 @@
 import { getOAuthClientId } from '@githq/github/oauth.js';
+import { getBeaconLoaderScript } from '@githq/github/usageStatistics.js';
 import { simplifyAliasesModule } from '@nzyme/nuxt-tools';
 import Beasties from 'beasties';
 import { defineNuxtConfig } from 'nuxt/config';
@@ -112,11 +113,17 @@ export default defineNuxtConfig({
             : {
                   // The landing page goes to `_landing.html`, leaving `index.html` to the shell, with its critical CSS
                   // inlined: the rules it uses go into the page, and its stylesheets load without blocking the
-                  // first paint (`media="print"` until loaded). The shell stays as it is.
+                  // first paint (`media="print"` until loaded), and with the loader of the usage statistics beacon,
+                  // added after Beasties so that it is written as it is. The shell stays as it is: app addresses
+                  // hold the names of private repos, so it never loads the beacon.
                   async 'prerender:generate'(route, nitro) {
                       if (route.route === '/') {
                           route.fileName = '/_landing.html';
-                          route.contents = await inlineCriticalCss(route.contents ?? '', nitro.options.publicAssets);
+                          const html = await inlineCriticalCss(route.contents ?? '', nitro.options.publicAssets);
+                          route.contents = html.replace(
+                              '</head>',
+                              () => `<script>${getBeaconLoaderScript({ spa: false })}</script></head>`,
+                          );
                       }
                   },
               },
