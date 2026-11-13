@@ -1,4 +1,8 @@
-import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import type { Page } from '@playwright/test';
+
+import { parseOAuthCredentials } from '@githq/app/auth/utils/parseOAuthCredentials.js';
+
+import { SAMPLE_REFRESH_TOKEN, SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { DesktopSignInScreenHarness } from '../harnesses/DesktopSignInScreen.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
@@ -73,21 +77,31 @@ test('the token is kept in the OS keychain, never in web storage — signed in a
 }) => {
     const shell = await signInOnDesktop({ page, github, native });
 
-    expect(native.keychain).toBe(SAMPLE_TOKEN);
-    expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
+    const kept = parseOAuthCredentials(native.keychain);
+    expect(kept?.accessToken).toBe(SAMPLE_TOKEN);
+    expect(kept?.refreshToken).toBe(SAMPLE_REFRESH_TOKEN);
+    expect(kept?.expiresAt).toBeGreaterThan(Date.now());
+    await expectNoTokenInWebStorage(page);
 
     // A new start of the app reads the token from the keychain.
     await page.reload();
     await expect(shell.account(LOGIN)).toBeVisible();
-    expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
+    await expectNoTokenInWebStorage(page);
 
     await shell.signOut(LOGIN);
     await expect(new DesktopSignInScreenHarness(page).signInButton).toBeVisible();
     await expect.poll(() => native.keychain).toBeNull();
     await expect.poll(() => github.revokedTokens).toEqual([SAMPLE_TOKEN]);
-    expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
+    await expectNoTokenInWebStorage(page);
 
     // Started again, the app is signed out.
     await page.reload();
     await expect(new DesktopSignInScreenHarness(page).signInButton).toBeVisible();
 });
+
+/** Neither the access token nor the refresh token is anywhere in the webview's storages. */
+async function expectNoTokenInWebStorage(page: Page) {
+    const stored = await readWebStorage(page);
+    expect(stored).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
+    expect(stored).not.toContainEqual(expect.stringContaining(SAMPLE_REFRESH_TOKEN));
+}

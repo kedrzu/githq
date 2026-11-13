@@ -8,7 +8,7 @@ import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
-import { readStoredToken, signIn } from '../session.js';
+import { readStoredCredentials, signIn } from '../session.js';
 import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
@@ -95,7 +95,7 @@ test("signing out on the Account section deletes this browser's copy and signs o
     await expect(otherTab).toHaveURL('/');
     for (const tab of [page, otherTab]) {
         await expect(new LandingHarness(tab).signInButton).toBeVisible();
-        expect(await readStoredToken(tab)).toBeNull();
+        expect(await readStoredCredentials(tab)).toBeNull();
         await expect.poll(() => readLocalDatabases(tab)).not.toContain(`githq-${LOGIN}`);
         expect((await readStoredKeys(tab)).filter(key => !PER_DEVICE_KEYS.includes(key))).toEqual([]);
     }
