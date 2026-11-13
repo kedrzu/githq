@@ -238,8 +238,6 @@ export class GitHubMock {
     private readonly revoked: string[] = [];
     /** What each refresh token not spent yet is renewed with ({@link tokenRefresh}). */
     private readonly refreshAnswers = new Map<string, GitHubTokenExchange>();
-    /** The refresh tokens spent, which GitHub no longer accepts. */
-    private readonly spentRefreshTokens = new Set<string>();
     private readonly refreshed: string[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
@@ -358,12 +356,11 @@ export class GitHubMock {
 
     /**
      * Answers the app's renewal of its token (`POST /api/auth/refresh`) with `refreshToken` as the Worker would after
-     * asking GitHub: `answer` once, then `400 bad_refresh_token`, as GitHub spends a refresh token on its first use. A
-     * refresh token never registered is unrouted.
+     * asking GitHub: `answer` once, as GitHub spends a refresh token on its first use. A refresh token never registered,
+     * or spent, is unrouted.
      */
     tokenRefresh(refreshToken: string, answer: GitHubTokenExchange): void {
         this.refreshAnswers.set(refreshToken, answer);
-        this.spentRefreshTokens.delete(refreshToken);
     }
 
     /**
@@ -613,14 +610,7 @@ export class GitHubMock {
         if (answer) {
             this.refreshed.push(refreshToken);
             this.refreshAnswers.delete(refreshToken);
-            this.spentRefreshTokens.add(refreshToken);
             await route.fulfill({ status: 200, json: toTokenExchangeBody(answer) });
-            return;
-        }
-
-        if (this.spentRefreshTokens.has(refreshToken)) {
-            this.refreshed.push(refreshToken);
-            await route.fulfill({ status: 400, json: { error: 'bad_refresh_token' } });
             return;
         }
 

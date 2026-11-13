@@ -522,11 +522,11 @@ export const ItemEditor = defineService({
         /** The user signed in, as the edits are built for them; `null` signed out. */
         function getAccount(): EditAccount | null {
             const viewer = auth.viewer;
-            return viewer && auth.token !== null ? { login: viewer.login } : null;
+            return viewer ? { login: viewer.login } : null;
         }
 
         function isSignedIn(account: EditAccount) {
-            return auth.viewer?.login === account.login && auth.token !== null;
+            return auth.viewer?.login === account.login;
         }
 
         /**

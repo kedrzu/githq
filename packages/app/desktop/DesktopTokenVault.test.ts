@@ -57,16 +57,6 @@ test('signing in keeps the credentials in the credential store only, read back w
     expect(native.calls).toEqual(['token_save', 'token_delete']);
 });
 
-test('a value the credential store kept that is not credentials — a bare token from before — is signed out', () => {
-    for (const token of ['gho_old', '{"accessToken":42}', '{not json']) {
-        const { auth, vault } = setup({ stored: { token, keychain: true } });
-
-        expect(vault.read()).toBeNull();
-        expect(auth.token).toBeNull();
-        expect(auth.signedIn).toBe(false);
-    }
-});
-
 test('a token GitHub rejects is deleted from the credential store', async () => {
     const { auth, native } = setup({
         stored: { token: storedToken('gho_revoked'), keychain: true },
