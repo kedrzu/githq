@@ -2,6 +2,7 @@
 import { expect, test } from 'bun:test';
 
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
+import { createTestLogger } from '@nzyme/logging/createTestLogger.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
@@ -12,6 +13,7 @@ import type { BrowserShape, BrowserStorage } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
+import { storedToken } from '@/testing/storedToken.js';
 
 import { createDesktopTokenVault } from './DesktopTokenVault.js';
 import type { NativeBridgeShape, StoredToken } from './NativeBridge.js';
@@ -19,7 +21,7 @@ import type { NativeBridgeShape, StoredToken } from './NativeBridge.js';
 const VIEWER = { login: 'octocat', name: null, avatarUrl: 'https://avatars.test/octocat' };
 
 test('the session starts from the token the credential store kept, and the webview keeps none of it', async () => {
-    const { auth, native, storages } = setup({ stored: { token: 'gho_kept', keychain: true } });
+    const { auth, native, storages } = setup({ stored: { token: storedToken('gho_kept'), keychain: true } });
 
     await auth.ready();
 
@@ -29,14 +31,24 @@ test('the session starts from the token the credential store kept, and the webvi
     expect(native.calls).toEqual([]);
 });
 
-test('signing in keeps the token in the credential store only; signing out deletes it from there', async () => {
-    const { auth, native, vault, storages } = setup({ stored: { token: null, keychain: true } });
+test('signing in keeps the credentials in the credential store only, read back whole at the next start; signing out deletes them', async () => {
+    const { auth, native, vault, storages, logs } = setup({ stored: { token: null, keychain: true } });
 
-    await auth.signInWithToken('gho_new');
+    await auth.signInWithToken('gho_new', { refreshToken: 'ghr_new', expiresIn: 28_800 });
 
     expect(auth.signedIn).toBe(true);
-    await waitUntil(() => native.kept === 'gho_new', { intervalMs: 1, timeoutMs: 1000 });
-    expect(storages.values().filter(value => value.includes('gho_new'))).toEqual([]);
+    await waitUntil(() => native.kept !== null, { intervalMs: 1, timeoutMs: 1000 });
+    const kept = vault.read();
+    expect(kept).toEqual({ accessToken: 'gho_new', refreshToken: 'ghr_new', expiresAt: expect.any(Number) });
+    // The next start reads what the credential store kept.
+    const restarted = createDesktopTokenVault({
+        bridge: native.bridge,
+        stored: { token: native.kept, keychain: true },
+        logger: createTestLogger('DesktopTokenVault').logger,
+    });
+    expect(restarted.read()).toEqual(kept);
+    expect(storages.values().filter(value => value.includes('gho_new') || value.includes('ghr_new'))).toEqual([]);
+    expect(JSON.stringify(logs)).not.toContain('ghr_new');
 
     auth.signOut();
 
@@ -45,9 +57,22 @@ test('signing in keeps the token in the credential store only; signing out delet
     expect(native.calls).toEqual(['token_save', 'token_delete']);
 });
 
+test('a value the credential store kept that is not credentials — a bare token from before — is signed out', () => {
+    for (const token of ['gho_old', '{"accessToken":42}', '{not json']) {
+        const { auth, vault } = setup({ stored: { token, keychain: true } });
+
+        expect(vault.read()).toBeNull();
+        expect(auth.token).toBeNull();
+        expect(auth.signedIn).toBe(false);
+    }
+});
+
 test('a token GitHub rejects is deleted from the credential store', async () => {
-    const { auth, native } = setup({ stored: { token: 'gho_revoked', keychain: true }, rejected: ['gho_revoked'] });
-    native.kept = 'gho_revoked';
+    const { auth, native } = setup({
+        stored: { token: storedToken('gho_revoked'), keychain: true },
+        rejected: ['gho_revoked'],
+    });
+    native.kept = storedToken('gho_revoked');
 
     await auth.ready();
 
@@ -117,7 +142,7 @@ function setup(options: SetupOptions) {
         ...createTestTabs().open(),
     };
 
-    const { container } = createTestContainer();
+    const { container, logs } = createTestContainer();
     container.set(Browser, browser);
     // A 401 is checked again after a wait; here every wait ends at once.
     container.set(Clock, {
@@ -139,6 +164,7 @@ function setup(options: SetupOptions) {
         auth,
         native,
         vault,
+        logs,
         /** Every value the webview's storages hold. */
         storages: { values: () => [...local.values(), ...session.values()] },
     };

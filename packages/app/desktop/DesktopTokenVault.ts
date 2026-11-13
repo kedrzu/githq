@@ -1,6 +1,9 @@
+import type { OAuthCredentials } from '@githq/github/oauth.js';
 import type { Logger } from '@nzyme/logging/Logger.js';
 
 import type { TokenVaultShape } from '@/auth/TokenVault.js';
+import { parseOAuthCredentials } from '@/auth/utils/parseOAuthCredentials.js';
+import { stringifyOAuthCredentials } from '@/auth/utils/stringifyOAuthCredentials.js';
 
 import type { NativeBridgeShape, StoredToken } from './NativeBridge.js';
 
@@ -14,11 +17,11 @@ export interface CreateDesktopTokenVaultParams {
 
 /**
  * The desktop app's token vault: the OS credential store, through the native side — never the webview's storages.
- * The token is read once, when the app starts, and kept in memory from then on; the app has one window, so nothing
- * else changes it.
+ * The credentials go there as one JSON string (the native side keeps it as it is), read once, when the app starts, and
+ * kept in memory from then on; the app has one window, so nothing else changes them.
  */
 export function createDesktopTokenVault({ bridge, stored, logger }: CreateDesktopTokenVaultParams): TokenVaultShape {
-    let token = stored.token;
+    let credentials = parseOAuthCredentials(stored.token);
     let persistent = stored.keychain;
     // The native side runs its commands side by side: here they run one after another, so a sign-out right after a
     // sign-in ends with no token kept.
@@ -28,18 +31,19 @@ export function createDesktopTokenVault({ bridge, stored, logger }: CreateDeskto
         get persistent() {
             return persistent;
         },
-        read: () => token,
+        read: () => (credentials === null ? null : { ...credentials }),
         write,
         remove,
         onChange: () => {},
     };
 
-    function write(value: string) {
-        token = value;
+    function write(value: OAuthCredentials) {
+        credentials = { ...value };
+        const text = stringifyOAuthCredentials(value);
         enqueue(async () => {
             try {
                 // `false`: the credential store failed, the native side keeps the token for this run only.
-                if (!(await bridge.saveToken(value))) {
+                if (!(await bridge.saveToken(text))) {
                     persistent = false;
                 }
             } catch (error) {
@@ -49,7 +53,7 @@ export function createDesktopTokenVault({ bridge, stored, logger }: CreateDeskto
     }
 
     function remove() {
-        token = null;
+        credentials = null;
         enqueue(async () => {
             try {
                 await bridge.deleteToken();

@@ -3,8 +3,9 @@ import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 import type { UpdateActivity, UpdateState, UpdateStream } from '@/services/AppUpdate.js';
 
-/** The token `token_load` found from an earlier sign-in, and whether the OS credential store works. */
+/** What `token_load` found from an earlier sign-in, and whether the OS credential store works. */
 export interface StoredToken {
+    /** What `token_save` kept, as it was given: the desktop vault's JSON of the credentials, opaque to the native side. */
     readonly token: string | null;
     /** `false`: the credential store does not work, so a token is kept for this run only. */
     readonly keychain: boolean;
@@ -80,7 +81,10 @@ export type ScrollPhase = 'began' | 'ended' | 'cancelled';
 export interface NativeBridgeShape {
     /** `token_load`: never rejects. */
     loadToken(): Promise<StoredToken>;
-    /** `token_save`: `false` when the credential store does not work and the token is kept for this run only. */
+    /**
+     * `token_save`: keeps `token` — any string, the desktop vault's JSON of the credentials — in place of the earlier
+     * one; `false` when the credential store does not work and it is kept for this run only.
+     */
     saveToken(token: string): Promise<boolean>;
     /** `token_delete`. */
     deleteToken(): Promise<void>;

@@ -1,13 +1,14 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
+import type { OAuthCredentials } from '@githq/github/oauth.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import type { PromiseWrapper } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { TokenVault } from '@/auth/TokenVault.js';
-import { createTestSession } from '@/testing/createTestSession.js';
+import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
 
 import type { DeviceSignInState } from './DeviceSignIn.js';
 import { DeviceSignIn } from './DeviceSignIn.js';
@@ -17,7 +18,7 @@ import { NativeBridge } from './NativeBridge.js';
 const CODE: DeviceCode = { userCode: 'WDJB-MJHT', verificationUri: 'https://github.com/login/device', expiresIn: 900 };
 const ALL_SCOPES = 'repo,project,read:org';
 
-test('a token with every scope githq asks for signs in and is kept', async () => {
+test('a token with every scope githq asks for signs in and is kept, with what renews it', async () => {
     const { signIn, auth, vault, native } = setup();
 
     await signIn.start();
@@ -26,13 +27,19 @@ test('a token with every scope githq asks for signs in and is kept', async () =>
     native.finishes[0]?.resolve({
         token: 'gho_octocat',
         scope: 'repo, project, write:org',
-        refreshToken: null,
-        expiresIn: null,
+        refreshToken: 'ghr_octocat',
+        expiresIn: 28_800,
     });
 
     await waitUntil(() => auth.signedIn, { intervalMs: 1, timeoutMs: 1000 });
     expect(auth.viewer?.login).toBe('octocat');
-    expect(vault.read()).toBe('gho_octocat');
+    // The expiry counted from when GitHub issued the token.
+    const expected: OAuthCredentials = {
+        accessToken: 'gho_octocat',
+        refreshToken: 'ghr_octocat',
+        expiresAt: TEST_START + 28_800_000,
+    };
+    expect(vault.read()).toEqual(expected);
 });
 
 test('a token GitHub granted with fewer scopes than githq asks for is refused and never kept', async () => {
