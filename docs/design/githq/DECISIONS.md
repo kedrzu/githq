@@ -146,7 +146,11 @@ window narrows that far moves to its page once no edit is open. `↵` on the ope
 1000 px on a page, 1300 px in the panel, a pinned 440 px summary column (title, standing, reviews, checks, what it
 closes, properties, projects, the stack map) beside the timeline, capped at 920 px; below, one column, the summary
 first. Revised 2026-11-13: the two columns are one `$bg-item` surface, unlike the app's other columns, the edge between
-them unseen until hovered and both columns' content 32 px from it.
+them unseen until hovered and both columns' content 32 px from it. Revised again 2026-11-13: the two columns scroll as
+one, the summary sticky in that scroll (at the top while it fits, its bottom kept at the view's bottom once taller); in
+the panel both columns' content sits 24 px from every edge; a page stands the two in a centred box whose width the
+user drags by its side edges (kept on the device, 1424 px by default), the summary's split inside it, the thread
+filling the timeline.
 
 > **Checked 2026-10-12 (live GraphQL introspection):** GitHub's saved project views are readable —
 > `ProjectV2View` has `name`, `layout`, `filter: String`, `groupByFields`, `verticalGroupByFields`,
