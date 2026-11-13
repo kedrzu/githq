@@ -61,7 +61,11 @@ test('the user’s own comment is edited in place and deleted once confirmed, as
     await expect.element(editor).toHaveFocus();
     await userEvent.type(editor, ' Merging.');
     await userEvent.click(page.getByRole('button', { name: 'Update comment' }));
-    expect(onEdit).toHaveBeenCalledWith({ kind: 'editComment', commentId: 'C_MINE', body: 'Thanks, looks right. Merging.' });
+    expect(onEdit).toHaveBeenCalledWith({
+        kind: 'editComment',
+        commentId: 'C_MINE',
+        body: 'Thanks, looks right. Merging.',
+    });
 
     await openMenu('Thanks, looks right.');
     await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));

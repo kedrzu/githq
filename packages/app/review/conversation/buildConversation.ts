@@ -61,6 +61,10 @@ export function buildConversation({
     return [
         ...timed.toSorted((a, b) => a.at - b.at).map(({ entry }) => entry),
         ...pending,
-        ...failedComments.map((failed): ConversationEntry => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
+        ...failedComments.map((failed): ConversationEntry => ({
+            kind: 'failedComment',
+            id: `failed:${failed.id}`,
+            failed,
+        })),
     ];
 }

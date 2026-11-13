@@ -10,7 +10,7 @@ const { Narrow, NarrowLongLogin, WideReview } = composeStories(stories);
 function getHead(login: string) {
     const head = page.getByText(login, { exact: true }).element().parentElement;
     expect(head?.tagName).toBe('P');
-    return head as HTMLElement;
+    return head!;
 }
 
 /** The one of the elements reading `text` the reader sees: a review's threads are drawn in both places, one hidden. */

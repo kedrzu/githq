@@ -257,7 +257,9 @@ export const NotSent: Story = {
     args: {
         detail: quietDetail(),
         viewer: { login: 'mlaine', avatarUrl: '' },
-        failedComments: [{ id: 1, itemId: F1_PULL_REQUEST.id, body: 'Thanks both.', reason: { kind: 'offline' }, retrying: false }],
+        failedComments: [
+            { id: 1, itemId: F1_PULL_REQUEST.id, body: 'Thanks both.', reason: { kind: 'offline' }, retrying: false },
+        ],
         onRetry: fn(),
         onDiscard: fn(),
     },
