@@ -11,8 +11,20 @@ export interface WorkerEnv {
      * again (`run_worker_first` applies to outside requests only).
      */
     ASSETS: { fetch(request: Request): Promise<Response> };
+    /**
+     * Workers Analytics Engine, where usage is counted (`wrangler.jsonc` `analytics_engine_datasets`, `usage.ts`).
+     * Typed by the one method used, like {@link WorkerEnv.ASSETS}. Optional: a Worker without it counts nothing.
+     */
+    USAGE?: { writeDataPoint(dataPoint: AnalyticsEngineDataPoint): void };
     /** Which OAuth App this is: `prod`, `dev` or `e2e` (`getOAuthClientId`). */
     GITHQ_ENV?: string;
     /** Secret: used only in the Worker's own requests to GitHub (the token exchange and revocation), never in a response or log. */
     GITHUB_CLIENT_SECRET?: string;
+}
+
+/** One row written to Workers Analytics Engine; the subset of Cloudflare's type the Worker writes. */
+export interface AnalyticsEngineDataPoint {
+    blobs: string[];
+    doubles: number[];
+    indexes: string[];
 }

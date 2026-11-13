@@ -12,7 +12,7 @@ import {
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 
 import worker from './worker.js';
-import type { WorkerEnv } from './WorkerEnv.js';
+import type { AnalyticsEngineDataPoint, WorkerEnv } from './WorkerEnv.js';
 
 // GitHub is the system boundary: its token endpoint is a stubbed global `fetch`. Every console call and
 // every answer the Worker gives is captured, so each test also proves that the client secret never leaves
@@ -354,6 +354,117 @@ test('answers an unknown API path with a JSON 404', async () => {
     expect(await response.json()).toEqual({ error: 'not_found' } satisfies OAuthErrorBody);
 });
 
+describe('usage statistics', () => {
+    // Headers a data point must never carry: the visitor's IP, browser and country.
+    const VISITOR_HEADERS = {
+        'cf-connecting-ip': '203.0.113.7',
+        'user-agent': 'Mozilla/5.0 (Macintosh) Safari/605',
+        'cf-ipcountry': 'PL',
+    };
+
+    test('counts a created token from the web app, with nothing but the event and the client', async () => {
+        const usage = usageBinding();
+        githubAnswers(JSON.stringify({ access_token: TOKEN, scope: 'repo' }));
+
+        await call(
+            tokenRequest(
+                { code: CODE, redirectUri: CALLBACK },
+                { headers: { 'content-type': 'application/json', ...VISITOR_HEADERS } },
+            ),
+            { ...ENV, USAGE: usage.binding },
+        );
+
+        const expected: AnalyticsEngineDataPoint[] = [
+            { blobs: ['token_created', 'web', ''], doubles: [1], indexes: ['token_created'] },
+        ];
+        expect(usage.points).toEqual(expected);
+    });
+
+    test('counts a revoked token from the desktop app, also when GitHub no longer knew it', async () => {
+        const usage = usageBinding();
+        github.mockResolvedValueOnce(new Response(null, { status: 204 }));
+        github.mockResolvedValueOnce(new Response('{"message":"Not Found"}', { status: 404 }));
+
+        for (let i = 0; i < 2; i++) {
+            await call(
+                revokeRequest(
+                    { token: TOKEN },
+                    {
+                        headers: {
+                            'content-type': 'application/json',
+                            origin: 'tauri://localhost',
+                            ...VISITOR_HEADERS,
+                        },
+                    },
+                ),
+                { ...ENV, USAGE: usage.binding },
+            );
+        }
+
+        const point: AnalyticsEngineDataPoint = {
+            blobs: ['token_revoked', 'desktop', ''],
+            doubles: [1],
+            indexes: ['token_revoked'],
+        };
+        expect(usage.points).toEqual([point, point]);
+    });
+
+    test('counts nothing when the body turns statistics off', async () => {
+        const usage = usageBinding();
+        githubAnswers(JSON.stringify({ access_token: TOKEN, scope: 'repo' }));
+        const env = { ...ENV, USAGE: usage.binding };
+
+        const exchanged = await call(tokenRequest({ code: CODE, redirectUri: CALLBACK, telemetry: false }), env);
+        github.mockResolvedValue(new Response(null, { status: 204 }));
+        const revoked = await call(revokeRequest({ token: TOKEN, telemetry: false }), env);
+
+        expect([exchanged.status, revoked.status]).toEqual([200, 204]);
+        expect(usage.points).toEqual([]);
+    });
+
+    test('counts no refused or failed exchange or revocation', async () => {
+        const usage = usageBinding();
+        const env = { ...ENV, USAGE: usage.binding };
+
+        githubAnswers(JSON.stringify({ error: 'bad_verification_code' }));
+        await call(tokenRequest({ code: CODE, redirectUri: CALLBACK }), env);
+        github.mockRejectedValueOnce(new TypeError('fetch failed'));
+        await call(tokenRequest({ code: CODE, redirectUri: CALLBACK }), env);
+        await call(tokenRequest({ code: CODE, redirectUri: 'https://evil.test/auth/callback' }), env);
+        github.mockResolvedValueOnce(new Response('{"message":"Validation Failed"}', { status: 422 }));
+        await call(revokeRequest({ token: TOKEN }), env);
+        github.mockRejectedValueOnce(new TypeError('network down'));
+        await call(revokeRequest({ token: TOKEN }), env);
+        await call(revokeRequest({ token: 'ghp_APersonalAccessToken0123' }), env);
+        await call(new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, { method: 'OPTIONS' }), env);
+        await call(revokeRequest({ token: TOKEN }), { ASSETS: ENV.ASSETS, USAGE: usage.binding });
+
+        expect(usage.points).toEqual([]);
+    });
+
+    test('answers the same with the binding, without it and when it throws', async () => {
+        const throwing: WorkerEnv['USAGE'] = {
+            writeDataPoint() {
+                throw new Error('Analytics Engine is down');
+            },
+        };
+        const envs: WorkerEnv[] = [ENV, { ...ENV, USAGE: usageBinding().binding }, { ...ENV, USAGE: throwing }];
+
+        const answers: string[][] = [];
+        for (const env of envs) {
+            githubAnswers(JSON.stringify({ access_token: TOKEN, scope: 'repo' }));
+            const exchanged = await call(tokenRequest({ code: CODE, redirectUri: CALLBACK }), env);
+            github.mockResolvedValue(new Response(null, { status: 204 }));
+            const revoked = await call(revokeRequest({ token: TOKEN }), env);
+            answers.push([await describeResponse(exchanged), await describeResponse(revoked)]);
+        }
+
+        expect(answers[0]?.[0]).toContain(TOKEN);
+        expect(answers[1]).toEqual(answers[0]);
+        expect(answers[2]).toEqual(answers[0]);
+    });
+});
+
 describe('the landing page and the app at /', () => {
     // The assets answer by path, as the real ones do: `/` is the shell, `/_landing` the landing.
     const env: WorkerEnv = {
@@ -374,3 +485,20 @@ describe('the landing page and the app at /', () => {
         expect(await (await call(new Request(`${ORIGIN}/_landing`), env)).text()).toBe('shell');
     });
 });
+
+/** A fake Analytics Engine binding that keeps every data point written to it. */
+function usageBinding() {
+    const points: AnalyticsEngineDataPoint[] = [];
+    const binding: WorkerEnv['USAGE'] = {
+        writeDataPoint(point) {
+            points.push(point);
+        },
+    };
+    return { points, binding };
+}
+
+/** A response's status, headers and body as one string, to compare answers whole. */
+async function describeResponse(response: Response) {
+    const headers = [...response.headers].map(([name, value]) => `${name}: ${value}`).join('\n');
+    return `${response.status}\n${headers}\n${await response.clone().text()}`;
+}

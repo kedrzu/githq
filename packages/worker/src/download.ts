@@ -7,6 +7,9 @@ import {
 } from '@githq/github/desktopInstallers.js';
 import type { DesktopInstaller } from '@githq/github/desktopInstallers.js';
 
+import { recordUsage } from './usage.js';
+import type { WorkerEnv } from './WorkerEnv.js';
+
 /** The prefix of every installer link, `/download/`. */
 export const DOWNLOAD_PREFIX = `${DESKTOP_INSTALLER_PATH}/`;
 
@@ -65,9 +68,10 @@ function downloadCookie(request: Request): string {
  * `/download/<build>`: a redirect to that installer in the latest Stable release, a file with the version in its name,
  * so that a release needs no copies under fixed names, with {@link DESKTOP_DOWNLOAD_COOKIE} for the page that sent the
  * visitor. An unknown build goes to `/download`, the page with every build; when GitHub can't say which release is the
- * latest, the visitor lands on that release's page on GitHub instead.
+ * latest, the visitor lands on that release's page on GitHub instead. Only the redirect to an installer is counted
+ * (`usage.ts`); a download has no opt-out, since no app is there to carry one.
  */
-export async function serveDownload(request: Request): Promise<Response> {
+export async function serveDownload(request: Request, env: WorkerEnv): Promise<Response> {
     const name = new URL(request.url).pathname.slice(DOWNLOAD_PREFIX.length);
     if (!isInstaller(name)) {
         return redirect(new URL(DESKTOP_INSTALLER_PATH, request.url).href);
@@ -76,5 +80,6 @@ export async function serveDownload(request: Request): Promise<Response> {
     if (!version) {
         return redirect(LATEST_RELEASE_URL);
     }
+    recordUsage(env, 'installer_download', { client: '', platform: name });
     return redirect(getDesktopInstallerAssetUrl(name, version), { 'Set-Cookie': downloadCookie(request) });
 }

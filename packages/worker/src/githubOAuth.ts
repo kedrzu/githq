@@ -2,6 +2,7 @@ import { getOAuthClientId, OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTER
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
 
+import { getUsageClient, isUsageOptedOut, recordUsage } from './usage.js';
 import type { WorkerEnv } from './WorkerEnv.js';
 
 /**
@@ -13,6 +14,9 @@ import type { WorkerEnv } from './WorkerEnv.js';
  * 2. GitHub sends the browser to the SPA's route `/auth/callback?code=…&state=…`; the SPA checks the state.
  * 3. The SPA calls `POST /api/auth/token` with `{ code, redirectUri }` ({@link exchangeToken}) and keeps the
  *    token it gets back. The Worker stores nothing.
+ *
+ * A token created or revoked is counted (`usage.ts`) unless the body carries `telemetry: false`; a refused or failed
+ * request is not.
  *
  * The paths, the scopes and what `state` may be are the contract shared with the app (`@githq/github/oauth.js`).
  *
@@ -139,7 +143,12 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
         });
     }
 
-    return await requestToken({ clientId, clientSecret, code, redirectUri });
+    const response = await requestToken({ clientId, clientSecret, code, redirectUri });
+    // 200 is only ever the answer with the token; every refusal and failure has an error status.
+    if (response.ok && !isUsageOptedOut(body)) {
+        recordUsage(env, 'token_created', { client: getUsageClient(request), platform: '' });
+    }
+    return response;
 }
 
 /**
@@ -201,6 +210,9 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
 
     // 404: GitHub no longer knows the token (revoked already); undocumented, observed.
     if (response.status === 204 || response.status === 404) {
+        if (!isUsageOptedOut(body)) {
+            recordUsage(env, 'token_revoked', { client: getUsageClient(request), platform: '' });
+        }
         return new Response(null, { status: 204, headers: { ...REVOKE_CORS_HEADERS, 'cache-control': 'no-store' } });
     }
 
