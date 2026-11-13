@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px they scroll as one column, the panel as it always was and a page centred at the reading width; from 1000px, a panel dragged wide as much as a page, they stand side by side, each scrolling on its own: the summary pinned at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), the timeline beside it at most the reading width, 40px from the column's line, the rest of the width left empty; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side, each scrolling on its own: the summary pinned at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), the timeline beside it at most the reading width, the rest of the width left empty. Unlike the app's other columns the two are one surface, the edge between them drawn only while hovered and both columns' content 32px from it, so it lies midway between them; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -84,8 +84,10 @@ import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
 
-/** From this width of the item below its header, panel or page, the summary and the timeline stand side by side. */
+/** From this width of the item below its header on a page, the summary and the timeline stand side by side. */
 const TWO_COLUMNS_WIDTH = 1000;
+/** The same in the panel: later, so a panel dragged a little wider does not already split. */
+const PANEL_TWO_COLUMNS_WIDTH = 1300;
 /**
  * The summary's column: 440 px by default, dragged from 360 to 560 px. The timeline keeps 560 px beside it, so at the
  * narrowest two columns the summary has its default width.
@@ -201,8 +203,10 @@ const stackRowsInView = ref(true);
 const stackDropped = ref(false);
 /** The item's width below the header, panel or page: it decides the layout, not the arrangement. */
 const bodyWidth = ref(0);
-/** From {@link TWO_COLUMNS_WIDTH}: the summary in a column of its own, the timeline beside it. */
-const twoColumns = computed(() => bodyWidth.value >= TWO_COLUMNS_WIDTH);
+/** From {@link TWO_COLUMNS_WIDTH} or {@link PANEL_TWO_COLUMNS_WIDTH}: the summary in a column of its own, the timeline beside it. */
+const twoColumns = computed(
+  () => bodyWidth.value >= (props.arrangement === 'panel' ? PANEL_TWO_COLUMNS_WIDTH : TWO_COLUMNS_WIDTH),
+);
 
 // Measured before the first paint, so a page opens in two columns rather than one for a frame.
 let bodyObserver: ResizeObserver | undefined;
@@ -783,6 +787,7 @@ interface OtherArrangement {
         :width="SUMMARY_WIDTH"
         :pane-min="TIMELINE_MIN_WIDTH"
         :label="t(l.resizeSummary)"
+        seamless
       >
         <template #column>
           <!-- Where the summary goes in two columns. -->
@@ -987,6 +992,8 @@ interface OtherArrangement {
 <style lang="scss" module="css">
 // A page in one column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
 $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
+// Two columns: each column's content this far from its edges, so the invisible edge between them lies midway.
+$item-column-inset: 32px;
 
 .itemView {
   display: flex;
@@ -1074,13 +1081,12 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   min-height: 0;
 }
 
-// Two columns: the summary's column, the summary scrolling in it.
+// Two columns: the summary's column, the summary scrolling in it, on the view's own surface.
 .itemView_summaryColumn {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  background: $color-bg;
 }
 
 // The content and, in one column, what drops over it from the stack bar.
@@ -1159,7 +1165,7 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 }
 
 // Two columns: only the timeline is left here, scrolling on its own, at most the reading width at the left (F18–F20,
-// F23); what is left of the width stays empty at the right.
+// F23), as far from the edge as the summary is; what is left of the width stays empty at the right.
 .itemView_scroll_twoColumns,
 .itemView_page .itemView_scroll_twoColumns {
   gap: 0;
@@ -1169,9 +1175,9 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   > .itemView_timeline {
     flex: 1;
     min-height: 0;
-    padding: 32px 40px;
+    padding: $item-column-inset;
     overflow-y: auto;
-    scroll-padding-block: 32px;
+    scroll-padding-block: $item-column-inset;
   }
 
   .itemView_thread {
@@ -1195,9 +1201,9 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 .itemView_summary_column {
   flex: 1;
   min-height: 0;
-  padding: 20px 20px 24px;
+  padding: $item-column-inset;
   overflow-y: auto;
-  scroll-padding-block: 20px;
+  scroll-padding-block: $item-column-inset;
 }
 
 .itemView_heading {

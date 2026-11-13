@@ -27,19 +27,20 @@ export class ItemViewHarness {
     }
 
     /**
-     * Its content: narrower than 1000px the one column that scrolls, the summary and then the thread; from 1000px it
+     * Its content: narrower than 1000px on a page (1300px in the panel) the one column that scrolls, the summary and
+     * then the thread; from there it
      * holds the {@link summary} and the {@link timeline} side by side, scrolling each on its own, and does not scroll.
      */
     get content(): Locator {
         return this.root.locator('[data-route-scroll^="item-main:"]');
     }
 
-    /** The column of its title, where it stands and its properties; scrolls on its own only from 1000px wide. */
+    /** The column of its title, where it stands and its properties; scrolls on its own only in two columns. */
     get summary(): Locator {
         return this.root.locator('[data-route-scroll^="item-summary:"]');
     }
 
-    /** The column of its description and activity; scrolls on its own only from 1000px wide. */
+    /** The column of its description and activity; scrolls on its own only in two columns. */
     get timeline(): Locator {
         return this.root.locator('[data-route-scroll^="item-timeline:"]');
     }
