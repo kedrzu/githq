@@ -56,5 +56,5 @@ function comment(id: string, createdAt: string): ItemComment {
 }
 
 function review(id: string, submittedAt: string, overrides: Partial<ItemReviewSummary> = {}): ItemReviewSummary {
-    return { id, url: '', author: null, state: 'APPROVED', bodyHtml: '<p>text</p>', submittedAt, ...overrides };
+    return { id, url: '', author: null, state: 'APPROVED', body: 'text', bodyHtml: '<p>text</p>', submittedAt, ...overrides };
 }

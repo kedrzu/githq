@@ -580,6 +580,10 @@ type Askable =
     :aria-busy="!detail || readingMiddle || reviewThreadsLoading || undefined"
     @keydown="onKeydown"
   >
+    <span
+      :class="css.itemThread_rail"
+      aria-hidden="true"
+    />
     <!-- The description comes with the detail: before it, no card of it — the rail's skeleton or why stands for it. -->
     <ItemThreadMissing
       v-if="!detail"
@@ -669,6 +673,8 @@ type Askable =
             :viewer="viewer"
             :replies="replies"
             :linked-anchor="linkedAnchor"
+            :actions="actions"
+            :can-quote="canQuote"
             @reply="openReply"
             @set-resolved="setResolved"
             @toggled="focusThread"
@@ -717,21 +723,28 @@ type Askable =
 
 <style lang="scss" module="css">
 // The rail: a line behind the cards, from the description down to the end, at the centre of the folds' breaks. Its own
-// stacking context keeps the line over the view's background and under the cards.
+// stacking context keeps the line over the view's background and under the cards. Narrow, the cards have no gutter for
+// it to run down (`CommentCard`), so there is none.
 .itemThread {
   position: relative;
   isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: $spacing-16;
+  container-type: inline-size;
+}
 
-  &::before {
-    position: absolute;
-    inset: 0 auto 0 $item-thread-rail-offset;
-    z-index: -1;
-    width: $item-thread-rail-width;
-    content: '';
-    background: $color-border;
+.itemThread_rail {
+  position: absolute;
+  inset: 0 auto 0 $item-thread-rail-offset;
+  z-index: -1;
+  width: $item-thread-rail-width;
+  background: $color-border;
+}
+
+@container (width < #{$comment-card-narrow}) {
+  .itemThread_rail {
+    display: none;
   }
 }
 

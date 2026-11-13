@@ -164,9 +164,18 @@ function onEscape(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
-// As a card of the thread: the avatar in the thread's gutter, level with the editor's head.
+// As a card of the thread: the avatar in the thread's gutter, level with the editor's head — none in a narrow one, as
+// a narrow card has none (`Activity / Comment · narrow, editing`).
 .commentEditor {
   @include item-thread-row;
+
+  container: comment-card / inline-size;
+}
+
+@container comment-card (width < #{$comment-card-narrow}) {
+  .commentEditor_gutter {
+    display: none;
+  }
 }
 
 .commentEditor_reply {

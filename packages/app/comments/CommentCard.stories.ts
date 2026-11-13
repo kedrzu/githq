@@ -6,9 +6,15 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import CommentCard from './CommentCard.vue';
+import CommentMenu from './CommentMenu.vue';
+import CommentVerdict from './CommentVerdict.vue';
 
 /** The thread's width in a panel. */
 const IN_PANEL = 512;
+/** Code review's conversation at its narrowest: the card in its narrow layout (`Activity / Comment · narrow`). */
+const NARROW = 312;
+/** A login as long as GitHub takes. */
+const LONG_LOGIN = 'a-very-long-github-login-name-here';
 
 const COMMENT = D1_ISSUE_DETAIL.comments.nodes[0]!;
 const VIEWER = {
@@ -24,20 +30,28 @@ const meta = {
         createdAt: COMMENT.createdAt,
         now: SAMPLE_NOW,
     },
-    // On an item view's background, as wide as the thread in a panel; GitHub's rendering as the text, or the text
-    // as typed (`parameters.typed`). The failed card's band is `ItemThread`'s (its `NotSent` story).
+    // On an item view's background, as wide as the thread in a panel (or `parameters.width`); GitHub's rendering as
+    // the text, or the text as typed (`parameters.typed`); a review's verdict (`parameters.verdict`), its threads at
+    // the head's end (`parameters.tail`) and the ⋯ (`parameters.menu`). The failed card's band is `CommentFailedCard`'s.
     render: (args, { parameters }) => ({
-        components: { GitHubHtml, CommentCard },
+        components: { CommentMenu, CommentVerdict, GitHubHtml, CommentCard },
         setup: () => ({
             args,
             html: parameters.html ?? COMMENT.bodyHtml,
             typed: parameters.typed,
+            verdict: parameters.verdict,
+            tail: parameters.tail,
+            menu: parameters.menu ?? false,
+            width: parameters.width ?? IN_PANEL,
         }),
         template: `
-          <div style="width: ${IN_PANEL}px; padding: 20px 0; background: #11161c">
+          <div :style="{ width: width + 'px', padding: '20px 0', background: '#11161c' }" tid="frame">
             <CommentCard v-bind="args">
+              <template v-if="verdict" #verdict><CommentVerdict :state="verdict" /></template>
+              <template v-if="tail" #tail><span>{{ tail }}</span></template>
               <p v-if="typed" style="margin: 0; white-space: pre-wrap" v-text="typed" />
               <GitHubHtml v-else :html="html" />
+              <template v-if="menu" #menu><CommentMenu :can-edit="true" :can-quote="true" /></template>
             </CommentCard>
           </div>`,
     }),
@@ -73,4 +87,33 @@ export const Sending: Story = {
 export const Failed: Story = {
     args: { author: VIEWER, createdAt: undefined, failed: true },
     parameters: { typed: TYPED },
+};
+
+/** In code review's conversation at 340 px: no gutter, the avatar starts the head, the age without the verb. */
+export const Narrow: Story = {
+    parameters: { width: NARROW, menu: true },
+};
+
+/** The narrow description: the Author chip kept while there is room. */
+export const NarrowDescription: Story = {
+    args: {
+        author: D1_ISSUE.author,
+        createdAt: D1_ISSUE.createdAt,
+        description: true,
+    },
+    parameters: { width: NARROW, menu: true, html: D1_ISSUE_DETAIL.bodyHtml },
+};
+
+/**
+ * A very long login on a review with its threads, narrow: the login is cut short, the verdict, the age and the ⋯
+ * stay, and the threads go to a line under the text.
+ */
+export const NarrowLongLogin: Story = {
+    args: { author: { login: LONG_LOGIN, avatarUrl: '' } },
+    parameters: { width: NARROW, menu: true, verdict: 'CHANGES_REQUESTED', tail: '2 threads · 1 resolved' },
+};
+
+/** The same review wide: the threads at the head's end. */
+export const WideReview: Story = {
+    parameters: { menu: true, verdict: 'CHANGES_REQUESTED', tail: '2 threads · 1 resolved' },
 };

@@ -1,4 +1,4 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`aside`), its ⋯ — and what they wrote below, when anything. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`tail`), its ⋯ — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -51,8 +51,8 @@ defineSlots<{
   default?(): unknown;
   /** Instead of "commented": a review's verdict, the age after it. */
   verdict?(): unknown;
-  /** At the end of the head: a review's threads, "Show review". */
-  aside?(): unknown;
+  /** At the end of the head, or a line under what was written in a narrow card: a review's threads, "Show review". */
+  tail?(): unknown;
   /** The entries of the card's menu, from its ⋯ at the end of its head or a right click on the card. */
   menu?(): unknown;
   /** A band at the bottom of the card, under what was written. */
@@ -63,14 +63,15 @@ const t = useTranslate();
 const headRef = useTemplateRef<HTMLElement>('head');
 
 const login = computed(() => props.author?.login ?? t(l.deletedUser));
-const age = computed(() => {
-  if (props.createdAt === undefined) {
-    return '';
-  }
-
-  const formatWhen = props.description ? formatTimeAgo : formatAge;
-  return formatWhen(Date.parse(props.createdAt), props.now);
-});
+const time = computed(() => (props.createdAt === undefined ? null : Date.parse(props.createdAt)));
+/** "2d": a narrow card's, and a review's after its verdict. */
+const age = computed(() => (time.value === null ? '' : formatAge(time.value, props.now)));
+/** "commented 2d", or "commented 2 days ago" on the description. */
+const commented = computed(() =>
+  time.value === null
+    ? ''
+    : t(l.commented, { when: (props.description ? formatTimeAgo : formatAge)(time.value, props.now) }),
+);
 
 // The ⋯ is the head's only button.
 watchPostEffect(() => {
@@ -106,6 +107,13 @@ watchPostEffect(() => {
           ref="head"
           :class="css.commentCard_head"
         >
+          <Avatar
+            :class="css.commentCard_headAvatar"
+            :name="login"
+            :src="author?.avatarUrl"
+            size="sm"
+            decorative
+          />
           <span :class="css.commentCard_author">{{ name ?? login }}</span>
           <slot name="verdict" />
           <span
@@ -119,10 +127,17 @@ watchPostEffect(() => {
             >{{ t(l.sending) }}</span
           >
           <time
-            v-else
+            v-else-if="$slots.verdict"
             :class="css.commentCard_when"
             :datetime="createdAt"
-            >{{ $slots.verdict || age === '' ? age : t(l.commented, { when: age }) }}</time
+            >{{ age }}</time
+          >
+          <time
+            v-else-if="time !== null"
+            :class="css.commentCard_when"
+            :datetime="createdAt"
+            ><span :class="css.commentCard_wide">{{ commented }}</span
+            ><span :class="css.commentCard_narrow">{{ age }}</span></time
           >
           <span
             v-if="edited"
@@ -130,7 +145,12 @@ watchPostEffect(() => {
             >{{ t(l.edited) }}</span
           >
           <span :class="css.commentCard_spacer" />
-          <slot name="aside" />
+          <span
+            v-if="$slots.tail"
+            :class="[css.commentCard_tail, css.commentCard_wide]"
+          >
+            <slot name="tail" />
+          </span>
           <span
             v-if="description"
             :class="css.commentCard_chip"
@@ -156,6 +176,12 @@ watchPostEffect(() => {
         >
           <slot />
         </div>
+        <div
+          v-if="$slots.tail"
+          :class="[css.commentCard_tailLine, $slots.default && css.commentCard_tailLine_after, css.commentCard_narrow]"
+        >
+          <slot name="tail" />
+        </div>
         <slot name="footer" />
       </div>
     </div>
@@ -166,9 +192,11 @@ watchPostEffect(() => {
 </template>
 
 <style lang="scss" module="css">
-// Avatars in the thread's gutter, beside the card.
+// Avatars in the thread's gutter, beside the card. Its own width decides the layout: the card is a query container.
 .commentCard {
   @include item-thread-row;
+
+  container: comment-card / inline-size;
 }
 
 .commentCard_gutter {
@@ -213,9 +241,21 @@ watchPostEffect(() => {
   &:last-child {
     border-bottom: 0;
   }
+
+  // What a review's verdict says stays whole: the login is cut short first.
+  > * {
+    flex: none;
+  }
 }
 
+// Twice the class: the avatar's own display comes from a stylesheet that may load after this one.
+.commentCard_headAvatar.commentCard_headAvatar {
+  display: none;
+}
+
+// The one part of the head that gives way, after the Author chip.
 .commentCard_author {
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -234,7 +274,13 @@ watchPostEffect(() => {
 }
 
 .commentCard_spacer {
-  flex: 1;
+  flex: 1 1 0;
+}
+
+.commentCard_tail {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
 }
 
 .commentCard_chip {
@@ -250,5 +296,61 @@ watchPostEffect(() => {
   flex-direction: column;
   gap: $spacing-10;
   padding: $spacing-14 $spacing-16 $spacing-16;
+}
+
+// A narrow card's head has no room for it: one line of its own, under what was written.
+.commentCard_tailLine {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+  padding: $spacing-10 $spacing-16;
+}
+
+.commentCard_tailLine_after {
+  padding-top: 0;
+  margin-top: -$spacing-6;
+}
+
+.commentCard_narrow {
+  display: none;
+}
+
+@container comment-card (width < #{$comment-card-narrow}) {
+  .commentCard_gutter,
+  .commentCard_wide {
+    display: none;
+  }
+
+  .commentCard_headAvatar.commentCard_headAvatar {
+    display: inline-flex;
+  }
+
+  .commentCard_narrow {
+    display: inline;
+  }
+
+  .commentCard_tailLine.commentCard_narrow {
+    display: flex;
+  }
+
+  .commentCard_head {
+    padding-left: $spacing-12;
+  }
+
+  .commentCard_body {
+    padding: $spacing-12 $spacing-14 $spacing-14;
+  }
+
+  .commentCard_tailLine {
+    padding-right: $spacing-14;
+    padding-left: $spacing-14;
+  }
+}
+
+// Tighter still, the Author chip goes before the login is cut short.
+@container comment-card (width < #{$comment-card-tight}) {
+  .commentCard_chip {
+    display: none;
+  }
 }
 </style>

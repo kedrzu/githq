@@ -290,6 +290,10 @@ $item-thread-rail-offset: 55px;
 $item-thread-rail-width: 2px;
 // A fold's break (`ItemThreadFold`): the dashed stretch of rail beside a folded band, centred on the rail.
 $item-thread-rail-break-width: 28px;
+// A comment card (`CommentCard`) narrower than this has no gutter: its avatar starts its head (`Activity / Comment ·
+// narrow`); narrower than the second, the description's Author chip gives way too.
+$comment-card-narrow: 480px;
+$comment-card-tight: 300px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)

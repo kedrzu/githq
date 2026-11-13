@@ -230,6 +230,7 @@ function summary(id: string, state: ItemReviewSummary['state'], bodyHtml: string
         url: `https://github.com/fitloop/webapp/pull/1202#pullrequestreview-${id}`,
         author: { login: 'sofiab', avatarUrl: '' },
         state,
+        body: '',
         bodyHtml,
         submittedAt: '2026-10-30T12:00:00Z',
     };
