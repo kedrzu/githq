@@ -76,3 +76,14 @@ Canvas:
 
 - [ ] The 25 top-level frames from `App · Command menu` down (y ≥ 56076) moved 2270 px down, keeping 1200 px below
       the taller `App · Code review`.
+
+## Round 2 · owner's answers
+
+Asked: the owner accepted the round and CR126's recommendation (⋯ on review cards at every width, Quote reply and Copy
+link). Checked the owner's note on panel separators: every separator of the code review screens is `$border` at 1 px,
+none doubled (a 4× export shows the file list's and the conversation's lines identical); the difference seen in the
+app comes from zoom antialiasing. In code, the conversation's own `border-left` goes once `ColumnSplit` draws the line.
+
+- [ ] Activity / Review (`b1us0`): `More` ⋯ (`e9fnT9`) shown on every review card, wide too; hidden on
+      `Activity / Review · pending` (`PwdqU`), a draft not on GitHub yet.
+- [ ] CR126 (`ERZS9`, `QNbcB`): settled — `Question ·` and the amber dropped, the caption says the rule.
