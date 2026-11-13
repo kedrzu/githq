@@ -5,6 +5,7 @@ import {
     DEFAULT_WORKFLOW_SETTINGS,
     parseSettings,
     readAnimations,
+    readUsageStatistics,
     readRepositoryLayout,
     readReviewCommentChoice,
     readWorkflowSettings,
@@ -220,6 +221,31 @@ test.each<[unknown, boolean]>([
 
     expect(readAnimations(parsed.document)).toBe(reads);
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, animations: written });
+});
+
+test.each<[unknown, boolean]>([
+    [false, false],
+    [true, true],
+    ['a newer build’s value', true],
+    [0, true],
+])('a file with usageStatistics %j is readable, reads as %s and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, usageStatistics: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readUsageStatistics(parsed.document)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, usageStatistics: written });
+});
+
+test('a file without usageStatistics reads as on', () => {
+    expect(readUsageStatistics(DOCUMENT)).toBe(true);
+});
+
+test('usageStatistics is written right after animations, before fields this build does not know', () => {
+    const written = serializeSettings({ ...DOCUMENT, usageStatistics: false, animations: false, future: 1 });
+
+    expect(Object.keys(JSON.parse(written)).slice(-3)).toEqual(['animations', 'usageStatistics', 'future']);
 });
 
 test.each<[unknown, ReviewCommentChoice]>([

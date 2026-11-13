@@ -29,6 +29,11 @@ export interface SettingsDocument {
      */
     readonly animations?: unknown;
     /**
+     * Whether anonymous usage statistics are shared, as written in the file: read it with {@link readUsageStatistics},
+     * which treats absent or unknown as on.
+     */
+    readonly usageStatistics?: unknown;
+    /**
      * What the first key of a code review's comment box does with no draft open (code-review D17, D34), as written in
      * the file: a newer build's value is kept until the user changes it, so read it with {@link readReviewCommentChoice}.
      */
@@ -141,7 +146,16 @@ export function parseSettings(text: string): ParsedSettings {
  * @__NO_SIDE_EFFECTS__
  */
 export function serializeSettings(document: SettingsDocument): string {
-    const { version, repositories, projects, repositoryLayout, reviewCommentChoice, animations, ...rest } = document;
+    const {
+        version,
+        repositories,
+        projects,
+        repositoryLayout,
+        reviewCommentChoice,
+        animations,
+        usageStatistics,
+        ...rest
+    } = document;
     const ordered: SettingsDocument = {
         version,
         repositories: repositories.map(({ nameWithOwner, id, tracking, ...unknown }) => ({
@@ -162,6 +176,7 @@ export function serializeSettings(document: SettingsDocument): string {
         repositoryLayout,
         reviewCommentChoice,
         animations,
+        usageStatistics,
         ...rest,
     };
     return `${JSON.stringify(ordered, null, 2)}\n`;
@@ -252,6 +267,15 @@ export function readRepositoryLayout(document: SettingsDocument): RepositoryLayo
  */
 export function readAnimations(document: SettingsDocument): boolean {
     return document.animations !== false;
+}
+
+/**
+ * Whether usage statistics are shared; on unless the document says exactly `false` (absent or a newer build's value
+ * reads as on).
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readUsageStatistics(document: SettingsDocument): boolean {
+    return document.usageStatistics !== false;
 }
 
 /**

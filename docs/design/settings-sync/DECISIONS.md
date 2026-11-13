@@ -125,7 +125,7 @@ layout, grouping, sort, visible properties and filter, a project's row field, th
 sizes, plus new issue drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the
 design agent's reading; 2026-11-02, owner for the repository layout, [git-client D14](../git-client/DECISIONS.md#d14)) Added
 since, as a chosen preference rather than a view detail: what a comment does by default
-([code-review D34](../code-review/DECISIONS.md#d34)).
+([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on).
 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
@@ -135,6 +135,8 @@ later; they are not part of this design.
 |Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
 |Repository layout|`repositoryLayout` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |How a code review's comment goes out|`reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
 |Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
 |How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|

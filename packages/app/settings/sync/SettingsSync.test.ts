@@ -746,6 +746,30 @@ test('animations turned off here are written at once, and one changed elsewhere 
     expect(tracking.animations).toBe(true);
 });
 
+test('usage statistics turned off here are written at once, one changed elsewhere comes in, and an absent key is not rewritten', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const text = github.file?.text;
+
+    await sync.sync();
+    expect(tracking.usageStatistics).toBe(true);
+    tracking.setUsageStatistics(true);
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+    expect(github.file?.text).toBe(text);
+
+    tracking.setUsageStatistics(false);
+    await sync.sync();
+    expect(tracking.usageStatistics).toBe(false);
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { usageStatistics: false },
+    });
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), usageStatistics: true });
+    await sync.sync();
+    expect(tracking.usageStatistics).toBe(true);
+});
+
 test('turning animations off before the first choice of what to track does not count as that choice', async () => {
     const { tracking } = await open();
 
