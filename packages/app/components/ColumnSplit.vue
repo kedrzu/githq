@@ -1,4 +1,4 @@
-<!-- A column beside a pane, left of it by default or right of it (`side`): the column (`column`), when `shown`, and the pane (the default slot), which stays mounted as the column comes and goes. The width is the user's on this device (`width`: its key, default and range), dragged by the column's inner edge (`label` names it) or changed with the arrow keys on it. The pane keeps at least `paneMin` px (400 by default), the column giving way down to its minimum while the width the user chose stays kept and returns when there is room again. Its root sets `--column-split-width` to the width shown (the kept one while the column is not shown), for what in the pane follows it. Panels beside each other are resized through Reka's splitter, here or as `SplitterGroup` + `ResizeHandle` + `usePanelWidth` where this doesn't fit, never by a handle of their own. -->
+<!-- A column beside a pane, left of it by default or right of it (`side`): the column (`column`), when `shown`, and the pane (the default slot), which stays mounted as the column comes and goes. The width is the user's on this device (`width`: its key, default and range), dragged by the column's inner edge (`label` names it) or changed with the arrow keys on it. The pane keeps at least `paneMin` px (400 by default), the column giving way down to its minimum while the width the user chose stays kept and returns when there is room again. With `seamless` the column and the pane are one surface: no line between them, the edge showing only while hovered, dragged or focused. Its root sets `--column-split-width` to the width shown (the kept one while the column is not shown), for what in the pane follows it. Panels beside each other are resized through Reka's splitter, here or as `SplitterGroup` + `ResizeHandle` + `usePanelWidth` where this doesn't fit, never by a handle of their own. -->
 <script lang="ts" setup>
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
@@ -18,10 +18,12 @@ const props = defineProps<{
   side?: 'left' | 'right';
   /** What is left to the pane, at least, in pixels; 400 by default. */
   paneMin?: number;
+  /** No line between the column and the pane; the edge is still there to drag, drawn only while in use. */
+  seamless?: boolean;
 }>();
 
 defineSlots<{
-  /** The column; fills its panel, whose inner border is the line beside the pane. */
+  /** The column; fills its panel, whose inner border is the line beside the pane unless `seamless`. */
   column?(): unknown;
   /** The pane. */
   default?(): unknown;
@@ -111,7 +113,10 @@ function saveWidth() {
         :min-size="columnWidth.min"
         :max-size="columnWidth.max"
         :style="columnWidth.style"
-        :class="[css.columnSplit_column, side === 'right' ? css.columnSplit_column_right : css.columnSplit_column_left]"
+        :class="[
+          css.columnSplit_column,
+          !seamless && (side === 'right' ? css.columnSplit_column_right : css.columnSplit_column_left),
+        ]"
         @vue:mounted="restoreWidth"
       >
         <slot name="column" />
