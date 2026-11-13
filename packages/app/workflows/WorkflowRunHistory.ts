@@ -86,7 +86,7 @@ export const WorkflowRunHistory = defineService({
 
         accounts.onChange(account => {
             entriesRef.value = new Map();
-            session = account ? { account, rest: createRest(() => account.token) } : null;
+            session = account ? { account, rest: createRest(account.getToken) } : null;
         });
 
         return { get, refresh, readMore };

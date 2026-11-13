@@ -2,7 +2,8 @@ import type { BrowserContext, Page, Request, Route } from '@playwright/test';
 
 import type { Sdk } from '@githq/github/generated.gen.js';
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
-import { OAUTH_REVOKE_PATH, OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
+import { OAUTH_REFRESH_PATH, OAUTH_REVOKE_PATH, OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
+import type { OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 /** A GraphQL operation the app sends: a method of the generated SDK (`packages/github/src/operations`). */
@@ -74,9 +75,15 @@ export interface GitHubRestCall extends GitHubRestRequest {
     readonly status: number;
 }
 
-/** What the app's token exchange (`POST /api/auth/token`) answers when it succeeds. */
+/**
+ * What the app's token exchange (`POST /api/auth/token`) and its refresh (`POST /api/auth/refresh`) answer when they
+ * succeed. Without a refresh token and an expiry, the token never expires, as a pasted development token.
+ */
 export interface GitHubTokenExchange {
     readonly accessToken: string;
+    readonly refreshToken?: string | null;
+    /** Seconds until the access token expires. */
+    readonly expiresIn?: number | null;
     readonly scopes: readonly string[];
 }
 
@@ -172,8 +179,10 @@ const AVATAR_PNG = Buffer.from(
  * the code for a token at `github.com`. Its endpoint (`POST /api/auth/token`) is therefore answered in the
  * browser too ({@link tokenExchange}), and unrouted like any other until a test registers it — so the Worker
  * never calls GitHub during the tests. So is its revocation of a token on signing out (`POST /api/auth/revoke`),
- * always answered `204` and recorded ({@link revokedTokens}). The Worker's other way to GitHub, the redirect to its
- * consent screen, is answered like a request to that screen (Chromium would not route it).
+ * always answered `204` and recorded ({@link revokedTokens}), and its renewal of an expiring token
+ * (`POST /api/auth/refresh`), answered for the refresh tokens a test registers ({@link tokenRefresh}). The Worker's
+ * other way to GitHub, the redirect to its consent screen, is answered like a request to that screen (Chromium would
+ * not route it).
  *
  * The issue search (`GET /search/issues`), which every signed-in app polls for "my work", is always answered:
  * from {@link searchIssues}, finding nothing until a test says otherwise — a query it does not know is unrouted.
@@ -227,6 +236,9 @@ export class GitHubMock {
     }[] = [];
     private tokenExchangeAnswer: GitHubTokenExchange | GitHubHttpError | null = null;
     private readonly revoked: string[] = [];
+    /** What each refresh token not spent yet is renewed with ({@link tokenRefresh}). */
+    private readonly refreshAnswers = new Map<string, GitHubTokenExchange>();
+    private readonly refreshed: string[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
     /** While answers are held: settles when they are released. */
@@ -253,11 +265,21 @@ export class GitHubMock {
             url => url.pathname === OAUTH_REVOKE_PATH,
             route => this.handleRevocation(route),
         );
+        await context.route(
+            // The renewal of an expiring token, which the Worker forwards to `github.com`: answered in the browser too.
+            url => url.pathname === OAUTH_REFRESH_PATH,
+            route => this.handleRefresh(route),
+        );
     }
 
     /** The tokens the app asked the Worker to revoke (`POST /api/auth/revoke`), oldest first. */
     get revokedTokens(): readonly string[] {
         return this.revoked;
+    }
+
+    /** The refresh tokens the app sent the Worker to renew its token with (`POST /api/auth/refresh`), oldest first. */
+    get refreshedTokens(): readonly string[] {
+        return this.refreshed;
     }
 
     /**
@@ -330,6 +352,15 @@ export class GitHubMock {
     /** Answers the app's token exchange (`POST /api/auth/token`) as the Worker would after asking GitHub. */
     tokenExchange(answer: GitHubTokenExchange | GitHubHttpError): void {
         this.tokenExchangeAnswer = answer;
+    }
+
+    /**
+     * Answers the app's renewal of its token (`POST /api/auth/refresh`) with `refreshToken` as the Worker would after
+     * asking GitHub: `answer` once, as GitHub spends a refresh token on its first use. A refresh token never registered,
+     * or spent, is unrouted.
+     */
+    tokenRefresh(refreshToken: string, answer: GitHubTokenExchange): void {
+        this.refreshAnswers.set(refreshToken, answer);
     }
 
     /**
@@ -566,6 +597,26 @@ export class GitHubMock {
         await route.fulfill({ status: 204 });
     }
 
+    private async handleRefresh(route: Route) {
+        const request = route.request();
+        const body = parseJson(request.postData());
+        const refreshToken = isPlainObject(body) && typeof body.refreshToken === 'string' ? body.refreshToken : null;
+        if (request.method() !== 'POST' || refreshToken === null) {
+            await this.reject(route, describe(request));
+            return;
+        }
+
+        const answer = this.refreshAnswers.get(refreshToken);
+        if (answer) {
+            this.refreshed.push(refreshToken);
+            this.refreshAnswers.delete(refreshToken);
+            await route.fulfill({ status: 200, json: toTokenExchangeBody(answer) });
+            return;
+        }
+
+        await this.reject(route, `${describe(request)} — refresh token ${refreshToken}`);
+    }
+
     private async handleTokenExchange(route: Route) {
         const request = route.request();
         const answer = this.tokenExchangeAnswer;
@@ -577,7 +628,7 @@ export class GitHubMock {
         await route.fulfill(
             answer instanceof GitHubHttpError
                 ? { status: answer.status, json: { error: answer.message } }
-                : { status: 200, json: answer },
+                : { status: 200, json: toTokenExchangeBody(answer) },
         );
     }
 
@@ -601,6 +652,16 @@ export class GitHubMock {
         this.unrouted.push(description);
         await route.abort('blockedbyclient');
     }
+}
+
+/** The Worker's answer to a token exchange or refresh (`OAuthTokenExchangeResult`), every field there. */
+function toTokenExchangeBody(answer: GitHubTokenExchange): OAuthTokenExchangeResult {
+    return {
+        accessToken: answer.accessToken,
+        refreshToken: answer.refreshToken ?? null,
+        expiresIn: answer.expiresIn ?? null,
+        scopes: [...answer.scopes],
+    };
 }
 
 /** The body GitHub answers an operation with: `{ data }`, and `errors` only when there are some. */

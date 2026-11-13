@@ -236,7 +236,7 @@ test('a change of several items reports the ones that failed of all, and undoes 
 
 test('an edit GitHub took and goes on with holds no slot: with four running another item’s edit goes at once, while the item’s own later edit waits', async () => {
     const { editor, queue, github, session } = await setup();
-    const account = { login: github.viewer, token: github.token };
+    const account = { login: github.viewer };
     const running = createPromise<EditVerdict>();
     const follow = () => running.promise;
     const sent: string[] = [];
@@ -275,7 +275,7 @@ test('an edit GitHub took and goes on with holds no slot: with four running anot
 
 test('asking how an edit GitHub took ended rejects: it is undone and reported like one refused', async () => {
     const { queue, github, session } = await setup();
-    const account = { login: github.viewer, token: github.token };
+    const account = { login: github.viewer };
     const answer: EditAnswer = { kind: 'following', follow: () => Promise.reject(new Error('Offline')) };
 
     const outcome = await queue.submit({ edits: [sampleEdit('PR_1', answer)], account, itemCount: 1 });

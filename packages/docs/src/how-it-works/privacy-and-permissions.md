@@ -35,17 +35,19 @@ OAuth App sees what you see on GitHub.
   Windows, the Secret Service on Linux. If the app can't reach it, the token stays in memory and you sign in again at
   the next launch.
 
-Once you are signed in, the token goes only to GitHub, apart from the moment you sign out (see below). githq.dev also sets a cookie,
+Once you are signed in, the token goes only to GitHub, apart from its renewal and the moment you sign out (see below). githq.dev also sets a cookie,
 `githq_signed_in=1`, while you are signed in, so that githq.dev opens the app rather than the landing page. It holds no
 token and nothing that identifies you.
 
-## The one server: sign-in
+## The one server: sign-in and tokens
 
 GitHub's sign-in in a browser needs a secret that a web page can't keep. So githq runs one small, stateless service on
 githq.dev, next to the app's files, that does only this:
 
 - sends you to GitHub's consent screen when you choose **Sign in with GitHub**;
 - trades the one-time code GitHub sends back for your token, and hands it to your browser;
+- renews your token: GitHub's tokens expire after 8 hours, so githq trades the refresh token GitHub issued with it for
+  new ones;
 - revokes your token at GitHub when you sign out;
 - opens GitHub's page where you request an organisation's approval of githq.
 
@@ -54,7 +56,7 @@ statuses and error codes. Cloudflare's own request logs still record that a requ
 requests or projects.
 
 The desktop app signs in with a device code instead, directly with GitHub, so this service takes no part in its sign-in.
-It is only asked to revoke the token when you sign out of the desktop app.
+It is asked only to renew the token every 8 hours and to revoke it when you sign out of the desktop app.
 
 ## Where your data goes
 

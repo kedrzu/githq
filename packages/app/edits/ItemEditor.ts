@@ -55,9 +55,9 @@ export const ItemEditor = defineService({
         let nextClose = 1;
         const closesRef = shallowRef<readonly UndoableClose[]>([]);
 
-        // What was closed with another account's token is not this account's to take back.
+        // What was closed as another user is not this one's to take back; a refreshed token is the same user's.
         watch(
-            () => auth.token,
+            () => auth.viewer?.login,
             () => {
                 closesRef.value = [];
             },
@@ -522,12 +522,11 @@ export const ItemEditor = defineService({
         /** The user signed in, as the edits are built for them; `null` signed out. */
         function getAccount(): EditAccount | null {
             const viewer = auth.viewer;
-            const token = auth.token;
-            return viewer && token !== null ? { login: viewer.login, token } : null;
+            return viewer ? { login: viewer.login } : null;
         }
 
         function isSignedIn(account: EditAccount) {
-            return auth.viewer?.login === account.login && auth.token === account.token;
+            return auth.viewer?.login === account.login;
         }
 
         /**

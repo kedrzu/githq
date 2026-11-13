@@ -65,7 +65,7 @@ test('an edit on its way holds the reload until GitHub answered, and its failure
         optimistic: { item: item => item },
         send: () => sent,
     };
-    const submitted = queue.submit({ edits: [edit], account: { login, token: `gho_${login}` }, itemCount: 1 });
+    const submitted = queue.submit({ edits: [edit], account: { login }, itemCount: 1 });
     await session.clock.advance(0);
     expect(queue.pending).toHaveLength(1);
 

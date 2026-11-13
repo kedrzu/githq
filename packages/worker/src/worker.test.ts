@@ -5,6 +5,7 @@ import {
     OAUTH_APPROVAL_PATH,
     OAUTH_AUTHORIZE_PATH,
     OAUTH_CALLBACK_PATH,
+    OAUTH_REFRESH_PATH,
     OAUTH_REVOKE_PATH,
     OAUTH_SCOPES,
     OAUTH_TOKEN_PATH,
@@ -16,13 +17,16 @@ import type { WorkerEnv } from './WorkerEnv.js';
 
 // GitHub is the system boundary: its token endpoint is a stubbed global `fetch`. Every console call and
 // every answer the Worker gives is captured, so each test also proves that the client secret never leaves
-// the Worker and that no code or token ever reaches a log.
+// the Worker and that no code, token or refresh token ever reaches a log.
 
 const ORIGIN = 'https://githq.test';
 const CALLBACK = `${ORIGIN}${OAUTH_CALLBACK_PATH}`;
 const STATE = 'q3V9-x_2LmZtR8wKpY4sNa';
 const CODE = 'c0de4f1e2d3c4b5a6978';
 const TOKEN = 'gho_TheAccessToken0123456789';
+const REFRESH_TOKEN = 'ghr_TheRefreshToken0123456789';
+const NEW_TOKEN = 'gho_TheRefreshedAccessToken0123';
+const NEW_REFRESH_TOKEN = 'ghr_TheNewRefreshToken0123456789';
 /** `e2e-client:the-client-secret-value`, as GitHub's Basic auth wants it. */
 const CLIENT_BASIC_AUTH = `Basic ${btoa('e2e-client:the-client-secret-value')}`;
 const ENV: WorkerEnv = {
@@ -52,7 +56,9 @@ afterEach(() => {
     for (const line of logged) {
         expect(line).not.toContain(ENV.GITHUB_CLIENT_SECRET);
         expect(line).not.toContain(CODE);
-        expect(line).not.toContain(TOKEN);
+        for (const token of [TOKEN, REFRESH_TOKEN, NEW_TOKEN, NEW_REFRESH_TOKEN]) {
+            expect(line).not.toContain(token);
+        }
     }
 });
 
@@ -118,8 +124,17 @@ test('GET /api/auth/approval redirects to GitHub’s page of the OAuth App, wher
 });
 
 describe('POST /api/auth/token', () => {
-    test('trades the code for a token and the scopes GitHub granted', async () => {
-        githubAnswers(JSON.stringify({ access_token: TOKEN, token_type: 'bearer', scope: 'project,read:org,repo' }));
+    test('trades the code for a token, its refresh token and expiry, and the scopes GitHub granted', async () => {
+        githubAnswers(
+            JSON.stringify({
+                access_token: TOKEN,
+                expires_in: 28800,
+                refresh_token: REFRESH_TOKEN,
+                refresh_token_expires_in: 15811200,
+                token_type: 'bearer',
+                scope: 'project,read:org,repo',
+            }),
+        );
 
         const response = await call(tokenRequest({ code: CODE, redirectUri: CALLBACK }));
 
@@ -127,6 +142,8 @@ describe('POST /api/auth/token', () => {
         expect(response.headers.get('cache-control')).toBe('no-store');
         expect(await response.json()).toEqual({
             accessToken: TOKEN,
+            refreshToken: REFRESH_TOKEN,
+            expiresIn: 28800,
             scopes: ['project', 'read:org', 'repo'],
         } satisfies OAuthTokenExchangeResult);
 
@@ -142,6 +159,19 @@ describe('POST /api/auth/token', () => {
             code: CODE,
             redirect_uri: CALLBACK,
         });
+    });
+
+    test('answers no refresh token and no expiry for a token that never expires', async () => {
+        githubAnswers(JSON.stringify({ access_token: TOKEN, token_type: 'bearer', scope: 'repo' }));
+
+        const response = await call(tokenRequest({ code: CODE, redirectUri: CALLBACK }));
+
+        expect(await response.json()).toEqual({
+            accessToken: TOKEN,
+            refreshToken: null,
+            expiresIn: null,
+            scopes: ['repo'],
+        } satisfies OAuthTokenExchangeResult);
     });
 
     test('turns GitHub’s 200 error answer into a 400, never a token', async () => {
@@ -223,6 +253,121 @@ describe('POST /api/auth/token', () => {
     });
 });
 
+function refreshRequest(body: unknown, init?: RequestInit) {
+    return new Request(`${ORIGIN}${OAUTH_REFRESH_PATH}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', origin: 'tauri://localhost' },
+        body: JSON.stringify(body),
+        ...init,
+    });
+}
+
+describe('POST /api/auth/refresh', () => {
+    test('trades the refresh token for new tokens with the OAuth App’s credentials, the token in the body only', async () => {
+        githubAnswers(
+            JSON.stringify({
+                access_token: NEW_TOKEN,
+                expires_in: 28800,
+                refresh_token: NEW_REFRESH_TOKEN,
+                refresh_token_expires_in: 15811200,
+                token_type: 'bearer',
+                scope: 'project,read:org,repo',
+            }),
+        );
+
+        const response = await call(refreshRequest({ refreshToken: REFRESH_TOKEN }));
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get('access-control-allow-origin')).toBe('*');
+        expect(response.headers.get('cache-control')).toBe('no-store');
+        expect(await response.json()).toEqual({
+            accessToken: NEW_TOKEN,
+            refreshToken: NEW_REFRESH_TOKEN,
+            expiresIn: 28800,
+            scopes: ['project', 'read:org', 'repo'],
+        } satisfies OAuthTokenExchangeResult);
+
+        expect(github).toHaveBeenCalledTimes(1);
+        const [url, init] = github.mock.calls[0] ?? [];
+        expect(url).toBe('https://github.com/login/oauth/access_token');
+        expect(init?.method).toBe('POST');
+        const body = init?.body;
+        expect(Object.fromEntries(body instanceof URLSearchParams ? body : [])).toEqual({
+            client_id: 'e2e-client',
+            client_secret: 'the-client-secret-value',
+            grant_type: 'refresh_token',
+            refresh_token: REFRESH_TOKEN,
+        });
+    });
+
+    test('answers a refresh token GitHub no longer accepts as bad_refresh_token, unlike GitHub being unreachable', async () => {
+        githubAnswers(
+            JSON.stringify({
+                error: 'bad_refresh_token',
+                error_description: 'The refresh token passed is incorrect or expired.',
+            }),
+        );
+
+        const refused = await call(refreshRequest({ refreshToken: REFRESH_TOKEN }));
+
+        expect(refused.status).toBe(400);
+        expect(refused.headers.get('access-control-allow-origin')).toBe('*');
+        expect(await refused.json()).toEqual({
+            error: 'bad_refresh_token',
+            description: 'The refresh token passed is incorrect or expired.',
+        } satisfies OAuthErrorBody);
+
+        github.mockRejectedValue(new TypeError('fetch failed'));
+
+        const unreachable = await call(refreshRequest({ refreshToken: REFRESH_TOKEN }));
+
+        expect(unreachable.status).toBe(502);
+        expect(unreachable.headers.get('access-control-allow-origin')).toBe('*');
+        expect(await unreachable.json()).toEqual({ error: 'github_unreachable' } satisfies OAuthErrorBody);
+    });
+
+    test('answers the desktop app’s CORS preflight', async () => {
+        const response = await call(
+            new Request(`${ORIGIN}${OAUTH_REFRESH_PATH}`, {
+                method: 'OPTIONS',
+                headers: {
+                    origin: 'tauri://localhost',
+                    'access-control-request-method': 'POST',
+                    'access-control-request-headers': 'content-type',
+                },
+            }),
+        );
+
+        expect(response.status).toBe(204);
+        expect(response.headers.get('access-control-allow-origin')).toBe('*');
+        expect(response.headers.get('access-control-allow-methods')).toContain('POST');
+        expect(response.headers.get('access-control-allow-headers')).toContain('content-type');
+        expect(github).not.toHaveBeenCalled();
+    });
+
+    test('refuses anything but a JSON POST of a refresh token, without asking GitHub', async () => {
+        const requests: [Request, number][] = [
+            [new Request(`${ORIGIN}${OAUTH_REFRESH_PATH}`), 405],
+            [refreshRequest({ refreshToken: REFRESH_TOKEN }, { headers: { 'content-type': 'text/plain' } }), 415],
+            [refreshRequest({}), 400],
+            [refreshRequest({ refreshToken: '' }), 400],
+            [refreshRequest({ refreshToken: TOKEN }), 400],
+            [refreshRequest({ token: REFRESH_TOKEN }), 400],
+            [refreshRequest({ refreshToken: `ghr_${'a'.repeat(252)}` }), 400],
+            [refreshRequest({ refreshToken: 'ghr_with spaces' }), 400],
+            [refreshRequest(undefined, { body: 'not json' }), 400],
+        ];
+
+        for (const [index, [request, status]] of requests.entries()) {
+            const response = await call(request);
+
+            expect({ index, status: response.status }).toEqual({ index, status });
+            expect(response.headers.get('access-control-allow-origin')).toBe('*');
+        }
+        expect(github).not.toHaveBeenCalled();
+    });
+});
+
 function revokeRequest(body: unknown, init?: RequestInit) {
     return new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, {
         method: 'POST',
@@ -248,6 +393,15 @@ describe('POST /api/auth/revoke', () => {
         expect(new Headers(init?.headers).get('authorization')).toBe(CLIENT_BASIC_AUTH);
         expect(new Headers(init?.headers).get('user-agent')).not.toBeNull();
         expect(typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body).toEqual({ access_token: TOKEN });
+    });
+
+    test('revokes an expiring token as well, whose prefix may be ghu_', async () => {
+        github.mockResolvedValue(new Response(null, { status: 204 }));
+
+        const response = await call(revokeRequest({ token: 'ghu_AnExpiringAccessToken0123' }));
+
+        expect(response.status).toBe(204);
+        expect(github).toHaveBeenCalledTimes(1);
     });
 
     test('answers the same for a token GitHub no longer knows, so it tells no one whether a token is alive', async () => {
@@ -336,6 +490,7 @@ test('without the OAuth App’s credentials the auth endpoints answer 500 not_co
         for (const request of [
             new Request(`${ORIGIN}${OAUTH_AUTHORIZE_PATH}?state=${STATE}`),
             tokenRequest({ code: CODE, redirectUri: CALLBACK }),
+            refreshRequest({ refreshToken: REFRESH_TOKEN }),
             revokeRequest({ token: TOKEN }),
         ]) {
             const response = await call(request, env);

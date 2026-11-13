@@ -223,7 +223,7 @@ export const WorkflowRunStore = defineService({
             sessionRef.value = account
                 ? {
                       account,
-                      rest: createRest(() => account.token),
+                      rest: createRest(account.getToken),
                       runs: new Map(),
                       jobs: new Map(),
                       logs: createLruCache({ maxSize: KEPT_LOGS }),

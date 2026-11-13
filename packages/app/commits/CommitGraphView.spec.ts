@@ -21,6 +21,7 @@ import {
     sampleHistory,
     sampleWebappHistory,
 } from '@/testing/sampleCommits.js';
+import { storedToken } from '@/testing/storedToken.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
@@ -437,7 +438,7 @@ test('another account signing in opens the graph again for them, the view stayin
     const { localStorage } = view.container.resolve(Browser);
     const login = uniqueLogin();
     localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
-    localStorage.setItem(TOKEN_KEY, `gho_${login}`);
+    localStorage.setItem(TOKEN_KEY, storedToken(`gho_${login}`));
     window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));
 
     await expect.poll(refsRead).toBe(2);
@@ -1278,7 +1279,7 @@ test("Enter from a ref's details moves on to the cursor's commit; another accoun
     const { localStorage } = view.container.resolve(Browser);
     const login = uniqueLogin();
     localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
-    localStorage.setItem(TOKEN_KEY, `gho_${login}`);
+    localStorage.setItem(TOKEN_KEY, storedToken(`gho_${login}`));
     window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));
     // Opened again, on the commit the new account's graph starts on: nothing of the previous account's is left.
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).not.toBeInTheDocument();
