@@ -145,7 +145,7 @@ test('a token GitHub stops accepting is renewed with its refresh token through t
     });
     await page.reload();
 
-    await expect.poll(() => github.refreshedTokens).toEqual([SAMPLE_REFRESH_TOKEN]);
+    await expect.poll(() => github.refreshBodies).toEqual([{ refreshToken: SAMPLE_REFRESH_TOKEN }]);
     await expect.poll(() => viewerTokens).toEqual([SAMPLE_TOKEN, renewedToken]);
     const stored = await readStoredCredentials(page);
     expect(stored?.accessToken).toBe(renewedToken);

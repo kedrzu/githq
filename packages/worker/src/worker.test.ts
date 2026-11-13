@@ -564,6 +564,35 @@ describe('usage statistics', () => {
         expect(usage.points).toEqual([point]);
     });
 
+    test('counts a refreshed token, from the web app and from the desktop app', async () => {
+        const usage = usageBinding();
+        const env = { ...ENV, USAGE: usage.binding };
+        const renewed = JSON.stringify({ access_token: NEW_TOKEN, refresh_token: NEW_REFRESH_TOKEN, scope: 'repo' });
+
+        githubAnswers(renewed);
+        await call(
+            refreshRequest(
+                { refreshToken: REFRESH_TOKEN },
+                { headers: { 'content-type': 'application/json', ...VISITOR_HEADERS } },
+            ),
+            env,
+        );
+        githubAnswers(renewed);
+        await call(
+            refreshRequest(
+                { refreshToken: REFRESH_TOKEN },
+                { headers: { 'content-type': 'application/json', origin: 'tauri://localhost', ...VISITOR_HEADERS } },
+            ),
+            env,
+        );
+
+        const expected: AnalyticsEngineDataPoint[] = [
+            { blobs: ['token_refreshed', 'web', ''], doubles: [1], indexes: ['token_refreshed'] },
+            { blobs: ['token_refreshed', 'desktop', ''], doubles: [1], indexes: ['token_refreshed'] },
+        ];
+        expect(usage.points).toEqual(expected);
+    });
+
     test('counts nothing when the body turns statistics off', async () => {
         const usage = usageBinding();
         githubAnswers(JSON.stringify({ access_token: TOKEN, scope: 'repo' }));
@@ -572,12 +601,14 @@ describe('usage statistics', () => {
         const exchanged = await call(tokenRequest({ code: CODE, redirectUri: CALLBACK, telemetry: false }), env);
         github.mockResolvedValue(new Response(null, { status: 204 }));
         const revoked = await call(revokeRequest({ token: TOKEN, telemetry: false }), env);
+        githubAnswers(JSON.stringify({ access_token: NEW_TOKEN, refresh_token: NEW_REFRESH_TOKEN, scope: 'repo' }));
+        const refreshed = await call(refreshRequest({ refreshToken: REFRESH_TOKEN, telemetry: false }), env);
 
-        expect([exchanged.status, revoked.status]).toEqual([200, 204]);
+        expect([exchanged.status, revoked.status, refreshed.status]).toEqual([200, 204, 200]);
         expect(usage.points).toEqual([]);
     });
 
-    test('counts no refused or failed exchange or revocation', async () => {
+    test('counts no refused or failed exchange, revocation or refresh', async () => {
         const usage = usageBinding();
         const env = { ...ENV, USAGE: usage.binding };
 
@@ -593,6 +624,11 @@ describe('usage statistics', () => {
         await call(revokeRequest({ token: 'ghp_APersonalAccessToken0123' }), env);
         await call(new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, { method: 'OPTIONS' }), env);
         await call(revokeRequest({ token: TOKEN }), { ASSETS: ENV.ASSETS, USAGE: usage.binding });
+        githubAnswers(JSON.stringify({ error: 'bad_refresh_token' }));
+        await call(refreshRequest({ refreshToken: REFRESH_TOKEN }), env);
+        github.mockRejectedValueOnce(new TypeError('fetch failed'));
+        await call(refreshRequest({ refreshToken: REFRESH_TOKEN }), env);
+        await call(refreshRequest({ refreshToken: TOKEN }), env);
 
         expect(usage.points).toEqual([]);
     });

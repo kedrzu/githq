@@ -240,7 +240,7 @@ export class GitHubMock {
     private readonly exchanges: object[] = [];
     /** What each refresh token not spent yet is renewed with ({@link tokenRefresh}). */
     private readonly refreshAnswers = new Map<string, GitHubTokenExchange>();
-    private readonly refreshed: string[] = [];
+    private readonly refreshes: object[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
     /** While answers are held: settles when they are released. */
@@ -289,9 +289,12 @@ export class GitHubMock {
         return this.exchanges;
     }
 
-    /** The refresh tokens the app sent the Worker to renew its token with (`POST /api/auth/refresh`), oldest first. */
-    get refreshedTokens(): readonly string[] {
-        return this.refreshed;
+    /**
+     * The whole bodies of the app's renewals (`POST /api/auth/refresh`) that were answered, oldest first: the refresh
+     * token and what else it says.
+     */
+    get refreshBodies(): readonly object[] {
+        return this.refreshes;
     }
 
     /**
@@ -613,15 +616,15 @@ export class GitHubMock {
     private async handleRefresh(route: Route) {
         const request = route.request();
         const body = parseJson(request.postData());
-        const refreshToken = isPlainObject(body) && typeof body.refreshToken === 'string' ? body.refreshToken : null;
-        if (request.method() !== 'POST' || refreshToken === null) {
+        if (request.method() !== 'POST' || !isPlainObject(body) || typeof body.refreshToken !== 'string') {
             await this.reject(route, describe(request));
             return;
         }
 
+        const refreshToken = body.refreshToken;
         const answer = this.refreshAnswers.get(refreshToken);
         if (answer) {
-            this.refreshed.push(refreshToken);
+            this.refreshes.push(body);
             this.refreshAnswers.delete(refreshToken);
             await route.fulfill({ status: 200, json: toTokenExchangeBody(answer) });
             return;

@@ -69,8 +69,8 @@ Your token stays in your browser's `localStorage`, and your data goes from the b
 When you review a pull request, the contents of the files it changes stay in your browser until you sign out, so
 that it reopens at once.
 The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
-Cloudflare's own request logs still record that a request happened. githq counts sign-ins, sign-outs, installer
-downloads and visits to the landing page and the docs anonymously — never your login, IP address or anything about
+Cloudflare's own request logs still record that a request happened. githq counts sign-ins, token renewals, sign-outs,
+installer downloads and visits to the landing page and the docs anonymously — never your login, IP address or anything about
 your repositories — and you can turn that off in Settings → Privacy
 ([what is counted](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)). You can revoke
 access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
@@ -161,9 +161,9 @@ Members of these roles use multi-factor authentication on GitHub and on any sign
   GitHub Releases;
 - GitHub's image hosts (`avatars.githubusercontent.com` and other `*.githubusercontent.com` hosts), for avatars
   and images in issues;
-- `githq.dev`, only when you sign out, to revoke your token at GitHub. Unless you turned **Share usage statistics**
-  off in Settings → Privacy, this adds one to an anonymous count of sign-outs that holds only that it came from the
-  desktop app ([what githq counts](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)).
+- `githq.dev`, only to renew your token, which GitHub makes expire after 8 hours, and to revoke it at GitHub when you
+  sign out. Unless you turned **Share usage statistics** off in Settings → Privacy, each adds one to an anonymous
+  count of renewals or sign-outs that holds only that it came from the desktop app ([what githq counts](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)).
 
 Your token stays in your system's keychain. The copy of your GitHub data stays on your computer. Links you open
 go to your own browser. What GitHub does with these requests is

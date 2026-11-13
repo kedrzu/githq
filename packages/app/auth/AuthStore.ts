@@ -537,7 +537,7 @@ export const AuthStore = defineService({
                 response = await browser.fetch(__WORKER_ORIGIN__ + OAUTH_REFRESH_PATH, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refreshToken }),
+                    body: JSON.stringify(withUsageStatisticsChoice({ refreshToken })),
                 });
                 text = await response.text();
             } catch (error) {

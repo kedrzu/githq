@@ -35,8 +35,8 @@ export function recordUsage(env: WorkerEnv, event: UsageEvent, { client, platfor
 
 /**
  * The app behind an `/api/*` request. The web app calls from the Worker's own origin (or sends no `Origin`); on
- * `/api/*` only the revocation answers CORS, and the desktop app's webview calls it from its own origin, so any other
- * origin is the desktop app.
+ * `/api/*` only the refresh and the revocation answer CORS, and the desktop app's webview calls them from its own
+ * origin, so any other origin is the desktop app.
  * @__NO_SIDE_EFFECTS__
  */
 export function getUsageClient(request: Request): UsageClient {

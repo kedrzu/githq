@@ -17,8 +17,8 @@ import type { WorkerEnv } from './WorkerEnv.js';
  * 4. GitHub's access tokens expire after 8 hours: the app trades the refresh token for new ones at
  *    `POST /api/auth/refresh` ({@link refreshAccessToken}), which needs the client secret as well.
  *
- * A token created or revoked is counted (`usage.ts`) unless the body carries `telemetry: false`; a refused or failed
- * request is not.
+ * A token created, refreshed or revoked is counted (`usage.ts`) unless the body carries `telemetry: false`; a refused
+ * or failed request is not.
  *
  * The paths, the scopes and what `state` may be are the contract shared with the app (`@githq/github/oauth.js`).
  *
@@ -200,13 +200,16 @@ export async function refreshAccessToken(request: Request, env: WorkerEnv): Prom
         );
     }
 
-    return withOpenCors(
-        await requestToken({
-            clientId,
-            clientSecret,
-            grant: { grant_type: 'refresh_token', refresh_token: token },
-        }),
-    );
+    const response = await requestToken({
+        clientId,
+        clientSecret,
+        grant: { grant_type: 'refresh_token', refresh_token: token },
+    });
+    // As with the exchange, only a 200 carries new tokens: a refused or failed renewal is not counted.
+    if (response.ok && !isUsageOptedOut(body)) {
+        recordUsage(env, 'token_refreshed', { client: getUsageClient(request), platform: '' });
+    }
+    return withOpenCors(response);
 }
 
 /**

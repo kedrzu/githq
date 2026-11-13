@@ -1,8 +1,8 @@
 # Privacy and permissions
 
 githq talks to GitHub from your device, with your own token. It has no server that stores your work, and it never
-sees your issues, pull requests, code or who you are. It does count sign-ins, sign-outs, downloads and visits to its
-public pages anonymously, and you can turn that off: see [Usage statistics](#usage-statistics).
+sees your issues, pull requests, code or who you are. It does count sign-ins, token renewals, sign-outs, downloads and
+visits to its public pages anonymously, and you can turn that off: see [Usage statistics](#usage-statistics).
 
 ## What githq asks GitHub for
 
@@ -54,8 +54,8 @@ githq.dev, next to the app's files, that does only this:
 
 It has no database and keeps no record of you. It handles the code and the token in memory and logs neither: its logs
 carry only statuses and error codes. Cloudflare's own request logs still record that a request happened. It never sees
-your issues, pull requests or projects. When a sign-in or a sign-out goes through it, it adds one to an anonymous count,
-unless you turned [usage statistics](#usage-statistics) off.
+your issues, pull requests or projects. When a sign-in, a renewal of your token or a sign-out goes through it, it adds
+one to an anonymous count, unless you turned [usage statistics](#usage-statistics) off.
 
 The desktop app signs in with a device code instead, directly with GitHub, so this service takes no part in its sign-in.
 It is asked only to renew the token every 8 hours and to revoke it when you sign out of the desktop app.
@@ -96,9 +96,9 @@ and Cloudflare keeps the counts for three months.
 |Event|When|What it holds|
 |-|-|-|
 |`token_created`|You sign in on githq.dev.|The event, and that it came from the web app.|
+|`token_refreshed`|githq renews your token, which GitHub makes expire after 8 hours, on githq.dev or in the desktop app.|The event, and whether it came from the web or the desktop app.|
 |`token_revoked`|You sign out, and githq asks GitHub to revoke your token.|The event, and whether it came from the web or the desktop app.|
 |`installer_download`|Someone downloads the desktop app from githq.dev.|The event, and which installer, such as `macos-silicon` or `windows`.|
-|`token_refreshed`|Reserved for when githq renews a token; githq doesn't renew tokens yet, so it is never sent.|The event, and the app it came from.|
 
 A count can't be traced back to a person: two sign-ins by you and one each by two other people look the same. Signing
 in to the desktop app goes straight to GitHub, so it is never counted.
@@ -111,7 +111,7 @@ desktop app.
 ### Turning it off
 
 Open **Settings → Privacy** and turn off **Share usage statistics**; it is on until you do. Then githq stops counting
-your sign-ins and sign-outs, and stops loading Web Analytics on that browser.
+your sign-ins, token renewals and sign-outs, and stops loading Web Analytics on that browser.
 
 The choice is kept with your other settings, so with **Save my settings to my GitHub account** on, it follows you to
 your other computers. Your browser also remembers it on githq.dev, so the landing page, these docs and your next sign-in

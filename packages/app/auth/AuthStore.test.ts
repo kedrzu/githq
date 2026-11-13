@@ -446,6 +446,25 @@ test('a request about to go with a token expiring within 2 minutes waits for its
     expect(github.refreshes).toHaveLength(1);
 });
 
+test('with usage statistics off on this device, the renewal tells the Worker not to count it', async () => {
+    for (const statisticsOff of [false, true]) {
+        const github = fakeGitHub({ scopes: ALL_SCOPES });
+        const stored = signedIn({ ...EXPIRING, expiresAt: START + 90_000 });
+        const { auth } = setup(
+            github,
+            statisticsOff ? { ...stored, [USAGE_STATISTICS_OFF_KEY]: USAGE_STATISTICS_OFF_VALUE } : stored,
+            { clock: createTestClock(START) },
+        );
+
+        expect(await auth.getFreshToken()).toBe('gho_renewed1');
+
+        const expected = statisticsOff
+            ? [{ refreshToken: 'ghr_old', [USAGE_STATISTICS_FIELD]: false }]
+            : [{ refreshToken: 'ghr_old' }];
+        expect({ statisticsOff, bodies: github.refreshBodies }).toEqual({ statisticsOff, bodies: expected });
+    }
+});
+
 test('the timer, a request and a 401 asking for a renewal at once renew the token once, with Web Locks or without', async () => {
     for (const webLocks of [true, false]) {
         const answer = createPromise();
@@ -628,6 +647,8 @@ function fakeGitHub(options: FakeGitHubOptions) {
     const revoked: unknown[] = [];
     /** The refresh tokens sent to the Worker, in order. */
     const refreshes: string[] = [];
+    /** The whole bodies of the refreshes, in order: the refresh token and what else they say. */
+    const refreshBodies: unknown[] = [];
     const spentRefreshTokens = new Set<string>();
 
     async function fetch(input: string | Request | URL, init?: RequestInit): Promise<Response> {
@@ -657,6 +678,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
             const sent: unknown = JSON.parse(body);
             const refreshToken = isPlainObject(sent) && typeof sent.refreshToken === 'string' ? sent.refreshToken : '';
             refreshes.push(refreshToken);
+            refreshBodies.push(sent);
             await options.refreshAfter;
             switch (options.refresh ?? 'renews') {
                 case 'offline':
@@ -716,7 +738,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
         throw new Error(`Unexpected request to ${url}`);
     }
 
-    return { fetch, exchanges, tokensSeen, revoked, refreshes };
+    return { fetch, exchanges, tokensSeen, revoked, refreshes, refreshBodies };
 }
 
 interface SetupOptions {
