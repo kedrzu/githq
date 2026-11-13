@@ -10,7 +10,7 @@ githq is a fast, keyboard-first client for GitHub Issues, Projects, pull request
 - **Build orchestration:** Nx, without a daemon, with its cache in each worktree.
 - **Frontend:** Nuxt 4 and Vue, a static SPA plus one prerendered landing page; SCSS.
 - **Data:** GitHub through GraphQL (generated SDK) and REST conditional requests; an in-memory store backed by IndexedDB.
-- **Hosting:** a Cloudflare Worker on https://githq.dev serves the static app and the OAuth token exchange. The desktop app is Tauri.
+- **Hosting:** a Cloudflare Worker on https://githq.dev serves the static app and the OAuth token endpoints (sign-in, refresh, revoke). The desktop app is Tauri.
 
 ## Packages
 
@@ -18,7 +18,7 @@ githq is a fast, keyboard-first client for GitHub Issues, Projects, pull request
 |-|-|-|
 |`@githq/app`|`packages/app`|The Nuxt app: screens by feature, the store, the sync engine, components and their stories. It holds no credentials.|
 |`@githq/github`|`packages/github`|The GitHub client: `.gql` operations, the committed schema, the generated SDK, the requester, rate limits and OAuth helpers.|
-|`@githq/worker`|`packages/worker`|The Cloudflare Workers: the signed-in/landing choice at `/`, the docs' 404 under `/docs/*`, the OAuth token exchange, the `www` redirect. Stateless.|
+|`@githq/worker`|`packages/worker`|The Cloudflare Workers: the signed-in/landing choice at `/`, the docs' 404 under `/docs/*`, the OAuth token endpoints (sign-in, refresh, revoke), the `www` redirect. Stateless.|
 |`@githq/docs`|`packages/docs`|The documentation site (VitePress), served at githq.dev/docs from the web builds.|
 |`@githq/desktop`|`packages/desktop`|The Tauri shell around the app's desktop build, and its native commands.|
 |`@githq/e2e`|`packages/e2e`|Playwright tests of the built app against a mocked GitHub, and the screen harnesses.|

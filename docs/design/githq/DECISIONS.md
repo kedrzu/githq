@@ -14,6 +14,8 @@ Rejected: a pasted personal access token as the primary path — onboarding fric
 broad, long-lived credential sitting in the browser (fine-grained PATs can't see user-owned Projects or more
 than one owner, so classic would be required). App type: [D3](#d3).
 Consistent with the AGENTS.md principle "no server of our own for task data": the service never sees task data.
+Update 2026-11-13: GitHub's OAuth App tokens expire after 8 hours (on by default for apps created after 2026-08-14),
+so the service also trades the refresh token for new ones, for the web and the desktop app alike ([#273](https://github.com/kedrzu/githq/issues/273)).
 
 ### D2
 
@@ -271,7 +273,7 @@ auto-imports, routes declared in `router.options.ts`, state in nzyme IoC service
 `shallowRef`/`computed`), `@nzyme/i18n` with `.loc.yaml`, reka-ui, oxlint/oxfmt, `bun test` + Vitest browser +
 Storybook + Playwright e2e, `setup.sh`/`setup.build.sh`, `paseo.json`, `.claude/skills/nzyme` symlink. One
 Cloudflare Worker serves the static SPA (`not_found_handling: single-page-application`) and runs first only for
-the OAuth token exchange ([D1](#d1)). No database, no backend of our own. User, 2026-10-30.
+the OAuth token endpoints ([D1](#d1)). No database, no backend of our own. User, 2026-10-30.
 
 > **Checked 2026-10-30 (codebase survey of nzyme):** nzyme has **no** IndexedDB, local-first, query/cache or GraphQL layer, and no Cloudflare package; it has
 > `@nzyme/fetch-utils` (typed `defineEndpoint`/`defineFetchClient`) and `@nzyme/openapi`.
