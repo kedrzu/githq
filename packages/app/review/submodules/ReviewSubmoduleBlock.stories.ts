@@ -1,5 +1,6 @@
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
+import { defineComponent, h } from 'vue';
 
 import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
 import { withSubmoduleHistory } from '@/testing/withSubmoduleHistory.js';
@@ -63,6 +64,37 @@ const AHEAD: ReviewSubmoduleHistory = {
     ],
 };
 
+/** A bump bigger than a list shows at first: 38 commits brought in, 48 files changed. */
+const LARGE: ReviewSubmoduleHistory = {
+    ...AHEAD,
+    relation: { kind: 'ahead', count: 38 },
+    commits: Array.from({ length: 38 }, (_, index) => ({
+        oid: (((index + 1) * 0x9e3779b1) >>> 0).toString(16).padStart(8, '0').repeat(5),
+        subject: `feat(ioc): step ${index + 1} of resolving child containers lazily`,
+        author: index % 3 === 0 ? 'anowak' : 'kedrzu',
+    })),
+    files: Array.from({ length: 48 }, (_, index) => ({
+        path: `packages/ioc/src/lazy/Step${index + 1}.ts`,
+        previousPath: null,
+        status: index % 4 === 0 ? 'added' : 'modified',
+        additions: index * 3,
+        deletions: index % 5,
+    })),
+};
+
+/** The block as wide as the review's diff is on a wide screen, or on a narrow one. */
+function ofWidth(width: number): Decorator {
+    return story => {
+        const Story = story();
+        return defineComponent({
+            setup: () => () => h('div', { style: { width: `${width}px` } }, [h(Story)]),
+        });
+    };
+}
+
+const WIDE = ofWidth(1100);
+const NARROW = ofWidth(600);
+
 const meta = {
     component: ReviewSubmoduleBlock,
     args: { change: CHANGE },
@@ -75,6 +107,38 @@ type Story = StoryObj<typeof meta>;
 
 /** Bumped forward: the open pull request carrying the new commit, the commits brought in and the files they change. */
 export const Ahead: Story = { decorators: [withSubmoduleHistory({ kind: 'ready', ...AHEAD })] };
+
+/** A large bump, wide: the panels side by side, 20 rows each and Show more for the rest. */
+export const Large: Story = { decorators: [WIDE, withSubmoduleHistory({ kind: 'ready', ...LARGE })] };
+
+/** A large bump, narrow: the files' panel under the commits'. */
+export const LargeNarrow: Story = { decorators: [NARROW, withSubmoduleHistory({ kind: 'ready', ...LARGE })] };
+
+/** A small bump no pull request carries: a quiet card saying so, and panels with no foot. */
+export const NoPullRequest: Story = {
+    decorators: [WIDE, withSubmoduleHistory({ kind: 'ready', ...AHEAD, pullRequests: [] })],
+};
+
+/** Two pull requests carry the new commit, the open one and the merged one: a card each. */
+export const TwoPullRequests: Story = {
+    decorators: [
+        WIDE,
+        withSubmoduleHistory({
+            kind: 'ready',
+            ...AHEAD,
+            pullRequests: [
+                ...AHEAD.pullRequests,
+                {
+                    number: 405,
+                    state: 'MERGED',
+                    title: 'Split Container into a resolver and a registry',
+                    url: 'https://github.com/kedrzu/nzyme/pull/405',
+                    isDraft: false,
+                },
+            ],
+        }),
+    ],
+};
 
 /** Rolled back: the commits it drops, the files as the rollback moves them, and the comparison the other way round. */
 export const RolledBack: Story = {
@@ -135,7 +199,7 @@ export const Added: Story = {
     ],
 };
 
-/** Removed: nothing is read of it. */
+/** Removed: nothing is read of it, so there is no pull request to look for. */
 export const Removed: Story = {
     args: { change: { ...CHANGE, after: null } },
     decorators: [

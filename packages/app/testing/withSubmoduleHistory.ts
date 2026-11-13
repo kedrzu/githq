@@ -10,14 +10,15 @@ import type { ReviewSubmoduleState } from '@/review/submodules/ReviewSubmodules.
 /**
  * Content whose submodules' histories are as `state` says, with nothing asked of GitHub: `ReviewSubmodules` in a child
  * of the container around it, so what that one holds (a browser, `withGitHubLinks`'s) stays. Try again on a failed
- * history puts it back on its way.
+ * history puts it back on its way. The lists expanded are kept for as long as the decorator, across mounts of the story,
+ * as the service keeps them across the block's unmounting when it is scrolled away.
  */
 export function withSubmoduleHistory(state: ReviewSubmoduleState): Decorator {
+    const expanded = shallowRef<ReadonlySet<string>>(new Set());
     return story =>
         defineComponent({
             setup() {
                 const held = shallowRef(state);
-                const expanded = shallowRef<ReadonlySet<string>>(new Set());
                 const container = createContainer({ parent: useContainer() });
                 container.set(ReviewSubmodules, {
                     load: () => {},

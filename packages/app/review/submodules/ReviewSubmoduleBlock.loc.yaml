@@ -44,3 +44,28 @@ paused:
   en: Waiting for GitHub's API allowance
 pausedDetail:
   en: It resets at {time}. This submodule's history will load then, without you doing anything.
+noPullRequest:
+  en: No pull request carries {oid}
+commitsAhead:
+  en: '{formatted} ahead'
+commitsBehind:
+  en: '{formatted} rolled back'
+filesChanged:
+  en: '{formatted} changed'
+filesChangedMore:
+  en: '{formatted}+ changed'
+showMoreCommits:
+  plural: count
+  en:
+    one: Show 1 more commit
+    many: Show {formatted} more commits
+showMoreFiles:
+  plural: count
+  en:
+    one: Show 1 more file
+    many: Show {formatted} more files
+totalPartial:
+  plural: count
+  en:
+    one: Counts only the 1 file read
+    many: Counts only the {formatted} files read
