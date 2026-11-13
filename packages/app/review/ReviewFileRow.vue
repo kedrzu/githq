@@ -104,7 +104,7 @@ function onClick(event: MouseEvent) {
       :aria-label="t(l.viewed)"
     />
     <span
-      v-if="showFolder"
+      v-if="showFolder && getFileFolder(file.path) !== null"
       :class="css.reviewFileRow_folder"
       >{{ getFileFolder(file.path) }}</span
     >

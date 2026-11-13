@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). Each says its open threads, a click on them landing on the first. A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It scrolls with the column it sits in (`ReviewView`), its head pinned at the column's top, under the stack's bar when there is one (`--review-file-list-top`, D25), and what's at its foot pinned there. It follows the file the diff is at, keeping its row in view clear of both. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files: each folder's under a quiet label in GitHub's tree order, then those at the root, then the submodule changes under a Submodules label, each followed by its folder; while a filter is on, flat and each followed by its folder (D27). Each says its open threads, a click on them landing on the first. A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It scrolls with the column it sits in (`ReviewView`), its head pinned at the column's top, under the stack's bar when there is one (`--review-file-list-top`, D25), and what's at its foot pinned there. It follows the file the diff is at, keeping its row in view clear of both. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -7,7 +7,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { EyeOff, Folder, ListFilter, Regex } from 'lucide-vue-next';
+import { EyeOff, Folder, FolderGit2, ListFilter, Regex } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -220,10 +220,10 @@ function onFilterKeydown(event: KeyboardEvent) {
       <ul :class="css.reviewFileList_groups">
         <li
           v-for="group in groups"
-          :key="group.folder ?? ''"
+          :key="group.kind === 'folder' ? `folder:${group.folder}` : group.kind"
         >
           <div
-            v-if="group.folder !== null"
+            v-if="group.kind === 'folder'"
             :class="css.reviewFileList_folder"
           >
             <Folder
@@ -231,6 +231,16 @@ function onFilterKeydown(event: KeyboardEvent) {
               aria-hidden="true"
             />
             <span :class="css.reviewFileList_folderPath">{{ group.folder }}</span>
+          </div>
+          <div
+            v-else-if="group.kind === 'submodules'"
+            :class="css.reviewFileList_folder"
+          >
+            <FolderGit2
+              :class="css.reviewFileList_folderIcon"
+              aria-hidden="true"
+            />
+            <span :class="css.reviewFileList_folderPath">{{ t(l.submodules) }}</span>
           </div>
           <ul :class="css.reviewFileList_files">
             <li
@@ -245,9 +255,9 @@ function onFilterKeydown(event: KeyboardEvent) {
                 :collapsed="isCollapsed(file.path)"
                 :collapse-reason="getCollapseReason(file.path)"
                 :current="file.path === currentPath"
-                :indented="group.folder !== null"
+                :indented="group.kind !== 'root'"
                 :selected="selected.has(file.path)"
-                :show-folder="flat"
+                :show-folder="flat || group.kind === 'submodules'"
                 :changed-since="lostViewed?.has(file.path)"
                 :open-threads="openThreads?.get(file.path)"
                 :resolved-threads="resolvedThreads?.get(file.path)"

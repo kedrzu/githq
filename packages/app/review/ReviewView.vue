@@ -133,6 +133,7 @@ import ReviewConversation from './conversation/ReviewConversation.vue';
 import { findCursorOnScreen } from './cursor/findCursorOnScreen.js';
 import type { ReviewCursor } from './cursor/ReviewCursor.js';
 import { groupReviewFiles } from './groupReviewFiles.js';
+import type { ReviewFileGroup } from './groupReviewFiles.js';
 import * as allViewedLoc from './ReviewAllViewed.loc.js';
 import ReviewAllViewed from './ReviewAllViewed.vue';
 import ReviewDiffRow from './ReviewDiffRow.vue';
@@ -388,8 +389,8 @@ watch(
 const ordered = computed(() => groups.value.flatMap(group => group.files));
 const filterOn = computed(() => filter.value.kind === 'on');
 // While a filter is on the list is flat, each file followed by its folder (D27).
-const listGroups = computed(() =>
-  filterOn.value && ordered.value.length > 0 ? [{ folder: null, files: ordered.value }] : groups.value,
+const listGroups = computed((): readonly ReviewFileGroup[] =>
+  filterOn.value && ordered.value.length > 0 ? [{ kind: 'root', files: ordered.value }] : groups.value,
 );
 const allPaths = computed(() =>
   groupReviewFiles([...allFiles.value, ...goneFiles.value]).flatMap(group => group.files.map(file => file.path)),

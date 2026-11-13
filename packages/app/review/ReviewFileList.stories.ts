@@ -3,7 +3,7 @@ import { expect, fireEvent, fn, userEvent } from 'storybook/test';
 
 import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewFileList from './ReviewFileList.vue';
-import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason, ReviewFilePatch, ReviewFileState } from './ReviewFiles.js';
 import type { ReviewSubmoduleState } from './submodules/ReviewSubmodules.js';
 
 const FILES: readonly ReviewFile[] = [
@@ -27,9 +27,15 @@ const STATES: Readonly<Record<string, ReviewFileState>> = {
     'docs/sync.md': { kind: 'loading' },
 };
 
+const SUBMODULE_PATCH: ReviewFilePatch = {
+    layout: null,
+    verdict: 'submodule',
+    submodule: { before: 'a1c9e2f', after: 'd4f7b21' },
+};
 const SUBMODULE_FILES: readonly ReviewFile[] = [
-    file('nzyme', 1, 1),
-    file('vendor/tokens', 1, 1),
+    file('README.md', 6, 0),
+    file('nzyme', 1, 1, { patch: SUBMODULE_PATCH }),
+    file('vendor/tokens', 1, 1, { patch: SUBMODULE_PATCH }),
     file('src/api/client.ts', 9, 3),
 ];
 const SUBMODULE_STATE: ReviewFileState = { kind: 'submodule', before: 'a1c9e2f', after: 'd4f7b21' };
@@ -86,14 +92,18 @@ type Story = StoryObj<typeof meta>;
 /** CR46: the files in tree order, viewed ones with an eye; loading, failed, binary and too large marked. */
 export const Files: Story = {};
 
-/** A submodule is tagged so, its commits counted once its block has read them; before that no size at all, not its +1 −1. */
+/**
+ * CR136: the submodules last, under a header of their own, after the folders and the root's files; a nested one followed
+ * by its folder. Each is tagged so, its commits counted once its block has read them; before that no size at all, not its
+ * +1 −1.
+ */
 export const Submodules: Story = {
     args: {
         groups: groupReviewFiles(SUBMODULE_FILES),
         files: SUBMODULE_FILES,
         currentPath: 'nzyme',
         changedFiles: SUBMODULE_FILES.length,
-        getState: (path: string) => (path === 'src/api/client.ts' ? READY : SUBMODULE_STATE),
+        getState: (path: string) => (path === 'nzyme' || path === 'vendor/tokens' ? SUBMODULE_STATE : READY),
         getSubmodule: (path: string): ReviewSubmoduleState | null =>
             path === 'nzyme' ? SUBMODULE_HISTORY : path === 'vendor/tokens' ? { kind: 'loading' } : null,
     },
@@ -172,7 +182,7 @@ export const StillArriving: Story = { args: { changedFiles: 238, listComplete: f
 /** CR27: a pattern on: flat, each file followed by its folder, and the count of what matches. */
 export const Filtered: Story = {
     args: {
-        groups: [{ folder: null, files: FILES.filter(({ path }) => path.endsWith('.md')) }],
+        groups: [{ kind: 'root', files: FILES.filter(({ path }) => path.endsWith('.md')) }],
         filterPattern: '*.md',
         matched: 4,
     },

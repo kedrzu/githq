@@ -20,6 +20,8 @@ useRegex:
   en: Use a regular expression
 invalidRegex:
   en: Not a valid regular expression
+submodules:
+  en: Submodules
 noMatch:
   en: No files match this filter.
 filesSelected:
