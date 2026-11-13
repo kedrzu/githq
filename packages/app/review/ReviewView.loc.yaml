@@ -112,3 +112,5 @@ showAllHiddenLines:
   en: Show all hidden lines
 resizeFileList:
   en: Resize the file list
+resizeConversation:
+  en: Resize the conversation

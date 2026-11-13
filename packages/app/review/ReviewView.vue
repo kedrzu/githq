@@ -186,6 +186,8 @@ const THREAD_MIN_OFFSET = 46;
 const NO_TARGETS: readonly ReviewCommentTarget[] = [];
 /** The stack's and the files' column: 300 px by default, dragged from 200 to 480 px (D24). */
 const FILE_LIST_WIDTH = { key: 'reviewFileList', default: 300, min: 200, max: 480 };
+/** The conversation's column at the right (CR121): 340 px by default and at least, dragged out to 720 px. */
+const CONVERSATION_WIDTH = { key: 'reviewConversation', default: 340, min: 340, max: 720 };
 
 const t = useTranslate();
 const accounts = useService(AccountSession);
@@ -2046,7 +2048,37 @@ function readAgain() {
           />
         </div>
       </template>
-      <div :class="css.reviewView_main">
+      <ColumnSplit
+        :shown="conversationShown"
+        :width="CONVERSATION_WIDTH"
+        :label="t(l.resizeConversation)"
+        side="right"
+      >
+        <template #column>
+          <div :class="css.reviewView_conversation">
+            <ReviewConversation
+              v-model:comment-draft="commentDraft"
+              :item="opened.item"
+              :detail="detail"
+              :review-threads="reviewThreads"
+              :load-older="opened.loadAllComments"
+              :load-older-reviews="opened.loadAllReviews"
+              :draft-open="writing?.draftOpen ?? false"
+              :comment-disabled="opened.item ? !editor.getPermissions(opened.item).comment : true"
+              :viewer="auth.viewer"
+              :failed-comments="failedComments"
+              :failed-edits="failedEdits"
+              :people="conversationPeople"
+              @comment="commentOnPullRequest"
+              @edit="editPullRequest"
+              @discard-edit="discardFailedEdit"
+              @retry="editor.retryComment($event)"
+              @discard="commentDrafts.discardFailed($event)"
+              @close="conversationShown = false"
+              @jump-to-threads="jumpToReviewThreads"
+            />
+          </div>
+        </template>
         <div :class="css.reviewView_diffColumn">
           <div
             ref="diffColumn"
@@ -2291,33 +2323,7 @@ function readAgain() {
             @dismiss="dismissFinish"
           />
         </div>
-        <div
-          v-if="conversationShown"
-          :class="css.reviewView_conversation"
-        >
-          <ReviewConversation
-            v-model:comment-draft="commentDraft"
-            :item="opened.item"
-            :detail="detail"
-            :review-threads="reviewThreads"
-            :load-older="opened.loadAllComments"
-            :load-older-reviews="opened.loadAllReviews"
-            :draft-open="writing?.draftOpen ?? false"
-            :comment-disabled="opened.item ? !editor.getPermissions(opened.item).comment : true"
-            :viewer="auth.viewer"
-            :failed-comments="failedComments"
-            :failed-edits="failedEdits"
-            :people="conversationPeople"
-            @comment="commentOnPullRequest"
-            @edit="editPullRequest"
-            @discard-edit="discardFailedEdit"
-            @retry="editor.retryComment($event)"
-            @discard="commentDrafts.discardFailed($event)"
-            @close="conversationShown = false"
-            @jump-to-threads="jumpToReviewThreads"
-          />
-        </div>
-      </div>
+      </ColumnSplit>
     </ColumnSplit>
     <ReviewSubmitDialog
       v-model:open="submitOpen"
@@ -2344,12 +2350,6 @@ function readAgain() {
   flex-direction: column;
   min-height: 0;
   background: $color-bg;
-}
-
-.reviewView_main {
-  display: flex;
-  flex: 1;
-  min-height: 0;
 }
 
 // One scroller for the stack and the files: nothing here takes height from the diff, and what stops moves nothing (D25).
@@ -2388,11 +2388,10 @@ function readAgain() {
   min-height: 0;
 }
 
+// The split draws the line beside it: none of its own, or it would be two.
 .reviewView_conversation {
-  flex: none;
-  width: $review-conversation-width;
+  flex: 1;
   min-height: 0;
-  border-left: 1px solid $color-border;
 }
 
 .reviewView_state {
