@@ -1579,7 +1579,8 @@ test("the cursor's row stays in view when the details dock under the graph and s
     // The pane is the shorter one from the start, and the viewport the rows are measured from with it.
     await expect.element(details()).toBeVisible();
     expect(scroller.clientHeight).toBeLessThan(400);
-    expect(inView()).toBe(true);
+    // The details can be in the page a frame before the pane's resize observer scrolls the row back into view.
+    await expect.poll(inView).toBe(true);
 
     // Closed, the pane is tall; a click on a row near its bottom, then the details open again by J: still in view.
     await userEvent.keyboard('{Escape}');

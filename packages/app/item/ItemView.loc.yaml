@@ -74,3 +74,5 @@ copyBranch:
   en: Copy branch name
 resizeSummary:
   en: Resize the summary
+resizeItem:
+  en: Resize the item

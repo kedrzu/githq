@@ -27,22 +27,26 @@ export class ItemViewHarness {
     }
 
     /**
-     * Its content: narrower than 1000px on a page (1300px in the panel) the one column that scrolls, the summary and
-     * then the thread; from there it
-     * holds the {@link summary} and the {@link timeline} side by side, scrolling each on its own, and does not scroll.
+     * Its content in one column (narrower than 1000px on a page, 1300px in the panel), what scrolls: the summary and
+     * then the thread. In two columns it holds only the {@link timeline} and does not scroll: {@link columns} does.
      */
     get content(): Locator {
         return this.root.locator('[data-route-scroll^="item-main:"]');
     }
 
-    /** The column of its title, where it stands and its properties; scrolls on its own only in two columns. */
-    get summary(): Locator {
-        return this.root.locator('[data-route-scroll^="item-summary:"]');
+    /** In two columns, the one scroll of the {@link summary} beside the {@link timeline}, and of the width beside them. */
+    get columns(): Locator {
+        return this.root.locator('[data-route-scroll^="item-columns:"]');
     }
 
-    /** The column of its description and activity; scrolls on its own only in two columns. */
+    /** Its title, where it stands and its properties: the content's first block, or the left column in two. */
+    get summary(): Locator {
+        return this.root.locator('[data-item-column="summary"]');
+    }
+
+    /** Its description and activity: after the summary, or the right column in two. Never scrolls on its own. */
     get timeline(): Locator {
-        return this.root.locator('[data-route-scroll^="item-timeline:"]');
+        return this.root.locator('[data-item-column="timeline"]');
     }
 
     /** "Previous item" (`K`). */
