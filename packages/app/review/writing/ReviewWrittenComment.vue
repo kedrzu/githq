@@ -28,7 +28,7 @@ defineProps<{
 
 const emit = defineEmits<{
   send: [way: ReviewCommentWay];
-  extend: [];
+  extend: [delta: 1 | -1];
   leave: [];
   discard: [];
   focus: [];
@@ -69,7 +69,7 @@ const text = defineModel<string>('text', { default: '' });
     :suggestion="suggestion"
     :code-changed="codeChanged"
     @send="emit('send', $event)"
-    @extend="emit('extend')"
+    @extend="emit('extend', $event)"
     @leave="emit('leave')"
     @discard="emit('discard')"
     @focus="emit('focus')"

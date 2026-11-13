@@ -1,4 +1,4 @@
-<!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape or Cancel closes an empty box; on one with text the editor's footer asks instead (D40, `· asks to discard`, CR97): "Discard what you wrote?", Keep writing (Escape) and Discard (Enter), as `MarkdownEditor` asks. Every other key typed stays in the field, and the keys it acts on there are announced on it. -->
+<!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line and `⇧↑` gives back the last (CR73), and with text in it they select text as anywhere. Escape or Cancel closes an empty box; on one with text the editor's footer asks instead (D40, `· asks to discard`, CR97): "Discard what you wrote?", Keep writing (Escape) and Discard (Enter), as `MarkdownEditor` asks. Every other key typed stays in the field, and the keys it acts on there are announced on it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -43,8 +43,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   send: [way: ReviewCommentWay];
-  /** `⇧↓` in an empty box. */
-  extend: [];
+  /** `⇧↓` or `⇧↑` in an empty box: its range ends a line further or a line sooner. */
+  extend: [delta: 1 | -1];
   /** Escape or Cancel on an empty box. */
   leave: [];
   /** Discard, asked on a box with text. */
@@ -174,10 +174,21 @@ function onKeydown(event: KeyboardEvent) {
   } else if (matchesCommandKey(event, REVIEW_KEYS.suggest)) {
     event.preventDefault();
     insertSuggestion();
-  } else if (matchesCommandKey(event, REVIEW_KEYS.extendComment) && !isReply.value && text.value === '') {
-    event.preventDefault();
-    emit('extend');
+  } else if (!isReply.value && text.value === '') {
+    const delta = getRangeStep(event);
+    if (delta !== null) {
+      event.preventDefault();
+      emit('extend', delta);
+    }
   }
+}
+
+function getRangeStep(event: KeyboardEvent) {
+  if (matchesCommandKey(event, REVIEW_KEYS.rangeDown)) {
+    return 1;
+  }
+
+  return matchesCommandKey(event, REVIEW_KEYS.rangeUp) ? -1 : null;
 }
 </script>
 

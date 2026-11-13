@@ -32,6 +32,8 @@ filter:
   en: Filter by path
 comment:
   en: Comment on the line
+range:
+  en: Lines for a comment
 reply:
   en: Reply to the thread
 send:

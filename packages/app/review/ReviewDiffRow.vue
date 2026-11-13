@@ -81,6 +81,8 @@ const props = withDefaults(
     pinned?: boolean;
     /** The row holds the line cursor (D44): a line tinted with its comment buttons, a thread focused, a gap lit. */
     cursor?: boolean;
+    /** The keys are in a text field, not on the cursor: only a line's comment buttons show it, for the pointer. */
+    quiet?: boolean;
     /** The row is of the file V, Space and C act on, whose block is edged in accent (D44). */
     current?: boolean;
     /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
@@ -242,6 +244,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :syntax="row.syntax"
           :commented="commented"
           :cursor="cursor"
+          :quiet="quiet"
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
         <DiffRowUnified
@@ -251,6 +254,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :syntax="row.syntax"
           :commented="commented"
           :cursor="cursor"
+          :quiet="quiet"
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
       </template>
@@ -268,7 +272,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         v-else-if="row.kind === 'thread'"
         :row="row"
         :open="threadOpen"
-        :focused="cursor"
+        :focused="cursor && !quiet"
         :replies="threadReplies"
         :viewer="viewer"
         :resolve-failure="threadFailure"
@@ -315,7 +319,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         v-else-if="row.kind === 'gap'"
         :row="row"
         :toward="towardGap"
-        :cursor="cursor"
+        :cursor="cursor && !quiet"
         @expand="(gap, step) => emit('expand', gap, step)"
       />
       <template v-else-if="row.kind === 'placeholder'">

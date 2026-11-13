@@ -1,4 +1,4 @@
-<!-- A line of a diff side by side: the older version on the left, the newer on the right, a side with nothing blank. Long lines wrap, so the row is as tall as its taller side. Between each half's number and its code a gutter holds the comment button on the line cursor's row (D43), there on every row so the code never shifts; the cursor's row is tinted, both halves, over their own colours, and each half's button comments on its own line, or an empty half's on the row's line, the one C takes. -->
+<!-- A line of a diff side by side: the older version on the left, the newer on the right, a side with nothing blank. Long lines wrap, so the row is as tall as its taller side. Between each half's number and its code a gutter holds the comment button on the line cursor's row (D43), there on every row so the code never shifts; the cursor's row is tinted, both halves, over their own colours, unless the keys are in a text field, and each half's button comments on its own line, or an empty half's on the row's line, the one C takes. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -26,6 +26,8 @@ const props = defineProps<{
   commented: CommentedLines;
   /** The row holds the line cursor (D44): tinted, a comment button in each half. */
   cursor?: boolean;
+  /** The keys are in a text field, which C or V would type into: the cursor's row keeps its buttons, not its tint. */
+  quiet?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -56,7 +58,7 @@ function isCommented(side: DiffLineSide, cell: DiffCell | null) {
 </script>
 
 <template>
-  <div :class="[css.diffRowSplit, cursor && css.diffRowSplit_cursor]">
+  <div :class="[css.diffRowSplit, cursor && !quiet && css.diffRowSplit_cursor]">
     <div
       v-for="half in halves"
       :key="half.side"

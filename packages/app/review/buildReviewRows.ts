@@ -1253,6 +1253,16 @@ export function getCommentLine(row: ReviewRow): ReviewCommentLine | null {
     return line ? { ...line, path: getReviewRowPath(row.key), key: row.key } : null;
 }
 
+/**
+ * The line a code row shows on a side: what a range on that side reaches when it gets to the row (CR73). `null` for a row
+ * that is not code, or has nothing on that side.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getRowLineOn(row: ReviewRow, side: RowLine['side']): number | null {
+    return row.kind === 'line' ? getLineNumber(row.line, side) : null;
+}
+
 export interface ClampCommentRangeParams extends RowLine {
     readonly rows: readonly ReviewRow[];
     readonly path: string;

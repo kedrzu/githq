@@ -1,4 +1,4 @@
-<!-- A line of a diff in one column: its old and new numbers, a gutter, a sign, and the line, the whole row tinted when added or deleted. Long lines wrap. The gutter holds the comment button on the line cursor's row (D43), on the line C takes: the newer, or the older on a deleted line; it is there on every row, so the code never shifts. The cursor's row is tinted over its own colour. -->
+<!-- A line of a diff in one column: its old and new numbers, a gutter, a sign, and the line, the whole row tinted when added or deleted. Long lines wrap. The gutter holds the comment button on the line cursor's row (D43), on the line C takes: the newer, or the older on a deleted line; it is there on every row, so the code never shifts. The cursor's row is tinted over its own colour, unless the keys are in a text field. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -19,6 +19,8 @@ const props = defineProps<{
   commented: CommentedLines;
   /** The row holds the line cursor (D44): tinted, with the comment button. */
   cursor?: boolean;
+  /** The keys are in a text field, which C or V would type into: the cursor's row keeps its button, not its tint. */
+  quiet?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -48,7 +50,7 @@ const isCommented = computed(() => {
       line.sign === '+' && css.diffRowUnified_added,
       line.sign === '-' && css.diffRowUnified_deleted,
       isCommented && css.diffRowUnified_commented,
-      cursor && css.diffRowUnified_cursor,
+      cursor && !quiet && css.diffRowUnified_cursor,
     ]"
   >
     <DiffLineNumber

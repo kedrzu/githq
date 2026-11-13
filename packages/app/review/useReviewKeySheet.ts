@@ -29,7 +29,8 @@ export const REVIEW_KEYS = {
     filter: '/',
     comment: 'C',
     reply: 'R',
-    extendComment: 'Shift+ArrowDown',
+    rangeDown: 'Shift+ArrowDown',
+    rangeUp: 'Shift+ArrowUp',
     sendFirst: 'Mod+Enter',
     sendSecond: 'Mod+Shift+Enter',
     suggest: 'Mod+G',
@@ -82,6 +83,7 @@ export function useReviewKeySheet(): void {
                     title: t(l.writing),
                     rows: [
                         { keys: [REVIEW_KEYS.comment], label: t(l.comment) },
+                        { keys: [REVIEW_KEYS.rangeDown, REVIEW_KEYS.rangeUp], label: t(l.range) },
                         { keys: [REVIEW_KEYS.reply], label: t(l.reply) },
                         { keys: [REVIEW_KEYS.sendFirst, REVIEW_KEYS.sendSecond], label: t(l.send) },
                         { keys: [REVIEW_KEYS.submit], label: t(l.submit) },

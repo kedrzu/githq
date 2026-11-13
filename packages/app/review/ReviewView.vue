@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35); a submodule shows the commits, files and pull requests between its two pointers, read only once its block is drawn. Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The diff has a line cursor the pointer and the keys share (D44): moving the pointer over a file's header, a row of code, a thread or a gap puts it there, moving nothing, though not rows scrolling under a still pointer, a drag along the numbers or the pinned header's overlay, a press on which puts it on that file's header; ↓ ↑ move it a stop, faster the longer they are held, and PageDown PageUp a screen, the diff scrolling only to keep it a third of the screen from the edge it goes toward; a scroll taking it off the screen brings it to the first stop at the edge it left by. Its file is the current file, the one `V`, Space and `C` act on. `[` `]`, the list and `V` moving on put it on a file's header, N ⇧N and a link on their thread, and rows changing under it leave it on its stop, or the nearest left, its file's header first. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row goes toward the hunk on the side of a line a third down the screen, and so does E, for the gap under the cursor or else its file's nearest, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), its width dragged by its edge from 340 px and kept on this device (D46), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the cursor on the first stop under the pinned header, the status bar saying so until the first move (CR20, CR25, CR26). An address naming a comment on the code (`#discussion_r…`, GitHub's `#r…`), as a file's link on the pull request's page gives, lands instead on its thread as N does, its file let past the filter and hidden viewed files and opened if collapsed; the fragment then leaves the address. Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the cursor's line, on the newer side unless the row has only the older, or a thread's own line, and does nothing on a header, a gap or a thread on the file (D44); a box closed, discarded or sent gives the keys back to the diff, the cursor on its line. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R`, on the thread under the cursor, or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35); a submodule shows the commits, files and pull requests between its two pointers, read only once its block is drawn. Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The diff has a line cursor the pointer and the keys share (D44): moving the pointer over a file's header, a row of code, a thread or a gap puts it there, moving nothing, though not rows scrolling under a still pointer, a drag along the numbers or the pinned header's overlay, a press on which puts it on that file's header; ↓ ↑ move it a stop, faster the longer they are held, and PageDown PageUp a screen, the diff scrolling only to keep it a third of the screen from the edge it goes toward; a scroll taking it off the screen brings it to the first stop at the edge it left by. Its file is the current file, the one `V`, Space and `C` act on. `[` `]`, the list and `V` moving on put it on a file's header, N ⇧N and a link on their thread, and rows changing under it leave it on its stop, or the nearest left, its file's header first. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row goes toward the hunk on the side of a line a third down the screen, and so does E, for the gap under the cursor or else its file's nearest, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), its width dragged by its edge from 340 px and kept on this device (D46), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the cursor on the first stop under the pinned header, the status bar saying so until the first move (CR20, CR25, CR26). An address naming a comment on the code (`#discussion_r…`, GitHub's `#r…`), as a file's link on the pull request's page gives, lands instead on its thread as N does, its file let past the filter and hidden viewed files and opened if collapsed; the fragment then leaves the address. Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag from a number or the comment button along the lines, or a ⇧click on the numbers, making it a range (CR73): `C` takes the cursor's line, on the newer side unless the row has only the older, or a thread's own line, and does nothing on a header, a gap or a thread on the file (D44); a box closed, discarded or sent gives the keys back to the diff, the cursor on its line. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` `⇧↑` from the diff choose lines from the cursor's line, the cursor on the end they move, Esc letting them go and `C` commenting on them, a box left on one of them taking them all; in an empty box they make it end a line further or sooner. While the keys are in a text field the cursor's row is not tinted, its comment buttons still there for the pointer (D44). `R`, on the thread under the cursor, or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -90,6 +90,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatList } from '@/utils/formatList.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
+import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
@@ -114,6 +115,7 @@ import {
   getReviewPosition,
   getReviewRowPath,
   getReviewThreadKey,
+  getRowLineOn,
   isFileWaiting,
 } from './buildReviewRows.js';
 import type {
@@ -191,6 +193,16 @@ const FILE_LIST_WIDTH = { key: 'reviewFileList', default: 300, min: 200, max: 48
 /** The conversation's column at the right (CR121): 340 px by default and at least, dragged out to 720 px. */
 const CONVERSATION_WIDTH = { key: 'reviewConversation', default: 340, min: 340, max: 720 };
 
+/** Lines being chosen for a comment, on one side of a file: from the line it started on to the one it reaches now. */
+interface LineRange {
+  readonly path: string;
+  readonly side: DiffLineSide;
+  readonly from: number;
+  readonly to: number;
+  /** By the pointer, still pressed; else by the keys. */
+  readonly dragging: boolean;
+}
+
 const t = useTranslate();
 const accounts = useService(AccountSession);
 const auth = useService(AuthStore);
@@ -258,8 +270,13 @@ const arrival = shallowRef<ReviewArrival | null>(null);
 const focusedBox = shallowRef<string | null>(null);
 /** The box sent last, which takes the keys back if GitHub refuses it. */
 const sentBox = shallowRef<string | null>(null);
-/** A range being dragged on the lines' numbers (CR73). */
-const commentDrag = shallowRef<{ path: string; side: DiffLineSide; from: number; to: number } | null>(null);
+/**
+ * Lines being chosen for a comment (CR73): dragged from a line's number or comment button, or taken from the cursor's line by
+ * ⇧↓ ⇧↑, the cursor on the end they move.
+ */
+const lineRange = shallowRef<LineRange | null>(null);
+/** The keys are in a text field, where V or C would be typed: the cursor shows only by a line's comment buttons (D44). */
+const keysInField = shallowRef(isEditableTarget(document.activeElement));
 const submitOpen = shallowRef(false);
 const discardOpen = shallowRef(false);
 /** The thread just resolved here, while N and ⇧N are still at it: they go on through the open ones (CR15). */
@@ -294,9 +311,9 @@ const commentedLines = computed(() => {
     }
   }
 
-  const drag = commentDrag.value;
-  if (drag) {
-    add(drag.path, drag.side, Math.min(drag.from, drag.to), Math.max(drag.from, drag.to));
+  const range = lineRange.value;
+  if (range) {
+    add(range.path, range.side, Math.min(range.from, range.to), Math.max(range.from, range.to));
   }
 
   return byPath;
@@ -467,7 +484,7 @@ const reviewCursor = useReviewCursor({
   rows,
   diffColumn,
   order: allPaths,
-  isDragging: () => commentDrag.value !== null,
+  isDragging: () => lineRange.value?.dragging === true,
   onMove: stopLanding,
 });
 /** The row holding the cursor. */
@@ -805,25 +822,59 @@ watch(rows, next => {
   }
 });
 
+// Along whatever of a line the pointer is over, its number, its comment button's column or its code: its line on the range's side.
+onWindowEvent(
+  'pointermove',
+  event => {
+    const range = lineRange.value;
+    if (range?.dragging && event.target instanceof Element) {
+      const key = event.target.closest('[data-cursor-key]')?.getAttribute('data-cursor-key');
+      const row = rows.value.find(other => other.key === key);
+      const line = row && getReviewRowPath(row.key) === range.path ? getRowLineOn(row, range.side) : null;
+      if (line !== null) {
+        lineRange.value = {
+          ...range,
+          to: clampCommentRange({ ...range, rows: rows.value, line: range.from, to: line }),
+        };
+      }
+    }
+  },
+  { passive: true },
+);
+
 onWindowEvent('pointerup', () => {
-  const drag = commentDrag.value;
-  commentDrag.value = null;
-  if (drag && drag.from !== drag.to) {
-    startComment({
-      path: drag.path,
-      side: drag.side,
-      startLine: Math.min(drag.from, drag.to),
-      line: Math.max(drag.from, drag.to),
-      threadId: null,
-    });
+  const range = lineRange.value;
+  if (range?.dragging) {
+    lineRange.value = null;
+    if (range.from !== range.to) {
+      startRange(range);
+    }
   }
 });
 
-// Gone elsewhere in the app: a box coming back into the window doesn't take the keys from there.
+// The keys' range goes once the cursor leaves the line it ends on: another key, the pointer, a jump.
+watch(cursorRow, row => {
+  const range = lineRange.value;
+  if (
+    range &&
+    !range.dragging &&
+    !(row && getReviewRowPath(row.key) === range.path && getRowLineOn(row, range.side) === range.to)
+  ) {
+    lineRange.value = null;
+  }
+});
+
 onWindowEvent('focusin', event => {
+  keysInField.value = isEditableTarget(event.target);
+  // Gone elsewhere in the app: a box coming back into the window doesn't take the keys from there.
   if (event.target instanceof Node && !diffColumn.value?.contains(event.target)) {
     focusedBox.value = null;
   }
+});
+
+// Where the keys go, or nowhere when the window loses them.
+onWindowEvent('focusout', event => {
+  keysInField.value = isEditableTarget(event.relatedTarget);
 });
 
 // Refused while the keys are still around the diff: back in the box, where they can try another way.
@@ -946,8 +997,12 @@ useCommands(() => [
     icon: MessageSquarePlus,
     // Always here, or with no files it would fall to a new issue, which the menu still offers: with no line on screen it does nothing.
     run: () => {
+      const range = lineRange.value;
       const line = findCursorLine();
-      if (line) {
+      if (range) {
+        lineRange.value = null;
+        startRange(range);
+      } else if (line) {
         startComment({ path: line.path, side: line.side, line: line.line, startLine: null, threadId: null });
       }
     },
@@ -967,17 +1022,32 @@ useCommands(() => [
     },
   },
   {
-    id: 'review.extendComment',
-    title: t(l.extendComment),
+    id: 'review.rangeDown',
+    title: t(l.rangeDown),
     section: 'view',
-    key: REVIEW_KEYS.extendComment,
+    key: REVIEW_KEYS.rangeDown,
     menu: false,
-    when: () => findOwnBox(null) !== undefined,
+    when: () => lineRange.value !== null || findCursorLine() !== null,
+    run: () => stepLineRange(1),
+  },
+  {
+    id: 'review.rangeUp',
+    title: t(l.rangeUp),
+    section: 'view',
+    key: REVIEW_KEYS.rangeUp,
+    menu: false,
+    when: () => lineRange.value !== null || findCursorLine() !== null,
+    run: () => stepLineRange(-1),
+  },
+  {
+    id: 'review.clearRange',
+    title: t(l.clearRange),
+    section: 'view',
+    key: 'Escape',
+    menu: false,
+    when: () => lineRange.value !== null && !isLayerOpen(),
     run: () => {
-      const box = findOwnBox(null);
-      if (box) {
-        extendBox(box);
-      }
+      lineRange.value = null;
     },
   },
   {
@@ -1734,19 +1804,21 @@ function startComment(target: Omit<ReviewCommentTarget, 'id'>) {
 }
 
 /** The cursor on what a box is under: its thread for a reply, else its line, for the keys to go on from there (D44). */
-function placeCursorAtBox({ path, id, threadId }: ReviewCommentTarget) {
+function placeCursorAtBox({ path, side, line, threadId }: ReviewCommentTarget) {
   if (threadId !== null && isRowShown(getReviewThreadKey(path, threadId))) {
     reviewCursor.setTo(getReviewThreadKey(path, threadId));
     return;
   }
 
-  const at = rows.value.findIndex(row => row.key === getReviewCommentKey(path, id));
-  const line = rows.value
-    .slice(0, Math.max(at, 0))
-    .findLast(row => row.kind === 'line' && getReviewRowPath(row.key) === path);
-  if (line) {
-    reviewCursor.setTo(line.key);
+  // By the line, not by the box's row: a box just opened is not among the rows yet.
+  const row = findLineRow(path, side, line);
+  if (row) {
+    reviewCursor.setTo(row.key);
   }
+}
+
+function findLineRow(path: string, side: DiffLineSide, line: number) {
+  return rows.value.find(row => getReviewRowPath(row.key) === path && getRowLineOn(row, side) === line);
 }
 
 /** Only when it wouldn't fit on screen, and then by as little as it takes (D7). */
@@ -1784,37 +1856,89 @@ function revealReply(threadKey: string, id: string) {
 
 /** ⇧click: the box being written on this side of the file now reaches the line, up to what hides lines from it (CR73). */
 function extendComment(path: string, side: DiffLineSide, line: number) {
-  const box = findOwnBox({ path, side });
+  const box = findOwnBox(path, side);
   if (!box) {
     startComment({ path, side, line, startLine: null, threadId: null });
     return;
   }
 
-  setBoxReach(box, line);
+  const from = box.startLine ?? box.line;
+  const to = clampCommentRange({ rows: rows.value, path, side, line: from, to: line });
+  writing.value?.setRange(box.id, from === to ? null : Math.min(from, to), Math.max(from, to));
   focusedBox.value = box.id;
 }
 
 /** The box the keys are in, or else the last with room to change; a reply stays on its thread's lines. */
-function findOwnBox(on: Pick<ReviewCommentTarget, 'path' | 'side'> | null) {
+function findOwnBox(path: string, side: DiffLineSide) {
   const own = commentTargets.value.filter(
-    target =>
-      target.threadId === null &&
-      canEdit(target.id) &&
-      (on === null || (target.path === on.path && target.side === on.side)),
+    target => target.threadId === null && canEdit(target.id) && target.path === path && target.side === side,
   );
   return own.find(target => target.id === focusedBox.value) ?? own.at(-1);
 }
 
-function setBoxReach(box: ReviewCommentTarget, line: number) {
-  const { path, side } = box;
-  const from = box.startLine ?? box.line;
-  const to = clampCommentRange({ rows: rows.value, path, side, line: from, to: line });
-  writing.value?.setRange(box.id, from === to ? null : Math.min(from, to), Math.max(from, to));
+/** ⇧↓ ⇧↑ in an empty box: its range ends a line further, or a line sooner, never before it starts; the box follows into sight (D7). */
+function extendBox(box: ReviewCommentTarget, delta: 1 | -1) {
+  const { path, side, line } = box;
+  const start = box.startLine ?? line;
+  const end =
+    delta === 1 ? clampCommentRange({ rows: rows.value, path, side, line, to: line + 1 }) : Math.max(start, line - 1);
+  writing.value?.setRange(box.id, start === end ? null : start, end);
+  void revealComment(box);
+  void keepKeysInBox(box.id);
 }
 
-/** ⇧↓: a line further, the box following it down into sight (D7). */
-function extendBox(box: ReviewCommentTarget) {
-  setBoxReach(box, box.line + 1);
+/** Under its new end line, the box may have been taken out of the page and put back, which drops the keys: back to it. */
+async function keepKeysInBox(id: string) {
+  await nextTick();
+  const element = diffColumn.value?.querySelector(`[data-box="${CSS.escape(id)}"]`);
+  if (element && !element.contains(document.activeElement)) {
+    element.querySelector('textarea')?.focus();
+  }
+}
+
+/**
+ * ⇧↓ ⇧↑: the range from the cursor's line, or the one the keys are making, ends a line further that way, up to what hides
+ * lines from it (CR73); the cursor goes to that line, the diff following as for ↓ ↑.
+ */
+function stepLineRange(delta: 1 | -1) {
+  const current = lineRange.value;
+  const line = current ? null : findCursorLine();
+  const range =
+    current ?? (line && { path: line.path, side: line.side, from: line.line, to: line.line, dragging: false });
+  if (!range || range.dragging) {
+    return;
+  }
+
+  const to = clampCommentRange({ ...range, rows: rows.value, line: range.from, to: range.to + delta });
+  const row = findLineRow(range.path, range.side, to);
+  if (to === range.to || !row) {
+    return;
+  }
+
+  lineRange.value = { ...range, to };
+  reviewCursor.stepTo(row.key, delta);
+}
+
+/** A box on the lines: one already written on a line of them takes them all, keeping its text, or else a new one. */
+function startRange({ path, side, from, to }: LineRange) {
+  const start = Math.min(from, to);
+  const end = Math.max(from, to);
+  const box = commentTargets.value.find(
+    target =>
+      target.threadId === null &&
+      canEdit(target.id) &&
+      target.path === path &&
+      target.side === side &&
+      target.line >= start &&
+      (target.startLine ?? target.line) <= end,
+  );
+  if (!box) {
+    startComment({ path, side, startLine: start === end ? null : start, line: end, threadId: null });
+    return;
+  }
+
+  writing.value?.setRange(box.id, start === end ? null : start, end);
+  focusedBox.value = box.id;
   void revealComment(box);
 }
 
@@ -1887,17 +2011,10 @@ function getSuggestion(target: ReviewCommentTarget) {
 
 function onGutter(row: ReviewRow, event: MouseEvent, side: DiffLineSide, line: number) {
   const path = getReviewRowPath(row.key);
-  const drag = commentDrag.value;
   switch (event.type) {
     case 'pointerdown':
-      commentDrag.value = event.button === 0 && !event.shiftKey ? { path, side, from: line, to: line } : null;
-      break;
-    case 'pointerenter':
-      if (drag?.path === path && drag.side === side) {
-        const to = clampCommentRange({ rows: rows.value, path, side, line: drag.from, to: line });
-        commentDrag.value = { ...drag, to };
-      }
-
+      lineRange.value =
+        event.button === 0 && !event.shiftKey ? { path, side, from: line, to: line, dragging: true } : null;
       break;
     case 'click':
       if (event.shiftKey) {
@@ -2170,6 +2287,7 @@ function readAgain() {
                   :pushed="pushed"
                   :pinned="pinned"
                   :cursor="!pinned && cursor?.key === row.key"
+                  :quiet="keysInField"
                   :current="getReviewRowPath(row.key) === currentPath"
                   :toward-gap="getGapToward"
                   @expand="expandGap"
@@ -2202,7 +2320,7 @@ function readAgain() {
                       :reply-to="getReplyTo(target)"
                       :suggestion="getSuggestion(target)"
                       :code-changed="writing?.hasCodeChanged(target.id)"
-                      @extend="extendBox(target)"
+                      @extend="extendBox(target, $event)"
                       @update:text="writing?.setText(target.id, $event)"
                       @send="way => sendComment(target, way)"
                       @leave="leaveComment(target)"

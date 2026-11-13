@@ -575,9 +575,9 @@ submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026
 A line cursor (D44) is what the keys act on: ↓ ↑ move it a stop, PageDown PageUp move it a screen, and holding ↓ ↑ speeds it up; C comments on its line, R replies to the thread it is on, E opens the gap it
 is on or the current file's gap nearest it (D42), and V, Space, x act on its file. (owner, 2026-11-13; CR29, CR120)
 
-A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
+A range has three ways, all ending in the same selection (CR73, CR83): press a line number or the comment button and drag along the lines, as on github.com; ⇧click a second number; or ⇧↓ ⇧↑. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows; 2026-11-13: the drag goes by the line under the pointer, not only its number, since the comment button D43 is where a press starts)
 
-⇧↓ is CR73's: from the diff it takes the next line into the last box written in; in a box only while the box is empty, for with text in it it is the text's own selection. ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
+⇧↓ ⇧↑ are CR73's: from the diff they choose lines from the cursor's line as an editor's selection does, tinted as a drag, the cursor on the end they move; another move of the cursor or Esc lets them go, and C comments on them, a box already written on one of them taking them all with its text. In a box they make it end a line further or sooner, only while the box is empty, for with text in it they are the text's own selection. (agent, 2026-11-04; owner, 2026-11-13: ⇧↑ too, and a range from the keys without a box first, replacing ⇧↓ into the last box written in) ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
 
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
 
@@ -802,6 +802,10 @@ moving on put it on the file's header, N ⇧N and a link to a comment on the thr
 under the pinned header, without scrolling. Escape never clears it. A file that leaves the diff (viewed and hidden, or
 a resolved thread's file) goes when it leaves the top of the screen (D7). The current header's tint is accent at 6%
 (`#7B87F70F`), so every text on it keeps AA (D30); its edge, opaque, is accent at 60% over the window.
+
+While the keys are in a text field (the file filter, a comment box), the cursor's row has no tint, a thread no focused
+look and a gap no light: V or C there would be typed, and the tint said otherwise. The comment buttons still show on its
+row, for the pointer. (owner, 2026-11-13)
 
 **Rejected.**
 

@@ -706,6 +706,59 @@ test('a range: a drag on the numbers, on one side, stopping at what hides lines;
     });
 });
 
+test('a range: a drag from the comment button straight down its column', async ({ page, github }) => {
+    const { review } = await openWriting(page, github);
+
+    await review.pointAt(review.lineNumber(19));
+    const button = review.commentButton(19);
+    const from = await button.boundingBox();
+    const to = await review.lineNumber(21).boundingBox();
+    if (!from || !to) {
+        throw new Error('Line 19 or 21 is not drawn');
+    }
+
+    const x = from.x + from.width / 2;
+    await page.mouse.move(x, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(x, to.y + to.height / 2, { steps: 8 });
+    await page.mouse.up();
+
+    await expect(review.commentBox('Comment on lines 19–21')).toBeVisible();
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
+});
+
+test('a range from the keys: ⇧↑ ⇧↓ from the cursor’s line, the cursor on its end, Esc letting it go, C commenting on it', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github);
+
+    await review.pointAt(review.lineNumber(21));
+    await page.keyboard.press('Shift+ArrowUp');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('c');
+    await expect(review.commentBox('Comment on line 20')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(review.commentBox()).toBeHidden();
+
+    await page.keyboard.press('Shift+ArrowUp');
+    await page.keyboard.press('Shift+ArrowUp');
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('c');
+    await expect(review.commentField('Comment on lines 19–20')).toBeFocused();
+
+    // In the empty box ⇧↓ takes in the next line and ⇧↑ gives it back.
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(review.commentField('Comment on lines 19–21')).toBeFocused();
+    await page.keyboard.press('Shift+ArrowUp');
+    await expect(review.commentField('Comment on lines 19–20')).toBeFocused();
+    await page.keyboard.type('These two');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.thread('These two')).toBeVisible();
+    expect(writes[0]?.variables).toMatchObject({ thread: { line: 20, startLine: 19 } });
+});
+
 /** Leaves the review with a box on line 20 holding `text`; GitHub's head moves on; back, the list reads it under the box. */
 async function pushUnderBox(page: Page, review: ReviewScreenHarness, answered: AnsweredReview, text: string) {
     await review.lineNumber(20).click();
@@ -1032,7 +1085,7 @@ test('a suggestion from a range keeps its indentation; the older side offers non
     });
 });
 
-test('⇧↓ out of a box left with text takes the next line into it, and in a box it selects text', async ({
+test('a range from the keys over a box left with text takes the box to its lines, and in a box ⇧↓ selects text', async ({
     page,
     github,
 }) => {
@@ -1045,8 +1098,10 @@ test('⇧↓ out of a box left with text takes the next line into it, and in a b
 
     await review.diff.focus();
     await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('c');
     await expect(review.commentBox('Comment on lines 20–21')).toBeVisible();
     await expect(review.commentField('Comment on lines 20–21')).toHaveValue('Half');
+    await expect(review.commentBox()).toHaveCount(1);
 });
 
 test('a comment on the pull request with a draft open goes at once and joins nothing, and keys there stay there', async ({
