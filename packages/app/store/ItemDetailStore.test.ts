@@ -358,6 +358,7 @@ function reviewPage(from: number, to: number): PullRequestDetailFieldsFragment['
             url: `https://github.com/acme/web/pull/1#${id}`,
             author: null,
             state: 'COMMENTED',
+            body: '',
             bodyHTML: '',
             submittedAt: MONDAY,
         })),

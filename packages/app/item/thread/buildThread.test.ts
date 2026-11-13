@@ -918,6 +918,7 @@ function review(
         url: `https://github.com/kedrzu/githq/pull/1#pullrequestreview-${id}`,
         author,
         state,
+        body: '',
         bodyHtml,
         submittedAt: at(minutes),
     };
