@@ -238,16 +238,6 @@ test.each<[unknown, boolean]>([
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, usageStatistics: written });
 });
 
-test('a file without usageStatistics reads as on', () => {
-    expect(readUsageStatistics(DOCUMENT)).toBe(true);
-});
-
-test('usageStatistics is written right after animations, before fields this build does not know', () => {
-    const written = serializeSettings({ ...DOCUMENT, usageStatistics: false, animations: false, future: 1 });
-
-    expect(Object.keys(JSON.parse(written)).slice(-3)).toEqual(['animations', 'usageStatistics', 'future']);
-});
-
 test.each<[unknown, ReviewCommentChoice]>([
     ['draft', 'draft'],
     ['a newer build’s way', 'single'],

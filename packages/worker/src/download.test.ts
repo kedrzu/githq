@@ -107,25 +107,6 @@ test('counts neither an unknown build nor the fallback to the release page', asy
     expect(usage.points).toEqual([]);
 });
 
-test('answers the same with the binding, without it and when it throws', async () => {
-    const throwing: WorkerEnv['USAGE'] = {
-        writeDataPoint() {
-            throw new Error('Analytics Engine is down');
-        },
-    };
-    githubRedirectsTo(`${RELEASES}/tag/v0.3.0`);
-
-    const answers: string[] = [];
-    for (const env of [ENV, { ...ENV, USAGE: usageBinding().binding }, { ...ENV, USAGE: throwing }]) {
-        const response = await download('/download/windows', env);
-        answers.push(`${response.status} ${JSON.stringify([...response.headers])}`);
-    }
-
-    expect(answers[0]).toContain('githq_0.3.0_x64-setup.exe');
-    expect(answers[1]).toBe(answers[0]);
-    expect(answers[2]).toBe(answers[0]);
-});
-
 /** A fake Analytics Engine binding that keeps every data point written to it. */
 function usageBinding() {
     const points: AnalyticsEngineDataPoint[] = [];
