@@ -12,7 +12,7 @@ import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
-import * as l from './ItemThreadEditor.loc.js';
+import * as l from './CommentEditor.loc.js';
 
 const props = defineProps<{
   /** `null` for a deleted account. */
@@ -100,10 +100,10 @@ function onEscape(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div :class="kind === 'reply' ? css.itemThreadEditor_reply : css.itemThreadEditor">
+  <div :class="kind === 'reply' ? css.commentEditor_reply : css.commentEditor">
     <div
       v-if="kind !== 'reply'"
-      :class="css.itemThreadEditor_gutter"
+      :class="css.commentEditor_gutter"
     >
       <Avatar
         :name="author?.login ?? ''"
@@ -112,12 +112,12 @@ function onEscape(event: KeyboardEvent) {
         decorative
       />
     </div>
-    <div :class="css.itemThreadEditor_main">
+    <div :class="css.commentEditor_main">
       <MarkdownEditor
         ref="editor"
         v-model="text"
         v-model:asking="asking"
-        :class="css.itemThreadEditor_editor"
+        :class="css.commentEditor_editor"
         :repository="repository"
         :item-number="itemNumber"
         :people="people"
@@ -151,10 +151,10 @@ function onEscape(event: KeyboardEvent) {
       </MarkdownEditor>
       <p
         v-if="reason"
-        :class="css.itemThreadEditor_failed"
+        :class="css.commentEditor_failed"
       >
         <CircleAlert
-          :class="css.itemThreadEditor_failedIcon"
+          :class="css.commentEditor_failedIcon"
           aria-hidden="true"
         />
         <span role="alert">{{ editTexts.notSent(reason) }}</span>
@@ -165,21 +165,21 @@ function onEscape(event: KeyboardEvent) {
 
 <style lang="scss" module="css">
 // As a card of the thread: the avatar in the thread's gutter, level with the editor's head.
-.itemThreadEditor {
+.commentEditor {
   @include item-thread-row;
 }
 
-.itemThreadEditor_reply {
+.commentEditor_reply {
   display: flex;
   flex: 1;
   min-width: 0;
 }
 
-.itemThreadEditor_gutter {
+.commentEditor_gutter {
   @include item-thread-gutter(38px);
 }
 
-.itemThreadEditor_main {
+.commentEditor_main {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -189,11 +189,11 @@ function onEscape(event: KeyboardEvent) {
 
 // Twice the class: the editor's own border comes from a stylesheet that may load after this one. In the accent while
 // open, focused or not: it is what is being changed.
-.itemThreadEditor_editor.itemThreadEditor_editor {
+.commentEditor_editor.commentEditor_editor {
   border-color: $color-accent;
 }
 
-.itemThreadEditor_failed {
+.commentEditor_failed {
   display: flex;
   gap: $spacing-8;
   align-items: center;
@@ -202,7 +202,7 @@ function onEscape(event: KeyboardEvent) {
   color: $color-fg;
 }
 
-.itemThreadEditor_failedIcon {
+.commentEditor_failedIcon {
   flex: none;
   width: 14px;
   height: 14px;

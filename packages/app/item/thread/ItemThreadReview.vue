@@ -4,6 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
 
+import CommentCard from '@/comments/CommentCard.vue';
 import Button from '@/components/Button.vue';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
@@ -14,7 +15,6 @@ import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import { getUrlAnchor } from './getUrlAnchor.js';
 import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadReview.loc.js';
-import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 import ItemThreadResolvedRow from './ItemThreadResolvedRow.vue';
 
@@ -141,7 +141,7 @@ function toggle(threadId: string, open: boolean) {
 </script>
 
 <template>
-  <ItemThreadCard
+  <CommentCard
     :author="entry.review.author"
     :created-at="entry.review.submittedAt"
     :now="now"
@@ -212,7 +212,7 @@ function toggle(threadId: string, open: boolean) {
         </template>
       </div>
     </template>
-  </ItemThreadCard>
+  </CommentCard>
 </template>
 
 <style lang="scss" module="css">

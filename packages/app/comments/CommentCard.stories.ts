@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
+import GitHubHtml from '@/item/GitHubHtml.vue';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
-import GitHubHtml from '../GitHubHtml.vue';
-import ItemThreadCard from './ItemThreadCard.vue';
+import CommentCard from './CommentCard.vue';
 
 /** The thread's width in a panel. */
 const IN_PANEL = 512;
@@ -18,7 +18,7 @@ const VIEWER = {
 const TYPED = 'Fixed in #1205.\n\nThe series start is converted when it is created.';
 
 const meta = {
-    component: ItemThreadCard,
+    component: CommentCard,
     args: {
         author: COMMENT.author,
         createdAt: COMMENT.createdAt,
@@ -27,7 +27,7 @@ const meta = {
     // On an item view's background, as wide as the thread in a panel; GitHub's rendering as the text, or the text
     // as typed (`parameters.typed`). The failed card's band is `ItemThread`'s (its `NotSent` story).
     render: (args, { parameters }) => ({
-        components: { GitHubHtml, ItemThreadCard },
+        components: { GitHubHtml, CommentCard },
         setup: () => ({
             args,
             html: parameters.html ?? COMMENT.bodyHtml,
@@ -35,13 +35,13 @@ const meta = {
         }),
         template: `
           <div style="width: ${IN_PANEL}px; padding: 20px 0; background: #11161c">
-            <ItemThreadCard v-bind="args">
+            <CommentCard v-bind="args">
               <p v-if="typed" style="margin: 0; white-space: pre-wrap" v-text="typed" />
               <GitHubHtml v-else :html="html" />
-            </ItemThreadCard>
+            </CommentCard>
           </div>`,
     }),
-} satisfies Meta<typeof ItemThreadCard>;
+} satisfies Meta<typeof CommentCard>;
 
 export default meta;
 

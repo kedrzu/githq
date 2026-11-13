@@ -12,7 +12,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 
-import * as l from './ItemThreadCard.loc.js';
+import * as l from './CommentCard.loc.js';
 
 const props = defineProps<{
   /** `null` for a deleted account. */
@@ -85,8 +85,8 @@ watchPostEffect(() => {
     :disabled="!$slots.menu"
     @close-auto-focus="emit('menuClose', $event)"
   >
-    <div :class="css.itemThreadCard">
-      <div :class="css.itemThreadCard_gutter">
+    <div :class="css.commentCard">
+      <div :class="css.commentCard_gutter">
         <Avatar
           :name="login"
           :src="author?.avatarUrl"
@@ -96,44 +96,44 @@ watchPostEffect(() => {
       </div>
       <div
         :class="[
-          css.itemThreadCard_card,
-          failed && css.itemThreadCard_failed,
-          pending && css.itemThreadCard_pending,
-          linked && css.itemThreadCard_linked,
+          css.commentCard_card,
+          failed && css.commentCard_failed,
+          pending && css.commentCard_pending,
+          linked && css.commentCard_linked,
         ]"
       >
         <p
           ref="head"
-          :class="css.itemThreadCard_head"
+          :class="css.commentCard_head"
         >
-          <span :class="css.itemThreadCard_author">{{ name ?? login }}</span>
+          <span :class="css.commentCard_author">{{ name ?? login }}</span>
           <slot name="verdict" />
           <span
             v-if="failed"
-            :class="[css.itemThreadCard_when, css.itemThreadCard_notSent]"
+            :class="[css.commentCard_when, css.commentCard_notSent]"
             >{{ t(l.notSent) }}</span
           >
           <span
             v-else-if="sending"
-            :class="css.itemThreadCard_when"
+            :class="css.commentCard_when"
             >{{ t(l.sending) }}</span
           >
           <time
             v-else
-            :class="css.itemThreadCard_when"
+            :class="css.commentCard_when"
             :datetime="createdAt"
             >{{ $slots.verdict || age === '' ? age : t(l.commented, { when: age }) }}</time
           >
           <span
             v-if="edited"
-            :class="css.itemThreadCard_when"
+            :class="css.commentCard_when"
             >{{ t(l.edited) }}</span
           >
-          <span :class="css.itemThreadCard_spacer" />
+          <span :class="css.commentCard_spacer" />
           <slot name="aside" />
           <span
             v-if="description"
-            :class="css.itemThreadCard_chip"
+            :class="css.commentCard_chip"
             >{{ t(l.authorChip) }}</span
           >
           <Menu
@@ -152,7 +152,7 @@ watchPostEffect(() => {
         </p>
         <div
           v-if="$slots.default"
-          :class="css.itemThreadCard_body"
+          :class="css.commentCard_body"
         >
           <slot />
         </div>
@@ -167,16 +167,16 @@ watchPostEffect(() => {
 
 <style lang="scss" module="css">
 // Avatars in the thread's gutter, beside the card.
-.itemThreadCard {
+.commentCard {
   @include item-thread-row;
 }
 
-.itemThreadCard_gutter {
+.commentCard_gutter {
   @include item-thread-gutter(36px);
 }
 
 // Its fill hides the rail running behind it.
-.itemThreadCard_card {
+.commentCard_card {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -185,20 +185,20 @@ watchPostEffect(() => {
   border-radius: $radius-lg;
 }
 
-.itemThreadCard_failed {
+.commentCard_failed {
   border-color: $color-border-danger-strong;
 }
 
-.itemThreadCard_pending {
+.commentCard_pending {
   border-color: rgba($color-amber, 0.5);
 }
 
 // The card has a border already: only its colour changes, so nothing moves.
-.itemThreadCard_linked {
+.commentCard_linked {
   border-color: $color-accent;
 }
 
-.itemThreadCard_head {
+.commentCard_head {
   display: flex;
   gap: $spacing-6;
   align-items: center;
@@ -215,7 +215,7 @@ watchPostEffect(() => {
   }
 }
 
-.itemThreadCard_author {
+.commentCard_author {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -224,20 +224,20 @@ watchPostEffect(() => {
   color: $color-fg;
 }
 
-.itemThreadCard_when {
+.commentCard_when {
   font-size: $font-size-xs;
   color: $color-fg-dim;
 }
 
-.itemThreadCard_notSent {
+.commentCard_notSent {
   color: $color-red;
 }
 
-.itemThreadCard_spacer {
+.commentCard_spacer {
   flex: 1;
 }
 
-.itemThreadCard_chip {
+.commentCard_chip {
   padding: 1px 7px;
   font-size: $font-size-3xs;
   color: $color-fg-2;
@@ -245,7 +245,7 @@ watchPostEffect(() => {
   border-radius: $radius-xl;
 }
 
-.itemThreadCard_body {
+.commentCard_body {
   display: flex;
   flex-direction: column;
   gap: $spacing-10;

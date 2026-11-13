@@ -8,7 +8,7 @@ import { useNow } from '@/services/useNow.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
-import * as l from './ReviewCommentFrame.loc.js';
+import * as l from './CommentReply.loc.js';
 
 const props = defineProps<{
   /** `null` for an account that no longer exists. */
@@ -29,25 +29,25 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
 </script>
 
 <template>
-  <div :class="css.reviewCommentFrame">
+  <div :class="css.commentReply">
     <Avatar
       :name="author?.login ?? t(l.ghost)"
       :src="author?.avatarUrl"
       decorative
     />
-    <div :class="[css.reviewCommentFrame_body, spaced && css.reviewCommentFrame_body_spaced]">
-      <p :class="css.reviewCommentFrame_meta">
-        <span :class="css.reviewCommentFrame_author">{{ author?.login ?? t(l.ghost) }}</span>
+    <div :class="[css.commentReply_body, spaced && css.commentReply_body_spaced]">
+      <p :class="css.commentReply_meta">
+        <span :class="css.commentReply_author">{{ author?.login ?? t(l.ghost) }}</span>
         <slot name="verdict" />
         <time
           v-if="url === undefined"
-          :class="css.reviewCommentFrame_age"
+          :class="css.commentReply_age"
           :datetime="createdAt"
           >{{ age }}</time
         >
         <a
           v-else
-          :class="css.reviewCommentFrame_age"
+          :class="css.commentReply_age"
           :href="url"
           target="_blank"
           rel="noopener noreferrer"
@@ -63,12 +63,12 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
 </template>
 
 <style lang="scss" module="css">
-.reviewCommentFrame {
+.commentReply {
   display: flex;
   gap: $spacing-10;
 }
 
-.reviewCommentFrame_body {
+.commentReply_body {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -76,24 +76,24 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
   min-width: 0;
 }
 
-.reviewCommentFrame_body_spaced {
+.commentReply_body_spaced {
   gap: $spacing-4;
 }
 
-.reviewCommentFrame_meta {
+.commentReply_meta {
   display: flex;
   gap: $spacing-6;
   align-items: center;
   margin: 0;
 }
 
-.reviewCommentFrame_author {
+.commentReply_author {
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   color: $color-fg;
 }
 
-.reviewCommentFrame_age {
+.commentReply_age {
   @include focus-ring;
 
   flex: none;

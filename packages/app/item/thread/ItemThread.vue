@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. Where what others did since the viewer last looked at the item starts, a line says how many there are (`ItemThreadNewSince`, F5), before the same item until another item opens, whatever the viewer posts meanwhile; the fold never hides that item. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment, review and comment on the code GitHub has carries GitHub's anchor (`issuecomment-<id>`, `pullrequestreview-<id>`, `discussion_r<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it, a resolved code thread or a dismissed review opened — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. Where what others did since the viewer last looked at the item starts, a line says how many there are (`ItemThreadNewSince`, F5), before the same item until another item opens, whatever the viewer posts meanwhile; the fold never hides that item. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`CommentEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`CommentEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment, review and comment on the code GitHub has carries GitHub's anchor (`issuecomment-<id>`, `pullrequestreview-<id>`, `discussion_r<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it, a resolved code thread or a dismissed review opened — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -6,6 +6,10 @@ import { CircleAlert, RotateCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import type { Ref } from 'vue';
 
+import CommentCard from '@/comments/CommentCard.vue';
+import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
+import CommentEditor from '@/comments/CommentEditor.vue';
+import CommentMenu from '@/comments/CommentMenu.vue';
 import Button from '@/components/Button.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
@@ -27,13 +31,9 @@ import type { CodeThreadReplies, CodeThreadReply, CodeThreadSentReply } from './
 import { getUrlAnchor } from './getUrlAnchor.js';
 import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThread.loc.js';
-import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeComment from './ItemThreadCodeComment.vue';
-import ItemThreadDeleteDialog from './ItemThreadDeleteDialog.vue';
-import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadEvent from './ItemThreadEvent.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
-import ItemThreadMenu from './ItemThreadMenu.vue';
 import ItemThreadMissing from './ItemThreadMissing.vue';
 import ItemThreadNewSince from './ItemThreadNewSince.vue';
 import ItemThreadPendingReview from './ItemThreadPendingReview.vue';
@@ -744,7 +744,7 @@ type Askable =
       :read-again="readAgain"
     />
     <template v-else>
-      <ItemThreadEditor
+      <CommentEditor
         v-if="editorsRef.has(null)"
         :text="editorsRef.get(null)?.text ?? ''"
         :author="item.author"
@@ -761,7 +761,7 @@ type Askable =
         @save="saveEdit(null, detail.body)"
         @cancel="cancelEdit(null)"
       />
-      <ItemThreadCard
+      <CommentCard
         v-else
         :author="item.author"
         :created-at="item.createdAt"
@@ -789,7 +789,7 @@ type Askable =
           {{ t(l.noDescription) }}
         </p>
         <template #menu>
-          <ItemThreadMenu
+          <CommentMenu
             :can-edit="detail.viewerCanUpdate && detail.pendingBody === undefined"
             :can-quote="canQuote"
             @edit="startEdit(null, detail.body)"
@@ -797,7 +797,7 @@ type Askable =
             @copy-link="copyLink(item.url)"
           />
         </template>
-      </ItemThreadCard>
+      </CommentCard>
       <ol
         v-if="entries.length > 0"
         ref="comments"
@@ -824,7 +824,7 @@ type Askable =
             @click="showEarlier()"
           />
           <template v-else-if="entry.kind === 'comment'">
-            <ItemThreadEditor
+            <CommentEditor
               v-if="editorsRef.has(entry.comment.id)"
               :text="editorsRef.get(entry.comment.id)?.text ?? ''"
               :author="entry.comment.author"
@@ -840,7 +840,7 @@ type Askable =
               @save="saveEdit(entry.comment.id, entry.comment.body)"
               @cancel="cancelEdit(entry.comment.id)"
             />
-            <ItemThreadCard
+            <CommentCard
               v-else
               :author="entry.comment.author"
               :created-at="entry.comment.createdAt"
@@ -867,7 +867,7 @@ type Askable =
                 v-if="entry.comment.pendingBody === undefined"
                 #menu
               >
-                <ItemThreadMenu
+                <CommentMenu
                   :can-edit="entry.comment.viewerCanUpdate"
                   :can-quote="canQuote"
                   :can-delete="entry.comment.viewerCanDelete"
@@ -877,7 +877,7 @@ type Askable =
                   @delete="askDelete(entry.comment.id)"
                 />
               </template>
-            </ItemThreadCard>
+            </CommentCard>
           </template>
           <ItemThreadEvent
             v-else-if="entry.kind === 'events' || entry.kind === 'checksFailed'"
@@ -913,7 +913,7 @@ type Askable =
             @set-resolved="setResolved(entry.thread.id, $event)"
             @toggled="focusThread(entry.thread.id)"
           />
-          <ItemThreadCard
+          <CommentCard
             v-else-if="entry.kind === 'failedComment'"
             :author="viewer ?? null"
             :now="now"
@@ -950,7 +950,7 @@ type Askable =
                 </Button>
               </div>
             </template>
-          </ItemThreadCard>
+          </CommentCard>
           <ItemThreadPendingReview
             v-else-if="entry.kind === 'pendingReview'"
             :entry="entry"
@@ -964,7 +964,7 @@ type Askable =
       </ol>
     </template>
     <slot name="composer" />
-    <ItemThreadDeleteDialog
+    <CommentDeleteDialog
       :open="deletingId !== null"
       @update:open="deletingId = null"
       @delete="confirmDelete"

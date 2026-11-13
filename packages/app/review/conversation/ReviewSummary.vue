@@ -4,11 +4,10 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowDownRight, MessageSquare } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import CommentReply from '@/comments/CommentReply.vue';
 import { getReviewVerdict } from '@/item/getReviewVerdict.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import type { ItemReviewSummary } from '@/store/ItemDetailTypes.js';
-
-import ReviewCommentFrame from '../threads/ReviewCommentFrame.vue';
 
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
 import * as l from './ReviewSummary.loc.js';
@@ -31,7 +30,7 @@ const threadsLabel = computed(() => {
 </script>
 
 <template>
-  <ReviewCommentFrame
+  <CommentReply
     :author="review.author"
     :url="review.url"
     :created-at="review.submittedAt"
@@ -77,7 +76,7 @@ const threadsLabel = computed(() => {
       />
       {{ threadsLabel }}
     </span>
-  </ReviewCommentFrame>
+  </CommentReply>
 </template>
 
 <style lang="scss" module="css">
