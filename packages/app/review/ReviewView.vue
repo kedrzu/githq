@@ -1422,7 +1422,7 @@ function jumpToThread(row: ReviewThreadRow) {
   reviewCursor.setTo(row.key);
   walkedCursor = cursor.value;
   justResolved.value = null;
-  const height = diffColumn.value?.clientHeight ?? 0;
+  const height = list.value?.getViewport().height ?? 0;
   list.value?.jumpTo(row.key, Math.round(Math.max(height / 4, THREAD_MIN_OFFSET)));
   list.value?.focus();
 }
@@ -1760,7 +1760,7 @@ async function revealComment({ path, id, threadId }: ReviewCommentTarget) {
   }
 
   const key = getReviewCommentKey(path, id);
-  const height = diffColumn.value?.clientHeight ?? 0;
+  const height = list.value?.getViewport().height ?? 0;
   const offset = list.value?.getRowOffset(key) ?? height;
   if (offset + COMMENT_BOX_HEIGHT > height) {
     list.value?.jumpTo(key, Math.max(height - COMMENT_BOX_HEIGHT, THREAD_MIN_OFFSET));
@@ -2140,6 +2140,7 @@ function readAgain() {
               :estimate-height="estimateReviewRowHeight"
               :is-pinned="isPinned"
               :push-room="FILE_GAP"
+              :top-room="FILE_GAP"
               :label="t(l.diff)"
               @user-scroll="onUserScroll"
               @row-focus-lost="onRowFocusLost"
@@ -2421,15 +2422,12 @@ function readAgain() {
   visibility: hidden;
 }
 
-// Room over the list, as the files have between them, so the first file's block and a pinned header don't touch the
-// toolbar: outside the scroller, whose offsets start at its rows, and outside what measures the screen of rows.
 .reviewView_diffColumn {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding-top: $spacing-8;
 }
 
 .reviewView_diff {

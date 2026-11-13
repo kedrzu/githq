@@ -28,6 +28,8 @@ const Demo = defineComponent({
         sectionSize: { type: Number, default: 0 },
         /** The room a header keeps over itself as it pushes the pinned one up. */
         pushRoom: { type: Number, default: 0 },
+        /** The room at the top that the rows scroll through and the pinned header covers. */
+        topRoom: { type: Number, default: 0 },
         wrapping: { type: Boolean, default: false },
         jumpKey: { type: String, default: 'row-5000' },
         jumpOffset: { type: Number, default: 0 },
@@ -63,6 +65,7 @@ const Demo = defineComponent({
                         estimateHeight={() => ESTIMATE}
                         isPinned={row => row.pinned}
                         pushRoom={props.pushRoom}
+                        topRoom={props.topRoom}
                         label="Rows"
                     >
                         {{
@@ -154,6 +157,11 @@ export const PinnedHeaders: Story = {
 /** The same, each header keeping 10 px of room over itself as it pushes the pinned one up. */
 export const PinnedHeadersWithRoom: Story = {
     args: { sectionSize: 100, jumpKey: 'row-250', pushRoom: 10 },
+};
+
+/** Sections whose headers pin 10 px below the top, over room the rows scroll through, as far apart when pushing. */
+export const PinnedHeadersWithTopRoom: Story = {
+    args: { sectionSize: 100, jumpKey: 'row-250', pushRoom: 10, topRoom: 10 },
 };
 
 /** Size is not what it costs. */

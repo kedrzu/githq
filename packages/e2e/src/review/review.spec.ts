@@ -529,8 +529,8 @@ test("C, V and E act on the cursor's file, not the one at the top: C opens on it
 
     // The short file's line a third down under the pinned header, the cursor put on it by the pointer.
     await expect(async () => {
-        const [line, diff] = await Promise.all([short.boundingBox(), review.diff.boundingBox()]);
-        if (!line || !diff) {
+        const [line, diff] = await Promise.all([short.boundingBox(), review.rowsBox()]);
+        if (!line) {
             throw new Error('The short file is not on screen');
         }
 

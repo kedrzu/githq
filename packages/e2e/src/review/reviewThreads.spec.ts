@@ -172,7 +172,7 @@ test('N lands exactly on a thread and stays there as a comment above it grows la
     await expect(review.focusedThread).toContainText('The target');
     await expect(page.getByText('Thread 2 of 2, 2 open')).toBeVisible();
     const offset = await review.threadOffset('The target');
-    const height = await review.diff.evaluate(diff => diff.clientHeight);
+    const { height } = await review.rowsBox();
     // The row at a quarter down the screen, the thread's box inside its padding.
     expect(offset).toBeCloseTo(Math.round(height / 4) + 8, 0);
 
