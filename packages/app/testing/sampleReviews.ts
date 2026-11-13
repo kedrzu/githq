@@ -245,6 +245,7 @@ function sampleSummary({ id, author, state, ago, text }: SampleSummaryParams): I
         url: `https://github.com/mlaine/tasklet/pull/15#pullrequestreview-${id}`,
         author,
         state,
+        body: text ?? '',
         bodyHtml: text === null ? '' : `<p>${text}</p>`,
         submittedAt: new Date(SAMPLE_NOW - ago).toISOString(),
     };

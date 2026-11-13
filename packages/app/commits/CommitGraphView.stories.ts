@@ -18,6 +18,8 @@ import CommitDetails from './CommitDetails.vue';
 import CommitGraphView from './CommitGraphView.vue';
 
 const NEVER = new Promise<void>(() => {});
+/** How long a wait that spans the view's whole start may take on a loaded CI runner. */
+const LOADED_RUNNER_TIMEOUT = 5000;
 
 const meta = {
     component: CommitGraphView,
@@ -64,7 +66,14 @@ export const LoadingOlder: Story = {
             holdIf: operation => (operation === 'CommitHistories' ? NEVER : null),
         }),
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('Loading older commits…')).toBeVisible();
+        const graph = await within(canvasElement).findByRole('region', { name: /^Commits of\s+acme\/web$/ });
+        const canvas = within(graph);
+        // Reading the kept copy, drawing it, measuring the pane and only then asking for the next page outlasts the
+        // default second on a loaded CI runner: each step gets a budget of its own.
+        await expect(await canvas.findByText('Commit c1', {}, { timeout: LOADED_RUNNER_TIMEOUT })).toBeVisible();
+        await expect(
+            await canvas.findByText('Loading older commits…', {}, { timeout: LOADED_RUNNER_TIMEOUT }),
+        ).toBeVisible();
     },
 };
 

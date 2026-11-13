@@ -664,8 +664,8 @@ export const SyncEngine = defineService({
         function start(account: Account, resume: boolean) {
             const current: Session = {
                 account,
-                // The token of this account, whatever the store holds by the time a request goes.
-                rest: createRest(() => account.token),
+                // The token of this account as each request goes: a refreshed one too.
+                rest: createRest(account.getToken),
                 loops: {
                     myWork: createLoopRun(),
                     pullRequestStatuses: createLoopRun(),

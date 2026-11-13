@@ -181,6 +181,8 @@ export interface GitHubWorldReviewParams {
     readonly id: string;
     readonly author: string;
     readonly state: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED';
+    /** Its text as written (`body`), which Quote reply quotes; none by default. */
+    readonly body?: string;
     /** Its text as GitHub renders it (`bodyHTML`); none by default. */
     readonly bodyHtml?: string;
     readonly minutesAgo: number;
@@ -3720,6 +3722,7 @@ function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams
             url: `${toUrl(item)}#pullrequestreview-${review.id}`,
             author: createUser(review.author),
             state: review.state,
+            body: review.body ?? '',
             bodyHTML: review.bodyHtml ?? '',
             submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
         })),

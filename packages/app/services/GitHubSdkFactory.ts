@@ -13,7 +13,7 @@ export const GitHubSdkFactory = defineFactory({
     deps: {
         createRequester: GitHubRequesterFactory,
     },
-    setup({ createRequester }, getToken: () => string) {
+    setup({ createRequester }, getToken: () => string | Promise<string>) {
         return getSdk(createRequester(getToken));
     },
 });

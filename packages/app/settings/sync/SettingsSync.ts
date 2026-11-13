@@ -578,7 +578,7 @@ export const SettingsSync = defineService({
 
             const current: Session = {
                 account,
-                rest: createRest(() => account.token),
+                rest: createRest(account.getToken),
                 running: null,
                 again: false,
             };

@@ -3,13 +3,18 @@ import { createPromise } from '@nzyme/utils/createPromise.js';
 
 import { expect, test } from '../fixtures.js';
 import { GitHubHttpError } from '../github/GitHubMock.js';
-import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import {
+    SAMPLE_REFRESH_TOKEN,
+    SAMPLE_TOKEN,
+    SAMPLE_TOKEN_LIFETIME_SECONDS,
+    SAMPLE_VIEWER,
+} from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { E2E_BASE_URL, E2E_CLIENT_ID } from '../localApp.js';
-import { readStoredToken } from '../session.js';
+import { readStoredCredentials } from '../session.js';
 import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 import { answerAuthorize } from './answerAuthorize.js';
@@ -51,7 +56,7 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
     await expect(page).toHaveURL('/?failed=cancelled');
     await expect(landing.banner).toContainText("Sign-in didn't finish.");
     await expect(landing.banner).toContainText("Access was cancelled on GitHub's screen");
-    expect(await readStoredToken(page)).toBeNull();
+    expect(await readStoredCredentials(page)).toBeNull();
 
     // The reason is in the address, so a reload still explains it.
     await page.reload();
@@ -74,12 +79,21 @@ test('a return from GitHub with a state this tab did not issue fails without sig
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?failed=failed');
     await expect(landing.banner).toContainText('Something went wrong on the way back from GitHub');
-    expect(await readStoredToken(page)).toBeNull();
+    expect(await readStoredCredentials(page)).toBeNull();
 });
 
-test('signing in with GitHub ends in the app, where the user was heading', async ({ page, github }) => {
+test('signing in with GitHub ends in the app, where the user was heading, keeping what renews the token', async ({
+    page,
+    github,
+}) => {
     const authorize = answerAuthorize(github, state => ({ code: 'e2e-code', state }));
-    github.tokenExchange({ accessToken: SAMPLE_TOKEN, scopes: OAUTH_SCOPES });
+    github.tokenExchange({
+        accessToken: SAMPLE_TOKEN,
+        refreshToken: SAMPLE_REFRESH_TOKEN,
+        expiresIn: SAMPLE_TOKEN_LIFETIME_SECONDS,
+        scopes: OAUTH_SCOPES,
+    });
+    const signInStarted = Date.now();
     github.graphql('Viewer', SAMPLE_VIEWER);
     answerTrackingCandidates(github, { login: LOGIN });
 
@@ -98,7 +112,12 @@ test('signing in with GitHub ends in the app, where the user was heading', async
     await expect(
         new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
     ).toBeVisible();
-    expect(await readStoredToken(page)).toBe(SAMPLE_TOKEN);
+    const stored = await readStoredCredentials(page);
+    expect(stored?.accessToken).toBe(SAMPLE_TOKEN);
+    expect(stored?.refreshToken).toBe(SAMPLE_REFRESH_TOKEN);
+    // Counted from the exchange: GitHub's 8 hours, not "never".
+    expect(stored?.expiresAt).toBeGreaterThanOrEqual(signInStarted + SAMPLE_TOKEN_LIFETIME_SECONDS * 1000);
+    expect(stored?.expiresAt).toBeLessThanOrEqual(Date.now() + SAMPLE_TOKEN_LIFETIME_SECONDS * 1000);
 });
 
 test('signed in with a token, the shell shows the user and the allowance, and opens at once on reload', async ({

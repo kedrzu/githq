@@ -1,16 +1,26 @@
+import { stringifyOAuthCredentials } from '@githq/app/auth/utils/stringifyOAuthCredentials.js';
+import { OAUTH_SCOPES } from '@githq/github/oauth.js';
+import type { OAuthCredentials } from '@githq/github/oauth.js';
+
 import { expect, test } from '../fixtures.js';
 import { GitHubHttpError } from '../github/GitHubMock.js';
-import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import {
+    SAMPLE_REFRESH_TOKEN,
+    SAMPLE_TOKEN,
+    SAMPLE_TOKEN_LIFETIME_SECONDS,
+    SAMPLE_VIEWER,
+} from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
-import { readStoredToken, signIn, skipTokenRechecks } from '../session.js';
+import { readStoredCredentials, signIn, skipTokenRechecks } from '../session.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
 /** Where the app keeps the signed-in user (`VIEWER_KEY` in `packages/app/auth/AuthStore.ts`). */
 const VIEWER_KEY = 'githq.viewer';
-
+/** Where the app keeps the credentials (`TOKEN_KEY` in `packages/app/auth/TokenVault.ts`). */
+const TOKEN_KEY = 'githq.token';
 test('signing out at home shows the landing page, forgets the token and revokes it at GitHub', async ({
     page,
     github,
@@ -25,7 +35,7 @@ test('signing out at home shows the landing page, forgets the token and revokes 
     await expect(landing.signInButton).toBeVisible();
     await expect(landing.banner).toBeHidden();
     await expect(shell.account(LOGIN)).toBeHidden();
-    expect(await readStoredToken(page)).toBeNull();
+    expect(await readStoredCredentials(page)).toBeNull();
 });
 
 test('signing out in one tab signs out the others too', async ({ page, context, github }) => {
@@ -74,7 +84,7 @@ test('a token GitHub stops accepting while "my work" is open signs out to the la
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?failed=tokenRejected');
     await expect(landing.banner).toContainText('You were signed out.');
-    expect(await readStoredToken(page)).toBeNull();
+    expect(await readStoredCredentials(page)).toBeNull();
 
     await landing.dismissButton.click();
     await expect(landing.banner).toBeHidden();
@@ -100,7 +110,49 @@ test('a token GitHub no longer accepts at app start lands on the landing page, s
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?next=/pulls&failed=tokenRejected');
     await expect(landing.banner).toContainText('You were signed out.');
-    expect(await readStoredToken(page)).toBeNull();
+    expect(await readStoredCredentials(page)).toBeNull();
+});
+
+test('a token GitHub stops accepting is renewed with its refresh token through the Worker, and the session goes on with the new one', async ({
+    page,
+    github,
+}) => {
+    await signIn(page, github);
+    // Signed in as GitHub's OAuth App signs in now: an access token that expires, and the refresh token that renews it.
+    const signedIn: OAuthCredentials = {
+        accessToken: SAMPLE_TOKEN,
+        refreshToken: SAMPLE_REFRESH_TOKEN,
+        expiresAt: Date.now() + SAMPLE_TOKEN_LIFETIME_SECONDS * 1000,
+    };
+    await page.evaluate(([key, text]) => localStorage.setItem(key, text), [
+        TOKEN_KEY,
+        stringifyOAuthCredentials(signedIn),
+    ] as const);
+
+    // GitHub no longer accepts the first token (expired, say), only the one the refresh token renews it with.
+    const renewedToken = 'gho_e2eRenewedToken';
+    const renewedRefreshToken = 'ghr_e2eRenewedRefreshToken';
+    const viewerTokens: (string | null)[] = [];
+    github.graphql('Viewer', ({ token }) => {
+        viewerTokens.push(token);
+        return token === renewedToken ? SAMPLE_VIEWER : new GitHubHttpError(401, 'Bad credentials');
+    });
+    github.tokenRefresh(SAMPLE_REFRESH_TOKEN, {
+        accessToken: renewedToken,
+        refreshToken: renewedRefreshToken,
+        expiresIn: SAMPLE_TOKEN_LIFETIME_SECONDS,
+        scopes: OAUTH_SCOPES,
+    });
+    await page.reload();
+
+    await expect.poll(() => github.refreshedTokens).toEqual([SAMPLE_REFRESH_TOKEN]);
+    await expect.poll(() => viewerTokens).toEqual([SAMPLE_TOKEN, renewedToken]);
+    const stored = await readStoredCredentials(page);
+    expect(stored?.accessToken).toBe(renewedToken);
+    expect(stored?.refreshToken).toBe(renewedRefreshToken);
+    await expect(page).toHaveURL('/');
+    await expect(new AppShellHarness(page).account(LOGIN)).toBeVisible();
+    await expect(new LandingHarness(page).signInButton).toBeHidden();
 });
 
 test('signed out, an app address opens the landing page, and signing in there returns to it', async ({

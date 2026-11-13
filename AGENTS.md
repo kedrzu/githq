@@ -17,7 +17,7 @@ Linear-grade ergonomics with GitHub as the only backend. Positioning: `docs/desi
 
 - `ARCHITECTURE.md`: read before changing the layout, tooling or a package's role.
 - Stack: bun workspaces + Nx, nzyme as a submodule (`nzyme/`, deps `workspace:*`), Nuxt 4 SPA, one Cloudflare Worker
-  (SPA + OAuth token exchange), IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen
+  (SPA + OAuth token endpoints), IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen
   (`docs/design/githq/DECISIONS.md` D16–D19).
 - Exception to the SPA: `/` is prerendered signed out into `_landing.html` (`index.html` stays the shell). The Worker
   serves the shell when the cookie `githq_signed_in=1` is set (written only by `AuthStore`), the landing otherwise.

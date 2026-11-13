@@ -1,6 +1,12 @@
-import { OAUTH_APPROVAL_PATH, OAUTH_AUTHORIZE_PATH, OAUTH_REVOKE_PATH, OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
+import {
+    OAUTH_APPROVAL_PATH,
+    OAUTH_AUTHORIZE_PATH,
+    OAUTH_REFRESH_PATH,
+    OAUTH_REVOKE_PATH,
+    OAUTH_TOKEN_PATH,
+} from '@githq/github/oauth.js';
 
-import { authorize, exchangeToken, openApproval, revokeToken } from './githubOAuth.js';
+import { authorize, exchangeToken, openApproval, refreshAccessToken, revokeToken } from './githubOAuth.js';
 import { isDocsPath, serveDocs } from './docs.js';
 import { DOWNLOAD_PREFIX, serveDownload } from './download.js';
 import { LANDING_PATH, serveHome, serveLanding } from './home.js';
@@ -13,7 +19,7 @@ import type { WorkerEnv } from './WorkerEnv.js';
  * links to the desktop installers of the latest release (`download.ts`); `/docs/*` is the documentation site, whose
  * unknown addresses get its 404 page instead of the app (`docs.ts`,
  * `docs/decisions/docs-site-under-githq-dev-docs.md`); `/api/*` is GitHub's OAuth (`githubOAuth.ts`, D1):
- * the code exchange, the revocation of a token on signing out, and the way to GitHub's page of the OAuth App. It is stateless: it stores nothing and keeps
+ * the code exchange, the refresh of an expired token, the revocation of a token on signing out, and the way to GitHub's page of the OAuth App. It is stateless: it stores nothing and keeps
  * no task data. Any other path that reaches it gets a JSON 404 — never the SPA's `index.html`, which a client calling the API would misread as a success.
  */
 export default {
@@ -34,6 +40,8 @@ export default {
                 return authorize(request, env);
             case OAUTH_TOKEN_PATH:
                 return await exchangeToken(request, env);
+            case OAUTH_REFRESH_PATH:
+                return await refreshAccessToken(request, env);
             case OAUTH_REVOKE_PATH:
                 return await revokeToken(request, env);
             case OAUTH_APPROVAL_PATH:

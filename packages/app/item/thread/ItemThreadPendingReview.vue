@@ -5,6 +5,7 @@ import { Send, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
+import CommentCard from '@/comments/CommentCard.vue';
 import ReviewPendingToolbar from '@/review/ReviewPendingToolbar.vue';
 import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import type { PendingComment } from '@/review/writing/getPendingComments.js';
@@ -15,7 +16,6 @@ import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import type { ThreadPendingReview } from './buildThread.js';
-import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 import * as l from './ItemThreadPendingReview.loc.js';
 
@@ -80,7 +80,7 @@ function discard() {
 </script>
 
 <template>
-  <ItemThreadCard
+  <CommentCard
     :author="viewer"
     :created-at="entry.review?.createdAt"
     :now="now"
@@ -135,7 +135,7 @@ function discard() {
         @discard="discard"
       />
     </template>
-  </ItemThreadCard>
+  </CommentCard>
 </template>
 
 <style lang="scss" module="css">

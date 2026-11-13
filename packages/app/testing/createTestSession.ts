@@ -5,13 +5,13 @@ import { VIEWER_KEY } from '@/auth/AuthStore.js';
 import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
-import type { ClockShape } from '@/services/Clock.js';
 import { Clock } from '@/services/Clock.js';
 
+import { createTestClock } from './createTestClock.js';
 import { createTestTabs } from './createTestTabs.js';
 import type { TestTabs } from './createTestTabs.js';
 import { fakeOnline } from './fakeOnline.js';
-import { settle } from './settle.js';
+import { storedToken } from './storedToken.js';
 
 /** A GraphQL operation as the fake GitHub received it. */
 export interface TestGraphQLRequest {
@@ -53,6 +53,11 @@ export interface CreateTestSessionParams {
      */
     readonly answerRest?: (request: TestGraphQLRequest) => TestRestAnswer | undefined;
     /**
+     * Answers the Worker's endpoints (`/api/auth/…`) by path and JSON body; one it returns `undefined` for — or every
+     * one, without it — cannot be reached. Not recorded with GitHub's requests.
+     */
+    readonly answerWorker?: (path: string, body: unknown) => TestRestAnswer | undefined;
+    /**
      * The browser this session is a tab of, sharing its Web Locks and broadcast channels with the other sessions
      * opened in it; a browser of its own without it (the only tab).
      */
@@ -66,7 +71,7 @@ export const TEST_START = Date.UTC(2026, 9, 30, 13, 0, 0);
 
 /**
  * A container for testing the stores against a fake GitHub: a browser with the user signed in, a clock that
- * moves only when told ({@link TestClock.advance}), and a GitHub answering GraphQL from `answer` — every request
+ * moves only when told (`advance`), and a GitHub answering GraphQL from `answer` — every request
  * recorded, any of them held back while {@link TestSessionGitHub.hold} is set. The stores' persistence
  * interfaces are left for the test to set. Several sessions given the same `tabs` are tabs of one browser —
  * each with its own clock and GitHub, so what each tab asked is told apart.
@@ -74,7 +79,7 @@ export const TEST_START = Date.UTC(2026, 9, 30, 13, 0, 0);
 export function createTestSession(params: CreateTestSessionParams) {
     const local = params.localStorage ?? new Map<string, string>();
     if (params.login !== null) {
-        local.set(TOKEN_KEY, `gho_${params.login}`);
+        local.set(TOKEN_KEY, storedToken(`gho_${params.login}`));
         local.set(VIEWER_KEY, JSON.stringify(viewerOf(params.login)));
     }
 
@@ -140,7 +145,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         estimateStorage: () => Promise.resolve(null),
     };
 
-    const clock = createTestClock();
+    const clock = createTestClock(TEST_START);
     const { container, logs } = createTestContainer();
     container.set(Browser, browser);
     container.set(Clock, clock);
@@ -166,14 +171,20 @@ export function createTestSession(params: CreateTestSessionParams) {
         fromAnotherTab,
         clearFromAnotherTab,
         signInFromAnotherTab: (login: string) =>
-            fromAnotherTab({ [TOKEN_KEY]: `gho_${login}`, [VIEWER_KEY]: JSON.stringify(viewerOf(login)) }),
+            fromAnotherTab({ [TOKEN_KEY]: storedToken(`gho_${login}`), [VIEWER_KEY]: JSON.stringify(viewerOf(login)) }),
         signOutFromAnotherTab: () => fromAnotherTab({ [TOKEN_KEY]: null, [VIEWER_KEY]: null }),
     };
 
     async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
         const headers = new Headers(init?.headers);
         const token = (headers.get('Authorization') ?? '').replace('Bearer ', '');
-        const url = new URL(input instanceof Request ? input.url : input);
+        const address = input instanceof Request ? input.url : String(input);
+        // The Worker's endpoints (`/api/auth/…`), on the app's origin: not GitHub's.
+        if (address.startsWith('/')) {
+            return answerWorker(address, init);
+        }
+
+        const url = new URL(address);
         if (url.pathname !== '/graphql') {
             return await fetchRest(url, token, init);
         }
@@ -195,6 +206,16 @@ export function createTestSession(params: CreateTestSessionParams) {
         }
 
         return Response.json(answer, { headers: limits });
+    }
+
+    function answerWorker(path: string, init: RequestInit | undefined): Response {
+        const body: unknown = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined;
+        const answer = params.answerWorker?.(path, body);
+        if (!answer) {
+            throw new TypeError('Failed to fetch');
+        }
+
+        return Response.json(answer.body ?? null, { status: answer.status });
     }
 
     async function fetchRest(url: URL, token: string, init: RequestInit | undefined): Promise<Response> {
@@ -296,46 +317,6 @@ export interface TestSessionGitHub {
     graphqlRemaining: number;
     /** What every REST answer says is left of the core allowance. */
     coreRemaining: number;
-}
-
-/** A clock that moves only when told. */
-export interface TestClock extends ClockShape {
-    /** Moves the time on, running the timers that fall due on the way and letting their work settle. */
-    advance(ms: number): Promise<void>;
-}
-
-function createTestClock(): TestClock {
-    let now = TEST_START;
-    let timers: { at: number; callback: () => void }[] = [];
-
-    return {
-        now: () => now,
-        schedule: (callback, delayMs) => {
-            const timer = { at: now + delayMs, callback };
-            timers.push(timer);
-            return () => {
-                timers = timers.filter(other => other !== timer);
-            };
-        },
-        advance: async ms => {
-            const end = now + ms;
-            await settle();
-            for (;;) {
-                const next = timers.toSorted((a, b) => a.at - b.at)[0];
-                if (!next || next.at > end) {
-                    break;
-                }
-
-                timers = timers.filter(other => other !== next);
-                now = next.at;
-                next.callback();
-                await settle();
-            }
-
-            now = end;
-            await settle();
-        },
-    };
 }
 
 function readRequest(body: unknown, token: string): TestGraphQLRequest {

@@ -129,6 +129,7 @@ test("a review summary keeps its text and id; one not submitted is nobody else's
         url: 'https://github.com/o/r/pull/1#pullrequestreview-1',
         author: null,
         state: 'CHANGES_REQUESTED' as const,
+        body: 'Two things',
         bodyHTML: '<p>Two things</p>',
         submittedAt: MONDAY,
     };
@@ -154,6 +155,7 @@ test("a review summary keeps its text and id; one not submitted is nobody else's
             url: review.url,
             author: null,
             state: 'CHANGES_REQUESTED',
+            body: 'Two things',
             bodyHtml: '<p>Two things</p>',
             submittedAt: MONDAY,
         },

@@ -15,6 +15,7 @@ import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
+import { storedToken } from '@/testing/storedToken.js';
 import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName } from './IndexedDbPersistence.js';
@@ -66,7 +67,7 @@ test("signing out deletes the user's copy and empties memory; the next user star
     expect(items.loaded).toBe(false);
     await waitUntil(async () => !(await databaseNames()).includes(getLocalDatabaseName(alice)), { timeoutMs: 2000 });
 
-    fromAnotherTab({ [TOKEN_KEY]: 'gho_bob', [VIEWER_KEY]: JSON.stringify(viewerOf(bob)) });
+    fromAnotherTab({ [TOKEN_KEY]: storedToken('gho_bob'), [VIEWER_KEY]: JSON.stringify(viewerOf(bob)) });
     await items.ready();
 
     expect(items.loaded).toBe(true);
@@ -199,7 +200,7 @@ test('a tab opening before another wrote its last changes gets them from it; a t
 function setup(login: string | null, persistence = recordingPersistence(), tabs = createTestTabs()) {
     const local = new Map<string, string>();
     if (login !== null) {
-        local.set(TOKEN_KEY, `gho_${login}`);
+        local.set(TOKEN_KEY, storedToken(`gho_${login}`));
         local.set(VIEWER_KEY, JSON.stringify(viewerOf(login)));
     }
 
