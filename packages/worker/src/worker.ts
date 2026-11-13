@@ -26,7 +26,7 @@ export default {
     async fetch(request: Request, env: WorkerEnv): Promise<Response> {
         const { pathname } = new URL(request.url);
         if (pathname.startsWith(DOWNLOAD_PREFIX)) {
-            return await serveDownload(request);
+            return await serveDownload(request, env);
         }
         if (isDocsPath(pathname)) {
             return await serveDocs(request, env);

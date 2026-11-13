@@ -7,8 +7,8 @@ to manage all your repositories, and no separate tracker for them because GitHub
 tracker ([why both](DECISIONS.md#d4)). Linear appears as what githq replaces, never as what it is
 ([why](DECISIONS.md#d2)).
 
-The landing page has no analytics, so these cannot be measured against each other on the live site. Their use
-is to be read to people and to watch which one makes them say "that's me".
+The landing page counts only anonymous visits, with no way to show one visitor one headline and another a
+different one, so these cannot be measured against each other on the live site. Their use is to be read to people and to watch which one makes them say "that's me".
 
 ## The headline and the line under it
 

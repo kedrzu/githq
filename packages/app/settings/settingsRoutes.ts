@@ -16,6 +16,7 @@ export type SettingsSection =
     | 'projects'
     | 'repositories'
     | 'review'
+    | 'privacy'
     | 'sync'
     | 'updates'
     | 'changelog';
@@ -30,6 +31,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
     'projects',
     'display',
     'review',
+    'privacy',
     'sync',
     'account',
     ...(__DESKTOP__ ? (['updates', 'changelog'] as const) : []),

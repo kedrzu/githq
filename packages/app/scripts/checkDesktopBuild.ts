@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { checkDocsAbsent } from './checkDocs.js';
-import { checkAppShell } from './checkPrerenderedPages.js';
+import { checkAppShell, hasBeaconLoader } from './checkPrerenderedPages.js';
 import { APP_MARKER, DESKTOP_MARKERS, DEV_SIGN_IN_MARKERS, WEB_MARKERS } from './checkProductionBuild.js';
 import { readBuiltFiles, readBuiltPaths } from './readBuiltFiles.js';
 
@@ -17,6 +17,11 @@ async function checkDesktopBuild() {
     const problems = [...checkAppShell(files), ...checkDocsAbsent(await readBuiltPaths(OUTPUT))];
     if (files.some(file => file.path === '_landing.html')) {
         problems.push('_landing.html: the desktop app has no landing page');
+    }
+    for (const file of files) {
+        if (file.path.endsWith('.html') && hasBeaconLoader(file)) {
+            problems.push(`${file.path}: the desktop app loads no usage statistics beacon`);
+        }
     }
 
     for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...DESKTOP_MARKERS]) {
@@ -38,7 +43,7 @@ async function checkDesktopBuild() {
     }
 
     console.info(
-        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, none of the web's own, no landing page, no docs.`,
+        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, none of the web's own, no landing page, no beacon loader, no docs.`,
     );
 }
 

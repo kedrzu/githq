@@ -13,7 +13,7 @@ export interface DesktopFixtures {
      * app never needs: it talks to GitHub alone. Any fails the test when it ends; githq.dev is never reached. The
      * exceptions are what only the client secret can do — the revocation of the token on signing out and the renewal of
      * an expiring one — which a build that is not production's asks of its own origin and the GitHub mock answers
-     * (`GitHubMock.revokedTokens`, `GitHubMock.refreshedTokens`).
+     * (`GitHubMock.revokedTokens`, `GitHubMock.refreshBodies`).
      */
     githqRequests: readonly string[];
 }

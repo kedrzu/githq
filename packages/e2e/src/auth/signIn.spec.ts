@@ -3,7 +3,6 @@ import { createPromise } from '@nzyme/utils/createPromise.js';
 
 import { expect, test } from '../fixtures.js';
 import { GitHubHttpError } from '../github/GitHubMock.js';
-import type { GitHubMock } from '../github/GitHubMock.js';
 import {
     SAMPLE_REFRESH_TOKEN,
     SAMPLE_TOKEN,
@@ -18,7 +17,10 @@ import { E2E_BASE_URL, E2E_CLIENT_ID } from '../localApp.js';
 import { readStoredCredentials } from '../session.js';
 import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
+import { answerAuthorize } from './answerAuthorize.js';
+
 const LOGIN = SAMPLE_VIEWER.viewer.login;
+
 test('signed out, home is the landing page', async ({ page }) => {
     await page.goto('/');
 
@@ -150,19 +152,3 @@ test('signed in with a token, the shell shows the user and the allowance, and op
     answer.resolve();
     await expect(shell.statusBar).toContainText('4,811 of 5,000 left this hour');
 });
-
-/**
- * Answers GitHub's consent screen (`github.com/login/oauth/authorize`) by sending the browser back to the
- * app's callback with `callbackQuery` (given the `state` GitHub was sent); resolves with the screen's address.
- */
-function answerAuthorize(github: GitHubMock, callbackQuery: (state: string) => Record<string, string>) {
-    const opened = createPromise<URL>();
-    github.web('/login/oauth/authorize', url => {
-        opened.resolve(url);
-        const callback = new URL(OAUTH_CALLBACK_PATH, E2E_BASE_URL);
-        callback.search = new URLSearchParams(callbackQuery(url.searchParams.get('state') ?? '')).toString();
-        return { status: 302, headers: { location: callback.href } };
-    });
-
-    return opened.promise;
-}

@@ -2,6 +2,7 @@ import { getOAuthClientId, OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTER
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
 
+import { getUsageClient, isUsageOptedOut, recordUsage } from './usage.js';
 import type { WorkerEnv } from './WorkerEnv.js';
 
 /**
@@ -15,6 +16,9 @@ import type { WorkerEnv } from './WorkerEnv.js';
  *    token it gets back, with its refresh token and expiry. The Worker stores nothing.
  * 4. GitHub's access tokens expire after 8 hours: the app trades the refresh token for new ones at
  *    `POST /api/auth/refresh` ({@link refreshAccessToken}), which needs the client secret as well.
+ *
+ * A token created, refreshed or revoked is counted (`usage.ts`) unless the body carries `telemetry: false`; a refused
+ * or failed request is not.
  *
  * The paths, the scopes and what `state` may be are the contract shared with the app (`@githq/github/oauth.js`).
  *
@@ -151,7 +155,12 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
         });
     }
 
-    return await requestToken({ clientId, clientSecret, grant: { code, redirect_uri: redirectUri } });
+    const response = await requestToken({ clientId, clientSecret, grant: { code, redirect_uri: redirectUri } });
+    // 200 is only ever the answer with the token; every refusal and failure has an error status.
+    if (response.ok && !isUsageOptedOut(body)) {
+        recordUsage(env, 'token_created', { client: getUsageClient(request), platform: '' });
+    }
+    return response;
 }
 
 /**
@@ -191,13 +200,16 @@ export async function refreshAccessToken(request: Request, env: WorkerEnv): Prom
         );
     }
 
-    return withOpenCors(
-        await requestToken({
-            clientId,
-            clientSecret,
-            grant: { grant_type: 'refresh_token', refresh_token: token },
-        }),
-    );
+    const response = await requestToken({
+        clientId,
+        clientSecret,
+        grant: { grant_type: 'refresh_token', refresh_token: token },
+    });
+    // As with the exchange, only a 200 carries new tokens: a refused or failed renewal is not counted.
+    if (response.ok && !isUsageOptedOut(body)) {
+        recordUsage(env, 'token_refreshed', { client: getUsageClient(request), platform: '' });
+    }
+    return withOpenCors(response);
 }
 
 /**
@@ -255,8 +267,12 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
         return withOpenCors(authError(502, { error: 'github_unreachable' }));
     }
 
-    // 404: GitHub no longer knows the token (revoked already); undocumented, observed.
+    // 404: GitHub no longer knows the token (revoked already); undocumented, observed. Only a 204 is counted: a 404
+    // would also answer any made-up token, so counting it would let anyone inflate the sign-outs.
     if (response.status === 204 || response.status === 404) {
+        if (response.status === 204 && !isUsageOptedOut(body)) {
+            recordUsage(env, 'token_revoked', { client: getUsageClient(request), platform: '' });
+        }
         return new Response(null, { status: 204, headers: { ...OPEN_CORS_HEADERS, 'cache-control': 'no-store' } });
     }
 

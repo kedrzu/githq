@@ -21,6 +21,7 @@ export class SettingsScreenHarness {
             | 'Account'
             | 'Code review'
             | 'Display'
+            | 'Privacy'
             | 'Projects'
             | 'Repositories'
             | 'Sync settings'
@@ -40,6 +41,11 @@ export class SettingsScreenHarness {
     /** The Display section's switch for animations. */
     get animationsSwitch(): Locator {
         return this.root.getByRole('switch', { name: 'Animations' });
+    }
+
+    /** The Privacy section's switch for usage statistics. */
+    get usageStatisticsSwitch(): Locator {
+        return this.root.getByRole('switch', { name: 'Share usage statistics' });
     }
 
     /** A card of the Code review section's comments. */

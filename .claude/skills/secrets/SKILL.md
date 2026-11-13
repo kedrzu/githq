@@ -30,6 +30,8 @@ not secrets: `packages/github/src/oauthClientIds.json`.
 
 The updater's signing key and its password, and the Apple certificate and notarization credentials (`APPLE_*`), are mapped with `GITHQ_ENV=prod` only, so no development command holds them. `bun run build:desktop:signed` reads them from the store; the Release action signs with repository secrets set from it (`docs/desktop/RELEASING.md`).
 
+The usage statistics token, `CLOUDFLARE_ANALYTICS_TOKEN`, has an environment of its own, `GITHQ_ENV=stats`, with that one entry (key `GITHQ_CLOUDFLARE_ANALYTICS_TOKEN_PROD`). `secrets run` refuses to start when a mapped secret is missing, so keeping it out of `dev` and `prod` leaves `bun run dev`, `build:desktop:signed` and `secrets:put:prod` working before it is stored, and out of release builds' environment. The owner creates a Cloudflare API token (Account → Account Analytics → Read) and stores it once, through the masked dialog: `GITHQ_ENV=stats bun nzyme secrets set CLOUDFLARE_ANALYTICS_TOKEN --prompt="Cloudflare API token with Account Analytics: Read"`. Then `bun --cwd packages/worker stats` prints the last 30 days of usage counts.
+
 ## Commands
 
 - `bun nzyme secrets login` — once per machine, by the person holding the token.

@@ -181,7 +181,7 @@ test("Settings' section is its `?tab=`; none, an unknown or an old one is the fi
     }
 
     expect(getSettingsPath('repositories')).toBe('/settings');
-    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'review', 'sync', 'account']);
+    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'review', 'privacy', 'sync', 'account']);
     expect(getSettingsPath('display')).toBe('/settings?tab=display');
     expect(readSettingsSection(undefined)).toBe('repositories');
     expect(readSettingsSection('unknown')).toBe('repositories');

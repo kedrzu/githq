@@ -13,6 +13,11 @@ import {
     SIGNED_IN_HINT_COOKIE,
 } from '@githq/github/oauth.js';
 import type { OAuthCredentials } from '@githq/github/oauth.js';
+import {
+    USAGE_STATISTICS_FIELD,
+    USAGE_STATISTICS_OFF_KEY,
+    USAGE_STATISTICS_OFF_VALUE,
+} from '@githq/github/usageStatistics.js';
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
@@ -251,6 +256,24 @@ test('signing out revokes the token at GitHub through the Worker, behind the sig
     expect(github.revoked).toHaveLength(1);
 });
 
+test('with usage statistics off on this device, the token exchange and the revocation tell the Worker not to count them', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES });
+    const { auth, browser } = setup(github, { [USAGE_STATISTICS_OFF_KEY]: USAGE_STATISTICS_OFF_VALUE });
+
+    auth.startSignIn('/');
+    const state = new URL(browser.navigatedTo[0] ?? '', ORIGIN).searchParams.get('state') ?? '';
+    await auth.completeSignIn({ code: 'the-code', state });
+    expect(github.exchanges).toEqual([
+        { code: 'the-code', redirectUri: `${ORIGIN}${OAUTH_CALLBACK_PATH}`, [USAGE_STATISTICS_FIELD]: false },
+    ]);
+
+    auth.signOut();
+    await waitUntil(() => github.revoked.length > 0);
+    expect(github.revoked).toEqual([{ method: 'POST', body: { token: 'gho_new', [USAGE_STATISTICS_FIELD]: false } }]);
+    // The flag is the device's, not the account's: signing out keeps it.
+    expect(browser.local.get(USAGE_STATISTICS_OFF_KEY)).toBe(USAGE_STATISTICS_OFF_VALUE);
+});
+
 test('signing out works offline: a revocation that cannot reach the Worker neither throws nor keeps the session', async () => {
     const github = fakeGitHub({ scopes: ALL_SCOPES, revokeOffline: true });
     const { auth, browser } = setup(github, {
@@ -421,6 +444,25 @@ test('a request about to go with a token expiring within 2 minutes waits for its
     // A token far from expiry goes as it is.
     expect(await auth.getFreshToken()).toBe('gho_renewed1');
     expect(github.refreshes).toHaveLength(1);
+});
+
+test('with usage statistics off on this device, the renewal tells the Worker not to count it', async () => {
+    for (const statisticsOff of [false, true]) {
+        const github = fakeGitHub({ scopes: ALL_SCOPES });
+        const stored = signedIn({ ...EXPIRING, expiresAt: START + 90_000 });
+        const { auth } = setup(
+            github,
+            statisticsOff ? { ...stored, [USAGE_STATISTICS_OFF_KEY]: USAGE_STATISTICS_OFF_VALUE } : stored,
+            { clock: createTestClock(START) },
+        );
+
+        expect(await auth.getFreshToken()).toBe('gho_renewed1');
+
+        const expected = statisticsOff
+            ? [{ refreshToken: 'ghr_old', [USAGE_STATISTICS_FIELD]: false }]
+            : [{ refreshToken: 'ghr_old' }];
+        expect({ statisticsOff, bodies: github.refreshBodies }).toEqual({ statisticsOff, bodies: expected });
+    }
 });
 
 test('the timer, a request and a 401 asking for a renewal at once renew the token once, with Web Locks or without', async () => {
@@ -605,6 +647,8 @@ function fakeGitHub(options: FakeGitHubOptions) {
     const revoked: unknown[] = [];
     /** The refresh tokens sent to the Worker, in order. */
     const refreshes: string[] = [];
+    /** The whole bodies of the refreshes, in order: the refresh token and what else they say. */
+    const refreshBodies: unknown[] = [];
     const spentRefreshTokens = new Set<string>();
 
     async function fetch(input: string | Request | URL, init?: RequestInit): Promise<Response> {
@@ -634,6 +678,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
             const sent: unknown = JSON.parse(body);
             const refreshToken = isPlainObject(sent) && typeof sent.refreshToken === 'string' ? sent.refreshToken : '';
             refreshes.push(refreshToken);
+            refreshBodies.push(sent);
             await options.refreshAfter;
             switch (options.refresh ?? 'renews') {
                 case 'offline':
@@ -693,7 +738,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
         throw new Error(`Unexpected request to ${url}`);
     }
 
-    return { fetch, exchanges, tokensSeen, revoked, refreshes };
+    return { fetch, exchanges, tokensSeen, revoked, refreshes, refreshBodies };
 }
 
 interface SetupOptions {
