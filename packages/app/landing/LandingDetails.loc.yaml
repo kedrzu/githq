@@ -19,7 +19,7 @@ freeBody:
 serverTitle:
   en: No server holds your work
 serverBody:
-  en: You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own.
+  en: You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own. It counts visits and sign-ins anonymously, never your work, and you can turn that off in Settings.
 limitTitle:
   en: Gentle on your API limit
 limitBody:

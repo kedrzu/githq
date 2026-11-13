@@ -208,9 +208,10 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
         return withRevokeCors(authError(502, { error: 'github_unreachable' }));
     }
 
-    // 404: GitHub no longer knows the token (revoked already); undocumented, observed.
+    // 404: GitHub no longer knows the token (revoked already); undocumented, observed. Only a 204 is counted: a 404
+    // would also answer any made-up token, so counting it would let anyone inflate the sign-outs.
     if (response.status === 204 || response.status === 404) {
-        if (!isUsageOptedOut(body)) {
+        if (response.status === 204 && !isUsageOptedOut(body)) {
             recordUsage(env, 'token_revoked', { client: getUsageClient(request), platform: '' });
         }
         return new Response(null, { status: 204, headers: { ...REVOKE_CORS_HEADERS, 'cache-control': 'no-store' } });

@@ -380,7 +380,7 @@ describe('usage statistics', () => {
         expect(usage.points).toEqual(expected);
     });
 
-    test('counts a revoked token from the desktop app, also when GitHub no longer knew it', async () => {
+    test('counts a revoked token from the desktop app, but not one GitHub no longer knew', async () => {
         const usage = usageBinding();
         github.mockResolvedValueOnce(new Response(null, { status: 204 }));
         github.mockResolvedValueOnce(new Response('{"message":"Not Found"}', { status: 404 }));
@@ -406,7 +406,7 @@ describe('usage statistics', () => {
             doubles: [1],
             indexes: ['token_revoked'],
         };
-        expect(usage.points).toEqual([point, point]);
+        expect(usage.points).toEqual([point]);
     });
 
     test('counts nothing when the body turns statistics off', async () => {
