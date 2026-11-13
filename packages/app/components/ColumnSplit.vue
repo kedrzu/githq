@@ -1,4 +1,4 @@
-<!-- A column beside a pane, left of it by default or right of it (`side`): the column (`column`), when `shown`, and the pane (the default slot), which stays mounted as the column comes and goes. The width is the user's on this device (`width`: its key, default and range), dragged by the column's inner edge (`label` names it) or changed with the arrow keys on it. The pane keeps at least `paneMin` px (400 by default), the column giving way down to its minimum while the width the user chose stays kept and returns when there is room again. With `seamless` the column and the pane are one surface: no line between them, the edge showing only while hovered, dragged or focused. Its root sets `--column-split-width` to the width shown (the kept one while the column is not shown), for what in the pane follows it. Panels beside each other are resized through Reka's splitter, here or as `SplitterGroup` + `ResizeHandle` + `usePanelWidth` where this doesn't fit, never by a handle of their own. -->
+<!-- A column beside a pane, left of it by default or right of it (`side`): the column (`column`), when `shown`, and the pane (the default slot), which stays mounted as the column comes and goes. The width is the user's on this device (`width`: its key, default and range), dragged by the column's inner edge (`label` names it) or changed with the arrow keys on it. The pane keeps at least `paneMin` px (400 by default), the column giving way down to its minimum while the width the user chose stays kept and returns when there is room again. With `seamless` the column and the pane are one surface: no line between them, the edge showing only while hovered, dragged or focused. With `flow` the split is as tall as its content rather than its parent, and neither panel clips: it grows inside a flex column that a scroller around it scrolls, both panels scrolling as one, and a `position: sticky` element in a panel sticks to that scroller. Its root sets `--column-split-width` to the width shown (the kept one while the column is not shown), for what in the pane follows it. Panels beside each other are resized through Reka's splitter, here or as `SplitterGroup` + `ResizeHandle` + `usePanelWidth` where this doesn't fit, never by a handle of their own: `WidthHandle` is only for a box centred in its parent. -->
 <script lang="ts" setup>
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
@@ -20,6 +20,11 @@ const props = defineProps<{
   paneMin?: number;
   /** No line between the column and the pane; the edge is still there to drag, drawn only while in use. */
   seamless?: boolean;
+  /**
+   * As tall as the taller panel, not its parent, and neither panel clips: for a split inside a flex column that a
+   * scroller around it scrolls, whose `position: sticky` descendants stick to that scroller.
+   */
+  flow?: boolean;
 }>();
 
 defineSlots<{
@@ -95,7 +100,7 @@ function saveWidth() {
   <SplitterGroup
     ref="group"
     direction="horizontal"
-    :class="css.columnSplit"
+    :class="[css.columnSplit, flow && css.columnSplit_flow]"
     :style="{ '--column-split-width': `${shown ? columnWidth.current : columnWidth.stored}px` }"
     @layout="onLayout"
   >
@@ -116,6 +121,7 @@ function saveWidth() {
         :class="[
           css.columnSplit_column,
           !seamless && (side === 'right' ? css.columnSplit_column_right : css.columnSplit_column_left),
+          flow && css.columnSplit_panel_flow,
         ]"
         @vue:mounted="restoreWidth"
       >
@@ -134,7 +140,7 @@ function saveWidth() {
         :id="`${panelId}-pane`"
         :order="order"
         :min-size="paneMinSize"
-        :class="css.columnSplit_pane"
+        :class="[css.columnSplit_pane, flow && css.columnSplit_panel_flow]"
       >
         <slot />
       </SplitterPanel>
@@ -147,6 +153,21 @@ function saveWidth() {
   flex: 1;
   min-width: 0;
   min-height: 0;
+}
+
+// Reka puts `height: 100%` and `overflow: hidden` on the group and `overflow: hidden` on each panel inline, which only
+// `!important` overrides: the group would stay its parent's height and the panels would clip a sticky descendant to
+// themselves rather than let it reach the scroller.
+.columnSplit_flow {
+  flex: 1 0 auto;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+// Not clipping, a panel would be as wide as its content's longest line at least: it keeps the width the splitter gives.
+.columnSplit_panel_flow {
+  min-width: 0;
+  overflow: visible !important;
 }
 
 .columnSplit_column {

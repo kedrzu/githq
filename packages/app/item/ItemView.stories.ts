@@ -7,6 +7,7 @@ import { defineComponent, h } from 'vue';
 
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
+import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import {
@@ -58,7 +59,7 @@ type Story = StoryObj<typeof meta>;
 /** D1: an issue in the panel — properties with their keys, two projects with every field, the body, the latest comments. */
 export const IssueInPanel: Story = {};
 
-/** F23: the same issue on a page of a 1440px window — the summary pinned at the left, the timeline beside it. */
+/** F23: the same issue on a page of a 1440px window — the summary and the timeline beside it in a centred box. */
 export const IssueOnPage: Story = { args: { arrangement: 'page' } };
 
 /** F22: on the page of a 900px window, too narrow for two columns — one column, centred. */
@@ -439,11 +440,33 @@ export const StackOfTenOnPage: Story = {
     render: renderAt(1920),
 };
 
-/** The view as tall as the window and `width` wide. */
-function renderAt(width: number): NonNullable<Meta<typeof ItemView>['render']> {
+/** The issue on a page with a thread longer than the window: its summary fits, sticking to the top as the thread scrolls. */
+export const IssueLongThreadOnPage: Story = {
+    args: { arrangement: 'page', detail: withLongThread(D1_ISSUE_DETAIL) },
+};
+
+/**
+ * F1's pull request on the page of a short window, its thread long: the summary, taller than the view, scrolls with the
+ * thread until its bottom shows, then sticks there.
+ */
+export const PullRequestLongThreadOnShortPage: Story = {
+    args: { ...PullRequestFailing.args, arrangement: 'page', detail: withLongThread(F1_PULL_REQUEST_DETAIL) },
+    render: renderAt(1440, 500),
+};
+
+/** `detail` with its comments eight times over, every one read. */
+function withLongThread<T extends ItemDetail>(detail: T): T {
+    const nodes = Array.from({ length: 8 }, (_, round) =>
+        detail.comments.nodes.map(comment => ({ ...comment, id: `${comment.id}_${round}` })),
+    ).flat();
+    return { ...detail, comments: { ...detail.comments, totalCount: nodes.length, nodes, olderCursor: null } };
+}
+
+/** The view `width` wide, as tall as the window or `height` px. */
+function renderAt(width: number, height?: number): NonNullable<Meta<typeof ItemView>['render']> {
     return args => ({
         components: { ItemView },
-        setup: () => ({ args, width: `${width}px` }),
-        template: `<div :style="{ height: '100vh', width }"><ItemView v-bind="args" /></div>`,
+        setup: () => ({ args, width: `${width}px`, height: height == null ? '100vh' : `${height}px` }),
+        template: `<div :style="{ height, width }"><ItemView v-bind="args" /></div>`,
     });
 }
