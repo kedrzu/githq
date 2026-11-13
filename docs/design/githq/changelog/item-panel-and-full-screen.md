@@ -216,3 +216,30 @@ app's CSS borders do, and nothing can cover them.
   (`i3LZ1T`), D3 (`SUsSL`).
 - [ ] F18 caption (`NyyOn`): the summary is "440 px by default" with "a 1 px $border on its right", and its right edge
   is dragged as the review's file list, 360–560 px, kept on this device, the handle shown only on hover.
+
+## Round 5 · agent brief
+
+Asked by the owner (`.context/item-seamless-columns-brief.md`): two columns came too early in the panel, and they looked
+like the app's other column screens. Now the panel splits from 1300 px of its own width (a page still from 1000 px), and
+the two columns are one `$bg-item` surface with no line between them. The edge is still dragged, drawn in `$accent`
+only while hovered, and both columns' content sits 32 px from it, so it lies midway. Built in the same PR: every entry
+is ticked. This supersedes round 4's right line on the summary (the line is gone), not its header line.
+
+- [x] Item / Summary · pull request (`NjMaL`): fill `$bg` → none; right stroke `$border` → none; padding
+  `[20,20,24,20]` → 32. `Item / Summary · issue` (`RtacV`) follows.
+- [x] `NjMaL` check names, text only (376 px of content, as `CheckList` ellipsises them): "ci / test (node 20)" →
+  "ci / test (nod…", "ci / e2e (chromium)" → "ci / e2e (chro…".
+- [x] Item view / split (`a80hmX`): timeline column `JWG5a` padding `[0,40,24,40]` → 32, its timeline `R2Ran`
+  `[28,0,0,0]` → 0; D3 (`SUsSL`), H6 (`U5eptM`), T12 (`B2JQS`), T15 (`IUXq5`) follow.
+- [x] Timeline columns `[0,40,24,40]` → 32 and their timelines `[28,0,0,0]` → 0: F2 (`Zgj09`/`EcyWR`), F4
+  (`J5zciW`/`U5rGe`), F5 (`L5I4A`/`HeLo8`), F10 (`X3oK8w`/`N9UGbe`), F20 (`KQb49`/`abZLC`), F23 (`D6DCCM`/`mw6nf`), M2
+  (`zp3jO`/`a9nBYc`), SP35 (`c9sN1`/`ueBlu`), SP37b (`lD5nk`/`h69xr`), CR1 (`uUHvf`/`JUy0c`), I1 (`L5f2J`/`C0H78`).
+- [x] Scrolled timelines, the scroll kept: F18 `ENPlN` `[-605,40,24,40]` → `[-577,32,32,32]`, `H5vD8C` → 0; F19
+  `GXvmg` `[-826,40,24,40]` → `[-798,32,32,32]`, `rK9we` → 0.
+- [x] F20 (`uAkdB`): screen 1728 → 1920 wide, `PR view (panel)` (`CKFxj`) 1100 → 1300, caption (`NkK8g`) 1728 → 1920;
+  the row `z5ZFg` grows to 3440 px inside `App · Pull request`.
+- [x] F4 (`Y2FX64`), text only: "Stripe webhooks dropped during deploys" → "Stripe webhooks dropped during…", "Approved
+  · checks passed · no conflicts" → "Approved · checks passed · no confl…".
+- [x] Captions: F18 (`NyyOn`) one surface, the edge unseen until hovered, 32 px either side, 1000 px on a page and 1300
+  px in the panel; F19 (`JyZIA`) 40 → 32 px from the edge; F20 (`r2WqoI`) the 1300 px panel; the overview
+  (`hbsg2`, `App · Overview — Direction D`) "from 1000 px" → "from 1000 px on a page (1300 px in the panel)".

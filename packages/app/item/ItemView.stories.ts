@@ -100,8 +100,11 @@ export const PullRequestFailingPage: Story = {
     args: { ...PullRequestFailing.args, arrangement: 'page' },
 };
 
-/** F20: the panel dragged to 1100px — two columns, as a page: the width decides, not the arrangement. */
-export const PullRequestFailingWidePanel: Story = { ...PullRequestFailing, render: renderAt(1100) };
+/** F20: the panel dragged to 1400px — two columns, as a page, from 1300px rather than a page's 1000px. */
+export const PullRequestFailingWidePanel: Story = { ...PullRequestFailing, render: renderAt(1400) };
+
+/** The panel dragged to 1100px: wide enough for a page's two columns, still one in the panel. */
+export const PullRequestFailingWiderPanel: Story = { ...PullRequestFailing, render: renderAt(1100) };
 
 /** F3: approved and ready — "Merge…" is the one prominent action. */
 export const PullRequestReady: Story = {
