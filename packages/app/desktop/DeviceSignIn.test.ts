@@ -23,7 +23,12 @@ test('a token with every scope githq asks for signs in and is kept', async () =>
     await signIn.start();
     expect(signIn.state).toEqual({ kind: 'waiting', code: CODE });
     // `write:org` includes `read:org`.
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo, project, write:org' });
+    native.finishes[0]?.resolve({
+        token: 'gho_octocat',
+        scope: 'repo, project, write:org',
+        refreshToken: null,
+        expiresIn: null,
+    });
 
     await waitUntil(() => auth.signedIn, { intervalMs: 1, timeoutMs: 1000 });
     expect(auth.viewer?.login).toBe('octocat');
@@ -34,7 +39,7 @@ test('a token GitHub granted with fewer scopes than githq asks for is refused an
     const { signIn, auth, vault, native, operations } = setup();
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,read:org' });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,read:org', refreshToken: null, expiresIn: null });
 
     await waitUntil(() => signIn.state.kind !== 'waiting', { intervalMs: 1, timeoutMs: 1000 });
     const expected: DeviceSignInState = { kind: 'failed', failure: 'missingScopes' };
@@ -82,7 +87,7 @@ test('a token GitHub cannot be asked about fails the attempt', async () => {
     session.github.holdIf = () => Promise.reject(new TypeError('Failed to fetch'));
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
 
     await waitUntil(() => signIn.state.kind === 'failed', { intervalMs: 1, timeoutMs: 1000 });
     expect(signIn.state).toEqual({ kind: 'failed', failure: 'failed' });
@@ -97,7 +102,7 @@ test('a token arriving after the attempt was cancelled is dropped', async () => 
     signIn.cancel();
     expect(signIn.state).toEqual({ kind: 'idle' });
 
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await Bun.sleep(10);
 
     expect(signIn.state).toEqual({ kind: 'idle' });
@@ -112,7 +117,7 @@ test('cancelled while GitHub is saying whose the token is: nothing is kept', asy
     session.github.hold = github.promise;
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await waitUntil(() => operations().length === 1, { intervalMs: 1, timeoutMs: 1000 });
     signIn.cancel();
     github.resolve();
@@ -134,7 +139,7 @@ test('a new code supersedes the attempt before it: what the old one answers is n
 
     expect(signIn.state).toEqual({ kind: 'waiting', code: CODE });
 
-    native.finishes[1]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[1]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await waitUntil(() => auth.signedIn, { intervalMs: 1, timeoutMs: 1000 });
     expect(auth.token).toBe('gho_octocat');
 });

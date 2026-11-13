@@ -91,10 +91,15 @@ pub struct DeviceCode {
 
 /// What `device_finish` answers on success.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Grant {
     pub token: String,
     /// The scopes GitHub granted, comma-separated as GitHub sends them.
     pub scope: String,
+    /// The token that gets a new `token` once it expires; `None` when GitHub issued a token that never expires.
+    pub refresh_token: Option<String>,
+    /// How many seconds `token` is valid for, as GitHub said; `None` when it never expires.
+    pub expires_in: Option<u64>,
 }
 
 /// GitHub's answer to `POST /login/device/code`; on failure it carries `error` instead.
@@ -114,6 +119,8 @@ struct DeviceCodeResponse {
 struct TokenResponse {
     access_token: Option<String>,
     scope: Option<String>,
+    refresh_token: Option<String>,
+    expires_in: Option<u64>,
     error: Option<String>,
     error_description: Option<String>,
     /// With `slow_down`: the interval to keep from now on.
@@ -147,6 +154,8 @@ fn next_step(response: TokenResponse, interval: Duration) -> Step {
         return Step::Granted(Grant {
             token,
             scope: response.scope.unwrap_or_default(),
+            refresh_token: response.refresh_token,
+            expires_in: response.expires_in,
         });
     }
 
@@ -556,10 +565,63 @@ mod tests {
             flow.finish().await,
             Ok(Grant {
                 token: "gho_token".to_owned(),
-                scope: "project,read:org,repo".to_owned()
+                scope: "project,read:org,repo".to_owned(),
+                refresh_token: None,
+                expires_in: None,
             })
         );
         assert_eq!(clock.sleeps(), vec![secs(5), secs(5), secs(5)]);
+    }
+
+    #[tokio::test]
+    async fn returns_the_refresh_token_and_expiry_of_an_expiring_token() {
+        let server = github_with_code(900, 5).await;
+        let expiring = serde_json::json!({
+            "access_token": "ghu_token",
+            "expires_in": 28800,
+            "refresh_token": "ghr_refresh",
+            "refresh_token_expires_in": 15_724_800,
+            "token_type": "bearer",
+            "scope": "project,read:org,repo",
+        });
+        answer_polls(&server, &[expiring]).await;
+        let clock = InstantClock::new();
+        let flow = flow(&server, &clock);
+
+        assert!(flow.start().await.is_ok());
+        assert_eq!(
+            flow.finish().await,
+            Ok(Grant {
+                token: "ghu_token".to_owned(),
+                scope: "project,read:org,repo".to_owned(),
+                refresh_token: Some("ghr_refresh".to_owned()),
+                expires_in: Some(28800),
+            })
+        );
+    }
+
+    #[test]
+    fn serialises_a_grant_for_the_app_in_camel_case() {
+        let expiring = Grant {
+            token: "ghu_token".to_owned(),
+            scope: "repo".to_owned(),
+            refresh_token: Some("ghr_refresh".to_owned()),
+            expires_in: Some(28800),
+        };
+        let lasting = Grant {
+            refresh_token: None,
+            expires_in: None,
+            ..expiring.clone()
+        };
+
+        assert_eq!(
+            serde_json::to_value(&expiring).unwrap_or_default(),
+            serde_json::json!({ "token": "ghu_token", "scope": "repo", "refreshToken": "ghr_refresh", "expiresIn": 28800 })
+        );
+        assert_eq!(
+            serde_json::to_value(&lasting).unwrap_or_default(),
+            serde_json::json!({ "token": "ghu_token", "scope": "repo", "refreshToken": null, "expiresIn": null })
+        );
     }
 
     #[tokio::test]

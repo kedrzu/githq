@@ -31,6 +31,10 @@ export interface DeviceGrant {
     readonly token: string;
     /** The scopes GitHub granted, comma-separated as GitHub sends them (`repo,project,read:org`). */
     readonly scope: string;
+    /** The token that gets a new `token` once it expires; `null` when GitHub issued a token that never expires. */
+    readonly refreshToken: string | null;
+    /** How many seconds `token` is valid for, as GitHub said; `null` when it never expires. */
+    readonly expiresIn: number | null;
 }
 
 /**

@@ -177,7 +177,10 @@ export class FakeNativeBridge {
 
     /** The user approved the device sign-in on GitHub: `device_finish` answers `token` with every scope githq asks. */
     approveDeviceSignIn(token: string): void {
-        this.deviceAnswer.resolve({ ok: true, value: { token, scope: OAUTH_SCOPES.join(',') } });
+        this.deviceAnswer.resolve({
+            ok: true,
+            value: { token, scope: OAUTH_SCOPES.join(','), refreshToken: null, expiresIn: null },
+        });
     }
 
     /** The updater's state changed: `update_status` answers it, and every page listening hears `update-state`. */

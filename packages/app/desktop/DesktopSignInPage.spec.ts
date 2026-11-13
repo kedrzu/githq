@@ -28,7 +28,7 @@ test('leaving the page abandons the attempt: a token approved afterwards is not 
     await expect.element(page.getByText(CODE.userCode)).toBeVisible();
 
     leave();
-    finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,project,read:org' });
+    finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,project,read:org', refreshToken: null, expiresIn: null });
     await new Promise(resolve => {
         setTimeout(resolve, 20);
     });
