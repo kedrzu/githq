@@ -73,20 +73,19 @@ async function openReview(page: Page, github: GitHubMock, files = FILES, count =
     return { review, answered };
 }
 
-/** Scrolls the line to `top` below the top of the diff, however far off it is, and waits past the position's throttle. */
+/** Scrolls the line to `top` below the top of the diff's rows, however far off it is, and waits past the position's throttle. */
 async function readLine(review: ReviewScreenHarness, text: string, top: number) {
+    const { y } = await review.rowsBox();
     await expect
         .poll(() =>
             review.diff.evaluate(
                 (diff, { wanted, at }) => {
                     const line = [...diff.querySelectorAll('code')].find(other => other.textContent?.includes(wanted));
-                    const distance = line
-                        ? line.getBoundingClientRect().top - diff.getBoundingClientRect().top - at
-                        : 400;
+                    const distance = line ? line.getBoundingClientRect().top - at : 400;
                     diff.scrollTop += distance;
                     return line ? distance : null;
                 },
-                { wanted: text, at: top },
+                { wanted: text, at: y + top },
             ),
         )
         .toBe(0);
@@ -95,10 +94,14 @@ async function readLine(review: ReviewScreenHarness, text: string, top: number) 
 
 /** How far below the top of the diff the line is, on whichever side it shows first. */
 async function lineOffset(review: ReviewScreenHarness, text: string) {
-    return await review.diff.evaluate((diff, wanted) => {
-        const line = [...diff.querySelectorAll('code')].find(other => other.textContent?.includes(wanted));
-        return line ? line.getBoundingClientRect().top - diff.getBoundingClientRect().top : null;
-    }, text);
+    const { y } = await review.rowsBox();
+    return await review.diff.evaluate(
+        (diff, { wanted, top }) => {
+            const line = [...diff.querySelectorAll('code')].find(other => other.textContent?.includes(wanted));
+            return line ? line.getBoundingClientRect().top - top : null;
+        },
+        { wanted: text, top: y },
+    );
 }
 
 /** Takes the texts off the disk, for a reload to have to ask GitHub for them. */
@@ -187,8 +190,8 @@ test("a remembered line whose file is not here holds its place in the patch's pl
     await expect.poll(() => review.code(READ).count()).toBe(0);
     await expect
         .poll(async () => {
-            const [line, diff] = await Promise.all([placeholderLine.boundingBox(), review.diff.boundingBox()]);
-            return line && diff ? line.y - diff.y : null;
+            const [line, diff] = await Promise.all([placeholderLine.boundingBox(), review.rowsBox()]);
+            return line ? line.y - diff.y : null;
         })
         .toBeCloseTo(READ_TOP, 0);
     release();
@@ -320,8 +323,14 @@ test('nine pull requests on, the first comes back from disk at its line, without
                         const line = [...(diff?.querySelectorAll('code') ?? [])].find(code =>
                             code.textContent?.includes(wanted),
                         );
+                        // From under the room at the diff's top, as the review's offsets are.
+                        const room =
+                            diff &&
+                            Number.parseFloat(getComputedStyle(diff).getPropertyValue('--anchored-list-top-room'));
                         const offset =
-                            diff && line && line.getBoundingClientRect().top - diff.getBoundingClientRect().top;
+                            diff &&
+                            line &&
+                            line.getBoundingClientRect().top - diff.getBoundingClientRect().top - (room ?? 0);
                         if (location.pathname.endsWith('/202/files') && offset != null && Math.abs(offset - top) < 1) {
                             resolve(performance.now() - start);
                         } else {

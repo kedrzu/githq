@@ -1,4 +1,4 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it, and `topRoom` over the rows that they scroll through and that the overlay's own background covers once one is pinned; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
@@ -99,10 +99,17 @@ const props = withDefaults(
     isPinned?: (row: T) => boolean;
     /** How far below the one it pushes up a pinned row stays, the background showing between them. */
     pushRoom?: number;
+    /**
+     * Room at the top, inside the scroller: the rows start below it and scroll through it up to the edge, and the pinned
+     * row's overlay stands below it with the background over it, so nothing scrolling shows above the overlay and nothing
+     * is cut short of the edge. The offsets the list takes and gives are measured from under it. No wider than
+     * `pushRoom`: a pushed row leaves at the edge only when the next one pins, its last strip vanishing at once otherwise.
+     */
+    topRoom?: number;
     /** What the list is, for screen readers. */
     label: string;
   }>(),
-  { isPinned: () => false },
+  { isPinned: () => false, topRoom: 0 },
 );
 
 const emit = defineEmits<{
@@ -181,7 +188,7 @@ defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getRowBox, getViewport, ge
 
 onMounted(() => {
   const element = assertValue(scroller.value);
-  viewportHeight = element.clientHeight;
+  viewportHeight = element.clientHeight - props.topRoom;
   observer.observe(element);
   applyLayout();
 });
@@ -267,8 +274,8 @@ function onResize(entries: ResizeObserverEntry[]) {
     return;
   }
 
-  let changed = height !== viewportHeight;
-  viewportHeight = height;
+  let changed = height - props.topRoom !== viewportHeight;
+  viewportHeight = height - props.topRoom;
   for (const entry of entries) {
     const key = measuredKeys.get(entry.target);
     const size = entry.borderBoxSize[0];
@@ -351,6 +358,7 @@ function showWindow(layoutChanged: boolean) {
     :class="[css.anchoredList, focusedQuietly && css.anchoredList_quiet]"
     role="region"
     :aria-label="label"
+    :style="{ '--anchored-list-top-room': `${topRoom}px` }"
     tabindex="0"
     @blur="focusedQuietly = false"
     @scroll.passive="onScroll"
@@ -364,7 +372,7 @@ function showWindow(layoutChanged: boolean) {
         :key="pinnedRow.row.key"
         v-measured="pinnedRow.row.key"
         :class="css.anchoredList_pinnedRow"
-        :style="{ top: `${-pinnedRow.pushUp}px` }"
+        :style="{ top: `${topRoom - pinnedRow.pushUp}px` }"
       >
         <AnchoredListCell
           :row="pinnedRow.row"
@@ -419,6 +427,7 @@ function showWindow(layoutChanged: boolean) {
 
 .anchoredList_spacer {
   position: relative;
+  margin-top: var(--anchored-list-top-room);
   // Its height is set, and rows come and go inside it: their layout has no business outside.
   contain: strict;
 }
@@ -439,5 +448,16 @@ function showWindow(layoutChanged: boolean) {
 
 .anchoredList_pinnedRow {
   background: $color-bg;
+
+  // The top room, going up with the overlay when it is pushed; outside its box, which measures the row.
+  &::before {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    left: 0;
+    height: var(--anchored-list-top-room);
+    content: '';
+    background: $color-bg;
+  }
 }
 </style>

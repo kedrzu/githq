@@ -2,6 +2,14 @@ import type { Locator, Page } from '@playwright/test';
 
 import { escapeRegExp } from '../utils/escapeRegExp.js';
 
+/** Where the diff's rows are measured from, on the page. */
+export interface ReviewRowsBox {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+}
+
 /** Playwright harness for a pull request's review (`ReviewView.vue`): its toolbar, its list of files and its diff. */
 export class ReviewScreenHarness {
     readonly page: Page;
@@ -14,6 +22,18 @@ export class ReviewScreenHarness {
         this.fileList = page.getByRole('region', { name: 'Files' });
         this.diff = page.getByRole('region', { name: 'Changes' });
         this.conversation = page.getByRole('region', { name: 'Conversation' });
+    }
+
+    /**
+     * The diff's box under the room at its top, which the rows scroll through and the pinned header stands below: where
+     * the review's offsets, a landed header's 0 among them, are measured from.
+     */
+    async rowsBox(): Promise<ReviewRowsBox> {
+        return await this.diff.evaluate(diff => {
+            const room = Number.parseFloat(getComputedStyle(diff).getPropertyValue('--anchored-list-top-room'));
+            const { x, y, width, height } = diff.getBoundingClientRect();
+            return { x, y: y + room, width, height: height - room };
+        });
     }
 
     /** The pull request's title in the toolbar. */
@@ -143,8 +163,8 @@ export class ReviewScreenHarness {
 
     /** The key of the first stop wholly under the pinned header, where a scroll down brings a cursor it took off the top. */
     async firstStopKey(): Promise<string> {
-        return await this.diff.evaluate(diff => {
-            const top = diff.getBoundingClientRect().top + 38;
+        const { y } = await this.rowsBox();
+        return await this.diff.evaluate((diff, top) => {
             const rows = [...diff.querySelectorAll('[data-cursor-key]')]
                 .map(row => ({ key: row.getAttribute('data-cursor-key'), top: row.getBoundingClientRect().top }))
                 .toSorted((a, b) => a.top - b.top);
@@ -154,7 +174,7 @@ export class ReviewScreenHarness {
             }
 
             throw new Error('No stop is under the pinned header');
-        });
+        }, y + 38);
     }
 
     /**
@@ -214,11 +234,8 @@ export class ReviewScreenHarness {
 
     /** How far below the top of the diff the file's header row is: 0 when it landed exactly. */
     async headerOffset(path: string): Promise<number> {
-        const [header, diff] = await Promise.all([
-            this.fileHeader(path).locator('..').boundingBox(),
-            this.diff.boundingBox(),
-        ]);
-        if (!header || !diff) {
+        const [header, diff] = await Promise.all([this.fileHeader(path).locator('..').boundingBox(), this.rowsBox()]);
+        if (!header) {
             throw new Error(`The header of ${path} is not on screen`);
         }
 
@@ -311,8 +328,8 @@ export class ReviewScreenHarness {
 
     /** How far below the top of the diff the thread is. */
     async threadOffset(text: string): Promise<number> {
-        const [thread, diff] = await Promise.all([this.thread(text).boundingBox(), this.diff.boundingBox()]);
-        if (!thread || !diff) {
+        const [thread, diff] = await Promise.all([this.thread(text).boundingBox(), this.rowsBox()]);
+        if (!thread) {
             throw new Error(`The thread "${text}" is not on screen`);
         }
 
@@ -354,17 +371,20 @@ export class ReviewScreenHarness {
 
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */
     async topLine(prefix: string): Promise<{ text: string; y: number }> {
-        return await this.diff.evaluate((diff, wanted) => {
-            const top = diff.getBoundingClientRect().top + 38;
-            for (const code of diff.querySelectorAll('code')) {
-                const { y } = code.getBoundingClientRect();
-                if (y >= top && code.textContent?.startsWith(wanted)) {
-                    return { text: code.textContent, y };
+        const { y: rowsTop } = await this.rowsBox();
+        return await this.diff.evaluate(
+            (diff, { wanted, top }) => {
+                for (const code of diff.querySelectorAll('code')) {
+                    const { y } = code.getBoundingClientRect();
+                    if (y >= top && code.textContent?.startsWith(wanted)) {
+                        return { text: code.textContent, y };
+                    }
                 }
-            }
 
-            throw new Error(`No line starting with ${wanted} is on screen`);
-        }, prefix);
+                throw new Error(`No line starting with ${wanted} is on screen`);
+            },
+            { wanted: prefix, top: rowsTop + 38 },
+        );
     }
 
     /** Opens the view options and picks the layout; closes them again. */

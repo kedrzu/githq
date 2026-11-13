@@ -5,7 +5,8 @@ import { nextTick } from 'vue';
 
 import * as stories from './AnchoredList.stories.jsx';
 
-const { Default, PinnedHeaders, PinnedHeadersWithRoom, TwoHundredThousandRows, Wrapping } = composeStories(stories);
+const { Default, PinnedHeaders, PinnedHeadersWithRoom, PinnedHeadersWithTopRoom, TwoHundredThousandRows, Wrapping } =
+    composeStories(stories);
 
 const ESTIMATE = 24;
 /** What the browser's own rounding of the scroll position to its pixels may leave: our sums keep the fractions. */
@@ -205,6 +206,39 @@ test('a header keeping room over itself pushes the pinned one that much earlier,
     expectWithin(topOf('row-200'), listTop - 20, ONE_PIXEL);
     expectWithin(bottomOf('row-200'), lastTopOf('row-300') - 10, ONE_PIXEL);
     expect(pinned()?.getAttribute('data-pushed')).toBe('true');
+});
+
+test('room at the top: offsets start under it, the pinned header covers it, and a pushed one goes up through it to the edge', async () => {
+    await PinnedHeadersWithTopRoom.run();
+    await clickButton('Jump');
+    await frames(3);
+    const list = scroller();
+    const listTop = list.getBoundingClientRect().top;
+    const left = list.getBoundingClientRect().left + 5;
+    const rowAt = (y: number) => document.elementFromPoint(left, y)?.closest('[tid]')?.getAttribute('tid');
+
+    // The jump's offset of 0 is under the room, and so is the pinned header, whose background covers the room.
+    expect(lastTopOf('row-250')).toBe(listTop + 10);
+    expect(topOf('row-200')).toBe(listTop + 10);
+    expect(rowAt(listTop + 5)).toBeUndefined();
+    expect(document.elementFromPoint(left, listTop + 5)?.contains(rowElement('row-200'))).toBe(true);
+
+    while (list.querySelector('[tid="row-300"]') === null) {
+        list.scrollTop += 300;
+        await frames(2);
+    }
+
+    // The next header 15 from the top: the pinned one pushed up into the room, cut only by the edge, 10 above it.
+    list.scrollTop += lastTopOf('row-300') - listTop - 15;
+    await frames(3);
+    expectWithin(bottomOf('row-200'), listTop + 5, ONE_PIXEL);
+    expect(rowAt(listTop + 3)).toBe('row-200');
+
+    // On the next header's pinning the pushed one has just left at the edge.
+    list.scrollTop += 5;
+    await frames(3);
+    expect(list.querySelector('[tid="row-200"]')).toBeNull();
+    expect(topOf('row-300')).toBe(listTop + 10);
 });
 
 test('the keys scroll the focused list natively, and the anchor follows: the first row still in view', async () => {

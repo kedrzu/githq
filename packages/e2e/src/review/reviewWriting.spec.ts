@@ -959,11 +959,8 @@ test('a viewed file whose thread was resolved stays while it is at the top of th
             throw new Error('The next file is not drawn yet');
         }
 
-        const [header, diff] = await Promise.all([
-            review.fileHeader(OTHER.path).boundingBox(),
-            review.diff.boundingBox(),
-        ]);
-        if (!header || !diff) {
+        const [header, diff] = await Promise.all([review.fileHeader(OTHER.path).boundingBox(), review.rowsBox()]);
+        if (!header) {
             throw new Error('The next file is not on screen');
         }
 
