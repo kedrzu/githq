@@ -85,9 +85,8 @@ to githq. See [Save what you track to GitHub](../getting-started/choose-what-to-
 
 ## Usage statistics
 
-githq never collects your GitHub login, your IP address, your browser or device, your country, your token, or anything
-about your repositories, issues, pull requests or projects. It sets no cookie for statistics and keeps no profile of
-anyone.
+githq never collects your GitHub login, your token, or anything about your repositories, issues, pull requests or
+projects. It sets no cookie for statistics and keeps no profile of anyone.
 
 What it does count, so we know how many people use githq: the sign-in service adds one to a count in
 [Cloudflare Workers Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) for each of these,
@@ -100,12 +99,14 @@ and Cloudflare keeps the counts for three months.
 |`token_revoked`|You sign out, and githq asks GitHub to revoke your token.|The event, and whether it came from the web or the desktop app.|
 |`installer_download`|Someone downloads the desktop app from githq.dev.|The event, and which installer, such as `macos-silicon` or `windows`.|
 
-A count can't be traced back to a person: two sign-ins by you and one each by two other people look the same. Signing
-in to the desktop app goes straight to GitHub, so it is never counted.
+A count holds nothing about who made it: no IP address, browser, device or country. Two sign-ins by you and one each by
+two other people look the same. Signing in to the desktop app goes straight to GitHub, so it is never counted.
 
 On githq.dev's landing page and on these docs, githq also loads
 [Cloudflare Web Analytics](https://developers.cloudflare.com/web-analytics/), which counts page visits without cookies
-and stores nothing in your browser. It is never loaded in the app, whose addresses name your repositories, nor in the
+and stores nothing in your browser. Like any page you load, it reaches Cloudflare with your IP address and browser;
+Cloudflare shows githq only totals, such as visits per page, country and browser, and no visitor's own trail. It is
+never loaded in the app, whose addresses name your repositories, nor in the
 desktop app.
 
 ### Turning it off

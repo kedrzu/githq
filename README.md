@@ -70,8 +70,8 @@ When you review a pull request, the contents of the files it changes stay in you
 that it reopens at once.
 The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
 Cloudflare's own request logs still record that a request happened. githq counts sign-ins, token renewals, sign-outs,
-installer downloads and visits to the landing page and the docs anonymously — never your login, IP address or anything about
-your repositories — and you can turn that off in Settings → Privacy
+installer downloads and visits to the landing page and the docs, as anonymous totals — never your login, your token or
+anything about your repositories — and you can turn that off in Settings → Privacy
 ([what is counted](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)). You can revoke
 access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
 restricts OAuth Apps keeps its private repositories hidden until an owner approves githq.
