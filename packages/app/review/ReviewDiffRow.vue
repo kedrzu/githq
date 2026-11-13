@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, a submodule's pointer change with what lies between the two commits (`ReviewSubmoduleBlock`), failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, a submodule's pointer change with what lies between the two commits (`ReviewSubmoduleBlock`), failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. The row holding the line cursor shows it (D44), and every row names the cursor stop it is part of (`data-cursor-key`), the cursor's own also `data-cursor`. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -9,6 +9,7 @@ const NO_LINES: CommentedLines = [];
 </script>
 
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, FileDiff, FileSymlink, LoaderCircle, Pause, Pilcrow } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
@@ -18,7 +19,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
-import { getPlaceholderHeight, LINE_HEIGHT } from './buildReviewRows.js';
+import { getPlaceholderHeight, getReviewHeaderKey, getReviewRowPath, LINE_HEIGHT } from './buildReviewRows.js';
 import type {
   ReviewDistanceRow as DistanceRow,
   ReviewFileEndRow,
@@ -61,8 +62,6 @@ const props = withDefaults(
     changedSince?: boolean;
     /** A resolved thread on this row shows whole. */
     threadOpen?: boolean;
-    /** The thread on this row is the one N and ⇧N are at. */
-    threadFocused?: boolean;
     /** The viewer's replies in the thread on this row, which the `comment` slot draws. */
     threadReplies?: ReviewThreadReplies | null;
     /** Who is signed in: a reply band's avatar. */
@@ -75,6 +74,13 @@ const props = withDefaults(
     layout?: DiffLayout;
     /** The row is the pinned header, being pushed up by the next file's. */
     pushed?: boolean;
+    /**
+     * The row is the pinned header's copy over the diff, not the header in its place: it carries no cursor stop, for
+     * hovering it leaves the cursor where it is (D44).
+     */
+    pinned?: boolean;
+    /** The row holds the line cursor (D44): a line tinted with its comment buttons, a thread focused, a gap lit. */
+    cursor?: boolean;
     /** The row is of the file V, Space and C act on, whose block is edged in accent (D44). */
     current?: boolean;
     /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
@@ -113,6 +119,39 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+
+/**
+ * The cursor stop the row is part of, which hovering it moves the cursor to (`data-cursor-key`): its own key for a stop, its
+ * header's for a row that belongs to it (D44), none for a row the cursor passes over or the pinned header's copy.
+ */
+const cursorKey = computed(() => {
+  const { row } = props;
+  if (props.pinned) {
+    return undefined;
+  }
+
+  switch (row.kind) {
+    case 'header':
+    case 'line':
+    case 'thread':
+    case 'gap':
+      return row.key;
+    case 'placeholder':
+    case 'notice':
+    case 'failed':
+    case 'paused':
+    case 'submodule':
+    case 'onlyWhitespace':
+      return getReviewHeaderKey(getReviewRowPath(row.key));
+    case 'comment':
+    case 'distance':
+    case 'end':
+    case 'fileEnd':
+      return undefined;
+    default:
+      return assertNever(row);
+  }
+});
 
 /** The file a row links to, on the rows that offer the link. */
 const linkedPath = computed(() => {
@@ -166,7 +205,11 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 </script>
 
 <template>
-  <div :class="css.reviewDiffRow">
+  <div
+    :class="css.reviewDiffRow"
+    :data-cursor-key="cursorKey"
+    :data-cursor="(cursor && cursorKey === row.key) || undefined"
+  >
     <DiffFileHeader
       v-if="row.kind === 'header'"
       :file="row.file"
@@ -198,6 +241,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :diff="row.diff"
           :syntax="row.syntax"
           :commented="commented"
+          :cursor="cursor"
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
         <DiffRowUnified
@@ -206,6 +250,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :diff="row.diff"
           :syntax="row.syntax"
           :commented="commented"
+          :cursor="cursor"
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
       </template>
@@ -223,7 +268,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         v-else-if="row.kind === 'thread'"
         :row="row"
         :open="threadOpen"
-        :focused="threadFocused"
+        :focused="cursor"
         :replies="threadReplies"
         :viewer="viewer"
         :resolve-failure="threadFailure"
@@ -270,6 +315,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         v-else-if="row.kind === 'gap'"
         :row="row"
         :toward="towardGap"
+        :cursor="cursor"
         @expand="(gap, step) => emit('expand', gap, step)"
       />
       <template v-else-if="row.kind === 'placeholder'">

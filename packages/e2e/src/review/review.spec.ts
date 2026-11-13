@@ -216,7 +216,7 @@ test('the list keeps the current file in view as ] walks past what fits', async 
     await expect(review.currentFileRow).toBeInViewport();
 });
 
-test('scrolling makes the file at the reading line current, the last one at the end and the first at the top (D44)', async ({
+test("the cursor's file is current: scrolled along to the end and back to the top, and hovering the last file and the first (D44)", async ({
     page,
     github,
 }) => {
@@ -226,13 +226,22 @@ test('scrolling makes the file at the reading line current, the last one at the 
     await page.goto(REVIEW_ADDRESS);
     await expect(review.currentFileRow).toContainText('file00.ts');
 
-    // Rows measured on the way change the height to scroll: again until the end stays the end.
+    // Rows measured on the way change the height to scroll: again until the end stays the end. The cursor comes along,
+    // its file current.
     await expect(async () => {
         await review.diff.evaluate(diff => diff.scrollTo(0, diff.scrollHeight));
-        await expect(review.currentFileRow).toContainText('file39.ts', { timeout: 500 });
+        await expect(review.fileHeader('src/a/file39.ts')).toBeInViewport({ timeout: 500 });
     }).toPass();
+    await expect(review.cursorRow).toBeInViewport();
+    await expectCursorFileCurrent(review);
+
+    await review.pointAt(review.code('  const changed39 = 2;'));
+    await expect(review.currentFileRow).toContainText('file39.ts');
 
     await review.diff.evaluate(diff => diff.scrollTo(0, 0));
+    await expect(review.cursorRow).toBeInViewport();
+    await expectCursorFileCurrent(review);
+    await review.pointAt(review.code('  const changed0 = 2;'));
     await expect(review.currentFileRow).toContainText('file00.ts');
 });
 
@@ -488,7 +497,7 @@ test('V collapses the file in place with viewed files shown, nothing moving, and
     await expect(review.code('The web app.')).toHaveCount(0);
 });
 
-test('C, V and E act on the short file crossing the reading line, not the one at the top: C opens on its line, nothing moving, E finds no gap in it and V marks it (D32, D44)', async ({
+test("C, V and E act on the cursor's file, not the one at the top: C opens on its line, nothing moving, E finds no gap in it and V marks it (D32, D44)", async ({
     page,
     github,
 }) => {
@@ -517,17 +526,20 @@ test('C, V and E act on the short file crossing the reading line, not the one at
     const gap = review.gap('24 lines');
     await expect(gap).toBeAttached();
 
-    // The short file's line a third down under the pinned header, where the reading line is.
+    // The short file's line a third down under the pinned header, the cursor put on it by the pointer.
     await expect(async () => {
         const [line, diff] = await Promise.all([short.boundingBox(), review.diff.boundingBox()]);
         if (!line || !diff) {
             throw new Error('The short file is not on screen');
         }
 
-        const reading = 38 + (diff.height - 38) / 3;
-        await review.diff.evaluate((element, by) => element.scrollBy(0, by), line.y + 10 - diff.y - reading);
-        await expect(review.currentFileRow).toContainText('short.ts', { timeout: 500 });
+        const third = 38 + (diff.height - 38) / 3;
+        const by = line.y + 10 - diff.y - third;
+        await review.diff.evaluate((element, distance) => element.scrollBy(0, distance), by);
+        expect(Math.abs(by)).toBeLessThan(2);
     }).toPass();
+    await review.pointAt(short);
+    await expect(review.currentFileRow).toContainText('short.ts');
     // The top of the screen is still the top file, its gap on screen.
     await expect(gap).toBeInViewport();
     const before = await short.boundingBox();
@@ -555,7 +567,7 @@ test('C, V and E act on the short file crossing the reading line, not the one at
     await expect(review.viewedButton('src/a/top.ts')).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('Space twice on the current file collapses it and opens it again, not the next file come up to the reading line (D44)', async ({
+test('Space twice on the current file collapses it and opens it again, not the next file come up on screen (D44)', async ({
     page,
     github,
 }) => {
@@ -564,7 +576,7 @@ test('Space twice on the current file collapses it and opens it again, not the n
         repository: 'acme/web',
         number: 15,
         files: [
-            // Above it, for the diff not to be at its top, where the reading line slides up to the top edge.
+            // Above it, for the diff not to be at its top.
             { path: 'src/0/first.ts', before: '', after: `${numbered('first', 60)}\n` },
             { path: 'src/a/tall.ts', before: '', after: `${numbered('tall', 120)}\n` },
             { path: 'src/b/next.ts', before: '', after: `${numbered('next', 120)}\n` },
@@ -573,7 +585,7 @@ test('Space twice on the current file collapses it and opens it again, not the n
     const review = new ReviewScreenHarness(page);
     await page.goto(REVIEW_ADDRESS);
     await expect(review.code('const first0 = 0;')).toBeVisible();
-    // Past the landing's hold, the tall file current by the reading line alone.
+    // Past the landing's hold, the tall file current by the cursor the scroll brought along.
     await review.diff.evaluate(element => element.scrollBy(0, 1600));
     await expect(review.currentFileRow).toContainText('tall.ts');
 
@@ -587,7 +599,7 @@ test('Space twice on the current file collapses it and opens it again, not the n
     await expect(review.currentFileRow).toContainText('tall.ts');
 });
 
-test("C takes N's thread only in the current file: scrolled up into the file above, the thread still on screen, C opens on that file's line (D44)", async ({
+test("C on a thread takes the thread's own line; a scroll keeping the thread on screen leaves the cursor on it, and the pointer on the file above takes C there (D44)", async ({
     page,
     github,
 }) => {
@@ -607,21 +619,32 @@ test("C takes N's thread only in the current file: scrolled up into the file abo
     await page.keyboard.press('n');
     await expect(review.focusedThread).toContainText('Look here');
 
-    // Up by more than half a screen, which ends N's hold: the thread a quarter down is still on screen.
+    // Up by more than half a screen, which ends N's hold: the thread a quarter down is still on screen, the cursor on it.
     await review.diff.evaluate(element => element.scrollBy(0, -(element.clientHeight / 2 + 40)));
-    await expect(review.currentFileRow).toContainText('above.ts');
     await expect(review.thread('Look here')).toBeInViewport();
+    await expect(review.focusedThread).toContainText('Look here');
+    await expect(review.currentFileRow).toContainText('threaded.ts');
 
     await page.keyboard.press('c');
-
-    const box = review.commentBox();
-    await expect(box).toBeVisible();
-    await expect(review.commentBox('Comment on line 5')).toHaveCount(0);
+    const onThread = review.commentBox('Comment on line 5');
+    await expect(onThread).toBeVisible();
     const [opened, header] = await Promise.all([
-        box.boundingBox(),
+        onThread.boundingBox(),
         review.fileHeader('src/b/threaded.ts').boundingBox(),
     ]);
-    expect(opened?.y).toBeLessThan(header?.y ?? 0);
+    expect(opened?.y).toBeGreaterThan(header?.y ?? Infinity);
+    await page.keyboard.press('Escape');
+    await expect(onThread).toBeHidden();
+
+    // The pointer on a line of the file above: that file is current, and C takes the line.
+    await review.pointAt(review.code('const above110 = 110;'));
+    await expect(review.currentFileRow).toContainText('above.ts');
+    await page.keyboard.press('c');
+    const above = review.commentBox('Comment on line 111');
+    await expect(above).toBeVisible();
+    expect((await above.boundingBox())?.y).toBeLessThan(
+        (await review.fileHeader('src/b/threaded.ts').boundingBox())?.y ?? 0,
+    );
 });
 
 test('a pull request with no changes says so', async ({ page, github }) => {
@@ -993,8 +1016,8 @@ test('a gap\'s arrows show 20 lines from their hunk and hold the row on that sid
     // Down, below the hunk above: the row over the gap stays.
     const first = await y('const first = 2;');
     await review.gapArrow('below').click();
-    // Off the gap, whose count says what the arrow under the pointer does.
-    await page.mouse.move(0, 0);
+    // The cursor off the gap, onto a line: on the cursor a gap says what a click and E show, not its count (D44).
+    await review.pointAt(review.code('const first = 2;'));
     await expect(review.code('const kept22 = 22;').first()).toBeAttached();
     await expect(review.code('const kept23 = 23;')).toHaveCount(0);
     await expect(review.gap('74 lines')).toBeAttached();
@@ -1003,24 +1026,28 @@ test('a gap\'s arrows show 20 lines from their hunk and hold the row on that sid
     // Up, above the hunk below: the row under the gap stays, the lines coming above it.
     const last = await y('const last = 2;');
     await review.gapArrow('above').click();
-    await page.mouse.move(0, 0);
+    // The pointer took the cursor onto the gap.
+    await expect(review.cursorRow.locator('[tid="review-gap"]')).toContainText(/Show 20 (above|below) line \d+/u);
+    await review.pointAt(review.code('const last = 2;'));
     await expect(review.code('const kept77 = 77;').first()).toBeAttached();
     await expect(review.code('const kept76 = 76;')).toHaveCount(0);
     await expect(review.gap('54 lines')).toBeAttached();
     await expect.poll(() => y('const last = 2;')).toBeCloseTo(last ?? 0, 0);
 
+    // E on the line under the gap: its file's nearest gap.
     await page.keyboard.press('e');
     await expect(review.gap('34 lines')).toBeAttached();
     await review.gap('34 lines').click({ position: { x: 200, y: 10 } });
     await page.mouse.move(0, 0);
-    // The lines came above the row under the gap, which stayed: the gap went up, out of the rows drawn.
+    // The lines came above the row under the gap, which stayed: the gap went up, out of the rows drawn. The cursor may be
+    // on it, which then says what it shows: the arrow says how many are left either way.
     await review.diff.evaluate(diff => diff.scrollTo(0, 0));
-    await expect(review.gap('14 lines')).toBeAttached();
+    await expect(review.gaps).toHaveCount(1);
     await expect(review.gapArrow('all')).toHaveAccessibleName('Show 14 lines');
 
     // The command acts on a gap on screen: bring this one into view, wherever the window's height left it.
-    await review.gap('14 lines').evaluate(gap => gap.scrollIntoView({ block: 'center' }));
-    await expect(review.gap('14 lines')).toBeInViewport();
+    await review.gaps.evaluate(gap => gap.scrollIntoView({ block: 'center' }));
+    await expect(review.gaps).toBeInViewport();
     await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
     await expect(review.gaps).toHaveCount(0);
@@ -1127,6 +1154,13 @@ function manyFiles(): SampleReviewFile[] {
             after: `${body}\nif (ready) {\n  const changed${index} = 2;\n}\n`,
         };
     });
+}
+
+/** The file row marked current is the cursor's file. */
+async function expectCursorFileCurrent(review: ReviewScreenHarness) {
+    await expect
+        .poll(async () => (await review.currentFileRow.getAttribute('title')) === (await review.cursorPath()))
+        .toBe(true);
 }
 
 /** `count` lines `const <name><n> = <n>;`. */

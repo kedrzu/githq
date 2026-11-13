@@ -101,9 +101,12 @@ const CHAR_WIDTH = 7.2;
 const INDENT_CHARS = 2;
 const LINE_HEIGHT = 20;
 const BAR_HEIGHT = 8;
-/** Where code starts: unified after both line numbers and the sign, split after the number in each half. */
-const UNIFIED_CODE_X = 108;
-const SPLIT_CODE_X = 48;
+/**
+ * Where code starts: unified after both line numbers, the comment button's gutter and the sign, split after the number
+ * and the gutter in each half (D43).
+ */
+const UNIFIED_CODE_X = 132;
+const SPLIT_CODE_X = 60;
 /** The right half's code is after the 1 px divider too. */
 const SPLIT_AFTER_CODE_X = SPLIT_CODE_X + 1;
 

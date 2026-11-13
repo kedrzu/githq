@@ -13,7 +13,9 @@ fileSteps:
 threads:
   en: Next and previous thread
 lines:
-  en: Scroll by a line
+  en: Move the cursor
+pages:
+  en: A screen at a time
 back:
   en: Back to the pull request
 viewed:

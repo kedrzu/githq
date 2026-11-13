@@ -81,7 +81,8 @@ function getBarStyle(bar: PlaceholderBar) {
 
 .diffRowPlaceholder_cell {
   display: flex;
-  gap: $spacing-12;
+  // The comment button's gutter after the number (D43).
+  gap: $spacing-24;
   min-width: 0;
   padding-right: $spacing-10;
 
@@ -105,9 +106,10 @@ function getBarStyle(bar: PlaceholderBar) {
   margin-right: $spacing-4;
 }
 
+// The comment button's gutter and the sign's column (D43).
 .diffRowPlaceholder_sign {
   flex: none;
-  width: 28px;
+  width: calc(#{$spacing-24} + 28px);
 }
 
 // Code's font, for a `ch` to be a character; a long bar ends at its column's edge.

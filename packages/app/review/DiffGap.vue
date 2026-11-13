@@ -1,4 +1,4 @@
-<!-- The lines a diff leaves out between hunks, at a file's top or at its end (D42): arrows side by side in the number gutter, as on github.com — ↓ shows 20 lines below the hunk above, ↑ 20 above the hunk below, a file's top having only ↑ and its end only ↓, a gap of 20 or fewer one ↕ for all of it — then the declaration what follows sits in, when it is a real one, and how many lines are hidden. Hovering an arrow lights it and has the count say what it does, and with the keyboard's focus on it the count says what ↵ does; the rest of the row is a click showing 20 toward the hunk `toward` names, and hovering it lights that arrow. The first gap of a file a push reset says so (CR62); one with nothing hidden, its lines all shown for threads, says only that, with no arrow and no click. The edge under a file's last gap is the block's own. A file still on its way draws its patch's gaps the same, as tall, and still: its arrows do nothing and take no focus, and the one after its last hunk says no count, which the patch doesn't know (D45). -->
+<!-- The lines a diff leaves out between hunks, at a file's top or at its end (D42): arrows side by side in the number gutter, as on github.com — ↓ shows 20 lines below the hunk above, ↑ 20 above the hunk below, a file's top having only ↑ and its end only ↓, a gap of 20 or fewer one ↕ for all of it — then the declaration what follows sits in, when it is a real one, and how many lines are hidden. Hovering an arrow lights it and has the count say what it does, and with the keyboard's focus on it the count says what ↵ does; the rest of the row is a click showing 20 toward the hunk `toward` names, and hovering it lights that arrow, as does the line cursor on the row (D44). The first gap of a file a push reset says so (CR62); one with nothing hidden, its lines all shown for threads, says only that, with no arrow and no click. The edge under a file's last gap is the block's own. A file still on its way draws its patch's gaps the same, as tall, and still: its arrows do nothing and take no focus, and the one after its last hunk says no count, which the patch doesn't know (D45). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -24,6 +24,8 @@ const props = defineProps<{
   row: ReviewGapRow | PlaceholderGap;
   /** The hunk a click on the row shows lines toward, the one on the reading line's side. */
   toward: (gap: ReviewGapRow) => ReviewGapDirection;
+  /** The row holds the line cursor (D44): the arrow a click and E take lights and says what it shows, as on hover. */
+  cursor?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -66,12 +68,20 @@ const count = computed(() => {
 
   return row.kind === 'gap' && row.expansionReset ? t(l.expansionReset, { lines }) : lines;
 });
-const text = computed(() => {
+/** The arrow drawn lit: the one under the pointer or a click's, or on the cursor's gap the one a click and E take. */
+const shown = computed(() => {
   if (lit.value !== null) {
-    return getActionText(lit.value, false);
+    return lit.value;
   }
 
-  return focused.value === null ? count.value : getActionText(focused.value, true);
+  return props.cursor && real.value && !nothingHidden.value ? getRowArrow(real.value) : null;
+});
+const text = computed(() => {
+  if (focused.value !== null && lit.value === null) {
+    return getActionText(focused.value, true);
+  }
+
+  return shown.value === null ? count.value : getActionText(shown.value, false);
 });
 
 function getStep(gap: ReviewGapRow, arrow: Arrow): ReviewGapStep {
@@ -145,7 +155,7 @@ function expandFromRow() {
           v-for="arrow in arrows"
           :key="arrow"
           type="button"
-          :class="[css.diffGap_arrow, lit === arrow && css.diffGap_arrow_lit]"
+          :class="[css.diffGap_arrow, shown === arrow && css.diffGap_arrow_lit]"
           :aria-label="getActionText(arrow, false)"
           @mouseenter="lit = arrow"
           @mouseleave="lit = null"
@@ -169,7 +179,7 @@ function expandFromRow() {
     <span
       :class="[
         css.diffGap_count,
-        (lit !== null || focused !== null || real?.expansionReset) && css.diffGap_count_strong,
+        (shown !== null || focused !== null || real?.expansionReset) && css.diffGap_count_strong,
       ]"
       >{{ text }}</span
     >
