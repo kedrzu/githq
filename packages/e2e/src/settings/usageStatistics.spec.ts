@@ -16,7 +16,7 @@ import { signIn } from '../session.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
-test('usage statistics turned off in Settings keep this device out of the counts, its sign-out and its next sign-in; on again, it is counted', async ({
+test('usage statistics turned off in Settings keep this device out of the counts, its sign-out and its next sign-in; switched back on, the device flag is cleared', async ({
     page,
     github,
 }) => {
