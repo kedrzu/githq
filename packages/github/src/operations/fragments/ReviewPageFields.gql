@@ -12,6 +12,7 @@ fragment ReviewPageFields on PullRequestReviewConnection {
             avatarUrl
         }
         state
+        body
         bodyHTML
         submittedAt
     }

@@ -3925,6 +3925,7 @@ export type ItemDetailQuery = {
                       id: string;
                       url: string;
                       state: PullRequestReviewState;
+                      body: string;
                       bodyHTML: string;
                       submittedAt: string | null;
                       author:
@@ -7038,6 +7039,7 @@ export type ItemDetailsQuery = {
                       id: string;
                       url: string;
                       state: PullRequestReviewState;
+                      body: string;
                       bodyHTML: string;
                       submittedAt: string | null;
                       author:
@@ -7494,6 +7496,7 @@ export type MoreReviewsQuery = {
                       id: string;
                       url: string;
                       state: PullRequestReviewState;
+                      body: string;
                       bodyHTML: string;
                       submittedAt: string | null;
                       author:
@@ -14855,6 +14858,7 @@ export type PullRequestDetailFieldsFragment = {
             id: string;
             url: string;
             state: PullRequestReviewState;
+            body: string;
             bodyHTML: string;
             submittedAt: string | null;
             author:
@@ -15246,6 +15250,7 @@ export type ReviewPageFieldsFragment = {
         id: string;
         url: string;
         state: PullRequestReviewState;
+        body: string;
         bodyHTML: string;
         submittedAt: string | null;
         author:
@@ -20528,6 +20533,7 @@ export const ReviewPageFieldsFragmentDoc = new TypedDocumentString(
       avatarUrl
     }
     state
+    body
     bodyHTML
     submittedAt
   }
@@ -20969,6 +20975,7 @@ fragment ReviewPageFields on PullRequestReviewConnection {
       avatarUrl
     }
     state
+    body
     bodyHTML
     submittedAt
   }
@@ -22373,6 +22380,7 @@ fragment ReviewPageFields on PullRequestReviewConnection {
       avatarUrl
     }
     state
+    body
     bodyHTML
     submittedAt
   }
@@ -23435,6 +23443,7 @@ fragment ReviewPageFields on PullRequestReviewConnection {
       avatarUrl
     }
     state
+    body
     bodyHTML
     submittedAt
   }
@@ -24231,6 +24240,7 @@ export const MoreReviewsDocument = new TypedDocumentString(`
       avatarUrl
     }
     state
+    body
     bodyHTML
     submittedAt
   }

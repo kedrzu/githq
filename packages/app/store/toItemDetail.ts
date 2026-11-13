@@ -509,6 +509,7 @@ export function toItemReviewPage(
                       url: review.url,
                       author: toDetailAuthor(review.author),
                       state: review.state,
+                      body: review.body,
                       bodyHtml: review.bodyHTML,
                       submittedAt: review.submittedAt,
                   }

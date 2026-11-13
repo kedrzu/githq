@@ -72,12 +72,12 @@ test('the conversation is remembered over a reload, comes in one time order and 
 
     const entries = review.conversation.getByRole('listitem');
     await expect(entries).toHaveCount(4);
-    await expect(entries.nth(0)).toContainText('Changes requested');
+    await expect(entries.nth(0)).toContainText('requested changes');
     await expect(entries.nth(1)).toContainText('An early remark');
-    await expect(entries.nth(2)).toContainText('Approved');
+    await expect(entries.nth(2)).toContainText('approved');
     await expect(entries.nth(3)).toContainText('The latest remark');
     // The reply, a review with nothing to say, is not among them.
-    await expect(review.conversation).not.toContainText('Commented');
+    await expect(review.conversation).not.toContainText('reviewed');
 
     await review.conversationToggle.click();
     await expect(review.conversation).toBeHidden();
@@ -184,6 +184,63 @@ test('its Close and the empty diff’s button are the same switch', async ({ pag
     await expect(review.conversation).toBeVisible();
     await review.conversation.getByRole('button', { name: 'Close the conversation' }).click();
     await expect(review.conversation).toBeHidden();
+});
+
+test('the user’s own comment is edited in place and deleted from the conversation, as on the pull request', async ({
+    page,
+    github,
+}) => {
+    const { world, closingPullRequest } = createSampleMyWork();
+    world.comment(closingPullRequest, { author: world.viewer, body: 'Mine to change', minutesAgo: 10 });
+    await openMyWork(page, github, world);
+    answerReview(github, { repository: 'acme/web', number: 15, files: FILES });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('long.ts')).toBeVisible();
+    await review.conversationToggle.click();
+
+    const mine = review.conversation.getByRole('listitem').filter({ hasText: 'Mine to change' });
+    await mine.getByRole('button', { name: 'Comment actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
+    const editor = review.conversation.getByRole('textbox', { name: 'Edit comment' });
+    await expect(editor).toHaveValue('Mine to change');
+    await editor.fill('Mine, changed');
+    await editor.press('ControlOrMeta+Enter');
+
+    const changed = review.conversation.getByRole('listitem').filter({ hasText: 'Mine, changed' });
+    await expect(changed).toContainText('· edited');
+    await expect.poll(() => world.stateOf(closingPullRequest).comments).toContain('Mine, changed');
+
+    await changed.getByRole('button', { name: 'Comment actions' }).click();
+    await page.getByRole('menuitem', { name: 'Delete…' }).click();
+    await page.getByRole('button', { name: 'Delete comment' }).click();
+    await expect(changed).toHaveCount(0);
+    await expect.poll(() => world.stateOf(closingPullRequest).comments).not.toContain('Mine, changed');
+});
+
+test('the conversation’s edge resizes it, from 340 px up, and its width is kept over a reload', async ({
+    page,
+    github,
+}) => {
+    const review = await openConversation(page, github);
+    await review.conversationToggle.click();
+    // The column's width less its 1 px line, which the split draws.
+    const width = async () => Math.round((await review.conversation.boundingBox())?.width ?? 0) + 1;
+    expect(await width()).toBe(340);
+
+    // The edge is on the conversation's left: the arrow keys widen it leftwards, and never take it under its least.
+    await review.conversationEdge.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(width).toBe(340);
+    for (let step = 0; step < 4; step++) {
+        await page.keyboard.press('ArrowLeft');
+    }
+
+    await expect.poll(width).toBeGreaterThan(340);
+    const wider = await width();
+    await page.reload();
+    await expect(review.fileRow('long.ts')).toBeVisible();
+    await expect.poll(width).toBe(wider);
 });
 
 async function openConversation(page: Page, github: Parameters<typeof openMyWork>[1], remarks = 0) {

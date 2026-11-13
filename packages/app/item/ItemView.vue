@@ -32,7 +32,7 @@ import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
-import { applyMarkdownTool } from '@/components/applyMarkdownTool.js';
+import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -542,14 +542,7 @@ function quoteReply(body: string) {
     return;
   }
 
-  // HTML comments (an issue template's hints) render as nothing: quoted, they would show.
-  const text = body
-    .replace(/<!--[\s\S]*?-->/gu, '')
-    .replace(/\n{3,}/gu, '\n\n')
-    .trim();
-  const quote = `${applyMarkdownTool(text, { start: 0, end: text.length }, 'quote').insert}\n\n`;
-  const typed = commentDraft.value;
-  commentDraft.value = typed.trim() ? `${typed.trimEnd()}\n\n${quote}` : quote;
+  commentDraft.value = quoteIntoDraft(body, commentDraft.value);
   void composerRef.value?.focus();
 }
 

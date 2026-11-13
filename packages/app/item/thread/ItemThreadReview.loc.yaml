@@ -1,15 +1,3 @@
-approved:
-  en: approved
-changesRequested:
-  en: requested changes
-commented:
-  en: reviewed
-approvedDismissed:
-  en: approved · dismissed
-changesRequestedDismissed:
-  en: requested changes · dismissed
-dismissed:
-  en: reviewed · dismissed
 threads:
   plural: count
   en:
