@@ -111,7 +111,9 @@ export const DeviceSignIn = defineService({
             }
 
             // Rejects only when abandoned while GitHub was saying whose the token is: then nothing was kept.
-            const result = await auth.signInWithToken(grant.token, signal).catch(() => null);
+            const result = await auth
+                .signInWithToken(grant.token, { refreshToken: grant.refreshToken, expiresIn: grant.expiresIn, signal })
+                .catch(() => null);
             if (!result?.ok) {
                 settle(signal, 'failed');
             }

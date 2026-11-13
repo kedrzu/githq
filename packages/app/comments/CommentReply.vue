@@ -1,4 +1,4 @@
-<!-- What a comment and a review summary share: the avatar, who, how long ago with a link to it on GitHub, room for a verdict between them and for a note after, and whatever it says under that. -->
+<!-- A reply: a comment inside a code thread, wherever code threads show — the pull request's thread (`ItemThreadCodeThread`), code review's diff (`ReviewThreadBox`) — and a reply on its way (`ReviewSentComment`) (`Review / Comment`): the avatar, who, how long ago with a link to it on GitHub, room for a note after ("Pending", "Sending…"), and what it says under that. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -8,7 +8,7 @@ import { useNow } from '@/services/useNow.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
-import * as l from './ReviewCommentFrame.loc.js';
+import * as l from './CommentReply.loc.js';
 
 const props = defineProps<{
   /** `null` for an account that no longer exists. */
@@ -16,8 +16,6 @@ const props = defineProps<{
   /** On GitHub; none for one on its way there. */
   url?: string;
   createdAt: string;
-  /** A little more room under the head, as a review summary has. */
-  spaced?: boolean;
 }>();
 
 /** How often "12m" moves on. */
@@ -29,25 +27,24 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
 </script>
 
 <template>
-  <div :class="css.reviewCommentFrame">
+  <div :class="css.commentReply">
     <Avatar
       :name="author?.login ?? t(l.ghost)"
       :src="author?.avatarUrl"
       decorative
     />
-    <div :class="[css.reviewCommentFrame_body, spaced && css.reviewCommentFrame_body_spaced]">
-      <p :class="css.reviewCommentFrame_meta">
-        <span :class="css.reviewCommentFrame_author">{{ author?.login ?? t(l.ghost) }}</span>
-        <slot name="verdict" />
+    <div :class="css.commentReply_body">
+      <p :class="css.commentReply_meta">
+        <span :class="css.commentReply_author">{{ author?.login ?? t(l.ghost) }}</span>
         <time
           v-if="url === undefined"
-          :class="css.reviewCommentFrame_age"
+          :class="css.commentReply_age"
           :datetime="createdAt"
           >{{ age }}</time
         >
         <a
           v-else
-          :class="css.reviewCommentFrame_age"
+          :class="css.commentReply_age"
           :href="url"
           target="_blank"
           rel="noopener noreferrer"
@@ -63,12 +60,12 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
 </template>
 
 <style lang="scss" module="css">
-.reviewCommentFrame {
+.commentReply {
   display: flex;
   gap: $spacing-10;
 }
 
-.reviewCommentFrame_body {
+.commentReply_body {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -76,24 +73,20 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
   min-width: 0;
 }
 
-.reviewCommentFrame_body_spaced {
-  gap: $spacing-4;
-}
-
-.reviewCommentFrame_meta {
+.commentReply_meta {
   display: flex;
   gap: $spacing-6;
   align-items: center;
   margin: 0;
 }
 
-.reviewCommentFrame_author {
+.commentReply_author {
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   color: $color-fg;
 }
 
-.reviewCommentFrame_age {
+.commentReply_age {
   @include focus-ring;
 
   flex: none;

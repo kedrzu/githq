@@ -3,8 +3,8 @@
 // and `/_landing` (the landing page for a visitor without the signed-in cookie, the app for one with it —
 // `src/home.ts`), for `/download/*` (a redirect to an installer of the latest release — `src/download.ts`), for `/docs/*`
 // (the documentation site, `packages/docs`, built into the assets' `docs/` — `src/docs.ts`,
-// `docs/decisions/docs-site-under-githq-dev-docs.md`) and for `/api/*`, where it trades GitHub's OAuth code for a token (D1, `src/githubOAuth.ts`) — GitHub's token
-// endpoint answers no CORS and needs the client secret, so a browser cannot do it alone. The Worker is
+// `docs/decisions/docs-site-under-githq-dev-docs.md`) and for `/api/*`, where it serves GitHub's OAuth token endpoints: sign-in, refresh, revoke (D1, `src/githubOAuth.ts`) —
+// GitHub's token endpoint answers no CORS and needs the client secret, so a browser cannot do it alone. The Worker is
 // stateless: no storage, no task data. Deploy with `bun run deploy`
 // from the repo root, which builds the SPA first.
 //

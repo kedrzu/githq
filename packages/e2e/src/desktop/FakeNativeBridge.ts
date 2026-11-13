@@ -16,6 +16,13 @@ export interface FakeJobLogAnswer {
     readonly text: string;
 }
 
+/** What GitHub's device flow issues with an expiring token ({@link FakeNativeBridge.approveDeviceSignIn}). */
+export interface FakeTokenRenewal {
+    readonly refreshToken: string;
+    /** Seconds until the token expires. */
+    readonly expiresIn: number;
+}
+
 /** What the updater is doing, as the native side's `UpdateState` says (`packages/desktop/src-tauri/src/updater.rs`). */
 export type FakeUpdateActivity = { readonly kind: string } & Readonly<Record<string, unknown>>;
 
@@ -84,7 +91,7 @@ interface FakeEventListener {
  * screen, a trackpad scroll's phases and the githq links opened in the app ({@link openLink}), sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
  */
 export class FakeNativeBridge {
-    /** The token in the OS credential store, or `null`. */
+    /** What the app keeps in the OS credential store — the JSON of its credentials — or `null`. */
     keychain: string | null = null;
 
     /** The code `device_start` answers. */
@@ -175,9 +182,21 @@ export class FakeNativeBridge {
         return this.listeners.some(listener => listener.event === event);
     }
 
-    /** The user approved the device sign-in on GitHub: `device_finish` answers `token` with every scope githq asks. */
-    approveDeviceSignIn(token: string): void {
-        this.deviceAnswer.resolve({ ok: true, value: { token, scope: OAUTH_SCOPES.join(',') } });
+    /**
+     * The user approved the device sign-in on GitHub: `device_finish` answers `token` with every scope githq asks —
+     * and, given `renewal`, the refresh token and expiry GitHub issues with an expiring token; without, one that never
+     * expires.
+     */
+    approveDeviceSignIn(token: string, renewal?: FakeTokenRenewal): void {
+        this.deviceAnswer.resolve({
+            ok: true,
+            value: {
+                token,
+                scope: OAUTH_SCOPES.join(','),
+                refreshToken: renewal?.refreshToken ?? null,
+                expiresIn: renewal?.expiresIn ?? null,
+            },
+        });
     }
 
     /** The updater's state changed: `update_status` answers it, and every page listening hears `update-state`. */

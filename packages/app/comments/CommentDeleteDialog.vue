@@ -7,7 +7,7 @@ import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import DialogFrame from '@/components/DialogFrame.vue';
 
-import * as l from './ItemThreadDeleteDialog.loc.js';
+import * as l from './CommentDeleteDialog.loc.js';
 
 const emit = defineEmits<{
   delete: [];
@@ -34,7 +34,7 @@ function onKeydown(event: KeyboardEvent) {
     initial-focus="[data-cancel]"
     @keydown="onKeydown"
   >
-    <p :class="css.itemThreadDeleteDialog_detail">{{ t(l.detail) }}</p>
+    <p :class="css.commentDeleteDialog_detail">{{ t(l.detail) }}</p>
     <template #footer>
       <Button
         size="sm"
@@ -59,7 +59,7 @@ function onKeydown(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
-.itemThreadDeleteDialog_detail {
+.commentDeleteDialog_detail {
   margin: 0;
   font-size: $font-size-sm;
   color: $color-fg-2;

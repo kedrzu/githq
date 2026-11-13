@@ -4000,6 +4000,19 @@
                               "alignItems": "center",
                               "children": [
                                 {
+                                  "id": "r10C3a",
+                                  "type": "ref",
+                                  "ref": "of5Pp",
+                                  "name": "Avatar",
+                                  "enabled": false,
+                                  "fill": "#C9A26B",
+                                  "descendants": {
+                                    "zeZzP": {
+                                      "content": "ML"
+                                    }
+                                  }
+                                },
+                                {
                                   "type": "text",
                                   "id": "JNFhA",
                                   "name": "Author",
@@ -4277,6 +4290,19 @@
                                       "fontWeight": "normal"
                                     }
                                   ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZyhJ7",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Show more",
+                                  "enabled": false,
+                                  "fill": "$accent",
+                                  "content": "Show description",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -37441,6 +37467,19 @@
                           "alignItems": "center",
                           "children": [
                             {
+                              "id": "AMSoi",
+                              "type": "ref",
+                              "ref": "of5Pp",
+                              "name": "Avatar",
+                              "enabled": false,
+                              "fill": "#8FBF9F",
+                              "descendants": {
+                                "zeZzP": {
+                                  "content": "DK"
+                                }
+                              }
+                            },
+                            {
                               "type": "text",
                               "id": "my8kv",
                               "name": "Author",
@@ -37941,6 +37980,16 @@
                               "fontFamily": "$font",
                               "fontSize": 12,
                               "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "e9fnT9",
+                              "name": "More",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "ellipsis",
+                              "library": "lucide",
+                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -37970,6 +38019,13 @@
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
+                            },
+                            {
+                              "id": "bOJMx",
+                              "type": "ref",
+                              "ref": "Ul90Y",
+                              "name": "Threads link",
+                              "enabled": false
                             },
                             {
                               "id": "B8zor",
@@ -40156,6 +40212,9 @@
                     "TPIyI": {
                       "enabled": false
                     },
+                    "e9fnT9": {
+                      "enabled": false
+                    },
                     "ZCoSV": {
                       "enabled": false
                     },
@@ -40852,6 +40911,383 @@
                               }
                             }
                           ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wuC1d",
+              "name": "Narrow cards",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Fj95O",
+                  "name": "Note",
+                  "fill": "$fg-2",
+                  "textGrowth": "fixed-width",
+                  "width": 1400,
+                  "content": "Narrow cards: the same card, chosen by the width of its container (a container query, not the window), below 480 px of thread width. The gutter avatar moves into the head (20 px) before the login, the verb drops and the age stays. When the head is still too tight, things give way in this order: the login truncates with an ellipsis; the description's Author chip drops before the login truncates. The ⋯ always stays at the end. What the wide review puts at the end of its head (\"2 threads · 1 resolved\", \"Show review\") moves to a line in the body right under the summary: the head stays the one 36 px band every card has, and the line sits where the reader decides to open the threads. In code review's sidebar the threads live in the diff, so that line is the jump: \"2 threads in files ↘\".",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "CL4LV",
+                  "name": "Components",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ul90Y",
+                      "name": "Activity / Threads link",
+                      "reusable": true,
+                      "gap": 5,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "NmRhF",
+                          "name": "Icon",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "message-square",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "text",
+                          "id": "K4Fyb",
+                          "name": "Label",
+                          "fill": "$fg-2",
+                          "content": "2 threads in files",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "w7dsF",
+                          "name": "Go",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "arrow-down-right",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "h74nP",
+                      "name": "Comments",
+                      "layout": "vertical",
+                      "gap": 24,
+                      "children": [
+                        {
+                          "id": "k6csA",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "WHy4W",
+                          "name": "Activity / Comment · narrow",
+                          "width": 312,
+                          "descendants": {
+                            "Eidxp": {
+                              "enabled": false
+                            },
+                            "AMSoi": {
+                              "enabled": true
+                            },
+                            "h99GW1": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "x9F0Cq",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "OmV5q",
+                          "name": "Activity / Comment · narrow, sending",
+                          "width": 312,
+                          "descendants": {
+                            "Eidxp": {
+                              "enabled": false
+                            },
+                            "AMSoi": {
+                              "enabled": true,
+                              "fill": "#C9A26B"
+                            },
+                            "AMSoi/zeZzP": {
+                              "content": "ML"
+                            },
+                            "h99GW1": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "ufFmh",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "a4VAuV",
+                          "name": "Activity / Comment · narrow, failed",
+                          "width": 312,
+                          "descendants": {
+                            "Eidxp": {
+                              "enabled": false
+                            },
+                            "AMSoi": {
+                              "enabled": true,
+                              "fill": "#C9A26B"
+                            },
+                            "AMSoi/zeZzP": {
+                              "content": "ML"
+                            },
+                            "h99GW1": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "xvz0F",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "niV8c",
+                          "name": "Activity / Editor tools · folded",
+                          "descendants": {
+                            "rGxCD": {
+                              "enabled": false
+                            },
+                            "ki7Pf": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "DFWqj",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "ehuxk",
+                          "name": "Activity / Comment · narrow, editing",
+                          "width": 312,
+                          "descendants": {
+                            "o8Qbrp": {
+                              "enabled": false
+                            },
+                            "pehHx/ro5XW": {
+                              "id": "UP6a5",
+                              "type": "ref",
+                              "ref": "xvz0F",
+                              "name": "Format",
+                              "height": "fill_container"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DKvDi",
+                      "name": "Description",
+                      "layout": "vertical",
+                      "gap": 24,
+                      "children": [
+                        {
+                          "id": "DSsUo",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "bJhAe",
+                          "name": "Item / Body · narrow",
+                          "width": 312,
+                          "descendants": {
+                            "tK4vq": {
+                              "enabled": false
+                            },
+                            "r10C3a": {
+                              "enabled": true
+                            },
+                            "MrJvR": {
+                              "content": "2d"
+                            }
+                          }
+                        },
+                        {
+                          "id": "a7snnS",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "DSsUo",
+                          "name": "Item / Body · narrow, folded",
+                          "width": 312,
+                          "descendants": {
+                            "ZyhJ7": {
+                              "enabled": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "swBX0",
+                      "name": "Reviews",
+                      "layout": "vertical",
+                      "gap": 24,
+                      "children": [
+                        {
+                          "id": "WUD8Y",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "b1us0",
+                          "name": "Activity / Review · narrow",
+                          "width": 312,
+                          "descendants": {
+                            "hdXU4": {
+                              "enabled": false
+                            },
+                            "HA3Ku": {
+                              "enabled": true
+                            },
+                            "TPIyI": {
+                              "enabled": false
+                            },
+                            "e9fnT9": {
+                              "enabled": true
+                            },
+                            "bOJMx": {
+                              "enabled": true
+                            },
+                            "bOJMx/K4Fyb": {
+                              "content": "2 threads · 1 resolved"
+                            },
+                            "bOJMx/w7dsF": {
+                              "enabled": false
+                            },
+                            "HlBSD/tFSoO": {
+                              "enabled": false
+                            },
+                            "HlBSD/nXhWM": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "Hs0KC",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "I99H9c",
+                          "name": "Activity / Review · narrow, approved",
+                          "width": 312,
+                          "descendants": {
+                            "hdXU4": {
+                              "enabled": false
+                            },
+                            "HA3Ku": {
+                              "enabled": true,
+                              "fill": "#8FBF9F"
+                            },
+                            "HA3Ku/zeZzP": {
+                              "content": "DK"
+                            },
+                            "TPIyI": {
+                              "enabled": false
+                            },
+                            "e9fnT9": {
+                              "enabled": true
+                            },
+                            "bOJMx": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "aolHQ",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "YKqKB",
+                          "name": "Activity / Review · narrow, commented",
+                          "width": 312,
+                          "descendants": {
+                            "hdXU4": {
+                              "enabled": false
+                            },
+                            "HA3Ku": {
+                              "enabled": true,
+                              "fill": "#8FBF9F"
+                            },
+                            "HA3Ku/zeZzP": {
+                              "content": "DK"
+                            },
+                            "TPIyI": {
+                              "enabled": false
+                            },
+                            "e9fnT9": {
+                              "enabled": true
+                            },
+                            "bOJMx": {
+                              "enabled": true
+                            },
+                            "bOJMx/K4Fyb": {
+                              "content": "1 thread"
+                            },
+                            "bOJMx/w7dsF": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "BA1U1",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "d5GG0",
+                          "name": "Activity / Review · narrow, dismissed",
+                          "width": 312,
+                          "descendants": {
+                            "hdXU4": {
+                              "enabled": false
+                            },
+                            "HA3Ku": {
+                              "enabled": true
+                            },
+                            "TPIyI": {
+                              "enabled": false
+                            },
+                            "e9fnT9": {
+                              "enabled": true
+                            },
+                            "bqcOd": {
+                              "enabled": true
+                            },
+                            "ZCoSV": {
+                              "enabled": false
+                            },
+                            "bOJMx": {
+                              "enabled": true
+                            },
+                            "bOJMx/NmRhF": {
+                              "enabled": false
+                            },
+                            "bOJMx/K4Fyb": {
+                              "content": "Show review",
+                              "fill": "$accent"
+                            },
+                            "bOJMx/w7dsF": {
+                              "enabled": false
+                            },
+                            "B8zor": {
+                              "enabled": false
+                            },
+                            "HlBSD": {
+                              "enabled": false
+                            }
+                          }
                         }
                       ]
                     }
@@ -42810,30 +43246,6 @@
                                       }
                                     },
                                     {
-                                      "id": "FUy8q",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · mlaine",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "N5FNN": {
-                                          "fill": "#C9A26B"
-                                        },
-                                        "N5FNN/zeZzP": {
-                                          "content": "ML"
-                                        },
-                                        "my8kv": {
-                                          "content": "mlaine"
-                                        },
-                                        "bCJbH": {
-                                          "content": "2h"
-                                        },
-                                        "BujgM": {
-                                          "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
-                                        }
-                                      }
-                                    },
-                                    {
                                       "type": "frame",
                                       "id": "rHhyl",
                                       "name": "Indent",
@@ -42858,21 +43270,6 @@
                                           }
                                         }
                                       ]
-                                    },
-                                    {
-                                      "id": "HPkPt",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · dkim",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "bCJbH": {
-                                          "content": "1h"
-                                        },
-                                        "BujgM": {
-                                          "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
-                                        }
-                                      }
                                     },
                                     {
                                       "id": "x9740p",
@@ -43827,30 +44224,6 @@
                                       }
                                     },
                                     {
-                                      "id": "Q9U3w1",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · mlaine",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "N5FNN": {
-                                          "fill": "#C9A26B"
-                                        },
-                                        "N5FNN/zeZzP": {
-                                          "content": "ML"
-                                        },
-                                        "my8kv": {
-                                          "content": "mlaine"
-                                        },
-                                        "bCJbH": {
-                                          "content": "2h"
-                                        },
-                                        "BujgM": {
-                                          "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
-                                        }
-                                      }
-                                    },
-                                    {
                                       "type": "frame",
                                       "id": "bTwKG",
                                       "name": "Indent",
@@ -43875,21 +44248,6 @@
                                           }
                                         }
                                       ]
-                                    },
-                                    {
-                                      "id": "M70nH4",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · dkim",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "bCJbH": {
-                                          "content": "1h"
-                                        },
-                                        "BujgM": {
-                                          "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
-                                        }
-                                      }
                                     },
                                     {
                                       "id": "BqPAi",
@@ -50826,7 +51184,7 @@
       "type": "frame",
       "id": "D27jC",
       "x": 0,
-      "y": 56076,
+      "y": 58346,
       "name": "App · Command menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -59168,7 +59526,7 @@
       "type": "frame",
       "id": "uWch5",
       "x": 8080,
-      "y": 56076,
+      "y": 58346,
       "name": "App · Context menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -63776,7 +64134,7 @@
       "type": "frame",
       "id": "xgYRz",
       "x": 14640,
-      "y": 56076,
+      "y": 58346,
       "name": "App · Item menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -66398,7 +66756,7 @@
       "type": "frame",
       "id": "pgCGV",
       "x": 18160,
-      "y": 56076,
+      "y": 58346,
       "name": "App · Repository and project menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -70853,7 +71211,7 @@
       "type": "frame",
       "id": "Zk4sa",
       "x": 0,
-      "y": 59992,
+      "y": 62262,
       "name": "App · First sign-in and choosing what to track",
       "fill": "#08090B",
       "layout": "vertical",
@@ -79242,7 +79600,7 @@
       "type": "frame",
       "id": "gvCqI",
       "x": 5040,
-      "y": 59992,
+      "y": 62262,
       "name": "App · Creating an issue",
       "fill": "#08090B",
       "layout": "vertical",
@@ -88819,7 +89177,7 @@
       "type": "frame",
       "id": "epLfx",
       "x": 17152,
-      "y": 59992,
+      "y": 62262,
       "name": "App · States",
       "fill": "#08090B",
       "layout": "vertical",
@@ -97725,7 +98083,7 @@
       "type": "frame",
       "id": "iZkBN",
       "x": 22192,
-      "y": 59992,
+      "y": 62262,
       "name": "App · Freshness",
       "fill": "#08090B",
       "layout": "vertical",
@@ -100300,7 +100658,7 @@
       "type": "frame",
       "id": "rV6qN",
       "x": 0,
-      "y": 72749,
+      "y": 75019,
       "name": "Desktop · Sign in with a device code",
       "fill": "#08090B",
       "layout": "vertical",
@@ -102268,7 +102626,7 @@
       "type": "frame",
       "id": "ohwJa",
       "x": 6560,
-      "y": 72749,
+      "y": 75019,
       "name": "Desktop · Updates",
       "fill": "#08090B",
       "layout": "vertical",
@@ -111371,7 +111729,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 109053,
+      "y": 111323,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -119492,7 +119850,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 109053,
+      "y": 111323,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -127851,7 +128209,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 109053,
+      "y": 111323,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -128484,7 +128842,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 109053,
+      "y": 111323,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -131769,7 +132127,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 109053,
+      "y": 111323,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -133619,7 +133977,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 109053,
+      "y": 111323,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -197737,7 +198095,7 @@
       "type": "frame",
       "id": "i3VkT",
       "x": 10080,
-      "y": 59992,
+      "y": 62262,
       "name": "App · Settings",
       "fill": "#08090B",
       "layout": "vertical",
@@ -288339,7 +288697,7 @@
       "type": "frame",
       "id": "Ri8IR",
       "x": 16160,
-      "y": 72749,
+      "y": 75019,
       "name": "Desktop · Commits",
       "fill": "#08090B",
       "layout": "vertical",
@@ -297358,92 +297716,42 @@
                       "type": "frame",
                       "id": "T1wpy",
                       "name": "Items",
+                      "clip": true,
                       "width": "fill_container",
+                      "height": "fill_container",
                       "layout": "vertical",
-                      "gap": 18,
-                      "padding": 14,
+                      "gap": 6,
+                      "padding": [
+                        8,
+                        14,
+                        14,
+                        14
+                      ],
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "E9XiLV",
+                          "id": "DnlGf",
+                          "type": "ref",
+                          "ref": "a7snnS",
                           "name": "Description",
                           "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 6,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "KmzyG",
-                              "name": "Meta",
-                              "gap": 6,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "UN9Ev",
-                                  "type": "ref",
-                                  "ref": "of5Pp",
-                                  "name": "Avatar",
-                                  "fill": "#D97757",
-                                  "descendants": {
-                                    "zeZzP": {
-                                      "content": "CL"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "BcGM6",
-                                  "name": "Author",
-                                  "fill": "$fg",
-                                  "content": "claude[bot]",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "g0E8RR",
-                                  "name": "What",
-                                  "fill": "$fg-dim",
-                                  "content": "opened · 3h",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                }
-                              ]
+                          "descendants": {
+                            "r10C3a": {
+                              "enabled": true,
+                              "fill": "#D97757"
                             },
-                            {
-                              "type": "text",
-                              "id": "KQVok",
-                              "name": "Text",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Second of four in the offline sync stack. Edits made offline go into an outbox table and are replayed in order when the connection returns. The engine now takes batches of 50 and leaves conflicts to src/sync/conflicts.ts.",
-                              "lineHeight": 1.5,
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
+                            "r10C3a/zeZzP": {
+                              "content": "CL"
                             },
-                            {
-                              "type": "text",
-                              "id": "c05P2",
-                              "name": "More",
-                              "fill": "$accent",
-                              "content": "Show the whole description",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
+                            "JNFhA": {
+                              "content": "claude[bot]"
+                            },
+                            "MrJvR": {
+                              "content": "3h"
+                            },
+                            "r8lpm": {
+                              "content": "Second of four in the offline sync stack. Edits made offline go into an outbox table and are replayed in order when the connection returns. The engine now takes batches of 50 and leaves conflicts to…"
                             }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "VnGYv",
-                          "name": "Rule",
-                          "width": "fill_container",
-                          "height": 1,
-                          "fill": "$border"
+                          }
                         },
                         {
                           "id": "gRhb4",
@@ -297458,94 +297766,141 @@
                           }
                         },
                         {
-                          "id": "nx2q2",
+                          "id": "IGlMA",
                           "type": "ref",
-                          "ref": "jHkgH",
-                          "name": "Summary sofiab",
-                          "width": "fill_container"
-                        },
-                        {
-                          "id": "FidSv",
-                          "type": "ref",
-                          "ref": "jHkgH",
-                          "name": "Summary dkim",
+                          "ref": "WUD8Y",
+                          "name": "Review sofiab",
                           "width": "fill_container",
                           "descendants": {
-                            "kdd9L": {
-                              "fill": "#8FBF9F"
+                            "N3CPrM": {
+                              "content": "2h"
                             },
-                            "kdd9L/zeZzP": {
-                              "content": "DK"
+                            "ZCoSV": {
+                              "content": "Two things in the queue, see the threads. The rest reads well."
                             },
-                            "tq25W": {
-                              "content": "dkim"
+                            "bOJMx": {
+                              "enabled": true
                             },
-                            "aeaCV": {
-                              "icon": "circle-check",
-                              "fill": "$green"
+                            "bOJMx/K4Fyb": {
+                              "content": "2 threads in files"
                             },
-                            "XSwHB": {
-                              "content": "Approved",
-                              "fill": "$green"
+                            "bOJMx/w7dsF": {
+                              "enabled": true
                             },
-                            "w7wmND": {
-                              "content": "1h"
+                            "B8zor": {
+                              "enabled": false
                             },
-                            "IUKRE": {
-                              "content": "Fine by me once the retry test lands."
-                            },
-                            "b5CDPO": {
-                              "content": "1 thread in files, resolved"
+                            "HlBSD": {
+                              "enabled": false
                             }
                           }
                         },
                         {
-                          "id": "GzEBA",
+                          "id": "C1m96g",
                           "type": "ref",
-                          "ref": "IHFo8",
+                          "ref": "Hs0KC",
+                          "name": "Review dkim",
+                          "width": "fill_container",
+                          "descendants": {
+                            "N3CPrM": {
+                              "content": "1h"
+                            },
+                            "ZCoSV": {
+                              "content": "Fine by me once the retry test lands."
+                            },
+                            "bOJMx": {
+                              "enabled": true
+                            },
+                            "bOJMx/K4Fyb": {
+                              "content": "1 thread in files, resolved"
+                            },
+                            "bOJMx/w7dsF": {
+                              "enabled": true
+                            },
+                            "B8zor": {
+                              "enabled": false
+                            },
+                            "HlBSD": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "LqooY",
+                          "type": "ref",
+                          "ref": "k6csA",
                           "name": "Comment claude",
                           "width": "fill_container",
                           "descendants": {
-                            "J1oko": {
+                            "AMSoi": {
+                              "enabled": true,
                               "fill": "#D97757"
                             },
-                            "J1oko/zeZzP": {
+                            "AMSoi/zeZzP": {
                               "content": "CL"
                             },
-                            "m8e7t": {
+                            "my8kv": {
                               "content": "claude[bot]"
                             },
-                            "LkH3H": {
+                            "bCJbH": {
                               "content": "40m"
                             },
-                            "o6hbQ": {
+                            "BujgM": {
                               "content": "Pushed 4a1c9e2: the outbox keeps both edits and queue.test.ts covers it. Waiting for your review before #1203."
                             }
                           }
                         },
                         {
-                          "id": "U82Ja",
+                          "id": "dZtrN",
                           "type": "ref",
-                          "ref": "IHFo8",
+                          "ref": "k6csA",
                           "name": "Comment sofiab",
                           "width": "fill_container",
                           "descendants": {
-                            "LkH3H": {
+                            "AMSoi": {
+                              "enabled": true,
+                              "fill": "#7FB3D5"
+                            },
+                            "AMSoi/zeZzP": {
+                              "content": "SB"
+                            },
+                            "my8kv": {
+                              "content": "sofiab"
+                            },
+                            "bCJbH": {
                               "content": "12m"
                             },
-                            "o6hbQ": {
+                            "BujgM": {
                               "content": "Thanks, looks right. @mlaine can you take a look at the engine part?"
+                            }
+                          }
+                        },
+                        {
+                          "id": "jh8mO",
+                          "type": "ref",
+                          "ref": "k6csA",
+                          "name": "Comment mlaine",
+                          "width": "fill_container",
+                          "descendants": {
+                            "AMSoi": {
+                              "enabled": true,
+                              "fill": "#C9A26B"
+                            },
+                            "AMSoi/zeZzP": {
+                              "content": "ML"
+                            },
+                            "my8kv": {
+                              "content": "mlaine"
+                            },
+                            "bCJbH": {
+                              "content": "2m"
+                            },
+                            "BujgM": {
+                              "content": "On it. The engine reads well; one question on the batch size, left in engine.ts."
                             }
                           }
                         }
                       ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "GPGnZ",
-                      "name": "flex",
-                      "width": "fill_container",
-                      "height": "fill_container"
                     },
                     {
                       "type": "frame",
@@ -297593,6 +297948,18 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "t4cZR",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Resize edge",
+                      "enabled": false,
+                      "fill": "$accent",
+                      "width": 2,
+                      "height": 1100
                     }
                   ]
                 },
@@ -353539,6 +353906,2618 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "TT4mn",
+          "name": "Group header",
+          "width": 1400,
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            40,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "iay7s",
+              "name": "Group title",
+              "fill": "$fg",
+              "content": "The conversation as cards",
+              "fontFamily": "$font",
+              "fontSize": 22,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "oxaXE",
+              "name": "Group note",
+              "fill": "$fg-2",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "The sidebar shows the description, reviews and comments with the pull request's own cards, in their narrow layout when the column is narrow, with the same ⋯ menu, the same sending and refused states and editing in place. Replies inside code threads stay flat. The column is resizable from its inner edge: 340 px by default and at least, kept on this device.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "DbUdM",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "S8Ol7",
+              "name": "Slot · CR120 · The conversation at 340 px, as cards",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RQaW2",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y6HQKD",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR120 · The conversation at 340 px, as cards",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pOJcx",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The same cards as the pull request's thread, in their narrow layout: no gutter, a 20 px avatar before the login, the age without the verb, the ⋯ at the end. The description folds at five lines with Show description. A review's summary is followed by one line for its threads, which here jumps to them in the diff (2 threads in files ↘). Your own comment is the last card; the composer stays at the foot.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eOOkK",
+                  "name": "CR120 · The conversation at 340 px, as cards",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MWxfh",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "XK9fX",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nGQM4",
+                          "name": "Review",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Gu3vC",
+                              "type": "ref",
+                              "ref": "Tt0Pa",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xPy8j": {
+                                  "icon": "rows-2"
+                                },
+                                "NPalc": {
+                                  "content": "Unified"
+                                },
+                                "GeDgn": {
+                                  "fill": "$bg-3"
+                                },
+                                "kEZim": {
+                                  "fill": "$fg"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VS0d9",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "p1ycW",
+                                  "name": "Left column",
+                                  "clip": true,
+                                  "width": 300,
+                                  "height": "fill_container",
+                                  "fill": "$bg",
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "right": 1
+                                  },
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "MwNPB",
+                                      "type": "ref",
+                                      "ref": "d1GzBA",
+                                      "name": "Stack",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "N0F0Mv",
+                                      "type": "ref",
+                                      "ref": "SgpvP",
+                                      "name": "File list",
+                                      "height": "fill_container",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "CjCVc",
+                                  "name": "Diff",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "mVbFn",
+                                      "name": "File engine.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "$border",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "H0q2DA",
+                                          "type": "ref",
+                                          "ref": "pAbDY",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "pKyDw": {
+                                              "enabled": true
+                                            },
+                                            "FPmJu": {
+                                              "content": "1 open · 1 outdated · 1 resolved"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "x7cBVW",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "1"
+                                            },
+                                            "AIddd": {
+                                              "content": "1"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { db } from '../db/client'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "G97ri",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "2"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { PendingStore } from './pending'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Yj2mq",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "2"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { Outbox } from './outbox'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "B1PGCz",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 3",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "3"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { replayQueue } from './queue'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "JgV20",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 4",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "3"
+                                            },
+                                            "AIddd": {
+                                              "content": "4"
+                                            },
+                                            "txzt7": {
+                                              "content": "import type { Workout } from '../api/types'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "lqiNX",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "4"
+                                            },
+                                            "AIddd": {
+                                              "content": "5"
+                                            },
+                                            "txzt7": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "ZscXn",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "5"
+                                            },
+                                            "txzt7": {
+                                              "content": "const MAX_BATCH = 20"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "CmNne",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 6",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "6"
+                                            },
+                                            "txzt7": {
+                                              "content": "const MAX_BATCH = 50"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "l7l8dZ",
+                                          "name": "Thread on line 6",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "VxCgA",
+                                              "type": "ref",
+                                              "ref": "oAPPV",
+                                              "name": "Thread",
+                                              "width": "fill_container"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "mXnFg",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 7",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "6"
+                                            },
+                                            "AIddd": {
+                                              "content": "7"
+                                            },
+                                            "txzt7": {
+                                              "content": "const RETRY_DELAY_MS = 2_000"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "mdVkW",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 8",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "7"
+                                            },
+                                            "AIddd": {
+                                              "content": "8"
+                                            },
+                                            "txzt7": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "DFZfg",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 9",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "8"
+                                            },
+                                            "AIddd": {
+                                              "content": "9"
+                                            },
+                                            "txzt7": {
+                                              "content": "export class SyncEngine {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "hsP62",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −9",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "9"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private pending = new PendingStore(db)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "FmPWE",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 10",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "10"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private outbox = new Outbox(db)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "TYMr6",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 11",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "10"
+                                            },
+                                            "AIddd": {
+                                              "content": "11"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private conflicts: Workout[] = []"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "wj1B5",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 12",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "11"
+                                            },
+                                            "AIddd": {
+                                              "content": "12"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "fOTZ9",
+                                          "type": "ref",
+                                          "ref": "tshOK",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "xGJGw": {
+                                              "content": "export class SyncEngine"
+                                            },
+                                            "F6fibT": {
+                                              "content": "26 lines"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "i2L0lg",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 39",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "38"
+                                            },
+                                            "AIddd": {
+                                              "content": "39"
+                                            },
+                                            "txzt7": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "RZ2He",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 40",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "39"
+                                            },
+                                            "AIddd": {
+                                              "content": "40"
+                                            },
+                                            "txzt7": {
+                                              "content": "    if (this.running) return"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Nr4b8",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 41",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "40"
+                                            },
+                                            "AIddd": {
+                                              "content": "41"
+                                            },
+                                            "txzt7": {
+                                              "content": "    this.running = true"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "H1jDj0",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −41",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "41"
+                                            },
+                                            "txzt7": {
+                                              "content": "    const items = await this.pending.all()"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "rT9Kp",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 42",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "42"
+                                            },
+                                            "txzt7": {
+                                              "content": "    const items = await this.outbox.take(MAX_BATCH)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "lT6l0",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "42"
+                                            },
+                                            "AIddd": {
+                                              "content": "43"
+                                            },
+                                            "txzt7": {
+                                              "content": "    try {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "X1axDz",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "43"
+                                            },
+                                            "txzt7": {
+                                              "content": "      for (const item of items) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "udoyz",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "44"
+                                            },
+                                            "txzt7": {
+                                              "content": "        await this.send(item)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "FqCBE",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "45"
+                                            },
+                                            "txzt7": {
+                                              "content": "      }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Qq17L",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "44"
+                                            },
+                                            "txzt7": {
+                                              "content": "      const result = await replayQueue(items, {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "s1C8o",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "45"
+                                            },
+                                            "txzt7": {
+                                              "content": "        send: (item) => this.send(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "z9ZBs",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 46",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "46"
+                                            },
+                                            "txzt7": {
+                                              "content": "        onConflict: (item) => this.conflicts.push(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "HiF8S",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "47"
+                                            },
+                                            "txzt7": {
+                                              "content": "      })"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "NalNh",
+                                          "name": "Thread on line 47",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "S3v3oK",
+                                              "type": "ref",
+                                              "ref": "ce2EO",
+                                              "name": "Thread",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "qrcqS": {
+                                                  "enabled": true
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "N2SDnF",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 48",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "48"
+                                            },
+                                            "txzt7": {
+                                              "content": "      await this.outbox.ack(result.sent)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "i2mx5C",
+                                          "name": "Thread on line 48",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "sgdwV",
+                                              "type": "ref",
+                                              "ref": "Ypl9I",
+                                              "name": "Thread",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "WFYVj/J1oko": {
+                                                  "fill": "#C9A26B"
+                                                },
+                                                "WFYVj/J1oko/zeZzP": {
+                                                  "content": "ML"
+                                                },
+                                                "WFYVj/m8e7t": {
+                                                  "content": "mlaine"
+                                                },
+                                                "WFYVj/LkH3H": {
+                                                  "content": "yesterday"
+                                                },
+                                                "WFYVj/o6hbQ": {
+                                                  "content": "If ack throws after a partial send, the next flush sends those items again. Is the endpoint idempotent?"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "Py4an",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 49",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "46"
+                                            },
+                                            "AIddd": {
+                                              "content": "49"
+                                            },
+                                            "txzt7": {
+                                              "content": "    } catch (error) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "LEZjU",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "47"
+                                            },
+                                            "txzt7": {
+                                              "content": "      setTimeout(() => this.flush(), RETRY_DELAY_MS)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "g3gyj",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 50",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "50"
+                                            },
+                                            "txzt7": {
+                                              "content": "      this.scheduleRetry(error)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "DhUqw",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 51",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "48"
+                                            },
+                                            "AIddd": {
+                                              "content": "51"
+                                            },
+                                            "txzt7": {
+                                              "content": "    } finally {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "aDV8s",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 52",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "49"
+                                            },
+                                            "AIddd": {
+                                              "content": "52"
+                                            },
+                                            "txzt7": {
+                                              "content": "      this.running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "l9pFl",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 53",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "50"
+                                            },
+                                            "AIddd": {
+                                              "content": "53"
+                                            },
+                                            "txzt7": {
+                                              "content": "    }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "lSvrV",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 54",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "51"
+                                            },
+                                            "AIddd": {
+                                              "content": "54"
+                                            },
+                                            "txzt7": {
+                                              "content": "  }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "o4Oxa8",
+                                          "type": "ref",
+                                          "ref": "YaZfl",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "F6fibT": {
+                                              "content": "64 lines below"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "iH1ts",
+                                  "type": "ref",
+                                  "ref": "sf3K6",
+                                  "name": "Conversation",
+                                  "height": "fill_container",
+                                  "enabled": true
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "E7Oj7",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "A4kcAD",
+              "name": "Slot · CR121 · Dragged to 560 px: the cards widen",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "y3UPu6",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "G5MJXI",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR121 · Dragged to 560 px: the cards widen",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ea2O4",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The column's inner edge lights up while hovered, dragged or focused, as the file list's does; dragging it, or ←/→ on the focused edge, sets the width from 340 px up, kept on this device. The cards follow the column, not the window: from 480 px of thread width they take the wide layout, the avatar back in the gutter and the verb back in the head. In the sidebar a review always ends with the jump to its threads in the diff, at either width, so the wide head drops its thread count.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Y0S98J",
+                  "name": "CR121 · Dragged to 560 px: the cards widen",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "z93Ypj",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "PjdAW",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "q2YKs",
+                          "name": "Review",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "MHH03",
+                              "type": "ref",
+                              "ref": "Tt0Pa",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "xPy8j": {
+                                  "icon": "rows-2"
+                                },
+                                "NPalc": {
+                                  "content": "Unified"
+                                },
+                                "GeDgn": {
+                                  "fill": "$bg-3"
+                                },
+                                "kEZim": {
+                                  "fill": "$fg"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wi5AM",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "bUVfF",
+                                  "name": "Left column",
+                                  "clip": true,
+                                  "width": 300,
+                                  "height": "fill_container",
+                                  "fill": "$bg",
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "right": 1
+                                  },
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "tlTnQ",
+                                      "type": "ref",
+                                      "ref": "d1GzBA",
+                                      "name": "Stack",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "j4GwVp",
+                                      "type": "ref",
+                                      "ref": "SgpvP",
+                                      "name": "File list",
+                                      "height": "fill_container",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "yqY3U",
+                                  "name": "Diff",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "bSrbB",
+                                      "name": "File engine.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "$border",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "DkxHd",
+                                          "type": "ref",
+                                          "ref": "pAbDY",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "pKyDw": {
+                                              "enabled": true
+                                            },
+                                            "FPmJu": {
+                                              "content": "1 open · 1 outdated · 1 resolved"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Nt5xT",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "1"
+                                            },
+                                            "AIddd": {
+                                              "content": "1"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { db } from '../db/client'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "dAqay",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "2"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { PendingStore } from './pending'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "YBMeK",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "2"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { Outbox } from './outbox'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "F4wei",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 3",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "3"
+                                            },
+                                            "txzt7": {
+                                              "content": "import { replayQueue } from './queue'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "zkMlJ",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 4",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "3"
+                                            },
+                                            "AIddd": {
+                                              "content": "4"
+                                            },
+                                            "txzt7": {
+                                              "content": "import type { Workout } from '../api/types'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "j93tN1",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "4"
+                                            },
+                                            "AIddd": {
+                                              "content": "5"
+                                            },
+                                            "txzt7": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Br8U9",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "5"
+                                            },
+                                            "txzt7": {
+                                              "content": "const MAX_BATCH = 20"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "W3ZqE",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 6",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "6"
+                                            },
+                                            "txzt7": {
+                                              "content": "const MAX_BATCH = 50"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Tkohd",
+                                          "name": "Thread on line 6",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "X6ZckG",
+                                              "type": "ref",
+                                              "ref": "oAPPV",
+                                              "name": "Thread",
+                                              "width": "fill_container"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "N7Pcca",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 7",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "6"
+                                            },
+                                            "AIddd": {
+                                              "content": "7"
+                                            },
+                                            "txzt7": {
+                                              "content": "const RETRY_DELAY_MS = 2_000"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "fTOYA",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 8",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "7"
+                                            },
+                                            "AIddd": {
+                                              "content": "8"
+                                            },
+                                            "txzt7": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "luERW",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 9",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "8"
+                                            },
+                                            "AIddd": {
+                                              "content": "9"
+                                            },
+                                            "txzt7": {
+                                              "content": "export class SyncEngine {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "s2Doh",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −9",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "9"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private pending = new PendingStore(db)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "C1aUiq",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 10",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "10"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private outbox = new Outbox(db)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "SrpWI",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 11",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "10"
+                                            },
+                                            "AIddd": {
+                                              "content": "11"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private conflicts: Workout[] = []"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "ePamc",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 12",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "11"
+                                            },
+                                            "AIddd": {
+                                              "content": "12"
+                                            },
+                                            "txzt7": {
+                                              "content": "  private running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "HS4LP",
+                                          "type": "ref",
+                                          "ref": "tshOK",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "xGJGw": {
+                                              "content": "export class SyncEngine"
+                                            },
+                                            "F6fibT": {
+                                              "content": "26 lines"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "qJjwM",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 39",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "38"
+                                            },
+                                            "AIddd": {
+                                              "content": "39"
+                                            },
+                                            "txzt7": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "YZ8RV",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 40",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "39"
+                                            },
+                                            "AIddd": {
+                                              "content": "40"
+                                            },
+                                            "txzt7": {
+                                              "content": "    if (this.running) return"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "xgAsS",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 41",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "40"
+                                            },
+                                            "AIddd": {
+                                              "content": "41"
+                                            },
+                                            "txzt7": {
+                                              "content": "    this.running = true"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "l90Bo",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −41",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "41"
+                                            },
+                                            "txzt7": {
+                                              "content": "    const items = await this.pending.all()"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "WfXq7",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 42",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "42"
+                                            },
+                                            "txzt7": {
+                                              "content": "    const items = await this.outbox.take(MAX_BATCH)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "ESDdE",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "42"
+                                            },
+                                            "AIddd": {
+                                              "content": "43"
+                                            },
+                                            "txzt7": {
+                                              "content": "    try {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "JHLi4",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "43"
+                                            },
+                                            "txzt7": {
+                                              "content": "      for (const item of items) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "v9tSz4",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "44"
+                                            },
+                                            "txzt7": {
+                                              "content": "        await this.send(item)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "g9Fi8j",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "45"
+                                            },
+                                            "txzt7": {
+                                              "content": "      }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "ZRbVF",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "44"
+                                            },
+                                            "txzt7": {
+                                              "content": "      const result = await replayQueue(items, {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "uDZpZ",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "45"
+                                            },
+                                            "txzt7": {
+                                              "content": "        send: (item) => this.send(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "JT5C5",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 46",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "46"
+                                            },
+                                            "txzt7": {
+                                              "content": "        onConflict: (item) => this.conflicts.push(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "jh7Vl",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "47"
+                                            },
+                                            "txzt7": {
+                                              "content": "      })"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "fpCUf",
+                                          "name": "Thread on line 47",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "z4XQcd",
+                                              "type": "ref",
+                                              "ref": "ce2EO",
+                                              "name": "Thread",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "qrcqS": {
+                                                  "enabled": true
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "HCb1K",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 48",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "48"
+                                            },
+                                            "txzt7": {
+                                              "content": "      await this.outbox.ack(result.sent)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Sls3h",
+                                          "name": "Thread on line 48",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            108
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "kPqFV",
+                                              "type": "ref",
+                                              "ref": "Ypl9I",
+                                              "name": "Thread",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "WFYVj/J1oko": {
+                                                  "fill": "#C9A26B"
+                                                },
+                                                "WFYVj/J1oko/zeZzP": {
+                                                  "content": "ML"
+                                                },
+                                                "WFYVj/m8e7t": {
+                                                  "content": "mlaine"
+                                                },
+                                                "WFYVj/LkH3H": {
+                                                  "content": "yesterday"
+                                                },
+                                                "WFYVj/o6hbQ": {
+                                                  "content": "If ack throws after a partial send, the next flush sends those items again. Is the endpoint idempotent?"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "vWkzm",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 49",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "46"
+                                            },
+                                            "AIddd": {
+                                              "content": "49"
+                                            },
+                                            "txzt7": {
+                                              "content": "    } catch (error) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "v6JuVy",
+                                          "type": "ref",
+                                          "ref": "D8ZJtP",
+                                          "name": "Line −47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "47"
+                                            },
+                                            "txzt7": {
+                                              "content": "      setTimeout(() => this.flush(), RETRY_DELAY_MS)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "MLctp",
+                                          "type": "ref",
+                                          "ref": "qDLAj",
+                                          "name": "Line 50",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "AIddd": {
+                                              "content": "50"
+                                            },
+                                            "txzt7": {
+                                              "content": "      this.scheduleRetry(error)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "LWulG",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 51",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "48"
+                                            },
+                                            "AIddd": {
+                                              "content": "51"
+                                            },
+                                            "txzt7": {
+                                              "content": "    } finally {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "c3BC8",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 52",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "49"
+                                            },
+                                            "AIddd": {
+                                              "content": "52"
+                                            },
+                                            "txzt7": {
+                                              "content": "      this.running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "fYaMh",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 53",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "50"
+                                            },
+                                            "AIddd": {
+                                              "content": "53"
+                                            },
+                                            "txzt7": {
+                                              "content": "    }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Reb2Q",
+                                          "type": "ref",
+                                          "ref": "UtCoP",
+                                          "name": "Line 54",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GP2HC": {
+                                              "content": "51"
+                                            },
+                                            "AIddd": {
+                                              "content": "54"
+                                            },
+                                            "txzt7": {
+                                              "content": "  }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "iOJx0",
+                                          "type": "ref",
+                                          "ref": "YaZfl",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "F6fibT": {
+                                              "content": "64 lines below"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "V20SS",
+                                  "type": "ref",
+                                  "ref": "sf3K6",
+                                  "name": "Conversation",
+                                  "height": "fill_container",
+                                  "enabled": true,
+                                  "width": 560,
+                                  "descendants": {
+                                    "DnlGf": {
+                                      "id": "LgXh6",
+                                      "type": "ref",
+                                      "ref": "bJhAe",
+                                      "name": "Description",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "a19SS": {
+                                          "fill": "#D97757"
+                                        },
+                                        "a19SS/zeZzP": {
+                                          "content": "CL"
+                                        },
+                                        "JNFhA": {
+                                          "content": "claude[bot]"
+                                        },
+                                        "MrJvR": {
+                                          "content": "opened 3h"
+                                        },
+                                        "r8lpm": {
+                                          "content": "Second of four in the offline sync stack. Edits made offline go into an outbox table and are replayed in order when the connection returns. The engine now takes batches of 50 and leaves conflicts to src/sync/conflicts.ts, which the next pull request of the stack fills in. Nothing changes for a user who stays online; the…"
+                                        },
+                                        "ZyhJ7": {
+                                          "enabled": true
+                                        }
+                                      }
+                                    },
+                                    "IGlMA": {
+                                      "id": "T7WFs",
+                                      "type": "ref",
+                                      "ref": "b1us0",
+                                      "name": "Review sofiab",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "N3CPrM": {
+                                          "content": "2h"
+                                        },
+                                        "TPIyI": {
+                                          "enabled": false
+                                        },
+                                        "ZCoSV": {
+                                          "content": "Two things in the queue, see the threads. The rest reads well."
+                                        },
+                                        "bOJMx": {
+                                          "enabled": true
+                                        },
+                                        "bOJMx/K4Fyb": {
+                                          "content": "2 threads in files"
+                                        },
+                                        "bOJMx/w7dsF": {
+                                          "enabled": true
+                                        },
+                                        "B8zor": {
+                                          "enabled": false
+                                        },
+                                        "HlBSD": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    "C1m96g": {
+                                      "id": "qYDYq",
+                                      "type": "ref",
+                                      "ref": "I99H9c",
+                                      "name": "Review dkim",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "N3CPrM": {
+                                          "content": "1h"
+                                        },
+                                        "TPIyI": {
+                                          "enabled": false
+                                        },
+                                        "ZCoSV": {
+                                          "content": "Fine by me once the retry test lands."
+                                        },
+                                        "bOJMx": {
+                                          "enabled": true
+                                        },
+                                        "bOJMx/K4Fyb": {
+                                          "content": "1 thread in files, resolved"
+                                        },
+                                        "bOJMx/w7dsF": {
+                                          "enabled": true
+                                        },
+                                        "B8zor": {
+                                          "enabled": false
+                                        },
+                                        "HlBSD": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    "LqooY": {
+                                      "id": "khqtg",
+                                      "type": "ref",
+                                      "ref": "WHy4W",
+                                      "name": "Comment claude",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "N5FNN": {
+                                          "fill": "#D97757"
+                                        },
+                                        "N5FNN/zeZzP": {
+                                          "content": "CL"
+                                        },
+                                        "my8kv": {
+                                          "content": "claude[bot]"
+                                        },
+                                        "bCJbH": {
+                                          "content": "40m"
+                                        },
+                                        "BujgM": {
+                                          "content": "Pushed 4a1c9e2: the outbox keeps both edits and queue.test.ts covers it. Waiting for your review before #1203."
+                                        }
+                                      }
+                                    },
+                                    "dZtrN": {
+                                      "id": "x6bz4W",
+                                      "type": "ref",
+                                      "ref": "WHy4W",
+                                      "name": "Comment sofiab",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "N5FNN": {
+                                          "fill": "#7FB3D5"
+                                        },
+                                        "N5FNN/zeZzP": {
+                                          "content": "SB"
+                                        },
+                                        "my8kv": {
+                                          "content": "sofiab"
+                                        },
+                                        "bCJbH": {
+                                          "content": "12m"
+                                        },
+                                        "BujgM": {
+                                          "content": "Thanks, looks right. @mlaine can you take a look at the engine part?"
+                                        }
+                                      }
+                                    },
+                                    "jh8mO": {
+                                      "id": "Kc212",
+                                      "type": "ref",
+                                      "ref": "WHy4W",
+                                      "name": "Comment mlaine",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "N5FNN": {
+                                          "fill": "#C9A26B"
+                                        },
+                                        "N5FNN/zeZzP": {
+                                          "content": "ML"
+                                        },
+                                        "my8kv": {
+                                          "content": "mlaine"
+                                        },
+                                        "bCJbH": {
+                                          "content": "2m"
+                                        },
+                                        "BujgM": {
+                                          "content": "On it. The engine reads well; one question on the batch size, left in engine.ts."
+                                        }
+                                      }
+                                    },
+                                    "t4cZR": {
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "H5YXk",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rlXs1",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "vVNwm",
+              "name": "Slot · CR122 · ⋯ on your comment: the same menu",
+              "width": 560,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wfdus",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BsUkq",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR122 · ⋯ on your comment: the same menu",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PYIvB",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The card's ⋯ opens the menu the pull request's thread has. Edit turns the card into the editor in place (CR123); Quote reply puts the quoted text into the sidebar's composer at the foot; Copy link copies the comment's GitHub link; Delete… asks first. Edit and Delete show on comments you may change, as on the thread. Scrolled to the latest comments.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cyUd6",
+                  "name": "CR122 · ⋯ on your comment: the same menu",
+                  "clip": true,
+                  "width": 340,
+                  "height": 560,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "l4URix",
+                      "type": "ref",
+                      "ref": "sf3K6",
+                      "name": "Conversation",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "descendants": {
+                        "DnlGf": {
+                          "enabled": false
+                        },
+                        "IGlMA": {
+                          "enabled": false
+                        },
+                        "C1m96g": {
+                          "enabled": false
+                        },
+                        "jh8mO/iO6W5": {
+                          "fill": "$fg"
+                        }
+                      }
+                    },
+                    {
+                      "id": "q8d2N",
+                      "type": "ref",
+                      "ref": "nS2AY",
+                      "name": "Comment menu",
+                      "layoutPosition": "absolute",
+                      "x": 100,
+                      "y": 365
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "F3O3m5",
+              "name": "Slot · CR123 · Editing your comment in place",
+              "width": 560,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ne8oo",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zOeiA",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR123 · Editing your comment in place",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "gC2pj",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Edit swaps the card for the editor where the card was, at the card's width: the formatting tools fold into ⋯ as in a narrow reply, Cancel (Esc) and Update comment (⌘↵) at its foot. The composer at the foot stays for a new comment. Esc with changes asks in place, as on the thread.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "j0LRr",
+                  "name": "CR123 · Editing your comment in place",
+                  "clip": true,
+                  "width": 340,
+                  "height": 600,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "C4oXZq",
+                      "type": "ref",
+                      "ref": "sf3K6",
+                      "name": "Conversation",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "descendants": {
+                        "DnlGf": {
+                          "enabled": false
+                        },
+                        "IGlMA": {
+                          "enabled": false
+                        },
+                        "C1m96g": {
+                          "enabled": false
+                        },
+                        "jh8mO": {
+                          "id": "ARVlX",
+                          "type": "ref",
+                          "ref": "DFWqj",
+                          "name": "Comment mlaine",
+                          "width": "fill_container",
+                          "descendants": {
+                            "pehHx/mnTU1": {
+                              "content": "On it. The engine reads well; one question on the batch size, left in engine.ts. Edit: the batch size is fine, 50 matches the server's limit."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YQPcq",
+              "name": "Slot · CR124 · Your comment sending, and one refused",
+              "width": 704,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GaxdF",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "a4e9tr",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR124 · Your comment sending, and one refused",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "y870pF",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Left: your comment shows at once, dimmed, with Sending… for its age, and the composer is empty again. Right: GitHub refused it, so the card stays with its text, Not sent in red in the head and a band saying why, with Discard and Retry; at 312 px the reason wraps to two lines and the buttons keep their size.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WLGn5",
+                  "name": "CR124 · Your comment sending, and one refused",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dCmqb",
+                      "name": "Sending",
+                      "clip": true,
+                      "width": 340,
+                      "height": 560,
+                      "fill": "$bg",
+                      "cornerRadius": 10,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "BuELD",
+                          "type": "ref",
+                          "ref": "sf3K6",
+                          "name": "Conversation",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "DnlGf": {
+                              "enabled": false
+                            },
+                            "IGlMA": {
+                              "enabled": false
+                            },
+                            "C1m96g": {
+                              "enabled": false
+                            },
+                            "jh8mO": {
+                              "id": "hkHBo",
+                              "type": "ref",
+                              "ref": "x9F0Cq",
+                              "name": "Comment mlaine",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BujgM": {
+                                  "content": "On it. The engine reads well; one question on the batch size, left in engine.ts."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sccQT",
+                      "name": "Refused",
+                      "clip": true,
+                      "width": 340,
+                      "height": 560,
+                      "fill": "$bg",
+                      "cornerRadius": 10,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "IBdPS",
+                          "type": "ref",
+                          "ref": "sf3K6",
+                          "name": "Conversation",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "DnlGf": {
+                              "enabled": false
+                            },
+                            "IGlMA": {
+                              "enabled": false
+                            },
+                            "C1m96g": {
+                              "enabled": false
+                            },
+                            "jh8mO": {
+                              "id": "zlgDx",
+                              "type": "ref",
+                              "ref": "ufFmh",
+                              "name": "Comment mlaine",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BujgM": {
+                                  "content": "On it. The engine reads well; one question on the batch size, left in engine.ts."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EgvuT",
+              "name": "Slot · CR125 · A very long login on a review",
+              "width": 560,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "vlegj",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "FF7qB",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR125 · A very long login on a review",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SXcSI",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "a-very-long-github-login-name-here requested changes. The login gives way first and ends in an ellipsis (the full login on hover); the verdict, the age and the ⋯ keep their place, so the head stays one line at 340 px. The same rule holds on a comment and on the description, where the Author chip drops before the login is cut.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qIKMX",
+                  "name": "CR125 · A very long login on a review",
+                  "clip": true,
+                  "width": 340,
+                  "height": 420,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "LL10W",
+                      "type": "ref",
+                      "ref": "sf3K6",
+                      "name": "Conversation",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "descendants": {
+                        "DnlGf": {
+                          "enabled": false
+                        },
+                        "IGlMA/HA3Ku": {
+                          "fill": "#B58FD6"
+                        },
+                        "IGlMA/HA3Ku/zeZzP": {
+                          "content": "AV"
+                        },
+                        "IGlMA/Bm9eC": {
+                          "content": "a-very-long-…"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ERZS9",
+              "name": "Slot · CR126 · The ⋯ of a review card",
+              "width": 520,
+              "fill": "#00000000",
+              "cornerRadius": 10,
+              "stroke": "#00000000",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CJtWG",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rMFa0",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR126 · The ⋯ of a review card",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "a71X5t",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A review card ends its head with ⋯ at every width, as a comment does, offering what GitHub allows on a submitted review: Quote reply and Copy link. No Delete (a submitted review cannot be deleted) and no Edit yet. The viewer's draft review has none: it is not on GitHub yet.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "QNbcB",
+                  "name": "CR126 · The ⋯ of a review card",
+                  "clip": true,
+                  "width": 340,
+                  "height": 420,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "DrdMB",
+                      "type": "ref",
+                      "ref": "sf3K6",
+                      "name": "Conversation",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "descendants": {
+                        "DnlGf": {
+                          "enabled": false
+                        },
+                        "IGlMA/e9fnT9": {
+                          "fill": "$fg"
+                        }
+                      }
+                    },
+                    {
+                      "id": "B0u0pp",
+                      "type": "ref",
+                      "ref": "nS2AY",
+                      "name": "Review menu",
+                      "layoutPosition": "absolute",
+                      "x": 100,
+                      "y": 87,
+                      "descendants": {
+                        "Tw3ZJ": {
+                          "enabled": false
+                        },
+                        "LQ9j0": {
+                          "id": "nuBCv",
+                          "type": "ref",
+                          "ref": "m8UXn",
+                          "name": "Quote reply",
+                          "width": "fill_container",
+                          "descendants": {
+                            "hslz2": {
+                              "icon": "text-quote",
+                              "fill": "$fg-2"
+                            },
+                            "pSlRN": {
+                              "content": "Quote reply"
+                            }
+                          }
+                        },
+                        "ztthR": {
+                          "enabled": false
+                        },
+                        "UUyle": {
+                          "enabled": false
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -353546,7 +356525,7 @@
       "type": "text",
       "id": "BnN7r",
       "x": 17870.178661448972,
-      "y": 62353.65929019575,
+      "y": 64623.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
       "fontFamily": "Inter",
@@ -353557,7 +356536,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 109053,
+      "y": 111323,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -356362,7 +359341,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 109053,
+      "y": 111323,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -356490,7 +359469,7 @@
       "type": "frame",
       "id": "O6Vuj8",
       "x": 24192,
-      "y": 59992,
+      "y": 62262,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -369225,7 +372204,7 @@
       "type": "frame",
       "id": "Sz7Bf",
       "x": 31444,
-      "y": 59992,
+      "y": 62262,
       "name": "App · Toasts",
       "fill": "#08090B",
       "layout": "vertical",
@@ -373194,7 +376173,7 @@
       "type": "frame",
       "id": "jy6bO",
       "x": 19680,
-      "y": 72749,
+      "y": 75019,
       "name": "App · Mobile",
       "fill": "#08090B",
       "layout": "vertical",
@@ -412768,7 +415747,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 109053,
+      "y": 111323,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",
@@ -418805,30 +421784,6 @@
                                   ]
                                 },
                                 {
-                                  "id": "pibll",
-                                  "type": "ref",
-                                  "ref": "WHy4W",
-                                  "name": "Comment · dkim",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "N5FNN": {
-                                      "fill": "#8FBF9F"
-                                    },
-                                    "N5FNN/zeZzP": {
-                                      "content": "DK"
-                                    },
-                                    "my8kv": {
-                                      "content": "dkim"
-                                    },
-                                    "bCJbH": {
-                                      "content": "3h"
-                                    },
-                                    "BujgM": {
-                                      "content": "Tried #15's branch: the parent survives the upgrade now, and a resync keeps it."
-                                    }
-                                  }
-                                },
-                                {
                                   "type": "frame",
                                   "id": "JHLMw",
                                   "name": "Indent",
@@ -418957,30 +421912,6 @@
                                     },
                                     "K9lUQx": {
                                       "content": "18m"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "MPqqL",
-                                  "type": "ref",
-                                  "ref": "WHy4W",
-                                  "name": "Comment · sofiab",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "N5FNN": {
-                                      "fill": "#7FB3D5"
-                                    },
-                                    "N5FNN/zeZzP": {
-                                      "content": "SB"
-                                    },
-                                    "my8kv": {
-                                      "content": "sofiab"
-                                    },
-                                    "bCJbH": {
-                                      "content": "5m"
-                                    },
-                                    "BujgM": {
-                                      "content": "Checked on today's Development build: the parent is still there after the upgrade. Thanks!"
                                     }
                                   }
                                 }

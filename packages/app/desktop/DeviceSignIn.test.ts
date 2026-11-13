@@ -1,13 +1,14 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
+import type { OAuthCredentials } from '@githq/github/oauth.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import type { PromiseWrapper } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { TokenVault } from '@/auth/TokenVault.js';
-import { createTestSession } from '@/testing/createTestSession.js';
+import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
 
 import type { DeviceSignInState } from './DeviceSignIn.js';
 import { DeviceSignIn } from './DeviceSignIn.js';
@@ -17,24 +18,35 @@ import { NativeBridge } from './NativeBridge.js';
 const CODE: DeviceCode = { userCode: 'WDJB-MJHT', verificationUri: 'https://github.com/login/device', expiresIn: 900 };
 const ALL_SCOPES = 'repo,project,read:org';
 
-test('a token with every scope githq asks for signs in and is kept', async () => {
+test('a token with every scope githq asks for signs in and is kept, with what renews it', async () => {
     const { signIn, auth, vault, native } = setup();
 
     await signIn.start();
     expect(signIn.state).toEqual({ kind: 'waiting', code: CODE });
     // `write:org` includes `read:org`.
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo, project, write:org' });
+    native.finishes[0]?.resolve({
+        token: 'gho_octocat',
+        scope: 'repo, project, write:org',
+        refreshToken: 'ghr_octocat',
+        expiresIn: 28_800,
+    });
 
     await waitUntil(() => auth.signedIn, { intervalMs: 1, timeoutMs: 1000 });
     expect(auth.viewer?.login).toBe('octocat');
-    expect(vault.read()).toBe('gho_octocat');
+    // The expiry counted from when GitHub issued the token.
+    const expected: OAuthCredentials = {
+        accessToken: 'gho_octocat',
+        refreshToken: 'ghr_octocat',
+        expiresAt: TEST_START + 28_800_000,
+    };
+    expect(vault.read()).toEqual(expected);
 });
 
 test('a token GitHub granted with fewer scopes than githq asks for is refused and never kept', async () => {
     const { signIn, auth, vault, native, operations } = setup();
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,read:org' });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,read:org', refreshToken: null, expiresIn: null });
 
     await waitUntil(() => signIn.state.kind !== 'waiting', { intervalMs: 1, timeoutMs: 1000 });
     const expected: DeviceSignInState = { kind: 'failed', failure: 'missingScopes' };
@@ -82,7 +94,7 @@ test('a token GitHub cannot be asked about fails the attempt', async () => {
     session.github.holdIf = () => Promise.reject(new TypeError('Failed to fetch'));
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
 
     await waitUntil(() => signIn.state.kind === 'failed', { intervalMs: 1, timeoutMs: 1000 });
     expect(signIn.state).toEqual({ kind: 'failed', failure: 'failed' });
@@ -97,7 +109,7 @@ test('a token arriving after the attempt was cancelled is dropped', async () => 
     signIn.cancel();
     expect(signIn.state).toEqual({ kind: 'idle' });
 
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await Bun.sleep(10);
 
     expect(signIn.state).toEqual({ kind: 'idle' });
@@ -112,7 +124,7 @@ test('cancelled while GitHub is saying whose the token is: nothing is kept', asy
     session.github.hold = github.promise;
 
     await signIn.start();
-    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[0]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await waitUntil(() => operations().length === 1, { intervalMs: 1, timeoutMs: 1000 });
     signIn.cancel();
     github.resolve();
@@ -134,7 +146,7 @@ test('a new code supersedes the attempt before it: what the old one answers is n
 
     expect(signIn.state).toEqual({ kind: 'waiting', code: CODE });
 
-    native.finishes[1]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES });
+    native.finishes[1]?.resolve({ token: 'gho_octocat', scope: ALL_SCOPES, refreshToken: null, expiresIn: null });
     await waitUntil(() => auth.signedIn, { intervalMs: 1, timeoutMs: 1000 });
     expect(auth.token).toBe('gho_octocat');
 });

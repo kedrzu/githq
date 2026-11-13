@@ -6,7 +6,7 @@ import { Link, Pencil, TextQuote, Trash2 } from 'lucide-vue-next';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
 
-import * as l from './ItemThreadMenu.loc.js';
+import * as l from './CommentMenu.loc.js';
 
 defineProps<{
   canEdit: boolean;
@@ -47,7 +47,7 @@ const t = useTranslate();
   <template v-if="canDelete">
     <MenuSeparator />
     <MenuItem
-      :class="css.itemThreadMenu_delete"
+      :class="css.commentMenu_delete"
       :icon="Trash2"
       @select="emit('delete')"
       >{{ t(l.delete) }}</MenuItem
@@ -56,7 +56,7 @@ const t = useTranslate();
 </template>
 
 <style lang="scss" module="css">
-.itemThreadMenu_delete {
+.commentMenu_delete {
   --menu-item-icon-color: #{$color-red};
 
   color: $color-red;
