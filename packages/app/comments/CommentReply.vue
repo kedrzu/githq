@@ -1,4 +1,4 @@
-<!-- What a comment and a review summary share: the avatar, who, how long ago with a link to it on GitHub, room for a verdict between them and for a note after, and whatever it says under that. -->
+<!-- A reply: a comment inside a code thread, wherever code threads show — the pull request's thread (`ItemThreadCodeThread`), code review's diff (`ReviewThreadBox`) — and a reply on its way (`ReviewSentComment`) (`Review / Comment`): the avatar, who, how long ago with a link to it on GitHub, room for a note after ("Pending", "Sending…"), and what it says under that. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -16,8 +16,6 @@ const props = defineProps<{
   /** On GitHub; none for one on its way there. */
   url?: string;
   createdAt: string;
-  /** A little more room under the head, as a review summary has. */
-  spaced?: boolean;
 }>();
 
 /** How often "12m" moves on. */
@@ -35,10 +33,9 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
       :src="author?.avatarUrl"
       decorative
     />
-    <div :class="[css.commentReply_body, spaced && css.commentReply_body_spaced]">
+    <div :class="css.commentReply_body">
       <p :class="css.commentReply_meta">
         <span :class="css.commentReply_author">{{ author?.login ?? t(l.ghost) }}</span>
-        <slot name="verdict" />
         <time
           v-if="url === undefined"
           :class="css.commentReply_age"
@@ -74,10 +71,6 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
   flex-direction: column;
   gap: 3px;
   min-width: 0;
-}
-
-.commentReply_body_spaced {
-  gap: $spacing-4;
 }
 
 .commentReply_meta {
