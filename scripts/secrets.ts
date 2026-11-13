@@ -15,7 +15,7 @@ const PROJECT_ID = '41fe22b4-53d3-4302-b97b-b4f601003c79';
 const KEYCHAIN_SUFFIX = 'githq';
 const CACHE_TTL_MS = 8 * 60 * 60 * 1000;
 
-/** Which OAuth App's secret to read: `dev` or `prod`. */
+/** Which secrets to read: the OAuth App's, `dev` or `prod`, or `stats` for the usage statistics script alone. */
 const GITHQ_ENV = defineEnvVariable('GITHQ_ENV', { default: 'dev' });
 
 /**
@@ -27,8 +27,16 @@ export const GithqSecrets = defineService({
     name: 'GithqSecrets',
     deps: { env: GITHQ_ENV },
     setup({ env }): SecretsMapping {
+        const store = cached(bitwarden({ project: PROJECT_ID, keychainSuffix: KEYCHAIN_SUFFIX }), {
+            ttl: CACHE_TTL_MS,
+        });
+        if (env === 'stats') {
+            // Its own environment: `secrets run` refuses to start with a mapped secret missing, so the token must
+            // not join `dev` or `prod`, where it would stop `bun run dev` and the release builds until it is stored.
+            return { store, secrets: { CLOUDFLARE_ANALYTICS_TOKEN: 'GITHQ_CLOUDFLARE_ANALYTICS_TOKEN_PROD' } };
+        }
         return {
-            store: cached(bitwarden({ project: PROJECT_ID, keychainSuffix: KEYCHAIN_SUFFIX }), { ttl: CACHE_TTL_MS }),
+            store,
             secrets: {
                 GITHUB_CLIENT_SECRET: `GITHQ_GITHUB_CLIENT_SECRET_${env.toUpperCase()}`,
                 // Production only, so that `bun run dev` never holds what signs updates and the app.
