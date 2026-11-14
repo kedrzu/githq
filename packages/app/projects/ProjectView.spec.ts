@@ -160,7 +160,7 @@ test('ES19: on the board a filter leaving nothing says what it hides, with the w
     const view = mount(SAMPLE_VIEW_BLOCKED, { grouping: 'field:F_status' });
     await userEvent.click(page.getByRole('button', { name: 'Board' }));
 
-    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Filtered down to zero' })).toBeVisible();
     await expect
         .element(page.getByText(/^Iteration\sis\s@current\sand\sLabel\sis\sblocked\shide\sall\s\d+\sitems\.$/u))
         .toBeVisible();
