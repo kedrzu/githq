@@ -99,3 +99,33 @@ of the recommended one. Changed: CH50 and CH51 deleted, a shared facts component
 
 Not drawn: the chosen variant on CH18, CH20, CH42, CH48 and `Commit details` (`CKaTw`) still waits for the owner's
 pick; the 11 passed checks unfolded; a commit with several failing checks (the list grows under Checks, one row each).
+
+## Round 3 · agent brief
+
+Asked (`.context/commit-view-brief-3.md`): in the branch and tag list (CH53) the pull request number blended with the
+branch name (both mono, the number barely greyer) and sat too far from its icon; the graph rows had the same loose gap.
+The owner suggested a small frame. Changed: the pull request mark became one shared chip used by the graph rows, the
+branch list rows and the details' facts; a new screen shows it at actual size and 2×.
+
+- [ ] Components · Commits › Atoms (`zeINb`): new `Commit / PR chip` (`O4txr`): 16 px tall, padding [0,4], gap 3,
+  radius 4, 1 px inner `$border` stroke; `PR state` icon 12 px (`lrpWJ`), `PR number` mono 11.5 `$fg-2` (`SbqSG`).
+  New `Commit / PR chip · hover` (`aOd0f`): stroke and number `$fg`. The chip is a link to the pull request.
+- [ ] Commit row (`EMjBX`): in `PR` (`RHE4I`) the icon `LVRNW` (13 px) and number `DR8rO` (gap 5) → a `PR chip`
+  instance (`S6abg`); `PR not known` (`VRxZq`) stays beside it, outside the chip. The CI mark stays where it was, after
+  the chip.
+- [ ] Ref list row (`Bcpzl`): the loose icon `kdsag` and number `tsytt` (mono 11, `$fg-dim`, row gap 8) → a `PR chip`
+  instance (`m381rf`), same place; the number is now `$fg-2` at 11.5. The row stays 26 px (the chip is the name box's
+  16 px). Reaches `Ref list row · selected` (`eVXEC`), `Ref list row · in a folder` (`lF1Ct`), both ref lists and
+  CH3, CH15–CH17, CH53.
+- [ ] Commit details / Facts (`NIaPG`): in the Pull request value (`KRVg7`) icon `rVBwa` and number `GhsD7` → a
+  `PR chip` instance (`K7V16F`); new hidden `No pull request` icon (`V4wIwL`, 13 px `$fg-3`) for a commit with none.
+  `…· checks passed, no pull request` (`REdEU`) hides the chip and shows that icon; `…· not known yet` (`CFnEm`) hides
+  the chip, the bar shows as before. Reaches CH55–CH58.
+- [x] Overrides of the 402 instances that pointed at the replaced nodes moved to the chip's paths (icon and number
+  overrides onto the chip's icon and number; icon and number both hidden → the chip hidden). Nothing to build.
+- [ ] App · Commits › `Row of screens · Folders` (`KLsDj`): new `CH59 · The pull request as a chip` (`Q8tHB`, slot
+  `iVq38`) after CH53: CH53's list at actual size (no tooltip; `login`'s chip hovered), CH54's seven graph rows at
+  actual size (the hovered row's chip hovered), two list rows and a graph row's end drawn at 2×, and notes.
+
+Not changed: `Item / Linked` (`MGnYu`, the issue's linked pull request card) keeps its loose number; it is not the
+commit view's mark.
