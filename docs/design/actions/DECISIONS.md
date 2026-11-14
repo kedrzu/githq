@@ -338,8 +338,19 @@ dispatch and cancel, which the owner left as proposed)
 nowhere to go, and other runs unfolded as a list inside the list. An item reuses Direction D's panel and full-screen
 switch, keeps the health overview of the list, and gives a workflow a place for its triggers and for starting it.
 
+**How it looks** (2026-11-14, owner after round 1 of the variants): the item has two columns, runs on the left and the
+workflow's details on the right (triggers, the refs that count, last success, typical duration, dispatch inputs).
+Narrower than Direction D's two-column width, the same content splits into the tabs Runs and Details; full screen is
+always two columns. Grouping the runs is an option of their toolbar (None, Status, Ref, Event, Day, Actor), not a
+layout. "Run workflow" works from the command menu in context: on the selected or open workflow directly, inside a
+repository among its workflows, elsewhere after picking the repository first, since names like Deploy repeat across
+repositories. The form for the inputs opens inside the command menu. The Run workflow button has no key.
+
 **Rejected.**
 
+- Runs grouped by ref as the only layout: grouping is an option instead.
+- Dispatch in a dialog: the command menu already holds the steps before the form.
+- Picking a workflow across all repositories by name: the same name repeats in many repositories.
 - GitHub's layout, workflows in a column beside one feed of runs: a second sidebar inside the tab, and it loses the
   health overview of all workflows at once.
 - Runs as the list, grouped by workflow: a workflow then has no place of its own for its triggers and dispatch.
