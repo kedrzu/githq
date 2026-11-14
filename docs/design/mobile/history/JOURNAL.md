@@ -101,3 +101,4 @@ Append-only. One line per decision, rejection or answer from the owner.
   the options); the Empty groups switch dropped (D46); writing is the desktop's full editor (D51). The thread follows the
   desktop's (D50, applying the review's rule). The summary — the desktop's blocks or the phone's D25 — the owner wants
   to see drawn: Variant A as on the desktop, Variant B a hybrid.
+- 2026-11-14 — Owner picked Variant A of the summary (MB260–MB263): the desktop's summary on a phone (D52), D25 retired.

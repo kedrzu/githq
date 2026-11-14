@@ -111697,7 +111697,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 121289,
+      "y": 126793,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -119818,7 +119818,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 121289,
+      "y": 126793,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -128177,7 +128177,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 121289,
+      "y": 126793,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -128810,7 +128810,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 121289,
+      "y": 126793,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -132095,7 +132095,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 121289,
+      "y": 126793,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -133945,7 +133945,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 121289,
+      "y": 126793,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -365918,7 +365918,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 121289,
+      "y": 126793,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -368723,7 +368723,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 121289,
+      "y": 126793,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -386678,98 +386678,6 @@
                 },
                 {
                   "type": "frame",
-                  "id": "BGx6I",
-                  "name": "Phone / Composer dock · typing",
-                  "reusable": true,
-                  "width": 390,
-                  "fill": "$bg-2",
-                  "stroke": "$border",
-                  "strokeWidth": {
-                    "top": 1
-                  },
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "FhcAm",
-                      "name": "Row",
-                      "width": "fill_container",
-                      "gap": 8,
-                      "padding": [
-                        7,
-                        10
-                      ],
-                      "alignItems": "end",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "p4XBwP",
-                          "name": "Comment box",
-                          "width": "fill_container",
-                          "fill": "$bg-3",
-                          "cornerRadius": 22,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 8,
-                          "padding": [
-                            10,
-                            8,
-                            10,
-                            16
-                          ],
-                          "alignItems": "end",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "FMtwR",
-                              "name": "Comment",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Same here on mobile. The series start is stored in local time",
-                              "lineHeight": 1.3,
-                              "fontFamily": "$font",
-                              "fontSize": 16,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "w5Xu6w",
-                              "name": "Send",
-                              "width": 30,
-                              "height": 30,
-                              "fill": "$accent",
-                              "cornerRadius": 15,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "wCr30",
-                                  "name": "Icon",
-                                  "width": 18,
-                                  "height": 18,
-                                  "icon": "arrow-up",
-                                  "library": "lucide",
-                                  "fill": "#0D1117"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "id": "fUJBd",
-                          "type": "ref",
-                          "ref": "aAEEs",
-                          "name": "Command",
-                          "enabled": false
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "pFppk",
                   "name": "Phone / Row",
                   "reusable": true,
@@ -388577,7 +388485,10 @@
                       "width": "fill_container",
                       "descendants": {
                         "b73Ct": {
-                          "fill": "$sel"
+                          "fill": "$sel",
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner"
                         },
                         "d9xbi/TZbKU": {
                           "icon": "circle-dot",
@@ -390528,159 +390439,6 @@
                 },
                 {
                   "type": "frame",
-                  "id": "Qidd9",
-                  "name": "Phone / Comment",
-                  "reusable": true,
-                  "width": 390,
-                  "gap": 10,
-                  "padding": [
-                    10,
-                    16
-                  ],
-                  "children": [
-                    {
-                      "id": "jVKSR",
-                      "type": "ref",
-                      "ref": "of5Pp",
-                      "name": "Avatar"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "VmAdu",
-                      "name": "Content",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "kc4Lk",
-                          "name": "Head",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "I5nFEL",
-                              "name": "Author",
-                              "fill": "$fg",
-                              "content": "sbrandt",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "T0Xvi",
-                              "name": "When",
-                              "fill": "$fg-dim",
-                              "content": "2h",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "zH5Wz",
-                          "name": "Text",
-                          "fill": "$fg",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Same on mobile. Looks like the series start is stored in local time.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 14.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "i4d4tt",
-                  "name": "Phone / Timeline commit",
-                  "reusable": true,
-                  "width": 390,
-                  "gap": 10,
-                  "padding": [
-                    10,
-                    16
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "uVWKG",
-                      "name": "Icon",
-                      "width": 16,
-                      "height": 16,
-                      "icon": "git-commit-horizontal",
-                      "library": "lucide",
-                      "fill": "$fg-2"
-                    },
-                    {
-                      "type": "text",
-                      "id": "Q3bBPC",
-                      "name": "Who",
-                      "fill": "$fg-2",
-                      "content": "mlaine pushed",
-                      "fontFamily": "$font",
-                      "fontSize": 13.5,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "LXxjn",
-                      "name": "Link",
-                      "gap": 3,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "RcKS1",
-                          "name": "Hash",
-                          "fill": "$accent",
-                          "content": "a3f91c2",
-                          "fontFamily": "$mono",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "icon",
-                          "id": "FSFyT",
-                          "name": "Leaves for GitHub",
-                          "width": 14,
-                          "height": 14,
-                          "icon": "arrow-up-right",
-                          "library": "lucide",
-                          "fill": "$accent"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "VTcct",
-                      "name": "spacer",
-                      "width": "fill_container",
-                      "height": 1
-                    },
-                    {
-                      "type": "text",
-                      "id": "A72fOx",
-                      "name": "When",
-                      "fill": "$fg-dim",
-                      "content": "40m",
-                      "fontFamily": "$font",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "zG5m0",
                   "name": "Phone / Item head",
                   "reusable": true,
@@ -390708,79 +390466,6 @@
                       "ref": "t0H0HA",
                       "name": "Title",
                       "width": "fill_container"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "KJnIN",
-                  "name": "Phone / Item / Timeline",
-                  "reusable": true,
-                  "width": 390,
-                  "layout": "vertical",
-                  "padding": [
-                    6,
-                    0
-                  ],
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "xPQWA",
-                      "name": "Section head",
-                      "width": "fill_container",
-                      "padding": [
-                        10,
-                        16,
-                        4,
-                        16
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Z8AUkG",
-                          "name": "Activity",
-                          "fill": "$fg-2",
-                          "content": "Activity",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "xlNO2",
-                      "type": "ref",
-                      "ref": "Qidd9",
-                      "name": "Comment sbrandt",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "X1WD0",
-                      "type": "ref",
-                      "ref": "i4d4tt",
-                      "name": "Commit",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "tkOZd",
-                      "type": "ref",
-                      "ref": "Qidd9",
-                      "name": "Comment mlaine",
-                      "width": "fill_container",
-                      "descendants": {
-                        "jVKSR/zeZzP": {
-                          "content": "ML"
-                        },
-                        "I5nFEL": {
-                          "content": "mlaine"
-                        },
-                        "T0Xvi": {
-                          "content": "20m"
-                        },
-                        "zH5Wz": {
-                          "content": "Opened #1205 — converting at creation and migrating existing series."
-                        }
-                      }
                     }
                   ]
                 }
@@ -394799,7 +394484,7 @@
                       "reusable": true,
                       "ref": "S2UMc",
                       "name": "Phone / Row / Selectable · selected",
-                      "fill": "$sel",
+                      "fill": [],
                       "descendants": {
                         "atqWM": {
                           "fill": "$accent",
@@ -394807,6 +394492,12 @@
                         },
                         "kpFMd": {
                           "enabled": true
+                        },
+                        "A70Zi/b73Ct": {
+                          "fill": "$sel",
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner"
                         }
                       }
                     },
@@ -402600,6 +402291,21 @@
                       }
                     },
                     {
+                      "id": "w6BzvV",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "DFWqj",
+                      "name": "Activity / Comment · narrow, editing · phone",
+                      "descendants": {
+                        "pehHx/wYaxO/ZBaFq": {
+                          "enabled": false
+                        },
+                        "pehHx/gAIL0/ZBaFq": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
                       "id": "Kt0hV",
                       "type": "ref",
                       "reusable": true,
@@ -402901,6 +402607,84 @@
                                   "content": "Same here on mobile. The series start is stored in local time, so anything created before the clocks changed is an hour off. I'd convert at creation and migrate the existing series in one go."
                                 }
                               }
+                            },
+                            {
+                              "id": "gC1B0",
+                              "type": "ref",
+                              "ref": "W3NY8",
+                              "name": "Event · closed",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "circle-check",
+                                  "fill": "$purple"
+                                },
+                                "smi7i": {
+                                  "fill": "#C9A26B",
+                                  "enabled": true
+                                },
+                                "smi7i/zeZzP": {
+                                  "content": "ML"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "closed this as completed"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "tDaJo": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": ""
+                                },
+                                "K9lUQx": {
+                                  "content": "5m"
+                                }
+                              }
+                            },
+                            {
+                              "id": "iWOgf",
+                              "type": "ref",
+                              "ref": "W3NY8",
+                              "name": "Event · locked",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "lock",
+                                  "fill": "$fg-2"
+                                },
+                                "smi7i": {
+                                  "fill": "#7FB3D5",
+                                  "enabled": true
+                                },
+                                "smi7i/zeZzP": {
+                                  "content": "DK"
+                                },
+                                "Yl9EU": {
+                                  "content": "dkim"
+                                },
+                                "xlFny": {
+                                  "content": "locked this conversation"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "tDaJo": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": ""
+                                },
+                                "K9lUQx": {
+                                  "content": "5m"
+                                }
+                              }
                             }
                           ]
                         }
@@ -403078,6 +402862,45 @@
                                 },
                                 "BujgM": {
                                   "content": "Same on mobile. Looks like the series start is stored in local time."
+                                }
+                              }
+                            },
+                            {
+                              "id": "RHsSB",
+                              "type": "ref",
+                              "ref": "W3NY8",
+                              "name": "Event · merged",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "git-merge",
+                                  "fill": "$purple"
+                                },
+                                "smi7i": {
+                                  "fill": "#C9A26B",
+                                  "enabled": true
+                                },
+                                "smi7i/zeZzP": {
+                                  "content": "ML"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "merged"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "tDaJo": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": "into main"
+                                },
+                                "K9lUQx": {
+                                  "content": "2m"
                                 }
                               }
                             }
@@ -403512,9 +403335,9 @@
                       "name": "Phone / Thread · editing",
                       "descendants": {
                         "S3mTe": {
-                          "id": "ODH8P",
+                          "id": "EXeku",
                           "type": "ref",
-                          "ref": "DFWqj",
+                          "ref": "w6BzvV",
                           "name": "Comment · mlaine, editing",
                           "width": "fill_container",
                           "descendants": {
@@ -403812,6 +403635,9 @@
                                 "B8zor/GPAiR/zeZzP": {
                                   "content": "ML"
                                 },
+                                "B8zor/i8NWhP": {
+                                  "enabled": false
+                                },
                                 "HlBSD": {
                                   "enabled": false
                                 }
@@ -403868,6 +403694,888 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "id": "jpEl1",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "ShZ5Q",
+                      "name": "Phone / Thread · closed",
+                      "descendants": {
+                        "hpa2i": {
+                          "height": 466
+                        },
+                        "gC1B0": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "f3AG7G",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "ShZ5Q",
+                      "name": "Phone / Thread · locked",
+                      "descendants": {
+                        "hpa2i": {
+                          "height": 466
+                        },
+                        "iWOgf": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "Zg7Cj",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "S2bNY",
+                      "name": "Phone / Thread · merged",
+                      "descendants": {
+                        "I3nyef": {
+                          "height": 386
+                        },
+                        "RHsSB": {
+                          "enabled": true
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "O1nNc",
+              "name": "Writing",
+              "layout": "vertical",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wOyiw",
+                  "name": "Writing title",
+                  "fill": "$fg-dim",
+                  "content": "Writing — the desktop's composer on a phone (D51): actions, text, then Write / Preview and the folded tools just above the keyboard",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "WSlci",
+                  "name": "Composer docks",
+                  "gap": 32,
+                  "padding": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BGx6I",
+                      "name": "Phone / Composer dock · typing",
+                      "reusable": true,
+                      "width": 390,
+                      "fill": "$bg-2",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "a5rL6",
+                          "name": "Actions",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "padding": [
+                            8,
+                            10,
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "kLlnA",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "xFuJJ",
+                              "type": "ref",
+                              "ref": "L4s15U",
+                              "name": "Close",
+                              "descendants": {
+                                "cJk7E": {
+                                  "content": "Close with comment"
+                                },
+                                "VCfdM": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "skQ6F",
+                              "type": "ref",
+                              "ref": "t0PlX5",
+                              "name": "Comment",
+                              "descendants": {
+                                "ZBaFq": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "X9pGmy",
+                          "name": "Text area",
+                          "width": "fill_container",
+                          "fill": "$bg",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "layout": "vertical",
+                          "padding": [
+                            12,
+                            16,
+                            14,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dQ6zQ",
+                              "name": "Text",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Same here on mobile. The series start is stored in local time",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WHjem",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Rendered",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "layout": "vertical",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "CrvOM",
+                                  "name": "Paragraph 1",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Same here on mobile. The series start is stored in local time, so anything created before the clocks changed is an hour off.",
+                                  "lineHeight": 1.4,
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "K0VSnS",
+                                  "name": "Paragraph 2",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "I'd convert at creation and migrate the existing series in one go:",
+                                  "lineHeight": 1.4,
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "KWYMG",
+                                  "name": "Paragraph 3",
+                                  "gap": 5,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "M4tDR4",
+                                      "name": "Reference",
+                                      "fill": "$accent",
+                                      "content": "#1205",
+                                      "lineHeight": 1.4,
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "k9AJyE",
+                                      "name": "Text",
+                                      "fill": "$fg",
+                                      "content": "does both.",
+                                      "lineHeight": 1.4,
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "syXj3",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "height": 44,
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            6,
+                            6,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "u4YcNf",
+                              "name": "Write",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "cornerRadius": [
+                                0,
+                                0,
+                                6,
+                                6
+                              ],
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "right": 1,
+                                "bottom": 1,
+                                "left": 1
+                              },
+                              "padding": [
+                                0,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FxLu7",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Write",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "H3wIpM",
+                              "name": "Preview",
+                              "height": "fill_container",
+                              "fill": "#00000000",
+                              "cornerRadius": [
+                                0,
+                                0,
+                                6,
+                                6
+                              ],
+                              "stroke": "#00000000",
+                              "strokeWidth": {
+                                "right": 1,
+                                "bottom": 1,
+                                "left": 1
+                              },
+                              "padding": [
+                                0,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "NB9Nz",
+                                  "name": "Label",
+                                  "fill": "$fg-dim",
+                                  "content": "Preview",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fg600",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lyqOI",
+                              "name": "Tools",
+                              "height": "fill_container",
+                              "padding": [
+                                0,
+                                6
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "t5hvVi",
+                                  "type": "ref",
+                                  "ref": "xvz0F",
+                                  "name": "Format"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "JdImD",
+                          "type": "ref",
+                          "ref": "n6xuXi",
+                          "name": "Home indicator",
+                          "enabled": false,
+                          "width": "fill_container(0)"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "YJ5LK",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "BGx6I",
+                      "name": "Phone / Composer dock · empty",
+                      "descendants": {
+                        "xFuJJ/cJk7E": {
+                          "content": "Close issue"
+                        },
+                        "skQ6F": {
+                          "opacity": 0.45
+                        },
+                        "dQ6zQ": {
+                          "fill": "$fg-dim",
+                          "content": "Leave a comment"
+                        }
+                      }
+                    },
+                    {
+                      "id": "NCvab",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "BGx6I",
+                      "name": "Phone / Composer dock · preview",
+                      "descendants": {
+                        "dQ6zQ": {
+                          "enabled": false
+                        },
+                        "WHjem": {
+                          "enabled": true
+                        },
+                        "u4YcNf": {
+                          "fill": "#00000000",
+                          "stroke": "#00000000"
+                        },
+                        "FxLu7": {
+                          "fill": "$fg-dim"
+                        },
+                        "H3wIpM": {
+                          "fill": "$bg",
+                          "stroke": "$border"
+                        },
+                        "NB9Nz": {
+                          "fill": "$fg"
+                        },
+                        "lyqOI": {
+                          "enabled": false
+                        },
+                        "JdImD": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "s9Gv7y",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "BGx6I",
+                      "name": "Phone / Composer dock · tools open",
+                      "descendants": {
+                        "t5hvVi/DLIm0": {
+                          "id": "sO2bN",
+                          "type": "ref",
+                          "ref": "KYOL3",
+                          "name": "More tools"
+                        }
+                      }
+                    },
+                    {
+                      "id": "pRXnP",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "BGx6I",
+                      "name": "Phone / Composer dock · a menu above the keyboard",
+                      "descendants": {
+                        "dQ6zQ": {
+                          "content": "Same here on mobile. @s"
+                        },
+                        "syXj3": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "UuizA",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "YJ5LK",
+                      "name": "Phone / Composer dock · closed issue",
+                      "descendants": {
+                        "xFuJJ": {
+                          "id": "lZsdF",
+                          "type": "ref",
+                          "ref": "TH5d7",
+                          "name": "Reopen",
+                          "descendants": {
+                            "Js7vW": {
+                              "icon": "circle-dot",
+                              "fill": "$green"
+                            },
+                            "hqldH": {
+                              "content": "Reopen issue"
+                            },
+                            "ZBaFq": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "id": "tnhAD",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "YJ5LK",
+                      "name": "Phone / Composer dock · pull request",
+                      "descendants": {
+                        "xFuJJ": {
+                          "id": "T4K5D8",
+                          "type": "ref",
+                          "ref": "TH5d7",
+                          "name": "Close",
+                          "descendants": {
+                            "Js7vW": {
+                              "icon": "git-pull-request-closed",
+                              "fill": "$red"
+                            },
+                            "hqldH": {
+                              "content": "Close pull request"
+                            },
+                            "ZBaFq": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "id": "wmgjy",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "YJ5LK",
+                      "name": "Phone / Composer dock · merged",
+                      "descendants": {
+                        "xFuJJ": {
+                          "enabled": false
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "d9uBJ",
+                  "name": "Menus and the locked line",
+                  "gap": 32,
+                  "padding": 8,
+                  "children": [
+                    {
+                      "id": "cFbzw",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "gf3JG",
+                      "name": "Phone / Menu / Editor tools",
+                      "descendants": {
+                        "I5kQbM": {
+                          "content": "More tools"
+                        },
+                        "e0cU1": {
+                          "content": "fitloop/webapp#1187"
+                        },
+                        "OHhrI": {
+                          "enabled": false
+                        },
+                        "lV2f9/JVDhZ": {
+                          "icon": "list",
+                          "fill": "$fg-2"
+                        },
+                        "lV2f9/bZUUX": {
+                          "content": "Bulleted list"
+                        },
+                        "lV2f9/tPamw": {
+                          "enabled": false
+                        },
+                        "lV2f9/s255dF": {
+                          "enabled": false
+                        },
+                        "lV2f9/wuwm0": {
+                          "enabled": false
+                        },
+                        "hPfRK/JVDhZ": {
+                          "icon": "list-ordered",
+                          "fill": "$fg-2"
+                        },
+                        "hPfRK/bZUUX": {
+                          "content": "Numbered list"
+                        },
+                        "hPfRK/tPamw": {
+                          "enabled": false
+                        },
+                        "hPfRK/s255dF": {
+                          "enabled": false
+                        },
+                        "hPfRK/wuwm0": {
+                          "enabled": false
+                        },
+                        "F9lUJ": {
+                          "enabled": true
+                        },
+                        "oD4ll/JVDhZ": {
+                          "icon": "list-checks",
+                          "fill": "$fg-2"
+                        },
+                        "oD4ll/bZUUX": {
+                          "content": "Task list"
+                        },
+                        "oD4ll/tPamw": {
+                          "enabled": false
+                        },
+                        "oD4ll/s255dF": {
+                          "enabled": false
+                        },
+                        "oD4ll/wuwm0": {
+                          "enabled": false
+                        },
+                        "aWhXG": {
+                          "enabled": true
+                        },
+                        "e16Wg/JVDhZ": {
+                          "icon": "text-quote",
+                          "fill": "$fg-2"
+                        },
+                        "e16Wg/bZUUX": {
+                          "content": "Quote"
+                        },
+                        "e16Wg/tPamw": {
+                          "enabled": false
+                        },
+                        "e16Wg/s255dF": {
+                          "enabled": false
+                        },
+                        "e16Wg/wuwm0": {
+                          "enabled": false
+                        },
+                        "HMUSU": {
+                          "enabled": true
+                        },
+                        "pedSs": {
+                          "enabled": true
+                        },
+                        "pedSs/CYCl2": {
+                          "content": "Insert"
+                        },
+                        "Ce6pf/JVDhZ": {
+                          "icon": "at-sign",
+                          "fill": "$fg-2"
+                        },
+                        "Ce6pf/bZUUX": {
+                          "content": "Mention someone"
+                        },
+                        "Ce6pf/tPamw": {
+                          "enabled": false
+                        },
+                        "Ce6pf/s255dF": {
+                          "enabled": false
+                        },
+                        "Ce6pf/wuwm0": {
+                          "enabled": false
+                        },
+                        "BkAxA": {
+                          "enabled": true
+                        },
+                        "iA6Ii/JVDhZ": {
+                          "icon": "hash",
+                          "fill": "$fg-2"
+                        },
+                        "iA6Ii/bZUUX": {
+                          "content": "Reference an issue or pull request"
+                        },
+                        "iA6Ii/tPamw": {
+                          "enabled": false
+                        },
+                        "iA6Ii/s255dF": {
+                          "enabled": false
+                        },
+                        "iA6Ii/wuwm0": {
+                          "enabled": false
+                        },
+                        "JPkVG": {
+                          "enabled": false
+                        },
+                        "qR3OK": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "LkBKK",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "gf3JG",
+                      "name": "Phone / Menu / Mention",
+                      "descendants": {
+                        "I5kQbM": {
+                          "content": "People"
+                        },
+                        "e0cU1": {
+                          "content": "@s"
+                        },
+                        "OHhrI": {
+                          "enabled": false
+                        },
+                        "lV2f9/JVDhZ": {
+                          "icon": "circle-user",
+                          "fill": "$fg-2"
+                        },
+                        "lV2f9/bZUUX": {
+                          "content": "sbrandt"
+                        },
+                        "lV2f9/tPamw": {
+                          "enabled": false
+                        },
+                        "lV2f9/s255dF": {
+                          "enabled": true,
+                          "content": "in this thread"
+                        },
+                        "lV2f9/wuwm0": {
+                          "enabled": false
+                        },
+                        "hPfRK/JVDhZ": {
+                          "icon": "circle-user",
+                          "fill": "$fg-2"
+                        },
+                        "hPfRK/bZUUX": {
+                          "content": "sanders"
+                        },
+                        "hPfRK/tPamw": {
+                          "enabled": false
+                        },
+                        "hPfRK/s255dF": {
+                          "enabled": false
+                        },
+                        "hPfRK/wuwm0": {
+                          "enabled": false
+                        },
+                        "F9lUJ": {
+                          "enabled": true
+                        },
+                        "oD4ll/JVDhZ": {
+                          "icon": "circle-user",
+                          "fill": "$fg-2"
+                        },
+                        "oD4ll/bZUUX": {
+                          "content": "sofiab"
+                        },
+                        "oD4ll/tPamw": {
+                          "enabled": false
+                        },
+                        "oD4ll/s255dF": {
+                          "enabled": false
+                        },
+                        "oD4ll/wuwm0": {
+                          "enabled": false
+                        },
+                        "aWhXG": {
+                          "enabled": false
+                        },
+                        "HMUSU": {
+                          "enabled": false
+                        },
+                        "BkAxA": {
+                          "enabled": false
+                        },
+                        "JPkVG": {
+                          "enabled": false
+                        },
+                        "qR3OK": {
+                          "enabled": false
+                        },
+                        "zIojp": {
+                          "enabled": true
+                        },
+                        "FKWPh": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "d3Q0Y3",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "gf3JG",
+                      "name": "Phone / Menu / Reference",
+                      "descendants": {
+                        "I5kQbM": {
+                          "content": "Issues and pull requests"
+                        },
+                        "e0cU1": {
+                          "content": "#12 · fitloop/webapp"
+                        },
+                        "OHhrI": {
+                          "enabled": false
+                        },
+                        "lV2f9/JVDhZ": {
+                          "icon": "git-pull-request",
+                          "fill": "$green"
+                        },
+                        "lV2f9/bZUUX": {
+                          "content": "Store series start in studio time"
+                        },
+                        "lV2f9/tPamw": {
+                          "enabled": false
+                        },
+                        "lV2f9/s255dF": {
+                          "enabled": true,
+                          "content": "#1205"
+                        },
+                        "lV2f9/wuwm0": {
+                          "enabled": false
+                        },
+                        "hPfRK/JVDhZ": {
+                          "icon": "git-pull-request-draft",
+                          "fill": "$fg-2"
+                        },
+                        "hPfRK/bZUUX": {
+                          "content": "Show the series timezone"
+                        },
+                        "hPfRK/tPamw": {
+                          "enabled": false
+                        },
+                        "hPfRK/s255dF": {
+                          "enabled": true,
+                          "content": "#1209"
+                        },
+                        "hPfRK/wuwm0": {
+                          "enabled": false
+                        },
+                        "F9lUJ": {
+                          "enabled": true
+                        },
+                        "oD4ll/JVDhZ": {
+                          "icon": "git-pull-request",
+                          "fill": "$green"
+                        },
+                        "oD4ll/bZUUX": {
+                          "content": "Bump payment SDK to v12"
+                        },
+                        "oD4ll/tPamw": {
+                          "enabled": false
+                        },
+                        "oD4ll/s255dF": {
+                          "enabled": true,
+                          "content": "#1201"
+                        },
+                        "oD4ll/wuwm0": {
+                          "enabled": false
+                        },
+                        "aWhXG": {
+                          "enabled": true
+                        },
+                        "e16Wg/JVDhZ": {
+                          "icon": "circle-check",
+                          "fill": "$purple"
+                        },
+                        "e16Wg/bZUUX": {
+                          "content": "Week view skips Sundays"
+                        },
+                        "e16Wg/tPamw": {
+                          "enabled": false
+                        },
+                        "e16Wg/s255dF": {
+                          "enabled": true,
+                          "content": "#1190"
+                        },
+                        "e16Wg/wuwm0": {
+                          "enabled": false
+                        },
+                        "HMUSU": {
+                          "enabled": false
+                        },
+                        "BkAxA": {
+                          "enabled": false
+                        },
+                        "JPkVG": {
+                          "enabled": false
+                        },
+                        "qR3OK": {
+                          "enabled": false
+                        },
+                        "zIojp": {
+                          "enabled": true
+                        },
+                        "FKWPh": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "Xm35X",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "D7Os7W",
+                      "name": "Phone / Command line dock · read-only",
+                      "descendants": {
+                        "djYER": {
+                          "id": "dDuI3",
+                          "type": "ref",
+                          "ref": "fBQzF",
+                          "name": "Locked",
+                          "width": "fill_container",
+                          "descendants": {
+                            "O1UDR": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      }
                     }
                   ]
                 }
@@ -407925,7 +408633,7 @@
                           "fill": "$fg-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Tapping the box raises the keyboard and the button goes. The box takes the whole width: about 52 px more per line, on the screen where width is scarcest.",
+                          "content": "Tapping the box raises the keyboard and grows it into the desktop's composer; ⌘ steps aside (D18). Close with comment and Comment sit on top, the text below them, and Write, Preview and the formatting tools folded to ⋯ just above the keyboard (D51).",
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 13,
@@ -407996,12 +408704,7 @@
                           "type": "ref",
                           "ref": "BGx6I",
                           "name": "Dock",
-                          "width": "fill_container",
-                          "descendants": {
-                            "fUJBd": {
-                              "enabled": false
-                            }
-                          }
+                          "width": "fill_container"
                         },
                         {
                           "id": "rIaQD",
@@ -408048,7 +408751,7 @@
                           "fill": "$fg-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "The box grows upwards over the timeline, never taking the top bar. Send stays bottom right, in the spot the button had, so the thumb's place keeps one meaning at a time.",
+                          "content": "The text grows upwards over the thread, never taking the top bar. Write, Preview and the tools stay pinned above the keyboard, and Comment stays at the composer's top right.",
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 13,
@@ -408121,11 +408824,8 @@
                           "name": "Dock",
                           "width": "fill_container",
                           "descendants": {
-                            "FMtwR": {
+                            "dQ6zQ": {
                               "content": "Same here on mobile. The series start is stored in local time, so anything created before the clocks changed is an hour off. I'd convert at creation and migrate the existing series in one go."
-                            },
-                            "fUJBd": {
-                              "enabled": false
                             }
                           }
                         },
@@ -409522,7 +410222,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "Tapping the comment box: the box grows with the text above the keyboard, ⌘ steps aside (D18), and the item scrolls so its last comment stays in view above the box.",
+                              "content": "Tapping the comment box: it grows into the desktop's composer above the keyboard, ⌘ steps aside (D18), and the item scrolls so its last comment stays in view above it. With text written, closing reads Close with comment, as on the desktop.",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -409595,7 +410295,7 @@
                               "name": "Dock",
                               "width": "fill_container",
                               "descendants": {
-                                "FMtwR": {
+                                "dQ6zQ": {
                                   "content": "Same here on mobile. The series start is stored in local time, so anything created before the clocks changed is an hour off. I'd convert at creation and migrate the existing series in one go."
                                 }
                               }
@@ -409829,6 +410529,12 @@
                               "descendants": {
                                 "hbmPR": {
                                   "fill": "$sel"
+                                },
+                                "hbmPR/b73Ct": {
+                                  "fill": "$sel",
+                                  "stroke": "#7B87F74D",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner"
                                 },
                                 "kcOFL": {
                                   "fill": "$sel"
@@ -414763,6 +415469,1324 @@
                                   "id": "r1VEF",
                                   "type": "ref",
                                   "ref": "D7Os7W",
+                                  "name": "Command line",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Cy2sA",
+                  "name": "Row · Writing",
+                  "gap": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "omanm",
+                      "name": "Slot · MB236 · Writing on an issue, keyboard up",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "G50hW9",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "GroFq",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB236 · Writing on an issue, keyboard up",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LkFLu",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Tapping the comment box grows it into the desktop's composer, made of its parts: Close issue and Comment on top, the text, then Write, Preview and the formatting tools folded to ⋯ just above the keyboard (D51). Comment is dim until there is text. ⌘ steps aside (D18). No key hints on a phone.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JY5eN",
+                          "name": "MB236 · Writing on an issue, keyboard up",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Ss80v",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "f4JlB",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "MBMRj",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "jzi4F",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -128
+                                }
+                              ]
+                            },
+                            {
+                              "id": "gXVEH",
+                              "type": "ref",
+                              "ref": "YJ5LK",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "F1g2s8",
+                              "type": "ref",
+                              "ref": "qEkWs",
+                              "width": "fill_container",
+                              "name": "Keyboard"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bDBys",
+                      "name": "Slot · MB237 · The tools' ⋯ open",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "TX9NS",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KOwks",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB237 · The tools' ⋯ open",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "YdTpK",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "⋯ opens the tools that didn't fit, as a menu at the bottom (D45) with the same entries as the desktop's folded tools menu: the lists and Quote, then Mention someone and Reference an issue or pull request. The keyboard steps down while it is open; picking an entry inserts it and brings the keyboard back.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wDKN7",
+                          "name": "MB237 · The tools' ⋯ open",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Yll6E",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "U0JP1f",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pm4ci",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "rBRWj",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -315
+                                }
+                              ]
+                            },
+                            {
+                              "id": "wNbtK",
+                              "type": "ref",
+                              "ref": "s9Gv7y",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "len14",
+                              "type": "ref",
+                              "ref": "cFbzw",
+                              "width": "fill_container",
+                              "name": "Menu"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Msq7u",
+                      "name": "Slot · MB238 · Preview",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vkv0r",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ieUgB",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB238 · Preview",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "c4D41",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Preview renders the Markdown as it will read in the thread, #1205 as a link. The keyboard goes down and the formatting tools hide, as on the desktop; Write brings both back. Close with comment and Comment work from here too.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N8CU2u",
+                          "name": "MB238 · Preview",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Nlt9o",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "oXDY9",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "sRwNV",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "fzJAD",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -38
+                                }
+                              ]
+                            },
+                            {
+                              "id": "a78HLq",
+                              "type": "ref",
+                              "ref": "NCvab",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q8aO3l",
+                      "name": "Slot · MB239 · Typing @, the mention menu",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "d4KrCN",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LDmU4",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB239 · Typing @, the mention menu",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "x4oedN",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Typing @ opens the desktop's mention menu as a menu just above the keyboard, filtered as you type: the people in this thread first. The tools bar makes way while it is open. Tapping a name inserts @sbrandt and the tools come back.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "c5gqN",
+                          "name": "MB239 · Typing @, the mention menu",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "ZUp6s",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "GwT4M",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z20ia",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "AqWot",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -294
+                                }
+                              ]
+                            },
+                            {
+                              "id": "DInM7",
+                              "type": "ref",
+                              "ref": "pRXnP",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "lfB7W",
+                              "type": "ref",
+                              "ref": "LkBKK",
+                              "width": "fill_container",
+                              "name": "Mention menu"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "APJgi",
+                      "name": "Slot · MB240 · Typing #, the reference menu",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uHigx",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "aRG2G",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB240 · Typing #, the reference menu",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rI0bW",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Typing # opens the desktop's reference menu above the keyboard: this repository's issues and pull requests, filtered by number or title as you type, each with its state icon. Tapping one inserts #1205.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Zbtsy",
+                          "name": "MB240 · Typing #, the reference menu",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "ng9Cy",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "QEBm2",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F0reO",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "s0ff9",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -342
+                                }
+                              ]
+                            },
+                            {
+                              "id": "kEMH8",
+                              "type": "ref",
+                              "ref": "pRXnP",
+                              "width": "fill_container",
+                              "name": "Composer",
+                              "descendants": {
+                                "dQ6zQ": {
+                                  "content": "Same here on mobile. Fixed in #12"
+                                }
+                              }
+                            },
+                            {
+                              "id": "UZAzm",
+                              "type": "ref",
+                              "ref": "d3Q0Y3",
+                              "width": "fill_container",
+                              "name": "Reference menu"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PzweY",
+                      "name": "Slot · MB241 · Close with comment, picking the reason",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "YCbxY",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "pJiiB",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB241 · Close with comment, picking the reason",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KtUcZ",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "With text written, closing reads Close with comment, as on the desktop. Tapping it opens the desktop's close menu as a menu at the bottom: completed or not planned. Picking one sends the comment and closes the issue in one step; the keyboard steps down while the menu is open.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rft3A",
+                          "name": "MB241 · Close with comment, picking the reason",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Li39D",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "Wz1Ka",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AbT5x",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "d9e9J",
+                                  "type": "ref",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -92
+                                }
+                              ]
+                            },
+                            {
+                              "id": "ac1Mz",
+                              "type": "ref",
+                              "ref": "BGx6I",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "x6Cmu",
+                              "type": "ref",
+                              "ref": "Fujkd",
+                              "width": "fill_container",
+                              "name": "Close menu",
+                              "descendants": {
+                                "I5kQbM": {
+                                  "content": "Close with comment"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jIf2d",
+                      "name": "Slot · MB242 · A closed issue: Reopen issue",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "HbBz3",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "W26d4P",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB242 · A closed issue: Reopen issue",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "gjX8c",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On a closed issue the composer offers Reopen issue beside Comment, as the desktop's closed composer does. It reopens at once, with no reason to pick; the comment, if any, is sent with it.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TwA3U",
+                          "name": "MB242 · A closed issue: Reopen issue",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "JHPV1",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "G3Tgu",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "OY2rp",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "Jc47b",
+                                  "type": "ref",
+                                  "ref": "jpEl1",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -172
+                                }
+                              ]
+                            },
+                            {
+                              "id": "F7dPDF",
+                              "type": "ref",
+                              "ref": "UuizA",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "L7Rjt",
+                              "type": "ref",
+                              "ref": "qEkWs",
+                              "width": "fill_container",
+                              "name": "Keyboard"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Wk8Ma",
+                      "name": "Slot · MB243 · A pull request: Close pull request",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "t4xGHL",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "AxZtE",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB243 · A pull request: Close pull request",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Gjg4g",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On an open pull request the button beside Comment is Close pull request, in red, with no menu: a pull request closes without a reason. Merging stays in the summary's standing card.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gc2E8",
+                          "name": "MB243 · A pull request: Close pull request",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "y1ALXQ",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "Y4j9m",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "c7awJ6",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "oTWL0",
+                                  "type": "ref",
+                                  "ref": "S2bNY",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -48
+                                }
+                              ]
+                            },
+                            {
+                              "id": "svzuw",
+                              "type": "ref",
+                              "ref": "tnhAD",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "VSAAs",
+                              "type": "ref",
+                              "ref": "qEkWs",
+                              "width": "fill_container",
+                              "name": "Keyboard"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hHZWJ",
+                      "name": "Slot · MB244 · A merged pull request: Comment only",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bC86u",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ZtWGb",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB244 · A merged pull request: Comment only",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "OdX71",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "A merged pull request can't be closed or reopened, so the composer has Comment alone, as the desktop's merged composer.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Yg57v",
+                          "name": "MB244 · A merged pull request: Comment only",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "ZXH0b",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "vDnSF",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "DJI6p",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "BoJde",
+                                  "type": "ref",
+                                  "ref": "Zg7Cj",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": -92
+                                }
+                              ]
+                            },
+                            {
+                              "id": "F5jt6",
+                              "type": "ref",
+                              "ref": "wmgjy",
+                              "width": "fill_container",
+                              "name": "Composer"
+                            },
+                            {
+                              "id": "CLzZP",
+                              "type": "ref",
+                              "ref": "qEkWs",
+                              "width": "fill_container",
+                              "name": "Keyboard"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ciKTL",
+                      "name": "Slot · MB245 · A locked issue: read only",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "iF5H2",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dx4PD",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB245 · A locked issue: read only",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "XUviq",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "On a conversation locked to collaborators the command line keeps ⌘ but the comment box gives way to the desktop's read-only card: it says why you can read it but not comment. Nothing grows when tapped.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HjUND",
+                          "name": "MB245 · A locked issue: read only",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "A6RAj",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "mtcQh",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "My work"
+                                },
+                                "LaOVG": {
+                                  "enabled": false
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "chevron-up"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "chevron-down"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dvd8c",
+                              "name": "Pane",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "$bg",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "id": "Y8OApS",
+                                  "type": "ref",
+                                  "ref": "f3AG7G",
+                                  "name": "Thread",
+                                  "x": 0,
+                                  "y": 0
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "OWZ6k",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "umGjm",
+                                  "type": "ref",
+                                  "ref": "Xm35X",
                                   "name": "Command line",
                                   "width": "fill_container"
                                 }
@@ -422482,6 +424506,184 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "I75v0E",
+                      "name": "Slot · MB246 · Settings · Privacy",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bAS2K",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qaq71",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB246 · Settings · Privacy",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "m2gJk",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Privacy holds one switch, as on the computer (T23): whether githq counts its use. It is on by default, and turned off it stops for the account, not just this phone. Only event names and the client are counted, never the user, their code or repositories. The row below opens the docs page that lists what is counted, in the browser (↗).",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "w4dhz",
+                          "name": "MB246 · Settings · Privacy",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "l2fhl",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "iz9BF",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a3kCD": {
+                                  "enabled": false
+                                },
+                                "oHtoi": {
+                                  "enabled": true
+                                },
+                                "oHtoi/ioLYI": {
+                                  "content": "Settings"
+                                },
+                                "LaOVG": {
+                                  "content": "Privacy"
+                                },
+                                "yCsSA": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "y6iWT",
+                              "name": "Content",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "WNUiW",
+                                  "type": "ref",
+                                  "ref": "qv3BF",
+                                  "name": "Usage",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "i3oQX": {
+                                      "content": "Usage"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "GfRWD",
+                                  "type": "ref",
+                                  "ref": "UVD7H",
+                                  "name": "Share usage statistics",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "XzMxI": {
+                                      "content": "Share usage statistics"
+                                    },
+                                    "Kb3zO": {
+                                      "content": "githq counts sign-ins and visits anonymously, so we know how many people use it. Nothing about your code, your repositories or who you are is ever sent."
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Z6zFV2",
+                                  "type": "ref",
+                                  "ref": "saAOr",
+                                  "name": "What githq counts",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "GvBwY": {
+                                      "icon": "book-open"
+                                    },
+                                    "FELdG": {
+                                      "content": "What githq counts"
+                                    },
+                                    "Jsnjd": {
+                                      "enabled": false
+                                    },
+                                    "o2fHt": {
+                                      "enabled": false
+                                    },
+                                    "zITed": {
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fFM5j",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "UKDBh",
+                                  "type": "ref",
+                                  "ref": "RGShR",
+                                  "name": "Command line",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "s3BoH2/I8SGfR": {
+                                      "enabled": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -427909,35 +430111,10 @@
                                   "width": "fill_container"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "d4IDpU",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "TQkKJ",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "u7wjE",
+                                  "id": "bVDpx",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "S2bNY",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -428117,35 +430294,10 @@
                                       "width": "fill_container"
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "oZ2hb",
-                                      "name": "Body",
-                                      "width": "fill_container",
-                                      "padding": [
-                                        14,
-                                        16
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "v0DBhA",
-                                          "name": "Body text",
-                                          "fill": "$fg",
-                                          "textGrowth": "fixed-width",
-                                          "width": "fill_container",
-                                          "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                          "lineHeight": 1.5,
-                                          "fontFamily": "$font",
-                                          "fontSize": 15,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "id": "U3xns7",
+                                      "id": "fbqta",
                                       "type": "ref",
-                                      "ref": "KJnIN",
-                                      "name": "Timeline",
+                                      "ref": "S2bNY",
+                                      "name": "Thread",
                                       "width": "fill_container"
                                     }
                                   ]
@@ -428294,35 +430446,10 @@
                                   "width": "fill_container"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "aDPnB",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "q5ERlR",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "A class repeating every Monday at 18:00 shows at 19:00 after the clocks change. New single classes are fine, so it looks like only the series store their start in local time.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "TcyzW",
+                                  "id": "w5xu6",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -428564,35 +430691,10 @@
                                   }
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "LK7oP",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "epGaH",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "e8edv4",
+                                  "id": "ocGTu",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "S2bNY",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -428770,35 +430872,10 @@
                                   "width": "fill_container"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "G1uaQL",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "F8tUqF",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "JsJJE",
+                                  "id": "jyYLt",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "S2bNY",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -428978,35 +431055,10 @@
                                       "width": "fill_container"
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "t1ewzz",
-                                      "name": "Body",
-                                      "width": "fill_container",
-                                      "padding": [
-                                        14,
-                                        16
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "MwU5Y",
-                                          "name": "Body text",
-                                          "fill": "$fg",
-                                          "textGrowth": "fixed-width",
-                                          "width": "fill_container",
-                                          "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                          "lineHeight": 1.5,
-                                          "fontFamily": "$font",
-                                          "fontSize": 15,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "id": "g3wk4",
+                                      "id": "A2uhO",
                                       "type": "ref",
-                                      "ref": "KJnIN",
-                                      "name": "Timeline",
+                                      "ref": "S2bNY",
+                                      "name": "Thread",
                                       "width": "fill_container"
                                     }
                                   ]
@@ -429155,35 +431207,10 @@
                                   "width": "fill_container"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "JOy7D",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "aO9Hq",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "A class repeating every Monday at 18:00 shows at 19:00 after the clocks change. New single classes are fine, so it looks like only the series store their start in local time.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "wQEy2",
+                                  "id": "Foklc",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "ShZ5Q",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -429425,35 +431452,10 @@
                                   }
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "Gr3h4",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "hRVeN",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Converts the start to the studio's timezone when a series is created, and migrates the existing series in one go. Closes #1187.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "GRH5C",
+                                  "id": "q49AB",
                                   "type": "ref",
-                                  "ref": "KJnIN",
-                                  "name": "Timeline",
+                                  "ref": "S2bNY",
+                                  "name": "Thread",
                                   "width": "fill_container"
                                 }
                               ]
@@ -429495,7 +431497,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 121289,
+      "y": 126793,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",

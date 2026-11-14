@@ -78,8 +78,8 @@ list, and goes back, naming the list, on an item ([the panel](DECISIONS.md#d19),
 top-right holds the list's options and New issue ([the corner](DECISIONS.md#d14)).
 
 **Seeing what needs you and acting on it** ([its brief](ui/act-on-my-work-on-a-phone.md)). A row keeps what tells you
-whether to open it, and the rest waits in the item ([the row](DECISIONS.md#d23)). On an item, the properties that need
-their name are rows and the rest are chips ([the properties](DECISIONS.md#d25)); tapping one opens its menu pinned to
+whether to open it, and the rest waits in the item ([the row](DECISIONS.md#d23)). On an item, the summary is the
+computer's, in one column ([the summary](DECISIONS.md#d52)); tapping a property opens its menu pinned to
 the bottom of the screen — the computer's dropdown within a thumb's reach, while the command menu stays what ⌘K is on
 the computer ([changing a property](DECISIONS.md#d45)). A row swiped to the left offers Status, Assign and
 Close ([swiping](DECISIONS.md#d27)).
@@ -112,5 +112,5 @@ the unfolded stack and selecting the failed items come along ([what came along](
 A second review against the desktop (2026-11-14) found the phone still drawing the item's old activity list, a comment
 box without the desktop's editor, and its own summary, all changed on the desktop since
 ([the review](history/2026-11-14-review-against-the-desktop.md)). The thread and the editor follow the desktop
-([the thread](DECISIONS.md#d50), [writing](DECISIONS.md#d51)); the summary waits for the owner's pick between two drawn
-variants. Nothing of the phone layout is built yet.
+([the thread](DECISIONS.md#d50), [writing](DECISIONS.md#d51)); the summary is the desktop's too
+([the summary](DECISIONS.md#d52)). Nothing of the phone layout is built yet.

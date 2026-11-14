@@ -160,3 +160,109 @@ round replaces it.
 
 Measured: in A the pull request's summary is 782 px tall, so its description starts more than a screen down. The issue's
 is 384 px. In B the pull request's summary is 562 px.
+
+## Round 2 · agent brief
+
+Asked (`.context/mobile-writing-brief.md`): writing on a phone as the desktop's composer (D51), Settings · Privacy on a
+phone, the phone's selected rows and highlighted command results in line with the desktop's selection, and the fixes
+round 1 left: the web and brand row's overlap, the summary variants' old thread, the key hints on the editing card.
+
+Changed: `Phone / Composer dock · typing` became the desktop's composer, with seven variants; three new phone menus and
+a read-only command line; ten writing screens (MB236–MB245) in a new row; MB246 · Settings · Privacy; the selected
+row's surface outlined; the summary variants on `Phone / Thread`; the old thread components deleted.
+
+Decisions taken in this round:
+
+- The composer is the desktop's editor turned upside down, so its tools sit just above the keyboard (D51): Close and
+  Comment on top (the desktop's footer, right-aligned as there), the text, then Write, Preview and the folded tools
+  (the desktop's head; the current tab hangs from the text area). Its buttons, tools and ⋯ are instances of the
+  desktop's (`Button / medium · menu`, `Button / medium`, `Button / medium · primary`, `Activity / Editor tools ·
+  folded`, `Activity / Editor · more tools, open`), keys hidden. The Write / Preview tabs and the text area are drawn in
+  the component, as the desktop has no component for them.
+- The text is 16 px, as in the phone's comment box before (iOS zooms a page on focus of a field under 16 px). The
+  desktop editor's 13 px stays in the editing card of MB227/MB228, as round 1 left it.
+- The tools' ⋯ menu is a `Phone / Menu` at the bottom with the keyboard down (D45). The @ and # menus are `Phone /
+  Menu` with its keyboard part on, so they sit just above the keyboard; the composer's tools bar makes way while they
+  are open. People are drawn with `circle-user`, as in `Phone / Menu / Assignees`.
+- Close with comment's reason is the existing `Phone / Menu / Close` (`Fujkd`), titled "Close with comment" on MB241.
+- Preview puts the keyboard down, so the preview variant shows the dock's home indicator.
+- A locked item keeps ⌘ in the command line; the comment box is the desktop's `Activity / Composer · read-only` card.
+- Selection: the selected selectable row has no fill of its own; its row's `Surface` takes `$sel` and the 1 px
+  `#7B87F74D` outline, so the checkbox sits outside the surface, as the commit graph does on the desktop. No phone
+  command result is highlighted anywhere (all 43 `Phone / Command result` instances checked), so nothing changed
+  there. MB93's "back at the same row" highlight and its repository pane's were full-bleed `$sel`; they got the
+  outlined surface too.
+- No phone screen shows a key hint any more: the editing card of MB227 through a phone variant, and the Reply key in
+  MB231's review card. MB228's card (`SSKJn`) already had none.
+- MB73 is unchanged: leaving with text keeps the draft in the comment box at rest, and its draft starts as the
+  composer's text does.
+
+Components (`Components · Mobile`, `F3mZHt`, new section `Writing`, `O1nNc`, rows `Composer docks` `WSlci` and `Menus
+and the locked line` `d9uBJ`):
+
+- [ ] Phone / Composer dock · typing (`BGx6I`): moved into `Composer docks`. Was a pill with Send and a hidden ⌘ →
+  the desktop's composer: `Actions` (`a5rL6`: Close `xFuJJ` = `Button / medium · menu` "Close with comment", Comment
+  `skQ6F` = `Button / medium · primary`, keys hidden), `Text area` (`X9pGmy`, 16 px text `dQ6zQ`, a hidden `Rendered`
+  preview `WHjem`), `Head` (`syXj3`: Write `u4YcNf`, Preview `H3wIpM`, the tools `lyqOI` with `Activity / Editor tools
+  · folded` `t5hvVi`), a hidden home indicator (`JdImD`).
+- [ ] Phone / Composer dock · empty (`YJ5LK`): new. Placeholder "Leave a comment", Close issue, Comment at 0.45.
+- [ ] Phone / Composer dock · preview (`NCvab`): new. Preview current, the text rendered, the tools hidden, the home
+  indicator shown.
+- [ ] Phone / Composer dock · tools open (`s9Gv7y`): new. ⋯ as `Activity / Editor · more tools, open`.
+- [ ] Phone / Composer dock · a menu above the keyboard (`pRXnP`): new. The head hidden, text ending "@s".
+- [ ] Phone / Composer dock · closed issue (`UuizA`), · pull request (`tnhAD`), · merged (`wmgjy`): new, instances of
+  `· empty`. Reopen issue (`Button / medium`, green `circle-dot`), Close pull request (red
+  `git-pull-request-closed`), no close button.
+- [ ] Phone / Menu / Editor tools (`cFbzw`): new, `Phone / Menu`: Bulleted list, Numbered list, Task list, Quote, then
+  under "Insert" Mention someone and Reference an issue or pull request.
+- [ ] Phone / Menu / Mention (`LkBKK`): new, `Phone / Menu` with the keyboard: People · @s, sbrandt (in this thread),
+  sanders, sofiab.
+- [ ] Phone / Menu / Reference (`d3Q0Y3`): new, `Phone / Menu` with the keyboard: #1205, #1209, #1201, #1190 with their
+  state icons.
+- [ ] Phone / Command line dock · read-only (`Xm35X`): new, instance of `Phone / Command line dock · item` with the
+  comment box replaced by `Activity / Composer · read-only`, its rail hidden.
+- [ ] Phone / Thread (`ShZ5Q`): new hidden events `Event · closed` (`gC1B0`, mlaine closed this as completed) and
+  `Event · locked` (`iWOgf`, dkim locked this conversation).
+- [ ] Phone / Thread · pull request (`S2bNY`): new hidden event `Event · merged` (`RHsSB`, mlaine merged into main).
+- [ ] Phone / Thread · closed (`jpEl1`), · locked (`f3AG7G`), · merged (`Zg7Cj`): new, each shows its event and
+  lengthens the rail to it.
+- [ ] Activity / Comment · narrow, editing · phone (`w6BzvV`): new in `Cards and menu` (`eUtEh`), instance of `DFWqj`
+  with the Esc and ⌘↵ keys hidden.
+- [ ] Phone / Thread · editing (`NZWBY`): its editing card → `Activity / Comment · narrow, editing · phone` (`EXeku`),
+  so MB227 shows no keys.
+- [ ] Phone / Thread · reviews (`CySKi`): the Reply key in sbrandt's review card (`jd4oq` → `B8zor/i8NWhP`) hidden
+  (MB231).
+- [ ] Phone / Row / Selectable · selected (`h9ZxKZ`): row fill `$sel` → none; its row's `Surface` (`A70Zi/b73Ct`)
+  `$sel` with a 1 px inside stroke `#7B87F74D`. MB117, MB118, MB119 and MB221 follow.
+- [ ] Phone / List / Repository · back at the row (`U9tdw`): `Row #1171`'s surface (`AIER7` → `b73Ct`) gets the
+  outline.
+- [ ] Deleted: Phone / Item / Timeline (`KJnIN`), Phone / Comment (`Qidd9`), Phone / Timeline commit (`i4d4tt`).
+
+Screens:
+
+- [ ] MB71 (`fMjLV`), MB72 (`uVIfU`), MB91 (`fJdr7`): follow the new composer; the stale overrides on `h4Wh24`,
+  `l8C6Od`, `Dv5Mx` removed (the long reply now on `dQ6zQ`); captions (`F6Tds`, `xZjT5`, `Byq6X`) rewritten for it.
+- [ ] MB93 (`x97Y8`): the pane's (`U9Qttk`) full-bleed `$sel` on `Row webapp#1187` and `Nested #1205` → the outlined
+  surface on the row alone.
+- [ ] Row · Writing (`Cy2sA`): new row in `Screens · Acting on My work` (`pM9rS`), after `Row · The thread`:
+  - MB236 · Writing on an issue, keyboard up (`omanm`)
+  - MB237 · The tools' ⋯ open (`bDBys`)
+  - MB238 · Preview (`Msq7u`)
+  - MB239 · Typing @, the mention menu (`q8aO3l`)
+  - MB240 · Typing #, the reference menu (`APJgi`)
+  - MB241 · Close with comment, picking the reason (`PzweY`)
+  - MB242 · A closed issue: Reopen issue (`jIf2d`)
+  - MB243 · A pull request: Close pull request (`Wk8Ma`)
+  - MB244 · A merged pull request: Comment only (`hHZWJ`)
+  - MB245 · A locked issue: read only (`ciKTL`)
+- [ ] MB246 · Settings · Privacy (`I75v0E`): new at the end of `Row · Settings · the other sections` (`H87JO`), built
+  from MB158: group "Usage", the switch row "Share usage statistics" on, with T23's explanation, and a row "What githq
+  counts" that leaves for the docs (↗).
+- [ ] MB260–MB267's panes (`z1pT4`, `ruVlo`, `pGX4w`, `v2BuOd`, `HUY2w`, `l9DJYT`, `f6qKTF`, `S3TWfg`): the old `Body`
+  frame deleted and `Timeline` → `Phone / Thread · pull request` (MB260, MB261, MB263, MB264, MB265, MB267) or `Phone /
+  Thread` (MB262, MB266). The summaries themselves are unchanged.
+
+Canvas:
+
+- [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
+  121289 → 126793, 1200 px under `App · Mobile`'s bottom (125593); x and order kept.

@@ -339,32 +339,6 @@ drawings: `MB100`)
 - A chip on the issue's row (MB101) — a small target, and the pull request's title is gone.
 - The full row, indented (MB102) — two near-identical rows read as two items.
 
-## D25
-
-**An item's properties are split: what needs its name stays a row under the title — assignees and the first project's
-row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands" — and what reads
-on its own follows as one block of chips without names: labels, the milestone, sub-issues, another project's field;
-on a pull request the branch, its size and the issues it closes. A chevron at the right of the chips unfolds every
-property as rows in place, the chips giving way to them — every project with all its fields, the empty ones too, and
-Add to a project — and Fewer folds it back.** (2026-11-08, owner: rows first with only the important ones, the rest
-unfolding inline, not hidden; then chips after the rows (`MB128`) with a chevron beside them, not a small "All" chip,
-and the chips gone once unfolded; drawn in `MB125`, `MB126`, `MB128`)
-
-**Why.** The owner preferred the desktop's rows to a line of chips alone, but not every row before the conversation.
-The drawing's case: the activity starts under 570 px down instead of under the fold, labels and the milestone read at
-a glance without a key, and nothing slides over the item to see the rest.
-
-**Rejected.**
-
-- A summary line of chips with a sheet for every property (MB103–MB105) — the design agent's recommendation; the owner
-  preferred rows.
-- The properties after the body (MB107) — the newest comment is as far as with all rows at the top, and a long body
-  hides the properties.
-- A More row naming what else there is (MB124) — superseded by the chips, which show the values themselves.
-- The chips under the title, beside the state (MB127, MB130–MB132) — the owner picked them after the rows; a small
-  "… All" chip as the way to every property was too small a target.
-- The chips after the body (MB129) — on a long body the labels and milestone are out of sight.
-
 ## D27
 
 **Swiping a list row to the left reveals Status, Assign and Close; each opens that property's menu at the bottom, the
@@ -554,7 +528,7 @@ on an item ([D45](#d45)).** (2026-11-08, owner, picked from the drawings:
 `MB194`–`MB196`)
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
-([D25](#d25)), changed the same way ([D45](#d45)), and assigning yourself is one tap.
+([D52](#d52)), changed the same way ([D45](#d45)), and assigning yourself is one tap.
 
 **Rejected.**
 
@@ -713,3 +687,21 @@ would have to go to github.com for both.
 
 - The editor without closing, which would stay only in the state chip's menu (MB109).
 - Text and send only, the tools later.
+
+## D52
+
+**An opened item's summary on a phone is the desktop's one-column summary: the title and its standing; on a pull
+request the standing card (what stops it — checks, reviews, conflicts — the branch, size and files, and Merge…, Open on
+GitHub, Review files), Reviews with Request, Checks failing first; what it closes; then Assignees, Labels, Milestone and
+Sub-issues as rows, and every project as a card with its fields. No key hints. Merge… and Review files, which a phone
+does not have yet ([D4](#d4)), are marked ↗ and open github.com ([D11](#d11)). Tapping a property opens its menu at the
+bottom ([D45](#d45)).** (2026-11-14, owner, picked from the drawings: `MB260`–`MB263`)
+
+**Why.** One summary to design and build for both, and nothing behind a chevron. The owner took the cost the drawing
+named: on a pull request the description starts more than a screen down.
+
+**Rejected.**
+
+- The phone's rows and chips ([D25, retired](history/RETIRED.md#d25)).
+- A hybrid: the desktop's standing card, Reviews and Checks, then the phone's rows and chips (MB264–MB267) — shorter,
+  but two summaries to keep in step.
