@@ -122,6 +122,16 @@ $color-syntax-tag: #7ee787;
 // A built-in and a variable.
 $color-syntax-builtin: #ffa657;
 
+// A match of find in the code (D47), under its syntax colours, and the one find is on, stronger and outlined.
+// Exception: a dark amber, as strong as keeps every syntax colour AA over the window, a deleted, an added and the
+// cursor's line (owner, 2026-11-14); the design's first #e3b341 at 24% and 46% took the comment colour to 3.3:1 and 2:1.
+$color-find-match: rgba(#bb8009, 0.08);
+$color-find-match-current: rgba(#bb8009, 0.14);
+$color-find-match-outline: #f2cc60;
+// The light ring round a match, past its fill, which shows it on every line's colour (owner, 2026-11-14): as faint as
+// keeps 3:1 on each of them.
+$color-find-match-ring: rgba(#d29922, 0.6);
+
 // The light button's fill.
 $color-button-light: $color-fg;
 $color-button-light-hover: #ffffff;

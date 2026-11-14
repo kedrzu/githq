@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35); a submodule shows the commits, files and pull requests between its two pointers, read only once its block is drawn. Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The diff has a line cursor the pointer and the keys share (D44): moving the pointer over a file's header, a row of code, a thread or a gap puts it there, moving nothing, though not rows scrolling under a still pointer, a drag along the numbers or the pinned header's overlay, a press on which puts it on that file's header; ↓ ↑ move it a stop, faster the longer they are held, and PageDown PageUp a screen, the diff scrolling only to keep it a third of the screen from the edge it goes toward; a scroll taking it off the screen brings it to the first stop at the edge it left by. Its file is the current file, the one `V`, Space and `C` act on. `[` `]`, the list and `V` moving on put it on a file's header, N ⇧N and a link on their thread, and rows changing under it leave it on its stop, or the nearest left, its file's header first. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row goes toward the hunk on the side of a line a third down the screen, and so does E, for the gap under the cursor or else its file's nearest, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), its width dragged by its edge from 340 px and kept on this device (D46), and a review's "2 threads in files" there lands on the first of them as N does. The diff stands in a box centred between them, the gaps beside it scrolling the diff: its left or right edge — the files' own edge, the cursor alone telling it — dragged (or moved by the arrow keys) symmetrically, from 800 px to the width there is, a maximum kept in the user's synced settings, by default the whole width; the side columns or the window drawing it narrower never change it, and the pinned header, the review's toasts and the pending toolbar's content keep to it. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the cursor on the first stop under the pinned header, the status bar saying so until the first move (CR20, CR25, CR26). An address naming a comment on the code (`#discussion_r…`, GitHub's `#r…`), as a file's link on the pull request's page gives, lands instead on its thread as N does, its file let past the filter and hidden viewed files and opened if collapsed; the fragment then leaves the address. Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag from a number or the comment button along the lines, or a ⇧click on the numbers, making it a range (CR73): `C` takes the cursor's line, on the newer side unless the row has only the older, or a thread's own line, and does nothing on a header, a gap or a thread on the file (D44); a box closed, discarded or sent gives the keys back to the diff, the cursor on its line. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` `⇧↑` from the diff choose lines from the cursor's line, the cursor on the end they move, Esc letting them go and `C` commenting on them, a box left on one of them taking them all; in an empty box they make it end a line further or sooner. While the keys are in a text field the cursor's row is not tinted, its comment buttons still there for the pointer (D44). `R`, on the thread under the cursor, or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35); a submodule shows the commits, files and pull requests between its two pointers, read only once its block is drawn. Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The diff has a line cursor the pointer and the keys share (D44): moving the pointer over a file's header, a row of code, a thread or a gap puts it there, moving nothing, though not rows scrolling under a still pointer, a drag along the numbers or the pinned header's overlay, a press on which puts it on that file's header; ↓ ↑ move it a stop, faster the longer they are held, and PageDown PageUp a screen, the diff scrolling only to keep it a third of the screen from the edge it goes toward; a scroll taking it off the screen brings it to the first stop at the edge it left by. Its file is the current file, the one `V`, Space and `C` act on. `[` `]`, the list and `V` moving on put it on a file's header, N ⇧N and a link on their thread, and rows changing under it leave it on its stop, or the nearest left, its file's header first. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row goes toward the hunk on the side of a line a third down the screen, and so does E, for the gap under the cursor or else its file's nearest, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), its width dragged by its edge from 340 px and kept on this device (D46), and a review's "2 threads in files" there lands on the first of them as N does. The diff stands in a box centred between them, the gaps beside it scrolling the diff: its left or right edge — the files' own edge, the cursor alone telling it — dragged (or moved by the arrow keys) symmetrically, from 800 px to the width there is, a maximum kept in the user's synced settings, by default the whole width; the side columns or the window drawing it narrower never change it, and the pinned header, the review's toasts and the pending toolbar's content keep to it. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the cursor on the first stop under the pinned header, the status bar saying so until the first move (CR20, CR25, CR26). An address naming a comment on the code (`#discussion_r…`, GitHub's `#r…`), as a file's link on the pull request's page gives, lands instead on its thread as N does, its file let past the filter and hidden viewed files and opened if collapsed; the fragment then leaves the address. Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ⌘F, outside a text field, opens find at the top right of the diff's box, over the code (D47): the shown lines' matches are marked, Enter ⇧Enter in its field and ⌘G ⇧⌘G or F3 ⇧F3 anywhere walk them, each drawn and held (D7) with the cursor on its row, the keys staying where they were; Esc in the field closes it and gives the keys back to the diff, and its query stays across J/K until the review is left. O to the pull request on GitHub and Esc, once there's no box, range, selection, find or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag from a number or the comment button along the lines, or a ⇧click on the numbers, making it a range (CR73): `C` takes the cursor's line, on the newer side unless the row has only the older, or a thread's own line, and does nothing on a header, a gap or a thread on the file (D44); a box closed, discarded or sent gives the keys back to the diff, the cursor on its line. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` `⇧↑` from the diff choose lines from the cursor's line, the cursor on the end they move, Esc letting them go and `C` commenting on them, a box left on one of them taking them all; in an empty box they make it end a line further or sooner. While the keys are in a text field the cursor's row is not tinted, its comment buttons still there for the pointer (D44). `R`, on the thread under the cursor, or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -26,6 +26,7 @@ import {
   Eye,
   EyeOff,
   FileSearch,
+  Search,
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
@@ -55,6 +56,7 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -94,6 +96,7 @@ import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
+import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import AnchoredList from './AnchoredList.vue';
@@ -132,6 +135,8 @@ import type {
 } from './buildReviewRows.js';
 import type { DiffLineSide } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
+import ReviewFindBar from './find/ReviewFindBar.vue';
+import { useReviewFind } from './find/useReviewFind.js';
 import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
 import ReviewConversation from './conversation/ReviewConversation.vue';
 import { findCursorOnScreen } from './cursor/findCursorOnScreen.js';
@@ -184,6 +189,10 @@ import ReviewWrittenComment from './writing/ReviewWrittenComment.vue';
 const props = defineProps<{
   reference: ItemReference;
 }>();
+/** What find's bar holds: the page's, so it stays across J/K and goes with the review (D47). */
+const findQuery = defineModel<string>('findQuery', { default: '' });
+/** Whether find's bar is open: the page's, as the query. */
+const findOpen = defineModel<boolean>('findOpen', { default: false });
 
 const WAITING: ReviewFileState = { kind: 'waiting' };
 const NO_FILTER: FileFilterInput = { pattern: '', regex: false };
@@ -261,6 +270,8 @@ const files = shallowRef<PullRequestFiles | null>(reviewFiles.open(props.referen
 const list = useTemplateRef<AnchoredListExposed<ReviewRow>>('list');
 const fileList = useTemplateRef<InstanceType<typeof ReviewFileList>>('fileList');
 const diffColumn = useTemplateRef<HTMLElement>('diffColumn');
+const findBox = useTemplateRef<HTMLElement>('findBox');
+const findBar = useTemplateRef<InstanceType<typeof ReviewFindBar>>('findBar');
 const leftColumn = useTemplateRef<HTMLElement>('leftColumn');
 /** The width there is for the diff's box: the list's inside its scrollbar, 0 while there is no list. */
 const diffRoom = computed(() => list.value?.width ?? 0);
@@ -511,6 +522,14 @@ const reviewCursor = useReviewCursor({
   order: allPaths,
   isDragging: () => lineRange.value?.dragging === true,
   onMove: stopLanding,
+});
+/** Find in the diff's shown lines (D47): a new query lands from the cursor, a step goes to its match's row. */
+const find = useReviewFind({
+  rows,
+  query: findQuery,
+  active: findOpen,
+  cursorKey: () => cursor.value?.key ?? null,
+  onGo: goToMatch,
 });
 /** The row holding the cursor. */
 const cursorRow = computed(() => {
@@ -867,6 +886,19 @@ onWindowEvent(
   { passive: true },
 );
 
+// ⌘F is a field's own inside one, the `/` filter's too, which a command's `Mod` key would run in: not one, then.
+onWindowEvent('keydown', event => {
+  if (
+    matchesCommandKey(event, REVIEW_KEYS.find) &&
+    !event.defaultPrevented &&
+    !isEditableTarget(event.target) &&
+    !isScreenCovered()
+  ) {
+    event.preventDefault();
+    void openFind();
+  }
+});
+
 onWindowEvent('pointerup', () => {
   const range = lineRange.value;
   if (range?.dragging) {
@@ -1152,6 +1184,16 @@ useCommands(() => [
     when: () => selected.value.size > 0 && !isLayerOpen(),
     run: clearSelection,
   },
+  // In the field the bar's own Esc closes it: no command runs from a field.
+  {
+    id: 'review.closeFind',
+    title: t(l.closeFind),
+    section: 'view',
+    key: REVIEW_KEYS.closeFind,
+    menu: false,
+    when: () => findOpen.value && !isLayerOpen(),
+    run: closeFind,
+  },
   {
     id: 'review.clearFilter',
     title: t(l.clearFilter),
@@ -1163,7 +1205,7 @@ useCommands(() => [
       filterPattern.value = '';
     },
   },
-  // Last of what Esc does, the box's own, the selection and the filter going first. Not with a layer open, whose Esc that is,
+  // Last of what Esc does, the box's own, the range, the selection, find and the filter going first. Not with a layer open, whose Esc that is,
   // though the menu, a layer itself, offers it.
   {
     id: 'review.back',
@@ -1218,6 +1260,51 @@ useCommands(() => [
     icon: ChevronsUp,
     when: isDiffScrollable,
     run: () => reviewCursor.page(-1),
+  },
+  {
+    id: 'review.find',
+    title: t(l.find),
+    section: 'view',
+    // ⌘F is the window's `keydown` handler's: a command's `Mod` key would run in the filter's field too.
+    otherKeys: [REVIEW_KEYS.find],
+    icon: Search,
+    run: () => void openFind(),
+  },
+  {
+    id: 'review.findNext',
+    title: t(l.findNext),
+    section: 'view',
+    key: REVIEW_KEYS.findNext,
+    icon: ArrowDown,
+    when: hasFindMatches,
+    run: () => stepFind(1),
+  },
+  {
+    id: 'review.findNextF3',
+    title: t(l.findNext),
+    section: 'view',
+    key: REVIEW_KEYS.findNextF3,
+    menu: false,
+    when: hasFindMatches,
+    run: () => stepFind(1),
+  },
+  {
+    id: 'review.findPrevious',
+    title: t(l.findPrevious),
+    section: 'view',
+    key: REVIEW_KEYS.findPrevious,
+    icon: ArrowUp,
+    when: hasFindMatches,
+    run: () => stepFind(-1),
+  },
+  {
+    id: 'review.findPreviousF3',
+    title: t(l.findPrevious),
+    section: 'view',
+    key: REVIEW_KEYS.findPreviousF3,
+    menu: false,
+    when: hasFindMatches,
+    run: () => stepFind(-1),
   },
   {
     id: 'review.focusFilter',
@@ -1519,6 +1606,52 @@ function jumpToThread(row: ReviewThreadRow) {
   const height = list.value?.getViewport().height ?? 0;
   list.value?.jumpTo(row.key, Math.round(Math.max(height / 4, THREAD_MIN_OFFSET)));
   list.value?.focus();
+}
+
+/** The bar shown and its query selected, to type over or step from. */
+async function openFind() {
+  findOpen.value = true;
+  await nextTick();
+  findBar.value?.focus();
+}
+
+/** Closed from its field, the keys go back to the diff, the view staying on the match (D47). */
+function closeFind() {
+  const keysInBar = findBox.value?.contains(document.activeElement) === true;
+  findOpen.value = false;
+  if (keysInBar) {
+    returnKeysToDiff();
+  }
+}
+
+function hasFindMatches() {
+  return findOpen.value && find.total > 0;
+}
+
+function stepFind(delta: 1 | -1) {
+  const key = delta > 0 ? find.next() : find.previous();
+  if (key !== null) {
+    goToMatch(key);
+  }
+}
+
+/**
+ * A match's row drawn and held (D7), the cursor on it (D44): where it stands if wholly on screen clear of the pinned header,
+ * else a quarter down as a thread lands. The keys stay where they were, in find's field or not.
+ */
+function goToMatch(key: string) {
+  const exposed = list.value;
+  if (!exposed) {
+    return;
+  }
+
+  stopLanding();
+  reviewCursor.setTo(key);
+  const viewport = exposed.getViewport();
+  const box = exposed.getRowBox(key);
+  const shown =
+    box !== null && box.top >= Math.max(viewport.covered, THREAD_MIN_OFFSET) && box.bottom <= viewport.height;
+  exposed.jumpTo(key, shown ? box.top : Math.round(Math.max(viewport.height / 4, THREAD_MIN_OFFSET)));
 }
 
 /** A click on a file's open threads in the list. */
@@ -2313,6 +2446,7 @@ function readAgain() {
                   :viewer="auth.viewer"
                   :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
                   :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
+                  :marks="row.kind === 'line' ? find.getRowMarks(row.key) : null"
                   :layout="layout"
                   :pushed="pushed"
                   :pinned="pinned"
@@ -2517,6 +2651,29 @@ function readAgain() {
                 :title="t(l.reading, { reference: formatItemReference(reference) })"
               />
             </div>
+            <!-- Find's bar, at the top right of the diff's box over the code and the pinned header (D47). -->
+            <div
+              v-if="findOpen && diffBoxStyle"
+              ref="findBox"
+              :class="css.reviewView_find"
+              :style="diffBoxStyle"
+            >
+              <ReviewFindBar
+                ref="findBar"
+                :class="css.reviewView_findBar"
+                :query="findQuery"
+                :options="find.options"
+                :state="find.state"
+                :total="find.total"
+                :position="find.position"
+                :incomplete="!find.final || find.capped"
+                @update:query="findQuery = $event"
+                @next="stepFind(1)"
+                @previous="stepFind(-1)"
+                @close="closeFind"
+                @toggle="find.toggle"
+              />
+            </div>
             <!-- The review's own: it goes with the review, at the foot of the diff's box, so above the pending toolbar (D40). -->
             <div
               :class="css.reviewView_foot"
@@ -2619,6 +2776,20 @@ function readAgain() {
 
 .reviewView_box .reviewView_edge {
   pointer-events: auto;
+}
+
+// Of no height at the top of the box, so it takes no pointer but the bar's: over the pinned header, under the toasts.
+.reviewView_find {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  height: 0;
+}
+
+.reviewView_findBar {
+  position: absolute;
+  top: $spacing-8;
+  right: $spacing-24;
 }
 
 // Of no height at the foot of the box, so it takes no pointer: the toasts stand above it, in its corner.
