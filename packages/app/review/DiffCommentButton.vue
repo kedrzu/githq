@@ -1,4 +1,4 @@
-<!-- The comment button on the line cursor's row, between a line's number and its code, as on github.com (D43): a small accent square with a `+`, whose tooltip names the line and the key C. It tells what happens to it as the number does, a click starting a comment and a press and drag along the lines or ⇧click making a range (CR73), so whoever decides treats the two alike. Out of the Tab order, as the number: `C` does the same from the keyboard. -->
+<!-- The comment button on the line cursor's row, between a line's number and its code, as on github.com (D43): a small accent square with a `+`, which takes clicks across the whole gutter around it, and whose tooltip names the line and the key C. It tells what happens to it as the number does, a click starting a comment and a press and drag along the lines or ⇧click making a range (CR73), so whoever decides treats the two alike. Out of the Tab order, as the number: `C` does the same from the keyboard. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus } from 'lucide-vue-next';
@@ -45,6 +45,7 @@ const t = useTranslate();
 
 <style lang="scss" module="css">
 .diffCommentButton {
+  position: relative;
   display: flex;
   flex: none;
   align-items: center;
@@ -57,6 +58,14 @@ const t = useTranslate();
   background: $color-accent;
   border: 0;
   border-radius: $radius-sm;
+
+  // The square stays small, but it takes a click anywhere in the row's 24 × 20 px gutter around it: a 16 px target
+  // between a line's number and its code is easy to miss. No further, as the number and the code have clicks of their own.
+  &::before {
+    position: absolute;
+    inset: -$spacing-2 (-$spacing-4);
+    content: '';
+  }
 
   // As a primary button's hover.
   &:hover {
