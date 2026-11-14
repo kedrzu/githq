@@ -8,7 +8,7 @@ import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemReturnRequest } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
-import { getExpandedLocation, getOpenedItemQuery, getOpenedItemRoute } from '@/item/itemRoutes.js';
+import { IssueRoutes, getItemPagePath } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
@@ -44,7 +44,7 @@ export interface ItemListViewModel {
 /**
  * What every list page does with items (my work, a repository, a project): an item opens in the panel when
  * it fits, else on its page (`useOpenItem`), and Enter on the opened one's row again expands it to its page, marked in the
- * history for Back to the panel (`getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
+ * history for Back to the panel (`IssueRoutes.getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
  * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
  * request to select the items that failed (K2) selects those the list shows, and an Undo of a close (D29) brings the
  * selection, and an item open, back to the undone item the list shows.
@@ -68,10 +68,10 @@ export function useItemList(): ItemListViewModel {
     let returning: ItemReturnRequest | null = null;
 
     const listPath = computed(
-        () => router.resolve({ path: route.path, query: getOpenedItemQuery(route.query, null) }).fullPath,
+        () => router.resolve({ path: route.path, query: IssueRoutes.getQuery(route.query, null) }).fullPath,
     );
     const opened = computed(() => {
-        const found = getOpenedItemRoute(route);
+        const found = IssueRoutes.getOpened(route);
         return found && !found.onPage ? found : null;
     });
     const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
@@ -197,7 +197,9 @@ export function useItemList(): ItemListViewModel {
     function expand(id: string) {
         const reference = opened.value?.reference;
         if (reference && id === openedId.value) {
-            void router.push(getExpandedLocation(reference, items.get(id)?.kind));
+            void router.push(
+                IssueRoutes.getExpandedLocation({ reference, path: getItemPagePath(reference, items.get(id)?.kind) }),
+            );
         }
     }
 

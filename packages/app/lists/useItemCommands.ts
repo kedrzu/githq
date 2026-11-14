@@ -28,12 +28,11 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import {
+    IssueRoutes,
     formatItemReference,
     formatShortReference,
-    getExpandedLocation,
     getItemPagePath,
     getItemReference,
-    getOpenedItemRoute,
 } from '@/item/itemRoutes.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
@@ -306,12 +305,13 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
     /** Its page; the one open in the panel expanded from it, as the header's "Open full screen" does, so Escape comes back. */
     function getPageLocation(item: Item): RouteLocationRaw {
         const reference = getItemReference(item);
-        const opened = getOpenedItemRoute(router.currentRoute.value);
+        const opened = IssueRoutes.getOpened(router.currentRoute.value);
         const inPanel =
             opened !== null &&
             !opened.onPage &&
             formatItemReference(opened.reference) === formatItemReference(reference);
-        return inPanel ? getExpandedLocation(reference, item.kind) : getItemPagePath(reference, item.kind);
+        const path = getItemPagePath(reference, item.kind);
+        return inPanel ? IssueRoutes.getExpandedLocation({ reference, path }) : path;
     }
 
     function edit(request: EditRequest) {

@@ -31,7 +31,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useOpenInDesktopCommand } from '@/desktopLinks/useOpenInDesktopCommand.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
-import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
+import { IssueRoutes, formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import { DOCS_URL } from '@/landing/docsUrl.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
@@ -311,7 +311,7 @@ function getUpdateLaterCommand(): Command {
 
 /** The quick capture with the defaults of the screen: its repository, and the issue open as the parent. */
 function startNewIssue() {
-  const opened = getOpenedItemRoute(route);
+  const opened = IssueRoutes.getOpened(route);
   const openedId = opened ? resolver.peek(opened.reference) : null;
   const item = openedId ? items.get(openedId) : undefined;
   composer.start({

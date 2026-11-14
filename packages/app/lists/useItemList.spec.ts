@@ -9,7 +9,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
-import { getExpandedFrom } from '@/item/itemRoutes.js';
+import { IssueRoutes } from '@/item/itemRoutes.js';
 import { Browser } from '@/services/Browser.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
@@ -43,7 +43,7 @@ test('expanding the opened item adds its page to the history, marked as expanded
 
     list.expand('p2');
     await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/acme/web/pull/2'));
-    expect(getExpandedFrom(router.options.history.state)).toBe('acme/web/2');
+    expect(IssueRoutes.getExpandedFrom(router.options.history.state)).toBe('acme/web/2');
     router.back();
     await vi.waitFor(() => expect(router.currentRoute.value.query.issue).toBe('acme|web|2'));
 });

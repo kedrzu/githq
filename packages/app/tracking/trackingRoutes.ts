@@ -17,8 +17,8 @@ export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls|commits|acti
 
 /**
  * The route path of a workflow's run of a tracked repository (actions W4a), at GitHub's address of it. Everything else
- * under `actions/` (`attempts/…`, `workflows/…`, `runs/1/usage`) is GitHub's page, and so is this address of a
- * repository not tracked (`middleware/auth.global.ts`, actions D4).
+ * under `actions/` but a workflow's page (`WORKFLOW_PAGE_PATH`) — `attempts/…`, `runs/1/usage` — is GitHub's page, and
+ * so is this address of a repository not tracked (`middleware/auth.global.ts`, actions D4).
  */
 export const WORKFLOW_RUN_PATH = '/:owner/:name/actions/runs/:run(\\d+)';
 
@@ -221,14 +221,15 @@ export interface IsTrackedOnlyRouteParams extends IsWorkflowRunRouteParams {
 }
 
 /**
- * Whether a route is shown only for a tracked repository (actions D4): its Workflows section and its runs' pages. Any
- * other repository's address of them is GitHub's page.
+ * Whether a route is shown only for a tracked repository (actions D4): its Workflows section, its workflows' pages and
+ * its runs' pages. Any other repository's address of them is GitHub's page.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function isTrackedOnlyRoute(route: IsTrackedOnlyRouteParams) {
     return (
         (route.name === 'repository' && getRepositorySection(route.params.section) === 'workflows') ||
+        route.name === 'workflow-page' ||
         isWorkflowRunRoute(route)
     );
 }

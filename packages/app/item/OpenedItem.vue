@@ -30,16 +30,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
 import { ItemNavigation } from './ItemNavigation.js';
-import {
-  formatItemReference,
-  getExpandedFrom,
-  getExpandedLocation,
-  getItemPagePath,
-  getItemReference,
-  getOpenedItemQuery,
-  getOpenedItemRoute,
-  getReviewPath,
-} from './itemRoutes.js';
+import { IssueRoutes, formatItemReference, getItemPagePath, getItemReference, getReviewPath } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
@@ -196,7 +187,7 @@ onWindowEvent('visibilitychange', () => {
 // Closed, it is left: opened again, its time is read afresh. Moved to another arrangement, the address still opens an
 // item — this one, held, or another, which replaces it.
 onScopeDispose(() => {
-  if (opened.id !== null && !getOpenedItemRoute(router.currentRoute.value)) {
+  if (opened.id !== null && !IssueRoutes.getOpened(router.currentRoute.value)) {
     itemLooked.leave(opened.id);
   }
 });
@@ -283,7 +274,7 @@ const removeLeaveGuard = router.beforeEach(to => {
   const by = movingBy;
   poppedBy = null;
   movingBy = null;
-  const next = getOpenedItemRoute(to);
+  const next = IssueRoutes.getOpened(to);
   const staying =
     next !== null &&
     formatItemReference(next.reference).toLowerCase() === formatItemReference(props.reference).toLowerCase();
@@ -315,7 +306,7 @@ function goAgain({ to, popped, by }: GoAgainOptions) {
     return;
   }
 
-  const next = getOpenedItemRoute(to);
+  const next = IssueRoutes.getOpened(to);
   const listStep = next !== null && !next.onPage && props.arrangement !== 'page' && to.path === route.path;
   const how = by ?? (listStep ? 'replace' : 'push');
   void (how === 'replace' ? router.replace(to.fullPath) : router.push(to.fullPath));
@@ -367,7 +358,13 @@ function arrange(arrangement: ItemArrangement) {
   }
 
   if (arrangement === 'page') {
-    moveTo(getExpandedLocation(props.reference, opened.item?.kind), 'push');
+    moveTo(
+      IssueRoutes.getExpandedLocation({
+        reference: props.reference,
+        path: getItemPagePath(props.reference, opened.item?.kind),
+      }),
+      'push',
+    );
   } else if (expandedFrom() === null) {
     moveTo(locate(props.reference, 'panel', opened.item?.kind), 'replace');
   } else {
@@ -386,9 +383,9 @@ function backToPanel() {
     // The page is gone once Back lands, and this instance with it: the router finishes the step.
     const removeAfterEach = router.afterEach((to, _from, failure) => {
       removeAfterEach();
-      const next = getOpenedItemRoute(to);
+      const next = IssueRoutes.getOpened(to);
       if (!failure && next && !next.onPage) {
-        void router.replace({ path: to.path, query: getOpenedItemQuery(to.query, reference) });
+        void router.replace({ path: to.path, query: IssueRoutes.getQuery(to.query, reference) });
       }
     });
   }
@@ -396,9 +393,9 @@ function backToPanel() {
   router.back();
 }
 
-/** What the page on screen was expanded from the panel for (`getExpandedLocation`); `null` off a page or unmarked. */
+/** What the page on screen was expanded from the panel for (`IssueRoutes.getExpandedLocation`); `null` off a page or unmarked. */
 function expandedFrom() {
-  return props.arrangement === 'page' ? getExpandedFrom(router.options.history.state) : null;
+  return props.arrangement === 'page' ? IssueRoutes.getExpandedFrom(router.options.history.state) : null;
 }
 
 function open(reference: ItemReference) {
@@ -432,7 +429,7 @@ function close() {
   }
 
   moveTo(
-    props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
+    props.arrangement === 'page' ? listPath() : { path: route.path, query: IssueRoutes.getQuery(route.query, null) },
     'push',
   );
 }
@@ -445,7 +442,7 @@ function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: I
 
   // From the item's page, back over the list it came from.
   const list = props.arrangement === 'page' ? router.resolve(listPath()) : route;
-  return { path: list.path, query: getOpenedItemQuery(list.query, reference) };
+  return { path: list.path, query: IssueRoutes.getQuery(list.query, reference) };
 }
 
 function listPath() {

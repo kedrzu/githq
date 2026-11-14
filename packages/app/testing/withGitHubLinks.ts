@@ -35,7 +35,7 @@ export function withGitHubLinks(options: WithGitHubLinksOptions = {}): Decorator
                         ...ITEM_PAGE_PATHS.map(path => ({
                             path,
                             component: empty,
-                            meta: { itemPage: true, gitHubScreen: true },
+                            meta: { itemPage: 'issue' as const, gitHubScreen: true },
                         })),
                         { path: REPOSITORY_PATH, name: 'repository', component: empty, meta: { gitHubScreen: true } },
                         { path: '/:path(.*)*', component: empty },

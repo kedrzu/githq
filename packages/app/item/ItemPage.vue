@@ -1,4 +1,4 @@
-<!-- `/:owner/:name/issues/:number` and `/:owner/:name/pull/:number`: an item on a page of its own (D9), at a GitHub-shaped address — reload, Back and a pasted github.com path open it again. -->
+<!-- `/:owner/:name/issues/:number`, `/:owner/:name/pull/:number` and `/:owner/:name/actions/workflows/:file`: an item on a page of its own (D9), at a GitHub-shaped address — reload, Back and a pasted github.com path open it again. A workflow shows nothing yet; its view comes with the workflow browser. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -12,7 +12,7 @@ const opened = computed(() => getOpenedItemRoute(route));
 
 <template>
   <OpenedItem
-    v-if="opened"
+    v-if="opened?.kind === 'issue'"
     :reference="opened.reference"
     arrangement="page"
   />

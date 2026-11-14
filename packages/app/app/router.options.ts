@@ -23,6 +23,7 @@ import {
     WORKFLOW_RUN_PATH,
     getRouteNameWithOwner,
 } from '@/tracking/trackingRoutes.js';
+import { WORKFLOW_PAGE_PATH } from '@/workflows/workflowRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
 // the build if any exist). Who may open each one is its `meta.auth` (`auth/routeAccess.ts`); the app's screens
@@ -99,14 +100,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name: index === 0 ? 'item-issue' : 'item-pull',
             component: () => import('@/item/ItemPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: true, gitHubScreen: true },
+            meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: 'issue', gitHubScreen: true },
         };
         // GitHub's other addresses under an item (a pull request's `/commits`, `/checks`, …) settle on the
         // item's own, keeping the query and the fragment. `router.resolve()` does not follow the redirect and reads
         // the record's own `meta`, so it says the same as the item's.
         yield {
             path: `${path}/:rest(.*)+`,
-            meta: { itemPage: true, gitHubScreen: true },
+            meta: { itemPage: 'issue', gitHubScreen: true },
             redirect: to => getItemPageRedirect(to, index === 0 ? 'item-issue' : 'item-pull'),
         };
     }
@@ -150,6 +151,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey, gitHubScreen: true },
         };
     }
+    // A workflow on a page of its own (actions D15), at GitHub's address of it; a static segment outranks the
+    // repository's other pages' hand-off to github.com, and a repository not tracked hands it off still.
+    yield {
+        path: WORKFLOW_PAGE_PATH,
+        name: 'workflow-page',
+        component: () => import('@/item/ItemPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: 'workflow', gitHubScreen: true },
+    };
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
     // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.
     yield {
