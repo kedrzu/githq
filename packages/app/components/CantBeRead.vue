@@ -1,4 +1,4 @@
-<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none; GitHub failing offers "Try again" (R), hidden or gone, or GitHub refusing to list a tracked copy's changes — in words of its own, close to the status bar's, as the repository is shown — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
+<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none, and on a screen say why in a mono chip (`api.github.com → unreachable`, `retry after 14:20`); GitHub failing offers "Try again" (R), hidden or gone, or GitHub refusing to list a tracked copy's changes — in words of its own, close to the status bar's, as the repository is shown — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
 <script lang="ts">
 /** The key of "Try again" (D18), as where settings saving stopped. */
 const RETRY_KEY = 'R';
@@ -38,7 +38,7 @@ const t = useTranslate();
 const browser = useService(Browser);
 const retrying = ref(false);
 
-const look = computed((): { icon: LucideIcon; title: string; detail: string; note: string } => {
+const look = computed((): { icon: LucideIcon; title: string; detail: string; note: string; fact?: string } => {
   const { cause, thing, plural } = props;
   switch (cause.kind) {
     case 'offline':
@@ -47,6 +47,7 @@ const look = computed((): { icon: LucideIcon; title: string; detail: string; not
         title: t(l.offlineTitle),
         detail: t(plural ? l.offlineLinePlural : l.offlineLine, { thing }),
         note: t(l.offlineNote),
+        fact: t(l.offlineFact),
       };
     case 'paused': {
       const time = formatTime(cause.until);
@@ -55,6 +56,7 @@ const look = computed((): { icon: LucideIcon; title: string; detail: string; not
         title: t(l.pausedTitle, { time }),
         detail: t(plural ? l.pausedLinePlural : l.pausedLine, { thing, time }),
         note: t(l.pausedNote, { time }),
+        fact: t(l.pausedFact, { time }),
       };
     }
     case 'failing':
@@ -132,6 +134,7 @@ async function tryAgain() {
     tone="warning"
     :title="onScreen ? look.title : look.note"
     :detail="look.detail"
+    :fact="look.fact"
   >
     <template
       v-if="cause.kind !== 'offline' && cause.kind !== 'paused'"
@@ -140,7 +143,7 @@ async function tryAgain() {
       <Button
         v-if="cause.kind === 'failing'"
         :variant="onScreen ? 'secondary' : 'outline'"
-        :size="onScreen ? 'md' : 'sm'"
+        size="sm"
         :icon="onScreen ? RotateCw : undefined"
         :kbd="onScreen ? RETRY_KEY : undefined"
         :keyshortcuts="onScreen ? RETRY_KEY : undefined"
@@ -152,7 +155,7 @@ async function tryAgain() {
       <Button
         v-else
         :variant="onScreen ? 'secondary' : 'outline'"
-        :size="onScreen ? 'md' : 'sm'"
+        size="sm"
         :icon="onScreen ? Github : undefined"
         :kbd="onScreen ? OPEN_KEY : undefined"
         :keyshortcuts="onScreen ? OPEN_KEY : undefined"

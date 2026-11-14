@@ -232,7 +232,7 @@ test('signing in for the first time from a link with GitHub\'s "return_to" choos
     await expect(page).toHaveURL('/pulls');
     // Nothing tracked, the group is empty: its note names it (D15, ES12).
     await expect(
-        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests, for now' }),
     ).toBeVisible();
 });
 

@@ -20,6 +20,7 @@ import { computed, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import IconButton from '@/components/IconButton.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
@@ -29,7 +30,6 @@ import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
 import type { LogMatches } from './utils/findLogMatches.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
-import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRunJobs from './WorkflowRunJobs.vue';
 import WorkflowRunLogPane from './WorkflowRunLogPane.vue';
 import WorkflowRunSummary from './WorkflowRunSummary.vue';
@@ -73,10 +73,10 @@ const emit = defineEmits<{
 /** What stands in for the columns. */
 interface RunMessage {
   readonly icon: LucideIcon;
-  readonly tone: 'amber' | 'neutral' | 'red';
+  readonly tone: 'broken' | 'muted' | 'warning';
   readonly title: string;
   readonly text: string;
-  readonly detail: string | null;
+  readonly detail?: string;
   readonly gitHubLabel: string;
   readonly retry: boolean;
 }
@@ -117,10 +117,9 @@ const message = computed((): RunMessage | null => {
     case 'gone':
       return {
         icon: Ghost,
-        tone: 'neutral',
+        tone: 'muted',
         title: t(l.goneTitle),
         text: t(l.goneText, { id: props.runId, name: props.nameWithOwner }),
-        detail: null,
         gitHubLabel: t(l.openOnGitHub),
         retry: false,
       };
@@ -134,19 +133,17 @@ const message = computed((): RunMessage | null => {
       return body.going
         ? {
             icon: Hourglass,
-            tone: 'amber',
+            tone: 'warning',
             title: t(l.noJobsWaitingTitle),
             text: t(l.noJobsWaitingText),
-            detail: null,
             gitHubLabel: t(l.openOnGitHub),
             retry: false,
           }
         : {
             icon: PackageOpen,
-            tone: 'neutral',
+            tone: 'muted',
             title: t(l.noJobsTitle),
             text: t(l.noJobsText),
-            detail: null,
             gitHubLabel: t(l.openOnGitHub),
             retry: false,
           };
@@ -243,7 +240,7 @@ function moveJob(by: number) {
 function getFailedMessage(heading: string, path: string, httpStatus: number | null): RunMessage {
   return {
     icon: Unplug,
-    tone: 'amber',
+    tone: 'warning',
     title: heading,
     text: httpStatus === null ? t(l.failedNoAnswerText) : t(l.failedText, { status: httpStatus }),
     detail: httpStatus === null ? t(l.failedNoAnswerDetail, { path }) : t(l.failedDetail, { path, status: httpStatus }),
@@ -256,7 +253,7 @@ function getInvalidFileMessage(): RunMessage {
   const { workflowPath } = props;
   return {
     icon: FileX,
-    tone: 'red',
+    tone: 'broken',
     title: t(l.invalidTitle),
     text: t(l.invalidText, { file: workflowPath ?? t(l.invalidFile) }),
     detail:
@@ -340,14 +337,15 @@ function getInvalidFileMessage(): RunMessage {
       v-else-if="message"
       :class="css.workflowRunView_message"
     >
-      <WorkflowEmptyState
+      <EmptyState
+        place="screen"
         :icon="message.icon"
         :tone="message.tone"
         :title="message.title"
-        :text="message.text"
-        :detail="message.detail"
+        :detail="message.text"
+        :fact="message.detail"
       >
-        <template #actions>
+        <template #action>
           <Button
             v-if="message.retry"
             variant="secondary"
@@ -370,7 +368,7 @@ function getInvalidFileMessage(): RunMessage {
             {{ message.gitHubLabel }}
           </Button>
         </template>
-      </WorkflowEmptyState>
+      </EmptyState>
     </div>
   </article>
 </template>
@@ -439,10 +437,7 @@ function getInvalidFileMessage(): RunMessage {
 .workflowRunView_message {
   display: flex;
   flex: 1;
-  align-items: center;
-  justify-content: center;
   min-height: 0;
-  padding: $spacing-16;
   overflow: auto;
 }
 </style>

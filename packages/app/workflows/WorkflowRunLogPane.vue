@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import Skeleton from '@/components/Skeleton.vue';
 import SkeletonBar from '@/components/SkeletonBar.vue';
@@ -18,7 +19,6 @@ import type { WorkflowLogPane } from './buildWorkflowRun.js';
 import type { LogMatches } from './utils/findLogMatches.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
-import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowJobLog from './WorkflowJobLog.vue';
 import WorkflowLogToolbar from './WorkflowLogToolbar.vue';
 import * as l from './WorkflowRunLogPane.loc.js';
@@ -57,7 +57,7 @@ interface KeyHint {
 /** What stands in for the log. */
 interface LogMessage {
   readonly icon: LucideIcon;
-  readonly tone: 'amber' | 'neutral';
+  readonly tone: 'muted' | 'warning';
   readonly title: string;
   readonly text: string;
   readonly detail: string;
@@ -116,7 +116,7 @@ const message = computed((): LogMessage | null => {
     case 'tooLarge':
       return {
         icon: FileX,
-        tone: 'amber',
+        tone: 'warning',
         title: t(l.tooLargeTitle, { job: pane.job.name }),
         text: t(l.tooLargeText),
         detail: t(l.tooLargeDetail, { id: pane.job.id }),
@@ -125,7 +125,7 @@ const message = computed((): LogMessage | null => {
     case 'refused':
       return {
         icon: ShieldX,
-        tone: 'amber',
+        tone: 'warning',
         title: t(l.failedTitle, { job: pane.job.name }),
         text: t(l.refusedText),
         detail: t(l.refusedDetail, { id: pane.job.id }),
@@ -134,7 +134,7 @@ const message = computed((): LogMessage | null => {
     case 'neverRan':
       return {
         icon: CircleSlash,
-        tone: 'neutral',
+        tone: 'muted',
         title: t(l.neverRanTitle, { job: pane.job.name }),
         text: t(l.neverRanText),
         detail: t(l.neverRanDetail, { conclusion: getConclusion(pane) }),
@@ -215,7 +215,7 @@ function getRunningMessage(pane: Extract<WorkflowLogPane, { kind: 'running' }>):
   const running = getJobMark(job) === 'running';
   return {
     icon: Hourglass,
-    tone: 'amber',
+    tone: 'warning',
     title: running ? t(l.runningTitle, { job: job.name }) : t(l.waitingTitle, { job: job.name }),
     text: t(l.runningText),
     detail:
@@ -233,7 +233,7 @@ function getGoneMessage(pane: Extract<WorkflowLogPane, { kind: 'gone' }>): LogMe
   const retention = days >= RETENTION_DAYS ? t(l.goneOld, { days }) : t(l.goneYoung);
   return {
     icon: Ghost,
-    tone: 'neutral',
+    tone: 'muted',
     title: t(l.goneTitle),
     text: failedStep ? `${t(l.goneFailedAt, { step: failedStep.name })} ${retention}` : retention,
     detail: t(l.goneDetail, { days }),
@@ -245,7 +245,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
   const { job, httpStatus } = pane;
   return {
     icon: Unplug,
-    tone: 'amber',
+    tone: 'warning',
     title: t(l.failedTitle, { job: job.name }),
     text: httpStatus === null ? t(l.failedNoAnswerText) : t(l.failedText, { status: httpStatus }),
     detail:
@@ -303,14 +303,15 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       v-else-if="message"
       :class="css.workflowRunLogPane_message"
     >
-      <WorkflowEmptyState
+      <EmptyState
+        place="screen"
         :icon="message.icon"
         :tone="message.tone"
         :title="message.title"
-        :text="message.text"
-        :detail="message.detail"
+        :detail="message.text"
+        :fact="message.detail"
       >
-        <template #actions>
+        <template #action>
           <Button
             v-if="canRetry"
             variant="secondary"
@@ -333,7 +334,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
             {{ message.gitHubLabel }}
           </Button>
         </template>
-      </WorkflowEmptyState>
+      </EmptyState>
     </div>
     <div
       v-if="pane.kind !== 'gone'"
@@ -391,10 +392,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
 .workflowRunLogPane_message {
   display: flex;
   flex: 1;
-  align-items: center;
-  justify-content: center;
   min-height: 0;
-  padding: $spacing-16;
   overflow: auto;
 }
 

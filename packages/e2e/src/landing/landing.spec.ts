@@ -285,7 +285,7 @@ test('"/login?next=" leads to the landing page keeping where to go, and signing 
     await expect(page).toHaveURL('/pulls');
     // Nothing tracked, the group is empty: its note names it (D15, ES12).
     await expect(
-        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests, for now' }),
     ).toBeVisible();
 });
 

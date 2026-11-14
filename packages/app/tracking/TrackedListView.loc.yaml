@@ -13,11 +13,11 @@ repositoriesDescription:
 projectsDescription:
   en: githq keeps every item of these, from any repository, in this browser and syncs it in the background. Open one for its settings.
 noRepositoriesTitle:
-  en: No repositories tracked
+  en: No repositories tracked yet
 noRepositoriesDetail:
   en: githq copies the repositories you track in full, other people's issues too. Issues and pull requests that concern you come along without tracking.
 noProjectsTitle:
-  en: No projects tracked
+  en: No projects tracked yet
 noProjectsDetail:
   en: githq copies the projects you track in full, items from any repository too. Issues and pull requests that concern you come along without tracking.
 addRepositories:

@@ -198,6 +198,7 @@ const SECTION_TEXTS = {
     hidden: l.stateHidesIssues,
     hiddenRead: l.stateHidesReadIssues,
     nothing: { open: l.noOpenIssues, closed: l.noClosedIssues, all: l.noIssues },
+    nothingFact: { open: l.noOpenIssuesFact, closed: l.noClosedIssuesFact, all: l.noIssuesFact },
     unread: { open: l.openIssuesOf, closed: l.closedIssuesOf, all: l.issuesOf },
   },
   pullRequests: {
@@ -205,6 +206,11 @@ const SECTION_TEXTS = {
     hidden: l.stateHidesPullRequests,
     hiddenRead: l.stateHidesReadPullRequests,
     nothing: { open: l.noOpenPullRequests, closed: l.noClosedPullRequests, all: l.noPullRequests },
+    nothingFact: {
+      open: l.noOpenPullRequestsFact,
+      closed: l.noClosedPullRequestsFact,
+      all: l.noPullRequestsFact,
+    },
     unread: { open: l.openPullRequestsOf, closed: l.closedPullRequestsOf, all: l.pullRequestsOf },
   },
 } as const;
@@ -671,6 +677,7 @@ function getSectionCount(value: RepositorySection) {
               />
               <FilteredOut
                 v-else-if="list.held > 0"
+                :fact="tracked ? t(l.filteredToZeroFact, { total: list.held }) : undefined"
                 :detail="
                   tracked
                     ? t(sectionTexts.hidden, { count: list.held, state: stateIs })
@@ -683,6 +690,7 @@ function getSectionCount(value: RepositorySection) {
                 place="screen"
                 :icon="BookMarked"
                 :title="t(sectionTexts.nothing[state])"
+                :fact="t(sectionTexts.nothingFact[state])"
                 :detail="t(l.nothingDetail, { repository: nameWithOwner })"
               />
             </template>
