@@ -130,3 +130,11 @@ resizeConversation:
   en: Resize the conversation
 resizeDiff:
   en: Resize the diff
+find:
+  en: Find in the diff
+findNext:
+  en: Next match
+findPrevious:
+  en: Previous match
+closeFind:
+  en: Close find

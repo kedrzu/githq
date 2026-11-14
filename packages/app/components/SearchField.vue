@@ -41,6 +41,11 @@ const { TextInput, input } = useTextInput();
 defineExpose({
   /** Puts the cursor in the field. */
   focus: () => input.value?.focus(),
+  /** Puts the cursor in the field, what is typed selected to type over. */
+  select: () => {
+    input.value?.focus();
+    input.value?.select();
+  },
 });
 </script>
 
