@@ -18,9 +18,9 @@ export interface WorkflowTabPlace {
 const NOWHERE: WorkflowTabPlace = { selected: null, followed: null };
 
 /**
- * Where the user was in each repository's Workflows section and on the broken workflows' screen, so P, a run's page or a
- * workflow's and back to it lands on the same row (actions W13, W4a, D15) — the screen is gone meanwhile. For this
- * session of the app, never persisted; forgotten when another account signs in.
+ * Where the user was in each repository's Workflows section, on the broken workflows' screen and among each opened
+ * workflow's runs, so P, a run's page or a workflow's and back to it lands on the same row (actions W13, W4a, D15) — the
+ * screen is gone meanwhile. For this session of the app, never persisted; forgotten when another account signs in.
  */
 export type WorkflowTabPlaces = Resolved<typeof WorkflowTabPlaces>;
 export const WorkflowTabPlaces = defineService({
@@ -31,10 +31,12 @@ export const WorkflowTabPlaces = defineService({
     setup({ accounts }) {
         const placesRef = shallowRef<ReadonlyMap<string, WorkflowTabPlace>>(new Map());
         const brokenSelectedRef = shallowRef<string | null>(null);
+        const runsSelectedRef = shallowRef<ReadonlyMap<string, string>>(new Map());
 
         accounts.onChange(() => {
             placesRef.value = new Map();
             brokenSelectedRef.value = null;
+            runsSelectedRef.value = new Map();
         });
 
         return {
@@ -43,12 +45,33 @@ export const WorkflowTabPlaces = defineService({
                 return brokenSelectedRef.value;
             },
             setBrokenSelected,
+            getRunSelected,
+            setRunSelected,
             get,
             update,
         };
 
         function setBrokenSelected(key: string | null) {
             brokenSelectedRef.value = key;
+        }
+
+        /**
+         * The selected run's row key among the runs of the workflow keyed `workflowKey` (`WorkflowRoutes.formatKey`);
+         * `null` until the user moves or opens one. Reactive.
+         */
+        function getRunSelected(workflowKey: string): string | null {
+            return runsSelectedRef.value.get(workflowKey) ?? null;
+        }
+
+        function setRunSelected(workflowKey: string, runKey: string | null) {
+            const next = new Map(runsSelectedRef.value);
+            if (runKey === null) {
+                next.delete(workflowKey);
+            } else {
+                next.set(workflowKey, runKey);
+            }
+
+            runsSelectedRef.value = next;
         }
 
         /** Where the user was in the repository's tab; reactive. */

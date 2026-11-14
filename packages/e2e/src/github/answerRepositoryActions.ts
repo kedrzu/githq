@@ -74,6 +74,8 @@ export interface GitHubActionsRun {
     readonly createdAt: string;
     /** Which attempt it is on; the first without it. */
     readonly attempt?: number;
+    /** Whose run it is: `monalisa` without it. */
+    readonly actor?: string;
 }
 
 /** A repository with no workflows, on `main`: what every tracked repository answers unless a test gives it some. */
@@ -91,7 +93,7 @@ export const NO_ACTIONS: GitHubActionsState = {
  * repository's latest runs (`GET /repos/{o}/{r}/actions/runs`), the repository itself for its default branch
  * (`GET /repos/{o}/{r}`), its tags (`…/git/matching-refs/tags`), its workflows (`…/actions/workflows`) and a
  * workflow's runs on any ref or filtered by `branch`, `event`, `status` and `actor` (`…/actions/workflows/{id}/runs`,
- * one page, no `Link`), a workflow's file (`…/contents/.github/workflows/<name>.yml`: run on push, one job), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
+ * paged by `per_page` and `page`, a `Link` to the next page while more remain), a workflow's file (`…/contents/.github/workflows/<name>.yml`: run on push, one job), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
  * job's log (`…/actions/jobs/{id}/logs`, plain text), each `404` for an id it does not know. Every JSON answer carries an ETag hashed from its body and is
  * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs and file are answered once the list
  * named it.
@@ -162,7 +164,7 @@ export function answerRepositoryActions(
                   name: read().workflows.find(workflow => workflow.id === run.workflowId)?.name ?? null,
                   head_commit: { message: `Run ${run.id}` },
                   run_attempt: run.attempt ?? 1,
-                  actor: { login: ACTOR },
+                  actor: { login: run.actor ?? ACTOR },
               })
             : NOT_FOUND;
     });
@@ -197,7 +199,6 @@ export function answerRepositoryActions(
         const branch = searchParams.get('branch');
         const event = searchParams.get('event');
         const status = searchParams.get('status');
-        // Every run of the mock is credited to the same login (`…/actions/runs/{id}`).
         const actor = searchParams.get('actor');
         const matching = newestFirst(read().runs).filter(
             run =>
@@ -205,17 +206,29 @@ export function answerRepositoryActions(
                 (branch === null || run.headBranch === branch) &&
                 (event === null || run.event === event) &&
                 (status === null || run.status === status || run.conclusion === status) &&
-                (actor === null || actor === ACTOR),
+                (actor === null || (run.actor ?? ACTOR) === actor),
         );
-        return conditional(request, {
+        const perPage = perPageOf(request);
+        const page = Number(searchParams.get('page') ?? 1);
+        const answer = conditional(request, {
             total_count: matching.length,
-            workflow_runs: matching.slice(0, perPageOf(request)).map(run => toRestRun(nameWithOwner, run)),
+            workflow_runs: matching
+                .slice((page - 1) * perPage, page * perPage)
+                .map(run => toRestRun(nameWithOwner, run)),
         });
+        if (page * perPage >= matching.length) {
+            return answer;
+        }
+
+        // GitHub's next page keeps the query, filters and page size included.
+        const next = new URL(request.url);
+        next.searchParams.set('page', String(page + 1));
+        return { ...answer, link: `<${next.href}>; rel="next"` };
     }
 }
 
 const NOT_FOUND: GitHubRestAnswer = { status: 404, json: { message: 'Not Found' } };
-/** Who every run is credited to. */
+/** Who a run is credited to unless it names someone. */
 const ACTOR = 'monalisa';
 
 /** Where the workflow `name`'s file is in its repository. */
@@ -263,6 +276,7 @@ function toRestRun(nameWithOwner: string, run: GitHubActionsRun) {
         created_at: run.createdAt,
         updated_at: run.createdAt,
         display_title: `Run ${run.id}`,
+        actor: { login: run.actor ?? ACTOR, avatar_url: `https://avatars.githubusercontent.com/${run.actor ?? ACTOR}` },
         html_url: `https://github.com/${nameWithOwner}/actions/runs/${run.id}`,
     };
 }

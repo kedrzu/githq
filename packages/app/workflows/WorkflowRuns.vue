@@ -86,6 +86,9 @@ const STATUS_ICONS = {
   other: CircleDashed,
 } as const;
 
+/** The run the user moved to or opened, by its row key; held here when the caller keeps none. */
+const chosenRun = defineModel<string | null>('selectedRun', { default: null });
+
 const t = useTranslate();
 const list = useTemplateRef<HTMLElement>('list');
 /** The groups folded by their heading. */
@@ -148,6 +151,7 @@ const selection = useRowSelection({
   root: list,
   keyAttribute: 'data-run-key',
   selectFirst: true,
+  chosenKey: chosenRun,
   open: row => emit('openRun', row.run),
   enabled: () => props.keys,
 });

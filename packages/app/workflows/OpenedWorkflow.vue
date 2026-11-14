@@ -1,4 +1,4 @@
-<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key) —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here; the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
+<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key) —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -18,6 +18,7 @@ import * as l from './OpenedWorkflow.loc.js';
 import { useOpenedWorkflow } from './useOpenedWorkflow.js';
 import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
 import { WorkflowRunHistory } from './WorkflowRunHistory.js';
+import { WorkflowTabPlaces } from './WorkflowTabPlaces.js';
 import type { WorkflowRunFilters } from './WorkflowRunHistory.js';
 import { parseWorkflowKey, WorkflowRoutes } from './workflowRoutes.js';
 import type { WorkflowReference } from './workflowRoutes.js';
@@ -35,6 +36,7 @@ const t = useTranslate();
 const history = useService(WorkflowRunHistory);
 const tracking = useService(TrackingStore);
 const navigation = useService(ItemNavigation);
+const places = useService(WorkflowTabPlaces);
 const route = useRoute();
 const router = useRouter();
 const now = useNow(TICK_MS);
@@ -65,6 +67,11 @@ watch(
   { immediate: true },
 );
 
+/** The run selected among its runs, kept for the session so coming back from a run's page lands on it. */
+const selectedRun = computed({
+  get: () => places.getRunSelected(WorkflowRoutes.formatKey(props.reference)),
+  set: (runKey: string | null) => places.setRunSelected(WorkflowRoutes.formatKey(props.reference), runKey),
+});
 const referenceText = computed(() => `${opened.nameWithOwner} ${props.reference.file}`);
 /** Escape from full screen goes back to the panel when the page was expanded from it and the panel fits. */
 const escapeTo = computed(() => {
@@ -91,6 +98,7 @@ function readMore() {
 <template>
   <WorkflowView
     v-if="opened.state && opened.details && opened.runs"
+    v-model:selected-run="selectedRun"
     :arrangement="arrangement"
     :position="walk.position"
     :name-with-owner="opened.nameWithOwner"

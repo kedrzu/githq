@@ -70,6 +70,9 @@ const props = withDefaults(
   { escapeTo: 'list', offerRun: false },
 );
 
+/** The run the user moved to or opened among the runs, by its row key: kept by the caller across visits. */
+const selectedRun = defineModel<string | null>('selectedRun', { default: null });
+
 const emit = defineEmits<{
   close: [];
   previous: [];
@@ -342,6 +345,7 @@ interface Standing {
           </div>
           <WorkflowRuns
             v-if="showsRuns"
+            v-model:selected-run="selectedRun"
             :runs="runs"
             :group-by="groupBy"
             :ref-groups="refGroups"

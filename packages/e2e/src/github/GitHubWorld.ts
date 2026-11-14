@@ -372,6 +372,8 @@ export interface GitHubWorldRunParams {
     readonly branch?: string;
     /** What started it: `push` by default, `pull_request`, `schedule`, … */
     readonly event?: string;
+    /** Whose run it is: `monalisa` by default. */
+    readonly actor?: string;
 }
 
 /** A job of a run ({@link GitHubWorld.runJobs}). */
@@ -881,6 +883,7 @@ export class GitHubWorld {
             status: run.conclusion === null ? 'in_progress' : 'completed',
             conclusion: run.conclusion,
             createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
+            ...(run.actor !== undefined && { actor: run.actor }),
         });
         return id;
     }
