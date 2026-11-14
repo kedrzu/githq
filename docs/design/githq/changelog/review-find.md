@@ -72,3 +72,15 @@ Forced by: the app's shared popover shadow and a state the design didn't draw.
   frame's 0 6 20 `#00000080`; the difference is too small to redraw.
 - [x] No matches while files are still read: the counter says "No results yet" (not drawn; the "+" of CR139 needs a
   count to follow).
+
+## Round 5 · owner, built at once
+
+Asked: "a light amber ring is fine, with a little room, reaching slightly past the word": a match at 8% was hardly seen
+on an added line. The ring is drawn outside the word, so no text moves (D7); at 60% it keeps 3:1 on every line's colour
+(`tokens.test.ts`), 40% did not.
+
+- [x] Variable `find-match-ring`: new, `#D2992299`.
+- [x] `Diff / Find mark` (`jtxWW`): padding `[0, -2]`, no fill; new `Fill` (`PtqIh`), fill `$find-match` reaching 2 px
+  past the word, radius 4, 1 px ring `$find-match-ring` outside.
+- [x] `Diff / Find mark · current` (`y6jJX`): the same geometry, `Fill` in `$find-match-current` with its ring
+  `$find-match-outline` (was a 1 px inner stroke on the mark).

@@ -297728,19 +297728,35 @@
                       "name": "Diff / Find mark",
                       "reusable": true,
                       "height": 16,
-                      "fill": "$find-match",
-                      "cornerRadius": 3,
+                      "padding": [
+                        0,
+                        -2
+                      ],
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "eWWS6",
-                          "name": "Text",
-                          "fill": "$fg",
-                          "content": "review",
-                          "fontFamily": "$mono",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "PtqIh",
+                          "name": "Fill",
+                          "fill": "$find-match",
+                          "cornerRadius": 4,
+                          "stroke": "$find-match-ring",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "outer",
+                          "padding": 2,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eWWS6",
+                              "name": "Text",
+                              "fill": "$fg",
+                              "content": "review",
+                              "fontFamily": "$mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -297750,10 +297766,16 @@
                       "reusable": true,
                       "ref": "jtxWW",
                       "name": "Diff / Find mark · current",
-                      "fill": "$find-match-current",
-                      "stroke": "$find-match-outline",
-                      "strokeWidth": 1,
-                      "strokeAlignment": "inner"
+                      "fill": [],
+                      "stroke": [],
+                      "strokeWidth": 0,
+                      "strokeAlignment": "inner",
+                      "descendants": {
+                        "PtqIh": {
+                          "fill": "$find-match-current",
+                          "stroke": "$find-match-outline"
+                        }
+                      }
                     },
                     {
                       "type": "frame",
@@ -297807,13 +297829,7 @@
                                   "id": "M98nN",
                                   "type": "ref",
                                   "ref": "jtxWW",
-                                  "name": "Match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "review",
-                                      "fill": "$syntax-comment"
-                                    }
-                                  }
+                                  "name": "Match"
                                 },
                                 {
                                   "type": "text",
@@ -297860,13 +297876,7 @@
                                   "id": "Hp5CF",
                                   "type": "ref",
                                   "ref": "jtxWW",
-                                  "name": "Match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "review",
-                                      "fill": "$syntax-comment"
-                                    }
-                                  }
+                                  "name": "Match"
                                 },
                                 {
                                   "type": "text",
@@ -297942,13 +297952,7 @@
                                   "id": "zpSBE",
                                   "type": "ref",
                                   "ref": "jtxWW",
-                                  "name": "Match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "Review",
-                                      "fill": "$syntax-title"
-                                    }
-                                  }
+                                  "name": "Match"
                                 },
                                 {
                                   "type": "text",
@@ -298025,13 +298029,7 @@
                                   "id": "AVRJs",
                                   "type": "ref",
                                   "ref": "jtxWW",
-                                  "name": "Match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "review",
-                                      "fill": "$syntax-string"
-                                    }
-                                  }
+                                  "name": "Match"
                                 },
                                 {
                                   "type": "text",
@@ -298127,13 +298125,7 @@
                                   "id": "f8qrv9",
                                   "type": "ref",
                                   "ref": "jtxWW",
-                                  "name": "Match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "review",
-                                      "fill": "$fg"
-                                    }
-                                  }
+                                  "name": "Match"
                                 },
                                 {
                                   "type": "text",
@@ -298243,13 +298235,7 @@
                                   "id": "KEVY1",
                                   "type": "ref",
                                   "ref": "y6jJX",
-                                  "name": "Current match",
-                                  "descendants": {
-                                    "eWWS6": {
-                                      "content": "review",
-                                      "fill": "$fg"
-                                    }
-                                  }
+                                  "name": "Current match"
                                 },
                                 {
                                   "type": "text",
@@ -367658,13 +367644,7 @@
                                                   "id": "rJfVF",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-comment"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -367711,13 +367691,7 @@
                                                   "id": "MKF6b",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-comment"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -368286,13 +368260,7 @@
                                                   "id": "UzK6c",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "Review",
-                                                      "fill": "$syntax-title"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -368510,13 +368478,7 @@
                                                   "id": "swysb",
                                                   "type": "ref",
                                                   "ref": "y6jJX",
-                                                  "name": "Current match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Current match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -368642,13 +368604,7 @@
                                                   "id": "VxttY",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-string"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -368694,13 +368650,7 @@
                                                   "id": "R68aGr",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -369701,13 +369651,7 @@
                                                   "id": "hP2F4",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "Review",
-                                                      "fill": "$syntax-title"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -369763,13 +369707,7 @@
                                                   "id": "hDieq",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-string"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -370912,13 +370850,7 @@
                                                   "id": "Knnp8",
                                                   "type": "ref",
                                                   "ref": "y6jJX",
-                                                  "name": "Current match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "foo",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Current match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -371276,13 +371208,7 @@
                                                   "id": "uhNJ9",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "foo",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -371660,13 +371586,7 @@
                                                   "id": "jNB5S",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "foo",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -372909,13 +372829,7 @@
                                                   "id": "r4j5k",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "foo",
-                                                      "fill": "$syntax-string"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -373674,13 +373588,7 @@
                                                   "id": "teKR8",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-comment"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -373727,13 +373635,7 @@
                                                   "id": "JGTz5",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-comment"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -374302,13 +374204,7 @@
                                                   "id": "cUMK6",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "Review",
-                                                      "fill": "$syntax-title"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -374526,13 +374422,7 @@
                                                   "id": "KjY1S",
                                                   "type": "ref",
                                                   "ref": "y6jJX",
-                                                  "name": "Current match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Current match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -374658,13 +374548,7 @@
                                                   "id": "reZCB",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-string"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -374710,13 +374594,7 @@
                                                   "id": "NF59f",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -384616,13 +384494,7 @@
                                                   "id": "MZq1Z",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -384658,13 +384530,7 @@
                                                   "id": "GyqRZ",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "Review",
-                                                      "fill": "$syntax-title"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -385073,13 +384939,7 @@
                                                   "id": "IGUh9",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-comment"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -385538,13 +385398,7 @@
                                                   "id": "LgiwL",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "Review",
-                                                      "fill": "$syntax-title"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -385870,13 +385724,7 @@
                                                   "id": "ASUoU",
                                                   "type": "ref",
                                                   "ref": "y6jJX",
-                                                  "name": "Current match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Current match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -386002,13 +385850,7 @@
                                                   "id": "qJxcw",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$syntax-string"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -386054,13 +385896,7 @@
                                                   "id": "noOtU",
                                                   "type": "ref",
                                                   "ref": "jtxWW",
-                                                  "name": "Match",
-                                                  "descendants": {
-                                                    "eWWS6": {
-                                                      "content": "review",
-                                                      "fill": "$fg"
-                                                    }
-                                                  }
+                                                  "name": "Match"
                                                 },
                                                 {
                                                   "type": "text",
@@ -452645,6 +452481,10 @@
     "find-match-outline": {
       "type": "color",
       "value": "#F2CC60"
+    },
+    "find-match-ring": {
+      "type": "color",
+      "value": "#D2992299"
     }
   },
   "fileToken": "926208b3-4cc0-40af-a9ef-a0904bbaa60d"

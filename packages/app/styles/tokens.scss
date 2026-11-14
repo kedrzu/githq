@@ -128,6 +128,9 @@ $color-syntax-builtin: #ffa657;
 $color-find-match: rgba(#bb8009, 0.08);
 $color-find-match-current: rgba(#bb8009, 0.14);
 $color-find-match-outline: #f2cc60;
+// The light ring round a match, past its fill, which shows it on every line's colour (owner, 2026-11-14): as faint as
+// keeps 3:1 on each of them.
+$color-find-match-ring: rgba(#d29922, 0.6);
 
 // The light button's fill.
 $color-button-light: $color-fg;

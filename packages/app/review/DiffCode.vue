@@ -71,12 +71,19 @@ const stretches = computed(() =>
 .diffCode_mark {
   color: inherit;
   background: $color-find-match;
-  border-radius: 3px;
+  border-radius: 2px;
+  // Its fill and its ring reach a little past the word, drawn outside its box, so the line's width doesn't change (D7).
+  box-shadow:
+    0 0 0 2px $color-find-match,
+    0 0 0 3px $color-find-match-ring;
+  box-decoration-break: clone;
 }
 
 .diffCode_mark_current {
   background: $color-find-match-current;
-  box-shadow: inset 0 0 0 1px $color-find-match-outline;
+  box-shadow:
+    0 0 0 2px $color-find-match-current,
+    0 0 0 3px $color-find-match-outline;
 }
 
 .diffCode_comment {

@@ -39,6 +39,7 @@ const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
     ['graph-line', GRAPH_SURFACES, GRAPHICS],
     ['graph-line-main', GRAPH_SURFACES, GRAPHICS],
     ['find-match-outline', CURRENT_MARK_SURFACES, GRAPHICS],
+    ['find-match-ring', DIFF_SURFACES, GRAPHICS],
     ...SYNTAX.map(token => [token, [...CODE_SURFACES, ...MARK_SURFACES], TEXT] as const),
 ];
 
@@ -90,6 +91,7 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'find-match': "the amber of a match of find (D47), dark and faint enough for every syntax colour's AA on it",
     'find-match-current': 'the current match, stronger than a match and outlined, still AA for every syntax colour',
     'find-match-outline': "the design's outline of the current match",
+    'find-match-ring': "a match's light ring (owner, 2026-11-14), drawn outside its text, as faint as keeps 3:1",
 };
 
 const tokens = readTokens();

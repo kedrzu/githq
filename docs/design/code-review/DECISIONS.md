@@ -890,7 +890,8 @@ Match Case, Match Whole Word and Use Regular Expression (JavaScript, one line at
 close. It searches the lines the diff shows (added, deleted and context, lines expanded out of a gap and a thread's
 code included), never lines still hidden in a gap, collapsed, too large or unread files, paths or comments; nothing is
 fetched for it. Each line counts once (a deleted line on its older side, others on the newer), so the total is the same
-in both layouts. Every match is marked in the code over its syntax colours, the current one stronger with an outline;
+in both layouts. Every match is marked in the code over its syntax colours, a faint fill and a light ring reaching just past the
+word, the current one stronger with a bright ring;
 going to one draws it first and holds it (D7) and puts the cursor on its row (D44).** (2026-11-14, owner: scope "only
 the lines shown", the floating bar, designed in Pen first; CR137–CR143)
 

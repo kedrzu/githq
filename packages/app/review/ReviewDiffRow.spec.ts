@@ -219,7 +219,7 @@ test.each([
     ['split', SplitColoured, SplitMarked],
     ['unified', UnifiedColoured, UnifiedMarked],
 ])(
-    "find's marks change no text and no height, keep the colours inside, the current one outlined, %s",
+    "find's marks change no text and no height, keep the colours inside, each ringed and the current one in its own, %s",
     async (_layout, Coloured, Marked) => {
         await Coloured.run();
         const coloured = readCode();
@@ -229,7 +229,8 @@ test.each([
         const marks = [...document.querySelectorAll('code mark')];
         const current = marks.filter(mark => mark.hasAttribute('data-current-match'));
         expect(current.map(mark => mark.textContent)).toEqual(['MAX_BATCH']);
-        expect(getComputedStyle(current[0]!).boxShadow).not.toBe('none');
+        const currentRing = getComputedStyle(current[0]!).boxShadow;
+        expect(currentRing).not.toBe('none');
         expect(marks.map(mark => mark.textContent)).toContain('xponen');
         const inString = marks.find(mark => mark.textContent === 'xponen')!;
         expect(inString.querySelector('[tid="code-string"]')).not.toBeNull();
@@ -238,7 +239,10 @@ test.each([
             getComputedStyle(document.querySelector('[tid="code-comment"]')!).color,
         );
         const other = marks.find(mark => !mark.hasAttribute('data-current-match'))!;
-        expect(getComputedStyle(other).boxShadow).toBe('none');
+        // Every match has its ring, the current one its own.
+        const otherRing = getComputedStyle(other).boxShadow;
+        expect(otherRing).not.toBe('none');
+        expect(otherRing).not.toBe(currentRing);
         expect(getCode('RETRY_DELAY_MS').querySelector('mark')).toBeNull();
     },
 );
