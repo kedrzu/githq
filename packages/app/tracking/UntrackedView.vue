@@ -1,9 +1,12 @@
-<!-- The screen of a project not tracked (J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). -->
+<!-- The screen of a project not tracked (J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). On a phone its header is the phone's top bar with the project's name (mobile D14). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import Button from '@/components/Button.vue';
 import ItemCard from '@/lists/ItemCard.vue';
@@ -67,6 +70,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
 
 // Shown with its count even when empty (CH37): the lines under it say why.
 const groups = computed((): ListGroup<Item>[] => [
@@ -76,7 +80,12 @@ const groups = computed((): ListGroup<Item>[] => [
 
 <template>
   <div :class="css.untrackedView">
+    <PhoneTopBar
+      v-if="phone.active"
+      :title="name"
+    />
     <header
+      v-else
       :class="css.untrackedView_header"
       v-bind="WINDOW_DRAG_REGION"
     >

@@ -8,6 +8,8 @@ import type { ListedItems } from '@/lists/ListTypes.js';
 export interface ItemList extends Omit<ListedItems, 'all'> {
     /** The list's address, query included (`/issues/assigned?…`): where closing an item goes back to. */
     readonly path: string;
+    /** What back on an item's page says it returns to (mobile D20): "Issues", "My work", a project's view. */
+    readonly title: string;
 }
 
 /** A step of `K`/`J` from one pull request's review to another's. */

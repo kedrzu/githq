@@ -127,6 +127,17 @@ export function getExpandedFrom(state: HistoryState): string | null {
 }
 
 /**
+ * The address of the entry behind the current one in the history, as vue-router keeps it in the entry's state (`back`,
+ * kept through a replace); `null` at the first entry, or where the history keeps no such state (a memory history).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getHistoryBack(state: HistoryState): string | null {
+    const { back } = state;
+    return typeof back === 'string' ? back : null;
+}
+
+/**
  * The address of a pull request's review (D2), always a page of its own.
  *
  * @__NO_SIDE_EFFECTS__

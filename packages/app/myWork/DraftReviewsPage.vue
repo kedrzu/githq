@@ -23,9 +23,9 @@ import { getDraftReviews } from './getDraftReviews.js';
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
 const router = useRouter();
-const list = useItemList();
-const navigation = useService(ItemNavigation);
 const t = useTranslate();
+const list = useItemList(() => t(l.title));
+const navigation = useService(ItemNavigation);
 
 const drafts = computed(() => getDraftReviews(items.all));
 

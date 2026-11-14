@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import { getWorkflowRunPathOfUrl } from './trackingRoutes.js';
+import { getWorkflowRunPathOfUrl, isRouteShownOnPhone } from './trackingRoutes.js';
 
 test('a run and a job of github.com become the app path of the repository in the address', () => {
     expect(getWorkflowRunPathOfUrl('https://github.com/acme/web/actions/runs/123')).toBe('/acme/web/actions/runs/123');
@@ -61,4 +61,22 @@ test('a malformed address gives null without throwing', () => {
     ]) {
         expect(getWorkflowRunPathOfUrl(url)).toBeNull();
     }
+});
+
+test('the phone shows lists, items and settings, and hands off code review, commits and Actions', () => {
+    const shown = (name: string, section?: string) => isRouteShownOnPhone({ name, params: { section } });
+
+    expect(shown('my-work')).toBe(true);
+    expect(shown('item-pull')).toBe(true);
+    expect(shown('settings')).toBe(true);
+    expect(shown('repository')).toBe(true);
+    expect(shown('repository', 'issues')).toBe(true);
+    expect(shown('repository', 'pulls')).toBe(true);
+    expect(shown('repository', 'commits')).toBe(false);
+    expect(shown('repository', 'actions')).toBe(false);
+    expect(shown('review')).toBe(false);
+    expect(shown('draft-reviews')).toBe(false);
+    expect(shown('workflows')).toBe(false);
+    expect(shown('workflow-run')).toBe(false);
+    expect(shown('workflow-run-job')).toBe(false);
 });

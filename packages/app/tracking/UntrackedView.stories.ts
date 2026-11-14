@@ -4,11 +4,14 @@ import Button from '@/components/Button.vue';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import UntrackedView from './UntrackedView.vue';
 
 const meta = {
     component: UntrackedView,
+    // The desktop's, whatever the width; the phone's stories say so.
+    decorators: [withPhoneLayout(false)],
     args: {
         name: 'Mobile launch',
         meta: 'fitloop',
@@ -56,3 +59,6 @@ export const NothingConcerns: Story = {
         summary: 'Nothing in Mobile launch concerns you, so githq has none of it.',
     },
 };
+
+/** On a phone (mobile D14): the phone's top bar with the project's name, in place of the header. */
+export const Phone: Story = { decorators: [withPhoneLayout(true)] };

@@ -6,16 +6,10 @@ list:
   en: List
 board:
   en: Board
-display:
-  en: Display
 order:
   en: Order
 properties:
   en: Properties
-deviceOnly:
-  en: Saved on this device only
-reset:
-  en: Reset
 orderBy:
   en: 'Order: {order}'
 showAsBoard:
