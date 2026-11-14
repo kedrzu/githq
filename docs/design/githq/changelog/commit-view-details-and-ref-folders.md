@@ -244,3 +244,53 @@ The existing screens keep their grey lanes until a variant is picked.
 Not changed: the lanes and dots of the ten `Commit graph / …` panes and every screen (waiting for the owner's pick);
 `Commit row`'s ring (14 px, now 2.5 px out from an r = 3 dot); D15's "each newest first" in
 `docs/design/git-client/DECISIONS.md` still to say the order is chosen per group.
+
+## Round 6 · agent brief
+
+Asked (`.context/commit-view-brief-6.md`): the owner picked CH61 · Variant A with 1 px of the row's own background
+between the lane-coloured outline and the red (or amber) centre; coloured lanes applied to every graph; the variants
+resolved; CH60's caption corrected (the sort is a synced user preference). Changed: the ten graph panes redrawn by lane,
+the dot ring enlarged, CH61 and the palette moved into an ordinary row, the `Variants` frame gone.
+
+- [ ] The `Graph drawing` of the ten `Commit graph / …` panes (`g6kfP` Few branches, `r6W7Ds` Many branches · capped,
+  `T0aoP` · every lane, `jaTAI` · three lanes, `YAAi9` First page, `xOlz1` Few branches · not known yet, `a5Qvh` One
+  branch, `o9mwGt` The beginning, `MRr2O` After a force-push, `lgXeK` Local clone): the grey `Lines`, `Lines default
+  branch`, `Commits`, `Merges`, `Commits failing` and `Commits running` paths → one path per lane and kind, named
+  `Lines · lane N`, `Commits · lane N`, `Merges · lane N`, `CI rings · lane N`, `Failing centres`, `Running centres`
+  (and `· main`, `· fold`). Colour by column: the default branch's column `$graph-line-main` (`#8B929B`, was a literal);
+  column n ≥ 1 `$graph-lane-((n − 1) mod 8 + 1)`; a curve between two columns takes the one farther from the trunk (the
+  branch's). Dots r = 3 (was 3.5) filled in the lane's colour (was `#9198A1`). Merges a 1.5 px ring r = 3 in the
+  lane's colour, unfilled (was `$bg` fill, `#9198A1` stroke). Failing and running: a 1.5 px ring r = 4.25 in the lane's
+  colour (3.5–5 px), 1 px gap, a disc r = 2.5 in `$red` / `$amber` (was a plain disc r = 4 / 3.5). The lines are cut
+  inside every failing, running and merge ring, so the gap and a merge's inside show the row's own background (`$bg`,
+  the stripe, `$sel`, the hover). One-branch and The beginning have no default-branch path; their leftmost column is
+  the default branch.
+- [ ] Folded lanes (`r6W7Ds`, `jaTAI`; CH10, CH17, CH44, CH45): the fold column is neutral, not a lane: `Lines folded`
+  (3 px) and the curves into it stay `$graph-line` (`#656C76`, the dimmer grey, so the fold doesn't read as the
+  trunk); the dots and CI rings on it `$graph-line-main`.
+- [ ] Commit row (`EMjBX`) › `Dot ring` (`gxMLU`): 14 × 14 at (3, 7) → 16 × 16 at (2, 6), 1.5 px inner stroke as
+  before: 1.5 px clear of a failing or running dot's outline, 3.5 px from a plain dot. The 23 instance overrides of its
+  `x` moved 1 px left (`YvExd`, `qslXI` ×2, `S8pU7q` ×2, `e9rali`, `CSIbx`, `t5ylMf`, `r0SGiG`, `VtHCg`, `h2wkJ`,
+  `At5oP`, `v0ZFU`, `pmqyb`, `KZksk`, `cUGYA`, `PMoe9` and the six rows of CH61–CH63).
+- [ ] Screens following the panes (nothing overridden in the drawings): CH3, CH6, CH10, CH11, CH12, CH15–CH18, CH20,
+  CH23–CH29, CH31–CH36, CH39–CH42, CH44–CH48, CH54, CH59, CD2–CD7.
+- [ ] CH54 (`bEoEQ`) › `Rows at 3×` (`JR2zo`): the six grey paths → the recoloured paths of `g6kfP` at 3× (viewBox
+  `[0,0,62,160]`, strokes 4.5); `Ring · selected` (`JdXkh`) and `Ring · hover` (`D0W8gj`) 42 → 48 px, x 93 → 90, y −3.
+- [ ] CH61 (`scrBz`): `Actual size` drawing (`fziJ0`) and `Rows at 3×` (`ikaW4`): the failing and running dots c01,
+  c02, c06 → a lane-coloured ring r = 4.25 plus a new `Dot c0N · centre` disc r = 2.5; the merge c03 unfilled; the
+  lanes cut inside those rings; the 3× rings (`d2RHE`, `vt9gu`) 42 → 48 px.
+- [ ] App · Commits (`DtWFt`): new `Row of screens · Lane colours` (`v6B8Ha`) after CH54's row, holding the CH61 slot
+  (`MDjZF`) and `Lane palette` (`pw4ow`), both moved out of `Variants · Failing CI on a coloured lane` (`v1rQdK`),
+  which is deleted with its intro, `CH62 · Variant B · The dot turns red, a red notch on the lane` (`YbZhD`) and
+  `CH63 · Variant C · A red halo round the lane-coloured dot` (`ef4Ez`) and their slots. Renamed: `CH61 · A red
+  centre inside the lane's ring` (slot, screen, caption; "Variant A · " and "Recommended" dropped). No amber left.
+- [ ] Captions: CH61 (`fIxzC`: the gap, r = 5 overall, the 16 px rings, every graph draws it), the palette note
+  (`rlDzy`: the fold stays neutral), CH54 (`glxYV`, note `eToC4`: 16 px ring, 3.5 / 1.5 px), CH12 (`woMK8`: red and
+  amber as the dot's centre in a lane-coloured ring), the graph group note (`ShEcf`: lanes in colour, the default
+  branch grey), CH10 (`fNPk8`) and CH44 (`d7i5i`: the fold stays grey), CH33 (`KuFvk`: a dot stays plain in its
+  lane's colour until its CI is known).
+- [ ] CH60 (`eiGXN`): "the choice is kept on the device per repository" → the order is a user preference kept in the
+  synced settings, one choice for Branches and one for Tags, the same in every repository.
+
+Not changed: `$graph-line` stays (the fold); `docs/design/git-client/DECISIONS.md` D15 still says "each newest first"
+(round 5). The code's graph has no `graph-lane-*` tokens yet.
