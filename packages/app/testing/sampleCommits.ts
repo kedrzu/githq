@@ -164,3 +164,24 @@ function samplePullRequest(number: number, state: PullRequestState, isDraft = fa
         isDraft,
     };
 }
+
+/**
+ * A commit message body of 40 lines for tests and stories (CH55): a paragraph, 30 `- ` list items, and a closing
+ * paragraph — long enough that facts drawn below it would leave the screen.
+ */
+export function sampleLongCommitBody() {
+    const items = Array.from({ length: 30 }, (_, index) => `- Step ${index + 1} of moving the role to its new name`);
+    return [
+        'The serverRole was renamed in #566, but the state of the testing and staging',
+        'stacks still held the old URN. Every preview since then planned a delete-and-',
+        'replace of the role, and the last deploy to testing stopped halfway with the',
+        'instance profile detached.',
+        '',
+        ...items,
+        '',
+        'Previews now fail on any replace of an IAM role, so this cannot slip through',
+        'again unnoticed. The drift job refreshes the state every night as well, and',
+        'lists planned replacements in the preview comment.',
+        'Refs HLD-688.',
+    ].join('\n');
+}
