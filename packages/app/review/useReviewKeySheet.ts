@@ -40,6 +40,14 @@ export const REVIEW_KEYS = {
     conversation: 'Alt+Mod+B',
     openOnGitHub: 'O',
     review: 'D',
+    find: 'Mod+F',
+    findNext: 'Mod+G',
+    findPrevious: 'Shift+Mod+G',
+    findNextF3: 'F3',
+    findPreviousF3: 'Shift+F3',
+    findNextInField: 'Enter',
+    findPreviousInField: 'Shift+Enter',
+    closeFind: 'Escape',
 } as const;
 
 /**
@@ -88,6 +96,19 @@ export function useReviewKeySheet(): void {
                         { keys: [REVIEW_KEYS.sendFirst, REVIEW_KEYS.sendSecond], label: t(l.send) },
                         { keys: [REVIEW_KEYS.submit], label: t(l.submit) },
                         { keys: [REVIEW_KEYS.suggest], label: t(l.suggest) },
+                    ],
+                },
+                {
+                    title: t(l.finding),
+                    rows: [
+                        { keys: [REVIEW_KEYS.find], label: t(l.find) },
+                        { keys: [REVIEW_KEYS.findNext, REVIEW_KEYS.findPrevious], label: t(l.findSteps) },
+                        { keys: [REVIEW_KEYS.findNextF3, REVIEW_KEYS.findPreviousF3], label: t(l.findStepsF3) },
+                        {
+                            keys: [REVIEW_KEYS.findNextInField, REVIEW_KEYS.findPreviousInField],
+                            label: t(l.findStepsInField),
+                        },
+                        { keys: [REVIEW_KEYS.closeFind], label: t(l.closeFind) },
                     ],
                 },
             ],

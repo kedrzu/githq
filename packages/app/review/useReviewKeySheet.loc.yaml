@@ -6,6 +6,8 @@ files:
   en: Files
 writing:
   en: Writing
+finding:
+  en: Finding
 pullRequests:
   en: Next and previous pull request
 fileSteps:
@@ -50,3 +52,13 @@ openOnGitHub:
   en: Open on GitHub
 review:
   en: Review, from an opened pull request
+find:
+  en: Find in the diff
+findSteps:
+  en: Next and previous match
+findStepsF3:
+  en: The same, with function keys
+findStepsInField:
+  en: The same, in the find field
+closeFind:
+  en: Close the bar, in the field

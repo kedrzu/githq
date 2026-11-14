@@ -19,10 +19,13 @@ const REVIEW_HIDE_WHITESPACE_KEY = 'githq.reviewHideWhitespace';
 const REVIEW_FILE_LIST_HIDDEN_KEY = 'githq.reviewFileListHidden';
 const REVIEW_CONVERSATION_SHOWN_KEY = 'githq.reviewConversationShown';
 const REVIEW_THREADS_IN_COLLAPSED_KEY = 'githq.reviewThreadsInCollapsed';
+const REVIEW_FIND_CASE_KEY = 'githq.reviewFindCase';
+const REVIEW_FIND_WORD_KEY = 'githq.reviewFindWord';
+const REVIEW_FIND_REGEX_KEY = 'githq.reviewFindRegex';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, whether githq links open in the desktop app, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
+ * whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, whether githq links open in the desktop app, how job logs show, how a code review shows a diff, whether its file list and its conversation show, whether collapsed files show their threads and how its find reads a query (D4, D5, D13, D26: none of it per pull request). The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -46,6 +49,9 @@ export const LocalPreferences = defineService({
         const reviewHideWhitespace = getFlag(REVIEW_HIDE_WHITESPACE_KEY);
         const reviewFileListHidden = getFlag(REVIEW_FILE_LIST_HIDDEN_KEY);
         const reviewConversationShown = getFlag(REVIEW_CONVERSATION_SHOWN_KEY);
+        const reviewFindCase = getFlag(REVIEW_FIND_CASE_KEY);
+        const reviewFindWord = getFlag(REVIEW_FIND_WORD_KEY);
+        const reviewFindRegex = getFlag(REVIEW_FIND_REGEX_KEY);
         const reviewLayout = storageRef<DiffLayout>({
             key: REVIEW_LAYOUT_KEY,
             storage,
@@ -106,6 +112,12 @@ export const LocalPreferences = defineService({
             reviewConversationShown,
             /** Whether a collapsed file in a code review shows its threads under its header, in every one (D13). */
             reviewThreadsInCollapsed,
+            /** Whether a code review's find matches case, in every one. */
+            reviewFindCase,
+            /** Whether a code review's find matches whole words only, in every one. */
+            reviewFindWord,
+            /** Whether a code review's find reads the query as a regular expression, in every one. */
+            reviewFindRegex,
             getPanelWidth,
             getPanelShare,
         };

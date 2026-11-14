@@ -57,7 +57,7 @@ const sections = computed(() =>
     v-if="sheet"
     v-model:open="open"
     :title="sheet.title"
-    :width="840"
+    :width="1120"
     bare
     fit-content
   >

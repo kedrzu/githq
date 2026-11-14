@@ -5,8 +5,10 @@ import { page, userEvent } from 'vitest/browser';
 import { estimateReviewRowHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
+import { MAX_MATCHES_PER_LINE } from '@/workflows/utils/findLogMatches.js';
 
 const {
+    CappedMarks,
     CodeKinds,
     Collapsed,
     CursorSplit,
@@ -24,10 +26,12 @@ const {
     Split,
     SplitColoured,
     SplitCommented,
+    SplitMarked,
     ThreadReplying,
     Unified,
     UnifiedColoured,
     UnifiedCommented,
+    UnifiedMarked,
 } = composeStories(stories);
 
 test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
@@ -211,6 +215,38 @@ test.each([
     expect(plain.texts.join('\n')).toContain('<img src=x>');
 });
 
+test.each([
+    ['split', SplitColoured, SplitMarked],
+    ['unified', UnifiedColoured, UnifiedMarked],
+])(
+    "find's marks change no text and no height, keep the colours inside, each ringed and the current one in its own, %s",
+    async (_layout, Coloured, Marked) => {
+        await Coloured.run();
+        const coloured = readCode();
+        await Marked.run();
+
+        expect(readCode()).toEqual(coloured);
+        const marks = [...document.querySelectorAll('code mark')];
+        const current = marks.filter(mark => mark.hasAttribute('data-current-match'));
+        expect(current.map(mark => mark.textContent)).toEqual(['MAX_BATCH']);
+        const currentRing = getComputedStyle(current[0]!).boxShadow;
+        expect(currentRing).not.toBe('none');
+        expect(marks.map(mark => mark.textContent)).toContain('xponen');
+        const inString = marks.find(mark => mark.textContent === 'xponen')!;
+        expect(inString.querySelector('[tid="code-string"]')).not.toBeNull();
+        const inComment = marks.find(mark => mark.textContent === 'nobody')!;
+        expect(getComputedStyle(inComment.firstElementChild!).color).toBe(
+            getComputedStyle(document.querySelector('[tid="code-comment"]')!).color,
+        );
+        const other = marks.find(mark => !mark.hasAttribute('data-current-match'))!;
+        // Every match has its ring, the current one its own.
+        const otherRing = getComputedStyle(other).boxShadow;
+        expect(otherRing).not.toBe('none');
+        expect(otherRing).not.toBe(currentRing);
+        expect(getCode('RETRY_DELAY_MS').querySelector('mark')).toBeNull();
+    },
+);
+
 function readCode() {
     const codes = [...document.querySelectorAll('code')];
     return {
@@ -243,6 +279,13 @@ test('each kind of token has a colour of its own', async () => {
     const code = getComputedStyle(document.querySelector('code')!).color;
 
     expect(new Set([...colours, code]).size).toBe(kinds.length + 1);
+});
+
+test("a line with more of find's matches than are kept marks only the first ones", async () => {
+    await CappedMarks.run();
+
+    expect(document.querySelectorAll('code mark')).toHaveLength(MAX_MATCHES_PER_LINE);
+    expect(document.querySelector('code mark')?.closest('code')?.textContent).toHaveLength(1005);
 });
 
 function getCode(text: string) {
