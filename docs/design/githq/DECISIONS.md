@@ -881,6 +881,28 @@ was easy to miss in the status bar.
 **Rejected.** Only one toast visible at a time, the rest queued: hides what happened. Actions disabled on older toasts:
 a click is never ambiguous. Every toast in its own lifetime: the reason to have rules.
 
+### D41
+
+**Nothing is pinned to a row's far right edge.** (owner, 2026-11-14.) In a list row, a header or a toolbar that can
+stretch across a wide window, every piece of information follows the content it belongs to, so a wide window leaves
+empty space at the end instead of a gap in the middle. Only controls that belong to the edge stay there: a panel's close
+and arrangement buttons, a toolbar's key hints and view options, row actions (Viewed, ⋯, Untrack, a chevron), a
+scrollbar. The rule is in the `design` skill; drawn in `githq.pen` (D10, D11 in App · My work, and the components).
+
+- **A list row** reads, on line 1, the title, then a pull request's number `#482`, the avatars and the age, each right
+  after the one before; line 2 of a pull request starts with its repository where the list doesn't already name it,
+  an issue keeps `owner/repo#123` there. When narrow the title gives way first; the number, avatars and age never do.
+- **A nested row's title** looks like any other row's title: the indent and the smaller icon say it is nested.
+- **Everywhere else** (a commit's author and age, a tracked repository's counts, a diff file's size, the opened item's
+  reviews, merge box, links and thread times) the same: the information follows its text.
+
+**Why.** On a big screen an age, an avatar or a count at the right edge drifts far from the thing it describes, and the
+eye has to cross the whole width. A pull request's number matters most for finding it, and it was barely visible inside
+the dim reference on line 2.
+
+**Rejected.** The age and avatars ending line 2 after the status (Variant A): one line of facts read left to right, but
+a narrow list cuts the status text to make room for them.
+
 ## Open questions
 
 ### D26
