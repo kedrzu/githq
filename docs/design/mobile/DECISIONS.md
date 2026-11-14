@@ -70,11 +70,13 @@ merging later too. The rest of the list is inferred from the desktop's first ver
 
 **"On a phone" means a narrow window: below one width the app takes its mobile layout and the hand-offs of
 [D3](#d3), whatever the device. Resizing never navigates — whether an address is handed off is decided when it is
-navigated to, and a screen already open stays and is squeezed.** (2026-11-06, owner, on the design agent's proposal)
+navigated to, and a screen already open stays and is squeezed. The width is 640 px.** (2026-11-06, owner, on the design
+agent's proposal; the width 2026-11-14, owner, on the delivery's proposal)
 
 **Why.** A narrow window needs the mobile layout anyway: the desktop's side-by-side panes do not fit below about
 650 px. If the feature set followed the device instead, a narrow window on a computer would need mobile versions of
-commits and code review, which are not designed. The width is not fixed here.
+commits and code review, which are not designed. At 640 px phones in portrait (375–430 px) take the phone layout, while
+tablets in portrait and phones in landscape (from about 768 px) keep the desktop with its commits and code review.
 
 > **Checked 2026-11-06:** the shell's screen has a minimum width of 400 px and the sidebar of 180 px —
 > `packages/app/shell/AppShell.vue:85`, `:88`. The landing page already switches to its mobile layout below 720 px
@@ -82,6 +84,7 @@ commits and code review, which are not designed. The width is not fixed here.
 
 **Rejected.**
 
+- 768 px — a tablet in portrait would take the phone layout and lose commits and code review.
 - Deciding by device (a touch screen and a narrow screen) — a narrow window on a computer would be a third state,
   mobile layout with desktop features, that nobody designs. It would win if someone regularly works in a narrow
   window on a computer and needs commits there; no such case is known.
@@ -94,6 +97,10 @@ commits and code review, which are not designed. The width is not fixed here.
 
 **Why.** Nobody runs the desktop app on a phone, and a narrow desktop window handing commits off to the browser
 would take away what the desktop app is for.
+
+> **Checked 2026-11-14:** the desktop window's minimum is already 900 × 600 — `min_inner_size` in
+> `packages/desktop/src-tauri/src/lib.rs` — and the desktop build never turns the phone layout on
+> (`packages/app/shell/PhoneLayout.ts`).
 
 ## D7
 

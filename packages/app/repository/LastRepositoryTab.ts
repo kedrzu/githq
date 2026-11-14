@@ -6,7 +6,8 @@ import { shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
-import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { getRepositoryPath, isRepositorySectionShownOnPhone } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { REPOSITORY_SECTIONS } from './RepositorySection.js';
@@ -27,9 +28,10 @@ export const LastRepositoryTab = defineService({
     deps: {
         accounts: AccountSession,
         browser: Browser,
+        phone: PhoneLayout,
         tracking: TrackingStore,
     },
-    setup({ accounts, browser, tracking }) {
+    setup({ accounts, browser, phone, tracking }) {
         const tabsRef = shallowRef<Readonly<Record<string, RepositorySection>>>({});
         const slot = createAccountSlot({
             accounts,
@@ -50,10 +52,15 @@ export const LastRepositoryTab = defineService({
 
         /**
          * The repository's last section, `null` when it has none, or when that was its Workflows section and it is no
-         * longer tracked, which has none (actions D4); reactive.
+         * longer tracked, which has none (actions D4), or when the phone layout does not show it (Commits, Workflows:
+         * mobile D3) — a phone opens the repository on Issues rather than handing it off; reactive.
          */
         function get(nameWithOwner: string): RepositorySection | null {
             const section = tabsRef.value[nameWithOwner] ?? null;
+            if (section === null || (phone.active && !isRepositorySectionShownOnPhone(section))) {
+                return null;
+            }
+
             return section === 'workflows' && !tracking.isTracked({ kind: 'repository', nameWithOwner })
                 ? null
                 : section;
