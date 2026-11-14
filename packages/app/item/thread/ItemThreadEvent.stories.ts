@@ -21,17 +21,19 @@ import ItemThreadEvent from './ItemThreadEvent.vue';
 
 /** The thread's width in a panel. */
 const IN_PANEL = 512;
+/** The widest the thread stretches: the one-column panel at its widest. */
+const WIDEST = 1300;
 
 const meta = {
     component: ItemThreadEvent,
     args: { entry: linesOf(I1_ISSUE_DETAIL)[0]!, item: I1_ISSUE, now: SAMPLE_NOW, onOpen: fn() },
     // On an item view's background, as wide as the thread, with the rail behind the badges. `parameters.lines`: every
-    // line of a thread, one under the other.
+    // line of a thread, one under the other; `parameters.width` instead of the panel's.
     render: (args, { parameters }) => ({
         components: { ItemThreadEvent },
-        setup: () => ({ args, lines: parameters.lines ?? [args.entry] }),
+        setup: () => ({ args, lines: parameters.lines ?? [args.entry], width: parameters.width ?? IN_PANEL }),
         template: `
-          <div style="position: relative; width: ${IN_PANEL}px; padding: 20px 0; background: #11161c">
+          <div :style="{ position: 'relative', width: width + 'px', padding: '20px 0', background: '#11161c' }" tid="frame">
             <div style="position: absolute; inset: 0 auto 0 55px; width: 2px; background: #2f353d" />
             <div style="position: relative">
               <ItemThreadEvent v-for="line in lines" :key="line.id" v-bind="args" :entry="line" />
@@ -102,3 +104,6 @@ function withEvents(detail: ItemDetail, newest: readonly ThreadEvent[]): ItemDet
         events: { totalCount: newest.length, commitCount: 0, oldest: [], newest, middle: null },
     };
 }
+
+/** The thread at its widest: the time follows what was done, it is not pushed to the far edge. */
+export const Wide: Story = { parameters: { width: WIDEST } };

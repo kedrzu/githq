@@ -246,7 +246,7 @@ test('D22: grouped by repository — the tracked ones in order, rows named by nu
     const review = api.getByRole('listitem').nth(0);
     await expect.element(review).toHaveTextContent('Add rate-limit backoff to webhook worker');
     await expect.element(review).toHaveTextContent('#482');
-    await expect.element(review).not.toHaveTextContent('skyline-labs/api#482');
+    await expect.element(review).not.toHaveTextContent('skyline-labs/api');
     await expect.element(review).toHaveTextContent(/your review requested/i);
 
     // The pull request closing an assigned issue stays nested under it.
@@ -257,7 +257,7 @@ test('D22: grouped by repository — the tracked ones in order, rows named by nu
     const others = page.getByRole('region', { name: 'Other repositories' });
     await expect.element(others).toHaveTextContent('not tracked');
     await expect.element(others).toHaveTextContent('kedrzu/skills#31');
-    await expect.element(others).toHaveTextContent('vitejs/vite#18842');
+    await expect.element(others).toHaveTextContent(/#18842.*vitejs\/vite/);
 });
 
 test('grouped by repository on the first download: what arrived is in its repositories, the reasons still arriving after them', async () => {
@@ -283,7 +283,7 @@ test('grouped by status: as the filters keep them, rows named in full, the neste
     expect(sections.elements()).toHaveLength(4);
 
     const needsMe = page.getByRole('region', { name: 'Needs me' }).getByRole('listitem');
-    await expect.element(needsMe.nth(0)).toHaveTextContent('skyline-labs/api#482');
+    await expect.element(needsMe.nth(0)).toHaveTextContent(/#482.*skyline-labs\/api/);
     await expect.element(needsMe.nth(0)).toHaveTextContent(/your review requested/i);
     const issue = needsMe.filter({ hasText: 'Calendar shows wrong timezone for recurring bookings' });
     await expect.element(issue).toBeInTheDocument();

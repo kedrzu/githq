@@ -49,7 +49,6 @@ const GRAPH_WIDTH = getCommitGraphWidth(4);
       :width="messageWidth"
       :height="9"
     />
-    <span :class="css.ghostCommitRow_spacer" />
     <span :class="css.ghostCommitRow_author">
       <SkeletonCircle :size="16" />
       <SkeletonBar
@@ -103,10 +102,6 @@ const GRAPH_WIDTH = getCommitGraphWidth(4);
   translate: -50% -50%;
 }
 
-.ghostCommitRow_spacer {
-  flex: 1 0 0;
-}
-
 .ghostCommitRow_author {
   display: inline-flex;
   flex: none;
@@ -118,7 +113,6 @@ const GRAPH_WIDTH = getCommitGraphWidth(4);
 .ghostCommitRow_age {
   display: flex;
   flex: none;
-  justify-content: flex-end;
   width: $commit-row-age-width;
 }
 

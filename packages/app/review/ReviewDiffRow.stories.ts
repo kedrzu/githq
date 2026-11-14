@@ -678,6 +678,32 @@ export const WithThreads: Story = {
     },
 };
 
+/** The diff at its widest: a header's threads and size follow its path and a gap's count its declaration, Viewed stays at the edge. */
+export const Wide: Story = {
+    render: () => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: [
+                {
+                    kind: 'header',
+                    key: 'header',
+                    file: FILE,
+                    collapsed: false,
+                    collapseReason: null,
+                    threadsUnder: false,
+                    threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+                } satisfies ReviewRow,
+                ...fileRows(GAPS_FILE, {
+                    kind: 'lines',
+                    rows: buildFileLineRows({ path: GAPS_FILE.path, diff: GAPS_DIFF, layout: 'unified' }),
+                }).filter(row => row.kind === 'gap'),
+            ],
+            githubUrl: FILES_URL,
+        }),
+        template: `<div tid="frame" style="width: 1300px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
+    }),
+};
+
 /** CR14: a file gone from the diff has a struck name and says so, with neither Viewed nor a chevron. */
 export const GoneHeader: Story = {
     render: () =>

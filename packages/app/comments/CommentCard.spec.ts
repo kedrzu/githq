@@ -4,7 +4,7 @@ import { page } from 'vitest/browser';
 
 import * as stories from './CommentCard.stories.js';
 
-const { Narrow, NarrowLongLogin, WideReview } = composeStories(stories);
+const { Narrow, NarrowLongLogin, WideReview, WidestReview } = composeStories(stories);
 
 /** The card's head: the paragraph the login is in. */
 function getHead(login: string) {
@@ -67,4 +67,19 @@ test('a very long login on a narrow review is cut short: nothing overflows, the 
     await expect.element(page.getByText('requested changes')).toBeVisible();
 
     expect(head.contains(getShown('2 threads · 1 resolved'))).toBe(false);
+});
+
+test("at the thread's widest the threads follow the time 6px after it while the ⋯ stays at the card's edge", async () => {
+    await WidestReview.run();
+    const head = getHead(WidestReview.args.author?.login ?? '');
+    const time = head.querySelector('time')?.getBoundingClientRect();
+    const tail = getShown('2 threads · 1 resolved').parentElement?.getBoundingClientRect();
+    if (!time || !tail) {
+        throw new Error('The head has no time or no threads.');
+    }
+
+    expect(tail.left - time.right).toBeCloseTo(6, 0);
+    expect(tail.right).toBeLessThan(head.getBoundingClientRect().right - 300);
+    const more = page.getByRole('button', { name: 'Comment actions' }).element().getBoundingClientRect();
+    expect(more.right).toBeGreaterThan(head.getBoundingClientRect().right - 20);
 });

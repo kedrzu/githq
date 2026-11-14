@@ -12,6 +12,12 @@ if (GREEN?.kind !== 'pullRequest') {
     throw new Error('The sample work needs the pull request PR_477.');
 }
 
+const NESTED = D1_ITEMS.find(item => item.id === 'PR_1205');
+const CLOSED_BY_IT = D1_ITEMS.find(item => item.id === 'I_1187');
+if (!NESTED || !CLOSED_BY_IT) {
+    throw new Error('The sample work needs the pull request PR_1205 and the issue I_1187 it closes.');
+}
+
 const meta = {
     component: ItemRow,
     args: { item: GREEN, properties: ITEM_PROPERTIES, now: SAMPLE_NOW, viewerLogin: SAMPLE_VIEWER.login },
@@ -37,4 +43,9 @@ export const ChecksPassedWaiting: Story = {
     play: async ({ canvasElement }) => {
         await expect(canvasElement).toHaveTextContent(/checks passed.*waiting for review/);
     },
+};
+
+/** Under the issue it closes, of the same repository: indented, its number after the title, line two from its status. */
+export const NestedUnderIssue: Story = {
+    args: { item: NESTED, parent: CLOSED_BY_IT },
 };

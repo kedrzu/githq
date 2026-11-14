@@ -4,7 +4,7 @@ import { page } from 'vitest/browser';
 
 import * as stories from './ItemThreadEvent.stories.js';
 
-const { NoPerson, IssueThread, OneKindMerged, IssueEvents, TheirOwnReviewRequest } = composeStories(stories);
+const { NoPerson, IssueThread, OneKindMerged, IssueEvents, TheirOwnReviewRequest, Wide } = composeStories(stories);
 
 test("a line no person made shows no avatar: a workflow's Status change names no one, failed checks name CI", async () => {
     await NoPerson.run();
@@ -46,4 +46,21 @@ test('an issue closed as a duplicate of one GitHub does not name says it is a du
     await IssueEvents.run();
 
     await expect.element(page.getByText(/^closed this as\sa\sduplicate$/u)).toBeVisible();
+});
+
+test("at the thread's widest the time follows what was done, 6px after it, and the line pins nothing to its far edge", async () => {
+    await Wide.run();
+
+    const times = [...document.querySelectorAll('time')];
+    expect(times.length).toBeGreaterThan(0);
+    for (const time of times) {
+        const what = time.previousElementSibling?.getBoundingClientRect();
+        const line = time.closest('p')?.getBoundingClientRect();
+        if (!what || !line) {
+            throw new Error('The time is not in a line after what was done.');
+        }
+
+        expect(time.getBoundingClientRect().left - what.right).toBeCloseTo(6, 0);
+        expect(time.getBoundingClientRect().right).toBeLessThan(line.right - 300);
+    }
 });
