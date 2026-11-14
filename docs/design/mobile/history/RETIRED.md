@@ -2,6 +2,34 @@
 
 Decisions no longer in force, with what replaced them.
 
+## D25
+
+Retired 2026-11-14 by [D52](../DECISIONS.md#d52): the phone shows the desktop's summary.
+
+**An item's properties are split: what needs its name stays a row under the title — assignees and the first project's
+row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands" — and what reads
+on its own follows as one block of chips without names: labels, the milestone, sub-issues, another project's field;
+on a pull request the branch, its size and the issues it closes. A chevron at the right of the chips unfolds every
+property as rows in place, the chips giving way to them — every project with all its fields, the empty ones too, and
+Add to a project — and Fewer folds it back.** (2026-11-08, owner: rows first with only the important ones, the rest
+unfolding inline, not hidden; then chips after the rows (`MB128`) with a chevron beside them, not a small "All" chip,
+and the chips gone once unfolded; drawn in `MB125`, `MB126`, `MB128`)
+
+**Why.** The owner preferred the desktop's rows to a line of chips alone, but not every row before the conversation.
+The drawing's case: the activity starts under 570 px down instead of under the fold, labels and the milestone read at
+a glance without a key, and nothing slides over the item to see the rest.
+
+**Rejected.**
+
+- A summary line of chips with a sheet for every property (MB103–MB105) — the design agent's recommendation; the owner
+  preferred rows.
+- The properties after the body (MB107) — the newest comment is as far as with all rows at the top, and a long body
+  hides the properties.
+- A More row naming what else there is (MB124) — superseded by the chips, which show the values themselves.
+- The chips under the title, beside the state (MB127, MB130–MB132) — the owner picked them after the rows; a small
+  "… All" chip as the way to every property was too small a target.
+- The chips after the body (MB129) — on a long body the labels and milestone are out of sight.
+
 ## D10
 
 **The bottom bar shows on list screens only. On an item's screen the bottom belongs to the comment box.**
