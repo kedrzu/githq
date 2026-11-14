@@ -50,6 +50,16 @@ brief: `docs/design/githq/ui/README.md`.
 - **Direction D** is settled: one app with three independent switches — the sidebar expanded or collapsed to a rail;
   every list as List or Board with the same toolbar; an item in a panel or full screen, both showing the same
   item view, in two columns once it is 1000 px wide on a page, 1300 px in the panel, scrolling as one with the summary sticky, centred in a resizable box on a page (D9). Build on it and keep its components and feel. The rejected Directions A–C are in git history.
+- **Every set of columns is resizable.** Wherever a screen puts columns side by side (the sidebar, a list and its
+  panel, an item's two columns, a run's jobs and log, a workflow's runs and details), the edge between them is a
+  splitter the user drags; widths are kept on the device. Draw the edge as Direction D does (unseen until hovered), and
+  never a column of fixed width. The code's side: the `app` skill's splitter requirement.
+- **Content has a readable width.** A page whose content is text, a summary or a log sits in a centred box of capped
+  width (an item page's box, D9), not stretched across a wide window; only a page that is a list may fill the width.
+- **Nothing is pinned to a row's far right edge.** In a list row, a header or a toolbar that can stretch across a
+  wide window, every piece of information follows the content it belongs to (a time after the status, a count after
+  the title), so a wide window leaves empty space at the end instead of a gap in the middle. Only controls that belong
+  to the edge stay there: a panel's close and arrangement buttons, a toolbar's key hints, a scrollbar.
 - **Navigation is settled:** `docs/design/githq/navigation.md` — the levels (list, panel, full screen, a page inside an
   item) and what `↵`, `⇧↵`, `Esc`, `j`/`k` and Back do. A new screen fits into it; a screen that needs otherwise
   changes that document first.

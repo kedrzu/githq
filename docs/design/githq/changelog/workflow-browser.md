@@ -119,3 +119,38 @@ the Workflows list headers (W35, W47, W48), which already show `F`.
   synced when saving to GitHub is on; filters clear when another workflow opens.
 - [ ] W35 caption (`MpRSm`): `F` opens the latest failed run of the workflow under the cursor on whatever ref, does
   nothing with its hint dimmed on a workflow without a failure.
+
+## Round 5 · agent brief, the last result beside the status and readable widths
+
+Asked (`.context/workflow-browser-brief-5.md`): on the Workflows list the last result follows the status instead of
+being pinned to the row's right edge, in the component so every screen follows; W34 in a centred box of capped width
+with a splitter between the jobs and the summary; W30 and W31 say the edge between the runs and the details is a
+splitter. Made in the Pen app through the MCP, not the CLI.
+Changed: `Workflow / Row`, `Workflow / Item · Deploy · two columns`, W34 and three captions.
+
+- [ ] `Workflow / Row` (`I98wYc`): `Last result` (`riEF4`) moved from the end of the row into `Status cell` (`gstUM`),
+  after the status, behind a new `Separator` (`QzGKB`, "·", `$fg-dim`, 11.5); the cell's gap 0 → 6. The time keeps
+  `$fg-dim` at 11.5 against the status's 12.5: `$fg-dim` is the dimmest text token that passes contrast (there is no
+  `$fg-muted`). Nothing is pinned to the right edge any more. Every screen using the row follows (W2, W2c, W2d,
+  W3a–W3c, W13–W15, W17–W19, W21, W30, W32, W33, W35, W39, W41–W45, W47, W48, through the narrow list `i7cCCB` too).
+- [ ] `Workflow / Row` instances: moving `riEF4` dropped every override on it; all 142 were put back from the base
+  (content on 110 rows, hidden on the 12 rows of the narrow list `i7cCCB` and the rows hiding it, shown again in its
+  four wider instances `fpPhO`, `I1F4T`, `m1ejIG`, `V9tfK5`). `QzGKB` is hidden wherever the time is hidden or empty.
+- [ ] `Workflow / Item · Deploy · two columns` (`v95xB`): `Details column` (`jyqHf`) left border 1 px → none, the edge
+  unseen until hovered as between an item's two columns (one `$bg-item` surface); W30, W31 and W39 follow.
+- [ ] W34 (`J8Gad`): 1440×900 → 1920×1080, so the box shows (at 1440 the pane, 1204 px, is narrower than the box).
+  New `Page` (`Xmvs4`, centred) and `Box` (`AW6bB`, 1424 px, vertical) under the toolbar, holding the run's line
+  (`iyR9G`) and the columns (`ZEdSN`); the toolbar (`f27hj`) stays full width.
+- [ ] W34 columns (`ZEdSN`): new `Jobs edge · hovered` (`e38xK`), 2 px `$accent` over the edge between the jobs and
+  the summary, the hovered state as CH46 draws it.
+- [ ] W34 caption (`IMeFt`): the box (1424 px by default, side edges dragged symmetrically from 920 px, kept on this
+  device, taking the whole width in a narrower window) and the jobs splitter (200–480 px, 268 by default, kept on this
+  device), drawn hovered.
+- [ ] W31 caption (`F9SxGw`): "The details keep their width" → the edge is a splitter, unseen until hovered, the
+  details 320–640 px, 420 by default, kept on this device.
+- [ ] W30 caption (`q8KyyO`): the edge between the runs and the details is a splitter, 420 px by default, kept on this
+  device.
+
+Guesses for the owner: the splitter ranges (jobs 200–480 px, details 320–640 px); whether the run page's box shares
+its width with the item page's box or keeps its own (the caption says neither); the jobs edge keeps the column's line
+at rest, like the sidebar's and CH46's, while the workflow's two columns, one `$bg-item` surface, draw none.

@@ -111789,6 +111789,9 @@
                           "content": "Broken for 3h",
                           "fill": "$fg"
                         },
+                        "QzGKB": {
+                          "enabled": false
+                        },
                         "riEF4": {
                           "enabled": false
                         }
@@ -111839,6 +111842,9 @@
                         "KY9vM": {
                           "content": "Broken for 9h",
                           "fill": "$fg"
+                        },
+                        "QzGKB": {
+                          "enabled": false
                         },
                         "riEF4": {
                           "enabled": false
@@ -120137,6 +120143,9 @@
                           "content": "Broken for 3h",
                           "fill": "$fg"
                         },
+                        "QzGKB": {
+                          "enabled": false
+                        },
                         "riEF4": {
                           "enabled": false
                         }
@@ -120187,6 +120196,9 @@
                         "KY9vM": {
                           "content": "Broken for 9h",
                           "fill": "$fg"
+                        },
+                        "QzGKB": {
+                          "enabled": false
                         },
                         "riEF4": {
                           "enabled": false
@@ -161945,6 +161957,7 @@
                       "id": "gstUM",
                       "name": "Status cell",
                       "width": "fill_container",
+                      "gap": 6,
                       "padding": [
                         0,
                         0,
@@ -161962,18 +161975,28 @@
                           "fontFamily": "$font",
                           "fontSize": 12.5,
                           "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QzGKB",
+                          "name": "Separator",
+                          "fill": "$fg-dim",
+                          "content": "·",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "riEF4",
+                          "name": "Last result",
+                          "fill": "$fg-dim",
+                          "content": "passed 6m ago",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
                         }
                       ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "riEF4",
-                      "name": "Last result",
-                      "fill": "$fg-dim",
-                      "content": "passed 6m ago",
-                      "fontFamily": "$font",
-                      "fontSize": 11.5,
-                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -168021,6 +168044,9 @@
                               "content": "Broken for 3h",
                               "fill": "$fg"
                             },
+                            "QzGKB": {
+                              "enabled": false
+                            },
                             "riEF4": {
                               "content": "failed 14m ago",
                               "enabled": false
@@ -168070,6 +168096,9 @@
                             "KY9vM": {
                               "content": "Broken for 4 days",
                               "fill": "$fg-2"
+                            },
+                            "QzGKB": {
+                              "enabled": false
                             },
                             "riEF4": {
                               "content": "failed Oct 28",
@@ -168143,6 +168172,9 @@
                               "content": "1 of the last 5 failed",
                               "fill": "$fg-dim"
                             },
+                            "QzGKB": {
+                              "enabled": false
+                            },
                             "riEF4": {
                               "content": "passed 12m ago",
                               "enabled": false
@@ -168214,6 +168246,9 @@
                               "content": "Failing on staging",
                               "fill": "$fg-dim"
                             },
+                            "QzGKB": {
+                              "enabled": false
+                            },
                             "riEF4": {
                               "content": "failed 6h ago",
                               "enabled": false
@@ -168283,6 +168318,9 @@
                               "content": "Passing · #88 running",
                               "fill": "$fg-2"
                             },
+                            "QzGKB": {
+                              "enabled": false
+                            },
                             "riEF4": {
                               "content": "passed 11m ago",
                               "enabled": false
@@ -168332,6 +168370,9 @@
                             "KY9vM": {
                               "content": "Passing",
                               "fill": "$fg-2"
+                            },
+                            "QzGKB": {
+                              "enabled": false
                             },
                             "riEF4": {
                               "content": "passed 14m ago",
@@ -168386,6 +168427,9 @@
                             "KY9vM": {
                               "content": "Passing",
                               "fill": "$fg-2"
+                            },
+                            "QzGKB": {
+                              "enabled": false
                             },
                             "riEF4": {
                               "content": "passed Oct 30",
@@ -168457,6 +168501,9 @@
                             "KY9vM": {
                               "content": "Disabled on GitHub",
                               "fill": "$fg-dim"
+                            },
+                            "QzGKB": {
+                              "enabled": false
                             },
                             "riEF4": {
                               "content": "last ran Aug 12",
@@ -170455,9 +170502,6 @@
                       "width": 420,
                       "height": "fill_container",
                       "stroke": "$border",
-                      "strokeWidth": {
-                        "left": 1
-                      },
                       "layout": "vertical",
                       "padding": [
                         24,
@@ -173721,6 +173765,9 @@
                                       "content": "not read yet",
                                       "fill": "$fg-dim"
                                     },
+                                    "QzGKB": {
+                                      "enabled": false
+                                    },
                                     "riEF4": {
                                       "content": ""
                                     }
@@ -173773,6 +173820,9 @@
                                     "KY9vM": {
                                       "content": "not read yet",
                                       "fill": "$fg-dim"
+                                    },
+                                    "QzGKB": {
+                                      "enabled": false
                                     },
                                     "riEF4": {
                                       "content": ""
@@ -177637,6 +177687,9 @@
                                       "content": "Reading…",
                                       "fill": "$fg-dim"
                                     },
+                                    "QzGKB": {
+                                      "enabled": false
+                                    },
                                     "riEF4": {
                                       "content": ""
                                     }
@@ -177685,6 +177738,9 @@
                                     "KY9vM": {
                                       "content": "Reading…",
                                       "fill": "$fg-dim"
+                                    },
+                                    "QzGKB": {
+                                      "enabled": false
                                     },
                                     "riEF4": {
                                       "content": ""
@@ -177735,6 +177791,9 @@
                                       "content": "Reading…",
                                       "fill": "$fg-dim"
                                     },
+                                    "QzGKB": {
+                                      "enabled": false
+                                    },
                                     "riEF4": {
                                       "content": ""
                                     }
@@ -177783,6 +177842,9 @@
                                     "KY9vM": {
                                       "content": "Reading…",
                                       "fill": "$fg-dim"
+                                    },
+                                    "QzGKB": {
+                                      "enabled": false
                                     },
                                     "riEF4": {
                                       "content": ""
@@ -199367,6 +199429,9 @@
                                       "content": "not read yet",
                                       "fill": "$fg-dim"
                                     },
+                                    "QzGKB": {
+                                      "enabled": false
+                                    },
                                     "riEF4": {
                                       "content": ""
                                     }
@@ -199419,6 +199484,9 @@
                                     "KY9vM": {
                                       "content": "not read yet",
                                       "fill": "$fg-dim"
+                                    },
+                                    "QzGKB": {
+                                      "enabled": false
                                     },
                                     "riEF4": {
                                       "content": ""
@@ -201805,7 +201873,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42).",
+                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42). The edge between the runs and the details is a splitter, unseen until hovered as between an item's two columns: dragging it, or ←/→ on the focused edge, sets the details' width, 420 px by default, kept on this device.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -201855,6 +201923,9 @@
                             "psxhV/gstUM": {
                               "enabled": false
                             },
+                            "psxhV/QzGKB": {
+                              "enabled": true
+                            },
                             "psxhV/riEF4": {
                               "enabled": true
                             },
@@ -201863,6 +201934,9 @@
                             },
                             "wAHd2/gstUM": {
                               "enabled": false
+                            },
+                            "wAHd2/QzGKB": {
+                              "enabled": true
                             },
                             "wAHd2/riEF4": {
                               "enabled": true
@@ -201873,6 +201947,9 @@
                             "yRlq7/gstUM": {
                               "enabled": false
                             },
+                            "yRlq7/QzGKB": {
+                              "enabled": true
+                            },
                             "yRlq7/riEF4": {
                               "enabled": true
                             },
@@ -201881,6 +201958,9 @@
                             },
                             "HHki7/gstUM": {
                               "enabled": false
+                            },
+                            "HHki7/QzGKB": {
+                              "enabled": true
                             },
                             "HHki7/riEF4": {
                               "enabled": true
@@ -201891,6 +201971,9 @@
                             "D1znz/gstUM": {
                               "enabled": false
                             },
+                            "D1znz/QzGKB": {
+                              "enabled": true
+                            },
                             "D1znz/riEF4": {
                               "enabled": true
                             },
@@ -201899,6 +201982,9 @@
                             },
                             "RyvQc/gstUM": {
                               "enabled": false
+                            },
+                            "RyvQc/QzGKB": {
+                              "enabled": true
                             },
                             "RyvQc/riEF4": {
                               "enabled": true
@@ -201909,6 +201995,9 @@
                             "Fe9F8/gstUM": {
                               "enabled": false
                             },
+                            "Fe9F8/QzGKB": {
+                              "enabled": true
+                            },
                             "Fe9F8/riEF4": {
                               "enabled": true
                             },
@@ -201917,6 +202006,9 @@
                             },
                             "sBbwf/gstUM": {
                               "enabled": false
+                            },
+                            "sBbwf/QzGKB": {
+                              "enabled": true
                             },
                             "sBbwf/riEF4": {
                               "enabled": true
@@ -202062,6 +202154,9 @@
                             "psxhV/gstUM": {
                               "enabled": false
                             },
+                            "psxhV/QzGKB": {
+                              "enabled": true
+                            },
                             "psxhV/riEF4": {
                               "enabled": true
                             },
@@ -202070,6 +202165,9 @@
                             },
                             "wAHd2/gstUM": {
                               "enabled": false
+                            },
+                            "wAHd2/QzGKB": {
+                              "enabled": true
                             },
                             "wAHd2/riEF4": {
                               "enabled": true
@@ -202080,6 +202178,9 @@
                             "yRlq7/gstUM": {
                               "enabled": false
                             },
+                            "yRlq7/QzGKB": {
+                              "enabled": true
+                            },
                             "yRlq7/riEF4": {
                               "enabled": true
                             },
@@ -202088,6 +202189,9 @@
                             },
                             "HHki7/gstUM": {
                               "enabled": false
+                            },
+                            "HHki7/QzGKB": {
+                              "enabled": true
                             },
                             "HHki7/riEF4": {
                               "enabled": true
@@ -202098,6 +202202,9 @@
                             "D1znz/gstUM": {
                               "enabled": false
                             },
+                            "D1znz/QzGKB": {
+                              "enabled": true
+                            },
                             "D1znz/riEF4": {
                               "enabled": true
                             },
@@ -202106,6 +202213,9 @@
                             },
                             "RyvQc/gstUM": {
                               "enabled": false
+                            },
+                            "RyvQc/QzGKB": {
+                              "enabled": true
                             },
                             "RyvQc/riEF4": {
                               "enabled": true
@@ -202116,6 +202226,9 @@
                             "Fe9F8/gstUM": {
                               "enabled": false
                             },
+                            "Fe9F8/QzGKB": {
+                              "enabled": true
+                            },
                             "Fe9F8/riEF4": {
                               "enabled": true
                             },
@@ -202124,6 +202237,9 @@
                             },
                             "sBbwf/gstUM": {
                               "enabled": false
+                            },
+                            "sBbwf/QzGKB": {
+                              "enabled": true
                             },
                             "sBbwf/riEF4": {
                               "enabled": true
@@ -202665,6 +202781,9 @@
                             "psxhV/gstUM": {
                               "enabled": false
                             },
+                            "psxhV/QzGKB": {
+                              "enabled": true
+                            },
                             "psxhV/riEF4": {
                               "enabled": true
                             },
@@ -202673,6 +202792,9 @@
                             },
                             "wAHd2/gstUM": {
                               "enabled": false
+                            },
+                            "wAHd2/QzGKB": {
+                              "enabled": true
                             },
                             "wAHd2/riEF4": {
                               "enabled": true
@@ -202683,6 +202805,9 @@
                             "yRlq7/gstUM": {
                               "enabled": false
                             },
+                            "yRlq7/QzGKB": {
+                              "enabled": true
+                            },
                             "yRlq7/riEF4": {
                               "enabled": true
                             },
@@ -202691,6 +202816,9 @@
                             },
                             "HHki7/gstUM": {
                               "enabled": false
+                            },
+                            "HHki7/QzGKB": {
+                              "enabled": true
                             },
                             "HHki7/riEF4": {
                               "enabled": true
@@ -202701,6 +202829,9 @@
                             "D1znz/gstUM": {
                               "enabled": false
                             },
+                            "D1znz/QzGKB": {
+                              "enabled": true
+                            },
                             "D1znz/riEF4": {
                               "enabled": true
                             },
@@ -202709,6 +202840,9 @@
                             },
                             "RyvQc/gstUM": {
                               "enabled": false
+                            },
+                            "RyvQc/QzGKB": {
+                              "enabled": true
                             },
                             "RyvQc/riEF4": {
                               "enabled": true
@@ -202719,6 +202853,9 @@
                             "Fe9F8/gstUM": {
                               "enabled": false
                             },
+                            "Fe9F8/QzGKB": {
+                              "enabled": true
+                            },
                             "Fe9F8/riEF4": {
                               "enabled": true
                             },
@@ -202727,6 +202864,9 @@
                             },
                             "sBbwf/gstUM": {
                               "enabled": false
+                            },
+                            "sBbwf/QzGKB": {
+                              "enabled": true
                             },
                             "sBbwf/riEF4": {
                               "enabled": true
@@ -205121,7 +205261,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The details keep their width on the right and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
+                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The edge between the runs and the details is a splitter, unseen until hovered as between an item's two columns: dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device, and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -205442,7 +205582,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A successful Deploy run, opened from the workflow's run list. Unlike a failed run (W4a), which opens at the error, a passing run has nothing to point at, so it opens at a summary: every job with its status and how long it took, when each ran, and what the run was. No log is open; the cursor is on the first job and Enter opens its log in the W4a layout. The toolbar reads as a path, fitloop/webapp › Deploy › #4825: Deploy is the way back to the workflow (Esc goes there too).",
+                      "content": "A successful Deploy run, opened from the workflow's run list. Unlike a failed run (W4a), which opens at the error, a passing run has nothing to point at, so it opens at a summary: every job with its status and how long it took, when each ran, and what the run was. No log is open; the cursor is on the first job and Enter opens its log in the W4a layout. The toolbar reads as a path, fitloop/webapp › Deploy › #4825: Deploy is the way back to the workflow (Esc goes there too). The run is text to read, not a list, so like an item page (D9) it stands in a centred box, 1424 px by default, shown here in a 1920 × 1080 window: the run's line, the jobs and the summary sit inside it, the toolbar above stays full width. The box's side edges are dragged symmetrically from 920 px to the width there is, kept on this device, and drawn only while hovered, dragged or focused; in a window narrower than the box it takes the whole width. The edge between the jobs and the summary is a splitter, drawn here hovered: the column's line lights up in accent while hovered, dragged or focused, as the sidebar's and the item panel's do. Dragging it, or ←/→ on the focused edge, sets the jobs column from 200 to 480 px, 268 by default, kept on this device.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -205455,8 +205595,8 @@
                   "id": "J8Gad",
                   "name": "W34 · A passing run, opened at its summary",
                   "clip": true,
-                  "width": 1440,
-                  "height": 900,
+                  "width": 1920,
+                  "height": 1080,
                   "fill": "$bg",
                   "cornerRadius": 10,
                   "stroke": "$border",
@@ -205548,904 +205688,935 @@
                               }
                             },
                             {
-                              "id": "iyR9G",
-                              "type": "ref",
-                              "ref": "vQdXP",
-                              "name": "Run summary",
-                              "width": "fill_container",
-                              "descendants": {
-                                "f11R8": {
-                                  "content": "Succeeded",
-                                  "fill": "$green"
-                                },
-                                "ovzqM": {
-                                  "content": "main"
-                                },
-                                "mXKg4": {
-                                  "content": "push"
-                                },
-                                "KS1WD": {
-                                  "content": "9b07d1e"
-                                },
-                                "xbspv": {
-                                  "content": "Retry the cache warmup on deploy"
-                                },
-                                "wujzv": {
-                                  "content": "2m ago · took 3m 54s"
-                                }
-                              }
-                            },
-                            {
                               "type": "frame",
-                              "id": "ZEdSN",
-                              "name": "Columns",
+                              "id": "Xmvs4",
+                              "name": "Page",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "top": 1
-                              },
+                              "justifyContent": "center",
                               "children": [
                                 {
-                                  "id": "b1uuv",
-                                  "type": "ref",
-                                  "ref": "SQygR",
-                                  "name": "Jobs",
-                                  "height": "fill_container",
-                                  "descendants": {
-                                    "h610Wc": {
-                                      "content": "7 passed"
-                                    },
-                                    "Q1ghU9": {
-                                      "icon": "circle-check",
-                                      "fill": "$green"
-                                    },
-                                    "dXxbl": {
-                                      "content": "2m 24s"
-                                    },
-                                    "B6Ty7H": {
-                                      "enabled": false
-                                    },
-                                    "C5xoEs": {
-                                      "enabled": false
-                                    },
-                                    "QovYk": {
-                                      "enabled": false
-                                    },
-                                    "LjrhE": {
-                                      "enabled": false
-                                    },
-                                    "zxNVq": {
-                                      "enabled": false
-                                    },
-                                    "vNNzU": {
-                                      "enabled": false
-                                    },
-                                    "TA6ZW": {
-                                      "enabled": false
-                                    },
-                                    "jRPQ2": {
-                                      "enabled": false
-                                    },
-                                    "M1nf16": {
-                                      "icon": "circle-check",
-                                      "fill": "$green"
-                                    },
-                                    "bwSHb": {
-                                      "fill": "$fg"
-                                    },
-                                    "cHNOV": {
-                                      "content": "48s"
-                                    },
-                                    "eAFsI": {
-                                      "content": "41s"
-                                    },
-                                    "P7lpCd": {
-                                      "content": "1m 02s"
-                                    },
-                                    "UbXmC": {
-                                      "content": "2m 48s"
-                                    },
-                                    "uToxn": {
-                                      "content": "2m 51s"
-                                    },
-                                    "amqzs": {
-                                      "content": "3m 04s"
-                                    }
-                                  }
-                                },
-                                {
                                   "type": "frame",
-                                  "id": "d6ndhN",
-                                  "name": "Summary",
-                                  "width": "fill_container",
+                                  "id": "AW6bB",
+                                  "name": "Box",
+                                  "width": 1424,
                                   "height": "fill_container",
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "left": 1
-                                  },
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "MzlDN",
-                                      "name": "Body",
+                                      "id": "iyR9G",
+                                      "type": "ref",
+                                      "ref": "vQdXP",
+                                      "name": "Run summary",
                                       "width": "fill_container",
-                                      "height": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 28,
-                                      "padding": [
-                                        22,
-                                        32
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "G2DRS",
-                                          "name": "Heading",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 6,
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "LxPou",
-                                              "name": "Title row",
-                                              "width": "fill_container",
-                                              "gap": 10,
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "D7krmF",
-                                                  "name": "icon",
-                                                  "width": 16,
-                                                  "height": 16,
-                                                  "icon": "circle-check",
-                                                  "library": "lucide",
-                                                  "fill": "$green"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "zrtzT",
-                                                  "name": "Title",
-                                                  "fill": "$fg",
-                                                  "content": "Succeeded in 3m 54s",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 16,
-                                                  "fontWeight": "600"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "IHomv",
-                                              "name": "Detail",
-                                              "fill": "$fg-2",
-                                              "textGrowth": "fixed-width",
-                                              "width": "fill_container",
-                                              "content": "All 7 jobs passed.",
-                                              "fontFamily": "$font",
-                                              "fontSize": 13,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
+                                      "descendants": {
+                                        "f11R8": {
+                                          "content": "Succeeded",
+                                          "fill": "$green"
                                         },
-                                        {
-                                          "type": "frame",
-                                          "id": "KWZXG",
-                                          "name": "Jobs over time",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 6,
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "vGFIu",
-                                              "name": "Head",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                0,
-                                                0,
-                                                4,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "plIEf",
-                                                  "name": "Title",
-                                                  "fill": "$fg-2",
-                                                  "content": "Jobs over time",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "500"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "qnh3F",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "nHG4E",
-                                                  "name": "Start",
-                                                  "fill": "$fg-dim",
-                                                  "content": "0s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "say8U",
-                                              "name": "Job build",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "ZgNhD",
-                                                  "name": "Job name",
-                                                  "fill": "$fg",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "build",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "c3nHm",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "sM4YS",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 369,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "M8eBPc",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "dAZb3",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "2m 24s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "CPZBx",
-                                              "name": "Job lint",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "j9yfNa",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "lint",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "vVl20",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "KZuWn",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 105,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "jICvt",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "vneSK",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "41s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "Hj13s",
-                                              "name": "Job typecheck",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "pPUSk",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "typecheck",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "p9RCMg",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "M955c",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 159,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "YTWY1",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "ydvJF",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "1m 02s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "RhklV",
-                                              "name": "Job test (node 20)",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "G7uuZW",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "test (node 20)",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "eMuS2",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "V4QceJ",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 431,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "iOdSJ",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "jBsPv",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "2m 48s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "oUYtG",
-                                              "name": "Job test (node 22)",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "zMmar",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "test (node 22)",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "jNyBe",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "W4iKr",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 438,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "WqGez",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "FPXgs",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "2m 51s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "yaAT1",
-                                              "name": "Job e2e (chromium)",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "zIaTU",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "e2e (chromium)",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "RSw7R",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "iziCW",
-                                                      "x": 0,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 472,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "EsZlF",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "bn8RS",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "3m 04s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "xJCri",
-                                              "name": "Job deploy",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                3,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "F5Vnw",
-                                                  "name": "Job name",
-                                                  "fill": "$fg-2",
-                                                  "textGrowth": "fixed-width",
-                                                  "width": 120,
-                                                  "content": "deploy",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "ceYCv",
-                                                  "name": "Track",
-                                                  "width": 600,
-                                                  "height": 8,
-                                                  "fill": "$bg-3",
-                                                  "cornerRadius": 2,
-                                                  "layout": "none",
-                                                  "children": [
-                                                    {
-                                                      "type": "rectangle",
-                                                      "cornerRadius": 2,
-                                                      "id": "u5fFI",
-                                                      "x": 477,
-                                                      "y": 0,
-                                                      "name": "Bar",
-                                                      "fill": "#3FB95080",
-                                                      "width": 123,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "e3czAO",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "Au5r3",
-                                                  "name": "Job time",
-                                                  "fill": "$fg-dim",
-                                                  "content": "48s",
-                                                  "fontFamily": "$mono",
-                                                  "fontSize": 11.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            }
-                                          ]
+                                        "ovzqM": {
+                                          "content": "main"
                                         },
-                                        {
-                                          "type": "frame",
-                                          "id": "aB44j",
-                                          "name": "About this run",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 2,
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "t7dqp",
-                                              "name": "Title",
-                                              "fill": "$fg-2",
-                                              "content": "About this run",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "l4D9bX",
-                                              "name": "Rows",
-                                              "width": 520,
-                                              "layout": "vertical",
-                                              "padding": [
-                                                6,
-                                                0,
-                                                0,
-                                                0
-                                              ],
-                                              "children": [
-                                                {
-                                                  "id": "l8BWt",
-                                                  "type": "ref",
-                                                  "ref": "csWLC",
-                                                  "name": "Property Started by",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "HQuNe": {
-                                                      "content": "Started by"
-                                                    },
-                                                    "DTq5k": {
-                                                      "icon": "git-commit-horizontal",
-                                                      "fill": "$fg-3"
-                                                    },
-                                                    "PtMSM": {
-                                                      "content": "dkim · push to main",
-                                                      "fontFamily": "$font"
-                                                    },
-                                                    "r9JYaP": {
-                                                      "enabled": false
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "jZHaD",
-                                                  "type": "ref",
-                                                  "ref": "csWLC",
-                                                  "name": "Property Commit",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "HQuNe": {
-                                                      "content": "Commit"
-                                                    },
-                                                    "DTq5k": {
-                                                      "icon": "git-commit-horizontal",
-                                                      "fill": "$fg-3"
-                                                    },
-                                                    "PtMSM": {
-                                                      "content": "9b07d1e",
-                                                      "fontFamily": "$mono"
-                                                    },
-                                                    "r9JYaP": {
-                                                      "content": "Retry the cache warmup on deploy"
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "kmYlJ",
-                                                  "type": "ref",
-                                                  "ref": "csWLC",
-                                                  "name": "Property Attempt",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "HQuNe": {
-                                                      "content": "Attempt"
-                                                    },
-                                                    "DTq5k": {
-                                                      "icon": "rotate-ccw",
-                                                      "fill": "$fg-3"
-                                                    },
-                                                    "PtMSM": {
-                                                      "content": "1 of 1",
-                                                      "fontFamily": "$font"
-                                                    },
-                                                    "r9JYaP": {
-                                                      "enabled": false
-                                                    }
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          ]
+                                        "mXKg4": {
+                                          "content": "push"
+                                        },
+                                        "KS1WD": {
+                                          "content": "9b07d1e"
+                                        },
+                                        "xbspv": {
+                                          "content": "Retry the cache warmup on deploy"
+                                        },
+                                        "wujzv": {
+                                          "content": "2m ago · took 3m 54s"
                                         }
-                                      ]
+                                      }
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "f8Y0u",
-                                      "name": "Keys",
+                                      "id": "ZEdSN",
+                                      "name": "Columns",
                                       "width": "fill_container",
-                                      "height": 30,
-                                      "fill": "$bg-2",
+                                      "height": "fill_container",
                                       "stroke": "$border",
                                       "strokeWidth": {
                                         "top": 1
                                       },
-                                      "gap": 12,
-                                      "padding": [
-                                        0,
-                                        14
-                                      ],
-                                      "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "FqYnY",
+                                          "id": "b1uuv",
                                           "type": "ref",
-                                          "ref": "r1lx0",
-                                          "name": "Hint Job",
+                                          "ref": "SQygR",
+                                          "name": "Jobs",
+                                          "height": "fill_container",
                                           "descendants": {
-                                            "fjIpR/luKkY": {
-                                              "content": "J"
+                                            "h610Wc": {
+                                              "content": "7 passed"
                                             },
-                                            "H0UIIx/luKkY": {
-                                              "content": "K"
+                                            "Q1ghU9": {
+                                              "icon": "circle-check",
+                                              "fill": "$green"
                                             },
-                                            "rNLpb": {
-                                              "content": "Job"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "leC6u",
-                                          "type": "ref",
-                                          "ref": "dxCfd",
-                                          "name": "Hint Open log",
-                                          "descendants": {
-                                            "IJcUr": {
-                                              "content": "Open log"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "c0mLb",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint Back",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "Esc"
+                                            "dXxbl": {
+                                              "content": "2m 24s"
                                             },
-                                            "IOvfA": {
-                                              "content": "Back to Deploy"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "cLgWb",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint GitHub",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "O"
+                                            "B6Ty7H": {
+                                              "enabled": false
                                             },
-                                            "IOvfA": {
-                                              "content": "GitHub"
+                                            "C5xoEs": {
+                                              "enabled": false
+                                            },
+                                            "QovYk": {
+                                              "enabled": false
+                                            },
+                                            "LjrhE": {
+                                              "enabled": false
+                                            },
+                                            "zxNVq": {
+                                              "enabled": false
+                                            },
+                                            "vNNzU": {
+                                              "enabled": false
+                                            },
+                                            "TA6ZW": {
+                                              "enabled": false
+                                            },
+                                            "jRPQ2": {
+                                              "enabled": false
+                                            },
+                                            "M1nf16": {
+                                              "icon": "circle-check",
+                                              "fill": "$green"
+                                            },
+                                            "bwSHb": {
+                                              "fill": "$fg"
+                                            },
+                                            "cHNOV": {
+                                              "content": "48s"
+                                            },
+                                            "eAFsI": {
+                                              "content": "41s"
+                                            },
+                                            "P7lpCd": {
+                                              "content": "1m 02s"
+                                            },
+                                            "UbXmC": {
+                                              "content": "2m 48s"
+                                            },
+                                            "uToxn": {
+                                              "content": "2m 51s"
+                                            },
+                                            "amqzs": {
+                                              "content": "3m 04s"
                                             }
                                           }
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "JjJJF",
-                                          "name": "spacer",
+                                          "id": "d6ndhN",
+                                          "name": "Summary",
                                           "width": "fill_container",
-                                          "height": 1
+                                          "height": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "left": 1
+                                          },
+                                          "layout": "vertical",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "MzlDN",
+                                              "name": "Body",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 28,
+                                              "padding": [
+                                                22,
+                                                32
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "G2DRS",
+                                                  "name": "Heading",
+                                                  "width": "fill_container",
+                                                  "layout": "vertical",
+                                                  "gap": 6,
+                                                  "children": [
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "LxPou",
+                                                      "name": "Title row",
+                                                      "width": "fill_container",
+                                                      "gap": 10,
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "icon",
+                                                          "id": "D7krmF",
+                                                          "name": "icon",
+                                                          "width": 16,
+                                                          "height": 16,
+                                                          "icon": "circle-check",
+                                                          "library": "lucide",
+                                                          "fill": "$green"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "zrtzT",
+                                                          "name": "Title",
+                                                          "fill": "$fg",
+                                                          "content": "Succeeded in 3m 54s",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 16,
+                                                          "fontWeight": "600"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "IHomv",
+                                                      "name": "Detail",
+                                                      "fill": "$fg-2",
+                                                      "textGrowth": "fixed-width",
+                                                      "width": "fill_container",
+                                                      "content": "All 7 jobs passed.",
+                                                      "fontFamily": "$font",
+                                                      "fontSize": 13,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "KWZXG",
+                                                  "name": "Jobs over time",
+                                                  "width": "fill_container",
+                                                  "layout": "vertical",
+                                                  "gap": 6,
+                                                  "children": [
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "vGFIu",
+                                                      "name": "Head",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        0,
+                                                        0,
+                                                        4,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "plIEf",
+                                                          "name": "Title",
+                                                          "fill": "$fg-2",
+                                                          "content": "Jobs over time",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "500"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "qnh3F",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "nHG4E",
+                                                          "name": "Start",
+                                                          "fill": "$fg-dim",
+                                                          "content": "0s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "say8U",
+                                                      "name": "Job build",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "ZgNhD",
+                                                          "name": "Job name",
+                                                          "fill": "$fg",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "build",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "c3nHm",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "sM4YS",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 369,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "M8eBPc",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "dAZb3",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "2m 24s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "CPZBx",
+                                                      "name": "Job lint",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "j9yfNa",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "lint",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "vVl20",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "KZuWn",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 105,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "jICvt",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "vneSK",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "41s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "Hj13s",
+                                                      "name": "Job typecheck",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "pPUSk",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "typecheck",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "p9RCMg",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "M955c",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 159,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "YTWY1",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "ydvJF",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "1m 02s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "RhklV",
+                                                      "name": "Job test (node 20)",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "G7uuZW",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "test (node 20)",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "eMuS2",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "V4QceJ",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 431,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "iOdSJ",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "jBsPv",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "2m 48s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "oUYtG",
+                                                      "name": "Job test (node 22)",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "zMmar",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "test (node 22)",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "jNyBe",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "W4iKr",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 438,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "WqGez",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "FPXgs",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "2m 51s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "yaAT1",
+                                                      "name": "Job e2e (chromium)",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "zIaTU",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "e2e (chromium)",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "RSw7R",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "iziCW",
+                                                              "x": 0,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 472,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "EsZlF",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "bn8RS",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "3m 04s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "xJCri",
+                                                      "name": "Job deploy",
+                                                      "width": "fill_container",
+                                                      "gap": 12,
+                                                      "padding": [
+                                                        3,
+                                                        0
+                                                      ],
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "F5Vnw",
+                                                          "name": "Job name",
+                                                          "fill": "$fg-2",
+                                                          "textGrowth": "fixed-width",
+                                                          "width": 120,
+                                                          "content": "deploy",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "ceYCv",
+                                                          "name": "Track",
+                                                          "width": 600,
+                                                          "height": 8,
+                                                          "fill": "$bg-3",
+                                                          "cornerRadius": 2,
+                                                          "layout": "none",
+                                                          "children": [
+                                                            {
+                                                              "type": "rectangle",
+                                                              "cornerRadius": 2,
+                                                              "id": "u5fFI",
+                                                              "x": 477,
+                                                              "y": 0,
+                                                              "name": "Bar",
+                                                              "fill": "#3FB95080",
+                                                              "width": 123,
+                                                              "height": 8
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "type": "frame",
+                                                          "id": "e3czAO",
+                                                          "name": "spacer",
+                                                          "width": "fill_container",
+                                                          "height": 1
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "Au5r3",
+                                                          "name": "Job time",
+                                                          "fill": "$fg-dim",
+                                                          "content": "48s",
+                                                          "fontFamily": "$mono",
+                                                          "fontSize": 11.5,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "aB44j",
+                                                  "name": "About this run",
+                                                  "width": "fill_container",
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "t7dqp",
+                                                      "name": "Title",
+                                                      "fill": "$fg-2",
+                                                      "content": "About this run",
+                                                      "fontFamily": "$font",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "500"
+                                                    },
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "l4D9bX",
+                                                      "name": "Rows",
+                                                      "width": 520,
+                                                      "layout": "vertical",
+                                                      "padding": [
+                                                        6,
+                                                        0,
+                                                        0,
+                                                        0
+                                                      ],
+                                                      "children": [
+                                                        {
+                                                          "id": "l8BWt",
+                                                          "type": "ref",
+                                                          "ref": "csWLC",
+                                                          "name": "Property Started by",
+                                                          "width": "fill_container",
+                                                          "descendants": {
+                                                            "HQuNe": {
+                                                              "content": "Started by"
+                                                            },
+                                                            "DTq5k": {
+                                                              "icon": "git-commit-horizontal",
+                                                              "fill": "$fg-3"
+                                                            },
+                                                            "PtMSM": {
+                                                              "content": "dkim · push to main",
+                                                              "fontFamily": "$font"
+                                                            },
+                                                            "r9JYaP": {
+                                                              "enabled": false
+                                                            }
+                                                          }
+                                                        },
+                                                        {
+                                                          "id": "jZHaD",
+                                                          "type": "ref",
+                                                          "ref": "csWLC",
+                                                          "name": "Property Commit",
+                                                          "width": "fill_container",
+                                                          "descendants": {
+                                                            "HQuNe": {
+                                                              "content": "Commit"
+                                                            },
+                                                            "DTq5k": {
+                                                              "icon": "git-commit-horizontal",
+                                                              "fill": "$fg-3"
+                                                            },
+                                                            "PtMSM": {
+                                                              "content": "9b07d1e",
+                                                              "fontFamily": "$mono"
+                                                            },
+                                                            "r9JYaP": {
+                                                              "content": "Retry the cache warmup on deploy"
+                                                            }
+                                                          }
+                                                        },
+                                                        {
+                                                          "id": "kmYlJ",
+                                                          "type": "ref",
+                                                          "ref": "csWLC",
+                                                          "name": "Property Attempt",
+                                                          "width": "fill_container",
+                                                          "descendants": {
+                                                            "HQuNe": {
+                                                              "content": "Attempt"
+                                                            },
+                                                            "DTq5k": {
+                                                              "icon": "rotate-ccw",
+                                                              "fill": "$fg-3"
+                                                            },
+                                                            "PtMSM": {
+                                                              "content": "1 of 1",
+                                                              "fontFamily": "$font"
+                                                            },
+                                                            "r9JYaP": {
+                                                              "enabled": false
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "f8Y0u",
+                                              "name": "Keys",
+                                              "width": "fill_container",
+                                              "height": 30,
+                                              "fill": "$bg-2",
+                                              "stroke": "$border",
+                                              "strokeWidth": {
+                                                "top": 1
+                                              },
+                                              "gap": 12,
+                                              "padding": [
+                                                0,
+                                                14
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "id": "FqYnY",
+                                                  "type": "ref",
+                                                  "ref": "r1lx0",
+                                                  "name": "Hint Job",
+                                                  "descendants": {
+                                                    "fjIpR/luKkY": {
+                                                      "content": "J"
+                                                    },
+                                                    "H0UIIx/luKkY": {
+                                                      "content": "K"
+                                                    },
+                                                    "rNLpb": {
+                                                      "content": "Job"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "leC6u",
+                                                  "type": "ref",
+                                                  "ref": "dxCfd",
+                                                  "name": "Hint Open log",
+                                                  "descendants": {
+                                                    "IJcUr": {
+                                                      "content": "Open log"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "c0mLb",
+                                                  "type": "ref",
+                                                  "ref": "xfbOl",
+                                                  "name": "Hint Back",
+                                                  "descendants": {
+                                                    "m5wIG9/luKkY": {
+                                                      "content": "Esc"
+                                                    },
+                                                    "IOvfA": {
+                                                      "content": "Back to Deploy"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "cLgWb",
+                                                  "type": "ref",
+                                                  "ref": "xfbOl",
+                                                  "name": "Hint GitHub",
+                                                  "descendants": {
+                                                    "m5wIG9/luKkY": {
+                                                      "content": "O"
+                                                    },
+                                                    "IOvfA": {
+                                                      "content": "GitHub"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "JjJJF",
+                                                  "name": "spacer",
+                                                  "width": "fill_container",
+                                                  "height": 1
+                                                },
+                                                {
+                                                  "id": "N2P7qq",
+                                                  "type": "ref",
+                                                  "ref": "xfbOl",
+                                                  "name": "Hint All keys",
+                                                  "descendants": {
+                                                    "m5wIG9/luKkY": {
+                                                      "content": "?"
+                                                    },
+                                                    "IOvfA": {
+                                                      "content": "All keys"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
                                         },
                                         {
-                                          "id": "N2P7qq",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint All keys",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "?"
-                                            },
-                                            "IOvfA": {
-                                              "content": "All keys"
-                                            }
-                                          }
+                                          "type": "rectangle",
+                                          "id": "e38xK",
+                                          "layoutPosition": "absolute",
+                                          "x": 267,
+                                          "y": 0,
+                                          "name": "Jobs edge · hovered",
+                                          "fill": "$accent",
+                                          "width": 2,
+                                          "height": 970
                                         }
                                       ]
                                     }
@@ -211490,6 +211661,9 @@
                             "psxhV/gstUM": {
                               "enabled": false
                             },
+                            "psxhV/QzGKB": {
+                              "enabled": true
+                            },
                             "psxhV/riEF4": {
                               "enabled": true
                             },
@@ -211498,6 +211672,9 @@
                             },
                             "wAHd2/gstUM": {
                               "enabled": false
+                            },
+                            "wAHd2/QzGKB": {
+                              "enabled": true
                             },
                             "wAHd2/riEF4": {
                               "enabled": true
@@ -211508,6 +211685,9 @@
                             "yRlq7/gstUM": {
                               "enabled": false
                             },
+                            "yRlq7/QzGKB": {
+                              "enabled": true
+                            },
                             "yRlq7/riEF4": {
                               "enabled": true
                             },
@@ -211516,6 +211696,9 @@
                             },
                             "HHki7/gstUM": {
                               "enabled": false
+                            },
+                            "HHki7/QzGKB": {
+                              "enabled": true
                             },
                             "HHki7/riEF4": {
                               "enabled": true
@@ -211526,6 +211709,9 @@
                             "D1znz/gstUM": {
                               "enabled": false
                             },
+                            "D1znz/QzGKB": {
+                              "enabled": true
+                            },
                             "D1znz/riEF4": {
                               "enabled": true
                             },
@@ -211534,6 +211720,9 @@
                             },
                             "RyvQc/gstUM": {
                               "enabled": false
+                            },
+                            "RyvQc/QzGKB": {
+                              "enabled": true
                             },
                             "RyvQc/riEF4": {
                               "enabled": true
@@ -211544,6 +211733,9 @@
                             "Fe9F8/gstUM": {
                               "enabled": false
                             },
+                            "Fe9F8/QzGKB": {
+                              "enabled": true
+                            },
                             "Fe9F8/riEF4": {
                               "enabled": true
                             },
@@ -211552,6 +211744,9 @@
                             },
                             "sBbwf/gstUM": {
                               "enabled": false
+                            },
+                            "sBbwf/QzGKB": {
+                              "enabled": true
                             },
                             "sBbwf/riEF4": {
                               "enabled": true
