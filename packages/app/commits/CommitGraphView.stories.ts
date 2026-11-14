@@ -127,7 +127,7 @@ export const Resizing: Story = {
 export const Empty: Story = {
     render: () => renderOver({ commits: [], defaultBranch: null, firstOpen: true }),
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('No commits yet')).toBeVisible();
+        await expect(await within(canvasElement).findByText('A blank slate')).toBeVisible();
     },
 };
 

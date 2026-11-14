@@ -123,6 +123,7 @@ const groups = computed((): ListGroup<Item>[] =>
       <template #empty>
         <EmptyState
           :icon="CircleCheck"
+          tone="good"
           :title="t(l.empty)"
           :detail="t(l.emptyDetail)"
         />

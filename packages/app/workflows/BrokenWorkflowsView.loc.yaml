@@ -74,6 +74,6 @@ allGreenTextPartly:
 allGreenDetail:
   en: '{read}/{tracked} repositories · 0 broken · read {age} ago'
 nothingTrackedTitle:
-  en: No repositories tracked
+  en: No repositories tracked yet
 nothingTrackedText:
   en: Track a repository in Settings and its broken workflows show up here.

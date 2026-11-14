@@ -133,7 +133,7 @@ test("an address GitHub can't be asked about says so instead of opening for ever
 
     github.graphql('ItemByNumber', { repository: null });
     await page.getByRole('button', { name: 'Try again' }).click();
-    await expect(page.getByRole('heading', { name: 'No such issue or pull request' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '404: no such issue or pull request' })).toBeVisible();
 });
 
 test('J and K step through the list the item was opened from, beside it and on its own page', async ({

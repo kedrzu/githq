@@ -102,7 +102,6 @@ test('U44: nothing users notice says so, and the link still goes to the commits'
     await NothingYoudNotice.run();
 
     await expect.element(page.getByText("Nothing you'd notice")).toBeVisible();
-    await expect.element(page.getByText('7 commits went in, and none of them changes what you see.')).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^All commits on GitHub/ })).toBeVisible();
 });
 
@@ -124,7 +123,7 @@ test('U46: quiet lines hold the place, with no fold and the link working', async
 test('U47: offline waits, and offers no link, by the button or by its key', async () => {
     await Offline.run();
 
-    await expect.element(page.getByText('Waiting for the connection')).toBeVisible();
+    await expect.element(page.getByText("You're offline")).toBeVisible();
     await expect.element(page.getByRole('button', { name: /on GitHub/ })).not.toBeInTheDocument();
     await userEvent.keyboard('o');
     expect(Offline.args.onOpenOnGitHub).not.toHaveBeenCalled();
@@ -132,7 +131,7 @@ test('U47: offline waits, and offers no link, by the button or by its key', asyn
 
 test('U48: a failure says so and links to the releases', async () => {
     await Failed.run();
-    await expect.element(page.getByText("Couldn't load the changelog")).toBeVisible();
+    await expect.element(page.getByText("GitHub isn't answering")).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^All releases on GitHub/ })).toBeVisible();
 });
 

@@ -137,7 +137,7 @@ test('with nothing to pick, ⌘↵ goes on to My work', async () => {
     await NothingToPick.run({ args: { ...NothingToPick.args, onTrack } });
 
     await expect
-        .element(page.getByRole('heading', { name: "You don't have any repositories yet" }))
+        .element(page.getByRole('heading', { name: 'A fresh account, no repositories yet' }))
         .toBeInTheDocument();
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     expect(onTrack).toHaveBeenCalledOnce();
@@ -442,7 +442,7 @@ test('never G10: with nothing to pick, the filter is there to look up', async ()
 
     await expect.element(page.getByRole('textbox', { name: 'Filter repositories' })).toBeInTheDocument();
     await expect
-        .element(page.getByRole('heading', { name: "You don't have any repositories yet" }))
+        .element(page.getByRole('heading', { name: 'A fresh account, no repositories yet' }))
         .not.toBeInTheDocument();
 });
 

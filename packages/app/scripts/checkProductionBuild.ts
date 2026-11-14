@@ -47,7 +47,7 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'UpdatedToast', what: 'the toast saying the app updated' },
     { text: 'UpdateReadyToast', what: 'the toast offering an update' },
     { text: 'ChangelogSection', what: "Settings' Changelog section" },
-    { text: 'changelog appears', what: "the text of Settings' Changelog section" },
+    { text: 'changelog shows', what: "the text of Settings' Changelog section" },
 ];
 
 /**

@@ -129,7 +129,9 @@ test('nothing on my plate (K4) says what was checked and offers the next keys: a
 }) => {
     const { myWork } = await openMyWork(page, github, new GitHubWorld(SAMPLE_VIEWER.viewer.login));
 
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing on your plate' })).toBeVisible();
+    await expect(myWork.root.getByRole('heading', { name: 'Inbox zero. Savour it.' })).toBeVisible();
+    await expect(myWork.root).toContainText('0 reviews · 0 pulls · 0 issues · 0 mentions');
+    await expect(myWork.root.getByRole('button', { name: 'New issue' })).toHaveAttribute('aria-keyshortcuts', 'C');
     await myWork.root.getByRole('button', { name: 'Jump to a project' }).click();
     await expect(new CommandMenuHarness(page).root).toBeVisible();
     await page.keyboard.press('Escape');
@@ -151,7 +153,7 @@ test('"Waiting on others" with nothing waiting says so', async ({ page, github }
     const { myWork } = await openMyWork(page, github, world);
 
     await myWork.filter('Waiting on others').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing is waiting on others' })).toBeVisible();
+    await expect(myWork.root.getByRole('heading', { name: "Nobody's keeping you waiting" })).toBeVisible();
     await expect(myWork.groups).toHaveCount(0);
 });
 
@@ -164,7 +166,7 @@ test('D15, ES12: narrowed to a group that shows nothing, the note names it and o
     const { myWork, shell } = await openMyWork(page, github, sample.world);
 
     await shell.myWorkLink('Mentioned').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Mentioned' })).toBeVisible();
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Mentioned, for now' })).toBeVisible();
     await expect(myWork.groups).toHaveCount(0);
     await myWork.root.getByRole('button', { name: 'Show all of My work' }).click();
     await expect(page).toHaveURL(/\/$/u);
@@ -174,7 +176,7 @@ test('D15, ES12: narrowed to a group that shows nothing, the note names it and o
     // The filter hides what the group holds: the filter is what to clear, and the group stays.
     await shell.myWorkLink('Review requested').click();
     await myWork.filter('Waiting on others').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Review requested' })).toBeVisible();
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Review requested, for now' })).toBeVisible();
     await expect(myWork.root.getByRole('button', { name: 'Show all of My work' })).toHaveCount(0);
     await myWork.root.getByRole('button', { name: 'Clear filter' }).click();
     await expect(myWork.filter('All')).toHaveAttribute('aria-pressed', 'true');
@@ -194,7 +196,7 @@ test('first run and loading D6, ES13: GitHub failing, then offline, before anyth
 
     await expect(myWork.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
     await expect(myWork.root).toContainText("githq couldn't read your work.");
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing on your plate' })).toHaveCount(0);
+    await expect(myWork.root.getByRole('heading', { name: 'Inbox zero. Savour it.' })).toHaveCount(0);
 
     await page.context().setOffline(true);
     await expect(myWork.root.getByRole('heading', { name: "You're offline" })).toBeVisible();

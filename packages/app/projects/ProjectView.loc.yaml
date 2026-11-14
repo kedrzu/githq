@@ -57,7 +57,9 @@ manual:
 sortedBy:
   en: 'Sort: {order}'
 emptyProjectTitle:
-  en: '{project} has no items yet'
+  en: '{project} is a blank canvas'
+emptyProjectFact:
+  en: 'items: 0'
 emptyProjectDetail:
   en: Add issues and pull requests from any repository, or write a draft issue that lives only in this project. Items added on github.com show up here within a minute.
 newDraft:
@@ -72,10 +74,14 @@ newIssueIn:
   en: New issue in {group}
 askingTitle:
   en: GitHub is answering this view
+askingFact:
+  en: '{term} → asked GitHub'
 askingDetail:
   en: githq can't check “{term}” itself, so GitHub runs this view's filter. It takes a moment.
 emptyViewTitle:
   en: Nothing matches “{view}”
+emptyViewFact:
+  en: '{filter} → 0 items'
 emptyViewDetail:
   en: '“{view}” is a view defined on GitHub: {filter}. No items match it right now.'
 filterHidesItems:

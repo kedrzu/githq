@@ -110,7 +110,7 @@ test('signing in with GitHub ends in the app, where the user was heading, keepin
     await expect(new AppShellHarness(page).account(LOGIN)).toBeVisible();
     await expect(page).toHaveURL('/pulls');
     await expect(
-        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests, for now' }),
     ).toBeVisible();
     const stored = await readStoredCredentials(page);
     expect(stored?.accessToken).toBe(SAMPLE_TOKEN);

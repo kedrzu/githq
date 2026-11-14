@@ -373,7 +373,7 @@ test("first run and loading D6: with rows on screen, what stands in the way is t
 test('first run and loading D6: what has all arrived and holds nothing says so, offline or not, as nothing more would come', async () => {
     mount({ items: [], cantBeRead: { kind: 'offline' } });
 
-    await expect.element(page.getByRole('heading', { name: 'No open issues' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No open issues. Enjoy the quiet.' })).toBeVisible();
     await expect.element(page.getByText(`GitHub lists none in ${SAMPLE_REPOSITORY}.`, { exact: true })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
 });
@@ -385,7 +385,7 @@ test('ES16: tracked, GitHub not showing it stands over nothing there and a state
     });
 
     await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: 'Filtered down to zero' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
     await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
@@ -397,7 +397,7 @@ test('ES16: tracked, GitHub refusing its changes leaves what has arrived its own
         cantBeRead: { kind: 'refused', url: GITHUB_URL },
     });
 
-    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Filtered down to zero' })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: /^GitHub refuses/ })).not.toBeInTheDocument();
 });
 
@@ -414,7 +414,7 @@ test('filtered out: the state hiding all the section holds is named, with a way 
     const closed = SAMPLE_REPOSITORY_ITEMS.filter(item => item.kind === 'issue' && item.state !== 'OPEN');
     const view = mount({ items: closed });
 
-    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Filtered down to zero' })).toBeVisible();
     await expect
         .element(
             page.getByText(

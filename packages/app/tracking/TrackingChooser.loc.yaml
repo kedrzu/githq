@@ -116,7 +116,7 @@ onlyMine:
 track:
   en: Track these
 emptyTitle:
-  en: You don't have any repositories yet
+  en: A fresh account, no repositories yet
 emptyDetail:
   en: That's fine. My work still shows the issues and pull requests that concern you anywhere on GitHub. You can also follow someone else's repository or project.
 continue:

@@ -99,6 +99,7 @@ function onRowClick(event: MouseEvent, row: T) {
       <template #action>
         <Button
           variant="secondary"
+          size="sm"
           :icon="Plus"
           :kbd="ADD_KEY"
           :keyshortcuts="formatAriaKeyShortcuts(ADD_KEY)"

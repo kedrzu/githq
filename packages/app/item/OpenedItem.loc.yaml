@@ -1,11 +1,15 @@
 opening:
   en: Opening {reference}…
 missing:
-  en: No such issue or pull request
+  en: '404: no such issue or pull request'
+missingFact:
+  en: '{reference} → not found'
 missingDetail:
-  en: '{reference} does not exist on GitHub, or your account may not see it.'
+  en: "{reference} doesn't exist on GitHub, or your account can't see it."
 unreachable:
   en: Couldn't reach GitHub
+unreachableDetail:
+  en: GitHub didn't answer this time. Another try usually does it.
 tryAgain:
   en: Try again
 backToList:

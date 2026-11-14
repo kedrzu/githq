@@ -9,10 +9,12 @@ import EmptyState from './EmptyState.vue';
 import * as l from './FilteredOut.loc.js';
 
 defineProps<{
-  /** What the screen says; "Nothing matches this filter" when not given. */
+  /** What the screen says; "Filtered down to zero" when not given. */
   title?: string;
   /** What the filter hides: "Label is bug hides all 18 open issues." */
   detail?: string;
+  /** A technical fact in a mono chip. */
+  fact?: string;
   /** A funnel when not given. */
   icon?: LucideIcon;
   /** Clears the filter: "Clear filter" is drawn when given and the `action` slot is not. */
@@ -31,8 +33,9 @@ const t = useTranslate();
   <EmptyState
     place="screen"
     :icon="icon ?? FunnelX"
-    :title="title ?? t(l.nothingMatchesThisFilter)"
+    :title="title ?? t(l.filteredDownToZero)"
     :detail="detail"
+    :fact="fact"
   >
     <template
       v-if="$slots.action || clear"
@@ -41,7 +44,8 @@ const t = useTranslate();
       <slot name="action">
         <Button
           variant="secondary"
-          size="md"
+          size="sm"
+          :icon="FunnelX"
           @click="clear"
         >
           {{ t(l.clearFilter) }}
