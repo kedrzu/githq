@@ -20,8 +20,6 @@ import {
   MessageSquare,
   SquareKanban,
   RotateCcw,
-  Maximize2,
-  Minimize2,
   X,
 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
@@ -64,14 +62,10 @@ import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
 import type { ItemEditing } from './ItemEditing.js';
-import { ItemNavigation } from './ItemNavigation.js';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
 import { formatShortReference } from './itemRoutes.js';
@@ -87,6 +81,7 @@ import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
+import { ITEM_ARRANGEMENT_KEYS, useItemKeys } from './useItemArrangement.js';
 
 /** From this width of the item below its header on a page, the summary and the timeline stand side by side. */
 const TWO_COLUMNS_WIDTH = 1000;
@@ -196,7 +191,6 @@ const emit = defineEmits<{
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
 const browser = useService(Browser);
-const navigation = useService(ItemNavigation);
 const tracking = useService(TrackingStore);
 /** Merging, where the screen offers it: how the session's last merge of a pull request ended (PM38). */
 const merging = injectContext(MergeContext, { optional: true });
@@ -286,18 +280,6 @@ useIntersectionObserver({
   onHidden: () => {
     stackRowsInView.value = false;
   },
-});
-
-/**
- * The other arrangement, offered by the header's button and `⇧Enter`: full screen from the panel, back to the panel from
- * the page — but not where the window has no room for the panel.
- */
-const otherArrangement = computed((): OtherArrangement | null => {
-  if (props.arrangement === 'panel') {
-    return { arrangement: 'page', title: t(l.openFullScreen), icon: Maximize2 };
-  }
-
-  return navigation.panelFits ? { arrangement: 'panel', title: t(l.backToPanel), icon: Minimize2 } : null;
 });
 
 const pr = computed(() => (props.item.kind === 'pullRequest' ? props.item : null));
@@ -406,11 +388,9 @@ const opened = computed(() => {
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
 const ITEM_KEYS = {
-  openOnGitHub: 'O',
   openFiles: 'Shift+O',
   review: 'D',
   itemMenu: 'Mod+.',
-  arrange: 'Shift+Enter',
 } as const;
 
 /**
@@ -438,6 +418,26 @@ defineExpose({
   hasOpenEditor: computed(() => threadRef.value?.hasOpenEditor ?? false),
 });
 
+// Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from.
+const keys = useItemKeys({
+  arrangement: () => props.arrangement,
+  // Here rather than in a listener of the copy's own, which would run after the item's. Not a `data-layer` either: that
+  // would cover the screen and switch `J`/`K` off while the rows are dropped.
+  onEscape: () => {
+    if (!stackDropped.value) {
+      return false;
+    }
+
+    stackDropped.value = false;
+    return true;
+  },
+  close: () => emit('close'),
+  arrange: arrangement => emit('arrange', arrangement),
+  openOnGitHub: () => browser.openInNewTab(props.item.url),
+  previous: () => emit('previous'),
+  next: () => emit('next'),
+});
+
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
 // the rest — comment, reviews, GitHub, the link, the arrangement.
 useCommands(
@@ -448,46 +448,6 @@ useCommands(
     title: props.item.title,
   }),
 );
-
-// Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from (in a panel the list's own `j`/`k`, run first,
-// move its selection instead, which the opened item follows).
-onWindowEvent('keydown', event => {
-  // An open picker or menu takes Escape for itself.
-  if (event.key === 'Escape' && !event.defaultPrevented && !isLayerOpen()) {
-    // Here rather than in a listener of the copy's own, which would run after this one. Not a `data-layer` either:
-    // that would cover the screen and switch `J`/`K` off while the rows are dropped.
-    if (stackDropped.value) {
-      event.preventDefault();
-      stackDropped.value = false;
-      return;
-    }
-
-    // A field gives the key up first: Escape in the comment box leaves it.
-    const { target } = event;
-    if (target instanceof HTMLElement && isEditableTarget(target)) {
-      target.blur();
-      return;
-    }
-
-    event.preventDefault();
-    emit('close');
-    return;
-  }
-
-  if (!isScreenKey(event)) {
-    return;
-  }
-
-  switch (event.key) {
-    case 'j':
-      event.preventDefault();
-      emit('next');
-      return;
-    case 'k':
-      event.preventDefault();
-      emit('previous');
-  }
-});
 
 // D27: a click outside the dropped rows and the bar takes them away; the bar's own click toggles them.
 onWindowEvent('pointerdown', event => {
@@ -604,32 +564,20 @@ function getItemCommands(): Command[] {
     });
   }
 
-  // Its own keys (`onWindowEvent` above), listed in the help sheet.
-  commands.push(
-    { id: 'item.next', title: t(l.next), section: 'item', key: 'J', menu: false },
-    { id: 'item.previous', title: t(l.previous), section: 'item', key: 'K', menu: false },
-    { id: 'item.close', title: t(l.close), section: 'item', key: 'Escape', menu: false },
-    {
-      id: 'item.menu',
-      title: t(l.itemMenu),
-      section: 'item',
-      key: ITEM_KEYS.itemMenu,
-      menu: false,
-      run: () => {
-        itemMenuOpen.value = true;
-      },
+  // Its own keys (`useItemKeys` above), listed in the help sheet.
+  commands.push(keys.commands.next, keys.commands.previous, keys.commands.close, {
+    id: 'item.menu',
+    title: t(l.itemMenu),
+    section: 'item',
+    key: ITEM_KEYS.itemMenu,
+    menu: false,
+    run: () => {
+      itemMenuOpen.value = true;
     },
-  );
+  });
 
   commands.push(
-    {
-      id: 'item.openOnGitHub',
-      title: t(l.openOnGitHub),
-      section: 'item',
-      key: ITEM_KEYS.openOnGitHub,
-      icon: Github,
-      run: () => browser.openInNewTab(item.url),
-    },
+    keys.commands.openOnGitHub,
     {
       id: 'item.review',
       title: t(l.review),
@@ -674,16 +622,8 @@ function getItemCommands(): Command[] {
     },
   );
 
-  const other = otherArrangement.value;
-  if (other) {
-    commands.push({
-      id: `item.arrange.${other.arrangement}`,
-      title: other.title,
-      section: 'item',
-      key: ITEM_KEYS.arrange,
-      icon: other.icon,
-      run: () => emit('arrange', other.arrangement),
-    });
+  if (keys.commands.arrange) {
+    commands.push(keys.commands.arrange);
   }
 
   return commands;
@@ -708,13 +648,6 @@ function getProjectOptions(): CommandOption[] {
       detail: project.owner,
       pick: () => emit('edit', { kind: 'addToProject', project }),
     }));
-}
-
-/** The arrangement the header's button and `⇧Enter` move the item to. */
-interface OtherArrangement {
-  readonly arrangement: ItemArrangement;
-  readonly title: string;
-  readonly icon: LucideIcon;
 }
 </script>
 
@@ -764,33 +697,33 @@ interface OtherArrangement {
       <ItemWalkStepper
         v-if="position"
         :position="position"
-        :previous-label="t(l.previous)"
-        :next-label="t(l.next)"
+        :previous-label="keys.commands.previous.title"
+        :next-label="keys.commands.next.title"
         @previous="emit('previous')"
         @next="emit('next')"
       />
       <IconButton
-        v-if="otherArrangement"
-        :icon="otherArrangement.icon"
-        :label="otherArrangement.title"
-        :kbd="ITEM_KEYS.arrange"
-        :keyshortcuts="ITEM_KEYS.arrange"
-        @click="emit('arrange', otherArrangement.arrangement)"
+        v-if="keys.otherArrangement"
+        :icon="keys.otherArrangement.icon"
+        :label="keys.otherArrangement.title"
+        :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
+        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
+        @click="emit('arrange', keys.otherArrangement.arrangement)"
       />
       <IconButton
         :icon="Github"
-        :label="t(l.openOnGitHub)"
-        :kbd="ITEM_KEYS.openOnGitHub"
+        :label="keys.commands.openOnGitHub.title"
+        :kbd="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
         :link="item.url"
         target="_blank"
         rel="noopener noreferrer"
-        :keyshortcuts="ITEM_KEYS.openOnGitHub"
+        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
       />
       <IconButton
         :icon="X"
-        :label="t(l.close)"
-        kbd="Escape"
-        keyshortcuts="Escape"
+        :label="keys.commands.close.title"
+        :kbd="ITEM_ARRANGEMENT_KEYS.close"
+        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.close"
         @click="emit('close')"
       />
     </header>

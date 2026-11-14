@@ -4,11 +4,14 @@ import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
+import type { OpenedItemKind } from './defineOpenedItemKind.js';
 import { ItemNavigation } from './ItemNavigation.js';
 import type { StackNeighbours } from './StackMap.vue';
 
 /** Options of {@link useItemWalk}. */
 export interface UseItemWalkOptions {
+    /** The kind of the item: a list of another kind has no place for it. */
+    kind: OpenedItemKind;
     /** The id of the item the walk is at; `null` until found. */
     id: MaybeRefOrGetter<string | null>;
     /** Which of the list's items the walk stops at; left out, every one. */
@@ -29,7 +32,7 @@ export interface ItemWalkPosition {
 
 /** Where `K`/`J` go from an item, and how far along it is. */
 export interface ItemWalkViewModel {
-    /** `null` with no list, or outside it (an item opened by its address). */
+    /** `null` with no list, a list of another kind, or outside it (an item opened by its address). */
     readonly position: ItemWalkPosition | null;
     /** What `K`/`J` reach. Both `null` wherever {@link position} is, unless they follow the list's cursor. */
     readonly neighbours: StackNeighbours;
@@ -46,12 +49,13 @@ export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
     const navigation = useService(ItemNavigation);
 
     const id = makeRef(options.id);
+    const list = computed(() => (navigation.list?.kind === options.kind ? navigation.list : null));
     const steps = computed(() => {
-        const listed = navigation.list?.steps ?? [];
+        const listed = list.value?.steps ?? [];
         return options.stopsAt ? listed.filter(options.stopsAt) : listed;
     });
     const index = computed(() =>
-        id.value === null ? -1 : steps.value.indexOf(navigation.list?.stepOf.get(id.value) ?? id.value),
+        id.value === null ? -1 : steps.value.indexOf(list.value?.stepOf.get(id.value) ?? id.value),
     );
     const stepNeighbours = computed((): StackNeighbours =>
         index.value === -1
@@ -61,7 +65,7 @@ export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
 
     return reactive<ItemWalkViewModel>({
         position: computed(() => (index.value === -1 ? null : { index: index.value + 1, count: steps.value.length })),
-        neighbours: computed(() => (options.followsCursor?.() && navigation.list?.around) || stepNeighbours.value),
+        neighbours: computed(() => (options.followsCursor?.() && list.value?.around) || stepNeighbours.value),
         stepNeighbours,
     });
 }

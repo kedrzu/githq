@@ -136,7 +136,7 @@ export function useItemList(): ItemListViewModel {
     // What an opened item steps through, and where closing it comes back to: on every move of the cursor.
     watch(
         [listed, listPath],
-        ([{ steps, stepOf, around }, path]) => navigation.setList({ path, steps, stepOf, around }),
+        ([{ steps, stepOf, around }, path]) => navigation.setList({ kind: 'issue', path, steps, stepOf, around }),
         { immediate: true },
     );
 
