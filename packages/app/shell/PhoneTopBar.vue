@@ -73,7 +73,7 @@ const shell = injectContext(PhoneShellContext, { optional: true });
 .phoneTopBar_bar {
   --icon-button-width: #{$touch-target-size};
   --icon-button-height: #{$touch-target-size};
-  --icon-button-glyph-size: 22px;
+  --icon-button-glyph-size: #{$phone-icon-size};
 
   display: flex;
   gap: $spacing-4;

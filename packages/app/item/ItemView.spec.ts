@@ -160,10 +160,10 @@ test("a control Tab reached outside the list holds an opened panel's J/K; one Es
 
 test('mobile MB33: on a phone the top bar is back, naming the list, and previous and next; nothing else of the header', async () => {
     await PhoneFromList.run();
-    const { onBack, onNext, onPrevious } = PhoneFromList.args;
+    const { onClose, onNext, onPrevious } = PhoneFromList.args;
 
     await userEvent.click(page.getByRole('button', { name: 'Back to Issues' }));
-    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
     await userEvent.click(page.getByRole('button', { name: 'Next item' }));
     await userEvent.click(page.getByRole('button', { name: 'Previous item' }));
     expect(onNext).toHaveBeenCalledTimes(1);

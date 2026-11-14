@@ -124,7 +124,7 @@ const keyshortcuts = formatAriaKeyShortcuts(APP_KEYS.commandMenu);
 .phoneCommandLine_menu {
   --icon-button-width: #{$phone-command-line-height};
   --icon-button-height: #{$phone-command-line-height};
-  --icon-button-glyph-size: 22px;
+  --icon-button-glyph-size: #{$phone-icon-size};
   --icon-button-radius: 50%;
   --icon-button-color: #{$color-accent};
   --icon-button-hover-color: #{$color-accent};

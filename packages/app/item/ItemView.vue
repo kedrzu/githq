@@ -12,7 +12,6 @@ import {
   CircleSlash,
   GitPullRequestClosed,
   ChevronDown,
-  ChevronLeft,
   ChevronUp,
   FileDiff,
   GitBranch,
@@ -61,6 +60,7 @@ import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneBackButton from '@/shell/PhoneBackButton.vue';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -177,9 +177,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  /** Escape and the close button; on a phone back in the top bar (mobile D20). */
   close: [];
-  /** On a phone, back in the top bar (mobile D20). */
-  back: [];
   previous: [];
   next: [];
   /** "Open full screen" or "Back to the panel" (`⇧Enter`): the other arrangement is wanted. */
@@ -739,15 +738,10 @@ interface OtherArrangement {
     <!-- On a phone (mobile MB33, MB62): back, naming what it returns to, and the way through the list; the rest is under ⌘. -->
     <PhoneTopBar v-if="phone.active">
       <template #start>
-        <Button
-          variant="ghost"
-          :icon="ChevronLeft"
-          :class="css.itemView_back"
-          :aria-label="t(l.backTo, { place: backTitle || t(l.back) })"
-          @click="emit('back')"
-        >
-          {{ backTitle || t(l.back) }}
-        </Button>
+        <PhoneBackButton
+          :place="backTitle"
+          @click="emit('close')"
+        />
       </template>
       <template
         v-if="position"
@@ -1182,13 +1176,6 @@ $item-column-inset: var(--item-column-inset);
   flex: none;
   font-family: $font-family-mono;
   color: $color-fg-dim;
-}
-
-.itemView_back {
-  min-width: 0;
-  max-width: 100%;
-  margin-left: -$spacing-6;
-  font-size: $font-size-xl;
 }
 
 .itemView_phoneReference {

@@ -79,8 +79,9 @@ test('mobile D20: Escape on a phone goes back as back does, by the history’s B
     expect(history.position()).toBe(0);
 });
 
-test('mobile D20: on a phone an item not in the local copy yet still has back in its top bar', async () => {
-    const { router } = await mountItemPage({ phone: true, visits: ['/acme/web/issues/99'] });
+test('mobile D20: on a phone an item not in the local copy has back in its top bar, to its repository whatever list was shown', async () => {
+    const { router, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/99'] });
+    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
 
     await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
 

@@ -6,7 +6,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
-import { ArrowLeft, ChevronLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
+import { ArrowLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onScopeDispose, ref, useTemplateRef, watch } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
@@ -28,6 +28,7 @@ import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneBackButton from '@/shell/PhoneBackButton.vue';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 
 import type { ItemEditing } from './ItemEditing.js';
@@ -147,13 +148,14 @@ const repositoryName = computed(
   () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
 );
 /**
- * The list the item was opened from: the last one shown, while the item is in it — or not known yet. An item opened from a
- * link after a list was shown has no list behind it (mobile D20).
+ * The list the item was opened from: the last one shown, while the item is in it. An item opened from a link after a list
+ * was shown, or one not known (yet, or at all: missing, unreachable), has no list behind it (mobile D20) — an item opened
+ * from a list is always known, as the list holds it.
  */
 const ownList = computed(() => {
   const { list } = navigation;
   const { id } = opened;
-  return list && (id === null || list.steps.includes(id) || list.stepOf.has(id)) ? list : null;
+  return list && id !== null && (list.steps.includes(id) || list.stepOf.has(id)) ? list : null;
 });
 /** Whether the item's page draws the phone's top bar itself while the item is not there (its route has `ownTopBar`). */
 const showsPhoneBar = computed(() => phone.active && props.arrangement === 'page');
@@ -577,7 +579,6 @@ interface LookedRead extends ItemOpening {
     @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"
-    @back="goBack"
     @previous="step(-1)"
     @next="step(1)"
     @arrange="arrange"
@@ -592,15 +593,10 @@ interface LookedRead extends ItemOpening {
     <!-- On a phone the screen's top bar is the item's (mobile D20), so back is there before the item is. -->
     <PhoneTopBar v-if="showsPhoneBar">
       <template #start>
-        <Button
-          variant="ghost"
-          :icon="ChevronLeft"
-          :class="css.openedItem_back"
-          :aria-label="t(l.backTo, { place: backTitle })"
+        <PhoneBackButton
+          :place="backTitle"
           @click="goBack"
-        >
-          {{ backTitle }}
-        </Button>
+        />
       </template>
     </PhoneTopBar>
     <EmptyState
@@ -658,12 +654,5 @@ interface LookedRead extends ItemOpening {
   > :last-child {
     flex: 1;
   }
-}
-
-.openedItem_back {
-  min-width: 0;
-  max-width: 100%;
-  margin-left: -$spacing-6;
-  font-size: $font-size-xl;
 }
 </style>

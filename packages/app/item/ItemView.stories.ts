@@ -49,7 +49,6 @@ const meta = {
         onEdit: fn(),
         onNeedProjects: fn(),
         onClose: fn(),
-        onBack: fn(),
         onPrevious: fn(),
         onNext: fn(),
         onArrange: fn(),
