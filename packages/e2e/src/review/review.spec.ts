@@ -300,6 +300,23 @@ test('the layout and hide whitespace are kept for the next review, and hiding wh
     await expect(review.viewOptionsButton).toHaveText(/Unified · whitespace hidden/);
 });
 
+test('⌘K on the review opens another pull request on its own page, not in a panel beside the review; Back returns to the review', async ({
+    page,
+    github,
+}) => {
+    await openReview(page, github);
+    const item = new ItemViewHarness(page);
+
+    await new CommandMenuHarness(page).run('Move the sidebar state');
+
+    await expect(page).toHaveURL('/acme/web/pull/17');
+    await expect(item.title).toHaveText('Move the sidebar state to the store');
+
+    await page.goBack();
+    await expect(page).toHaveURL(REVIEW_ADDRESS);
+    await expect(item.root).toBeHidden();
+});
+
 test('the view options are commands that change what their controls change, their titles saying what picking them does', async ({
     page,
     github,
