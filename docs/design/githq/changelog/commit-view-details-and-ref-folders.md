@@ -190,3 +190,57 @@ retuned, `Commit details` rebuilt on the facts and the message, the `Variants` f
 Checked, nothing to change: the 17 selected rows all have `$sel`, the accent outline and the ring; no loose pull request
 number, old panel or flat prefixed name is left in App · Commits or Desktop · Commits; App · Repository shows neither
 the graph nor the details.
+
+## Round 5 · agent brief
+
+Asked (`.context/commit-view-brief-5.md`): a real sort dropdown on each group of the branch and tag list, applied
+everywhere (settled), and three variants of how a failing commit shows once every lane has its own colour (the owner
+wants the graph closer to Fork's). Changed: three button states and a menu as components, `Ref list section` carrying the
+button, a new screen; eight lane colours as variables; an amber `Variants` frame with the palette and three variants.
+The existing screens keep their grey lanes until a variant is picked.
+
+- [ ] Components · Commits › Atoms (`zeINb`): new `Ref list sort` (`zwGis`): 18 px tall, padding [0,3,0,6], gap 3,
+  radius 4, 1 px inner `$border-2` stroke; `Order` (`rJori`) 11 px `$fg-2`, "Newest first"; `Chevron` (`vc5t1`)
+  `chevron-down` 12 px `$fg-3`. New `Ref list sort · hover` (`F54Nvj`): fill `$bg-3`, stroke `$fg-3`, label `$fg`,
+  chevron `$fg-2`. New `Ref list sort · open` (`o3wZHM`): as hover, the chevron `chevron-up`.
+- [ ] Components · Commits › Parts (`C2tGlJ`): new `Ref list sort menu` (`CdB0y`) after `Ref list section`: 168 wide,
+  `$bg-2`, radius 8, `$border-2` stroke, the shadow of `Activity / Comment menu`, padding 4, two `Activity / Menu item`
+  instances, "Newest first" (`X2hxOg`) and "By name" (`SLAvy`), the current one's icon a `check` in `$accent`, the other's
+  the same check transparent so the labels align. New `Ref list sort menu · by name` (`ME5z9`): the check on By name.
+- [ ] Ref list section (`O0IBWH`): the hidden text `Right` (`aKo9W`, "by last commit", shown as "newest first" by every
+  instance) → a `Ref list sort` instance `Sort` (`hMXTr`), shown by default; padding [12,10,4,10] → [10,10,3,10] so the
+  section stays 31 px. The `aKo9W` overrides of all 30 instances removed; `Sort` hidden where the group can't be sorted:
+  App · Repository's "Its issues live in" (`fjJsq`) and "Its pull requests live in" (`V5U5W`), CH25's empty Tags
+  (`d4F16y`), CH39's empty Branches (`yV5ko`). Every list now shows "Newest first" on both groups: CH3, CH6, CH10, CH11,
+  CH15–CH17, CH42, CH44–CH46, CH53, CH59, CD2, CD3, CD5, CD7 and the panes in Components · Commits.
+- [ ] App · Commits › `Row of screens · Folders` (`KLsDj`): new `CH60 · Sorting the list` (`F7mkm`, slot `kAYNm`) after
+  CH59: two lists at 280 px. Left, "Picking By name in the Branches menu": Branches' button open (`Sort` replaced by
+  `Ref list sort · open`), the menu (`z7SShM`) 4 px under it, right edges aligned, By name highlighted `$sel` under the
+  pointer. Right, "Branches by name": the button reads "By name"; `feature` (billing-export, login, search) and `fix`
+  unfolded, `fix` in natural order (booking-tz, hld-9-retry, hld-98-week, hld-99-dst, hld-100-ical, hld-104-seats,
+  rate-limit; newest first on the left), `kedrzu` folded, loose `develop` after the folders as CH53's rule says; Tags
+  unchanged, Newest first. The caption gives the keys (↵ opens, ↑/↓ and ↵ pick, Esc closes), the order kept per group
+  on the device per repository (the agent's guess), the default branch staying on top and folding kept.
+- [ ] Variables: new `graph-lane-1` … `graph-lane-8`: `#5899E4` blue, `#91B54A` lime, `#B190EA` violet, `#41AA90` teal,
+  `#C784CD` orchid, `#39AEC6` cyan, `#5DB669` green, `#86AECB` steel, each 5.7:1 to 8.1:1 on `$bg`, the stripe and
+  `$sel`; new `graph-line-main` `#8B929B`, the code's token of the same name, so far a literal in the file. No red, amber
+  or indigo (failing, running, the selection ring); ordered so neighbouring lanes differ most. Used only in the variants.
+- [ ] App · Commits (`DtWFt`): new `Variants · Failing CI on a coloured lane` (`v1rQdK`, amber) after CH54's row: an
+  intro, `Lane palette` (`pw4ow`: nine swatches with value and contrast, the lanes and dots drawn on `$bg`, the stripe
+  and `$sel`, and why the default branch keeps its grey: the trunk stays the neutral line the branches leave and join,
+  and the accent is the selection ring's), then three screens, each the same twelve rows (`Commit row` instances, 800
+  wide, graph 74 px: main grey and four coloured lanes, a merge from `feat/member-search`, `fix: booking time…` failing
+  on `fix/booking-tz` and selected, `fix: member list loads twice` failing on main and hovered, `feat: preview a class…`
+  running) with the graph column at 3× beside them. Dots r = 3 (was 3.5), filled in their lane's colour; merges a 1.5 px
+  ring in the lane's colour on `$bg`; lines 1.5 px in the lane's colour; the 14 px rings of CH54 unchanged.
+  - `CH61 · Variant A · A red centre inside the lane's ring` (`scrBz`), recommended: failing is a circle r = 3.25 filled
+    `$red` with a 1.5 px stroke in the lane's colour (r = 4 overall), running the same in `$amber`.
+  - `CH62 · Variant B · The dot turns red, a red notch on the lane` (`YbZhD`): a plain `$red` dot r = 3.5 and the lane
+    drawn red 10 px above and below it, 2 px; running in `$amber`.
+  - `CH63 · Variant C · A red halo round the lane-coloured dot` (`ef4Ez`): the dot as any other, a 1.5 px `$red` ring at
+    r = 5.25 round it; running in `$amber`. Drawn with its clash: the selected and hovered rings land on the halo. The
+    caption names the ✕ glyph as the idea not drawn.
+
+Not changed: the lanes and dots of the ten `Commit graph / …` panes and every screen (waiting for the owner's pick);
+`Commit row`'s ring (14 px, now 2.5 px out from an r = 3 dot); D15's "each newest first" in
+`docs/design/git-client/DECISIONS.md` still to say the order is chosen per group.
