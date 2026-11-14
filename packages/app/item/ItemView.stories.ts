@@ -29,6 +29,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_CONTRIBUTOR_EDITING, SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
@@ -48,6 +49,7 @@ const meta = {
         onEdit: fn(),
         onNeedProjects: fn(),
         onClose: fn(),
+        onBack: fn(),
         onPrevious: fn(),
         onNext: fn(),
         onArrange: fn(),
@@ -58,7 +60,8 @@ const meta = {
     // As tall as the window, and as wide as the arrangement: the panel's 560px (one column), or a 1440px window's page
     // (two columns, F18).
     render: (args, context) => renderAt(args.arrangement === 'panel' ? 560 : 1440)(args, context),
-    decorators: [withSignedIn()],
+    // The desktop's, whatever the width; the phone's stories say so.
+    decorators: [withPhoneLayout(false), withSignedIn()],
 } satisfies Meta<typeof ItemView>;
 
 export default meta;
@@ -86,6 +89,20 @@ export const IssueOnPageNoRoomForPanel: Story = {
                 },
             }),
     ],
+};
+
+/** Mobile MB33: on a phone, opened from a list — back names it, previous and next step through it; the reference heads the title. */
+export const PhoneFromList: Story = {
+    args: { arrangement: 'page', backTitle: 'Issues' },
+    render: renderAt(390),
+    decorators: [withPhoneLayout(true)],
+};
+
+/** Mobile MB62: on a phone, opened from a link — back goes up to the repository and says so; no list, no arrows. */
+export const PhoneFromLink: Story = {
+    args: { arrangement: 'page', backTitle: D1_ISSUE.repository.nameWithOwner, position: null },
+    render: renderAt(390),
+    decorators: [withPhoneLayout(true)],
 };
 
 /** F1: a pull request that can't merge yet — two checks failing, changes requested; the issue it closes. */

@@ -12,6 +12,10 @@ openOnGitHub:
   en: Open on GitHub
 close:
   en: Close
+back:
+  en: Back
+backTo:
+  en: Back to {place}
 open:
   en: Open
 closedCompleted:

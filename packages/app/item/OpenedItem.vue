@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected — with no list (opened by its address or a link), to the item's repository, its Issues or Pull requests by the item's kind (mobile D20, the computer too). On a phone the view's top bar has back, naming where it goes — the list, or with none the repository — which returns by the history's Back when the entry behind is that list, so it comes back scrolled and selected, else goes to its address. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -24,6 +24,7 @@ import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemLookedStore } from '@/store/ItemLookedStore.js';
 import type { ItemOpening } from '@/store/ItemLookedStore.js';
+import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 
@@ -34,6 +35,7 @@ import {
   formatItemReference,
   getExpandedFrom,
   getExpandedLocation,
+  getHistoryBack,
   getItemPagePath,
   getItemReference,
   getOpenedItemQuery,
@@ -137,6 +139,12 @@ const waitingDetail = computed(() => {
 
   return opened.failed ? t(l.unreachableDetail) : undefined;
 });
+/** The item's repository, as GitHub names it once the item is known. */
+const repositoryName = computed(
+  () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
+);
+/** What back on a phone says it returns to (mobile D20): the list's name, or with no list the repository's. */
+const backTitle = computed(() => navigation.list?.title ?? repositoryName.value);
 const closes = computed((): Item[] => {
   const { item } = opened;
   if (item?.kind !== 'pullRequest') {
@@ -424,7 +432,10 @@ function openReview() {
   moveTo(getReviewPath(props.reference), 'push');
 }
 
-/** Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list. */
+/**
+ * Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list, or
+ * with none to the item's repository.
+ */
 function close() {
   if (expandedFrom() !== null && navigation.panelFits) {
     backToPanel();
@@ -435,6 +446,21 @@ function close() {
     props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
     'push',
   );
+}
+
+/**
+ * Back on a phone (mobile D20): to the list the item was opened from — by the history's Back when the entry behind is that
+ * list, so it comes back scrolled and selected as it was, else to its address; with no list, to the item's repository.
+ */
+function goBack() {
+  const { list } = navigation;
+  const behind = getHistoryBack(router.options.history.state);
+  if (list && behind !== null && router.resolve(behind).fullPath === router.resolve(list.path).fullPath) {
+    router.back();
+    return;
+  }
+
+  moveTo(listPath(), 'push');
 }
 
 /** Where `reference` opens in `arrangement`: its page, or the list with it opened over it. */
@@ -448,8 +474,14 @@ function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: I
   return { path: list.path, query: getOpenedItemQuery(list.query, reference) };
 }
 
+/** The list the item was opened from; with none, its repository's issues or pull requests by its kind (mobile D20). */
 function listPath() {
-  return navigation.list?.path ?? '/';
+  if (navigation.list) {
+    return navigation.list.path;
+  }
+
+  const kind = opened.item?.kind ?? (route.name === 'item-pull' ? 'pullRequest' : 'issue');
+  return getRepositoryPath(repositoryName.value, kind === 'pullRequest' ? 'pullRequests' : 'issues');
 }
 
 function edit(request: EditRequest) {
@@ -518,6 +550,7 @@ interface LookedRead extends ItemOpening {
     :review-draft-first="tracking.reviewCommentChoice === 'draft'"
     :looked-at="opening?.lookedAt ?? null"
     :opened-at="opening?.openedAt ?? null"
+    :back-title="backTitle"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"
@@ -525,6 +558,7 @@ interface LookedRead extends ItemOpening {
     @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"
+    @back="goBack"
     @previous="step(-1)"
     @next="step(1)"
     @arrange="arrange"

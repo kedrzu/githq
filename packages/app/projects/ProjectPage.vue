@@ -101,7 +101,6 @@ const sync = useService(SyncEngine);
 const phone = useService(PhoneLayout);
 const route = useRoute();
 const t = useTranslate();
-const list = useItemList();
 const projectCommands = useProjectCommands();
 
 const openedDraftId = shallowRef<string | null>(null);
@@ -185,6 +184,8 @@ const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;
 });
+// Back on an item opened from here names the view shown, as its tab does, or the project (mobile D20).
+const list = useItemList(() => (showAll.value ? t(l.allItems) : (view.value?.name ?? tracked.value?.title ?? '')));
 const defaults = computed(() => {
   const saved =
     project.value && view.value

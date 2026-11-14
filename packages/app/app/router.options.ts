@@ -100,7 +100,15 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name: index === 0 ? 'item-issue' : 'item-pull',
             component: () => import('@/item/ItemPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: true, gitHubScreen: true },
+            // On a phone the item view draws its top bar itself, with back (mobile D20).
+            meta: {
+                auth: 'signedIn',
+                layout: 'shell',
+                key: 'item',
+                itemPage: true,
+                gitHubScreen: true,
+                ownTopBar: true,
+            },
         };
         // GitHub's other addresses under an item (a pull request's `/commits`, `/checks`, …) settle on the
         // item's own, keeping the query and the fragment. `router.resolve()` does not follow the redirect and reads
