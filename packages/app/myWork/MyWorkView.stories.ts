@@ -11,12 +11,15 @@ import {
     TWO_STACKS_UNDER_ISSUE_MEMBERSHIP,
 } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import MyWorkView from './MyWorkView.vue';
 import { MY_WORK_VIEW_DEFAULTS } from './myWorkViewOptions.js';
 
 const meta = {
     component: MyWorkView,
+    // The desktop's, whatever the width; the phone's stories say so.
+    decorators: [withPhoneLayout(false)],
     args: {
         work: sampleMyWork(D1_ITEMS, D1_MEMBERSHIP, 'all'),
         group: null,
@@ -329,3 +332,6 @@ export const DraftReview: Story = {
         ),
     },
 };
+
+/** On a phone (mobile MB32): the phone's top bar — places, "My work" and the display options; no filters. */
+export const Phone: Story = { decorators: [withPhoneLayout(true)] };

@@ -60,7 +60,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: HOME_PATH,
         name: 'my-work',
         component: HomePage,
-        meta: { auth: 'home', layout: false, key: 'my-work', itemPanel: true, gitHubScreen: true },
+        meta: { auth: 'home', layout: false, key: 'my-work', itemPanel: true, gitHubScreen: true, ownTopBar: true },
     };
     for (const group of MY_WORK_GROUPS) {
         yield {
@@ -75,6 +75,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
                 myWorkGroup: group,
                 itemPanel: true,
                 gitHubScreen: true,
+                ownTopBar: true,
             },
         };
     }
@@ -150,20 +151,28 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey, gitHubScreen: true },
         };
     }
-    // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
-    // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.
+    // A repository's and a project's views, at GitHub's addresses of them; on a phone each list draws its own top bar
+    // (`ownTopBar`), with its options and New issue. One repository page instance for the repository and its lists of
+    // issues and pull requests (`key`), so switching between them keeps the screen.
     yield {
         path: REPOSITORY_PATH,
         name: 'repository',
         component: () => import('@/repository/RepositoryPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner, itemPanel: true, gitHubScreen: true },
+        meta: {
+            auth: 'signedIn',
+            layout: 'shell',
+            key: getRouteNameWithOwner,
+            itemPanel: true,
+            gitHubScreen: true,
+            ownTopBar: true,
+        },
     };
     for (const [index, path] of PROJECT_PATHS.entries()) {
         yield {
             path,
             name: index === 0 ? 'project-org' : 'project-user',
             component: () => import('@/projects/ProjectPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', itemPanel: true, gitHubScreen: true },
+            meta: { auth: 'signedIn', layout: 'shell', itemPanel: true, gitHubScreen: true, ownTopBar: true },
         };
     }
     // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their

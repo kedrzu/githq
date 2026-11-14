@@ -9,6 +9,8 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import type { ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import {
@@ -271,6 +273,8 @@ function mount(
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The desktop's layout, whatever the frame's width.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';

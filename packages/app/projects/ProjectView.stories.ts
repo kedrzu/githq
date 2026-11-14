@@ -16,12 +16,15 @@ import {
 } from '@/testing/sampleProject.js';
 import { sampleProjectView } from '@/testing/sampleProjectView.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ProjectView from './ProjectView.vue';
 import { getProjectViewDefaults } from './projectViewOptions.js';
 
 const meta = {
     component: ProjectView,
+    // The desktop's, whatever the width; the phone's stories say so.
+    decorators: [withPhoneLayout(false)],
     args: {
         ...sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: SAMPLE_PROJECT_ENTRIES }),
         rowFieldId: 'F_status',
@@ -158,3 +161,6 @@ export const ItemsArriving: Story = {
 export const BoardItemsArriving: Story = {
     args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_BOARD, entries: [], arriving: true }),
 };
+
+/** On a phone (mobile MB32): the phone's top bar with the project's title and its display options; no saved views. */
+export const Phone: Story = { decorators: [withPhoneLayout(true)] };

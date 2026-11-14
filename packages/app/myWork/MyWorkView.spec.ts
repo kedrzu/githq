@@ -6,6 +6,8 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, ref, shallowRef } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
@@ -511,6 +513,8 @@ function mount(
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The desktop's layout, whatever the frame's width.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';

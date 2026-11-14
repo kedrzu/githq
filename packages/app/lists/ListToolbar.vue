@@ -1,24 +1,19 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the display options as one icon holding every option, and New issue — what `C` runs there; the title's menu, what the list puts beside the title (tabs, a selection's actions) and the filters leave it, the options staying in the command menu. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  ArrowDownUp,
-  Columns3,
-  LayoutGrid,
-  List,
-  ListChecks,
-  RotateCcw,
-  Rows3,
-  SlidersHorizontal,
-} from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { ArrowDownUp, Columns3, LayoutGrid, List, ListChecks, Plus, RotateCcw, Rows3 } from 'lucide-vue-next';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
+import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
-import Button from '@/components/Button.vue';
-import Popover from '@/components/Popover.vue';
+import IconButton from '@/components/IconButton.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
+import ListDisplayOptions from './ListDisplayOptions.vue';
 import ListTitle from './ListTitle.vue';
 import * as l from './ListToolbar.loc.js';
 import ListToolbarControl from './ListToolbarControl.vue';
@@ -71,7 +66,11 @@ defineSlots<{
 const options = defineModel<ListViewOptions>('options', { required: true });
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
+const registry = useService(CommandRegistry);
 
+/** What the phone's New issue runs: what `C` runs here — a project's own in a project, else the app's (H1, H5). */
+const newIssue = computed(() => registry.findByKey(NEW_ISSUE_KEY));
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
 
@@ -87,30 +86,39 @@ const PRIORITY = ['layout', 'grouping', 'sort', 'properties'];
 /** The keys of the options that fit the toolbar; all of them until it has been measured. */
 const fitting = ref<ReadonlySet<string> | null>(null);
 const onToolbar = computed(() => viewOptions.value.filter(option => !fitting.value || fitting.value.has(option.key)));
-const inDisplay = computed(() => viewOptions.value.filter(option => fitting.value && !fitting.value.has(option.key)));
+/** On a phone the top bar holds none of them: every one is in the display options. */
+const inDisplay = computed(() =>
+  phone.active
+    ? viewOptions.value
+    : viewOptions.value.filter(option => fitting.value && !fitting.value.has(option.key)),
+);
 
 const controls = useTemplateRef<HTMLElement>('controls');
 const measure = useTemplateRef<HTMLElement>('measure');
-let observer: ResizeObserver | undefined;
 let frame = 0;
 
-onMounted(() => {
-  // A frame later: what `fit` moves resizes what is observed, which must not happen within the observer's turn.
-  observer = new ResizeObserver(() => {
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(fit);
-  });
-  for (const element of [controls.value, measure.value]) {
-    if (element) {
-      observer.observe(element);
+// Measured while the toolbar is drawn — not on a phone, whose top bar takes its place, and again once it comes back.
+watch(
+  [controls, measure],
+  ([controlsElement, measureElement], _, onCleanup) => {
+    if (!controlsElement || !measureElement) {
+      return;
     }
-  }
-});
 
-onBeforeUnmount(() => {
-  observer?.disconnect();
-  cancelAnimationFrame(frame);
-});
+    // A frame later: what `fit` moves resizes what is observed, which must not happen within the observer's turn.
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fit);
+    });
+    observer.observe(controlsElement);
+    observer.observe(measureElement);
+    onCleanup(() => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    });
+  },
+  { flush: 'post' },
+);
 
 /** Keeps on the toolbar as many options as its free space holds, by priority, each at its full width. */
 function fit() {
@@ -314,7 +322,34 @@ function change(changes: Partial<ListViewOptions>) {
 </script>
 
 <template>
+  <!-- On a phone (mobile MB32): the places button, the title, the display options and New issue; the rest stays in the command menu. -->
+  <PhoneTopBar
+    v-if="phone.active"
+    :title="title"
+  >
+    <template #actions>
+      <ListDisplayOptions
+        v-if="!bare"
+        :options="inDisplay"
+        :modified="modified"
+        icon-only
+        @reset="emit('reset')"
+      >
+        <template #header>
+          <slot name="displayHeader" />
+        </template>
+        <slot name="display" />
+      </ListDisplayOptions>
+      <IconButton
+        v-if="newIssue"
+        :icon="Plus"
+        :label="newIssue.title"
+        @click="newIssue && registry.run(newIssue)"
+      />
+    </template>
+  </PhoneTopBar>
   <header
+    v-else
     :class="css.listToolbar"
     v-bind="WINDOW_DRAG_REGION"
   >
@@ -362,44 +397,17 @@ function change(changes: Partial<ListViewOptions>) {
         />
       </div>
     </div>
-    <Popover
+    <ListDisplayOptions
       v-if="!bare"
-      :label="t(l.display)"
-      align="end"
-      flush
+      :options="inDisplay"
+      :modified="modified"
+      @reset="emit('reset')"
     >
-      <template #trigger>
-        <Button
-          variant="ghost"
-          size="sm"
-          :icon="SlidersHorizontal"
-        >
-          {{ t(l.display) }}
-        </Button>
-      </template>
-      <div :class="css.listToolbar_display">
+      <template #header>
         <slot name="displayHeader" />
-        <ListToolbarControl
-          v-for="option in inDisplay"
-          :key="option.key"
-          :option="option"
-          place="display"
-        />
-        <slot name="display" />
-        <div :class="css.listToolbar_footer">
-          <span>{{ t(l.deviceOnly) }}</span>
-          <Button
-            v-if="modified"
-            variant="ghost"
-            size="sm"
-            :icon="RotateCcw"
-            @click="emit('reset')"
-          >
-            {{ t(l.reset) }}
-          </Button>
-        </div>
-      </div>
-    </Popover>
+      </template>
+      <slot name="display" />
+    </ListDisplayOptions>
   </header>
 </template>
 
@@ -435,23 +443,5 @@ function change(changes: Partial<ListViewOptions>) {
   gap: $spacing-10;
   align-items: center;
   width: max-content;
-}
-
-.listToolbar_display {
-  display: flex;
-  flex-direction: column;
-  width: 340px;
-}
-
-/* Under the sections, each closed by its own border. */
-.listToolbar_footer {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 36px;
-  padding: $spacing-6 $spacing-8 $spacing-6 14px;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
 }
 </style>

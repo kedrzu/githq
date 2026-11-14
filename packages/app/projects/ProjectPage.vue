@@ -1,4 +1,4 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). On a phone every state has the phone's top bar with the project's name (mobile D14), the view's its options too (`ListToolbar`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -30,6 +30,8 @@ import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
 import { withStackMembers } from '@/lists/withStackMembers.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
@@ -96,6 +98,7 @@ const listViewOptions = useService(ListViewOptionsStore);
 const composer = useService(NewIssueComposer);
 const registry = useService(CommandRegistry);
 const sync = useService(SyncEngine);
+const phone = useService(PhoneLayout);
 const route = useRoute();
 const t = useTranslate();
 const list = useItemList();
@@ -665,7 +668,12 @@ function setRowField(fieldId: string | null) {
     v-if="tracked && !project"
     :class="css.projectPage"
   >
+    <PhoneTopBar
+      v-if="phone.active"
+      :title="name"
+    />
     <header
+      v-else
       :class="css.projectPage_header"
       v-bind="WINDOW_DRAG_REGION"
     >
