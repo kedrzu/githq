@@ -28,3 +28,5 @@ draftReviews:
   en: Draft reviews
 draftReviewsCount:
   en: Draft reviews, {count}
+closePlaces:
+  en: Close places

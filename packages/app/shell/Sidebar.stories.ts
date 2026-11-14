@@ -15,7 +15,7 @@ import type { SidebarWorkflowMarker } from './SidebarTypes.js';
 /** As tall as the window and as wide as the panel it has in the app. */
 const asInTheApp: Decorator = (story, { args }) => {
     const Story = story();
-    const width = args.collapsed ? '56px' : '236px';
+    const width = args.phone ? '320px' : args.collapsed ? '56px' : '236px';
     return defineComponent({ setup: () => () => h('div', { style: { width, height: '100vh' } }, [h(Story)]) });
 };
 
@@ -251,6 +251,28 @@ function onPage(path: string): Decorator {
         });
     };
 }
+
+/**
+ * On a phone, the places panel's content (mobile MB26): no search, no rail, no "Draft reviews" nor "Broken workflows"
+ * though there are some, every group with its icon, rows a finger's height, how fresh the app is above the user.
+ */
+export const Phone: Story = {
+    args: {
+        phone: true,
+        draftReviews: 2,
+        brokenWorkflows: { count: '3', tone: 'new' },
+    },
+    render: args => ({
+        setup: () => () => h(Sidebar, args, { status: () => h('span', { style: { padding: '0 8px' } }, 'Up to date') }),
+    }),
+    decorators: [onPage('/')],
+};
+
+/** On a phone, in a repository (mobile MB27): its row marked. */
+export const PhoneOnRepository: Story = {
+    args: { phone: true },
+    decorators: [onPage('/skyline-labs/portal')],
+};
 
 /** In the macOS desktop app, a strip along the top holds the window controls and moves the window; here with more repositories than fit, as the sidebar scrolls. */
 export const WindowControlsOverflowing: Story = {

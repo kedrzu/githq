@@ -66,6 +66,16 @@ export const PhoneLayout = defineService({
     },
 });
 
+declare module 'vue-router' {
+    interface RouteMeta {
+        /**
+         * In the phone layout the screen draws its top bar itself (`PhoneTopBar`: a list's with its options, an item's
+         * with back), so the shell draws none.
+         */
+        ownTopBar?: boolean;
+    }
+}
+
 function getQuery() {
     if (__DESKTOP__ || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
         return null;
