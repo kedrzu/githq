@@ -36,23 +36,27 @@ const registry = useService(CommandRegistry);
 /** "New issue" from the app's commands, when it can run here. */
 const newIssue = computed(() => registry.commands.find(command => command.key === NEW_ISSUE_KEY) ?? null);
 
-const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: string; detail: string } => {
-  switch (props.filter) {
-    case 'all':
-      return {
-        icon: CircleCheckBig,
-        tone: 'good',
-        title: t(l.nothingTitle),
-        detail: props.trackedCount > 0 ? t(l.nothingTrackedDetail, { count: props.trackedCount }) : t(l.nothingDetail),
-      };
-    case 'needsMe':
-      return { icon: Coffee, tone: 'muted', title: t(l.nothingNeedsYouTitle), detail: t(l.nothingNeedsYouDetail) };
-    case 'waitingOnOthers':
-      return { icon: Hourglass, tone: 'muted', title: t(l.nothingWaitingTitle), detail: t(l.nothingWaitingDetail) };
-    default:
-      return assertNever(props.filter);
-  }
-});
+const look = computed(
+  (): { icon: LucideIcon; tone: 'good' | 'muted'; title: string; detail: string; fact?: string } => {
+    switch (props.filter) {
+      case 'all':
+        return {
+          icon: CircleCheckBig,
+          tone: 'good',
+          title: t(l.nothingTitle),
+          detail:
+            props.trackedCount > 0 ? t(l.nothingTrackedDetail, { count: props.trackedCount }) : t(l.nothingDetail),
+          fact: t(l.nothingFact),
+        };
+      case 'needsMe':
+        return { icon: Coffee, tone: 'good', title: t(l.nothingNeedsYouTitle), detail: t(l.nothingNeedsYouDetail) };
+      case 'waitingOnOthers':
+        return { icon: Hourglass, tone: 'muted', title: t(l.nothingWaitingTitle), detail: t(l.nothingWaitingDetail) };
+      default:
+        return assertNever(props.filter);
+    }
+  },
+);
 </script>
 
 <template>
@@ -62,41 +66,41 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: str
     :tone="look.tone"
     :title="look.title"
     :detail="look.detail"
+    :fact="look.fact"
   >
     <template
       v-if="filter === 'all'"
       #action
     >
-      <div :class="css.myWorkEmpty_keys">
-        <Button
-          v-if="newIssue"
-          variant="ghost"
-          size="sm"
-          :icon="SquarePen"
-          :kbd="NEW_ISSUE_KEY"
-          :keyshortcuts="NEW_ISSUE_KEY"
-          @click="newIssue && registry.run(newIssue)"
-        >
-          {{ t(l.newIssue) }}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          :icon="Search"
-          :kbd="APP_KEYS.commandMenu"
-          :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
-          @click="registry.openMenu()"
-        >
-          {{ t(l.jumpToProject) }}
-        </Button>
-      </div>
+      <Button
+        v-if="newIssue"
+        variant="secondary"
+        size="sm"
+        :icon="SquarePen"
+        :kbd="NEW_ISSUE_KEY"
+        :keyshortcuts="NEW_ISSUE_KEY"
+        @click="newIssue && registry.run(newIssue)"
+      >
+        {{ t(l.newIssue) }}
+      </Button>
+      <Button
+        variant="secondary"
+        size="sm"
+        :icon="Search"
+        :kbd="APP_KEYS.commandMenu"
+        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        @click="registry.openMenu()"
+      >
+        {{ t(l.jumpToProject) }}
+      </Button>
     </template>
     <template
       v-else-if="filter === 'needsMe' && waitingCount > 0"
       #action
     >
       <Button
-        variant="outline"
+        variant="secondary"
+        size="sm"
         :icon="Hourglass"
         :kbd="waitingKey"
         :keyshortcuts="waitingKey"
@@ -114,11 +118,6 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: str
 </template>
 
 <style lang="scss" module="css">
-.myWorkEmpty_keys {
-  display: flex;
-  gap: $spacing-8;
-}
-
 .myWorkEmpty_hint {
   font-weight: $font-weight-normal;
   color: $color-fg-dim;

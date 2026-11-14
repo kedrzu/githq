@@ -80,7 +80,7 @@ export const GroupEmpty: Story = {
     },
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned,\sfor\snow$/u })).toBeVisible();
         await expect(canvas.queryByText('Nothing here.')).toBeNull();
         await userEvent.click(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u }));
         await expect(args.onShowAll).toHaveBeenCalledOnce();
@@ -94,7 +94,9 @@ export const GroupEmptyOnBoard: Story = {
         options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
     },
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(
+            within(canvasElement).getByRole('heading', { name: /^Nothing\sin\sMentioned,\sfor\snow$/u }),
+        ).toBeVisible();
     },
 };
 
@@ -107,7 +109,7 @@ export const GroupHiddenByFilter: Story = {
     },
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned,\sfor\snow$/u })).toBeVisible();
         await expect(canvas.queryByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeNull();
         await userEvent.click(canvas.getByRole('button', { name: /^Clear\sfilter$/u }));
         await expect(args['onUpdate:filter']).toHaveBeenCalledWith('all');
@@ -182,7 +184,9 @@ export const OfflineArrivedEmpty: Story = {
 export const OfflineNothingOnYourPlate: Story = {
     args: { work: sampleMyWork([], sampleMembership({}), 'all'), cantBeRead: { kind: 'offline' } },
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\son\syour\splate$/u })).toBeVisible();
+        await expect(
+            within(canvasElement).getByRole('heading', { name: /^Inbox\szero\.\sSavour\sit\.$/u }),
+        ).toBeVisible();
     },
 };
 

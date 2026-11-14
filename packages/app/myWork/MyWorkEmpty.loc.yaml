@@ -1,5 +1,5 @@
 nothingTitle:
-  en: Nothing on your plate
+  en: Inbox zero. Savour it.
 nothingDetail:
   en: No review requests, open pull requests, assigned issues or mentions, anywhere on GitHub.
 nothingTrackedDetail:
@@ -7,10 +7,12 @@ nothingTrackedDetail:
   en:
     one: No review requests, open pull requests, assigned issues or mentions across your tracked repository.
     many: No review requests, open pull requests, assigned issues or mentions across your {count} tracked repositories.
+nothingFact:
+  en: 0 reviews · 0 pulls · 0 issues · 0 mentions
 nothingNeedsYouTitle:
   en: Nothing needs you right now
 nothingNeedsYouDetail:
-  en: No review requests, no assigned issues, and none of your pull requests are failing, blocked or asked to change.
+  en: Nobody is waiting on a review, an issue or a fix from you. Go get a coffee.
 pullRequestsWaiting:
   plural: count
   en:
@@ -19,7 +21,7 @@ pullRequestsWaiting:
 waitingOnOthers:
   en: Waiting on others
 nothingWaitingTitle:
-  en: Nothing is waiting on others
+  en: Nobody's keeping you waiting
 nothingWaitingDetail:
   en: None of your pull requests is waiting for a review or for its checks to finish.
 newIssue:
