@@ -25,6 +25,7 @@ const RUN: GitHubWorkflowRunDetail = {
     workflowName: 'Deploy',
     headCommitMessage: 'Move design tokens into the ui package\n\nAnd the rest.',
     runAttempt: 1,
+    actor: { login: 'kedrzu', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4' },
 };
 
 const meta = {
@@ -97,7 +98,7 @@ export const NoRef: Story = { args: { gitRef: null } };
 
 /** From the local copy, the run itself not read yet: GitHub's title stands in for the commit's. */
 export const LocalCopy: Story = {
-    args: { run: { ...RUN, workflowName: null, headCommitMessage: null, runAttempt: null } },
+    args: { run: { ...RUN, workflowName: null, headCommitMessage: null } },
 };
 
 /** A commit title wider than the row. */

@@ -1,0 +1,34 @@
+# githq's own release workflow, with one input of each type GitHub allows.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: preview only prints the version and notes; stable tags and builds a draft release
+        type: choice
+        options: [preview, stable]
+        default: preview
+        required: true
+      notes:
+        description: Extra notes above the list of changes
+      draft:
+        type: boolean
+        default: true
+      build:
+        type: number
+        default: 3
+      target:
+        type: environment
+        required: false
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5

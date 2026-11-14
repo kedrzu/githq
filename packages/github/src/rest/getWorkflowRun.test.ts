@@ -58,7 +58,7 @@ test('a run without a name or commit still reads, those told as unknown', async 
     const rest = restAnswering([Response.json({ ...RUN, name: null, head_commit: null, run_attempt: undefined })]);
 
     expect(await getWorkflowRun(rest, PARAMS)).toMatchObject({
-        run: { workflowName: null, headCommitMessage: null, runAttempt: null },
+        run: { workflowName: null, headCommitMessage: null, runAttempt: 1 },
     });
 });
 

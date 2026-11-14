@@ -1,0 +1,16 @@
+# A reusable workflow: only other workflows run it.
+name: Desktop build
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to build
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - run: echo "${{ inputs.ref }}"

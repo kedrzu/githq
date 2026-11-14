@@ -24,7 +24,8 @@ const RUN: GitHubWorkflowRunDetail = {
     displayTitle: 'Fix',
     workflowName: 'Deploy',
     headCommitMessage: null,
-    runAttempt: null,
+    runAttempt: 1,
+    actor: null,
 };
 const NOW = Date.parse('2026-11-02T12:00:00Z');
 

@@ -98,8 +98,8 @@ export interface WorkflowRerunFailure {
 
 /** A re-run asked for, drawn over what GitHub's reads say until they show it (W4j). */
 interface RunRerun {
-    /** The attempt the run was on when it was asked; `null` when not known. */
-    readonly attempt: number | null;
+    /** The attempt the run was on when it was asked. */
+    readonly attempt: number;
     /** The failed jobs it re-runs. */
     readonly jobIds: ReadonlySet<number>;
     /** ISO. */
@@ -570,12 +570,7 @@ export const WorkflowRunStore = defineService({
 
 /** The re-run's attempt, finished: GitHub's word is all there is to say, whatever the jobs' read says. */
 function hasFinishedAgain(run: GitHubWorkflowRunDetail, layer: RunRerun) {
-    return (
-        run.status === 'completed' &&
-        run.runAttempt !== null &&
-        layer.attempt !== null &&
-        run.runAttempt > layer.attempt
-    );
+    return run.status === 'completed' && run.runAttempt > layer.attempt;
 }
 
 /** The run as running, unless GitHub's read of it shows the re-run itself. */
@@ -590,7 +585,7 @@ function withRerun(run: GitHubWorkflowRunDetail, layer: RunRerun): GitHubWorkflo
         conclusion: null,
         runStartedAt: layer.startedAt,
         updatedAt: layer.startedAt,
-        runAttempt: run.runAttempt === null ? null : run.runAttempt + 1,
+        runAttempt: run.runAttempt + 1,
     };
 }
 
@@ -632,7 +627,7 @@ function findStoredRun(stored: RepositoryWorkflows | undefined, runId: number): 
     for (const { workflow, runs } of stored?.workflows ?? []) {
         const run = runs.find(candidate => candidate.id === runId);
         if (run) {
-            return { ...run, workflowName: workflow.name, headCommitMessage: null, runAttempt: null };
+            return { ...run, workflowName: workflow.name, headCommitMessage: null };
         }
     }
 

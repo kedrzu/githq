@@ -9292,6 +9292,26 @@ export type RepositorySearchQuery = {
     };
 };
 
+export type RepositoryWorkflowFilesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    expression: string;
+}>;
+
+export type RepositoryWorkflowFilesQuery = {
+    repository: {
+        object:
+            | {
+                  entries: Array<{
+                      path: string | null;
+                      object: { text: string | null; isTruncated: boolean } | Record<PropertyKey, never> | null;
+                  }> | null;
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
 export type ReviewThreadCommentsQueryVariables = Exact<{
     id: string;
     after: string;
@@ -26430,6 +26450,25 @@ export const RepositorySearchDocument = new TypedDocumentString(`
   }
 }
     `);
+export const RepositoryWorkflowFilesDocument = new TypedDocumentString(`
+    query RepositoryWorkflowFiles($owner: String!, $name: String!, $expression: String!) {
+  repository(owner: $owner, name: $name) {
+    object(expression: $expression) {
+      ... on Tree {
+        entries {
+          path
+          object {
+            ... on Blob {
+              text
+              isTruncated
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `);
 export const ReviewThreadCommentsDocument = new TypedDocumentString(`
     query ReviewThreadComments($id: ID!, $after: String!) {
   node(id: $id) {
@@ -28972,6 +29011,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositorySearchQuery>;
+        },
+        RepositoryWorkflowFiles(
+            variables: RepositoryWorkflowFilesQueryVariables,
+            options?: C,
+        ): Promise<RepositoryWorkflowFilesQuery> {
+            return requester<RepositoryWorkflowFilesQuery, RepositoryWorkflowFilesQueryVariables>(
+                RepositoryWorkflowFilesDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryWorkflowFilesQuery>;
         },
         ReviewThreadComments(
             variables: ReviewThreadCommentsQueryVariables,

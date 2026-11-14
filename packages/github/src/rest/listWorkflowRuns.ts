@@ -11,11 +11,20 @@ export interface ListWorkflowRunsParams {
     workflowId: number;
     /** Only runs on this exact branch or tag (GitHub matches no wildcards); every ref's when absent. */
     branch?: string;
+    /** Only runs credited to this login (a run's `actor`). */
+    actor?: string;
+    /** Only runs started by this event: `push`, `pull_request`, `workflow_dispatch`, `schedule`, … */
+    event?: string;
+    /**
+     * Only runs in this state: a status (`queued`, `in_progress`, `completed`, …) or a conclusion (`success`,
+     * `failure`, …) — GitHub takes either.
+     */
+    status?: string;
     /** Runs a page; GitHub's default, 30, when absent. */
     perPage?: number;
     /**
      * A `nextPageUrl` an earlier call returned: that page is asked instead of the first. It carries the query
-     * already, so `branch` and `perPage` are not added again.
+     * already, so the filters and `perPage` are not added again.
      */
     pageUrl?: string;
     /** The ETag the last 200 of the same page returned; GitHub answers 304, free of quota, while nothing changed. */
@@ -46,11 +55,13 @@ export async function listWorkflowRuns(
     rest: GitHubRestRequester,
     params: ListWorkflowRunsParams,
 ): Promise<ListWorkflowRunsResult> {
-    const { nameWithOwner, workflowId, branch, perPage, pageUrl, etag } = params;
+    const { nameWithOwner, workflowId, branch, actor, event, status, perPage, pageUrl, etag } = params;
     const query: Record<string, string> = {};
     if (pageUrl === undefined) {
-        if (branch !== undefined) {
-            query.branch = branch;
+        for (const [name, value] of Object.entries({ branch, actor, event, status })) {
+            if (value !== undefined) {
+                query[name] = value;
+            }
         }
 
         if (perPage != null) {

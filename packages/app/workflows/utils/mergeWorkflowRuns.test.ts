@@ -150,6 +150,8 @@ function run(id: number, conclusion: string | null, hour: number, overrides: Par
         headSha: 'abc',
         displayTitle: 'Run',
         updatedAt: created.toISOString(),
+        actor: null,
+        runAttempt: 1,
         ...overrides,
     };
     return entry;

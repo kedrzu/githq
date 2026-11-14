@@ -601,6 +601,8 @@ function storedRun() {
                         headSha: 'abc',
                         displayTitle: 'Run 7',
                         updatedAt: '2026-11-02T19:00:00Z',
+                        actor: null,
+                        runAttempt: 1,
                     },
                 ],
             },

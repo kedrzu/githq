@@ -45,5 +45,7 @@ function run(id: number, createdAt: string, conclusion: string | null): GitHubWo
         headSha: 'abc',
         displayTitle: 'Run',
         updatedAt: '2026-11-02T11:00:00Z',
+        actor: null,
+        runAttempt: 1,
     };
 }

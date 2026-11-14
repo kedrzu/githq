@@ -13,8 +13,6 @@ export interface GitHubWorkflowRunDetail extends GitHubWorkflowRun {
     readonly workflowName: string | null;
     /** The whole message of the commit it ran on; `null` when GitHub gives none. */
     readonly headCommitMessage: string | null;
-    /** Which attempt this is, from 1; `null` when GitHub gives none. */
-    readonly runAttempt: number | null;
 }
 
 /** Which run to read, and the ETag of the last answer. */
@@ -64,7 +62,6 @@ export async function getWorkflowRun(
                 ...run,
                 workflowName: isPlainObject(body) && typeof body.name === 'string' ? body.name : null,
                 headCommitMessage: readHeadCommitMessage(body),
-                runAttempt: isPlainObject(body) && typeof body.run_attempt === 'number' ? body.run_attempt : null,
             },
         };
     } catch (error) {

@@ -141,6 +141,8 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             headSha: `${id}`.padStart(40, '0'),
             displayTitle: sample.title ?? '',
             updatedAt: new Date(createdAt + (sample.seconds ?? 0) * 1000).toISOString(),
+            actor: null,
+            runAttempt: 1,
             ...(sample.seconds !== undefined && { runStartedAt: new Date(createdAt).toISOString() }),
             ...(sample.beforeRerun !== undefined && { conclusionBeforeRerun: sample.beforeRerun }),
         };
