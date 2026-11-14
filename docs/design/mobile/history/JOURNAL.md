@@ -95,3 +95,11 @@ Append-only. One line per decision, rejection or answer from the owner.
   nothing chosen in advance, last used at the top with a "last used" pill, on both platforms (D43 changed). Project
   views as proposed: board views as grouped lists (D9), changes marked with Reset as on the computer (D49, replaces
   D37). Open: where the mark and Reset sit on a phone.
+- 2026-11-14 — Owner asked to bring the phone design in line with the desktop, finish it and start building. Second
+  review against the desktop: `history/2026-11-14-review-against-the-desktop.md` (the item thread, the composer, the
+  summary, Settings · Privacy, selection). Owner: D49 picked (a dot on the view's chip and in the views menu, a line in
+  the options); the Empty groups switch dropped (D46); writing is the desktop's full editor (D51). The thread follows the
+  desktop's (D50, applying the review's rule). The summary — the desktop's blocks or the phone's D25 — the owner wants
+  to see drawn: Variant A as on the desktop, Variant B a hybrid.
+- 2026-11-14 — Owner picked Variant A of the summary (MB260–MB263): the desktop's summary on a phone (D52), D25 retired.
+- 2026-11-14 — The new issue form follows the item's summary (D42 updated after D52): its rows and project card, as on the desktop's full form (H3).
