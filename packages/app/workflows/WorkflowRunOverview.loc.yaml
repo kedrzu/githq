@@ -1,0 +1,53 @@
+overview:
+  en: Run overview
+succeededIn:
+  en: Succeeded in {duration}
+succeeded:
+  en: Succeeded
+failedIn:
+  en: Failed in {duration}
+failed:
+  en: Failed
+runningFor:
+  en: Running for {duration}
+running:
+  en: Running
+ended:
+  en: Ended {conclusion}
+allPassed:
+  plural: count
+  en:
+    one: The job passed.
+    many: All {count} jobs passed.
+countsSentence:
+  en: '{counts}.'
+countFailed:
+  en: '{count} failed'
+countRunning:
+  en: '{count} running'
+countWaiting:
+  en: '{count} waiting'
+countSkipped:
+  en: '{count} skipped'
+countPassed:
+  en: '{count} passed'
+countOther:
+  en: '{count} other'
+jobsOverTime:
+  en: Jobs over time
+notStarted:
+  en: not started
+aboutRun:
+  en: About this run
+startedBy:
+  en: Started by
+startedByValue:
+  en: '{actor} · {event} to {ref}'
+startedByNoRef:
+  en: '{actor} · {event}'
+commit:
+  en: Commit
+attempt:
+  en: Attempt
+attemptValue:
+  en: '{attempt} of {count}'

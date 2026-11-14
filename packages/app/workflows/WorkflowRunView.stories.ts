@@ -3,6 +3,7 @@ import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/l
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
+import { SAMPLE_PASSED_JOBS, SAMPLE_PASSED_RUN } from '@/testing/samplePassedRun.js';
 import { SAMPLE_WORKFLOWS_NOW } from '@/testing/sampleWorkflows.js';
 
 import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
@@ -135,11 +136,12 @@ export const LogTooLarge: Story = { args: viewOf({}, () => ({ status: 'tooLarge'
 /** A log the desktop app turned down: Enter tries again. */
 export const LogRefused: Story = { args: viewOf({}, () => ({ status: 'refused' })) };
 
-/** W4j: the run still going, its running job selected, no log read for it. */
+/** W4j: the run still going, its running job opened, no log read for it. */
 export const Running: Story = {
     args: {
         ...viewOf(
             {
+                jobId: 105,
                 run: { run: RUNNING_RUN, status: 'ready', httpStatus: null },
                 jobs: {
                     jobs: [
@@ -166,15 +168,33 @@ export const SecondAttempt: Story = {
     })),
 };
 
-/** A run that passed: its first job selected, no error. */
+/** A run that passed, at its job's address: the job selected, its log, no error. */
 export const Passed: Story = {
     args: viewOf(
         {
+            jobId: 101,
             run: { run: { ...RUN, conclusion: 'success' }, status: 'ready', httpStatus: null },
             jobs: { jobs: [job(101, 'lint', 'success')], status: 'ready', httpStatus: null, checkedAt: null },
         },
         () => ({ status: 'ready', log: parseJobLog('2026-11-02T11:46:01.0000000Z All good', []) }),
     ),
+};
+
+/** W34: a run opened with nothing failed, at its overview: the jobs with a cursor, the overview, the key bar. */
+export const Overview: Story = {
+    args: {
+        ...viewOf(
+            {
+                run: { run: SAMPLE_PASSED_RUN, status: 'ready', httpStatus: null },
+                jobs: { jobs: SAMPLE_PASSED_JOBS, status: 'ready', httpStatus: null, checkedAt: null },
+                overview: true,
+            },
+            () => ({ status: 'loading' }),
+        ),
+        runId: SAMPLE_PASSED_RUN.id,
+        workflowPage: '/fitloop/webapp/actions/workflows/deploy.yml',
+        backToWorkflow: true,
+    },
 };
 
 /** A skipped job never ran: its pane says so. */
@@ -230,6 +250,7 @@ function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => Workflow
         jobs: { jobs: JOBS, status: 'ready', httpStatus: null, checkedAt: null },
         jobId: null,
         shownJobId: null,
+        overview: false,
         ...params,
     });
     return {

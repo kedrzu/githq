@@ -17,6 +17,8 @@ export type WorkflowRunBody =
     | { readonly kind: 'loading' }
     /** The columns: the jobs and the selected job's log. */
     | { readonly kind: 'jobs' }
+    /** The jobs beside the run's overview, no log read: a run opened with nothing failed and no job in the address (W34). */
+    | { readonly kind: 'overview' }
     /** GitHub has no such run, or will not show it. */
     | { readonly kind: 'gone' }
     /** The run was not read, and nothing is known of it. */
@@ -40,7 +42,7 @@ export interface WorkflowRunModel {
     readonly counts: WorkflowJobCounts;
     /**
      * The job asked for by the address when the run has it, else the one shown so far, else the first of {@link jobs}:
-     * its first failed one.
+     * its first failed one. `null` at the overview, which shows no job's log.
      */
     readonly selectedJob: GitHubWorkflowJob | null;
     readonly body: WorkflowRunBody;
@@ -64,6 +66,11 @@ export interface BuildWorkflowRunParams {
      * job in the address, this is what keeps a job that passes, or another that fails, from changing what is being read.
      */
     readonly shownJobId: number | null;
+    /**
+     * The page opened at the run's overview ({@link opensAtOverview}): with no job in the address it stays there, whatever
+     * fails later, as a failure takes nothing over, and a run opened at its failure stays there through a re-run.
+     */
+    readonly overview: boolean;
 }
 
 /** What a job's log pane shows. */
@@ -115,7 +122,7 @@ const MARK_RANK: Readonly<Record<WorkflowJobMark, number>> = {
  * @__NO_SIDE_EFFECTS__
  */
 export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunModel {
-    const { run: runState, jobs: jobsState, jobId, shownJobId } = params;
+    const { run: runState, jobs: jobsState, jobId, shownJobId, overview } = params;
     const { run } = runState;
     const jobs = jobsState.jobs.toSorted((a, b) => MARK_RANK[getJobMark(a)] - MARK_RANK[getJobMark(b)]);
     const counts: Record<WorkflowJobMark, number> = {
@@ -130,7 +137,8 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
         counts[getJobMark(job)] += 1;
     }
 
-    const body = getBody(runState, jobsState);
+    const read = getBody(runState, jobsState);
+    const body: WorkflowRunBody = read.kind === 'jobs' && overview && jobId === null ? { kind: 'overview' } : read;
     const going =
         body.kind !== 'gone' &&
         ((run !== null && run.status !== 'completed') || jobs.some(job => job.status !== 'completed'));
@@ -138,11 +146,24 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
         run,
         jobs,
         counts,
-        selectedJob: jobs.find(job => job.id === jobId) ?? jobs.find(job => job.id === shownJobId) ?? jobs[0] ?? null,
+        selectedJob:
+            body.kind === 'overview'
+                ? null
+                : (jobs.find(job => job.id === jobId) ?? jobs.find(job => job.id === shownJobId) ?? jobs[0] ?? null),
         body,
         going,
         rerunnableJobs: going || run === null ? [] : jobs.filter(job => getJobMark(job) === 'failed'),
     };
+}
+
+/**
+ * Whether a run's page opens at its overview rather than at its failure (W34, W4a), decided once, as its jobs are first
+ * known: none of them failed — it passed, or still goes, or was cancelled, with nothing failed.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function opensAtOverview(jobs: readonly GitHubWorkflowJob[]): boolean {
+    return !jobs.some(job => getJobMark(job) === 'failed');
 }
 
 /**

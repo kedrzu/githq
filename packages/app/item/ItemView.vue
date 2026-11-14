@@ -7,6 +7,25 @@
 export const TWO_COLUMNS_WIDTH = 1000;
 /** The same in the panel: later, so a panel dragged a little wider does not already split. */
 export const PANEL_TWO_COLUMNS_WIDTH = 1300;
+
+/**
+ * The summary's column: 440 px by default, dragged from 360 to 560 px. The timeline keeps 560 px beside it, so at the
+ * narrowest two columns the summary has its default width.
+ */
+const SUMMARY_WIDTH = { key: 'itemSummary', default: 440, min: 360, max: 560 };
+const TIMELINE_MIN_WIDTH = 560;
+/** The thread's width at most in the panel, and the timeline's by default on a page: `$item-reading-width`. */
+const READING_WIDTH = 920;
+/** On a page in two columns, each column's content this far from its edges: `$item-column-inset` there. */
+const PAGE_COLUMN_INSET = 32;
+/**
+ * On a page in two columns, the box the two stand in (and a workflow run's page, which shares its width setting), centred, its edges dragged symmetrically: as wide as the summary
+ * beside a timeline at the reading width by default, at least as wide as the two columns at their narrowest.
+ */
+export const PAGE_WIDTH = {
+  default: SUMMARY_WIDTH.default + READING_WIDTH + 2 * PAGE_COLUMN_INSET,
+  min: SUMMARY_WIDTH.min + TIMELINE_MIN_WIDTH,
+};
 </script>
 
 <script lang="ts" setup>
@@ -88,25 +107,6 @@ import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
 import { useItemKeys } from './useItemArrangement.js';
-
-/**
- * The summary's column: 440 px by default, dragged from 360 to 560 px. The timeline keeps 560 px beside it, so at the
- * narrowest two columns the summary has its default width.
- */
-const SUMMARY_WIDTH = { key: 'itemSummary', default: 440, min: 360, max: 560 };
-const TIMELINE_MIN_WIDTH = 560;
-/** The thread's width at most in the panel, and the timeline's by default on a page: `$item-reading-width`. */
-const READING_WIDTH = 920;
-/** On a page in two columns, each column's content this far from its edges: `$item-column-inset` there. */
-const PAGE_COLUMN_INSET = 32;
-/**
- * On a page in two columns, the box the two stand in, centred, its edges dragged symmetrically: as wide as the summary
- * beside a timeline at the reading width by default, at least as wide as the two columns at their narrowest.
- */
-const PAGE_WIDTH = {
-  default: SUMMARY_WIDTH.default + READING_WIDTH + 2 * PAGE_COLUMN_INSET,
-  min: SUMMARY_WIDTH.min + TIMELINE_MIN_WIDTH,
-};
 
 const props = withDefaults(
   defineProps<{

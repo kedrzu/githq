@@ -57,3 +57,17 @@ rerunDetail:
   en:
     one: '1 job: {jobs}'
     many: '{count} jobs: {jobs}'
+number:
+  en: '#{number}'
+backTo:
+  en: Back to {workflow}
+hintJob:
+  en: Job
+hintOpenLog:
+  en: Open log
+hintGitHub:
+  en: GitHub
+resizePage:
+  en: Resize the page
+resizeJobs:
+  en: Resize the jobs
