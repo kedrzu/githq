@@ -187,6 +187,25 @@ test("a branch's pull request is a link: a click on it opens it, choosing nothin
     expect(view.choose).not.toHaveBeenCalled();
 });
 
+test('CH59: the pull request is an 18 px chip with a 1 px border, the CI mark outside it, and the row is no taller for it than one with no marks', async () => {
+    await mount({
+        branches: [ref('main', 100), ref('feat/a', 50), ref('plain', 40)],
+        states: new Map([['feat/a', { pullRequest: pullRequest(1209), ci: 'FAILURE' }]]),
+    });
+    const row = page.getByRole('row', { name: /feat\/a/ });
+    const chip = row.getByRole('link', { name: /1209/ });
+    await expect.element(chip).toBeVisible();
+    const style = getComputedStyle(chip.element());
+    expect(style.borderTopWidth).toBe('1px');
+    expect(chip.element().getBoundingClientRect().height).toBe(18);
+    expect(chip.element().querySelector('[aria-label="Checks failing"]')).toBeNull();
+    await expect.element(row.getByRole('img', { name: 'Checks failing' })).toBeVisible();
+    // The age's own line sets the row; the chip must not make it taller than a row with no marks.
+    expect(row.element().getBoundingClientRect().height).toBe(
+        page.getByRole('row', { name: /plain/ }).element().getBoundingClientRect().height,
+    );
+});
+
 test('the links are no tab stops: Tab leaves the filter past them, and Enter in the filter still chooses the selected row', async () => {
     const view = await mount({
         branches: [ref('main', 100), ref('feat/a', 50)],

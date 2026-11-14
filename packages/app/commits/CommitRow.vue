@@ -129,8 +129,9 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   height: 100%;
 }
 
+// The message's gap is 6 px; the headline sits 4 px from the marks.
 .commitRow_marks {
-  padding-left: $spacing-4;
+  margin-left: -$spacing-2;
 }
 
 .commitRow_message {

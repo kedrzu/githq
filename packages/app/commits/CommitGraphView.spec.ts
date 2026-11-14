@@ -129,6 +129,33 @@ test('D18, CH34: not known yet is an empty bar, never a blank; a commit with no 
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 });
 
+test('CH59: a commit with a pull request keeps its 32 px row, the pull request a chip with the CI mark outside it', async () => {
+    const states = new Map<string, CommitState>([
+        [
+            'c1',
+            {
+                pullRequest: {
+                    number: 1203,
+                    state: 'MERGED',
+                    title: 'Fix',
+                    url: 'https://github.com/acme/web/pull/1203',
+                    isDraft: false,
+                },
+                ci: 'FAILURE',
+            },
+        ],
+    ]);
+    await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)], states });
+    const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
+    const chip = row('Commit c1').getByRole('link', { name: /1203/ });
+    await expect.element(chip).toBeVisible();
+    expect(getComputedStyle(chip.element()).borderTopWidth).toBe('1px');
+    expect(chip.element().querySelector('[aria-label="Checks failing"]')).toBeNull();
+    await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
+    expect(row('Commit c1').element().getBoundingClientRect().height).toBe(32);
+    expect(row('Commit c2').element().getBoundingClientRect().height).toBe(32);
+});
+
 test("CH23: the cursor starts on the default branch's tip; J/K and the arrows move it, a click moves it there", async () => {
     await mount(sampleWebappHistory());
 

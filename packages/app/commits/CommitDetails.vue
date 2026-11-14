@@ -298,8 +298,9 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
             :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
             @click="emit('openPullRequest')"
           >
-            <CommitPullRequestIcon :pull-request="state.pullRequest" />
-            <span :class="css.commitDetails_number">#{{ state.pullRequest.number }}</span>
+            <span :class="css.commitDetails_number"
+              ><CommitPullRequestIcon :pull-request="state.pullRequest" />#{{ state.pullRequest.number }}</span
+            >
             <span :class="css.commitDetails_rowText">{{ state.pullRequest.title }}</span>
             <span :class="css.commitDetails_dim">{{ getPullRequestWord(state.pullRequest) }}</span>
           </button>
@@ -663,11 +664,26 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
   }
 }
 
+// The pull request as the chip it is everywhere else (`CommitStateMarks`, CH59).
 .commitDetails_number {
+  box-sizing: border-box;
+  display: inline-flex;
   flex: none;
+  gap: $spacing-2 + 1px;
+  align-items: center;
+  height: 18px;
+  padding: 1px $spacing-5;
   font-family: $font-family-mono;
-  font-size: $font-size-xs;
+  font-size: $font-size-2xs;
   color: $color-fg-2;
+  white-space: nowrap;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .commitDetails_rowText {
