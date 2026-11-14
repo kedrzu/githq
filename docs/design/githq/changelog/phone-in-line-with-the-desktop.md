@@ -501,3 +501,9 @@ Canvas:
 
 - [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
   124906 → 125223, 1200 px under `App · Mobile`'s bottom (124023); x and order kept.
+
+## Merge with main · 2026-11-14
+
+`main` (#293, the empty states) moved `App · Mobile` down 2244 px and the web and brand row with it, while this branch
+moved the row for the grown `App · Mobile`. Both moves add up: the row's nine frames (`JJOFX`, `ucqck`, `XCfAD`,
+`S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`) take `y` 127467, 1200 px under `App · Mobile`.

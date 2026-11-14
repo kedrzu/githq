@@ -110,7 +110,7 @@ test('K6: until GitHub answers a view githq can’t evaluate, it waits — no it
 test('first run and loading ES18, ES30: items still downloading show ghosts — on the board the columns’ heads without counts — never an empty project to add to', async () => {
     mount(SAMPLE_VIEW_SPRINT, { entries: [], arriving: true });
     await expect.element(page.getByText('Still arriving from GitHub')).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /is a blank canvas/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: /Add existing issues/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('heading', { name: /^Nothing matches/ })).not.toBeInTheDocument();
 
@@ -128,7 +128,7 @@ test('first run and loading D6, ES18: offline with its items on their way and no
         .element(page.getByText(`so ${SAMPLE_PROJECT.title}'s items haven't arrived yet.`, { exact: false }))
         .toBeVisible();
     await expect.element(page.getByText('Still arriving from GitHub')).not.toBeInTheDocument();
-    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /is a blank canvas/ })).not.toBeInTheDocument();
 });
 
 test("first run and loading D6: with rows in, what stands in the way is the status bar's alone", async () => {
@@ -160,7 +160,7 @@ test('ES19: on the board a filter leaving nothing says what it hides, with the w
     const view = mount(SAMPLE_VIEW_BLOCKED, { grouping: 'field:F_status' });
     await userEvent.click(page.getByRole('button', { name: 'Board' }));
 
-    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Filtered down to zero' })).toBeVisible();
     await expect
         .element(page.getByText(/^Iteration\sis\s@current\sand\sLabel\sis\sblocked\shide\sall\s\d+\sitems\.$/u))
         .toBeVisible();
@@ -178,7 +178,7 @@ test('first run and loading ES18: rows show as soon as some are in while more ar
 
 test('K8: a project downloaded with nothing in it says so and offers to add items', async () => {
     mount(SAMPLE_VIEW_SPRINT, { entries: [] });
-    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /is a blank canvas/ })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /Add existing issues/ })).toBeVisible();
 });
 

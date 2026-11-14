@@ -14,12 +14,14 @@ withDefaults(
     title?: string;
     /** On a screen, what was checked, so "nothing" can be trusted. */
     detail?: string;
+    /** On a screen, a technical fact in a mono chip. */
+    fact?: string;
     /** On a screen; an inbox when not given. */
     icon?: LucideIcon;
     /** `good` when nothing is good news ("Nothing on your plate"). */
     tone?: 'muted' | 'good';
   }>(),
-  { title: undefined, detail: undefined, icon: undefined, tone: 'muted' },
+  { title: undefined, detail: undefined, fact: undefined, icon: undefined, tone: 'muted' },
 );
 
 defineSlots<{
@@ -37,6 +39,7 @@ const t = useTranslate();
     :tone="tone"
     :title="title ?? t(l.nothingHere)"
     :detail="detail"
+    :fact="fact"
   >
     <template
       v-if="$slots.action"

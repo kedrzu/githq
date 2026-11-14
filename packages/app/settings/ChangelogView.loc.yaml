@@ -43,23 +43,23 @@ inNewestCommits:
 noticedSentence:
   en: '{changes}, {commits}.'
 nothingTitle:
-  en: Nothing you'd notice
-nothingDetail:
   plural: count
   en:
-    one: "{count} commit went in, and it doesn't change what you see."
-    many: '{count} commits went in, and none of them changes what you see.'
-nothingDetailNewest:
-  en: None of the newest {count} commits changes what you see.
+    one: "Nothing you'd notice: {count} commit went in, and it doesn't change what you see."
+    many: "Nothing you'd notice: {count} commits went in, and none of them changes what you see."
+nothingTitleNewest:
+  en: "Nothing you'd notice: none of the newest {count} commits changes what you see."
 noneTitle:
   en: No Stable version yet
+noneFact:
+  en: 'stable: none · next {version}'
 noneDetail:
   en: The first one will be {version}. Its changes appear here once it's out.
 offlineTitle:
-  en: Waiting for the connection
+  en: You're offline
 offlineDetail:
-  en: You're offline. The changelog appears here by itself once you're back.
+  en: The changelog shows up by itself once you're back.
 failedTitle:
-  en: Couldn't load the changelog
+  en: GitHub isn't answering
 failedDetail:
-  en: GitHub didn't answer. You can read the same changes there.
+  en: githq couldn't read the changelog. GitHub has the same changes.

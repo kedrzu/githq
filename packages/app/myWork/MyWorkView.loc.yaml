@@ -33,6 +33,6 @@ showFilter:
 yourWork:
   en: your work
 nothingIn:
-  en: Nothing in {group}
+  en: Nothing in {group}, for now
 showAll:
   en: Show all of My work

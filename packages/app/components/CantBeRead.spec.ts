@@ -8,9 +8,10 @@ import * as stories from './CantBeRead.stories.js';
 
 const { Failing, FailingGroup, Hidden, Offline, Paused, Refused, RefusedGroup } = composeStories(stories);
 
-test('offline and paused say when it resolves and offer nothing to press (D12)', async () => {
+test('offline and paused say when it resolves, with why in a chip, and offer nothing to press (D12)', async () => {
     await Offline.run();
     await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect.element(page.getByText('api.github.com → unreachable')).toBeVisible();
     await expect.element(page.getByRole('button')).not.toBeInTheDocument();
 
     await Paused.run();
@@ -23,6 +24,7 @@ test('offline and paused say when it resolves and offer nothing to press (D12)',
             }),
         )
         .toBeVisible();
+    await expect.element(page.getByText(`retry after ${time}`)).toBeVisible();
     await expect.element(page.getByRole('button')).not.toBeInTheDocument();
 });
 

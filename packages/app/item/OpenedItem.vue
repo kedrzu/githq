@@ -6,7 +6,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
-import { SearchX } from 'lucide-vue-next';
+import { ArrowLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onScopeDispose, ref, useTemplateRef, watch } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
@@ -129,6 +129,13 @@ const waitingTitle = computed(() => {
   }
 
   return opened.failed ? t(l.unreachable) : t(l.opening, { reference: referenceText.value });
+});
+const waitingDetail = computed(() => {
+  if (opened.missing) {
+    return t(l.missingDetail, { reference: referenceText.value });
+  }
+
+  return opened.failed ? t(l.unreachableDetail) : undefined;
 });
 const closes = computed((): Item[] => {
   const { item } = opened;
@@ -530,16 +537,20 @@ interface LookedRead extends ItemOpening {
     :class="css.openedItem_waiting"
   >
     <EmptyState
-      :icon="SearchX"
+      :icon="opened.failed ? CloudOff : SearchX"
+      :tone="opened.failed ? 'warning' : 'muted'"
       :title="waitingTitle"
-      :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
+      :detail="waitingDetail"
+      :fact="opened.missing ? t(l.missingFact, { reference: referenceText }) : undefined"
     >
       <template
         v-if="opened.missing"
         #action
       >
         <Button
+          variant="secondary"
           size="sm"
+          :icon="ArrowLeft"
           @click="close"
         >
           {{ t(l.backToList) }}
@@ -550,7 +561,9 @@ interface LookedRead extends ItemOpening {
         #action
       >
         <Button
+          variant="secondary"
           size="sm"
+          :icon="RotateCw"
           @click="opened.tryAgain()"
         >
           {{ t(l.tryAgain) }}

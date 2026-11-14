@@ -54,3 +54,4 @@ Append-only; one line per turn that settled something.
   words neutral, hidden a status of its own, refused only over what hasn't arrived, group notes, one poll per Try
   again. D15 simplified ("Nothing in Mentioned", no counts). Ghosts share the real rows' and columns' sizes.
 - 2026-11-09 — Owner: the skeleton band too strong, narrow, slanted and fast. D9 now a slow train of soft, wide bands, 25 ms a row.
+- 2026-11-14 — Owner: one empty-state style everywhere, the Workflows one, with a lighter, nerdier voice (D19). Built in `EmptyState`; `githq.pen`'s `Empty / Note · screen` redrawn and every empty note swapped for an instance.

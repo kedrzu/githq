@@ -7,6 +7,6 @@ openReview:
 submit:
   en: Submit…
 empty:
-  en: No draft reviews
+  en: No reviews left hanging
 emptyDetail:
-  en: A review you start and don't submit shows up here until you do.
+  en: A review you start and don't submit waits here until you do.

@@ -18,3 +18,6 @@ type Story = StoryObj<typeof meta>;
 
 /** A screen whose filter hides everything: what it hides, and "Clear filter". */
 export const Screen: Story = {};
+
+/** With a technical fact in a mono chip: the filter as written. */
+export const ScreenWithFact: Story = { args: { fact: 'is:open label:bug' } };

@@ -26,6 +26,15 @@ export const ScreenGood: Story = {
     },
 };
 
+/** A screen with a technical fact in a mono chip. */
+export const ScreenWithFact: Story = {
+    args: {
+        title: 'No releases',
+        detail: 'mlaine/tasklet has published none yet.',
+        fact: 'GET /repos/mlaine/tasklet/releases → []',
+    },
+};
+
 /** An arrived, empty group: "Nothing here." under its header. */
 export const Group: Story = {
     args: { place: 'group', title: undefined, detail: undefined },

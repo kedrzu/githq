@@ -10,6 +10,7 @@ import {
   CloudOff,
   GitPullRequestDraft,
   Hourglass,
+  LayoutList,
   ListFilter,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -502,6 +503,8 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           >
             <Button
               variant="secondary"
+              size="sm"
+              :icon="LayoutList"
               @click="showAll"
             >
               {{ t(l.showAll) }}

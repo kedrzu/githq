@@ -9,6 +9,7 @@ import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import { getGitHubUrl, getRepositoryPath, getRepositorySettingsPath } from '@/tracking/trackingRoutes.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
@@ -21,7 +22,6 @@ import type { UnfoldedRun, UnfoldedWorkflow } from './buildUnfoldedWorkflow.js';
 import * as l from './RepositoryWorkflowsView.loc.js';
 import UnfoldedWorkflowRuns from './UnfoldedWorkflowRuns.vue';
 import WorkflowAlertsBar from './WorkflowAlertsBar.vue';
-import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRow from './WorkflowRow.vue';
 import WorkflowsArriving from './WorkflowsArriving.vue';
 
@@ -300,40 +300,37 @@ function describeGroup(group: RepositoryWorkflowGroup) {
     />
 
     <div
-      :class="css.repositoryWorkflowsView_body"
+      :class="[
+        css.repositoryWorkflowsView_body,
+        emptyState && list.groups.length === 0 && css.repositoryWorkflowsView_body_note,
+      ]"
       :data-route-scroll="`repository-workflows:${nameWithOwner}`"
     >
       <WorkflowsArriving v-if="list.status === 'unread'" />
-      <div
+      <EmptyState
         v-else-if="emptyState"
-        :class="[
-          css.repositoryWorkflowsView_message,
-          list.groups.length > 0 && css.repositoryWorkflowsView_message_above,
-        ]"
+        :class="list.groups.length > 0 && css.repositoryWorkflowsView_noteAbove"
+        :icon="emptyState.icon"
+        :title="emptyState.title"
+        :detail="emptyState.text"
+        :fact="emptyState.detail"
       >
-        <WorkflowEmptyState
-          :icon="emptyState.icon"
-          :title="emptyState.title"
-          :text="emptyState.text"
-          :detail="emptyState.detail"
+        <template
+          v-if="emptyState.action"
+          #action
         >
-          <template
-            v-if="emptyState.action"
-            #actions
+          <Button
+            variant="secondary"
+            size="sm"
+            :icon="Github"
+            kbd="O"
+            keyshortcuts="O"
+            @click="emit('openOnGitHub', emptyState.action.url)"
           >
-            <Button
-              variant="secondary"
-              size="sm"
-              :icon="Github"
-              kbd="O"
-              keyshortcuts="O"
-              @click="emit('openOnGitHub', emptyState.action.url)"
-            >
-              {{ emptyState.action.label }}
-            </Button>
-          </template>
-        </WorkflowEmptyState>
-      </div>
+            {{ emptyState.action.label }}
+          </Button>
+        </template>
+      </EmptyState>
 
       <section
         v-for="group in list.groups"
@@ -407,16 +404,15 @@ function describeGroup(group: RepositoryWorkflowGroup) {
   overflow-y: auto;
 }
 
-.repositoryWorkflowsView_message {
-  display: flex;
-  justify-content: center;
-  padding: $spacing-96 $spacing-16 $spacing-48;
+// The last known rows follow the note.
+.repositoryWorkflowsView_noteAbove {
+  flex: none;
+  border-bottom: 1px solid $color-border;
 }
 
-// The last known rows follow: the message keeps less room above them.
-.repositoryWorkflowsView_message_above {
-  padding: $spacing-48 $spacing-16 $spacing-32;
-  border-bottom: 1px solid $color-border;
+.repositoryWorkflowsView_body_note {
+  display: flex;
+  flex-direction: column;
 }
 
 .repositoryWorkflowsView_group {

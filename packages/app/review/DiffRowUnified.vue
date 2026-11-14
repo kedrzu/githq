@@ -7,6 +7,7 @@ import DiffCommentButton from './DiffCommentButton.vue';
 import DiffLineNumber from './DiffLineNumber.vue';
 import type { DiffLineSide, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
+import type { RowMarks } from './find/RowMarks.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { isLineCommented } from './utils/isLineCommented.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
@@ -21,6 +22,8 @@ const props = defineProps<{
   cursor?: boolean;
   /** The keys are in a text field, which C or V would type into: the cursor's row keeps its button, not its tint. */
   quiet?: boolean;
+  /** Find's matches on the row (D47), by side. */
+  marks?: RowMarks | null;
 }>();
 
 const emit = defineEmits<{
@@ -79,6 +82,7 @@ const isCommented = computed(() => {
       :text="diff[side][lineIndex] ?? ''"
       :tokens="syntax?.[side].value ?? null"
       :line="lineIndex"
+      :marks="marks?.[side]"
     />
   </div>
 </template>

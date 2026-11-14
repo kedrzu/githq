@@ -385,7 +385,7 @@ test('a refused read answers with the failure and the releases on GitHub, and op
     await menu.open();
     await menu.field.pressSequentially('Settings: Changelog');
     await page.keyboard.press('Enter');
-    await expect(page.getByText("Couldn't load the changelog")).toBeVisible();
+    await expect(page.getByText("GitHub isn't answering")).toBeVisible();
 
     answerChangelog(github);
     const settings = new SettingsScreenHarness(page);

@@ -804,6 +804,7 @@ function resetShare() {
               :icon="GitCommitHorizontal"
               :title="t(l.emptyTitle)"
               :detail="t(l.emptyDetail, { name: nameWithOwner })"
+              :fact="t(l.emptyFact)"
             />
             <template v-else>
               <div

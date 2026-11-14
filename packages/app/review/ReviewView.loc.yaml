@@ -13,15 +13,17 @@ gone:
 goneDetail:
   en: It may have been deleted, or you may have lost access to its repository. Its code read earlier stays in this browser until you sign out.
 paused:
-  en: Waiting for GitHub's API allowance
+  en: Refresh paused until {time}
 pausedDetail:
-  en: It resets at {time}. The files will load then, without you doing anything.
+  en: GitHub asked githq to wait. The files come in by themselves at {time}.
 tryAgain:
   en: Try again
 openOnGitHub:
   en: Open on GitHub
 noChanges:
-  en: No changes
+  en: Nothing to diff
+noChangesFact:
+  en: '{base}...{head} → ∅'
 noChangesDetail:
   en: '{head} has the same content as {base}. The branch may be waiting for a push, or the changes landed elsewhere.'
 noChangesPlain:
@@ -36,6 +38,8 @@ expandFile:
   en: Expand file
 allViewed:
   en: All {total} files viewed
+allViewedFact:
+  en: '{total}/{total} viewed'
 allViewedDetail:
   en: Hidden files stay viewed on GitHub. Show them to read them again.
 showViewed:
@@ -55,7 +59,9 @@ showCommentsInCollapsed:
 hideCommentsInCollapsed:
   en: Hide comments in collapsed files
 noMatch:
-  en: No files match this filter
+  en: Filtered down to zero
+noMatchFact:
+  en: '{filter} → 0 files'
 noMatchViewedHidden:
   en: Viewed files are hidden too.
 clearFilter:
@@ -124,3 +130,11 @@ resizeConversation:
   en: Resize the conversation
 resizeDiff:
   en: Resize the diff
+find:
+  en: Find in the diff
+findNext:
+  en: Next match
+findPrevious:
+  en: Previous match
+closeFind:
+  en: Close find

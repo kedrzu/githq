@@ -6,6 +6,8 @@ offlineLinePlural:
   en: "githq can't reach GitHub, so {thing} haven't arrived yet. It carries on by itself as soon as you're back."
 offlineNote:
   en: Offline. Fills in when you're back.
+offlineFact:
+  en: api.github.com → unreachable
 pausedTitle:
   en: Refresh paused until {time}
 pausedLine:
@@ -14,6 +16,8 @@ pausedLinePlural:
   en: GitHub asked githq to wait before {thing} could be read. They come in by themselves at {time}.
 pausedNote:
   en: Refresh paused. Fills in at {time}.
+pausedFact:
+  en: retry after {time}
 failingTitle:
   en: GitHub isn't answering
 failingLine:

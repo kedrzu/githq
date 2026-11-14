@@ -6,16 +6,27 @@ export type ChangelogContent =
   /** No version at all: the first Stable to come (U45). */
   | { readonly kind: 'none'; readonly firstVersion: string }
   | { readonly kind: 'versions'; readonly versions: readonly ChangelogVersion[] };
+
+/** A whole-section message (none, offline, failed) as `EmptyState` draws it. */
+interface SectionMessage {
+  icon: LucideIcon;
+  tone: 'muted' | 'warning';
+  title: string;
+  detail: string;
+  fact: string | undefined;
+}
 </script>
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import type { LucideIcon } from 'lucide-vue-next';
 import { ArrowUpRight, Check, ChevronDown, ChevronRight, Info, TriangleAlert, WifiOff } from 'lucide-vue-next';
 import { computed, reactive, ref, useId, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
@@ -64,20 +75,27 @@ const showsCommits = computed(
 const gitHubUrl = computed(() => (showsCommits.value && props.commitsUrl) || RELEASES_URL);
 const gitHubLabel = computed(() => t(showsCommits.value ? l.allCommits : l.allReleases));
 const hasGitHubLink = computed(() => props.content.kind !== 'offline');
-const message = computed(() => {
+const message = computed((): SectionMessage | null => {
   const { content } = props;
   switch (content.kind) {
     case 'none':
       return {
         icon: Info,
-        warning: false,
+        tone: 'muted',
         title: t(l.noneTitle),
         detail: t(l.noneDetail, { version: content.firstVersion }),
+        fact: t(l.noneFact, { version: content.firstVersion }),
       };
     case 'offline':
-      return { icon: WifiOff, warning: false, title: t(l.offlineTitle), detail: t(l.offlineDetail) };
+      return { icon: WifiOff, tone: 'warning', title: t(l.offlineTitle), detail: t(l.offlineDetail), fact: undefined };
     case 'failed':
-      return { icon: TriangleAlert, warning: true, title: t(l.failedTitle), detail: t(l.failedDetail) };
+      return {
+        icon: TriangleAlert,
+        tone: 'warning',
+        title: t(l.failedTitle),
+        detail: t(l.failedDetail),
+        fact: undefined,
+      };
     default:
       return null;
   }
@@ -246,19 +264,15 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
             :style="{ width: `${width}px` }"
           />
         </div>
-        <div
+        <EmptyState
           v-else-if="message"
-          :class="css.changelogView_message"
+          :icon="message.icon"
+          :tone="message.tone"
+          :title="message.title"
+          :detail="message.detail"
+          :fact="message.fact"
           role="status"
-        >
-          <component
-            :is="message.icon"
-            :class="[css.changelogView_messageIcon, message.warning && css.changelogView_messageIcon_warning]"
-            aria-hidden="true"
-          />
-          <p :class="css.changelogView_messageTitle">{{ message.title }}</p>
-          <p :class="css.changelogView_messageDetail">{{ message.detail }}</p>
-        </div>
+        />
         <ul
           v-else
           ref="list"
@@ -350,23 +364,16 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
                   </section>
                 </div>
               </GitHubLinks>
-              <div
+              <EmptyState
                 v-else
-                :class="css.changelogView_message"
-              >
-                <Check
-                  :class="css.changelogView_messageIcon"
-                  aria-hidden="true"
-                />
-                <p :class="css.changelogView_messageTitle">{{ t(l.nothingTitle) }}</p>
-                <p :class="css.changelogView_messageDetail">
-                  {{
-                    version.limited
-                      ? t(l.nothingDetailNewest, { count: version.commits })
-                      : t(l.nothingDetail, { count: version.commits })
-                  }}
-                </p>
-              </div>
+                place="column"
+                :icon="Check"
+                :title="
+                  version.limited
+                    ? t(l.nothingTitleNewest, { count: version.commits })
+                    : t(l.nothingTitle, { count: version.commits })
+                "
+              />
             </div>
           </li>
         </ul>
@@ -609,37 +616,5 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
   height: 10px;
   background: $color-bg-3;
   border-radius: 3px;
-}
-
-.changelogView_message {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-8;
-  align-items: center;
-  padding: 40px 24px;
-  text-align: center;
-}
-
-.changelogView_messageIcon {
-  width: 18px;
-  height: 18px;
-  color: $color-fg-2;
-}
-
-.changelogView_messageIcon_warning {
-  color: $color-amber;
-}
-
-.changelogView_messageTitle {
-  font-size: 13.5px;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
-.changelogView_messageDetail {
-  max-width: 420px;
-  font-size: 13px;
-  line-height: $line-height-normal;
-  color: $color-fg-2;
 }
 </style>
