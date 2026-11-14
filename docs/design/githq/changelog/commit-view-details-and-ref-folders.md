@@ -60,3 +60,42 @@ four new parts, a reusable rendered message, `Commit row` reworked so the change
 Not drawn: the details in the chosen variant on CH18, CH20, CH42, CH48 and the `Commit details` component (`CKaTw`)
 wait for the owner's pick; the ref list in CH3, CH15–CH17 and the column layout still draws flat names until folders
 are settled; a filtering state with folders unfolded on their own is described in CH53's caption only.
+
+## Round 2 · agent brief
+
+Asked (`.context/commit-view-brief-2.md`): the owner rejected CH50 (one label column reads as noise, though its failing
+check unfolded under Checks is liked) and CH51 (chips without labels), and picked CH52's structure with two faults: the
+tabs read as labels, and failing checks must not hide behind a tab. Two refinements of CH52 without tabs, and two states
+of the recommended one. Changed: CH50 and CH51 deleted, a shared facts component with two variants, four new panels.
+
+- [ ] Components · Commits › Parts (`C2tGlJ`): new `Commit details / Facts` (`NIaPG`), 400 wide: the headline (15 px,
+  600), the meta line (avatar, name, age · date, sha with copy) and a card (`$border`, radius 8) of four groups divided
+  by `$border` lines, each with its own head (11.5 px, 500, `$fg-dim`): **Pull request** (state icon, number, the title
+  clipped to one line, `merged`; ⇧↵ in the head), **Checks** (`1 failing` in `$red` and `of 12` in the head; the failing
+  check on `$bg-3` with name, duration and ↗; `11 passed ›` folded under it), **Parents** (one row each: P / ⇧P key, sha,
+  headline clipped), **Refs** (one line: label then chips). The parents take the full width rather than sharing a row
+  with refs: beside refs a parent's headline kept ~20 characters. Hidden `Commit / Not known yet` bars in the Pull
+  request value and in a `CI not known row` under Checks.
+- [ ] Components · Commits › Parts (`C2tGlJ`): new `Commit details / Facts · checks passed, no pull request` (`REdEU`),
+  an instance of the facts: a commit pushed to main (`d07be52`, parent `3f9c2e1`, `main` only); Pull request reads
+  "Pushed straight to main, no pull request" in `$fg-dim` with a `$fg-3` icon, no key; Checks only `12 passed ›`; one
+  parent.
+- [ ] Components · Commits › Parts (`C2tGlJ`): new `Commit details / Facts · not known yet` (`CFnEm`): the Pull request
+  value and the check list swapped for the empty bars (120 and 72 px), no ⇧↵; parents and refs as known.
+- [ ] App · Commits › `Variants · How a commit's details read` (`WCpKZ`): deleted `CH50 · Variant A · A property sheet
+  above the message` and `CH51 · Variant B · A header with chips` with their slots; CH52 stays last as the round-1
+  reference, its caption saying so. Order now CH55, CH57, CH58, CH56, CH52.
+- [ ] `WCpKZ`: new `CH55 · Variant A · C, one scroll` (`BMfTt`), recommended: `Item / Toolbar` as in CH52, then one
+  scroll area (padding [16,20,24,20], gap 20) holding the facts and `Commit details / Message`. Why recommended: the
+  failing check is on the first screen without a key, and the long message gets the whole panel once the card scrolls
+  away.
+- [ ] `WCpKZ`: new `CH56 · Variant B · C, facts fixed` (`Ip4d5`): the facts fixed under the toolbar (padding 16/20, a
+  `$border` bottom line); the message scrolls alone below, drawn a few lines down, with a 14 px shade (`#00000059` →
+  transparent) under the edge. The caption names the cost: ~330 px of the panel taken for good, two scroll areas.
+- [ ] `WCpKZ`: new `CH57 · Variant A · Checks passed, no pull request` (`Yuudr`): CH55 with the passed variant, the
+  toolbar's sha `d07be52`, the message one paragraph (the message's list, second paragraph and trailers hidden).
+- [ ] `WCpKZ`: new `CH58 · Variant A · Pull request and checks not known yet` (`egAi8`): CH55 with the not-known
+  variant.
+
+Not drawn: the chosen variant on CH18, CH20, CH42, CH48 and `Commit details` (`CKaTw`) still waits for the owner's
+pick; the 11 passed checks unfolded; a commit with several failing checks (the list grows under Checks, one row each).

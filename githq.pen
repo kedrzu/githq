@@ -273261,6 +273261,755 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NIaPG",
+                  "name": "Commit details / Facts",
+                  "reusable": true,
+                  "width": 400,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ExPG6",
+                      "name": "Headline",
+                      "fill": "$fg",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename (#581)",
+                      "lineHeight": 1.4,
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "D5PaU",
+                      "name": "Meta line",
+                      "width": "fill_container",
+                      "gap": 7,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "HZCsg",
+                          "type": "ref",
+                          "ref": "of5Pp",
+                          "name": "Avatar",
+                          "cornerRadius": 8,
+                          "fill": "#7B87F7",
+                          "width": 16,
+                          "height": 16,
+                          "descendants": {
+                            "zeZzP": {
+                              "content": "MK",
+                              "fontSize": 6
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "jVOmE",
+                          "name": "Name",
+                          "fill": "$fg-2",
+                          "content": "Michał Kędrzyński",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cOChE",
+                          "name": "Rest",
+                          "fill": "$fg-dim",
+                          "content": "4 days ago · Nov 10, 16:42",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Z80bQd",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "yPPqP",
+                          "name": "Sha",
+                          "fill": "$fg-dim",
+                          "content": "3f9c2e1",
+                          "fontFamily": "$mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "zsayP",
+                          "name": "icon copy",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "copy",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U5q3Td",
+                      "name": "Card",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "RUCUe",
+                          "name": "Group Pull request",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "kzMeS",
+                              "name": "Group head",
+                              "width": "fill_container",
+                              "height": 16,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xyp5I",
+                                  "name": "Label",
+                                  "fill": "$fg-dim",
+                                  "content": "Pull request",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "s3tnSy",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "id": "aPye1",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd ⇧↵",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "⇧↵"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KRVg7",
+                              "name": "Value",
+                              "width": "fill_container",
+                              "height": 18,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "rVBwa",
+                                  "name": "PR state",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "git-merge",
+                                  "library": "lucide",
+                                  "fill": "$purple"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "GhsD7",
+                                  "name": "Number",
+                                  "fill": "$fg-2",
+                                  "content": "#581",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M4RVB",
+                                  "name": "Title box",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": 18,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Niajp",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename",
+                                      "fontFamily": "$font",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c89tDK",
+                                  "name": "State",
+                                  "fill": "$fg-dim",
+                                  "content": "merged",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "UKtGW",
+                                  "type": "ref",
+                                  "ref": "q9UN4",
+                                  "name": "PR not known",
+                                  "width": 120,
+                                  "enabled": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R6XLXW",
+                          "name": "Group Checks",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "l8G9E",
+                              "name": "Group head",
+                              "width": "fill_container",
+                              "height": 16,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VJde1",
+                                  "name": "Label",
+                                  "fill": "$fg-dim",
+                                  "content": "Checks",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dNykR",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "msbAY",
+                                  "name": "Summary",
+                                  "fill": "$red",
+                                  "content": "1 failing",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mL3fR",
+                                  "name": "Of",
+                                  "fill": "$fg-dim",
+                                  "content": "of 12",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "a3Wdhx",
+                              "name": "Check list",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Q2o89A",
+                                  "name": "Failing check",
+                                  "width": "fill_container",
+                                  "height": 26,
+                                  "fill": "$bg-3",
+                                  "cornerRadius": 6,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "BItO7",
+                                      "name": "icon circle-x",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "circle-x",
+                                      "library": "lucide",
+                                      "fill": "$red"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "HktBA",
+                                      "name": "Name box",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "height": 16,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "wEd6Z",
+                                          "name": "Name",
+                                          "fill": "$fg",
+                                          "content": "deploy / preview (testing)",
+                                          "fontFamily": "$mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LcM8N",
+                                      "name": "Duration",
+                                      "fill": "$fg-dim",
+                                      "content": "3m 41s",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "YxuFF",
+                                      "name": "icon external",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "arrow-up-right",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mlQH5",
+                                  "name": "Passed, folded",
+                                  "width": "fill_container",
+                                  "height": 26,
+                                  "cornerRadius": 6,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "U3gBX",
+                                      "name": "icon circle-check",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "circle-check",
+                                      "library": "lucide",
+                                      "fill": "#3FB950B0"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "V9bas",
+                                      "name": "Passed",
+                                      "fill": "$fg-2",
+                                      "content": "11 passed",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "a2Ctr",
+                                      "name": "icon chevron-right",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-right",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "T1YxGC",
+                              "x": 0,
+                              "y": 0,
+                              "name": "CI not known row",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "height": 18,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "cRyPq",
+                                  "type": "ref",
+                                  "ref": "q9UN4",
+                                  "name": "CI not known",
+                                  "width": 72,
+                                  "enabled": true
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FsbsK",
+                          "name": "Group Parents",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "l3vv2Z",
+                              "name": "Group head",
+                              "width": "fill_container",
+                              "height": 16,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IgzFb",
+                                  "name": "Label",
+                                  "fill": "$fg-dim",
+                                  "content": "Parents",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "JeCT5",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BINsx",
+                              "name": "Parent P",
+                              "width": "fill_container",
+                              "height": 20,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "owGO1",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd P",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "P"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "hUPDq",
+                                  "name": "Sha",
+                                  "fill": "$fg-2",
+                                  "content": "8e1d4b7",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "nTPC4",
+                                  "name": "Headline box",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "MbVcF",
+                                      "name": "Headline",
+                                      "fill": "$fg",
+                                      "content": "[HLD-702] Bump the Pulumi AWS provider to 6.66 (#579)",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "f7MK5",
+                              "name": "Parent ⇧P",
+                              "width": "fill_container",
+                              "height": 20,
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "a7KMom",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd ⇧P",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "⇧P"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "b0qNo",
+                                  "name": "Sha",
+                                  "fill": "$fg-2",
+                                  "content": "c52a90f",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "NxIiu",
+                                  "name": "Headline box",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": 16,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qBTXl",
+                                      "name": "Headline",
+                                      "fill": "$fg",
+                                      "content": "Pin doctorCore role names during the rename",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uGnJZ",
+                          "name": "Group Refs",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "padding": [
+                            9,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "HK1on",
+                              "name": "Label",
+                              "fill": "$fg-dim",
+                              "content": "Refs",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "v2seI",
+                              "name": "Ref list",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "M8rZF",
+                                  "type": "ref",
+                                  "ref": "GBqBN",
+                                  "name": "Ref main"
+                                },
+                                {
+                                  "id": "H5Ztqq",
+                                  "type": "ref",
+                                  "ref": "ofuH4",
+                                  "name": "Ref testing/v178",
+                                  "descendants": {
+                                    "L94EoG": {
+                                      "content": "testing/v178"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "REdEU",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "NIaPG",
+                  "name": "Commit details / Facts · checks passed, no pull request",
+                  "descendants": {
+                    "ExPG6": {
+                      "content": "Move the nightly drift job to 03:00 UTC"
+                    },
+                    "cOChE": {
+                      "content": "2 hours ago · Nov 14, 15:20"
+                    },
+                    "yPPqP": {
+                      "content": "d07be52"
+                    },
+                    "aPye1": {
+                      "enabled": false
+                    },
+                    "rVBwa": {
+                      "icon": "git-pull-request",
+                      "fill": "$fg-3"
+                    },
+                    "GhsD7": {
+                      "enabled": false
+                    },
+                    "Niajp": {
+                      "content": "Pushed straight to main, no pull request",
+                      "fill": "$fg-dim"
+                    },
+                    "c89tDK": {
+                      "enabled": false
+                    },
+                    "msbAY": {
+                      "enabled": false
+                    },
+                    "mL3fR": {
+                      "enabled": false
+                    },
+                    "Q2o89A": {
+                      "enabled": false
+                    },
+                    "V9bas": {
+                      "content": "12 passed"
+                    },
+                    "hUPDq": {
+                      "content": "3f9c2e1"
+                    },
+                    "MbVcF": {
+                      "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename (#581)"
+                    },
+                    "f7MK5": {
+                      "enabled": false
+                    },
+                    "H5Ztqq": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "id": "CFnEm",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "NIaPG",
+                  "name": "Commit details / Facts · not known yet",
+                  "descendants": {
+                    "aPye1": {
+                      "enabled": false
+                    },
+                    "rVBwa": {
+                      "enabled": false
+                    },
+                    "GhsD7": {
+                      "enabled": false
+                    },
+                    "M4RVB": {
+                      "enabled": false
+                    },
+                    "c89tDK": {
+                      "enabled": false
+                    },
+                    "UKtGW": {
+                      "enabled": true
+                    },
+                    "msbAY": {
+                      "enabled": false
+                    },
+                    "mL3fR": {
+                      "enabled": false
+                    },
+                    "a3Wdhx": {
+                      "enabled": false
+                    },
+                    "T1YxGC": {
+                      "enabled": true
+                    }
+                  }
                 }
               ]
             }
@@ -282362,14 +283111,14 @@
           "children": [
             {
               "type": "frame",
-              "id": "a28G2y",
-              "name": "Slot · CH50 · Variant A · A property sheet above the message",
+              "id": "DeNri",
+              "name": "Slot · CH55 · Variant A · C, one scroll",
               "layout": "vertical",
               "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "Uqpwn",
+                  "id": "ApYCB",
                   "name": "Caption",
                   "width": 440,
                   "layout": "vertical",
@@ -282377,22 +283126,22 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "XAoAF",
+                      "id": "Shs8m",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CH50 · Variant A · A property sheet above the message",
+                      "content": "CH55 · Variant A · C, one scroll",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
                     {
                       "type": "text",
-                      "id": "iOnVN",
+                      "id": "nBcAG",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Recommended. Every one-line fact is a row of one sheet, label on the left, value on the right, in the order they are asked: pull request, checks, refs, author, committed, parents, the sha. It reads like an item's properties, so nothing new to learn, and each row's key (⇧↵, P, ⇧P) sits on the row it acts on, so the footer of keys goes. A failing check is listed under its row, the passed ones fold into one line. The headline stays the title, as it names the commit; the body follows the sheet in the normal text colour at 14 px, rendered: paragraphs, a list with hanging bullets, trailers quiet. The panel scrolls as one, as an item does.",
+                      "content": "Recommended. No tabs and no second scroll area: the headline, the author line and one card of four groups (pull request with its title, checks, parents with their headlines, refs), then the message, all in one scroll. A red build names its failing check right in the Checks group, with the passed ones folded into one line; nothing hides behind a key. The groups have their own heads and dividers, so the eye jumps to Checks or Parents instead of reading a column of labels. A long message only pushes the card up and away, which is fine: the facts are read first, then the message.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -282402,8 +283151,8 @@
                 },
                 {
                   "type": "frame",
-                  "id": "x2kaeP",
-                  "name": "CH50 · Variant A · A property sheet above the message",
+                  "id": "BMfTt",
+                  "name": "CH55 · Variant A · C, one scroll",
                   "clip": true,
                   "width": 440,
                   "height": 826,
@@ -282414,7 +283163,7 @@
                   "layout": "vertical",
                   "children": [
                     {
-                      "id": "KTcWQ",
+                      "id": "RtECK",
                       "type": "ref",
                       "ref": "I6JTP",
                       "name": "Toolbar",
@@ -282443,736 +283192,45 @@
                     },
                     {
                       "type": "frame",
-                      "id": "nB0y8",
+                      "id": "zVpA5",
                       "name": "Scroll",
                       "clip": true,
                       "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
-                      "gap": 14,
+                      "gap": 20,
                       "padding": [
-                        18,
-                        12,
+                        16,
+                        20,
                         24,
-                        12
+                        20
                       ],
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "zfuYv",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "padding": [
-                            0,
-                            8,
-                            4,
-                            8
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "DO6ZE",
-                              "name": "Headline",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename (#581)",
-                              "lineHeight": 1.4,
-                              "fontFamily": "$font",
-                              "fontSize": 16,
-                              "fontWeight": "600"
-                            }
-                          ]
+                          "id": "uQl4C",
+                          "type": "ref",
+                          "ref": "NIaPG",
+                          "name": "Facts",
+                          "width": "fill_container"
                         },
                         {
-                          "type": "frame",
-                          "id": "W4cn5",
-                          "name": "Sheet",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "XbIQV",
-                              "name": "Row Pull request",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "P5rFoq",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "IpkW9",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Pull request",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "HftpG",
-                                  "name": "icon git-merge",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "git-merge",
-                                  "library": "lucide",
-                                  "fill": "$purple"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "mG62Z",
-                                  "name": "Number",
-                                  "fill": "$fg-2",
-                                  "content": "#581",
-                                  "fontFamily": "$mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "UeJjH",
-                                  "name": "Value box",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": 16,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "QqJzF",
-                                      "name": "Value",
-                                      "fill": "$fg",
-                                      "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "xw5uK",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd ⇧↵",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "⇧↵"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "HZpoM",
-                              "name": "Row Checks",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "FYn5V",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "m9W1P",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Checks",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "Tdbzd",
-                                  "name": "icon circle-x",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "lcC7S",
-                                  "name": "Failing",
-                                  "fill": "$fg",
-                                  "content": "1 failing",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "re4BH",
-                                  "name": "Of",
-                                  "fill": "$fg-dim",
-                                  "content": "of 12",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "K3RtWq",
-                              "name": "Check list",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "padding": [
-                                0,
-                                0,
-                                4,
-                                100
-                              ],
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "T7AtR",
-                                  "name": "Check deploy / pulumi preview (testing)",
-                                  "width": "fill_container",
-                                  "height": 26,
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 6,
-                                  "gap": 8,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "zNwES",
-                                      "name": "icon circle-x",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "circle-x",
-                                      "library": "lucide",
-                                      "fill": "$red"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "yqzvg",
-                                      "name": "Value box",
-                                      "clip": true,
-                                      "width": "fill_container",
-                                      "height": 16,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "lmBYA",
-                                          "name": "Value",
-                                          "fill": "$fg",
-                                          "content": "deploy / preview (testing)",
-                                          "fontFamily": "$mono",
-                                          "fontSize": 12,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "jTug7",
-                                      "name": "Duration",
-                                      "fill": "$fg-dim",
-                                      "content": "3m 41s",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "Z7sH5",
-                                  "name": "Passed, folded",
-                                  "width": "fill_container",
-                                  "height": 26,
-                                  "cornerRadius": 6,
-                                  "gap": 8,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "CRFlT",
-                                      "name": "icon circle-check",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "circle-check",
-                                      "library": "lucide",
-                                      "fill": "#3FB950B0"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "JsLGM",
-                                      "name": "Passed",
-                                      "fill": "$fg-2",
-                                      "content": "11 passed",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "icon",
-                                      "id": "rOIQi",
-                                      "name": "icon chevron-right",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "chevron-right",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "vZsKU",
-                              "name": "Row Refs",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "qw3gX",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "TU1BB",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Refs",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "NDJoh",
-                                  "type": "ref",
-                                  "ref": "GBqBN",
-                                  "name": "Ref main"
-                                },
-                                {
-                                  "id": "L73CAf",
-                                  "type": "ref",
-                                  "ref": "ofuH4",
-                                  "name": "Ref testing/v178",
-                                  "descendants": {
-                                    "L94EoG": {
-                                      "content": "testing/v178"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "R5j4e",
-                              "name": "Row Author",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "oRvm6",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "Wrjxg",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Author",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "kie6k",
-                                  "type": "ref",
-                                  "ref": "of5Pp",
-                                  "name": "Avatar",
-                                  "width": 18,
-                                  "height": 18,
-                                  "cornerRadius": 9,
-                                  "fill": "#7B87F7",
-                                  "descendants": {
-                                    "zeZzP": {
-                                      "content": "MK",
-                                      "fontSize": 7
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "mpKPQ",
-                                  "name": "Name",
-                                  "fill": "$fg",
-                                  "content": "Michał Kędrzyński",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "rnhb7",
-                                  "name": "Login",
-                                  "fill": "$fg-dim",
-                                  "content": "kedrzu",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "WaUZI",
-                              "name": "Row Committed",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "S9MKh",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "VEbuC",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Committed",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "DTCxe",
-                                  "name": "Age",
-                                  "fill": "$fg",
-                                  "content": "4 days ago",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "hbYYH",
-                                  "name": "Date",
-                                  "fill": "$fg-dim",
-                                  "content": "Nov 10, 16:42",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "AD4zc",
-                              "name": "Row Parent P",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "a743PA",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "C7HqK5",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Parents",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "mDg60",
-                                  "name": "Sha",
-                                  "fill": "$fg-2",
-                                  "content": "8e1d4b7",
-                                  "fontFamily": "$mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "TszKY",
-                                  "name": "Value box",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": 16,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "YqDNY",
-                                      "name": "Value",
-                                      "fill": "$fg",
-                                      "content": "[HLD-702] Bump the Pulumi AWS provider to 6.66 (#579)",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "M7ntOU",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd P",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "P"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "wnip4",
-                              "name": "Row Parent ⇧P",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "zuXdB",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "height": 16
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "qu59c",
-                                  "name": "Sha",
-                                  "fill": "$fg-2",
-                                  "content": "c52a90f",
-                                  "fontFamily": "$mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "Zhhre",
-                                  "name": "Value box",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": 16,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "MVmmr",
-                                      "name": "Value",
-                                      "fill": "$fg",
-                                      "content": "Pin doctorCore role names during the rename",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "FCPzS",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd ⇧P",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "⇧P"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "n80Eql",
-                              "name": "Row Commit",
-                              "width": "fill_container",
-                              "height": 28,
-                              "cornerRadius": 6,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "R2XLK",
-                                  "name": "Key",
-                                  "width": 92,
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "nDdQ3",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "Commit",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "rcsBG",
-                                  "name": "Value box",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": 16,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "Zv0e9",
-                                      "name": "Value",
-                                      "fill": "$fg-2",
-                                      "content": "3f9c2e1a7b04d58e9c61f2a0b7d34e5c9a18f06b",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 11.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "CuTeq",
-                                  "name": "icon copy",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "copy",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
-                                }
-                              ]
-                            }
-                          ]
+                          "id": "XIOln",
+                          "type": "ref",
+                          "ref": "c1E2q",
+                          "name": "Message",
+                          "width": "fill_container"
                         },
                         {
-                          "type": "frame",
-                          "id": "ppt7q",
-                          "name": "Divider",
-                          "width": "fill_container",
-                          "height": 1,
-                          "fill": "$border"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "gajLp",
-                          "name": "Message box",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "padding": [
-                            4,
-                            8,
-                            0,
-                            8
-                          ],
-                          "children": [
-                            {
-                              "id": "SSrhw",
-                              "type": "ref",
-                              "ref": "c1E2q",
-                              "name": "Message",
-                              "width": "fill_container"
-                            }
-                          ]
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "ZXd6w",
+                          "layoutPosition": "absolute",
+                          "x": 432,
+                          "y": 6,
+                          "name": "Scrollbar",
+                          "fill": "$border-2",
+                          "width": 4,
+                          "height": 220
                         }
                       ]
                     }
@@ -283182,14 +283240,14 @@
             },
             {
               "type": "frame",
-              "id": "Kc3b3",
-              "name": "Slot · CH51 · Variant B · A header with chips",
+              "id": "OTDsi",
+              "name": "Slot · CH57 · Variant A · Checks passed, no pull request",
               "layout": "vertical",
               "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "xJnGS",
+                  "id": "GsWZG",
                   "name": "Caption",
                   "width": 440,
                   "layout": "vertical",
@@ -283197,22 +283255,22 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "e2Wl7",
+                      "id": "cK8DR",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CH51 · Variant B · A header with chips",
+                      "content": "CH57 · Variant A · Checks passed, no pull request",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
                     {
                       "type": "text",
-                      "id": "w1OYI",
+                      "id": "GuQLM",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Who and when sit with the headline at the top; everything else is one wrapped strip of chips: the pull request with its state, the checks as 1 / 12, the parents with their keys, the refs and the sha. The shortest top of the three: the message starts high. The checks open from a disclosure row. Chips carry no labels, so a parent and a sha look alike, and they wrap differently with every commit.",
+                      "content": "Variant A for a commit pushed straight to main whose 12 checks passed. The groups keep their places so the eye finds them where it always does: the Pull request group says there is none instead of disappearing, Checks shrinks to one folded “12 passed” line that unfolds the list, one parent means one row. Refs shows only what points here.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -283222,8 +283280,8 @@
                 },
                 {
                   "type": "frame",
-                  "id": "k9FJP3",
-                  "name": "CH51 · Variant B · A header with chips",
+                  "id": "Yuudr",
+                  "name": "CH57 · Variant A · Checks passed, no pull request",
                   "clip": true,
                   "width": 440,
                   "height": 826,
@@ -283234,7 +283292,138 @@
                   "layout": "vertical",
                   "children": [
                     {
-                      "id": "Q8Cs8",
+                      "id": "jwrdq",
+                      "type": "ref",
+                      "ref": "I6JTP",
+                      "name": "Toolbar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "a9vgxp": {
+                          "icon": "git-commit-horizontal",
+                          "fill": "$fg-2"
+                        },
+                        "P1piP": {
+                          "content": "fitloop/infra"
+                        },
+                        "b2amx": {
+                          "content": "d07be52"
+                        },
+                        "VYOFz": {
+                          "enabled": false
+                        },
+                        "bzhnE": {
+                          "enabled": false
+                        },
+                        "gDNX8": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pckvY",
+                      "name": "Scroll",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 20,
+                      "padding": [
+                        16,
+                        20,
+                        24,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "id": "e6lxTY",
+                          "type": "ref",
+                          "ref": "REdEU",
+                          "name": "Facts",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "w7D4lL",
+                          "type": "ref",
+                          "ref": "c1E2q",
+                          "name": "Message",
+                          "width": "fill_container",
+                          "descendants": {
+                            "dUwyI": {
+                              "content": "The drift job ran at 01:00, inside the RDS backup window, and timed out on the describe calls twice this week. 03:00 is clear of both the backups and the deploy freeze."
+                            },
+                            "nwAHO": {
+                              "enabled": false
+                            },
+                            "s1jdkl": {
+                              "enabled": false
+                            },
+                            "p9epg": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kHsRA",
+              "name": "Slot · CH58 · Variant A · Pull request and checks not known yet",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "MdvNZ",
+                  "name": "Caption",
+                  "width": 440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "g5Mxex",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CH58 · Variant A · Pull request and checks not known yet",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "P8WPK",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Variant A right after the commit arrives from git, before GitHub has answered for its pull request and checks. Both groups hold an empty bar, the same `Commit / Not known yet` the commit rows show, sized like the line that will replace it, so nothing jumps when the answer lands. Parents and refs come with the commit and show at once. The ⇧↵ key appears with the pull request.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "egAi8",
+                  "name": "CH58 · Variant A · Pull request and checks not known yet",
+                  "clip": true,
+                  "width": 440,
+                  "height": 826,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "u3ZQR",
                       "type": "ref",
                       "ref": "I6JTP",
                       "name": "Toolbar",
@@ -283263,645 +283452,201 @@
                     },
                     {
                       "type": "frame",
-                      "id": "fzNgO",
+                      "id": "oWBD7",
                       "name": "Scroll",
                       "clip": true,
                       "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
-                      "gap": 16,
+                      "gap": 20,
                       "padding": [
-                        18,
+                        16,
                         20,
                         24,
                         20
                       ],
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "uLEf8",
-                          "name": "Byline",
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "IUl3L",
-                              "type": "ref",
-                              "ref": "of5Pp",
-                              "name": "Avatar",
-                              "cornerRadius": 10,
-                              "fill": "#7B87F7",
-                              "width": 20,
-                              "height": 20,
-                              "descendants": {
-                                "zeZzP": {
-                                  "content": "MK",
-                                  "fontSize": 7
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "Z57IY",
-                              "name": "Name",
-                              "fill": "$fg",
-                              "content": "Michał Kędrzyński",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "text",
-                              "id": "GHaor",
-                              "name": "Age",
-                              "fill": "$fg-dim",
-                              "content": "committed 4 days ago",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "id": "NzhOZ",
+                          "type": "ref",
+                          "ref": "CFnEm",
+                          "name": "Facts",
+                          "width": "fill_container"
                         },
                         {
-                          "type": "text",
-                          "id": "qXrTF",
-                          "name": "Headline",
-                          "fill": "$fg",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "[HLD-688][Maintenance] Stale Pulumi state on doctorCore serverRole after rename (#581)",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font",
-                          "fontSize": 16,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "TdBhJ",
-                          "name": "Chips",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 6,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "tO7Fq",
-                              "name": "Chip row",
-                              "gap": 6,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "OmEeb",
-                                  "name": "Chip pull request",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "Oin9P",
-                                      "name": "icon git-merge",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "git-merge",
-                                      "library": "lucide",
-                                      "fill": "$purple"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "JlyoU",
-                                      "name": "Number",
-                                      "fill": "$fg",
-                                      "content": "#581",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "gZXuk",
-                                      "name": "State",
-                                      "fill": "$fg-dim",
-                                      "content": "merged",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "id": "V5zMFE",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd ⇧↵",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "⇧↵"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "gRuZt",
-                                  "name": "Chip checks",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "VAdwO",
-                                      "name": "icon circle-x",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "circle-x",
-                                      "library": "lucide",
-                                      "fill": "$red"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "v8Ij1y",
-                                      "name": "Count",
-                                      "fill": "$fg",
-                                      "content": "1 / 12",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "L5a2dL",
-                                      "name": "Label",
-                                      "fill": "$fg-dim",
-                                      "content": "failing",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "ZgDKG",
-                                  "name": "Chip sha",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "QIqV7",
-                                      "name": "icon git-commit-horizontal",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "git-commit-horizontal",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "lAS8A",
-                                      "name": "Sha",
-                                      "fill": "$fg-2",
-                                      "content": "3f9c2e1",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "icon",
-                                      "id": "pTbuS",
-                                      "name": "icon copy",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "copy",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "m7vll",
-                              "name": "Chip row",
-                              "gap": 6,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "m9Sqe",
-                                  "name": "Chip parent P",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "J24Sq",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd P",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "P"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "p5EWn",
-                                      "name": "Sha",
-                                      "fill": "$fg-2",
-                                      "content": "8e1d4b7",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "lSfuC",
-                                  "name": "Chip parent ⇧P",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "NvdUi",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd ⇧P",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "⇧P"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "hI7v6",
-                                      "name": "Sha",
-                                      "fill": "$fg-2",
-                                      "content": "c52a90f",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "pCKLL",
-                                  "name": "Chip main",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "E69Pe",
-                                      "name": "icon git-branch",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "git-branch",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "lVjtN",
-                                      "name": "Name",
-                                      "fill": "$fg",
-                                      "content": "main",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "wGyIO",
-                                  "name": "Chip testing/v178",
-                                  "height": 24,
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    0,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "Uz3bC",
-                                      "name": "icon tag",
-                                      "width": 12,
-                                      "height": 12,
-                                      "icon": "tag",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "H5as3N",
-                                      "name": "Name",
-                                      "fill": "$fg-2",
-                                      "content": "testing/v178",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Udo1i",
-                          "name": "Checks disclosure",
-                          "width": "fill_container",
-                          "height": 34,
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1,
-                            "bottom": 1
-                          },
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            2
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "DNEN1",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            },
-                            {
-                              "type": "text",
-                              "id": "D5eop",
-                              "name": "Title",
-                              "fill": "$fg-2",
-                              "content": "Checks",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "t5eC8",
-                              "name": "icon circle-x",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "circle-x",
-                              "library": "lucide",
-                              "fill": "$red"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "AI0EC",
-                              "name": "Value box",
-                              "clip": true,
-                              "width": "fill_container",
-                              "height": 16,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "Zuy2Z",
-                                  "name": "Value",
-                                  "fill": "$fg",
-                                  "content": "deploy / preview (testing) failed",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "sx4ga",
-                              "name": "Rest",
-                              "fill": "$fg-dim",
-                              "content": "11 passed",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "X47HNf",
+                          "id": "nbfKl",
                           "type": "ref",
                           "ref": "c1E2q",
                           "name": "Message",
                           "width": "fill_container"
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RyvMu",
+              "name": "Slot · CH56 · Variant B · C, facts fixed",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aVTJ7",
+                  "name": "Caption",
+                  "width": 440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZvD9o",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CH56 · Variant B · C, facts fixed",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dlqP6",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The same card, fixed at the top; the message alone scrolls under it, drawn here a few lines down. A border and a soft shade mark the edge once the message has moved, and no tabs. The facts never leave the screen, but they take about 330 px of the panel for good, so a 25-line message gets less than half of it, and a second scroll area means the wheel does different things above and below the edge.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Ip4d5",
+                  "name": "CH56 · Variant B · C, facts fixed",
+                  "clip": true,
+                  "width": 440,
+                  "height": 826,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "qsr1Z",
+                      "type": "ref",
+                      "ref": "I6JTP",
+                      "name": "Toolbar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "a9vgxp": {
+                          "icon": "git-commit-horizontal",
+                          "fill": "$fg-2"
+                        },
+                        "P1piP": {
+                          "content": "fitloop/infra"
+                        },
+                        "b2amx": {
+                          "content": "3f9c2e1"
+                        },
+                        "VYOFz": {
+                          "enabled": false
+                        },
+                        "bzhnE": {
+                          "enabled": false
+                        },
+                        "gDNX8": {
+                          "enabled": false
+                        }
+                      }
                     },
                     {
                       "type": "frame",
-                      "id": "WkoUE",
-                      "name": "Keys",
+                      "id": "v8vHw",
+                      "name": "Facts, fixed",
                       "width": "fill_container",
                       "stroke": "$border",
                       "strokeWidth": {
-                        "top": 1
+                        "bottom": 1
                       },
-                      "gap": 14,
+                      "layout": "vertical",
                       "padding": [
-                        9,
+                        16,
                         20
                       ],
-                      "alignItems": "center",
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "S5Gytd",
-                          "name": "Hint Commit",
-                          "gap": 5,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "DvWYb",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd J",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "J"
-                                }
-                              }
-                            },
-                            {
-                              "id": "SIpDU",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd K",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "K"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "BNita",
-                              "name": "Commit",
-                              "fill": "$fg-dim",
-                              "content": "Commit",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "id": "f1sTd",
+                          "type": "ref",
+                          "ref": "NIaPG",
+                          "name": "Facts",
+                          "width": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ef91Y",
+                      "name": "Message scroll",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "none",
+                      "children": [
+                        {
+                          "id": "JAsqZ",
+                          "type": "ref",
+                          "ref": "c1E2q",
+                          "name": "Message",
+                          "x": 20,
+                          "y": -134,
+                          "width": 400
                         },
                         {
-                          "type": "frame",
-                          "id": "X3Cfwz",
-                          "name": "Hint Parent",
-                          "gap": 5,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "mqSMx",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd P",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "P"
-                                }
-                              }
+                          "type": "rectangle",
+                          "id": "MvvC1",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Edge shade",
+                          "fill": {
+                            "type": "gradient",
+                            "gradientType": "linear",
+                            "enabled": true,
+                            "rotation": 180,
+                            "size": {
+                              "height": 1
                             },
-                            {
-                              "type": "text",
-                              "id": "ffODe",
-                              "name": "Parent",
-                              "fill": "$fg-dim",
-                              "content": "Parent",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                            "colors": [
+                              {
+                                "color": "#00000059",
+                                "position": 0
+                              },
+                              {
+                                "color": "#00000000",
+                                "position": 1
+                              }
+                            ]
+                          },
+                          "width": 440,
+                          "height": 14
                         },
                         {
-                          "type": "frame",
-                          "id": "x6IiFT",
-                          "name": "Hint Pull request",
-                          "gap": 5,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "TNMyA",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd ⇧↵",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "⇧↵"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "b354G",
-                              "name": "Pull request",
-                              "fill": "$fg-dim",
-                              "content": "Pull request",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "tMhqf",
-                          "name": "Hint GitHub",
-                          "gap": 5,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "VEnKl",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd O",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "O"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "LiSS0",
-                              "name": "GitHub",
-                              "fill": "$fg-dim",
-                              "content": "GitHub",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "gWp9l",
+                          "x": 432,
+                          "y": 70,
+                          "name": "Scrollbar",
+                          "fill": "$border-2",
+                          "width": 4,
+                          "height": 150
                         }
                       ]
                     }
@@ -283941,7 +283686,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The facts never scroll away: the headline, author and four tiles (pull request, checks, parents, refs) stay fixed, and below them tabs, Message and Checks, each scrolling on its own. The checks get a whole tab, never pushed under a long message. It costs a second scroll area that halves the room for a long message, and a key or a click to see the checks.",
+                      "content": "Round 1, kept for reference; CH55 and CH56 refine it. The facts never scroll away: the headline, author and four tiles (pull request, checks, parents, refs) stay fixed, and below them tabs, Message and Checks, each scrolling on its own. It costs a second scroll area that halves the room for a long message, and a key or a click to see the checks.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
