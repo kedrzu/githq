@@ -373,7 +373,7 @@ test("first run and loading D6: with rows on screen, what stands in the way is t
 test('first run and loading D6: what has all arrived and holds nothing says so, offline or not, as nothing more would come', async () => {
     mount({ items: [], cantBeRead: { kind: 'offline' } });
 
-    await expect.element(page.getByRole('heading', { name: 'No open issues' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No open issues. Enjoy the quiet.' })).toBeVisible();
     await expect.element(page.getByText(`GitHub lists none in ${SAMPLE_REPOSITORY}.`, { exact: true })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
 });

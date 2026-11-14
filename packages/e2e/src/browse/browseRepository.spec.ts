@@ -274,7 +274,9 @@ test('filtered out, nothing there: a state hiding all a section holds offers to 
     await expect(repository.row('Issue 001')).toBeVisible();
 
     await page.keyboard.press('2');
-    await expect(repository.root.getByRole('heading', { name: 'No open pull requests' })).toBeVisible();
+    await expect(
+        repository.root.getByRole('heading', { name: 'No open pull requests. Nothing to review.' }),
+    ).toBeVisible();
 });
 
 test("opening a repository by another case of its name settles the address on GitHub's name and lists its rows", async ({

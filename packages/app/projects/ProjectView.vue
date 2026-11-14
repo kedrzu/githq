@@ -7,6 +7,8 @@ import {
   Cloud,
   CircleCheck,
   FilePlus,
+  FilterX,
+  List,
   ListFilter,
   Loader,
   Map as MapIcon,
@@ -443,122 +445,111 @@ function hasItemView(entry: ProjectEntry) {
     </div>
 
     <!-- ES20: first of all reasons, and nothing of the view's own applies. -->
-    <div
+    <CantBeRead
       v-if="unreadable"
-      :class="css.projectView_empty"
-    >
-      <CantBeRead
-        place="screen"
-        :cause="unreadable"
-        :thing="unreadable.kind === 'hidden' ? project.title : t(l.itemsOf, { project: project.title })"
-        :plural="unreadable.kind !== 'hidden'"
-      />
-    </div>
+      place="screen"
+      :cause="unreadable"
+      :thing="unreadable.kind === 'hidden' ? project.title : t(l.itemsOf, { project: project.title })"
+      :plural="unreadable.kind !== 'hidden'"
+    />
 
     <!-- K8: nothing in the project at all — not while its items are still on their way (ES18). -->
-    <div
+    <EmptyState
       v-else-if="itemCount === 0 && !arriving"
-      :class="css.projectView_empty"
+      :icon="SquareKanban"
+      :title="t(l.emptyProjectTitle, { project: project.title })"
+      :detail="t(l.emptyProjectDetail)"
+      :fact="t(l.emptyProjectFact)"
     >
-      <EmptyState
-        :icon="SquareKanban"
-        :title="t(l.emptyProjectTitle, { project: project.title })"
-        :detail="t(l.emptyProjectDetail)"
+      <template
+        v-if="canWrite"
+        #action
       >
-        <template
-          v-if="canWrite"
-          #action
-        >
-          <ProjectDraftComposer
-            v-if="composing === null"
-            :group="null"
-            @add="addDraft($event, null)"
-            @close="composing = undefined"
-          />
-          <div
-            v-else
-            :class="css.projectView_emptyActions"
+        <ProjectDraftComposer
+          v-if="composing === null"
+          :group="null"
+          @add="addDraft($event, null)"
+          @close="composing = undefined"
+        />
+        <template v-else>
+          <Button
+            variant="secondary"
+            size="sm"
+            :icon="Plus"
+            :kbd="APP_KEYS.commandMenu"
+            :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+            @click="emit('addItems')"
           >
-            <Button
-              variant="secondary"
-              :icon="Plus"
-              :kbd="APP_KEYS.commandMenu"
-              :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
-              @click="emit('addItems')"
-            >
-              {{ t(l.addExistingIssues) }}
-            </Button>
-            <Button
-              variant="secondary"
-              :icon="SquarePen"
-              :kbd="NEW_ISSUE_KEY"
-              :keyshortcuts="NEW_ISSUE_KEY"
-              @click="emit('newIssue', null, null)"
-            >
-              {{ t(l.newIssue) }}
-            </Button>
-            <Button
-              variant="secondary"
-              :icon="FilePlus"
-              @click="composing = null"
-            >
-              {{ t(l.newDraft) }}
-            </Button>
-          </div>
+            {{ t(l.addExistingIssues) }}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            :icon="SquarePen"
+            :kbd="NEW_ISSUE_KEY"
+            :keyshortcuts="NEW_ISSUE_KEY"
+            @click="emit('newIssue', null, null)"
+          >
+            {{ t(l.newIssue) }}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            :icon="FilePlus"
+            @click="composing = null"
+          >
+            {{ t(l.newDraft) }}
+          </Button>
         </template>
-      </EmptyState>
-    </div>
+      </template>
+    </EmptyState>
 
     <!-- K6: GitHub has not answered the view yet — its items are not the unfiltered ones. -->
-    <div
+    <EmptyState
       v-else-if="groups === null"
-      :class="css.projectView_empty"
-    >
-      <EmptyState
-        :icon="Loader"
-        :title="t(l.askingTitle)"
-        :detail="t(l.askingDetail, { term: answeredTerm ?? '' })"
-      />
-    </div>
+      :icon="Loader"
+      :title="t(l.askingTitle)"
+      :detail="t(l.askingDetail, { term: answeredTerm ?? '' })"
+      :fact="t(l.askingFact, { term: answeredTerm ?? '' })"
+    />
 
     <!-- K9: the view is fine, nothing matches it now. A board keeps its columns, to write a draft into. -->
-    <div
+    <EmptyState
       v-else-if="shownCount === 0 && options.layout === 'list' && !arriving"
-      :class="css.projectView_empty"
+      :icon="CircleCheck"
+      tone="good"
+      :title="t(l.emptyViewTitle, { view: view?.name ?? project.title })"
+      :detail="
+        view && filter
+          ? t(l.emptyViewDetail, { view: view.name, filter })
+          : t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })
+      "
+      :fact="view && filter ? t(l.emptyViewFact, { filter }) : undefined"
     >
-      <EmptyState
-        :icon="CircleCheck"
-        tone="good"
-        :title="t(l.emptyViewTitle, { view: view?.name ?? project.title })"
-        :detail="
-          view && filter
-            ? t(l.emptyViewDetail, { view: view.name, filter })
-            : t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })
-        "
+      <template
+        v-if="allItemsTo || filter"
+        #action
       >
-        <template
-          v-if="allItemsTo || filter"
-          #action
+        <Button
+          v-if="allItemsTo"
+          variant="secondary"
+          size="sm"
+          :icon="List"
+          :link="allItemsTo"
         >
-          <div :class="css.projectView_emptyActions">
-            <Button
-              v-if="allItemsTo"
-              variant="secondary"
-              :link="allItemsTo"
-            >
-              {{ t(l.showAllItems) }}
-            </Button>
-            <Button
-              v-if="filter"
-              variant="secondary"
-              @click="emit('clearFilter')"
-            >
-              {{ t(l.clearFilters) }}
-            </Button>
-          </div>
-        </template>
-      </EmptyState>
-    </div>
+          {{ t(l.showAllItems) }}
+        </Button>
+        <Button
+          v-if="filter"
+          variant="secondary"
+          size="sm"
+          :icon="FilterX"
+          @click="emit('clearFilter')"
+        >
+          {{ t(l.clearFilters) }}
+        </Button>
+      </template>
+    </EmptyState>
 
     <template v-else>
       <!-- ES19: the filter leaves the board nothing, and its columns stay, to write a draft into. -->
@@ -886,21 +877,6 @@ function hasItemView(entry: ProjectEntry) {
 
 .projectView_sortSummary {
   white-space: nowrap;
-}
-
-.projectView_empty {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-}
-
-.projectView_emptyActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-8;
-  justify-content: center;
 }
 
 .projectView_filteredOut {

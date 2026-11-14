@@ -78,7 +78,7 @@ test('a draft begun on github.com shows on the next read of the statuses, in its
     await nextStatusRead(page);
 
     await expect(shell.draftReviews).toBeHidden();
-    await expect(page.getByText('No draft reviews')).toBeVisible();
+    await expect(page.getByText('No reviews left hanging')).toBeVisible();
 });
 
 test('a pull request only a tracked repository holds: a draft begun on github.com shows within five minutes, and goes with the next read of the statuses', async ({

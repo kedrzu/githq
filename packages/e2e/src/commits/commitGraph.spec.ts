@@ -122,6 +122,24 @@ test('first run and loading D6, D12, ES22: GitHub failing, then offline, with no
     await expect(failing).toHaveCount(0);
 });
 
+test('git-client CH38: an empty repository says it is a blank slate, with the shell command that would show it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.history(SAMPLE_REPOSITORY, { commits: [], branches: {} });
+    await openTrackedWork(page, github, sample.world);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.root.getByRole('heading', { name: 'A blank slate' })).toBeVisible();
+    await expect(graph.root).toContainText(
+        `${SAMPLE_REPOSITORY} is empty on GitHub. Commits show up after the first push.`,
+    );
+    await expect(graph.root.getByText('git log → no commits yet')).toBeVisible();
+    await expect(graph.rows).toHaveCount(0);
+});
+
 test('git-client D11, D20, CH37: an untracked repository shows Commits in full at its GitHub address, and its Issues are one key away', async ({
     page,
     github,
