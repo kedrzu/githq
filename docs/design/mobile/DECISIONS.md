@@ -631,6 +631,9 @@ later, on both.** (2026-11-09, owner: no filters on a phone for now, keep the de
 **Why.** The desktop has no editor for filters by field values; building it on the phone first would make the phone a
 second solution.
 
+The list options' Empty groups switch (MB173) goes with it: the desktop has none, and a list there decides on its own
+whether to show an empty group (`packages/app/myWork/buildMyWork.ts:41`). (2026-11-14, owner)
+
 > **Checked 2026-11-09:** the desktop's filters — `packages/app/repository/RepositoryView.vue:242` (state),
 > `packages/app/myWork/MyWorkView.vue:133` (All, Needs me, Waiting on others), the project view's GitHub filter, cleared
 > here (`packages/app/projects/ProjectView.loc.yaml`).
@@ -665,8 +668,9 @@ githq is a layer over that view, kept per device (`packages/app/lists/useListVie
 it with Reset (`packages/app/projects/ProjectView.vue:1`). Without the mark a phone would show a view that silently
 differs from the team's.
 
-> **Not settled by this:** where the mark and the way back sit on a phone, where a project's views are a menu under the
-> command line, not tabs. The variants drawn for it were deleted when D37 dropped the question.
+**Where it sits** (2026-11-14, owner, picked from the drawings: `MB222`–`MB224`): a dot on the view's chip in the
+command line, the same dot beside the view in the views menu, and at the top of the list's options one line, "Changed
+on this device", with Back to GitHub's view. Nothing else on the list changes.
 
 **Rejected.**
 
@@ -674,3 +678,38 @@ differs from the team's.
   from GitHub.
 - Syncing view preferences between devices — the owner: not for now; it would reverse
   [settings-sync D7](../settings-sync/DECISIONS.md#d7), where they stay local as too volatile.
+- The mark as a strip under the top bar for as long as the change lasts (MB225) — it reads as a passing state, while
+  the change is there for good.
+
+## D50
+
+**An item's thread on a phone is the desktop's: one thread on a rail, the description as its first comment card,
+events one line on the rail, comments and reviews as cards with a ⋯ menu, with their sending, not sent and
+editing-in-place states, the fold past 20 items and "N new since you looked". The cards take the narrow layout the
+desktop already has for a container under 480 px.** (2026-11-14, applying the rule of
+[the review](history/2026-11-08-review-against-the-desktop.md): the phone does what the computer does)
+
+**Why.** The desktop's thread (`docs/design/githq/changelog/item-activity.md`, `conversation-cards.md`) replaced the
+activity list the phone was drawn on. Its narrow cards were made for code review's 340 px sidebar, which is a phone's
+width, so the phone needs no thread of its own. A comment's ⋯ menu is a menu at the bottom ([D45](#d45)). It also
+answers MB97's question: the desktop now has both the fold and the new-since line (I2).
+
+**Rejected.**
+
+- The phone's own activity list, kept from #214 — a second thread to design, build and keep in step.
+
+## D51
+
+**Writing on a phone is the desktop's editor. At rest the comment box stays in the command line
+([D17](#d17)); once tapped it grows into the desktop's composer: Write and Preview, the formatting tools folded to ⋯
+as on a narrow desktop card, the @ and # menus, and beside sending the item's own closing — Close issue with its
+reason, Reopen, Close pull request — as on the desktop's composer. Its tools sit just above the keyboard; its menus
+are menus at the bottom ([D45](#d45)).** (2026-11-14, owner: the full editor)
+
+**Why.** The desktop's composer offers closing with a comment and Markdown with a preview; a phone without them
+would have to go to github.com for both.
+
+**Rejected.**
+
+- The editor without closing, which would stay only in the state chip's menu (MB109).
+- Text and send only, the tools later.

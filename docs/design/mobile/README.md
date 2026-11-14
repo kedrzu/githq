@@ -109,5 +109,8 @@ the unfolded stack and selecting the failed items come along ([what came along](
 
 ## Where this stands
 
-Everything drawn has been picked; the decisions are in [the record](DECISIONS.md). The screens are being corrected after
-the review, and a few points from it are still being settled with the owner.
+A second review against the desktop (2026-11-14) found the phone still drawing the item's old activity list, a comment
+box without the desktop's editor, and its own summary, all changed on the desktop since
+([the review](history/2026-11-14-review-against-the-desktop.md)). The thread and the editor follow the desktop
+([the thread](DECISIONS.md#d50), [writing](DECISIONS.md#d51)); the summary waits for the owner's pick between two drawn
+variants. Nothing of the phone layout is built yet.
