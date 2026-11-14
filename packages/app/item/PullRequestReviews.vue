@@ -236,7 +236,6 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
 }
 
 .pullRequestReviews_name {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -273,6 +272,5 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
   min-width: 18px;
   font-size: $font-size-xs;
   color: $color-fg-dim;
-  text-align: right;
 }
 </style>

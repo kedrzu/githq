@@ -8,7 +8,7 @@ import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import * as l from './StackBar.loc.js';
 
-defineProps<{
+const props = defineProps<{
   stack: StackDescription;
   /** The id of the pull request opened. */
   currentId: string;
@@ -25,6 +25,12 @@ const emit = defineEmits<{
 const dropped = defineModel<boolean>('dropped', { default: false });
 
 const t = useTranslate();
+
+function toggle() {
+  if (!props.rowsInView) {
+    dropped.value = !dropped.value;
+  }
+}
 </script>
 
 <template>
@@ -43,7 +49,7 @@ const t = useTranslate();
         aria-hidden="true"
       />
       <span :class="css.stackBar_name">{{ stack.name.title }}</span>
-      <!-- Not rendered while the rows are in view; nothing follows it but the spacer, so nothing shifts as it shows. -->
+      <!-- Not rendered while the rows are in view; nothing follows it but the squares, which sit at the bar's gap either way. -->
       <span
         v-if="!rowsInView"
         :class="css.stackBar_chevron"
@@ -54,12 +60,17 @@ const t = useTranslate();
           aria-hidden="true"
         />
       </span>
-      <span :class="css.stackBar_spacer" />
     </button>
     <StackPlaces
       :pips="stack.pips"
       :current-id="currentId"
       @open="emit('open', $event)"
+    />
+    <!-- The rest of the bar toggles too, as the toggle itself; the keyboard has the button. -->
+    <span
+      :class="[css.stackBar_rest, rowsInView && css.stackBar_rest_inView]"
+      aria-hidden="true"
+      @click="toggle"
     />
   </div>
 </template>
@@ -81,7 +92,7 @@ const t = useTranslate();
   @include focus-ring;
 
   display: flex;
-  flex: 1;
+  flex: 0 1 auto;
   gap: $spacing-8;
   align-items: center;
   align-self: stretch;
@@ -131,7 +142,13 @@ const t = useTranslate();
   color: $color-fg-3;
 }
 
-.stackBar_spacer {
+.stackBar_rest {
   flex: 1;
+  align-self: stretch;
+  cursor: pointer;
+}
+
+.stackBar_rest_inView {
+  cursor: default;
 }
 </style>
