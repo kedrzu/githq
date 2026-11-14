@@ -250,3 +250,29 @@ Agent's choices the brief left open: the queued run (#4826, hidden except in W39
 cancelled runs keep no duration, as before, rather than inventing one; the narrow form goes wherever the run list is
 560 px (the narrow item, W32, W45), the wide one at 864 px and over; the selected chip tints with the accent rather
 than a lighter neutral, since `$border` and `$border-2` keep the label under 4.5:1 unless it turns `$fg`.
+
+## Round 8 · agent brief, the edge between runs and details
+
+Asked (`.context/workflow-browser-brief-8.md`): bring back a visible edge between the runs and the details in `Workflow
+/ Item · Deploy · two columns`. Without it the runs column's separators (under the header, under the filter toolbar)
+ended in mid-air and the two columns read as one surface. Show the splitter hovered once, and say in W30's and W31's
+captions that the edge is a splitter. Made in the Pen app through the MCP, not the CLI.
+Changed: one stroke in the component, one hover rectangle in W30, two captions. This reverses round 5's `jyqHf` entry,
+still unticked.
+
+- [ ] `Workflow / Item · Deploy · two columns` (`v95xB`): `Details column` (`jyqHf`) left border none → 1 px
+  `$border`, the token of the runs column's separators (`eRZOb` top, `Workflow / Run filters` bottom). Full height of
+  the item body, and the separators end exactly on it (checked at 4×). W30, W31, W39, W43 and W44 follow; none
+  overrides the column.
+- [ ] Separators at the edge: they stop at the line rather than continuing across the details. The details column has
+  its own rhythm (a property list from 24 px down, its top level with the workflow head's) and a line through it would
+  cut between properties. Nothing changed for this.
+- [ ] W30 (`qjQBQ`): new `Details edge · hovered` (`S46bs`) in `Workflow view (panel)` (`o9lWKc`), absolute, 2×1006 px
+  `$accent` over the edge from below the toolbar to the bottom, the hovered state as W34's `e38xK` draws it.
+- [ ] W30 caption (`q8KyyO`): the edge is drawn hovered; at rest a 1 px line in the separators' colour, which end on
+  it; the details 320–640 px (was only "420 px by default").
+- [ ] W31 caption (`F9SxGw`): "unseen until hovered as between an item's two columns" → a 1 px line at rest that the
+  separators end on, 2 px accent when hovered (W30).
+
+This departs from the design skill's "draw the edge as Direction D does (unseen until hovered)" for this one screen
+pair, on the owner's word: the runs column has full-width separators that an item's two columns do not.

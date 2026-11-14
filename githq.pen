@@ -170742,6 +170742,9 @@
                       "width": 420,
                       "height": "fill_container",
                       "stroke": "$border",
+                      "strokeWidth": {
+                        "left": 1
+                      },
                       "layout": "vertical",
                       "padding": [
                         24,
@@ -202113,7 +202116,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42). The edge between the runs and the details is a splitter, unseen until hovered as between an item's two columns: dragging it, or ←/→ on the focused edge, sets the details' width, 420 px by default, kept on this device.",
+                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42). The edge between the runs and the details is a splitter, drawn here hovered (2 px accent): at rest a 1 px line in the colour of the runs' separators, which end on it, so the two columns read apart. Dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -202296,6 +202299,17 @@
                               "name": "Workflow item",
                               "width": "fill_container",
                               "height": "fill_container"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "S46bs",
+                              "layoutPosition": "absolute",
+                              "x": 880,
+                              "y": 48,
+                              "name": "Details edge · hovered",
+                              "fill": "$accent",
+                              "width": 2,
+                              "height": 1006
                             }
                           ]
                         }
@@ -205652,7 +205666,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The edge between the runs and the details is a splitter, unseen until hovered as between an item's two columns: dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device, and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
+                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The edge between the runs and the details is a splitter, a 1 px line at rest in the colour of the runs' separators, which end on it (hovered it turns 2 px accent, W30): dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device, and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,

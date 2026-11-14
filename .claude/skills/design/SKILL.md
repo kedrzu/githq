@@ -52,8 +52,9 @@ brief: `docs/design/githq/ui/README.md`.
   item view, in two columns once it is 1000 px wide on a page, 1300 px in the panel, scrolling as one with the summary sticky, centred in a resizable box on a page (D9). Build on it and keep its components and feel. The rejected Directions A–C are in git history.
 - **Every set of columns is resizable.** Wherever a screen puts columns side by side (the sidebar, a list and its
   panel, an item's two columns, a run's jobs and log, a workflow's runs and details), the edge between them is a
-  splitter the user drags; widths are kept on the device. Draw the edge as Direction D does (unseen until hovered), and
-  never a column of fixed width. The code's side: the `app` skill's splitter requirement.
+  splitter the user drags; widths are kept on the device, and no column has a fixed width. At rest the edge is a 1 px
+  line in the separators' token, which those separators meet; only two columns drawn as one surface (an issue's or a
+  pull request's, D9) leave it unseen. Hovered, every edge shows the 2 px `$accent` line. The code's side: the `app` skill's splitter requirement.
 - **Content has a readable width.** A page whose content is text, a summary or a log sits in a centred box of capped
   width (an item page's box, D9), not stretched across a wide window; only a page that is a list may fill the width.
 - **Nothing is pinned to a row's far right edge.** In a list row, a header or a toolbar that can stretch across a
