@@ -409,3 +409,95 @@ Canvas:
 
 - [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
   126793 → 124906, 1200 px under `App · Mobile`'s bottom (123706); x and order kept.
+
+## Round 4 · agent brief
+
+Asked (`.context/mobile-form-brief.md`): the new issue form's details as the item summary's rows and project card
+(D42), the body in the phone's editor (D51), every form screen and caption updated, the form's old components deleted.
+
+Changed: a new `Phone / New issue / Details` with five variants, built from round 3's `Item / Properties · phone` and
+`Item / Projects · phone`; the form draws it in place of its rows and chips; the composer's Write / Preview / tools bar
+is now the component `Phone / Editor head`, shared by the composer and the form; two new screens for the description,
+MB268 and MB269.
+
+Decisions taken in this round:
+
+- The details are two instances of `Item / Properties · phone` in a frame with the same 9 px gap, so they read as one
+  list: the first shows Assignees, Labels and Milestone, the second only its Milestone row as Type and its Sub-issues
+  row as Parent (key, icon and value overridden, the progress bar hidden). The desktop component has no Type or Parent
+  row and stays unchanged.
+- Assign to me is the desktop's `Button / small, outline` in the Assignees row's end slot (the hidden key hint
+  replaced). Once assigned it reads "Assigned to me" and takes it back, as `NewIssueFields.vue` does; the old MB195
+  hid it.
+- The empty values are the app's own (`NewIssueFields.loc.yaml`, `ItemProperties.loc.yaml`): No one, No labels, No
+  milestone, No type, No parent. An empty project is the project card with its title alone, "No project" in
+  `$fg-dim`; a set project's unset fields read Empty, as on #290 (MB95). "No labels" is a text in the second label's
+  slot, shown when no label is.
+- MB211's offered parent project (a chip before) is the empty card reading "+ Add to Platform Q4, as #1187".
+- A draft (MB216) shows only Assignees and the project's card, as a draft has no labels, milestone, type or parent.
+- MB200 (vitejs/vite) keeps hiding Milestone and Type, as its chips did.
+- The Repository and Template rows stay as they were drawn. `Phone / Property` was used only by them once the form's
+  other rows went, so it became `Phone / New issue / Repository row` with its unused avatar, dot and label children
+  deleted, rather than a redrawn copy. The brief asked to delete `Phone / Property`: this keeps D43's row as it is.
+- The editor bar shows only while the description has the keyboard (MB268) or is previewed (MB269): a title takes no
+  Markdown, so the screens with the keyboard on the title (MB67, MB194, MB210, MB211, MB216) and those with the
+  keyboard down (MB195, MB213, MB214) show no bar. MB268 starts from the empty details, as the set ones (MB195) leave
+  no room above the keyboard for the description.
+
+Components (`Components · Mobile` → `Lists and new issue`, `Kg17q`, new row `Form details`, `Y1M8VS`):
+
+- [ ] Phone / New issue / Details (`J7HpC4`): new. `Properties` (`M7bvh`) with `Rows` (`kPrkZ`, `Item / Properties ·
+  phone`: No one + Assign to me `mUmmB`, No labels `l6pj8`, No milestone, Sub-issues hidden) and `Type and parent`
+  (`ptJIJ`: No type, No parent), then `Projects` (`CKqb5`, `Item / Projects · phone`: one card, "No project").
+- [ ] Phone / New issue / Details · in a project (`EVN9h`): new. Platform Q4, Status Todo, Priority, Iteration and
+  Estimate Empty.
+- [ ] Phone / New issue / Details · details set (`YQPDv`): new, instance of `EVN9h`. mlaine, Assigned to me, bug, v4.2
+  — November, Bug.
+- [ ] Phone / New issue / Details · a label (`pepk1`): new. bug.
+- [ ] Phone / New issue / Details · sub-issue (`D44q2`): new. Parent #1187 Calendar shows wrong time…, the card "+ Add
+  to Platform Q4, as #1187".
+- [ ] Phone / New issue / Details · draft (`nAlsM`): new, instance of `EVN9h`. Labels, Milestone, Type and Parent
+  hidden.
+- [ ] Phone / Property (`VILkz`) → Phone / New issue / Repository row: renamed, moved from `Rows and bars 2`
+  (`KNEI4`) to `Form details`; Avatar (`EkBUG`), Dot (`HR9f7`), Label 1 (`x35FX1`), Label 2 (`h9jnGq`) deleted; key
+  "Assignees" → "Repository", value "mlaine" → "fitloop/webapp".
+- [ ] Phone / New issue / Form (`HpEKu`): Assignees (`MBP2J`), Project field (`mVhXY`), Parent (`Yo1ay`) and Chips
+  (`M36lRG`) deleted; Details (`zsm4s`, `J7HpC4`) under the title; Body (`tYG8y`) gets a hidden `Rendered` (`OiTtG`,
+  a paragraph and a bullet, 16 px); a hidden Editor head (`w24uxe`, `Phone / Editor head`) at the bottom.
+- [ ] Deleted, left unused: Phone / Chip (`oEda7`), Phone / Property · assignees, assign to me (`W7sKw0`).
+
+Components (`Components · Mobile` → `Writing`, `O1nNc`, row `Composer docks`, `WSlci`):
+
+- [ ] Phone / Editor head (`syXj3`): the composer's `Head` moved out of `Phone / Composer dock · typing` and made a
+  component, width 390, fill `$bg-2` (the dock's own fill, so the composer looks the same). Its children keep their
+  ids.
+- [ ] Phone / Editor head · preview (`VDEO6`): new. Preview current, Write dimmed, the tools hidden.
+- [ ] Phone / Composer dock · typing (`BGx6I`): Head → an instance of `syXj3` (`Uhc14`).
+- [ ] Phone / Composer dock · preview (`NCvab`): its five head overrides → the head replaced by `VDEO6`.
+- [ ] Phone / Composer dock · tools open (`s9Gv7y`): override `PUCUW/HbK87` → `Uhc14/PUCUW/HbK87`.
+- [ ] Phone / Composer dock · a menu above the keyboard (`pRXnP`): override `syXj3` hidden → `Uhc14` hidden.
+
+Screens (`Row · Starting a new issue`, `zsHum`, unless said):
+
+- [ ] MB67 (`jvTiZ`), MB194 (`CbG7w`): follow the form, the empty details. Captions `p4dQP`, `pwD8s` rewritten.
+- [ ] MB194 (`H1y1T`, `Prb2P`, `qeB56`), MB195 (`kaOWp`, `h12PVi`, `relhT`): "The form's rows and chips" → "The form's
+  details".
+- [ ] MB196 (`hqCS9`, `SE9dq`, `GeR5v`): "The form's rows and chips · A chip opens its menu" → "The form's details · A
+  row opens its menu"; its pane (`lT2CL`) → `EVN9h`; caption `WziQT` rewritten.
+- [ ] MB195 (`LcAyj`): details → `YQPDv`; caption `v6CkJ` rewritten.
+- [ ] MB200 (`BzL8o`): Milestone and Type rows hidden in place of the Milestone and Type chips.
+- [ ] MB210 (`iHlhd`): details → `EVN9h`; caption `AR7bW` names the project's card.
+- [ ] MB211 (`klz5t`): details → `D44q2`; caption `JPptH` names the offer in the card.
+- [ ] MB213 (`RagDH`): details → `pepk1`.
+- [ ] MB214 (`F4wSdg`): details → `pepk1`, its label api (`#4493F8`).
+- [ ] MB216 (`NDIYx`, `Row · Created, and drafts`): details → `nAlsM`; caption `DO9TP` rewritten.
+- [ ] MB268 · The form's details · Writing the description (`icxaz`, screen `dmkMk`, form `Ei6bM`): new, from MB194:
+  the description in Markdown, the editor head above the keyboard.
+- [ ] MB269 · The form's details · Previewing the description (`xFebW`, screen `BMorj`, form `x6yPe`): new, from
+  MB195: the keyboard down, `Rendered` shown, `Phone / Editor head · preview`.
+- [ ] MB68, MB193, MB215: unchanged; they show the repository menu and the list, not the form.
+
+Canvas:
+
+- [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
+  124906 → 125223, 1200 px under `App · Mobile`'s bottom (124023); x and order kept.
