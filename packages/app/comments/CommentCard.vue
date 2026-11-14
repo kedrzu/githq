@@ -1,4 +1,4 @@
-<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`tail`), its ⋯ — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says after them (`tail`), its ⋯ at the card's edge — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -144,7 +144,6 @@ watchPostEffect(() => {
             :class="css.commentCard_when"
             >{{ t(l.edited) }}</span
           >
-          <span :class="css.commentCard_spacer" />
           <span
             v-if="$slots.tail"
             :class="[css.commentCard_tail, css.commentCard_wide]"
@@ -156,6 +155,7 @@ watchPostEffect(() => {
             :class="css.commentCard_chip"
             >{{ t(l.authorChip) }}</span
           >
+          <span :class="css.commentCard_spacer" />
           <Menu
             v-if="$slots.menu"
             align="end"
@@ -273,6 +273,7 @@ watchPostEffect(() => {
   color: $color-red;
 }
 
+// Only before the ⋯: the tail and the chip follow the time, the menu stays at the edge.
 .commentCard_spacer {
   flex: 1 1 0;
 }
