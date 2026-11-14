@@ -193,3 +193,60 @@ since the icon says it (C says it in words); the failure on `chore/deploy-workfl
 `$fg-2` word in C because `$red-quiet` fails contrast as text; B and C swap components below a width (about 760 and
 620 px), A has one shape at every width. Not touched: the Run filters' count and Group control still sit at the bar's
 right edge.
+
+## Round 7 · agent brief, settle the run row
+
+Asked (`.context/workflow-browser-brief-7.md`): the owner chose Variant C of `Variants · How a run row reads`. Settle
+it, make C the run row on every screen, give the cursor row a ref chip that keeps contrast on the selection, and move
+the runs toolbar's count and Group control off the right edge.
+Changed: the run row and three new variants of it, every screen showing runs, the Run filters, W53 and W54 settled;
+A, B and the Variants frame deleted.
+
+- [ ] App · Workflows (`IEyTW`): deleted `Variants · How a run row reads` (`SPZBF`) with `W49` (`tHjyE`), `W50`
+  (`i90V6v`), `W51` (`gIGGI`), `W52` (`PqOkw`) and their slots. W53 and W54 moved, slots and all, into a new `Row of
+  screens` (`WKSWz`) at the end of the frame, no longer amber.
+- [ ] W53 (`CWenq`, slot `YXGIS`, caption `RFUW7`): `W53 · Variant C · The result in words` → `W53 · The result in
+  words`. Caption note (`pu4JE`) rewritten: the run row as settled, the selected chip, the toolbar.
+- [ ] W54 (`jsxuT`, slot `T5bBV`, caption `WX0wJ`): `W54 · Variant C · In the narrow item` → `W54 · In the narrow
+  item`. Caption note (`qDD07`) rewritten around `Workflow / Run row · narrow`.
+- [ ] Components · Workflows › Workflow item (`Lxfnv`): deleted `Workflow / Run row · variant A` (`aRcyG`), `· variant
+  B` (`JpzWZ`), `· variant B, narrow` (`kMZzn`) and `Workflow / Run duration` (`PGg7V`, used only by A and B); deleted
+  `· variant C` (`y7yiv`) and `· variant C, narrow` (`hoHPi`) once the run row took their place.
+- [ ] `Workflow / Run row` (`Y8FSMM`): its tree is now variant C's. Old `Surface` (`vUvjs`) with the title and time on
+  line 1 and number, ref, event, actor, spacer and a right-pinned duration on line 2 → new `Surface` (`yvmhP`): line 1
+  the title (fit to content) with the number (`hNJbU`) right after it; line 2 `Result` (`aswis`: `Result word`
+  `m1Fgab`, `Took` `nWhpP`, `·`, `Age` `ud1K5`), the ref chip (`mB2LY`, `Workflow alerts / Ref`), the event (`Bab4F`,
+  `Workflow / Run event`) and the actor (`H2wmdV`, `Workflow / Run actor`). 51 → 57 px a row. Nothing pinned right.
+- [ ] New `Workflow / Run row · narrow` (`DU9kH`): an instance of the run row with the login hidden (avatar only), for
+  rows under about 620 px.
+- [ ] New `Workflow / Run row · selected` (`cFCw8`): an instance of the run row, the surface `$sel` with the
+  `#7B87F74D` 1 px border (the cursor look rows had as overrides), and the ref chip `$bg-3` → `#7B87F726` (the
+  selection's border colour, accent, at half its alpha), its icon `$fg-3` → `$fg-2`. The chip label stays `$fg-2`:
+  4.62:1 on the chip over the selection; the old chip was 1.03:1 against the selection fill.
+- [ ] New `Workflow / Run row · narrow, selected` (`xrMld`): an instance of `· selected` with the login hidden.
+- [ ] Run row data mapped on every instance, same runs and counts: the state icon, title, number and age carried over;
+  the old duration became the result word and its duration (`Queued` amber with no duration, `Running for` amber,
+  `Failed after` `$red` or `$fg-2` on `$red-quiet` runs, `Passed in` `$fg-2`, `Cancelled` `$fg-dim` with no duration
+  where the old row said "cancelled"); the event word became the event atom (`push`, `pull_request` → `PR`,
+  `workflow_dispatch` → `manual`); ref, avatar and login carried over.
+- [ ] `Workflow / Item · Deploy` (`p8dmLt`, 560 px): its 12 rows replaced by `· narrow` instances (new ids `Bg6jq`,
+  `On6WU`, `l9fsJV`, `Qxxzc`, `w1pVMq`, `maSB4`, `D3yx1`, `mJ5C3`, `skUN1`, `rig3t`, `VdMma`, `V9OaI`); W41 follows.
+- [ ] `Workflow / Item · Deploy · two columns` (`v95xB`): its 16 rows stay run row instances, overrides remapped; W30
+  follows.
+- [ ] W31 (`zsvUd`): the cursor row #4821 (`e1lQB`) replaced by a `· selected` instance (`Fgyz1`) instead of fill and
+  stroke overrides on the old surface.
+- [ ] W39 (`aaIw8`): the just-started #4826's amber tint moved from `ruZPm/vUvjs` to `ruZPm/yvmhP`.
+- [ ] W43 (`r1TmY`) and W44 (`hpGvF`): the rows in their replaced run lists (6 and 7) remapped; the rebuild had dropped
+  their overrides and they were restored from the base revision's data.
+- [ ] W32 (`amsQR`): the one row replaced by a `· narrow` instance (`ROmKH`). W45 (`jUfLY`): its 11 rows replaced by
+  `· narrow` instances (`AlHFX` … `ZNJlf`).
+- [ ] W53 (`sgyX9`): eight rows re-pointed from variant C to the run row, the cursor #4821 to `· selected`. W54
+  (`lRvfj`): eight rows to `· narrow`, the cursor #4821 to `· narrow, selected`.
+- [ ] `Workflow / Run filters` (`gTzqv`): `spacer` (`m8G3qJ`, fill_container) → `Divider` (1×14, `$border`), so
+  "48 runs · newest first" (`w1mGO`) and the Group control (`z2TR0`) follow the filter chips instead of sitting at the
+  right edge. Every screen with the bar follows (W30–W32, W39, W41, W43–W45, W53, W54).
+
+Agent's choices the brief left open: the queued run (#4826, hidden except in W39) says `Queued` with no duration; the
+cancelled runs keep no duration, as before, rather than inventing one; the narrow form goes wherever the run list is
+560 px (the narrow item, W32, W45), the wide one at 864 px and over; the selected chip tints with the accent rather
+than a lighter neutral, since `$border` and `$border-2` keep the label under 4.5:1 unless it turns `$fg`.

@@ -26,3 +26,4 @@ Append-only.
 - 2026-11-14 — Owner chose: full screen, a workflow's `j`/`k` walk its runs and `⇧J`/`⇧K` step to the next workflow (navigation.md).
 - 2026-11-14 — Owner took the recommendations: the tab carries over until reload; one grouping for all workflows, synced through the settings file; filters cleared per workflow; `F` for the latest failure, Broken workflows keeps ↵ to the failure; no artifacts or environment in the run summary (D16).
 - 2026-11-14 — Owner: every set of columns gets a splitter (now a rule in the design skill); a run's page gets a readable width like an item page; the workflow row's last-result time follows the status instead of being pinned right, styled apart. Round 5 drawing it.
+- 2026-11-14 — Owner chose the run row variant C (the result in words first on the second line); the selected row's ref chip must keep contrast. Toolbar count and grouping follow the filters (no right-pinned items).
