@@ -490,8 +490,9 @@ function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: I
     return getItemPagePath(reference, kind);
   }
 
-  // From the item's page, back over the list it came from.
-  const list = props.arrangement === 'page' ? router.resolve(listPath()) : route;
+  // From the item's page, back over the list shown last — My work before any (closing and back go to the item's own list
+  // or its repository instead, mobile D20).
+  const list = props.arrangement === 'page' ? router.resolve(navigation.list?.path ?? '/') : route;
   return { path: list.path, query: getOpenedItemQuery(list.query, reference) };
 }
 
