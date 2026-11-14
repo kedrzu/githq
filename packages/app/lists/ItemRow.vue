@@ -1,4 +1,4 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter; one of a stack with a header of its own under an issue one step further (D23). -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, a pull request's number, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed, each right after the one before — nothing pinned to the far edge, the title giving way first; under them an issue's repository and number, a pull request's repository unless the list or the issue it is nested under already names it, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented, its icon smaller, its title as any other; one of a stack with a header of its own under an issue one step further (D23). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -131,6 +131,11 @@ const waitingDraft = computed(() =>
             @toggle="emit('toggle')"
           />
         </span>
+        <span
+          v-if="item.kind === 'pullRequest'"
+          :class="css.itemRow_number"
+          >{{ facts.number }}</span
+        >
         <template v-if="shown.has('people')">
           <Avatar
             v-for="person in facts.people"
@@ -150,7 +155,16 @@ const waitingDraft = computed(() =>
         >
       </div>
       <div :class="css.itemRow_line">
-        <span :class="css.itemRow_reference">{{ facts.reference }}</span>
+        <span
+          v-if="item.kind !== 'pullRequest'"
+          :class="css.itemRow_reference"
+          >{{ facts.reference }}</span
+        >
+        <span
+          v-else-if="facts.repository"
+          :class="css.itemRow_reference"
+          >{{ facts.repository }}</span
+        >
         <StackMarker
           :class="css.itemRow_stack"
           :item="item"
@@ -324,9 +338,9 @@ const waitingDraft = computed(() =>
   }
 }
 
+// No spacer: what follows the title sits right after it, the title giving way first when the row is narrow.
 .itemRow_name {
   display: flex;
-  flex: 1;
   gap: $spacing-8;
   min-width: 0;
 }
@@ -339,12 +353,14 @@ const waitingDraft = computed(() =>
   font-weight: $font-weight-medium;
   line-height: 18px;
   color: $color-fg;
+}
 
-  .itemRow_nested & {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-normal;
-    color: $color-fg-2;
-  }
+.itemRow_number {
+  flex: none;
+  font-size: $font-size-row-title;
+  font-weight: $font-weight-normal;
+  line-height: 18px;
+  color: $color-fg-2;
 }
 
 .itemRow_age {
