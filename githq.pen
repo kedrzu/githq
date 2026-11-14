@@ -261620,34 +261620,6 @@
                           }
                         },
                         {
-                          "id": "PCcxG",
-                          "type": "ref",
-                          "ref": "LbvAS",
-                          "name": "Folder feat",
-                          "descendants": {
-                            "ZSlWg": {
-                              "content": "feat"
-                            },
-                            "OvA7d": {
-                              "content": "1"
-                            }
-                          }
-                        },
-                        {
-                          "id": "gyyZk",
-                          "type": "ref",
-                          "ref": "LbvAS",
-                          "name": "Folder fix",
-                          "descendants": {
-                            "ZSlWg": {
-                              "content": "fix"
-                            },
-                            "OvA7d": {
-                              "content": "1"
-                            }
-                          }
-                        },
-                        {
                           "id": "pPJcH",
                           "type": "ref",
                           "ref": "LbvAS",
@@ -261662,44 +261634,110 @@
                           }
                         },
                         {
-                          "id": "jDqIs",
+                          "id": "N8FoL9",
                           "type": "ref",
-                          "ref": "LbvAS",
-                          "name": "Folder spike",
+                          "ref": "Bcpzl",
+                          "name": "Ref feat/calendar-sync",
+                          "width": "fill_container",
                           "descendants": {
-                            "ZSlWg": {
-                              "content": "spike"
+                            "lEmLh": {
+                              "content": "feat/calendar-sync"
                             },
-                            "OvA7d": {
-                              "content": "1"
+                            "m381rf/SbqSG": {
+                              "content": "#1231"
+                            },
+                            "jFGjA": {
+                              "content": "12m"
                             }
                           }
                         },
                         {
-                          "id": "Pi2DO",
+                          "id": "RJpc1",
                           "type": "ref",
-                          "ref": "LbvAS",
-                          "name": "Folder renovate",
+                          "ref": "Bcpzl",
+                          "name": "Ref fix/booking-tz",
+                          "width": "fill_container",
                           "descendants": {
-                            "ZSlWg": {
-                              "content": "renovate"
+                            "lEmLh": {
+                              "content": "fix/booking-tz"
                             },
-                            "OvA7d": {
-                              "content": "1"
+                            "m381rf/SbqSG": {
+                              "content": "#1228"
+                            },
+                            "KA0q4": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "jFGjA": {
+                              "content": "38m"
                             }
                           }
                         },
                         {
-                          "id": "w0EvWW",
+                          "id": "HQPqf",
                           "type": "ref",
-                          "ref": "LbvAS",
-                          "name": "Folder docs",
+                          "ref": "Bcpzl",
+                          "name": "Ref spike/redis-queue",
+                          "width": "fill_container",
                           "descendants": {
-                            "ZSlWg": {
-                              "content": "docs"
+                            "lEmLh": {
+                              "content": "spike/redis-queue"
                             },
-                            "OvA7d": {
-                              "content": "1"
+                            "m381rf/lrpWJ": {
+                              "icon": "git-pull-request-closed",
+                              "fill": "$fg-3"
+                            },
+                            "m381rf/SbqSG": {
+                              "content": "#1177"
+                            },
+                            "KA0q4": {
+                              "enabled": false
+                            },
+                            "jFGjA": {
+                              "content": "6d"
+                            }
+                          }
+                        },
+                        {
+                          "id": "Ojysu",
+                          "type": "ref",
+                          "ref": "Bcpzl",
+                          "name": "Ref renovate/vite-6.x",
+                          "width": "fill_container",
+                          "descendants": {
+                            "lEmLh": {
+                              "content": "renovate/vite-6.x"
+                            },
+                            "m381rf/SbqSG": {
+                              "content": "#1162"
+                            },
+                            "KA0q4": {
+                              "icon": "circle-check",
+                              "fill": "#3FB950B0"
+                            },
+                            "jFGjA": {
+                              "content": "2w"
+                            }
+                          }
+                        },
+                        {
+                          "id": "sxy4q",
+                          "type": "ref",
+                          "ref": "Bcpzl",
+                          "name": "Ref docs/onboarding",
+                          "width": "fill_container",
+                          "descendants": {
+                            "lEmLh": {
+                              "content": "docs/onboarding"
+                            },
+                            "m381rf": {
+                              "enabled": false
+                            },
+                            "KA0q4": {
+                              "enabled": false
+                            },
+                            "jFGjA": {
+                              "content": "3w"
                             }
                           }
                         },
@@ -272851,7 +272889,10 @@
                     {
                       "type": "text",
                       "id": "Mj3Vy",
+                      "x": 141,
+                      "y": 5,
                       "name": "Note",
+                      "enabled": false,
                       "fill": "$fg-dim",
                       "content": "· newest 20 shown",
                       "fontFamily": "$font",
@@ -272859,6 +272900,22 @@
                       "fontWeight": "normal"
                     }
                   ]
+                },
+                {
+                  "id": "DRgij",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "iSknk",
+                  "name": "Ref list folder · show more, top level",
+                  "padding": [
+                    5,
+                    10
+                  ],
+                  "descendants": {
+                    "a5rj6p": {
+                      "content": "Show 15 more"
+                    }
+                  }
                 },
                 {
                   "type": "frame",
@@ -274118,7 +274175,7 @@
                       "fill": "$fg-3"
                     },
                     "Niajp": {
-                      "content": "Pushed straight to main, no pull request",
+                      "content": "No pull request",
                       "fill": "$fg-dim"
                     },
                     "c89tDK": {
@@ -275564,36 +275621,6 @@
                                       }
                                     },
                                     {
-                                      "id": "zI8hi",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder feat",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "feat"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "j1Kh1",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder fix",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "fix"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
                                       "id": "cA8Zt",
                                       "type": "ref",
                                       "ref": "LbvAS",
@@ -275609,47 +275636,110 @@
                                       }
                                     },
                                     {
-                                      "id": "P26FWj",
+                                      "id": "Wfkks",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder spike",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref feat/calendar-sync",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "spike"
+                                        "lEmLh": {
+                                          "content": "feat/calendar-sync"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1231"
+                                        },
+                                        "jFGjA": {
+                                          "content": "12m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "ANZSh",
+                                      "id": "G1DqG",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder renovate",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref fix/booking-tz",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "renovate"
+                                        "lEmLh": {
+                                          "content": "fix/booking-tz"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1228"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-x",
+                                          "fill": "$red"
+                                        },
+                                        "jFGjA": {
+                                          "content": "38m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "p9Rdht",
+                                      "id": "rnHeE",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder docs",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref spike/redis-queue",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "docs"
+                                        "lEmLh": {
+                                          "content": "spike/redis-queue"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/lrpWJ": {
+                                          "icon": "git-pull-request-closed",
+                                          "fill": "$fg-3"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1177"
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "6d"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "TNboN",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref renovate/vite-6.x",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "renovate/vite-6.x"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1162"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-check",
+                                          "fill": "#3FB950B0"
+                                        },
+                                        "jFGjA": {
+                                          "content": "2w"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "KUlAi",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref docs/onboarding",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "docs/onboarding"
+                                        },
+                                        "m381rf": {
+                                          "enabled": false
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "3w"
                                         }
                                       }
                                     },
@@ -276211,36 +276301,6 @@
                                       }
                                     },
                                     {
-                                      "id": "XIFGg",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder feat",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "feat"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "V950d",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder fix",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "fix"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
                                       "id": "pTvj4",
                                       "type": "ref",
                                       "ref": "LbvAS",
@@ -276256,47 +276316,110 @@
                                       }
                                     },
                                     {
-                                      "id": "i9wTx2",
+                                      "id": "WjMtZ",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder spike",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref feat/calendar-sync",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "spike"
+                                        "lEmLh": {
+                                          "content": "feat/calendar-sync"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1231"
+                                        },
+                                        "jFGjA": {
+                                          "content": "12m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "NmmcS",
+                                      "id": "oKb7U",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder renovate",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref fix/booking-tz",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "renovate"
+                                        "lEmLh": {
+                                          "content": "fix/booking-tz"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1228"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-x",
+                                          "fill": "$red"
+                                        },
+                                        "jFGjA": {
+                                          "content": "38m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "W4VyU",
+                                      "id": "VTq7I",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder docs",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref spike/redis-queue",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "docs"
+                                        "lEmLh": {
+                                          "content": "spike/redis-queue"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/lrpWJ": {
+                                          "icon": "git-pull-request-closed",
+                                          "fill": "$fg-3"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1177"
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "6d"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "UC95L",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref renovate/vite-6.x",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "renovate/vite-6.x"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1162"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-check",
+                                          "fill": "#3FB950B0"
+                                        },
+                                        "jFGjA": {
+                                          "content": "2w"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "YwvjG",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref docs/onboarding",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "docs/onboarding"
+                                        },
+                                        "m381rf": {
+                                          "enabled": false
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "3w"
                                         }
                                       }
                                     },
@@ -276869,36 +276992,6 @@
                                       }
                                     },
                                     {
-                                      "id": "ECOhg",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder feat",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "feat"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "o5oClw",
-                                      "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder fix",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "ZSlWg": {
-                                          "content": "fix"
-                                        },
-                                        "OvA7d": {
-                                          "content": "1"
-                                        }
-                                      }
-                                    },
-                                    {
                                       "id": "f7HHNE",
                                       "type": "ref",
                                       "ref": "LbvAS",
@@ -276914,47 +277007,110 @@
                                       }
                                     },
                                     {
-                                      "id": "yc9zW",
+                                      "id": "HBLOY",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder spike",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref feat/calendar-sync",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "spike"
+                                        "lEmLh": {
+                                          "content": "feat/calendar-sync"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1231"
+                                        },
+                                        "jFGjA": {
+                                          "content": "12m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "KWHc3",
+                                      "id": "yrEr7",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder renovate",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref fix/booking-tz",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "renovate"
+                                        "lEmLh": {
+                                          "content": "fix/booking-tz"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/SbqSG": {
+                                          "content": "#1228"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-x",
+                                          "fill": "$red"
+                                        },
+                                        "jFGjA": {
+                                          "content": "38m"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "erj9d",
+                                      "id": "Txsjr",
                                       "type": "ref",
-                                      "ref": "LbvAS",
-                                      "name": "Folder docs",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref spike/redis-queue",
                                       "width": "fill_container",
                                       "descendants": {
-                                        "ZSlWg": {
-                                          "content": "docs"
+                                        "lEmLh": {
+                                          "content": "spike/redis-queue"
                                         },
-                                        "OvA7d": {
-                                          "content": "1"
+                                        "m381rf/lrpWJ": {
+                                          "icon": "git-pull-request-closed",
+                                          "fill": "$fg-3"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1177"
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "6d"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "MSyou",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref renovate/vite-6.x",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "renovate/vite-6.x"
+                                        },
+                                        "m381rf/SbqSG": {
+                                          "content": "#1162"
+                                        },
+                                        "KA0q4": {
+                                          "icon": "circle-check",
+                                          "fill": "#3FB950B0"
+                                        },
+                                        "jFGjA": {
+                                          "content": "2w"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "FnCnk",
+                                      "type": "ref",
+                                      "ref": "Bcpzl",
+                                      "name": "Ref docs/onboarding",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "lEmLh": {
+                                          "content": "docs/onboarding"
+                                        },
+                                        "m381rf": {
+                                          "enabled": false
+                                        },
+                                        "KA0q4": {
+                                          "enabled": false
+                                        },
+                                        "jFGjA": {
+                                          "content": "3w"
                                         }
                                       }
                                     },
@@ -282726,7 +282882,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "On the left of the graph in both layouts: in the tabs layout under the header, always there on a wide window, and below about 1200 px it folds away and B opens it over the graph from the left; in the column layout, the column's lower part. Every branch and tag on GitHub, the default branch first, then branches and tags newest first, each with its pull request and CI where it has them; the newest twenty of each are drawn and the rest counted. B puts the cursor in its filter; typing narrows both groups; ↵ or a click scrolls the graph to the commit, selects it there and goes back to the graph. The graph is never narrowed to one branch.",
+              "content": "On the left of the graph in both layouts: in the tabs layout under the header, always there on a wide window, and below about 1200 px it folds away and B opens it over the graph from the left; in the column layout, the column's lower part. Every branch and tag on GitHub, the default branch first, then branches and tags, nested by / into folders (CH53), each group newest first or by name (CH60), each branch with its pull request and CI where it has them; each level draws its first twenty and a Show N more row for the rest. B puts the cursor in its filter; typing narrows both groups; ↵ or a click scrolls the graph to the commit, selects it there and goes back to the graph. The graph is never narrowed to one branch.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -283567,7 +283723,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "nuxt/nuxt has 67 branches and 339 tags; the list shows the newest and says how many more there are, and typing is the way to the rest. \"3.1\" matches across both groups. The testing folder, folded until now, unfolds on its own around its four matches, which show their full names; folders without a match hide. Clearing the filter folds testing again.",
+                      "content": "nuxt/nuxt has 67 branches and 339 tags; typing is the way to the rest. \"3.1\" matches across both groups. The testing folder, folded until now, unfolds on its own around its four matches, which show their full names; folders without a match hide. A level still draws 20 entries while filtering, and ends with the same Show N more row as without a filter, here under Tags: the folder and 19 tags, then Show 15 more. Clearing the filter folds testing again and goes back to 20 per level.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -283921,7 +284077,7 @@
                                               "content": "Tags"
                                             },
                                             "MhbFt": {
-                                              "content": "24"
+                                              "content": "38"
                                             }
                                           }
                                         },
@@ -284277,25 +284433,227 @@
                                           }
                                         },
                                         {
-                                          "type": "frame",
-                                          "id": "OMVdd",
-                                          "name": "More",
-                                          "padding": [
-                                            4,
-                                            10
-                                          ],
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "A3kbVg",
-                                              "name": "9 more · keep typing",
-                                              "fill": "$fg-dim",
-                                              "content": "9 more · keep typing",
-                                              "fontFamily": "$font",
-                                              "fontSize": 11.5,
-                                              "fontWeight": "normal"
+                                          "id": "d3mnpZ",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.15.3",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.15.3"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "8mo"
                                             }
-                                          ]
+                                          }
+                                        },
+                                        {
+                                          "id": "v9pXZu",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.15.2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.15.2"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "9mo"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "GLFrB",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.15.1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.15.1"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "9mo"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "iZu2j",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.15.0",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.15.0"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "10mo"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "O13fmT",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.14.1592",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.14.1592"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "1y"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "P7Ce8",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.14.0",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.14.0"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "1y"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Pn58i",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.13.2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.13.2"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "1y"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "bBycL",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.13.1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.13.1"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "1y"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "b9pucm",
+                                          "type": "ref",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref v3.13.0",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "BXJd5": {
+                                              "icon": "tag"
+                                            },
+                                            "lEmLh": {
+                                              "content": "v3.13.0"
+                                            },
+                                            "m381rf": {
+                                              "enabled": false
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "1y"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "MYBht",
+                                          "type": "ref",
+                                          "ref": "DRgij",
+                                          "name": "Show 15 more",
+                                          "width": "fill_container"
                                         }
                                       ]
                                     }
@@ -284393,7 +284751,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Names nest by / into folders, like a file tree, as deep as the names go (release/2026/q4 is release › 2026 › q4). A folder row: chevron, folder, name, the count of refs inside, folded or unfolded with a click, → and ←. Inside a group, folders come first, then loose refs, each newest first; a folder sorts by its newest ref. A ref in a folder is indented and shows only its last segment, its full name on hover (feature/login). Each folder draws its newest 20 and a Show N more row of its own, so a hundred testing/v… tags never flood the list. While filtering, folders holding a match unfold on their own, matched rows show their full names, and the rest hide (CH17, CH25); clearing the filter brings back what the user had folded.",
+                      "content": "Names nest by / into folders, like a file tree, as deep as the names go (release/2026/q4 is release › 2026 › q4). A prefix shared by two refs or more at a level makes a folder; one only a single ref has makes none, and that ref stays a loose row under its full name (fix/booking-tz, not a fix folder of one). A folder row: chevron, folder, name, the count of refs inside, folded or unfolded with a click or ↵. Inside a group, folders come first, then loose refs, each newest first; a folder sorts by its newest ref. A ref in a folder is indented and shows its name past the folder's path, its full name on hover (feature/login). Each level draws its first 20 entries and a Show N more row of its own for the next 20, so a hundred testing/v… tags never flood the list. While filtering, folders holding a match unfold on their own, matched rows show their full names, and the rest hide (CH17, CH25); clearing the filter brings back what the user had folded.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -290543,7 +290901,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "B puts the cursor in the list's filter. Typing narrows it, every letter typed, J and K too; the best match is selected and ↑ and ↓ move through the matches. The fix folder unfolds on its own around the match, and the matched row shows its full name, ending in … where the row is too narrow (the whole name on hover). The graph's cursor stays where it was until ↵.",
+                      "content": "B puts the cursor in the list's filter. Typing narrows it, every letter typed, J and K too; the best match is selected and ↑ and ↓ move through the matches. fix/booking-tz is the only branch under fix/, so it has no folder: a loose row under its full name, cut with … where the row is too narrow (the whole name on hover). The graph's cursor stays where it was until ↵.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -290841,29 +291199,14 @@
                                           }
                                         },
                                         {
-                                          "id": "rb4N7",
+                                          "id": "Rd4gm",
                                           "type": "ref",
-                                          "ref": "x4Hfm",
-                                          "name": "Folder fix",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "ZSlWg": {
-                                              "content": "fix"
-                                            },
-                                            "OvA7d": {
-                                              "content": "1"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "lbdta",
-                                          "type": "ref",
-                                          "ref": "PhUDv",
+                                          "ref": "eVXEC",
                                           "name": "Ref fix/booking-tz",
                                           "width": "fill_container",
                                           "descendants": {
                                             "lEmLh": {
-                                              "content": "fix/booking…"
+                                              "content": "fix/booking-tz"
                                             },
                                             "m381rf/SbqSG": {
                                               "content": "#1228"
@@ -290878,7 +291221,7 @@
                                           }
                                         },
                                         {
-                                          "id": "d4F16y",
+                                          "id": "r5QO6",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Tags",
@@ -290889,9 +291232,6 @@
                                             },
                                             "MhbFt": {
                                               "content": "0"
-                                            },
-                                            "hMXTr": {
-                                              "enabled": false
                                             }
                                           }
                                         },
@@ -296736,7 +297076,7 @@
                                           }
                                         },
                                         {
-                                          "id": "yV5ko",
+                                          "id": "BnTsS",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Branches",
@@ -296746,10 +297086,7 @@
                                               "content": "Branches"
                                             },
                                             "MhbFt": {
-                                              "content": "0"
-                                            },
-                                            "hMXTr": {
-                                              "enabled": false
+                                              "content": "1"
                                             }
                                           }
                                         },
@@ -298042,7 +298379,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A worktree shows in the list as a row nested under the branch it has checked out: its folder's name and its count of uncommitted changes. In the graph it is a marker on its commit. The list stays one list of branches and tags. A worktree on a bare commit (quiet-heron) has no branch, so it is found in the graph only, where its marker sits on the commit it has checked out. Branches nest in folders as everywhere (CH53); feat and fix are unfolded here, and a worktree's row sits under its branch inside the folder.",
+                      "content": "A worktree shows in the list as a row nested under the branch it has checked out: its folder's name and its count of uncommitted changes. In the graph it is a marker on its commit. The list stays one list of branches and tags. A worktree on a bare commit (quiet-heron) has no branch, so it is found in the graph only, where its marker sits on the commit it has checked out. Branches nest in folders as everywhere (CH53): feat holds two branches and is unfolded here, a worktree's row under its branch inside the folder; fix/booking-tz, release/4.2, spike/redis-queue and renovate/vite-6.x are each the only branch of their prefix, so they stay loose rows with their full names.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -298556,29 +298893,14 @@
                                           ]
                                         },
                                         {
-                                          "id": "Gkm5W",
+                                          "id": "LMzWt",
                                           "type": "ref",
-                                          "ref": "x4Hfm",
-                                          "name": "Folder fix",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "ZSlWg": {
-                                              "content": "fix"
-                                            },
-                                            "OvA7d": {
-                                              "content": "1"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "qEuTQ",
-                                          "type": "ref",
-                                          "ref": "lF1Ct",
+                                          "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
                                           "width": "fill_container",
                                           "descendants": {
                                             "lEmLh": {
-                                              "content": "booking-tz"
+                                              "content": "fix/booking-tz"
                                             },
                                             "m381rf/SbqSG": {
                                               "content": "#1228"
@@ -298601,7 +298923,7 @@
                                             0,
                                             0,
                                             0,
-                                            36
+                                            18
                                           ],
                                           "children": [
                                             {
@@ -298633,47 +298955,75 @@
                                           ]
                                         },
                                         {
-                                          "id": "lqILL",
+                                          "id": "y3dDD5",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder release",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref release/4.2",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "release"
+                                            "lEmLh": {
+                                              "content": "release/4.2"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-merge",
+                                              "fill": "$purple"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1209"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "o4Muhn",
+                                          "id": "FtKKM",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder spike",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref spike/redis-queue",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "spike"
+                                            "lEmLh": {
+                                              "content": "spike/redis-queue"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-pull-request-closed",
+                                              "fill": "$fg-3"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1177"
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "6d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "u20xR",
+                                          "id": "uRiCw",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder renovate",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref renovate/vite-6.x",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "renovate"
+                                            "lEmLh": {
+                                              "content": "renovate/vite-6.x"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/SbqSG": {
+                                              "content": "#1162"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2w"
                                             }
                                           }
                                         },
@@ -299414,29 +299764,14 @@
                                           ]
                                         },
                                         {
-                                          "id": "okZvY",
+                                          "id": "Ukgzm",
                                           "type": "ref",
-                                          "ref": "x4Hfm",
-                                          "name": "Folder fix",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "ZSlWg": {
-                                              "content": "fix"
-                                            },
-                                            "OvA7d": {
-                                              "content": "1"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "fFkZS",
-                                          "type": "ref",
-                                          "ref": "lF1Ct",
+                                          "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
                                           "width": "fill_container",
                                           "descendants": {
                                             "lEmLh": {
-                                              "content": "booking-tz"
+                                              "content": "fix/booking-tz"
                                             },
                                             "m381rf/SbqSG": {
                                               "content": "#1228"
@@ -299459,7 +299794,7 @@
                                             0,
                                             0,
                                             0,
-                                            36
+                                            18
                                           ],
                                           "children": [
                                             {
@@ -299491,47 +299826,75 @@
                                           ]
                                         },
                                         {
-                                          "id": "zIsMm",
+                                          "id": "ggMUH",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder release",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref release/4.2",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "release"
+                                            "lEmLh": {
+                                              "content": "release/4.2"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-merge",
+                                              "fill": "$purple"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1209"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "OJsJs",
+                                          "id": "gO7P3",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder spike",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref spike/redis-queue",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "spike"
+                                            "lEmLh": {
+                                              "content": "spike/redis-queue"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-pull-request-closed",
+                                              "fill": "$fg-3"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1177"
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "6d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "f2717B",
+                                          "id": "owmf7",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder renovate",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref renovate/vite-6.x",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "renovate"
+                                            "lEmLh": {
+                                              "content": "renovate/vite-6.x"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/SbqSG": {
+                                              "content": "#1162"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2w"
                                             }
                                           }
                                         },
@@ -300815,29 +301178,14 @@
                                           ]
                                         },
                                         {
-                                          "id": "ADX71",
+                                          "id": "m3nP1",
                                           "type": "ref",
-                                          "ref": "x4Hfm",
-                                          "name": "Folder fix",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "ZSlWg": {
-                                              "content": "fix"
-                                            },
-                                            "OvA7d": {
-                                              "content": "1"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "d8CHoY",
-                                          "type": "ref",
-                                          "ref": "lF1Ct",
+                                          "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
                                           "width": "fill_container",
                                           "descendants": {
                                             "lEmLh": {
-                                              "content": "booking-tz"
+                                              "content": "fix/booking-tz"
                                             },
                                             "m381rf/SbqSG": {
                                               "content": "#1228"
@@ -300860,7 +301208,7 @@
                                             0,
                                             0,
                                             0,
-                                            36
+                                            18
                                           ],
                                           "children": [
                                             {
@@ -300892,47 +301240,75 @@
                                           ]
                                         },
                                         {
-                                          "id": "Kt5yS",
+                                          "id": "PesW5",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder release",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref release/4.2",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "release"
+                                            "lEmLh": {
+                                              "content": "release/4.2"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-merge",
+                                              "fill": "$purple"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1209"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "YA56K",
+                                          "id": "a4pYwD",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder spike",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref spike/redis-queue",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "spike"
+                                            "lEmLh": {
+                                              "content": "spike/redis-queue"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-pull-request-closed",
+                                              "fill": "$fg-3"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1177"
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "6d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "j6nZC",
+                                          "id": "BZ8GO",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder renovate",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref renovate/vite-6.x",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "renovate"
+                                            "lEmLh": {
+                                              "content": "renovate/vite-6.x"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/SbqSG": {
+                                              "content": "#1162"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2w"
                                             }
                                           }
                                         },
@@ -302036,29 +302412,14 @@
                                           ]
                                         },
                                         {
-                                          "id": "dGupq",
+                                          "id": "ioZKQ",
                                           "type": "ref",
-                                          "ref": "x4Hfm",
-                                          "name": "Folder fix",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "ZSlWg": {
-                                              "content": "fix"
-                                            },
-                                            "OvA7d": {
-                                              "content": "1"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "r6967t",
-                                          "type": "ref",
-                                          "ref": "lF1Ct",
+                                          "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
                                           "width": "fill_container",
                                           "descendants": {
                                             "lEmLh": {
-                                              "content": "booking-tz"
+                                              "content": "fix/booking-tz"
                                             },
                                             "m381rf/SbqSG": {
                                               "content": "#1228"
@@ -302081,7 +302442,7 @@
                                             0,
                                             0,
                                             0,
-                                            36
+                                            18
                                           ],
                                           "children": [
                                             {
@@ -302113,47 +302474,75 @@
                                           ]
                                         },
                                         {
-                                          "id": "dPbfm",
+                                          "id": "B5GtDu",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder release",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref release/4.2",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "release"
+                                            "lEmLh": {
+                                              "content": "release/4.2"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-merge",
+                                              "fill": "$purple"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1209"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "qX1yH",
+                                          "id": "NMWMu",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder spike",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref spike/redis-queue",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "spike"
+                                            "lEmLh": {
+                                              "content": "spike/redis-queue"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/lrpWJ": {
+                                              "icon": "git-pull-request-closed",
+                                              "fill": "$fg-3"
+                                            },
+                                            "m381rf/SbqSG": {
+                                              "content": "#1177"
+                                            },
+                                            "KA0q4": {
+                                              "enabled": false
+                                            },
+                                            "jFGjA": {
+                                              "content": "6d"
                                             }
                                           }
                                         },
                                         {
-                                          "id": "KlJaC",
+                                          "id": "c5T25",
                                           "type": "ref",
-                                          "ref": "LbvAS",
-                                          "name": "Folder renovate",
+                                          "ref": "Bcpzl",
+                                          "name": "Ref renovate/vite-6.x",
                                           "width": "fill_container",
                                           "descendants": {
-                                            "ZSlWg": {
-                                              "content": "renovate"
+                                            "lEmLh": {
+                                              "content": "renovate/vite-6.x"
                                             },
-                                            "OvA7d": {
-                                              "content": "1"
+                                            "m381rf/SbqSG": {
+                                              "content": "#1162"
+                                            },
+                                            "KA0q4": {
+                                              "icon": "circle-check",
+                                              "fill": "#3FB950B0"
+                                            },
+                                            "jFGjA": {
+                                              "content": "2w"
                                             }
                                           }
                                         },
