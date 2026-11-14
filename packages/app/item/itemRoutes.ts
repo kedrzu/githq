@@ -222,6 +222,11 @@ declare module 'vue-router' {
         /** The route is an item's own page (`ITEM_PAGE_PATHS`). */
         itemPage?: boolean;
         /**
+         * The screen is a list an item opens over, in the panel beside it (D9): opening one from anywhere else — a
+         * review, Settings, a run — goes to its own page (`useOpenItemReference`).
+         */
+        itemPanel?: boolean;
+        /**
          * The route shows what GitHub shows at the same address (an item, a repository, a project, a run, "my work"),
          * so a github.com link to it may open here (`shell/gitHubLinks.ts`). Not set on githq's own pages (settings,
          * sign-in, download), on GitHub's settings of a repository or a project, nor on a hand-off.
