@@ -39,6 +39,17 @@ export class ItemViewHarness {
         return this.root.locator('[data-route-scroll^="item-columns:"]');
     }
 
+    /** On a page in two columns, an edge of the centred box the columns stand in, dragged to resize it. */
+    pageEdge(side: 'left' | 'right'): Locator {
+        const edges = this.root.getByRole('separator', { name: 'Resize the item' });
+        return side === 'left' ? edges.first() : edges.last();
+    }
+
+    /** On a page in two columns, the centred box the columns stand in: its edges' parent. */
+    get pageBox(): Locator {
+        return this.pageEdge('left').locator('xpath=..');
+    }
+
     /** Its title, where it stands and its properties: the content's first block, or the left column in two. */
     get summary(): Locator {
         return this.root.locator('[data-item-column="summary"]');

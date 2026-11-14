@@ -36,6 +36,17 @@ export class ReviewScreenHarness {
         });
     }
 
+    /** An edge of the diff's box, centred in the {@link diff}, dragged to resize it. */
+    diffEdge(side: 'left' | 'right'): Locator {
+        const edges = this.page.getByRole('separator', { name: 'Resize the diff' });
+        return side === 'left' ? edges.first() : edges.last();
+    }
+
+    /** The diff's box, centred in the {@link diff}: its edges' parent. */
+    get diffBox(): Locator {
+        return this.diffEdge('left').locator('xpath=..');
+    }
+
     /** The pull request's title in the toolbar. */
     get title(): Locator {
         return this.page.getByRole('heading', { level: 1 });

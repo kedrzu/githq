@@ -1,4 +1,4 @@
-<!-- The handle on the left or right edge of a box centred in its parent (the box is the handle's parent, which it is drawn in the edge of, top to bottom): dragging it widens or narrows the box by as much on both sides, so the edge stays under the pointer, the arrow keys too, the width staying between `min` and `max`. Only for a centred box: panels beside each other are resized through Reka's splitter (`ColumnSplit`, or `SplitterGroup` + `ResizeHandle` + `usePanelWidth`), never by this. Drawn as `ResizeHandle` is — a line lit up while hovered, dragged or focused; the mouse takes no focus, so a key after a drag doesn't light it. `resized` tells when the user is done: they let go of it, or released an arrow key. -->
+<!-- The handle on the left or right edge of a box centred in its parent (the box is the handle's parent, which it is drawn in the edge of, top to bottom): dragging it widens or narrows the box by as much on both sides, so the edge stays under the pointer, the arrow keys too, the width staying between `min` and `max`. Only for a centred box: panels beside each other are resized through Reka's splitter (`ColumnSplit`, or `SplitterGroup` + `ResizeHandle` + `usePanelWidth`), never by this. Drawn as `ResizeHandle` is — a line lit up while hovered, dragged or focused; the mouse takes no focus, so a key after a drag doesn't light it. `resized` tells when the user is done: they let go of it, or released an arrow key. With `inset` it is drawn that far inside the box's edge, over a line of the box's content (the code review's files, whose edge it is), and `quiet` lights nothing while hovered or dragged — the cursor alone tells it — only while focused from the keyboard. -->
 <script lang="ts" setup>
 import { ref } from 'vue';
 
@@ -11,6 +11,10 @@ const props = defineProps<{
   min: number;
   /** The widest the box may be, such as the `clientWidth` of what it is centred in. */
   max: number;
+  /** How far inside the box's edge the handle is centred, in pixels; none: at the edge, inside it. */
+  inset?: number;
+  /** Lit only while focused from the keyboard: the edge it lies on is the content's own. */
+  quiet?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -21,6 +25,8 @@ const emit = defineEmits<{
 const width = defineModel<number>({ required: true });
 
 const KEYBOARD_STEP = 20;
+/** `.widthHandle`'s width. */
+const HANDLE_WIDTH = 6;
 
 const dragging = ref(false);
 let start: { x: number; width: number } | null = null;
@@ -92,7 +98,12 @@ function clamp(next: number) {
     :aria-valuemax="max"
     tabindex="0"
     :data-state="dragging ? 'drag' : undefined"
-    :class="[css.widthHandle, side === 'left' ? css.widthHandle_left : css.widthHandle_right]"
+    :class="[
+      css.widthHandle,
+      side === 'left' ? css.widthHandle_left : css.widthHandle_right,
+      quiet && css.widthHandle_quiet,
+    ]"
+    :style="inset === undefined ? undefined : { [side]: `${inset - HANDLE_WIDTH / 2}px` }"
     @mousedown.prevent
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
@@ -130,6 +141,23 @@ function clamp(next: number) {
 
   &:hover::before,
   &[data-state='drag']::before,
+  &:focus-visible::before {
+    background: $color-accent;
+  }
+}
+
+.widthHandle_quiet {
+  // On the content's line, in its middle.
+  &::before {
+    right: auto;
+    left: calc(50% - 1px);
+  }
+
+  &:hover::before,
+  &[data-state='drag']::before {
+    background: transparent;
+  }
+
   &:focus-visible::before {
     background: $color-accent;
   }
