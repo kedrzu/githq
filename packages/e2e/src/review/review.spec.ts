@@ -671,7 +671,7 @@ test('a pull request with no changes says so', async ({ page, github }) => {
     const review = new ReviewScreenHarness(page);
 
     await page.goto(REVIEW_ADDRESS);
-    await expect(page.getByRole('heading', { name: 'No changes' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nothing to diff' })).toBeVisible();
     await expect(review.fileList).not.toContainText('viewed');
 });
 
@@ -997,7 +997,7 @@ test('the filter takes a pattern and a regular expression, holds what stays on s
 
     await review.filterField.fill('^nothing$');
     await expect(review.fileList).toContainText('No files match this filter.');
-    await expect(page.getByRole('heading', { name: 'No files match this filter' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Filtered down to zero' })).toBeVisible();
     await page.getByRole('button', { name: 'Clear the filter' }).click();
     await expect(review.fileList).toContainText('0 of 42 viewed');
 });
