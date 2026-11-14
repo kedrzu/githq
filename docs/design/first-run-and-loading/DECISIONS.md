@@ -363,6 +363,29 @@ keeps O.** (2026-11-06, the build plan the owner approved)
 **Why.** One key for one action across the app; R is the one already in use (`packages/app/settings/SavingStopped.vue`,
 `RETRY_KEY`).
 
+## D19
+
+**Every screen's empty note has one look, the one the Workflows screens had (W2b, W3d, W3e): a 40 px icon at a thin
+stroke, its tone the only colour (grey; green for good news; amber when it can't be read; red when something is
+broken), a 15 px title, one line, an optional mono chip stating a real fact (`git log → no commits yet`,
+`api.github.com → unreachable`), and its ways on as small secondary buttons with their icons and keys. The words are
+positive, short and lightly nerdy: a wink, never a joke about a failure; can't be read keeps the status bar's words as
+its title (D12). Groups and columns keep their quiet line (D8).** (2026-11-14, owner) — amends D8's look; the four
+reasons stay
+
+One component draws it, in the code (`EmptyState`) and in `githq.pen` (`Empty / Note · screen`, with tone components
+overriding only the icon colour); every empty note in the file is an instance of it.
+
+**Why.** Four looks had grown: the shared note (a 26 px icon, a dry line), the richer Workflows note, and hand-built ones
+in choosing what to track and the changelog; tones and buttons differed from screen to screen. The owner wanted one
+style, the polished one, with a positive, slightly playful, slightly nerdy voice.
+
+**Rejected.**
+
+- Keeping the shared note's smaller look and only fixing tones and copy — the Workflows note was the one the owner
+  called well designed.
+- Playful titles for can't be read ("No route to github.com") — the note and the status bar would stop reading as one.
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land
