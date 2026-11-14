@@ -41,6 +41,7 @@ const Demo = defineComponent({
         const rows = shallowRef(createRows(props.count, props.sectionSize, props.wrapping));
         const grownBy = reactive(new Map<string, number>());
         const width = ref(600);
+        const inset = ref(0);
         let inserted = 0;
 
         return () => (
@@ -50,6 +51,7 @@ const Demo = defineComponent({
                     <Button onClick={growRowAbove}>Grow above</Button>
                     <Button onClick={insertRowsAbove}>Insert above</Button>
                     <Button onClick={() => (width.value = width.value === 600 ? 300 : 600)}>Change width</Button>
+                    <Button onClick={() => (inset.value = inset.value === 0 ? 100 : 0)}>Change inset</Button>
                     <Button onClick={() => list.value?.focus()}>Focus</Button>
                 </div>
                 <div
@@ -66,6 +68,7 @@ const Demo = defineComponent({
                         isPinned={row => row.pinned}
                         pushRoom={props.pushRoom}
                         topRoom={props.topRoom}
+                        inset={inset.value}
                         label="Rows"
                     >
                         {{
@@ -162,6 +165,11 @@ export const PinnedHeadersWithRoom: Story = {
 /** Sections whose headers pin 10 px below the top, over room the rows scroll through, as far apart when pushing. */
 export const PinnedHeadersWithTopRoom: Story = {
     args: { sectionSize: 100, jumpKey: 'row-250', pushRoom: 10, topRoom: 10 },
+};
+
+/** Wrapping rows under headers pinned below room at the top: "Change inset" draws them 100 px in from each side. */
+export const PinnedWrappingWithTopRoom: Story = {
+    args: { sectionSize: 100, jumpKey: 'row-250', pushRoom: 10, topRoom: 10, wrapping: true, count: 2000 },
 };
 
 /** Size is not what it costs. */

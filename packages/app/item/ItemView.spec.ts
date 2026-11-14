@@ -12,7 +12,10 @@ import {
 import { CHANGES_REQUESTED_REVIEW, DB_THREAD, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { pressWidthHandle } from '@/testing/pressWidthHandle.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
+import type { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import * as stories from './ItemView.stories.js';
 
@@ -447,7 +450,6 @@ test('a summary taller than the view scrolls with the thread until its bottom me
 });
 
 test('F19: in two columns on a page the thread fills the timeline, at the reading width in the default box, 32px from the summary', async () => {
-    window.localStorage.removeItem(PAGE_WIDTH_KEY);
     await StackOfTenOnPage.run();
     const thread = getColumn('timeline').firstElementChild;
     if (!thread) {
@@ -458,11 +460,9 @@ test('F19: in two columns on a page the thread fills the timeline, at the readin
     expect(thread.getBoundingClientRect().left - getSummaryColumn().getBoundingClientRect().right).toBe(32);
 });
 
-test("on a page the columns stand in a box centred in the width: its edge widens it on both sides, the width kept on this device; the summary's edge moves neither side", async () => {
-    window.localStorage.setItem(PAGE_WIDTH_KEY, '1200');
-    onTestFinished(() => window.localStorage.removeItem(PAGE_WIDTH_KEY));
-    onTestFinished(() => window.localStorage.removeItem(SUMMARY_WIDTH_KEY));
-    await PullRequestFailingPage.run();
+test("on a page the columns stand in a box centred in the width: its edge widens it on both sides, the width kept in the user's settings; the summary's edge moves neither side", async () => {
+    const { tracking, browser } = await runPageWithSettings();
+    tracking.setMaxWidth('itemPageWidth', 1200);
     const columns = getColumnsScroll();
     const box = getPageBox();
     const space = () => {
@@ -474,12 +474,12 @@ test("on a page the columns stand in a box centred in the width: its edge widens
     expect(space().left).toBeGreaterThan(0);
     expect(Math.abs(space().left - space().right)).toBeLessThanOrEqual(1);
 
-    const drag = pressEdge(page.getByRole('separator', { name: 'Resize the item' }).last().element());
+    const drag = pressWidthHandle(page.getByRole('separator', { name: 'Resize the item' }).last().element());
     drag.moveBy(50);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(1300);
     drag.release();
     expect(Math.abs(space().left - space().right)).toBeLessThanOrEqual(1);
-    await expect.poll(() => window.localStorage.getItem(PAGE_WIDTH_KEY)).toBe('1300');
+    expect(tracking.itemPageWidth).toBe(1300);
 
     // The summary's edge moves only the edge between the columns. Once the split has laid its panels out in the wider
     // box (a frame for its observer, a tick for the width put back).
@@ -492,17 +492,63 @@ test("on a page the columns stand in a box centred in the width: its edge widens
     split.release();
     expect(box.getBoundingClientRect().left).toBe(left);
     expect(box.getBoundingClientRect().right).toBe(right);
+    expect(tracking.itemPageWidth).toBe(1300);
+
+    // Changed elsewhere (another device), the box follows.
+    tracking.setMaxWidth('itemPageWidth', 1100);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(1100);
 
     // Opened again, the item has the box's width kept.
-    await PullRequestFailingPage.run();
-    await expect.poll(() => getPageBox().getBoundingClientRect().width).toBe(1300);
+    await runPageWithSettings(browser);
+    await expect.poll(() => getPageBox().getBoundingClientRect().width).toBe(1100);
+});
+
+test('the box is at most as wide as the width there is, never narrower than the two columns; dragged to the edge it keeps "full"', async () => {
+    const { tracking } = await runPageWithSettings();
+    const columns = getColumnsScroll();
+    const box = getPageBox();
+    tracking.setMaxWidth('itemPageWidth', 4000);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(columns.clientWidth);
+
+    // Not below the narrowest the two columns take (360 + 560px), however narrow a width is kept.
+    tracking.setMaxWidth('itemPageWidth', 400);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(920);
+
+    tracking.setMaxWidth('itemPageWidth', 1200);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(1200);
+    const drag = pressWidthHandle(page.getByRole('separator', { name: 'Resize the item' }).last().element());
+    drag.moveBy(columns.clientWidth);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(columns.clientWidth);
+    drag.release();
+    expect(tracking.itemPageWidth).toBe('full');
+});
+
+test("a click on the box's edge, or Tab through it, keeps nothing; an arrow key keeps the width it moved to", async () => {
+    const { tracking } = await runPageWithSettings();
+    const box = getPageBox();
+    const edges = page.getByRole('separator', { name: 'Resize the item' });
+    // The summary's 440px beside a timeline at the reading width, each 32px from its edges, in a window that wide.
+    const width = Math.min(440 + 920 + 2 * 32, getColumnsScroll().clientWidth);
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(width);
+
+    const click = pressWidthHandle(edges.last().element());
+    click.moveBy(0);
+    click.release();
+    // Tab from the left edge to the right one: the key is let go of on the right edge.
+    edges.first().element().focus();
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(edges.last().element());
+    expect(tracking.itemPageWidth).toBeNull();
+    expect(box.getBoundingClientRect().width).toBe(width);
+
+    // On the right edge, the left arrow narrows the box on both sides.
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(() => box.getBoundingClientRect().width).toBe(width - 40);
+    expect(tracking.itemPageWidth).toBe(width - 40);
 });
 
 test("the summary's column is resized by dragging its edge or by the arrow keys on it, from 360 to 560 px, the width kept on this device and the timeline following it", async () => {
-    window.localStorage.removeItem(SUMMARY_WIDTH_KEY);
-    window.localStorage.removeItem(PAGE_WIDTH_KEY);
-    onTestFinished(() => window.localStorage.removeItem(SUMMARY_WIDTH_KEY));
-    await PullRequestFailingPage.run();
+    const { browser } = await runPageWithSettings();
     const edge = page.getByRole('separator', { name: 'Resize the summary' });
     const threadLeft = () => getColumn('timeline').firstElementChild?.getBoundingClientRect().left;
     const boxLeft = getPageBox().getBoundingClientRect().left;
@@ -512,20 +558,20 @@ test("the summary's column is resized by dragging its edge or by the arrow keys 
     drag.moveBy(60);
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(500);
     drag.release();
-    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('500');
+    await expect.poll(() => browser.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('500');
     expect(threadLeft()).toBe(boxLeft + 500 + 32);
 
     // A tenth of the box a press, within the range.
     edge.element().focus();
     await userEvent.keyboard('{ArrowRight}');
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(560);
-    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('560');
+    await expect.poll(() => browser.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('560');
     await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(360);
-    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('360');
+    await expect.poll(() => browser.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('360');
 
     // Opened again, the item has the width kept.
-    await PullRequestFailingPage.run();
+    await runPageWithSettings(browser);
     await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(360);
 });
 
@@ -730,8 +776,18 @@ async function useShortWideWindow() {
 
 /** Where `LocalPreferences` keeps the summary's width. */
 const SUMMARY_WIDTH_KEY = 'githq.panelWidth.itemSummary';
-/** Where it keeps the width of a page's box. */
-const PAGE_WIDTH_KEY = 'githq.panelWidth.itemPage';
+
+/**
+ * Runs `PullRequestFailingPage` in `browser` (a user of their own when not given, a reopened item when given again)
+ * and gives the user's settings once read: where the width of a page's box is kept.
+ */
+async function runPageWithSettings(browser = createSignedInBrowser()) {
+    const settings = Promise.withResolvers<TrackingStore>();
+    await PullRequestFailingPage.run({
+        parameters: { ...PullRequestFailingPage.parameters, browser, onTracking: settings.resolve },
+    });
+    return { tracking: await settings.promise, browser };
+}
 
 /** In two columns, the summary's column: the panel of the split holding the summary (its place, sticky in it). */
 function getSummaryColumn() {
@@ -774,23 +830,6 @@ function getScrollingAncestor(element: Element) {
     }
 
     return null;
-}
-
-/** Presses the primary button on a box's edge (`WidthHandle`), as the mouse does (pointer 1). */
-function pressEdge(handle: Element) {
-    const { left: x, top, height } = handle.getBoundingClientRect();
-    const init = { pointerId: 1, button: 0, bubbles: true, clientY: top + height / 2 };
-    handle.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
-
-    return {
-        /** Moves the pointer `by` pixels from where it was pressed. */
-        moveBy(by: number) {
-            handle.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x + by }));
-        },
-        release() {
-            handle.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x }));
-        },
-    };
 }
 
 /** Presses the mouse on `handle`, as Reka hears it: it listens on the body and takes no width to be clicked by a tool. */

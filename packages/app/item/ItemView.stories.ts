@@ -1,15 +1,21 @@
+import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { assertValue } from '@nzyme/utils/assert.js';
+import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
+import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { defineComponent, h } from 'vue';
 
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
+import { Browser } from '@/services/Browser.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import {
     D1_ISSUE,
     D1_ISSUE_DETAIL,
@@ -22,6 +28,8 @@ import {
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_CONTRIBUTOR_EDITING, SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
 import ItemView from './ItemView.vue';
@@ -50,6 +58,7 @@ const meta = {
     // As tall as the window, and as wide as the arrangement: the panel's 560px (one column), or a 1440px window's page
     // (two columns, F18).
     render: (args, context) => renderAt(args.arrangement === 'panel' ? 560 : 1440)(args, context),
+    decorators: [withSignedIn()],
 } satisfies Meta<typeof ItemView>;
 
 export default meta;
@@ -469,4 +478,25 @@ function renderAt(width: number, height?: number): NonNullable<Meta<typeof ItemV
         setup: () => ({ args, width: `${width}px`, height: height == null ? '100vh' : `${height}px` }),
         template: `<div :style="{ height, width }"><ItemView v-bind="args" /></div>`,
     });
+}
+
+/**
+ * A user of their own signed in, their settings read, so what the view keeps in them (the page box's width) is kept.
+ * For a spec: `parameters.browser` signs in the browser given instead (the same user again, with what they kept), and
+ * `parameters.onTracking` is handed the settings once read, to set or read them.
+ */
+function withSignedIn(): Decorator {
+    return (story, { parameters }) =>
+        defineComponent({
+            setup() {
+                const container = createContainer();
+                container.set(LanguageContext, () => APP_LANGUAGE);
+                container.set(Browser, parameters.browser ?? createSignedInBrowser());
+                setIndexedDbPersistence(container);
+                provideContainer(container);
+                const tracking = container.resolve(TrackingStore);
+                void tracking.ready().then(() => parameters.onTracking?.(tracking));
+                return () => h(story());
+            },
+        });
 }

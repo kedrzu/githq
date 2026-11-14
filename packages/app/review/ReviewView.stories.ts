@@ -9,6 +9,7 @@ import { Browser } from '@/services/Browser.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { ReviewFiles } from './ReviewFiles.js';
 import type {
@@ -47,15 +48,19 @@ export const Gone: Story = { render: () => renderView({ kind: 'gone' }) };
 /** A pull request with no changes. */
 export const NoChanges: Story = { render: () => renderView({ kind: 'ready' }) };
 
-/** Files arrived: the list at the left and the diff filling the rest, every file under its header. */
+/**
+ * Files arrived: the list at the left and the diff filling the rest, every file under its header. For a spec,
+ * `parameters.onTracking` is handed the user's settings once read, where the diff's box keeps its width.
+ */
 export const Files: Story = {
-    render: () =>
+    render: (_args, { parameters }) =>
         renderView(
             { kind: 'ready' },
             {
                 'src/sync/queue.ts': { kind: 'ready', before: 'one\ntwo\nthree\n', after: 'one\nTWO\nthree\n' },
                 'public/hero.png': { kind: 'binary', before: 12_000, after: 14_000 },
             },
+            { onTracking: parameters.onTracking },
         ),
 };
 
@@ -133,6 +138,8 @@ interface RenderOptions {
     readonly lostViewed?: ReadonlySet<string>;
     readonly threads?: readonly ReviewThread[];
     readonly conversationShown?: boolean;
+    /** Handed the user's settings once read, to set or read them. */
+    readonly onTracking?: (tracking: TrackingStore) => void;
 }
 
 /** The view over a real session, whose GitHub answers nothing, reading what is given. */
@@ -155,6 +162,8 @@ function renderView(
             const files = createFiles(list, states, options);
             container.set(ReviewFiles, { open: () => files, openThreads: () => files });
             provideContainer(container);
+            const tracking = container.resolve(TrackingStore);
+            void tracking.ready().then(() => options.onTracking?.(tracking));
             return () => h(ReviewView, { reference: REFERENCE });
         },
     });

@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { pressWidthHandle } from '@/testing/pressWidthHandle.js';
+
 import * as stories from './WidthHandle.stories.js';
 
 const { Centred, Squeezed } = composeStories(stories);
@@ -16,7 +18,7 @@ test('dragging an edge moves both by as much, so the dragged one stays under the
     const box = getBox();
     const startEdge = box.getBoundingClientRect().right;
 
-    const drag = press(handle);
+    const drag = pressWidthHandle(handle);
     drag.moveBy(50);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(700);
     expect(box.getBoundingClientRect().right).toBeCloseTo(startEdge + 50);
@@ -36,7 +38,7 @@ test('the left edge widens the box by being dragged left', async () => {
     const box = getBox();
     const startEdge = box.getBoundingClientRect().left;
 
-    const drag = press(left.element());
+    const drag = pressWidthHandle(left.element());
     drag.moveBy(-30);
     await expect.poll(() => box.getBoundingClientRect().width).toBe(660);
     expect(box.getBoundingClientRect().left).toBeCloseTo(startEdge - 30);
@@ -71,22 +73,4 @@ test('with more kept than there is room for, a key narrows from the width drawn'
 
 function getBox() {
     return page.getByTestId('box').element();
-}
-
-/** Presses the primary button on `handle`, as the mouse does (pointer 1). */
-function press(handle: Element) {
-    const { left: x, top, height } = handle.getBoundingClientRect();
-    const y = top + height / 2;
-    const init = { pointerId: 1, button: 0, bubbles: true, clientY: y };
-    handle.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
-
-    return {
-        /** Moves the pointer `by` pixels from where it was pressed. */
-        moveBy(by: number) {
-            handle.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x + by }));
-        },
-        release() {
-            handle.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x }));
-        },
-    };
 }

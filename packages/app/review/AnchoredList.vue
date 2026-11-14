@@ -1,4 +1,4 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it, and `topRoom` over the rows that they scroll through and that the overlay's own background covers once one is pinned; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it, and `topRoom` over the rows that they scroll through and that the overlay's own background covers once one is pinned; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. `inset` draws the rows and the overlay that far in from both sides, in a box narrower than the scroller, whose gaps still scroll the list and whose scrollbar stays at the edge; a change of it re-measures the rows as a change of width does, holding what you look at. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
@@ -57,6 +57,8 @@ export interface AnchoredListExposed<T = AnchoredListRow> {
   readonly anchor: AnchoredListAnchor | null;
   /** The key of the first row showing under the pinned one, reactive: `anchor` is usually hidden behind that. */
   readonly firstVisibleKey: string | null;
+  /** The scroller's width inside its scrollbar, reactive: the room for the rows' box, 0 while it is not displayed. */
+  readonly width: number;
 }
 
 /** How far the rendered rows reach beyond the viewport, each way: about a screen. */
@@ -106,10 +108,12 @@ const props = withDefaults(
      * `pushRoom`: a pushed row leaves at the edge only when the next one pins, its last strip vanishing at once otherwise.
      */
     topRoom?: number;
+    /** How far in from each side of the scroller the rows and the overlay are drawn, the gaps empty. */
+    inset?: number;
     /** What the list is, for screen readers. */
     label: string;
   }>(),
-  { isPinned: () => false, topRoom: 0 },
+  { isPinned: () => false, topRoom: 0, inset: 0 },
 );
 
 const emit = defineEmits<{
@@ -139,6 +143,7 @@ model.setRows(props.rows);
 
 const anchor = shallowRef(model.anchor);
 const firstVisibleKey = shallowRef<string | null>(null);
+const width = shallowRef(0);
 const focusedQuietly = shallowRef(false);
 const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
 const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
@@ -184,11 +189,23 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getRowBox, getViewport, getShownRows, anchor, firstVisibleKey });
+defineExpose({
+  jumpTo,
+  focus,
+  scrollBy,
+  getRowOffset,
+  getRowBox,
+  getViewport,
+  getShownRows,
+  anchor,
+  firstVisibleKey,
+  width,
+});
 
 onMounted(() => {
   const element = assertValue(scroller.value);
   viewportHeight = element.clientHeight - props.topRoom;
+  width.value = element.clientWidth;
   observer.observe(element);
   applyLayout();
 });
@@ -268,6 +285,7 @@ function onScroll() {
 /** One observer call is the whole frame's observations of these elements, so it is one layout. */
 function onResize(entries: ResizeObserverEntry[]) {
   const element = assertValue(scroller.value);
+  width.value = element.clientWidth;
   // A list that is not displayed reports every row at 0: that says nothing about the rows.
   const height = element.clientHeight;
   if (height === 0) {
@@ -358,7 +376,7 @@ function showWindow(layoutChanged: boolean) {
     :class="[css.anchoredList, focusedQuietly && css.anchoredList_quiet]"
     role="region"
     :aria-label="label"
-    :style="{ '--anchored-list-top-room': `${topRoom}px` }"
+    :style="{ '--anchored-list-top-room': `${topRoom}px`, '--anchored-list-inset': `${inset}px` }"
     tabindex="0"
     @blur="focusedQuietly = false"
     @scroll.passive="onScroll"
@@ -435,8 +453,8 @@ function showWindow(layoutChanged: boolean) {
 .anchoredList_row,
 .anchoredList_pinnedRow {
   position: absolute;
-  right: 0;
-  left: 0;
+  right: var(--anchored-list-inset);
+  left: var(--anchored-list-inset);
 }
 
 .anchoredList_pin {
