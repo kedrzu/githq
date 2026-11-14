@@ -1,0 +1,77 @@
+label:
+  en: Runs
+count:
+  plural: count
+  en:
+    zero: No runs
+    one: 1 run · newest first
+    many: '{count} runs · newest first'
+countSoFar:
+  plural: count
+  en:
+    one: 1+ run · newest first
+    many: '{count}+ runs · newest first'
+group:
+  en: 'Group: {grouping}'
+groupRunsBy:
+  en: Group runs by
+groupNone:
+  en: None
+groupStatus:
+  en: Status
+groupRef:
+  en: Ref
+groupRefDetail:
+  en: counted refs first
+groupEvent:
+  en: Event
+groupDay:
+  en: Day
+groupActor:
+  en: Actor
+inProgress:
+  en: In progress
+failed:
+  en: Failed
+succeeded:
+  en: Succeeded
+cancelled:
+  en: Cancelled
+other:
+  en: Other
+otherBranches:
+  en: Other branches
+otherTags:
+  en: Other tags
+pullRequests:
+  en: Pull requests
+today:
+  en: Today
+yesterday:
+  en: Yesterday
+thisWeek:
+  en: Earlier this week
+older:
+  en: Older
+noOne:
+  en: No one
+noRuns:
+  en: No runs yet.
+noRunsFiltered:
+  en: No runs match these filters.
+callOnly:
+  en: Only other workflows run it, so it has no runs of its own.
+reading:
+  en: Reading runs…
+readingOlder:
+  en: Reading older runs…
+readFailed:
+  en: The runs could not be read.
+retry:
+  en: Try again
+clearFilters:
+  en: Clear the filters
+fold:
+  en: Fold {group}
+unfold:
+  en: Unfold {group}

@@ -6,7 +6,7 @@ import routerOptions from '@/app/router.options.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 
-import { WorkflowRoutes } from './workflowRoutes.js';
+import { parseWorkflowKey, WorkflowRoutes } from './workflowRoutes.js';
 
 const router = createRouter({
     history: createMemoryHistory(),
@@ -47,4 +47,13 @@ test('a malformed workflow pane opens nothing', () => {
 
     expect(getOpenedItemRoute(router.resolve('/acme/web/actions?workflow=acme|web|deploy.yml'))).toBeNull();
     expect(getOpenedItemRoute(router.resolve('/acme/web/actions?pane=issue&workflow=acme|web|deploy.yml'))).toBeNull();
+});
+
+test('a list of workflows steps through their keys, each read back as the workflow it names', () => {
+    for (const file of ['deploy.yml', 'pages/pages-build-deployment']) {
+        const reference = { owner: 'acme', name: 'web.js', file };
+        expect(parseWorkflowKey(WorkflowRoutes.formatKey(reference))).toEqual(reference);
+    }
+
+    expect(parseWorkflowKey('acme/web')).toBeNull();
 });

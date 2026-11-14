@@ -1,0 +1,10 @@
+opening:
+  en: Opening {reference}…
+missing:
+  en: No such workflow
+missingDetail:
+  en: "{reference} isn't among the repository's workflows on GitHub, or it was deleted."
+missingFact:
+  en: '{reference} → not found'
+backToList:
+  en: Back to the list

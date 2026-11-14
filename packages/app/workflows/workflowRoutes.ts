@@ -44,6 +44,16 @@ export const WorkflowRoutes = defineOpenedItemKind<WorkflowReference>({
     },
 });
 
+/**
+ * The workflow a key names, as `WorkflowRoutes.formatKey` writes it (`owner/name/deploy.yml`) — what a list of
+ * workflows steps through (`ItemNavigation.list`); `null` when it names none.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function parseWorkflowKey(key: string): WorkflowReference | null {
+    const [owner, name, ...file] = key.split('/');
+    return toReference(owner, name, file.join('/'));
+}
+
 function toReference(owner: unknown, name: unknown, file: unknown): WorkflowReference | null {
     return typeof owner === 'string' &&
         typeof name === 'string' &&

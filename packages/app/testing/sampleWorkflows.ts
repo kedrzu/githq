@@ -36,6 +36,8 @@ export interface SampleRun {
     readonly seconds?: number;
     /** The conclusion it had before the re-run going now, with a `conclusion` of `null`. */
     readonly beforeRerun?: string;
+    /** Whose run it is, by login; no one unless given. */
+    readonly actor?: string;
 }
 
 /** A sample workflow and its runs. */
@@ -141,7 +143,7 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             headSha: `${id}`.padStart(40, '0'),
             displayTitle: sample.title ?? '',
             updatedAt: new Date(createdAt + (sample.seconds ?? 0) * 1000).toISOString(),
-            actor: null,
+            actor: sample.actor === undefined ? null : { login: sample.actor, avatarUrl: '' },
             runAttempt: 1,
             ...(sample.seconds !== undefined && { runStartedAt: new Date(createdAt).toISOString() }),
             ...(sample.beforeRerun !== undefined && { conclusionBeforeRerun: sample.beforeRerun }),

@@ -476,7 +476,7 @@ test('a log GitHub had no answer for just after its job ended is asked for again
     await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
 });
 
-test('under `actions/` of a tracked repository everything but a run and its job is GitHub’s page', async ({
+test('under `actions/` of a tracked repository everything but a run, its job and a workflow is GitHub’s page', async ({
     page,
     github,
 }) => {
@@ -486,7 +486,6 @@ test('under `actions/` of a tracked repository everything but a run and its job 
     for (const address of [
         `/${SAMPLE_REPOSITORY}/actions/runs/${runId}/usage`,
         `/${SAMPLE_REPOSITORY}/actions/runs/${runId}/attempts/1`,
-        `/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`,
     ]) {
         github.web(address, () => ({ status: 200, body: address }));
         await page.goto(address);
