@@ -8,8 +8,9 @@ import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { sampleCommit, sampleCommitRef } from '@/testing/sampleCommits.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
+import { CommitRefFolders } from './CommitRefFolders.js';
 import CommitRefList from './CommitRefList.vue';
-import type { CommitRef, CommitState, KeptCommit } from './CommitTypes.js';
+import type { CommitRef, CommitState, KeptCommit, KeptCommitRefs } from './CommitTypes.js';
 
 const REPOSITORY = 'acme/web';
 
@@ -27,24 +28,28 @@ test('D15: the default branch first, then branches and tags, each newest first b
     await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent(/^Tags\s*3\s*newest first/);
 });
 
-test('hundreds of refs draw a bounded number of rows and count the rest; typing searches all of them', async () => {
+test('hundreds of refs draw a bounded number of rows and a row to show the rest; typing searches all of them', async () => {
     const branches = Array.from({ length: 300 }, (_, index) => ref(`branch-${index}`, index));
     const tags = Array.from({ length: 400 }, (_, index) => ref(`tag-${index}`, index));
     await mount({ branches: [ref('main', 1000), ...branches], tags });
 
-    expect(rows().length).toBe(41);
-    await expect.element(page.getByText('280 more branches · type to find one')).toBeVisible();
-    await expect.element(page.getByText('380 more tags · type to find one')).toBeVisible();
+    // The default branch, 20 of each group and a "Show more" row of each.
+    expect(rows().length).toBe(43);
+    await expect.element(page.getByText('Show 280 more')).toBeVisible();
+    await expect.element(page.getByText('Show 380 more')).toBeVisible();
 
     await filter().fill('branch-7');
-    // branch-7 itself is far past the 20 newest, and the best match.
-    await expect.element(page.getByRole('gridcell', { selected: true })).toHaveAttribute('title', 'branch-7');
+    // branch-7 itself is far past the 20 newest, and the best match: it is drawn, selected and in view.
+    const selected = page.getByRole('gridcell', { selected: true });
+    await expect.element(selected).toHaveAttribute('title', 'branch-7');
+    await expect.element(selected).toBeInViewport();
     await filter().fill('tag-12');
     await expect.poll(rowNames).toContain('tag-12');
-    await expect.element(page.getByText(/more · keep typing/)).not.toBeInTheDocument();
-    await filter().fill('tag-1');
-    expect(rows().length).toBeLessThanOrEqual(21);
-    await expect.element(page.getByText(/\d+ more · keep typing/)).toBeVisible();
+    await expect.element(page.getByText(/^Show \d+ more$/)).not.toBeInTheDocument();
+    // Matching every tag alike: the newest 20, and the rest behind a row.
+    await filter().fill('tag');
+    expect(rows().length).toBe(21);
+    await expect.element(page.getByText('Show 380 more')).toBeVisible();
 });
 
 test('CH15, CH17: typing narrows both groups; a group left with none says so; the best match is selected', async () => {
@@ -54,7 +59,7 @@ test('CH15, CH17: typing narrows both groups; a group left with none says so; th
     });
     await filter().fill('rel');
 
-    await expect.poll(rowNames).toEqual(['release/4.2', 'release/4.1']);
+    await expect.poll(rowNames).toEqual(['release/ 2', 'release/4.2', 'release/4.1']);
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('release/4.2');
     await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent('No tag matches "rel".');
     await expect.element(page.getByRole('rowgroup', { name: 'Branches' })).not.toHaveTextContent('newest first');
@@ -63,7 +68,7 @@ test('CH15, CH17: typing narrows both groups; a group left with none says so; th
     await filter().fill('v4.1');
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('v4.1');
     await filter().fill('');
-    await expect.poll(rowNames).toEqual(['main', 'feat/x', 'release/4.2', 'release/4.1', 'v4.2.1', 'v4.1']);
+    await expect.poll(rowNames).toEqual(['main', 'release/ 2', 'feat/x', 'v4.2.1', 'v4.1']);
     await expect.element(page.getByRole('gridcell', { selected: true })).not.toBeInTheDocument();
 });
 
@@ -143,12 +148,11 @@ test('D18: the branch rows drawn ask for their state, tags never; not known yet 
     await expect.element(row('plain')).not.toHaveTextContent('#');
     await expect.element(row('plain').getByRole('img')).not.toBeInTheDocument();
 
-    const asked = () => view.ensureStates.mock.calls.flatMap(([, commits]) => commits.map(commit => commit.oid));
-    expect(asked()).toContain('with-pr');
-    expect(asked()).toContain('branch-0');
+    expect(asked(view)).toContain('with-pr');
+    expect(asked(view)).toContain('branch-0');
     await expect.element(row('v1')).toBeVisible();
     await expect.element(row('v1').getByRole('img')).not.toBeInTheDocument();
-    expect(asked()).not.toContain('tagged');
+    expect(asked(view)).not.toContain('tagged');
 });
 
 test("a branch's pull request is a link: a click on it opens it, choosing nothing and leaving the selection and the focus where they were; a modified click is the browser's", async () => {
@@ -218,6 +222,116 @@ test('CH34: while a branch is not known yet, the bar stands in for its marks', a
         .toBeVisible();
 });
 
+test('CH53: names nest by `/` into folded folders; unfolding one draws its newest 20 and a row for 20 more there, the other folders as they were; folded branches ask for no state', async () => {
+    const view = await mount(folderRefs());
+
+    expect(rowNames()).toEqual(['feature/ 2', 'develop', 'testing/ 45']);
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'false');
+    expect(asked(view)).toContain('develop');
+    expect(asked(view)).not.toContain('feature/a');
+
+    await userEvent.click(folderCell('testing'));
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    await expect
+        .poll(rowNames)
+        .toEqual(['feature/ 2', 'develop', 'testing/ 45', ...testingTags(45, 26), 'Show 25 more']);
+    // A ref in a folder shows its name past the folder's.
+    await expect
+        .element(page.getByRole('gridcell', { name: 'v45', exact: true }))
+        .toHaveAttribute('title', 'testing/v45');
+
+    await userEvent.click(page.getByText('Show 25 more'));
+    await expect.poll(rowNames).toEqual(['feature/ 2', 'develop', 'testing/ 45', ...testingTags(45, 6), 'Show 5 more']);
+    await expect.element(folderCell('feature')).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(folderCell('feature'));
+    await expect.poll(() => asked(view)).toContain('feature/a');
+});
+
+test("CH53: the unfolded folders are kept per repository: the list mounted again finds them so, another repository's does not", async () => {
+    const view = await mount(folderRefs());
+    await userEvent.click(folderCell('testing'));
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+
+    view.remount();
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    // How many a level shows is not kept.
+    await expect.element(page.getByText('Show 25 more')).toBeVisible();
+
+    view.remount('acme/other');
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('CH53: unfolding a folder forgets the kept folders no longer among the refs, a complete read of them', async () => {
+    const view = await mount(folderRefs());
+    const kept = view.container.resolve(CommitRefFolders);
+    kept.toggle(REPOSITORY, 'tags:gone', null);
+
+    await userEvent.click(folderCell('testing'));
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    expect(kept.isUnfolded(REPOSITORY, 'tags:gone')).toBe(false);
+    expect(kept.isUnfolded(REPOSITORY, 'tags:testing')).toBe(true);
+});
+
+test('CH53: refs not read in full forget no kept folder', async () => {
+    const view = await mount(folderRefs(), { refsComplete: false });
+    const kept = view.container.resolve(CommitRefFolders);
+    kept.toggle(REPOSITORY, 'tags:gone', null);
+
+    await userEvent.click(folderCell('testing'));
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    expect(kept.isUnfolded(REPOSITORY, 'tags:gone')).toBe(true);
+});
+
+test('CH53: a filter unfolds every folder holding a match, counting its matches, the matches under their full names and the best selected, keeping nothing', async () => {
+    const view = await mount(folderRefs());
+    const kept = view.container.resolve(CommitRefFolders);
+
+    await filter().fill('testing/v12');
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    await expect.poll(rowNames).toContain('testing/v12');
+    expect(rowNames()).not.toContain('develop');
+    const selected = page.getByRole('gridcell', { selected: true });
+    await expect.element(selected).toHaveTextContent('testing/v12');
+    expect(kept.isUnfolded(REPOSITORY, 'tags:testing')).toBe(false);
+
+    // A click on a folder the filter unfolded keeps nothing either.
+    await userEvent.click(folderCell('testing'));
+    expect(kept.isUnfolded(REPOSITORY, 'tags:testing')).toBe(false);
+
+    await filter().fill('');
+    await expect.poll(rowNames).toEqual(['feature/ 2', 'develop', 'testing/ 45']);
+});
+
+test('CH53: ↑/↓ reach folder and "Show more" rows; Enter folds or unfolds a folder, the selection staying on it, and shows more', async () => {
+    await mount(folderRefs());
+    const selected = page.getByRole('gridcell', { selected: true });
+    await userEvent.click(filter());
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(selected).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(selected).toHaveTextContent(/^feature/);
+    await userEvent.keyboard('{Enter}');
+    await expect.element(selected).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(selected).toHaveAttribute('title', 'feature/b');
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await expect.element(selected).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(selected).toHaveTextContent(/^feature/);
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(selected).toHaveAttribute('title', 'develop');
+
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(folderCell('testing')).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard('{ArrowDown}'.repeat(21));
+    await expect.element(selected).toHaveTextContent('Show 25 more');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(selected).toHaveTextContent('Show 5 more');
+    await userEvent.keyboard('{Enter}');
+    // All shown: the selection on the first of the last ones.
+    await expect.element(selected).toHaveAttribute('title', 'testing/v5');
+});
+
 function filter() {
     return page.getByRole('combobox', { name: 'Filter branches and tags' });
 }
@@ -229,8 +343,38 @@ function rows() {
         .elements();
 }
 
+/** Each row's name: a ref's full name, `name/ count` for a folder, a "Show more" row's text. */
 function rowNames() {
-    return rows().map(row => row.querySelector('[title]')?.textContent);
+    return rows().map(row => {
+        const cell = row.querySelector('[aria-selected]');
+        if (cell?.hasAttribute('aria-expanded')) {
+            return `${cell.children[0]?.textContent}/ ${cell.children[1]?.textContent}`;
+        }
+
+        return cell?.getAttribute('title') ?? cell?.textContent;
+    });
+}
+
+function folderCell(name: string) {
+    return page.getByRole('gridcell', { name: new RegExp(`^${name} \\d+ (refs?|match(es)?)$`) });
+}
+
+/** The oids the list asked the state of. */
+function asked(view: MountedList) {
+    return view.ensureStates.mock.calls.flatMap(([, commits]) => commits.map(commit => commit.oid));
+}
+
+/** `testing/v<from>` down to `testing/v<to>`. */
+function testingTags(from: number, to: number) {
+    return Array.from({ length: from - to + 1 }, (_, index) => `testing/v${from - index}`);
+}
+
+/** Branches `feature/a`, `feature/b`, `develop`, no default branch among them, and tags `testing/v1…v45`. */
+function folderRefs(): MountRefs {
+    return {
+        branches: [ref('develop', 10), ref('feature/a', 20), ref('feature/b', 30)],
+        tags: Array.from({ length: 45 }, (_, index) => ref(`testing/v${index + 1}`, index + 1)),
+    };
 }
 
 function pullRequest(number: number) {
@@ -256,8 +400,17 @@ interface MountRefs {
     readonly holdIf?: (operation: string) => Promise<void> | null;
 }
 
+type MountedList = Awaited<ReturnType<typeof mount>>;
+
+/** How `mount` draws the list. */
+interface MountOptions {
+    readonly height?: number;
+    /** Overrides whether the refs are a complete read, the store's word otherwise. */
+    readonly refsComplete?: boolean;
+}
+
 /** The list alone over the real store and a GitHub holding `refs`, 280 px wide. */
-async function mount(refs: MountRefs, { height = 600 } = {}) {
+async function mount(refs: MountRefs, { height = 600, refsComplete }: MountOptions = {}) {
     const commits: KeptCommit[] = [...refs.branches, ...(refs.tags ?? [])].map(item => ({
         ...sampleCommit(item.oid, 0),
         committedDate: item.committedDate,
@@ -277,33 +430,47 @@ async function mount(refs: MountRefs, { height = 600 } = {}) {
     const leave = vi.fn<() => void>();
     const openPullRequest = vi.fn<(reference: ItemReference) => void>();
 
-    const host = document.createElement('div');
-    host.style.display = 'flex';
-    host.style.width = '280px';
-    host.style.height = `${height}px`;
-    document.body.append(host);
-    const known = store.get(REPOSITORY)?.refs;
-    if (!known) {
+    const read = store.get(REPOSITORY)?.refs;
+    if (!read) {
         throw new Error('No refs');
     }
 
-    const app = createApp({
-        setup: () => () =>
-            h(CommitRefList, {
-                nameWithOwner: REPOSITORY,
-                refs: store.get(REPOSITORY)?.refs ?? known,
-                now: Date.parse('2026-10-02T00:00:00Z'),
-                onChoose: choose,
-                onLeave: leave,
-                onOpenPullRequest: openPullRequest,
-            }),
-    });
-    app.use(IocPlugin, { container });
-    app.mount(host);
-    onTestFinished(() => {
-        app.unmount();
-        host.remove();
-    });
+    const known: KeptCommitRefs = read;
 
-    return { store, ensureStates, choose, leave, openPullRequest };
+    let unmount = render(REPOSITORY);
+    onTestFinished(() => unmount());
+
+    /** The list again, unmounted and mounted afresh over the same store, for `nameWithOwner`. */
+    function remount(nameWithOwner = REPOSITORY) {
+        unmount();
+        unmount = render(nameWithOwner);
+    }
+
+    function render(nameWithOwner: string) {
+        const host = document.createElement('div');
+        host.style.display = 'flex';
+        host.style.width = '280px';
+        host.style.height = `${height}px`;
+        document.body.append(host);
+        const app = createApp({
+            setup: () => () =>
+                h(CommitRefList, {
+                    nameWithOwner,
+                    refs: store.get(REPOSITORY)?.refs ?? known,
+                    refsComplete: refsComplete ?? store.get(REPOSITORY)?.refsComplete ?? false,
+                    now: Date.parse('2026-10-02T00:00:00Z'),
+                    onChoose: choose,
+                    onLeave: leave,
+                    onOpenPullRequest: openPullRequest,
+                }),
+        });
+        app.use(IocPlugin, { container });
+        app.mount(host);
+        return () => {
+            app.unmount();
+            host.remove();
+        };
+    }
+
+    return { container, store, ensureStates, choose, leave, openPullRequest, remount };
 }

@@ -925,6 +925,7 @@ function resetShare() {
             :class="refListFolded && css.commitGraphView_refListOver"
             :name-with-owner="nameWithOwner"
             :refs="refs"
+            :refs-complete="graph?.refsComplete ?? false"
             :now="now"
             @choose="onRefChosen"
             @leave="onRefListLeft"

@@ -14,18 +14,18 @@ tags:
   en: Tags
 newestFirst:
   en: newest first
-moreBranches:
+showMore:
+  en: 'Show {count} more'
+folderRefs:
   plural: count
   en:
-    one: '{count} more branch · type to find one'
-    many: '{count} more branches · type to find one'
-moreTags:
+    one: ref
+    many: refs
+folderMatches:
   plural: count
   en:
-    one: '{count} more tag · type to find one'
-    many: '{count} more tags · type to find one'
-moreMatches:
-  en: '{count} more · keep typing'
+    one: match
+    many: matches
 noBranchMatches:
   en: No branch matches "{query}".
 noTagMatches:
