@@ -1039,9 +1039,16 @@ function resetShare() {
   position: absolute;
   right: 0;
   left: 0;
-  cursor: default;
-  // The graph stays outside the surface, so its lanes run unbroken from row to row.
-  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} var(--commit-graph-width);
+  cursor: pointer;
+  // CH54: the surface spans the graph too, with room on the left for the first lane's ring; the lanes are drawn over it,
+  // unbroken from row to row.
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} #{$spacing-4};
+
+  // The dot's ring (`CommitGraphCell`): soft under the mouse.
+  &:hover {
+    --commit-graph-ring-color: #{$color-fg-3};
+    --commit-graph-ring-opacity: 0.5;
+  }
 }
 
 // D18.
@@ -1052,6 +1059,13 @@ function resetShare() {
 // As a list's selected row.
 .commitGraphView_row_cursor {
   @include row-selected;
+
+  // The dot's ring in the accent, hovered or not: 3:1 on `$color-sel` (`tokens.test.ts`, `accent`).
+  &,
+  &:hover {
+    --commit-graph-ring-color: #{$color-accent};
+    --commit-graph-ring-opacity: 1;
+  }
 }
 
 // D17, CH45: a line at the graph's edge, with room to take hold of it either side. It runs the height of the rows, so
