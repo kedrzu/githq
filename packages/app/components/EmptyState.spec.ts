@@ -4,10 +4,16 @@ import { page } from 'vitest/browser';
 
 import * as stories from './EmptyState.stories.jsx';
 
-const { BrokenWithFactAndActions, Muted } = composeStories(stories);
+const { BrokenWithFactAndActions, Good, Muted, Warning } = composeStories(stories);
 
 /** `$color-red` in `tokens.scss`. */
 const RED = 'rgb(248, 81, 73)';
+
+/** `$color-green` in `tokens.scss`. */
+const GREEN = 'rgb(63, 185, 80)';
+
+/** `$color-amber` in `tokens.scss`. */
+const AMBER = 'rgb(210, 153, 34)';
 
 test('a screen says its title as a heading, a broken one in red, its fact in a mono chip and its actions with their keys', async () => {
     await BrokenWithFactAndActions.run();
@@ -36,4 +42,16 @@ test('without a fact no chip is drawn', async () => {
     const note = heading.element().parentElement?.parentElement;
     expect(note?.children).toHaveLength(2);
     expect(note?.querySelector('code')).toBeNull();
+});
+
+test.each([
+    { story: Good, title: 'Nothing on your plate', colour: GREEN },
+    { story: Warning, title: "GitHub isn't answering", colour: AMBER },
+])('the icon takes its tone: $title', async ({ story, title, colour }) => {
+    await story.run();
+
+    const heading = page.getByRole('heading', { name: title });
+    await expect.element(heading).toBeVisible();
+    const icon = heading.element().parentElement?.previousElementSibling;
+    expect(icon && getComputedStyle(icon).color).toBe(colour);
 });
