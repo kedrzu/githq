@@ -325,3 +325,23 @@ decides where, not this design ([D5](#d5)). How the file takes a new field, and 
 - Writing the default into every entry: entries nobody configured would keep an old default forever.
 - Merging two devices' pattern lists: no case for it, and a pattern deleted on one side would come back.
 - Raising the file's `version` for this field: the owner wants new settings to be optional fields instead.
+
+## D15
+
+**A workflow is an item, like an issue or a pull request. Enter on a workflow in the Workflows tab opens the workflow
+in the item panel (or full screen): what it is and a flat list of its runs with filters. Enter on a run opens the run.
+Starting runs (dispatch with inputs, re-runs, cancel) is in the command menu only, as re-running already is
+([D10](#d10)).** (2026-11-14, owner for the direction and against a cross-repository feed, agent for extending D10 to
+dispatch and cancel, which the owner left as proposed)
+
+**Why.** The tab was built only around broken workflows: Enter jumped to the latest failure, a passing workflow had
+nowhere to go, and other runs unfolded as a list inside the list. An item reuses Direction D's panel and full-screen
+switch, keeps the health overview of the list, and gives a workflow a place for its triggers and for starting it.
+
+**Rejected.**
+
+- GitHub's layout, workflows in a column beside one feed of runs: a second sidebar inside the tab, and it loses the
+  health overview of all workflows at once.
+- Runs as the list, grouped by workflow: a workflow then has no place of its own for its triggers and dispatch.
+- A feed of runs across repositories: the owner expects it to be noisy; the Broken workflows page (D6) stays the
+  cross-repository view.
