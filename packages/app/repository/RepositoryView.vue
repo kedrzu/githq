@@ -140,6 +140,8 @@ const emit = defineEmits<{
   open: [id: string];
   /** Enter on the opened item's row: it expands to its page. */
   expand: [id: string];
+  /** `⇧Enter` on a row not open: it opens straight on its page. */
+  fullScreen: [id: string];
   listed: [listed: ListedItems];
   /** An item dropped into another group: set its value. */
   move: [move: ListMove];
@@ -593,6 +595,7 @@ function getSectionCount(value: RepositorySection) {
             :can-move="canMove"
             @open="emit('open', $event)"
             @expand="emit('expand', $event)"
+            @full-screen="emit('fullScreen', $event)"
             @listed="emit('listed', $event)"
             @move="emit('move', $event)"
             @some-collapsed="someCollapsed = $event"

@@ -69,6 +69,7 @@ function open(id: string) {
     :now="list.now"
     :undone="list.undone"
     @open="open"
+    @full-screen="open"
     @listed="list.setListed"
   >
     <template #selection="{ ids, span }">

@@ -468,6 +468,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     @reset="view.reset()"
     @open="list.open"
     @expand="list.expand"
+    @full-screen="list.openFullScreen"
     @listed="list.setListed"
     @move="move"
     @read-more="readMore"

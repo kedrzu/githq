@@ -99,6 +99,7 @@ const waitingCount = computed(() => {
     @reset="view.reset()"
     @open="list.open"
     @expand="list.expand"
+    @full-screen="list.openFullScreen"
     @listed="list.setListed"
     @show-all="router.push(HOME_PATH)"
   >

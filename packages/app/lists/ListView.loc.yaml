@@ -6,6 +6,8 @@ previous:
   en: Previous item
 open:
   en: Open the selected item
+openFullScreen:
+  en: Open full screen
 openOnGitHub:
   en: Open on GitHub
 check:
