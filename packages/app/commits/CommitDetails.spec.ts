@@ -1,11 +1,12 @@
 import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { createApp, defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import tokens from '@/styles/tokens.scss?raw';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
 import {
@@ -13,12 +14,14 @@ import {
     sampleCheckRun,
     sampleCommit,
     sampleCommitRef,
+    sampleLongCommitBody,
     sampleWebappHistory,
 } from '@/testing/sampleCommits.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import CommitDetails from './CommitDetails.vue';
 import type { CommitRowRef } from './CommitRow.vue';
+import type { CommitState } from './CommitTypes.js';
 
 const REPOSITORY = 'acme/web';
 const CHECKS_ON_GITHUB = 'The checks are listed on GitHub';
@@ -47,7 +50,7 @@ test('a hostile message is text, never markup, its line breaks kept', async () =
     expect('hacked' in window).toBe(false);
 });
 
-test('CH18: what it says of a commit: author, when, sha, parent, refs, pull request and CI, with no count of failing checks', async () => {
+test('CH18, CH55: what it says of a commit: author, when, sha, parent, refs, pull request and CI, with no count of failing checks', async () => {
     const { panel, store } = await mount(sampleWebappHistory(), 'a2', {
         refs: [{ name: 'fix/booking-tz', kind: 'branch' }],
     });
@@ -60,10 +63,11 @@ test('CH18: what it says of a commit: author, when, sha, parent, refs, pull requ
     await expect.element(panel).toHaveTextContent(/ago · \w+ \d+, \d\d:\d\d/);
     await expect.element(panel.getByRole('heading', { name: 'Parent', exact: true })).toBeVisible();
     await expect.element(panel.getByRole('button', { name: /chore: bump vite to 6\.2/ })).toBeVisible();
-    await expect.element(panel.getByRole('heading', { name: 'Branches and tags here' })).toBeVisible();
+    await expect.element(panel.getByRole('heading', { name: 'Refs' })).toBeVisible();
     await expect.element(panel.getByText('fix/booking-tz')).toBeVisible();
-    await expect.element(panel.getByRole('button', { name: /Pull request 1228/ })).toBeVisible();
-    await expect.element(panel).toHaveTextContent('#1228');
+    const pullRequest = panel.getByRole('button', { name: /Pull request 1228/ });
+    await expect.element(pullRequest).toHaveAttribute('aria-keyshortcuts', 'Shift+Enter');
+    await expect.element(pullRequest).toHaveTextContent(/#1228\s*Pull request 1228\s*open/);
     await expect.element(panel.getByRole('img', { name: 'Open pull request' })).toBeVisible();
     await expect.element(panel.getByRole('img', { name: 'Checks failing' })).toBeVisible();
     await expect.element(panel.getByText('Failing')).toBeVisible();
@@ -76,16 +80,82 @@ test('CH18: what it says of a commit: author, when, sha, parent, refs, pull requ
         .toHaveAttribute('href', 'https://github.com/acme/web/commit/a2');
 });
 
-test("a pull request's number follows its title 8px after it, not pushed to the panel's edge", async () => {
+test("a pull request's state follows its title 8px after it, not pushed to the panel's edge", async () => {
     const { panel } = await mount(sampleWebappHistory(), 'a2', { width: 600 });
 
     await expect.element(panel.getByRole('button', { name: /Pull request 1228/ })).toBeVisible();
     const button = panel.getByRole('button', { name: /Pull request 1228/ }).element();
-    const number = assertValue(button.lastElementChild);
-    const title = assertValue(number.previousElementSibling);
-    expect(number.textContent).toBe('#1228');
-    expect(number.getBoundingClientRect().left - title.getBoundingClientRect().right).toBeCloseTo(8, 0);
-    expect(number.getBoundingClientRect().right).toBeLessThan(button.getBoundingClientRect().right - 100);
+    const state = assertValue(button.lastElementChild);
+    const title = assertValue(state.previousElementSibling);
+    expect(state.textContent).toBe('open');
+    expect(state.getBoundingClientRect().left - title.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(state.getBoundingClientRect().right).toBeLessThan(button.getBoundingClientRect().right - 100);
+});
+
+test('CH55: with a 40-line message every fact comes before it, a failing check is named without a click, and the message reads in the text colour with its list as a list', async () => {
+    const oid = '3f9c2e1a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e';
+    const state: CommitState = {
+        pullRequest: {
+            number: 581,
+            state: 'MERGED',
+            title: 'Stale state after rename',
+            url: 'https://github.com/acme/web/pull/581',
+            isDraft: false,
+        },
+        ci: 'FAILURE',
+    };
+    const { panel } = await mount(
+        {
+            commits: [sampleCommit(oid, 20, ['p1']), sampleCommit('p1', 10)],
+            states: new Map([[oid, state]]),
+            checks: new Map([[oid, [sampleCheckRun('build', 'FAILURE'), sampleCheckRun('lint', 'SUCCESS')]]]),
+            bodies: new Map([[oid, sampleLongCommitBody()]]),
+        },
+        oid,
+        { refs: [{ name: 'main', kind: 'branch' }] },
+    );
+
+    const message = panel.getByText('The serverRole was renamed in #566', { exact: false });
+    await expect.element(message).toBeVisible();
+    const failing = panel.getByText('CI / build');
+    await expect.element(failing).toBeVisible();
+    // Above the fold of the panel's one scroll, with nothing unfolded.
+    const scroller = message.element().closest('section > div');
+    expect(failing.element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        scroller?.getBoundingClientRect().bottom ?? 0,
+    );
+
+    const facts = [
+        panel.getByRole('button', { name: /#581/ }),
+        failing,
+        panel.getByText('Octo Cat'),
+        panel.getByText(/ago · \w+ \d+, \d\d:\d\d/),
+        panel.getByRole('button', { name: /^p1/ }),
+        panel.getByText('main', { exact: true }),
+        panel.getByTitle(oid),
+    ];
+    for (const fact of facts) {
+        expect(
+            fact.element().compareDocumentPosition(message.element()) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+    }
+
+    const root = message.element().parentElement;
+    expect(root && getComputedStyle(root).color).toBe(getTokenColour('color-fg'));
+    const items = [...(root?.querySelectorAll('li') ?? [])].map(item => item.textContent.trim());
+    expect(items).toHaveLength(30);
+    expect(items[0]).toBe('Step 1 of moving the role to its new name');
+});
+
+test("the author line's copy button copies the whole sha, which the short one names as its title", async () => {
+    const oid = '3f9c2e1a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e';
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    onTestFinished(() => writeText.mockRestore());
+    const { panel } = await mount({ commits: [sampleCommit(oid, 10)] }, oid);
+
+    await expect.element(panel.getByTitle(oid)).toHaveTextContent('3f9c2e1');
+    await panel.getByRole('button', { name: "Copy the commit's sha" }).click();
+    expect(writeText).toHaveBeenCalledWith(oid);
 });
 
 test('a long subject GitHub cuts in the headline reads whole once read, nothing of it repeated in the body', async () => {
@@ -113,7 +183,7 @@ test('a long subject GitHub cuts in the headline reads whole once read, nothing 
     );
 });
 
-test('CH34: the pull request and CI not known yet: their titles over an empty bar, gone once a commit is known to have neither', async () => {
+test('CH34, CH57, CH58: the pull request and checks not known yet: an empty bar under each title; a commit known to have neither says so in place', async () => {
     const answered = createPromise();
     const { panel } = await mount(
         {
@@ -122,16 +192,22 @@ test('CH34: the pull request and CI not known yet: their titles over an empty ba
         },
         'c1',
     );
-    const bars = panel.getByRole('img', { name: 'Pull request and checks not known yet' });
+    const pullRequestBar = panel.getByRole('img', { name: 'Pull request not known yet' });
+    const checksBar = panel.getByRole('img', { name: 'Checks not known yet' });
 
     await expect.element(panel.getByRole('heading', { name: 'Pull request' })).toBeVisible();
-    await expect.element(panel.getByRole('heading', { name: 'CI on this commit' })).toBeVisible();
-    await expect.poll(() => bars.elements().length).toBe(2);
+    await expect.element(panel.getByRole('heading', { name: 'Checks' })).toBeVisible();
+    await expect.element(pullRequestBar).toBeVisible();
+    await expect.element(checksBar).toBeVisible();
+    await expect.element(panel.getByText('No pull request')).not.toBeInTheDocument();
 
     answered.resolve();
-    await expect.element(panel.getByRole('heading', { name: 'Pull request' })).not.toBeInTheDocument();
-    await expect.element(panel.getByRole('heading', { name: 'CI on this commit' })).not.toBeInTheDocument();
-    await expect.poll(() => bars.elements().length).toBe(0);
+    await expect.element(pullRequestBar).not.toBeInTheDocument();
+    await expect.element(checksBar).not.toBeInTheDocument();
+    await expect.element(panel.getByRole('heading', { name: 'Pull request' })).toBeVisible();
+    await expect.element(panel.getByText('No pull request')).toBeVisible();
+    await expect.element(panel.getByRole('heading', { name: 'Checks' })).toBeVisible();
+    await expect.element(panel.getByText('No checks')).toBeVisible();
 });
 
 test('the rollup shows at once, with no note, while the checks are read; the list then takes its place, in order, what passed folded', async () => {
@@ -161,7 +237,9 @@ test('the rollup shows at once, with no note, while the checks are read; the lis
 
     answered.resolve();
     await expect.element(panel.getByText('CI / build')).toBeVisible();
-    await expect.element(panel.getByText('Failing')).not.toBeInTheDocument();
+    await expect.element(panel.getByText('Failing', { exact: true })).not.toBeInTheDocument();
+    await expect.element(panel.getByText('1 failing')).toBeVisible();
+    await expect.element(panel.getByText('of 4')).toBeVisible();
     expect(getRowStarts(panel.element())).toEqual(['CI / build', 'CI / e2e', '1 passed · 1 skipped']);
 
     await panel.getByRole('button', { name: 'Show the checks that passed' }).click();
@@ -229,7 +307,7 @@ test("in a tracked repository another check's address opens in a new tab, and a 
     await expect.element(panel.getByRole('link', { name: 'Log · CI / build' })).not.toBeInTheDocument();
 });
 
-test('a failed read keeps the rollup and links to the checks on GitHub, whatever the rollup; a commit with no checks still has no CI', async () => {
+test('a failed read keeps the rollup and links to the checks on GitHub, whatever the rollup; a commit with no checks says so, with no link', async () => {
     for (const [ci, word] of [
         ['SUCCESS', 'Passing'],
         ['FAILURE', 'Failing'],
@@ -252,7 +330,7 @@ test('a failed read keeps the rollup and links to the checks on GitHub, whatever
 
     const none = await mount({ commits: [sampleCommit('c1', 10)], failIf: name => name === 'CommitChecks' }, 'c1');
     await expect.poll(() => none.store.getChecks(REPOSITORY, 'c1')?.kind).toBe('failed');
-    await expect.element(none.panel.getByRole('heading', { name: 'CI on this commit' })).not.toBeInTheDocument();
+    await expect.element(none.panel.getByText('No checks')).toBeVisible();
     await expect.element(none.panel.getByRole('link', { name: CHECKS_ON_GITHUB })).not.toBeInTheDocument();
 });
 
@@ -295,11 +373,15 @@ test("in the narrowest panel a check's name gives way and how long it ran stays;
     expect(chevron.getBoundingClientRect().right).toBeLessThanOrEqual(panel.element().getBoundingClientRect().right);
 });
 
-test('no refs, no pull request, no checks: "None." and nothing more', async () => {
+test("CH57: no refs, no pull request, no checks, no parent: each group that stays says so, and a root has no parents' group", async () => {
     const { panel } = await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)] }, 'c1');
 
+    await expect.element(panel.getByText('No pull request')).toBeVisible();
+    await expect.element(panel.getByText('No checks')).toBeVisible();
     await expect.element(panel).toHaveTextContent('None.');
-    await expect.poll(() => panel.element().querySelectorAll('h3').length).toBe(1);
+    await expect
+        .poll(() => [...panel.element().querySelectorAll('h3')].map(title => title.textContent))
+        .toEqual(['Pull request', 'Checks', 'Refs']);
 });
 
 test('D12: a commit not loaded is quiet until it is read, and then drawn from the read', async () => {
@@ -336,6 +418,13 @@ test('CH40: a read that fails says so quietly: a commit not loaded has the rest 
         .toHaveTextContent("GitHub can't be asked for the rest of this message right now.");
     await expect.element(loaded.panel.getByRole('heading', { name: 'Commit c1' })).toBeVisible();
 });
+
+/** A colour token of `styles/tokens.scss` as `getComputedStyle` writes it. */
+function getTokenColour(name: string) {
+    const hex = new RegExp(`^\\$${name}: #([0-9a-f]{6});`, 'm').exec(tokens)?.[1] ?? '';
+    const [r, g, b] = [0, 2, 4].map(start => Number.parseInt(hex.slice(start, start + 2), 16));
+    return `rgb(${r}, ${g}, ${b})`;
+}
 
 /** The first text of each row of the list of checks: a check's name, or the folded row's counts. */
 function getRowStarts(panel: Element) {

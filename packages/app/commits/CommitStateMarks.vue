@@ -116,19 +116,33 @@ function getCiLook(state: StatusState): CiLook {
 .commitStateMarks {
   display: inline-flex;
   flex: none;
-  gap: $spacing-6;
+  gap: $spacing-8;
   align-items: center;
 }
 
+// The pull request is a chip (CH59): 18 px tall with its 1 px border; the CI mark stays outside it.
 .commitStateMarks_pullRequest {
+  box-sizing: border-box;
   display: inline-flex;
   flex: none;
-  gap: $spacing-5;
+  gap: $spacing-2 + 1px;
   align-items: center;
+  height: 18px;
+  padding: 1px $spacing-5;
+  // 18 px of chip lays out as 16: the ref list's row (26 px) does not grow for it.
+  margin-block: -1px;
   font-family: $font-family-mono;
   font-size: $font-size-2xs;
   color: $color-fg-2;
   white-space: nowrap;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+
+  // The state icon is 12 px inside the chip; the CI mark keeps its 13.
+  > svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .commitStateMarks_pullRequest_link {
@@ -138,7 +152,7 @@ function getCiLook(state: StatusState): CiLook {
 
   &:hover {
     color: $color-fg;
-    text-decoration: underline;
+    border-color: $color-fg;
   }
 }
 

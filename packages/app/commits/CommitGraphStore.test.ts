@@ -403,10 +403,13 @@ test('the branches are joined as soon as they are read, without waiting for the 
 
     expect(requests().map(request => request.operation)).toContain('CommitHistories');
     expect(shownOids(graphs, 'acme/web')).toContain('f1');
+    // A page of tags still to come: the refs are not all read.
+    expect(graphs.get('acme/web')?.refsComplete).toBe(false);
 
     held.resolve();
     await opened;
     expect(graphs.get('acme/web')?.refs?.tags.map(tag => tag.name)).toEqual(['v1', 'v2', 'v3']);
+    expect(graphs.get('acme/web')?.refsComplete).toBe(true);
 });
 
 test('a branch that could not be joined leaves the graph stale and not at its end, and the next open reads it', async () => {
@@ -496,6 +499,8 @@ test('a page of tags that fails leaves the moved branch shown, the old tags and 
     expect(after.graphs.get('acme/web')?.refs?.tags.map(tag => tag.name)).toEqual(['v1', 'v2']);
     const stale: Freshness = { kind: 'stale', since, reason: 'failing' };
     expect(after.graphs.getFreshness('acme/web')).toEqual(stale);
+    // The kept copy was a complete read, and the branches read since are all of them.
+    expect(after.graphs.get('acme/web')?.refsComplete).toBe(true);
 });
 
 test('a first open is not at its end while a page of branches is unread, nor once one failed', async () => {
@@ -524,6 +529,7 @@ test('a first open is not at its end while a page of branches is unread, nor onc
     await opened;
     expect(graphs.get('acme/web')?.endReached).toBe(false);
     expect(graphs.getFreshness('acme/web').kind).toBe('stale');
+    expect(graphs.get('acme/web')?.refsComplete).toBe(false);
 });
 
 test('GitHub refusing a read for the rate pauses the graph until a minute from now, not stale, on the refs and the joining alike', async () => {

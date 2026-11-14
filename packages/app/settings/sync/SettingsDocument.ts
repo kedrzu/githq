@@ -2,6 +2,7 @@ import { deepEquals } from '@nzyme/utils/deepEquals.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import * as z from 'zod/mini';
 
+import type { RefTreeGroup, RefTreeOrder } from '@/commits/buildRefTree.js';
 import type { TrackedProject, TrackedRepository } from '@/tracking/TrackingTypes.js';
 import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
@@ -39,6 +40,12 @@ export interface SettingsDocument {
      */
     readonly reviewCommentChoice?: unknown;
     /**
+     * How a repository's branches and tags are each ordered in its ref list, the same in every repository (CH60), as
+     * written in the file: an object of `branches` and `tags`, each a newer build's value kept until the user changes
+     * that group's order, so read it with {@link readRefSort}.
+     */
+    readonly refSort?: unknown;
+    /**
      * The maximum width of the full-screen item page's box, as written in the file: a value not understood is kept
      * until the user changes it, so read it with {@link readMaxWidth}.
      */
@@ -56,6 +63,12 @@ export type RepositoryLayout = 'tabs' | 'column';
 
 /** How a code review's comment goes out with no draft open: as a single comment, or into a draft review (code-review D17). */
 export type ReviewCommentChoice = 'single' | 'draft';
+
+/** The order of each group of a repository's ref list: newest first or by name (CH60). */
+export interface RefSort {
+    readonly branches: RefTreeOrder;
+    readonly tags: RefTreeOrder;
+}
 
 /** A box's maximum width: a whole number of pixels, or `'full'` for no maximum. */
 export type MaxWidth = number | 'full';
@@ -165,6 +178,7 @@ export function serializeSettings(document: SettingsDocument): string {
         projects,
         repositoryLayout,
         reviewCommentChoice,
+        refSort,
         itemPageWidth,
         reviewDiffWidth,
         animations,
@@ -190,6 +204,7 @@ export function serializeSettings(document: SettingsDocument): string {
         })),
         repositoryLayout,
         reviewCommentChoice,
+        refSort,
         itemPageWidth,
         reviewDiffWidth,
         animations,
@@ -304,6 +319,39 @@ export function readReviewCommentChoice(document: SettingsDocument): ReviewComme
 }
 
 /**
+ * The order the document chooses for each group of the ref list; for a group absent or not known to this build (a newer
+ * one's), newest first — each group on its own, whatever the other holds.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readRefSort(document: SettingsDocument): RefSort {
+    const written = isPlainObject(document.refSort) ? document.refSort : {};
+    return { branches: readRefTreeOrder(written.branches), tags: readRefTreeOrder(written.tags) };
+}
+
+/** What {@link writeRefSort} writes. */
+export interface WriteRefSortParams {
+    readonly document: SettingsDocument;
+    readonly group: RefTreeGroup;
+    readonly order: RefTreeOrder;
+}
+
+/**
+ * The document with the group's order set to `order` — over what else the file's `refSort` holds (the other group's
+ * value, a newer build's fields), which stays (D13); `null` when the group reads as that order already, so a value not
+ * understood stays until the user picks the other order.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function writeRefSort(params: WriteRefSortParams): SettingsDocument | null {
+    const { document, group, order } = params;
+    if (readRefSort(document)[group] === order) {
+        return null;
+    }
+
+    const previous = isPlainObject(document.refSort) ? document.refSort : {};
+    return { ...document, refSort: { ...previous, [group]: order } };
+}
+
+/**
  * A maximum width as written in the file: a positive whole number of pixels or `'full'`; `null` for absent or not
  * understood (`0`, a negative or fractional number, another string), so the view falls back to its default.
  * @__NO_SIDE_EFFECTS__
@@ -314,6 +362,10 @@ export function readMaxWidth(value: unknown): MaxWidth | null {
     }
 
     return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+function readRefTreeOrder(value: unknown): RefTreeOrder {
+    return value === 'name' ? 'name' : 'newest';
 }
 
 function hasDuplicates(keys: readonly string[]) {
