@@ -12,6 +12,7 @@ import SearchField from '@/components/SearchField.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
 import ReviewToggle from '../ReviewToggle.vue';
+import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import type { FindOptions } from './compileFindQuery.js';
 import type { FindState } from './createFindRunner.js';
 import * as l from './ReviewFindBar.loc.js';
@@ -102,24 +103,24 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, 'Mod+F')) {
+  if (matchesCommandKey(event, REVIEW_KEYS.find)) {
     event.preventDefault();
     selectField();
   } else if (
-    matchesCommandKey(event, 'Enter') ||
-    matchesCommandKey(event, 'F3') ||
-    matchesCommandKey(event, 'Mod+G')
+    matchesCommandKey(event, REVIEW_KEYS.findNextInField) ||
+    matchesCommandKey(event, REVIEW_KEYS.findNextF3) ||
+    matchesCommandKey(event, REVIEW_KEYS.findNext)
   ) {
     event.preventDefault();
     emit('next');
   } else if (
-    matchesCommandKey(event, 'Shift+Enter') ||
-    matchesCommandKey(event, 'Shift+F3') ||
-    matchesCommandKey(event, 'Shift+Mod+G')
+    matchesCommandKey(event, REVIEW_KEYS.findPreviousInField) ||
+    matchesCommandKey(event, REVIEW_KEYS.findPreviousF3) ||
+    matchesCommandKey(event, REVIEW_KEYS.findPrevious)
   ) {
     event.preventDefault();
     emit('previous');
-  } else if (matchesCommandKey(event, 'Escape')) {
+  } else if (matchesCommandKey(event, REVIEW_KEYS.closeFind)) {
     event.preventDefault();
     emit('close');
   }
@@ -186,8 +187,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="ArrowUp"
       :label="t(l.previous)"
-      kbd="Shift+Enter"
-      :keyshortcuts="formatAriaKeyShortcuts('Shift+Enter')"
+      :kbd="REVIEW_KEYS.findPreviousInField"
+      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.findPreviousInField)"
       :disabled="total === 0"
       tid="review-find-previous"
       @mousedown.prevent
@@ -197,8 +198,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="ArrowDown"
       :label="t(l.next)"
-      kbd="Enter"
-      :keyshortcuts="formatAriaKeyShortcuts('Enter')"
+      :kbd="REVIEW_KEYS.findNextInField"
+      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.findNextInField)"
       :disabled="total === 0"
       tid="review-find-next"
       @mousedown.prevent
@@ -208,8 +209,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="X"
       :label="t(l.close)"
-      kbd="Escape"
-      :keyshortcuts="formatAriaKeyShortcuts('Escape')"
+      :kbd="REVIEW_KEYS.closeFind"
+      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.closeFind)"
       tid="review-find-close"
       @mousedown.prevent
       @click="emit('close')"

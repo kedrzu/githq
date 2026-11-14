@@ -2,7 +2,7 @@
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { injectionKey } from '@nzyme/vue-ioc/injectionKey.js';
 import { expect, test } from 'bun:test';
-import { createApp, effectScope, shallowRef } from 'vue';
+import { createApp, effectScope, nextTick, shallowRef } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
@@ -66,12 +66,27 @@ test('a new query lands from the cursor; closing find takes the marks away at on
     view.stop();
 });
 
+test('a step asked for before the query is searched goes to its first match once it lands', async () => {
+    const view = open();
+    view.query.value = 'needle';
+    // Typed, as the field's input event does, and Enter pressed before the typing delay is over.
+    await nextTick();
+
+    expect(view.find.next()).toBeNull();
+    await waitUntil(() => view.went.length > 0);
+
+    expect(view.went).toEqual([rowWithAfter('split', 20)]);
+    expect(view.find.position).toBe(0);
+    view.stop();
+});
+
 function open() {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const rows = shallowRef<readonly ReviewRow[]>(rowsOf('split'));
     const query = shallowRef('');
     const active = shallowRef(true);
     const cursorKey = shallowRef<string | null>(null);
+    const went: string[] = [];
 
     const app = createApp({});
     const container = createContainer();
@@ -79,7 +94,9 @@ function open() {
     container.set(Browser, session.container.resolve(Browser));
     app.provide(injectionKey, container);
     const scope = effectScope();
-    const find = app.runWithContext(() => scope.run(() => useReviewFind({ rows, query, active, cursorKey })));
+    const find = app.runWithContext(() =>
+        scope.run(() => useReviewFind({ rows, query, active, cursorKey, onGo: rowKey => went.push(rowKey) })),
+    );
     if (!find) {
         throw new Error('The scope is active');
     }
@@ -90,6 +107,8 @@ function open() {
         query,
         active,
         cursorKey,
+        /** The rows `onGo` was given. */
+        went,
         stop: () => scope.stop(),
         settle: () => session.clock.advance(0),
         /** Past the typing delay, until the search is done and, if given, the row has marks. */

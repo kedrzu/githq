@@ -30,6 +30,11 @@ export interface UseReviewFindOptions {
     active: MaybeRefOrGetter<boolean>;
     /** The key of the row the cursor is on, `null` for none: a new query lands on the first match from there. */
     cursorKey: MaybeRefOrGetter<string | null>;
+    /**
+     * Given the row of a step asked for while what is typed was still being searched (Enter right after typing): the step
+     * is taken once its matches land, as {@link ReviewFindViewModel.next} would have given it.
+     */
+    onGo: (rowKey: string) => void;
 }
 
 /** What {@link useReviewFind} returns. */
@@ -46,7 +51,10 @@ export interface ReviewFindViewModel {
     /** How the query is read, kept in every review. */
     readonly options: FindOptions;
     toggle(option: keyof FindOptions): void;
-    /** Steps to the next match, wrapping, and gives its row's key for the caller to go to; `null` when there's none. */
+    /**
+     * Steps to the next match, wrapping, and gives its row's key for the caller to go to; `null` when there's none, or
+     * when what is typed isn't searched yet: the step then goes to `onGo` once it is.
+     */
     next(): string | null;
     /** Steps to the previous match, wrapping, like {@link next}. */
     previous(): string | null;
@@ -108,6 +116,10 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
     let cancelSearch: (() => void) | null = null;
     /** What is typed, or a toggle, waits to be searched: its matches aren't those of the last result. */
     let queryWaiting = false;
+    /** What was typed, or a toggle, is being searched: the matches shown aren't its own yet. */
+    let querySearching = false;
+    /** A step asked for before the query's matches landed, taken as they do. */
+    let waitingStep: 1 | -1 | null = null;
 
     // Typing waits for a pause; the rows, rebuilt every few frames while diffs are computed, don't push the search back.
     watch([searched, findOptions], () => schedule(true), { immediate: true });
@@ -147,6 +159,7 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
     function search() {
         cancelSearch?.();
         cancelSearch = null;
+        querySearching ||= queryWaiting;
         queryWaiting = false;
         const lines = collectFindLines(rows.value);
         pending = { query: searched.value, rows: rows.value, lines };
@@ -159,14 +172,18 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
             case 'searching':
                 return;
             case 'done':
+                querySearching = false;
                 if (pending) {
                     land({ ...pending, matches: changed.matches });
                 }
 
+                takeWaitingStep();
                 return;
             case 'idle':
             case 'invalid':
             case 'tooSlow':
+                querySearching = false;
+                waitingStep = null;
                 result.value = null;
                 current.value = null;
                 return;
@@ -195,10 +212,15 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
     }
 
     function step(by: 1 | -1) {
-        if (queryWaiting) {
-            // What is typed isn't searched yet: search it now rather than step through the matches of what was. Rows
-            // waiting don't hold a step back: they are rebuilt every few frames while diffs are computed.
-            search();
+        if (queryWaiting || querySearching) {
+            // What is typed isn't searched yet: search it now rather than step through the matches of what was, and take
+            // the step once they land. Rows waiting don't hold a step back: they are rebuilt every few frames while diffs
+            // are computed.
+            if (queryWaiting) {
+                search();
+            }
+
+            waitingStep = by;
             return null;
         }
 
@@ -221,6 +243,25 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
         const wrapped = (position + total) % total;
         setCurrent(wrapped);
         return getRowKey(found, wrapped);
+    }
+
+    /** A new query landed on the first match from the cursor: that is where a step forward goes, back the one before it. */
+    function takeWaitingStep() {
+        const by = waitingStep;
+        waitingStep = null;
+        const found = result.value;
+        const at = current.value?.position;
+        if (by === null || !found || at === undefined) {
+            return;
+        }
+
+        const total = found.matches.counted.length;
+        const position = by > 0 ? at : (at - 1 + total) % total;
+        setCurrent(position);
+        const rowKey = getRowKey(found, position);
+        if (rowKey !== null) {
+            options.onGo(rowKey);
+        }
     }
 
     function setCurrent(position: number | null) {
