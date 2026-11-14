@@ -67,6 +67,10 @@ brief: `docs/design/githq/ui/README.md`.
 - **The logo is settled.** The brandbook is the frame `Logo — git/hq` (`S5J7kt`): the wordmark `git/hq` and the
   sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the slash alone. One of them in a given
   place, never both side by side, placed through `Brand / Wordmark` and `Brand / Sygnet`. Don't change it.
+- **Nothing is pinned to a row's far right edge.** In a list row, a header or a toolbar that can stretch across a
+  wide window, every piece of information follows the content it belongs to (a time after the status, a count after
+  the title), so a wide window leaves empty space at the end instead of a gap in the middle. Only controls that belong
+  to the edge stay there: a panel's close and arrangement buttons, a toolbar's key hints, a scrollbar.
 
 ## Decisions
 

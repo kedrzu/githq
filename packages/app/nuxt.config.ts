@@ -66,6 +66,9 @@ export default defineNuxtConfig({
         head: {
             title: 'githq',
             htmlAttrs: { lang: 'en' },
+            // `viewport-fit=cover` lets the phone layout keep its floating command line clear of the home indicator
+            // (`env(safe-area-inset-bottom)`, mobile D15).
+            viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
             meta: [{ name: 'theme-color', content: '#0d1117' }],
             // The icons are written by `scripts/generateIcons.ts`; the manifest makes githq installable.
             link: [

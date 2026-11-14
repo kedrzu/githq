@@ -130,8 +130,9 @@ test('a page opened by its address: "Back to the panel" puts the item in the pan
 
     await page.goto(PAGE);
     await expect(item.title).toHaveText(ISSUE);
+    // With no list behind it, closing goes up to the item's repository (mobile D20, the computer too).
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/acme/web/issues');
     await expect(item.root).toBeHidden();
 });
 

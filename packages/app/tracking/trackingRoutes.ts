@@ -235,6 +235,41 @@ export function isTrackedOnlyRoute(route: IsTrackedOnlyRouteParams) {
 }
 
 /**
+ * Whether the phone layout shows a route (mobile D3, D4): not a pull request's review, Draft reviews, the broken
+ * workflows, a workflow's page or run, or a repository's Commits and Workflows sections — those are handed off to github.com when
+ * navigated to below the phone's width, as every address githq does not show at all is.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isRouteShownOnPhone(route: IsTrackedOnlyRouteParams) {
+    switch (route.name) {
+        case 'review':
+        case 'draft-reviews':
+        case 'workflows':
+        case 'workflow-page':
+        case 'workflow-run':
+        case 'workflow-run-job':
+            return false;
+        case 'repository': {
+            const section = getRepositorySection(route.params.section);
+            return section === null || isRepositorySectionShownOnPhone(section);
+        }
+        default:
+            return true;
+    }
+}
+
+/**
+ * Whether the phone layout shows a repository's section: Issues and Pull requests, not Commits or Workflows (mobile
+ * D3, D4).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isRepositorySectionShownOnPhone(section: RepositorySection) {
+    return section === 'issues' || section === 'pullRequests';
+}
+
+/**
  * The section a repository's address names, from its last segment (the route's `section`): `null` when it names
  * none (`/owner/name`).
  *

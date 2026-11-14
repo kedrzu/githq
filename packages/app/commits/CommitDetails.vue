@@ -1,4 +1,4 @@
-<!-- A commit's details, right of the graph, filling the column the graph's view gives it, or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known; its checks replace the CI's rollup once read, and a read that fails leaves the rollup with a link to them on GitHub (D24). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
+<!-- A commit's details, right of the graph, filling the column the graph's view gives it, or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20, CH55): one scroll, the facts before the message. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), each shown on the row it presses. -->
 <script lang="ts">
 /** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
 export const COMMIT_DETAILS_KEYS = {
@@ -13,14 +13,13 @@ export const COMMIT_DETAILS_KEYS = {
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowUpRight, GitCommitHorizontal, Github, Info, X } from 'lucide-vue-next';
+import { ArrowUpRight, Copy, GitCommitHorizontal, GitPullRequest, Github, Info, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
-import PropertyRow from '@/components/PropertyRow.vue';
 import CheckList from '@/item/CheckList.vue';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
@@ -29,11 +28,12 @@ import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 
 import * as l from './CommitDetails.loc.js';
 import { CommitGraphStore } from './CommitGraphStore.js';
+import CommitMessage from './CommitMessage.vue';
 import CommitPullRequestIcon from './CommitPullRequestIcon.vue';
 import CommitRefChip from './CommitRefChip.vue';
 import type { CommitRowRef } from './CommitRow.vue';
 import CommitStateMarks from './CommitStateMarks.vue';
-import type { CommitParent, CommitRef } from './CommitTypes.js';
+import type { CommitParent, CommitPullRequest, CommitRef } from './CommitTypes.js';
 import { getCiTone } from './getCiTone.js';
 
 const props = defineProps<{
@@ -108,6 +108,24 @@ const parents = computed(() =>
     headline: store.getCommit(props.nameWithOwner, parent.oid)?.headline ?? null,
   })),
 );
+/** The checks as read, when GitHub listed any; until then the rollup stands for them. */
+const checkList = computed(() =>
+  checks.value?.kind === 'read' && checks.value.checks.length > 0 ? checks.value : null,
+);
+/** Beside the title: how many fail of how many, or that some still run; nothing when all passed, as the folded row says it. */
+const checksSummary = computed(() => {
+  const list = checkList.value;
+  if (!list) {
+    return null;
+  }
+
+  const failing = list.checks.filter(check => check.state === 'failing').length;
+  if (failing > 0) {
+    return { kind: 'failing' as const, failing, of: list.checkCount };
+  }
+
+  return list.checks.some(check => check.state === 'pending') ? { kind: 'running' as const } : null;
+});
 const ci = computed(() => {
   const rollup = state.value?.ci;
   if (!rollup) {
@@ -127,6 +145,10 @@ const ci = computed(() => {
   }
 });
 
+function copySha() {
+  return navigator.clipboard.writeText(props.oid);
+}
+
 function getParentKey(index: number) {
   switch (index) {
     case 0:
@@ -135,6 +157,19 @@ function getParentKey(index: number) {
       return COMMIT_DETAILS_KEYS.secondParent;
     default:
       return null;
+  }
+}
+
+function getPullRequestWord(pullRequest: CommitPullRequest) {
+  switch (pullRequest.state) {
+    case 'OPEN':
+      return pullRequest.isDraft ? t(l.pullRequestDraft) : t(l.pullRequestOpen);
+    case 'MERGED':
+      return t(l.pullRequestMerged);
+    case 'CLOSED':
+      return t(l.pullRequestClosed);
+    default:
+      return assertNever(pullRequest.state);
   }
 }
 </script>
@@ -200,69 +235,33 @@ function getParentKey(index: number) {
 
       <template v-if="commit">
         <h2 :class="css.commitDetails_headline">{{ headline }}</h2>
-        <p
-          v-if="body"
-          :class="css.commitDetails_body"
-        >
-          {{ body }}
-        </p>
-        <p
-          v-else-if="failed"
-          :class="css.commitDetails_quiet"
-        >
-          {{ t(l.bodyFailed) }}
-        </p>
-
-        <dl :class="css.commitDetails_meta">
-          <PropertyRow :label="t(l.author)">
-            <Avatar
-              :name="commit.author.login ?? authorName"
-              :src="commit.author.avatarUrl"
-              size="xs"
-              decorative
-            />
-            {{ authorName }}
-            <span
-              v-if="commit.author.login && commit.author.login !== authorName"
-              :class="css.commitDetails_login"
-              >{{ commit.author.login }}</span
-            >
-          </PropertyRow>
-          <PropertyRow :label="t(l.committed)">{{ committed }}</PropertyRow>
-          <PropertyRow :label="t(l.commit)">
-            <span :class="css.commitDetails_fullSha">{{ oid }}</span>
-          </PropertyRow>
-        </dl>
-
-        <section
-          v-if="parents.length > 0"
-          :class="css.commitDetails_section"
-        >
-          <h3 :class="css.commitDetails_title">{{ t(parents.length === 1 ? l.parent : l.parents) }}</h3>
-          <button
-            v-for="{ parent, key, headline: parentHeadline } in parents"
-            :key="parent.oid"
-            type="button"
-            :class="css.commitDetails_row"
-            :aria-keyshortcuts="key ?? undefined"
-            @click="emit('openParent', parent)"
+        <div :class="css.commitDetails_author">
+          <Avatar
+            :name="commit.author.login ?? authorName"
+            :src="commit.author.avatarUrl"
+            size="xs"
+            decorative
+          />
+          <span :class="css.commitDetails_authorName">{{ authorName }}</span>
+          <span
+            v-if="commit.author.login && commit.author.login !== authorName"
+            :class="css.commitDetails_dim"
+            >{{ commit.author.login }}</span
           >
-            <Kbd
-              v-if="key"
-              :keys="key"
-            />
-            <GitCommitHorizontal
-              :class="css.commitDetails_commitIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.commitDetails_sha">{{ parent.oid.slice(0, 7) }}</span>
-            <span
-              v-if="parentHeadline"
-              :class="css.commitDetails_rowText"
-              >{{ parentHeadline }}</span
-            >
-          </button>
-        </section>
+          <span :class="css.commitDetails_dim">{{ committed }}</span>
+          <span :class="css.commitDetails_spacer" />
+          <span
+            :class="css.commitDetails_sha"
+            :title="oid"
+            >{{ oid.slice(0, 7) }}</span
+          >
+          <IconButton
+            :class="css.commitDetails_copy"
+            :icon="Copy"
+            :label="t(l.copySha)"
+            @click="copySha"
+          />
+        </div>
       </template>
       <p
         v-else-if="failed"
@@ -277,101 +276,174 @@ function getParentKey(index: number) {
         {{ t(l.reading) }}
       </p>
 
-      <section :class="css.commitDetails_section">
-        <h3 :class="css.commitDetails_title">{{ t(l.refsHere) }}</h3>
-        <div
-          v-if="refs.length > 0"
-          :class="css.commitDetails_refs"
-        >
-          <CommitRefChip
-            v-for="commitRef in refs"
-            :key="`${commitRef.kind}:${commitRef.name}`"
-            :kind="commitRef.kind"
-            :label="commitRef.name"
+      <div :class="css.commitDetails_card">
+        <section :class="css.commitDetails_group">
+          <div :class="css.commitDetails_groupHead">
+            <h3 :class="css.commitDetails_title">{{ t(l.pullRequest) }}</h3>
+            <Kbd
+              v-if="state?.pullRequest"
+              :keys="COMMIT_DETAILS_KEYS.pullRequest"
+            />
+          </div>
+          <span
+            v-if="state === undefined"
+            :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_pullRequest]"
+            role="img"
+            :aria-label="t(l.pullRequestNotKnown)"
           />
-        </div>
-        <p
-          v-else
-          :class="css.commitDetails_quiet"
-        >
-          {{ t(place === 'gone' ? l.noRefsAnyMore : l.noRefs) }}
-        </p>
-      </section>
+          <button
+            v-else-if="state.pullRequest"
+            type="button"
+            :class="css.commitDetails_row"
+            :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
+            @click="emit('openPullRequest')"
+          >
+            <span :class="css.commitDetails_number"
+              ><CommitPullRequestIcon :pull-request="state.pullRequest" />#{{ state.pullRequest.number }}</span
+            >
+            <span :class="css.commitDetails_rowText">{{ state.pullRequest.title }}</span>
+            <span :class="css.commitDetails_dim">{{ getPullRequestWord(state.pullRequest) }}</span>
+          </button>
+          <p
+            v-else
+            :class="[css.commitDetails_quiet, css.commitDetails_none]"
+          >
+            <GitPullRequest
+              :class="css.commitDetails_commitIcon"
+              aria-hidden="true"
+            />
+            {{ t(l.noPullRequest) }}
+          </p>
+        </section>
 
-      <section
-        v-if="state === undefined || state.pullRequest"
-        :class="css.commitDetails_section"
-      >
-        <h3 :class="css.commitDetails_title">{{ t(l.pullRequest) }}</h3>
-        <CommitStateMarks
-          v-if="state === undefined"
-          :state="state"
-        />
-        <button
-          v-else-if="state.pullRequest"
-          type="button"
-          :class="[css.commitDetails_row, css.commitDetails_pullRequest]"
-          :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
-          @click="emit('openPullRequest')"
-        >
-          <CommitPullRequestIcon :pull-request="state.pullRequest" />
-          <span :class="css.commitDetails_rowText">{{ state.pullRequest.title }}</span>
-          <span :class="css.commitDetails_sha">#{{ state.pullRequest.number }}</span>
-        </button>
-      </section>
-
-      <section
-        v-if="state === undefined || ci"
-        :class="css.commitDetails_section"
-      >
-        <h3 :class="css.commitDetails_title">{{ t(l.ci) }}</h3>
-        <!-- Keyed: the next commit's list starts folded, read before or not. -->
-        <CheckList
-          v-if="checks?.kind === 'read' && checks.checks.length > 0"
-          :key="oid"
-          :checks="checks.checks"
-          :check-count="checks.checkCount"
-          :more-url="`${url}/checks`"
-          :now="now"
-          :runs-in-app="runsInApp"
-        />
-        <CommitStateMarks
-          v-else-if="state === undefined"
-          :state="state"
-        />
-        <p
-          v-else-if="ci"
-          :class="css.commitDetails_ci"
-        >
-          <CommitStateMarks
-            :state="state"
-            :with-pull-request="false"
+        <section :class="css.commitDetails_group">
+          <div :class="css.commitDetails_groupHead">
+            <h3 :class="css.commitDetails_title">{{ t(l.checks) }}</h3>
+            <span
+              v-if="checksSummary?.kind === 'failing'"
+              :class="css.commitDetails_summary"
+            >
+              <span :class="css.commitDetails_ci_danger">{{
+                t(l.failingCount, { count: checksSummary.failing })
+              }}</span>
+              <span :class="css.commitDetails_dim">{{ t(l.ofCount, { count: checksSummary.of }) }}</span>
+            </span>
+            <span
+              v-else-if="checksSummary?.kind === 'running'"
+              :class="[css.commitDetails_summary, css.commitDetails_ci_warning]"
+              >{{ t(l.ciRunning) }}</span
+            >
+          </div>
+          <!-- Keyed: the next commit's list starts folded, read before or not. -->
+          <CheckList
+            v-if="checkList"
+            :key="oid"
+            :checks="checkList.checks"
+            :check-count="checkList.checkCount"
+            :more-url="`${url}/checks`"
+            :now="now"
+            :runs-in-app="runsInApp"
           />
-          <span :class="css[`commitDetails_ci_${ci.tone}`]">{{ ci.word }}</span>
-        </p>
-        <Button
-          v-if="checks?.kind === 'failed'"
-          :class="css.commitDetails_ciLink"
-          variant="link"
-          size="sm"
-          :icon="ArrowUpRight"
-          :link="`${url}/checks`"
-          target="_blank"
-          rel="noopener noreferrer"
+          <span
+            v-else-if="state === undefined"
+            :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_checks]"
+            role="img"
+            :aria-label="t(l.checksNotKnown)"
+          />
+          <p
+            v-else-if="ci"
+            :class="css.commitDetails_ci"
+          >
+            <CommitStateMarks
+              :state="state"
+              :with-pull-request="false"
+            />
+            <span :class="css[`commitDetails_ci_${ci.tone}`]">{{ ci.word }}</span>
+          </p>
+          <p
+            v-else
+            :class="css.commitDetails_quiet"
+          >
+            {{ t(l.noChecks) }}
+          </p>
+          <Button
+            v-if="checks?.kind === 'failed' && (state === undefined || ci)"
+            :class="css.commitDetails_ciLink"
+            variant="link"
+            size="sm"
+            :icon="ArrowUpRight"
+            :link="`${url}/checks`"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t(l.checksOnGitHub) }}
+          </Button>
+        </section>
+
+        <section
+          v-if="parents.length > 0"
+          :class="css.commitDetails_group"
         >
-          {{ t(l.checksOnGitHub) }}
-        </Button>
-      </section>
+          <h3 :class="css.commitDetails_title">{{ t(parents.length === 1 ? l.parent : l.parents) }}</h3>
+          <div :class="css.commitDetails_rows">
+            <button
+              v-for="{ parent, key, headline: parentHeadline } in parents"
+              :key="parent.oid"
+              type="button"
+              :class="css.commitDetails_row"
+              :aria-keyshortcuts="key ?? undefined"
+              @click="emit('openParent', parent)"
+            >
+              <Kbd
+                v-if="key"
+                :keys="key"
+              />
+              <span :class="css.commitDetails_number">{{ parent.oid.slice(0, 7) }}</span>
+              <span
+                v-if="parentHeadline"
+                :class="css.commitDetails_rowText"
+                >{{ parentHeadline }}</span
+              >
+            </button>
+          </div>
+        </section>
+
+        <section :class="[css.commitDetails_group, css.commitDetails_group_inline]">
+          <h3 :class="css.commitDetails_title">{{ t(l.refs) }}</h3>
+          <div
+            v-if="refs.length > 0"
+            :class="css.commitDetails_refs"
+          >
+            <CommitRefChip
+              v-for="commitRef in refs"
+              :key="`${commitRef.kind}:${commitRef.name}`"
+              :kind="commitRef.kind"
+              :label="commitRef.name"
+            />
+          </div>
+          <p
+            v-else
+            :class="css.commitDetails_quiet"
+          >
+            {{ t(place === 'gone' ? l.noRefsAnyMore : l.noRefs) }}
+          </p>
+        </section>
+      </div>
+
+      <template v-if="commit">
+        <CommitMessage
+          v-if="body"
+          :class="css.commitDetails_message"
+          :body="body"
+        />
+        <p
+          v-else-if="failed"
+          :class="[css.commitDetails_quiet, css.commitDetails_message]"
+        >
+          {{ t(l.bodyFailed) }}
+        </p>
+      </template>
     </div>
-
-    <footer :class="css.commitDetails_keys">
-      <span :class="css.commitDetails_key"><Kbd keys="J" /><Kbd keys="K" />{{ t(l.keyCommit) }}</span>
-      <span :class="css.commitDetails_key"><Kbd :keys="COMMIT_DETAILS_KEYS.firstParent" />{{ t(l.keyParent) }}</span>
-      <span :class="css.commitDetails_key"
-        ><Kbd :keys="COMMIT_DETAILS_KEYS.pullRequest" />{{ t(l.keyPullRequest) }}</span
-      >
-      <span :class="css.commitDetails_key"><Kbd :keys="COMMIT_DETAILS_KEYS.openOnGitHub" />{{ t(l.keyGitHub) }}</span>
-    </footer>
   </section>
 </template>
 
@@ -431,11 +503,11 @@ function getParentKey(index: number) {
   flex: 1;
 }
 
+// CH55: one scroll, the facts first and the message after them.
 .commitDetails_scroll {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: $spacing-20;
   min-height: 0;
   padding: $spacing-20;
   overflow-y: auto;
@@ -445,7 +517,7 @@ function getParentKey(index: number) {
   display: flex;
   gap: $spacing-8;
   padding: $spacing-12;
-  margin: 0;
+  margin: 0 0 $spacing-16;
   font-size: $font-size-sm;
   color: $color-fg-2;
   background: $color-bg-2;
@@ -467,13 +539,28 @@ function getParentKey(index: number) {
   overflow-wrap: anywhere;
 }
 
-// A commit's message is what its author typed, line breaks and all, and only ever text.
-.commitDetails_body {
-  margin: 0;
+.commitDetails_author {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-4 $spacing-6;
+  align-items: center;
+  min-width: 0;
+  margin-top: $spacing-8;
   font-size: $font-size-sm;
+}
+
+.commitDetails_authorName {
   color: $color-fg-2;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
+}
+
+.commitDetails_copy {
+  --icon-button-glyph-size: 13px;
+  --icon-button-color: #{$color-fg-dim};
+}
+
+.commitDetails_dim {
+  flex: none;
+  color: $color-fg-dim;
 }
 
 .commitDetails_quiet {
@@ -482,36 +569,77 @@ function getParentKey(index: number) {
   color: $color-fg-dim;
 }
 
-.commitDetails_meta {
+.commitDetails_card {
   display: flex;
   flex-direction: column;
-  gap: $spacing-6;
-  margin: 0;
-}
-
-.commitDetails_login {
-  color: $color-fg-dim;
-}
-
-.commitDetails_fullSha {
   min-width: 0;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  overflow-wrap: anywhere;
+  margin-top: $spacing-12;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
 }
 
-.commitDetails_section {
+.commitDetails_group {
   display: flex;
   flex-direction: column;
   gap: $spacing-6;
+  min-width: 0;
+  padding: $spacing-10 $spacing-12;
+
+  & + & {
+    border-top: 1px solid $color-border;
+  }
+}
+
+// Refs: the title and the chips on one line.
+.commitDetails_group_inline {
+  flex-direction: row;
+  gap: $spacing-8;
+  align-items: center;
+}
+
+.commitDetails_groupHead {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+  justify-content: space-between;
   min-width: 0;
 }
 
 .commitDetails_title {
+  flex: none;
   margin: 0;
   font-size: $font-size-xs;
   font-weight: $font-weight-normal;
   color: $color-fg-dim;
+}
+
+.commitDetails_summary {
+  display: inline-flex;
+  gap: $spacing-4;
+  font-size: $font-size-xs;
+}
+
+// Not known yet (CH58): an empty bar where the answer goes, so it never reads as "has none".
+.commitDetails_unknownBar {
+  display: block;
+  height: 6px;
+  background: $color-skeleton-weak;
+  border-radius: $radius-skeleton;
+}
+
+.commitDetails_unknownBar_pullRequest {
+  width: 128px;
+}
+
+.commitDetails_unknownBar_checks {
+  width: 76px;
+}
+
+.commitDetails_rows {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  min-width: 0;
 }
 
 .commitDetails_row {
@@ -521,37 +649,61 @@ function getParentKey(index: number) {
   gap: $spacing-8;
   align-items: center;
   min-width: 0;
-  padding: $spacing-5 $spacing-8;
+  padding: $spacing-2 $spacing-4;
+  margin: 0 (-$spacing-4);
   font-size: $font-size-sm;
   color: $color-fg;
   text-align: left;
   cursor: pointer;
   background: none;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
+  border: none;
+  border-radius: $radius-sm;
 
   &:hover {
     background: $color-bg-2;
   }
 }
 
-.commitDetails_pullRequest {
-  background: $color-bg-2;
-  border-color: transparent;
+// The pull request as the chip it is everywhere else (`CommitStateMarks`, CH59).
+.commitDetails_number {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-2 + 1px;
+  align-items: center;
+  height: 18px;
+  padding: 1px $spacing-5;
+  font-family: $font-family-mono;
+  font-size: $font-size-2xs;
+  color: $color-fg-2;
+  white-space: nowrap;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .commitDetails_rowText {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.commitDetails_none {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+}
+
 .commitDetails_refs {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-4;
+  min-width: 0;
 }
 
 .commitDetails_ci {
@@ -578,20 +730,7 @@ function getParentKey(index: number) {
   align-self: flex-start;
 }
 
-.commitDetails_keys {
-  display: flex;
-  flex: none;
-  flex-wrap: wrap;
-  gap: $spacing-4 $spacing-12;
-  padding: $spacing-8 $spacing-20;
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
-  border-top: 1px solid $color-border;
-}
-
-.commitDetails_key {
-  display: inline-flex;
-  gap: $spacing-4;
-  align-items: center;
+.commitDetails_message {
+  margin-top: $spacing-16;
 }
 </style>

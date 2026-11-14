@@ -1,5 +1,6 @@
 <!-- `/` and a group's own list at GitHub's dashboard address of it (`/pulls/review-requested`, `/pulls`, `/issues/assigned`, `/issues/mentioned`; `myWorkRoutes.ts`): "my work" from the local copy (D11, D17) — all four groups, or the one the sidebar narrowed it to (`meta.myWorkGroup`), each stack one entry, whole — a row in the list, a card on the board (`buildMyWork`). The routes share one instance (`meta.key`), so the filter and the selection survive moving between them. What can't arrive now is told from the sync's freshness of My work, once the kept copy is loaded, so a copy still loading never reads as offline (`cantBeRead`, first run and loading D6, D12). Opening items and the selection are every list's (`useItemList`); the layout, order and properties shown are kept on this device (`useListViewOptions`). -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -22,6 +23,8 @@ import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
 import type { MyWorkFilter } from './buildMyWork.js';
 import { buildMyWork } from './buildMyWork.js';
 import MyWorkView from './MyWorkView.vue';
+import * as groupLabels from './MyWorkGroupLabel.loc.js';
+import * as l from './MyWorkView.loc.js';
 import { MY_WORK_VIEW_CHOICES, MY_WORK_VIEW_DEFAULTS } from './myWorkViewOptions.js';
 
 const auth = useService(AuthStore);
@@ -31,13 +34,15 @@ const tracking = useService(TrackingStore);
 const sync = useService(SyncEngine);
 const route = useRoute();
 const router = useRouter();
-const list = useItemList();
+const t = useTranslate();
 const view = useListViewOptions({ list: 'myWork', defaults: MY_WORK_VIEW_DEFAULTS, choices: MY_WORK_VIEW_CHOICES });
 
 const filter = ref<MyWorkFilter>('all');
 const trackedRepositories = computed(() => tracking.repositories.map(repository => repository.nameWithOwner));
 
 const group = computed(() => route.meta.myWorkGroup ?? null);
+// Back on an item opened from here says My work, or the group it is narrowed to (mobile D20).
+const list = useItemList(() => (group.value ? t(groupLabels[group.value]) : t(l.title)));
 // D12: each row's projects as lists outside them show them — the tracked ones first, with their row field.
 const work = computed(() =>
   buildMyWork({

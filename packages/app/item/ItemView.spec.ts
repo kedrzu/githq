@@ -27,6 +27,8 @@ const {
     IssueOnPage,
     IssueOnPageNoRoomForPanel,
     LoadingComments,
+    PhoneFromLink,
+    PhoneFromList,
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
@@ -154,6 +156,29 @@ test("a control Tab reached outside the list holds an opened panel's J/K; one Es
     expect(onNext).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('{Escape}');
     expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test('mobile MB33: on a phone the top bar is back, naming the list, and previous and next; nothing else of the header', async () => {
+    await PhoneFromList.run();
+    const { onClose, onNext, onPrevious } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: 'Back to Issues' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await userEvent.click(page.getByRole('button', { name: 'Next item' }));
+    await userEvent.click(page.getByRole('button', { name: 'Previous item' }));
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(onPrevious).toHaveBeenCalledTimes(1);
+    for (const name of ['Close', 'Open on GitHub', 'Back to the panel', 'Open full screen']) {
+        await expect.element(page.getByRole('button', { name, exact: true })).not.toBeInTheDocument();
+    }
+});
+
+test('mobile MB62: on a phone, opened from a link, back names the repository and there is nothing to step through', async () => {
+    await PhoneFromLink.run();
+
+    const repository = PhoneFromLink.args.item!.repository.nameWithOwner;
+    await expect.element(page.getByRole('button', { name: `Back to ${repository}` })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Next item' })).not.toBeInTheDocument();
 });
 
 test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {
@@ -1010,6 +1035,30 @@ test('D25: another pull request of the stack opens with its rows in view and non
     await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('in one wide column the summary pins nothing to the far edge: states, sizes and statuses follow their content 7–8px after it', async () => {
+    await PullRequestFailingWiderPanel.run();
+    await expect.element(page.getByRole('heading', { name: 'Reviews' })).toBeVisible();
+
+    const lines: { selector: string; gap: number }[] = [
+        { selector: '[class*="pullRequestReviews_reviewer"]', gap: 8 },
+        { selector: '[class*="pullRequestMerge_branches"]', gap: 7 },
+        { selector: '[class*="pullRequestMerge_conditionValue"]', gap: 8 },
+        { selector: '[class*="linkedItems_row"]', gap: 8 },
+    ];
+    for (const { selector, gap } of lines) {
+        const found = [...document.querySelectorAll(selector)];
+        expect(found.length, selector).toBeGreaterThan(0);
+        for (const line of found) {
+            expectFollowing(line, gap);
+        }
+    }
+
+    // The review state and its age, after the name of who gave it.
+    const reviewer = page.getByRole('listitem').filter({ hasText: 'olam' }).first().element();
+    expect(reviewer.textContent).toContain('Changes requested');
+    expect(reviewer.textContent).toContain('3h');
+});
+
 test('a row of the stack map opens its pull request in place of this one', async () => {
     await StackOfTenOnPage.run();
     const { onOpenInPlace } = StackOfTenOnPage.args;
@@ -1291,3 +1340,21 @@ test('PM38: no answer in time is grey, neither merged nor refused, until the nex
     await expect.element(page.getByText('The next refresh settles it')).toBeVisible();
     await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
 });
+
+/** The parts of a line sit `gap`px apart, the last far from the line's right edge: nothing is pushed to it. */
+function expectFollowing(line: Element, gap: number) {
+    const parts = [...line.children]
+        .filter(part => !(part.getAttribute('class') ?? '').includes('hidden'))
+        .map(part => part.getBoundingClientRect())
+        .filter(rect => rect.width > 0);
+    const last = parts.at(-1);
+    if (!last) {
+        throw new Error('The line has no parts.');
+    }
+
+    for (const [index, part] of parts.slice(1).entries()) {
+        expect(part.left - parts[index]!.right, line.getAttribute('class') ?? undefined).toBeCloseTo(gap, 0);
+    }
+
+    expect(last.right, line.getAttribute('class') ?? undefined).toBeLessThan(line.getBoundingClientRect().right - 300);
+}

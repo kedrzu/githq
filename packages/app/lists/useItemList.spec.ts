@@ -129,7 +129,7 @@ test('an opened item steps through what the list hands over, every move of its c
     list.setListed({ all: ['a', 'p1', 'p2'], steps: ['a', 'p1'], stepOf, around: { previous: null, next: 'p1' } });
     await nextTick();
 
-    const expected = { kind: 'issue', path: '/?filter=a', steps: ['a', 'p1'], stepOf };
+    const expected = { kind: 'issue', path: '/?filter=a', title: 'Issues', steps: ['a', 'p1'], stepOf };
     expect(navigation.list).toEqual({ ...expected, around: { previous: null, next: 'p1' } });
 
     app.unmount();
@@ -163,7 +163,7 @@ async function mountList(path: string) {
     const lists: ItemListViewModel[] = [];
     const app = createApp({
         setup() {
-            lists.push(useItemList());
+            lists.push(useItemList('Issues'));
             return () => h('div');
         },
     });

@@ -247,6 +247,25 @@ version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now"
 request when the details open, kept for the session. Files and diffs are the owner's explicit "not yet". CI is the rollup
 alone: no count of failing checks, nothing else fetches them.
 
+**The facts come first, the message after them, formatted lightly.** One-line facts (pull request, checks, author, date,
+parents, refs, sha) sit above the message, and the message is in the normal text colour with its paragraphs, `- ` and `* `
+lists with hanging bullets and quiet trailers such as `Co-Authored-By:` — no Markdown, no HTML, replacing the plain text of
+the first version. The sha has a copy button. The layout is CH55: the whole panel scrolls as one, and under the headline and
+an author · date · sha line comes one card of four titled groups: Pull request, Checks (`N failing of M`, each failing
+check by name and duration, the passed ones folded into one line), Parents, Refs. States: checks passed with no pull
+request CH57, not known yet CH58. (2026-11-14, owner: "the description is often very long and pushes everything down";
+the message "is grey and hard to see"; "one scroll is ok"; the groups and states are the design agent's)
+
+**Why (2026-11-14).** The message runs 20–60 lines, so the facts a reader scans for sat below the fold; one scroll keeps
+the panel simple, and a failing check is visible without a click.
+
+**Rejected (2026-11-14).**
+
+- A property sheet, every fact in a row of one hierarchy (A) — "everything in the same hierarchy, noisy" (owner).
+- Facts as chips (B) — "too minimalistic" (owner).
+- Tabs for the groups — failing checks hidden under a tab (owner).
+- The facts fixed at the top while the message scrolls — owner: one scroll is ok.
+
 ## D14
 
 **The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with
@@ -277,13 +296,24 @@ decides it. The layout is a preference of the user, not of a view, so it travels
 **The branch and tag list sits on the left of the graph, in both layouts. In the tabs layout it is under the header,
 always there on a wide window; below about 1,200 px it folds away and `B` opens it over the graph from the left (CH47). In the
 column layout it is the column's lower part on Commits (CH6). The default branch is first, then branches, then tags, each
-newest first, with the pull request and CI of each branch's tip, the newest twenty of each drawn and the rest counted.
+newest first unless the user sorts it by name (below), with the pull request and CI of each branch's tip, and names
+nested into folders by `/` (below).
 `B` puts the cursor in its filter, typing narrows both groups, every letter typed, and `↑`/`↓` move through the matches.
 This left column and the repository's column are one column with one width: 280 px by default, dragged or moved with
 `←`/`→` on its edge from 200 to 480 px, on every section, kept on the device. The pane keeps 400 px on a small window, the
 column giving way down to 200 px; the width chosen comes back with the room (CH46).** (2026-11-02, design agent's proposal;
 CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03; the left, the one width and its resizing by the owner
 2026-11-03, the numbers the agent's)
+
+**Names nest into folders by `/` at every level, separately in Branches and in Tags.** A prefix holding one ref is no
+folder: that ref stays one row under its full remaining name. Folders start folded (CH53). The unfolded ones are kept on the
+device per user and repository, as a view detail, and pruned only against a complete read of the refs. Each level, the
+group's top and every unfolded folder, draws its first 20 entries with its own "Show N more" row; how many are shown is not
+kept. Filtering unfolds the folders holding matches without remembering it. Each group has a button naming its order,
+"Newest first" or "By name" (natural order, `v99` before `v100`, folders first), which opens a menu of the two; the choice is
+one for Branches and one for Tags, the same in every repository, and is synced
+([settings-sync D7](../settings-sync/DECISIONS.md#d7), CH60). (2026-11-14, owner: "loading more should work in the scope of
+the folder that is expanded", "so a hundred testing/v123 tags don't load"; "newest first is clearer than an arrow")
 
 **A branch's pull request number in the list is a real link, as in the graph (D18): a plain click opens it as any item
 opens and the list gives way, its filter cleared; right, middle and modified clicks are the browser's; neither chooses
@@ -307,6 +337,7 @@ both, so it has one place and one width. Panel widths are local ([settings-sync 
   [history](history/DECISIONS.md#d15)).
 - `J`/`K` through the matches (the first CH30) — in a filter they are letters, and names like `jan/x` or `k8s` must stay
   typable (owner, 2026-11-03).
+- An arrow icon for the sort direction — the button's words say the order better (owner, 2026-11-14).
 - Building the list on `FilterList` — it always highlights its first row, has one message per list and a plain heading;
   extending it for this one list costs more than the keys it would share (owner, 2026-11-03).
 - In the column, judging the threshold on the window less the column — a threshold nobody can tell from the window's
@@ -328,6 +359,9 @@ both layouts, it sits under the graph at the pane's full width and a fixed 45% o
 covers the graph only.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29,
 CH42; on the right with the list staying by the owner 2026-11-03; following the selection, the default branch's start, `Esc`,
 the width and the place under the graph by the owner 2026-11-03, the numbers the agent's)
+
+**The keys footer of the details goes: each key sits on the row it acts on** (`⇧↵` on the pull request, `P`/`⇧P` on the
+parents). (2026-11-14, owner's layout CH55, [D13](#d13))
 
 **Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
 it, which a modal or a page would hide. Selecting a commit is already asking about it, so a key to see it adds a step and
@@ -374,13 +408,23 @@ graph is worth the width. Panel widths are local ([settings-sync D7](../settings
 
 **A row reads: graph, worktree markers (desktop), branches and tags, headline, then right after the headline the
 pull request's state and number, the number a link to it that opens it as any item opens, and the CI mark; the author (16 px avatar and name) and the age are aligned at the
-right edge. Rows alternate with a very faint stripe. A failing commit is a red dot and a red ✕ after its pull request,
-and its text is never red; running is amber in both places. A merge is a hollow dot with a dimmed headline. Pull request
+right edge. Rows alternate with a very faint stripe. A failing commit keeps its lane-coloured ring with a red centre, 1 px of the row's
+background between them, and a red ✕ after its pull request, and its text is never red; running is amber in both places
+(CH61). A merge is a hollow dot, in its lane's colour, with a dimmed headline. Pull request
 and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open, the column layout) the
 headline is cut first and the author's name gives way to the avatar.** (2026-11-02, owner: pull request and checks to
 the right of the headline, "not somewhere far right in a separate column"; the author as avatar and name, the avatar a
 little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
 the narrow-row rule is the design agent's; CH12, CH34; the link by the owner 2026-11-03)
+
+**The row's surface and the graph.** The selected and the hovered surface span the whole row with the graph column, the
+lanes drawn over it unbroken, and the pointer is on the whole row; the dot gets a ring, soft on hover and accent on the
+selected row (CH54). The pull request mark is an outlined chip, 4 px after the headline, the CI mark outside it (CH59).
+Lanes are coloured from an 8-colour palette by lane, none red or amber; the default branch stays light grey, the folded lane
+is the darker grey; dots are r = 3 (CH61). (2026-11-14, owner: "the frame is only on the commit's name, I want it wide with
+its node; I can click the node but the cursor doesn't change"; "the PR number blends with the branch name… maybe put it in a
+small frame"; "like Fork renders it… different branches different colours… the nodes a bit smaller"; the failing mark: the
+owner picked A, "leave one pixel of margin so it doesn't blend")
 
 **The CI mark is no link of its own: a click on it is a click on its row, which opens that commit's details, where its
 checks are listed (D24).** (2026-11-04, owner)
@@ -393,6 +437,8 @@ right commit. The stripe carries the eye from a dot far to the left to its row i
 - Pull request and CI in fixed columns at the right edge — read badly, far from the headline (owner).
 - A red headline or a red-tinted row for a failure (owner; the screens were CH13, CH14, deleted).
 - The author as an avatar alone (owner).
+- A failing dot that loses its lane colour (B), and a red halo that clashes with the selection ring (C) — the owner picked
+  A (2026-11-14).
 
 ## D19
 

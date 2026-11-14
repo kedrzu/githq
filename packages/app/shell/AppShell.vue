@@ -1,11 +1,12 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum, and whether the window holds the panel at all, at its minimum beside the screen at its own (`panelFits`) — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum, and whether the window holds the panel at all, at its minimum beside the screen at its own (`panelFits`) — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. In the phone layout (`phone`, mobile D5) the screen fills the window, with no sidebar, panel, splitter nor status bar, and items open on their page (`panelFits` off): over it the phone's top bar with the places button, unless the screen draws its own (`ownTopBar`, a list's or an item's), each top bar with the strip under it while offline or paused (mobile D12, `PhoneShellContext`); the command line floating over its bottom (`commandLine`), the screen's scroll ending with room for it; and the places panel from the left (`PlacesPanel`), open while `PhoneLayout` says, which the screen's list and item never mount under. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { provideContext } from '@nzyme/vue-utils/context.js';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
@@ -20,6 +21,10 @@ import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import * as l from './AppShell.loc.js';
 import FreshnessSegment from './FreshnessSegment.vue';
+import { PhoneLayout } from './PhoneLayout.js';
+import { PhoneShellContext } from './PhoneShellContext.js';
+import PhoneTopBar from './PhoneTopBar.vue';
+import PlacesPanel from './PlacesPanel.vue';
 import type { SegmentEdits } from './SegmentEdits.js';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
@@ -56,6 +61,10 @@ const props = defineProps<{
   draftReviews?: number;
   /** The screen wants the rail (a code review): shown as long as this is on, the remembered `collapsed` left as it is. */
   railForced?: boolean;
+  /** The phone layout (mobile D5, `PhoneLayout.active`). */
+  phone?: boolean;
+  /** On a phone, the screen draws its top bar itself (a list's, an item's): the shell draws none. */
+  ownTopBar?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -73,6 +82,8 @@ defineSlots<{
   panel?(): unknown;
   /** The entries of a tracked project's or repository's context menu in the sidebar. */
   trackedMenu?(props: { target: TrackedTarget }): unknown;
+  /** On a phone, the command line floating over the screen's bottom (`PhoneCommandLine`). */
+  commandLine?(): unknown;
 }>();
 
 /** The sidebar collapsed to the rail, as the user keeps it. */
@@ -86,6 +97,7 @@ const rail = computed(() => props.railForced || collapsed.value);
 const panelFits = defineModel<boolean>('panelFits', { default: true });
 
 const windowControls = useService(WindowControls);
+const phoneLayout = useService(PhoneLayout);
 /** `$sidebar-rail-width`, or room for macOS's window controls over it; the user does not resize the rail. */
 const sidebarRailWidth = computed(() => (windowControls.overlaid ? 80 : 56));
 /** What is left to the screen (the list), at least, in pixels: the item panel grows as wide as the window allows. */
@@ -107,28 +119,42 @@ const besideSidebar = computed(() => surfacesWidth.value - (rail.value ? sidebar
 // The panel stops where the screen would get narrower than its minimum, so dragging it never squeezes the sidebar.
 const panelMaxWidth = computed(() => Math.max(panelWidth.min, besideSidebar.value - SCREEN_MIN_WIDTH));
 
-// Whether the panel fits at all: at its minimum, beside the screen at its own.
+// Whether the panel fits at all: at its minimum, beside the screen at its own. Never on a phone.
 watch(
-  () => besideSidebar.value >= SCREEN_MIN_WIDTH + panelWidth.min,
+  () => !props.phone && besideSidebar.value >= SCREEN_MIN_WIDTH + panelWidth.min,
   fits => {
     panelFits.value = fits;
   },
   { immediate: true },
 );
 
-let observer: ResizeObserver | undefined;
-onMounted(() => {
-  const element = surfaces.value?.$el as HTMLElement | undefined;
-  if (element) {
-    observer = new ResizeObserver(([entry]) => {
+provideContext(PhoneShellContext, {
+  get notice() {
+    return props.notice;
+  },
+  get lastRefreshedAt() {
+    return props.lastRefreshedAt ?? null;
+  },
+});
+
+// The surfaces are there outside the phone layout only, which the window can enter and leave.
+watch(
+  () => surfaces.value?.$el as HTMLElement | undefined,
+  (element, _, onCleanup) => {
+    if (!element) {
+      return;
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
       if (entry) {
         surfacesWidth.value = entry.contentRect.width;
       }
     });
     observer.observe(element);
-  }
-});
-onBeforeUnmount(() => observer?.disconnect());
+    onCleanup(() => observer.disconnect());
+  },
+  { flush: 'post', immediate: true },
+);
 
 // `[` collapses or expands the sidebar, unless the key is being typed into something; a forced rail doesn't toggle.
 useCommands(() => [
@@ -138,7 +164,7 @@ useCommands(() => [
     section: 'app',
     key: APP_KEYS.sidebar,
     icon: collapsed.value ? PanelLeftOpen : PanelLeftClose,
-    when: () => !props.railForced,
+    when: () => !props.railForced && !props.phone,
     run: toggle,
   },
 ]);
@@ -176,6 +202,45 @@ function onLayout(sizes: number[]) {
 
 <template>
   <div
+    v-if="phone"
+    :class="[css.appShell, css.appShell_phone]"
+  >
+    <PhoneTopBar v-if="!ownTopBar" />
+    <main :class="css.appShell_phoneScreen">
+      <slot />
+      <!-- An item the address opens over the screen moves to its page at once, there being no room (`OpenedItem`). -->
+      <div
+        v-if="$slots.panel"
+        :class="css.appShell_phonePanel"
+      >
+        <slot name="panel" />
+      </div>
+    </main>
+    <div
+      v-if="$slots.commandLine"
+      :class="css.appShell_commandLine"
+    >
+      <slot name="commandLine" />
+    </div>
+    <PlacesPanel
+      :open="phoneLayout.placesOpen"
+      :viewer="viewer"
+      :counts="myWorkCounts"
+      :tracked="tracked"
+      :settings-sync-stopped="settingsSyncStopped"
+      :freshness="freshness"
+      :edits="edits"
+      :rate-limit="rateLimit"
+      :notice="notice"
+      :last-refreshed-at="lastRefreshedAt"
+      :download="download"
+      @update:open="phoneLayout.setPlacesOpen"
+      @sign-out="emit('signOut')"
+      @show-failure="emit('showFailure')"
+    />
+  </div>
+  <div
+    v-else
     :class="css.appShell"
     :style="{
       '--sidebar-width': `${sidebarWidth.current}px`,
@@ -297,6 +362,45 @@ function onLayout(sizes: number[]) {
   height: 100vh;
   overflow: hidden;
   background: $color-bg;
+}
+
+// The window's visible height, which on a phone's browser is not `100vh` while its bars show.
+.appShell_phone {
+  position: relative;
+  height: 100dvh;
+}
+
+.appShell_phoneScreen {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+
+  // The screen's scroll — the outermost container a route scrolls in (`shell/routeScroll.ts`) — goes on under the
+  // command line and ends with room for it, so its last row comes up above it; what is scrolled into view stays clear
+  // of it.
+  :global([data-route-scroll]:not([data-route-scroll] [data-route-scroll])) {
+    padding-bottom: $phone-command-line-room;
+    scroll-padding-bottom: $phone-command-line-room;
+  }
+}
+
+.appShell_phonePanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: $color-bg;
+}
+
+.appShell_commandLine {
+  position: absolute;
+  right: $phone-command-line-gap;
+  bottom: calc(#{$phone-command-line-gap} + env(safe-area-inset-bottom, 0px));
+  left: $phone-command-line-gap;
+  z-index: 5;
 }
 
 .appShell_surfaces {

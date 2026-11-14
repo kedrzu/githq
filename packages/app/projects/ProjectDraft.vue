@@ -1,4 +1,4 @@
-<!-- A draft issue of a project as its row or card shows it (D4, D5): no repository or number, a "Draft" marker in their place, its title, its assignees and the values of the fields the view shows. One still on its way to GitHub says so. The list draws the row or card, its selection and its handlers. -->
+<!-- A draft issue of a project as its row or card shows it (D4, D5): no repository or number, a "Draft" marker in their place, its title with its assignees right after it in a row, and the values of the fields the view shows. One still on its way to GitHub says so. The list draws the row or card, its selection and its handlers. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, FilePen } from 'lucide-vue-next';
@@ -48,17 +48,19 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
       :class="css.projectDraft_marker"
       >{{ t(l.draft) }}</span
     >
-    <span :class="css.projectDraft_title">{{ item.draft?.title }}</span>
-    <span :class="css.projectDraft_people">
-      <template v-if="people">
-        <Avatar
-          v-for="person in item.draft?.assignees ?? []"
-          :key="person.login"
-          :name="person.login"
-          :src="person.avatarUrl"
-          size="xs"
-        />
-      </template>
+    <span :class="css.projectDraft_line">
+      <span :class="css.projectDraft_title">{{ item.draft?.title }}</span>
+      <span :class="css.projectDraft_people">
+        <template v-if="people">
+          <Avatar
+            v-for="person in item.draft?.assignees ?? []"
+            :key="person.login"
+            :name="person.login"
+            :src="person.avatarUrl"
+            size="xs"
+          />
+        </template>
+      </span>
     </span>
     <div :class="css.projectDraft_meta">
       <span
@@ -80,8 +82,8 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
 </template>
 
 <style lang="scss" module="css">
-// A row: the icon, then the title and the people, the marker and the values under them. A card: the icon, the
-// marker and the people, the title under them, then the values.
+// A row: the icon, then the title with the people right after it, the marker and the values under them. A card: the
+// icon, the marker and the people, the title under them, then the values.
 .projectDraft {
   display: grid;
   gap: 5px $spacing-10;
@@ -92,9 +94,9 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
 
 .projectDraft_row {
   grid-template-areas:
-    'icon title people'
-    '. meta meta';
-  grid-template-columns: 15px minmax(0, 1fr) auto;
+    'icon line'
+    '. meta';
+  grid-template-columns: 15px minmax(0, 1fr);
   padding: 7px $spacing-16;
 }
 
@@ -106,6 +108,19 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
   grid-template-columns: 15px minmax(0, 1fr) auto;
   gap: $spacing-8;
   padding: $spacing-10 $spacing-12;
+}
+
+// A row's title line, no spacer: the title gives way first when narrow. A card places the two apart.
+.projectDraft_line {
+  display: flex;
+  grid-area: line;
+  gap: $spacing-8;
+  align-items: center;
+  min-width: 0;
+
+  .projectDraft_card & {
+    display: contents;
+  }
 }
 
 .projectDraft_icon,
@@ -150,6 +165,7 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
 
 .projectDraft_people {
   display: inline-flex;
+  flex: none;
   grid-area: people;
   gap: 2px;
 }

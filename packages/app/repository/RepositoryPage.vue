@@ -66,7 +66,6 @@ const sync = useService(SyncEngine);
 const route = useRoute();
 const router = useRouter();
 const t = useTranslate();
-const list = useItemList();
 const tabs = useService(LastRepositoryTab);
 const workflowPlaces = useService(WorkflowTabPlaces);
 const graphView = useTemplateRef<InstanceType<typeof CommitGraphView>>('graphView');
@@ -93,6 +92,8 @@ const section = computed({
 });
 /** The item section whose state and view options the page holds: the one shown; on Commits, which lists none, Issues. */
 const listSection = computed((): RepositoryItemSection => (isItemSection(section.value) ? section.value : 'issues'));
+// Back on an item opened from here names the section (mobile D20).
+const list = useItemList(() => t(l[listSection.value]));
 const itemsShown = computed(() => isItemSection(section.value));
 const state = computed({
   get: () => states.value[listSection.value],

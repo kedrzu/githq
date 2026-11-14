@@ -12,12 +12,14 @@ import { useRoute, useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import type { GetExpandedLocationParams, OpenedItemKindRoutes } from './defineOpenedItemKind.js';
 import { ItemNavigation } from './ItemNavigation.js';
+import { getHistoryBack } from './itemRoutes.js';
 import type { ItemArrangement } from './itemRoutes.js';
 import * as l from './useItemArrangement.loc.js';
 import { useItemWalk } from './useItemWalk.js';
@@ -90,12 +92,21 @@ export interface UseItemArrangementOptions<TReference> {
     pagePath?: MaybeRefOrGetter<string | undefined>;
     /** The item's id among the list's steps (`ItemNavigation.list`); `null` until found. */
     id: MaybeRefOrGetter<string | null>;
+    /** Where closing goes when no list is behind the item (mobile D20): its repository's section of its kind. */
+    parent: MaybeRefOrGetter<ItemParent>;
     /** Where a step of the list opens, by its id: `K`/`J` and {@link ItemArrangementViewModel.openInPlace}. */
     resolveStep(id: string): GetExpandedLocationParams<TReference> | null;
     /** The item may not move to its page yet when the panel stops fitting (an open edit the move would lose). */
     holdsPanel?: () => boolean;
     /** Leaving the item asks first: unsaved changes. */
     guard?: ItemLeaveGuard;
+}
+
+/** Where an item opened with no list behind it goes up to, and what back on a phone calls it. */
+export interface ItemParent {
+    readonly path: string;
+    /** What back on a phone says it returns to (mobile D20): the repository's name. */
+    readonly title: string;
 }
 
 /** What stops the user leaving an opened item. */
@@ -112,9 +123,11 @@ export interface ItemLeaveGuard {
 export interface ItemArrangementViewModel<TReference> {
     /** The walk through the list the item was opened from. */
     readonly walk: ItemWalkViewModel;
+    /** What back on a phone says it returns to (mobile D20): the list's name, or with no list the parent's. */
+    readonly backTitle: string;
     /** "Open full screen" and "Back to the panel". */
     arrange(arrangement: ItemArrangement): void;
-    /** Escape and the close button. */
+    /** Escape, the close button, and back on a phone. */
     close(): void;
     /** `K`/`J`: a step through the list, in the item's place. */
     step(delta: 1 | -1): void;
@@ -134,14 +147,17 @@ export interface ItemArrangementViewModel<TReference> {
  * panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window
  * narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once
  * {@link UseItemArrangementOptions.holdsPanel} lets it — and widening never brings it back; closing goes back to the
- * list. Moving to another item of the list replaces the address; opening another item or closing adds one, so Back
- * returns. With a {@link ItemLeaveGuard}, leaving the item may ask first, and its Discard goes on where the user was
+ * list, or with no list behind the item (opened by its address or a link) up to its parent (mobile D20, the computer
+ * too). On a phone the page's back goes there too, by the history's Back when the entry behind is that list, so it
+ * comes back scrolled and selected. Moving to another item of the list replaces the address; opening another item or
+ * closing adds one, so Back returns. With a {@link ItemLeaveGuard}, leaving the item may ask first, and its Discard goes on where the user was
  * going.
  */
 export function useItemArrangement<TReference>(
     options: UseItemArrangementOptions<TReference>,
 ): ItemArrangementViewModel<TReference> {
     const navigation = useService(ItemNavigation);
+    const phone = useService(PhoneLayout);
     const route = useRoute();
     const router = useRouter();
     const { routes, guard } = options;
@@ -150,6 +166,7 @@ export function useItemArrangement<TReference>(
     const arrangement = makeRef(options.arrangement);
     const pagePath = makeRef(options.pagePath);
     const id = makeRef(options.id);
+    const parent = makeRef(options.parent);
     // How the item's own navigation on its way goes — adding to the history or replacing the address (`moveTo`).
     let movingBy: HistoryMove | null = null;
     // In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
@@ -159,6 +176,21 @@ export function useItemArrangement<TReference>(
         id,
         followsCursor: () => arrangement.value === 'panel',
     });
+    /**
+     * The list the item was opened from: the last one shown, while the item is in it. An item opened from a link after a
+     * list was shown, or one not found (yet, or at all), has no list behind it (mobile D20) — an item opened from a list
+     * is always found, as the list holds it.
+     */
+    const ownList = computed(() => {
+        const { list } = navigation;
+        const current = id.value;
+        return list?.kind === routes.kind &&
+            current !== null &&
+            (list.steps.includes(current) || list.stepOf.has(current))
+            ? list
+            : null;
+    });
+    const backTitle = computed(() => ownList.value?.title ?? parent.value.title);
 
     // In the panel, a window narrowed until the panel no longer fits beside the screen moves the item to its page, in place
     // of the address — but not while `holdsPanel` says so: it moves once that lets go. Widening never brings it back. The
@@ -177,7 +209,16 @@ export function useItemArrangement<TReference>(
         guardLeaving(guard);
     }
 
-    return { walk, arrange, close, step, openInPlace, open, navigate };
+    return reactive<ItemArrangementViewModel<TReference>>({
+        walk,
+        backTitle,
+        arrange,
+        close,
+        step,
+        openInPlace,
+        open,
+        navigate,
+    });
 
     /**
      * Leaving the item — `K`/`J`, another item opened, closing it, anywhere else — while the guard asks first: the item
@@ -315,8 +356,16 @@ export function useItemArrangement<TReference>(
         });
     }
 
-    /** Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list. */
+    /**
+     * Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list,
+     * or with none up to the parent. On a phone the page's back.
+     */
     function close() {
+        if (phone.active && arrangement.value === 'page') {
+            goBack();
+            return;
+        }
+
         if (expandedFrom() !== null && navigation.panelFits) {
             backToPanel();
             return;
@@ -328,19 +377,36 @@ export function useItemArrangement<TReference>(
         );
     }
 
+    /**
+     * Back on a phone (mobile D20): to the list the item was opened from — by the history's Back when the entry behind is
+     * that list, so it comes back scrolled and selected as it was, else to its address; with no list, up to the parent.
+     */
+    function goBack() {
+        const list = ownList.value;
+        const behind = getHistoryBack(router.options.history.state);
+        if (list && behind !== null && router.resolve(behind).fullPath === router.resolve(list.path).fullPath) {
+            router.back();
+            return;
+        }
+
+        moveTo(listPath(), 'push');
+    }
+
     /** Where `target` opens in `to`: its page (`path`, else the kind's address of it), or the list with it opened over it. */
     function locate(target: TReference, to: ItemArrangement, path?: string): RouteLocationRaw {
         if (to === 'page') {
             return path ?? routes.getPagePath(target);
         }
 
-        // From the item's page, back over the list it came from.
-        const list = arrangement.value === 'page' ? router.resolve(listPath()) : route;
+        // From the item's page, back over the list shown last — My work before any (closing and back go to the item's own
+        // list or its parent instead, mobile D20).
+        const list = arrangement.value === 'page' ? router.resolve(navigation.list?.path ?? '/') : route;
         return { path: list.path, query: routes.getQuery(list.query, target) };
     }
 
+    /** The list the item was opened from; with none, its parent (mobile D20). */
     function listPath() {
-        return navigation.list?.path ?? '/';
+        return ownList.value?.path ?? parent.value.path;
     }
 }
 

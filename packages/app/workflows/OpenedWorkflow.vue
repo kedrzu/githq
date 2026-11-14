@@ -1,4 +1,4 @@
-<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key) —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
+<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key), or with no list behind it (opened by its address) up to the repository's Workflows section —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -12,6 +12,7 @@ import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
 import { useItemArrangement } from '@/item/useItemArrangement.js';
 import { useNow } from '@/services/useNow.js';
+import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import * as l from './OpenedWorkflow.loc.js';
@@ -49,6 +50,8 @@ const arranging = useItemArrangement({
   arrangement: () => props.arrangement,
   // Its key among the steps of a list of workflows: found once it is among the repository's workflows.
   id: () => (opened.state ? WorkflowRoutes.formatKey(props.reference) : null),
+  // With no list behind it, closing goes up to its repository's Workflows section.
+  parent: () => ({ path: getRepositoryPath(opened.nameWithOwner, 'workflows'), title: opened.nameWithOwner }),
   resolveStep: key => {
     const reference = parseWorkflowKey(key);
     return reference && { reference };

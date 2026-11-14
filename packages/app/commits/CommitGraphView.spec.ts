@@ -1,4 +1,5 @@
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
+import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -34,6 +35,24 @@ const REPOSITORY = 'acme/web';
 const SHARE_KEY = 'githq.panelShare.commitGraph';
 const COMMITS = '/acme/web/commits';
 const RUN = '/acme/web/actions/runs/1';
+/** `$color-accent` and `$color-fg-3`, as computed. */
+const ACCENT = 'rgb(123, 135, 247)';
+const FG_3 = 'rgb(101, 108, 118)';
+/** `$color-graph-line`, `$color-graph-line-main`, `$color-graph-lane-1…8`, `$color-red` and `$color-amber`, as computed. */
+const GRAPH_LINE = FG_3;
+const GRAPH_LINE_MAIN = 'rgb(139, 146, 155)';
+const LANES = [
+    'rgb(88, 153, 228)',
+    'rgb(145, 181, 74)',
+    'rgb(177, 144, 234)',
+    'rgb(65, 170, 144)',
+    'rgb(199, 132, 205)',
+    'rgb(57, 174, 198)',
+    'rgb(93, 182, 105)',
+    'rgb(134, 174, 203)',
+];
+const RED = 'rgb(248, 81, 73)';
+const AMBER = 'rgb(210, 153, 34)';
 
 test('only the rows near the viewport are drawn: a 5,000-commit graph draws a few dozen, and asks the state of those on screen only', async () => {
     // Wide, so the details sit beside the graph and the pane keeps the section's whole height.
@@ -111,6 +130,33 @@ test('D18, CH34: not known yet is an empty bar, never a blank; a commit with no 
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 });
 
+test('CH59: a commit with a pull request keeps its 32 px row, the pull request a chip with the CI mark outside it', async () => {
+    const states = new Map<string, CommitState>([
+        [
+            'c1',
+            {
+                pullRequest: {
+                    number: 1203,
+                    state: 'MERGED',
+                    title: 'Fix',
+                    url: 'https://github.com/acme/web/pull/1203',
+                    isDraft: false,
+                },
+                ci: 'FAILURE',
+            },
+        ],
+    ]);
+    await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)], states });
+    const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
+    const chip = row('Commit c1').getByRole('link', { name: /1203/ });
+    await expect.element(chip).toBeVisible();
+    expect(getComputedStyle(chip.element()).borderTopWidth).toBe('1px');
+    expect(chip.element().querySelector('[aria-label="Checks failing"]')).toBeNull();
+    await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
+    expect(row('Commit c1').element().getBoundingClientRect().height).toBe(32);
+    expect(row('Commit c2').element().getBoundingClientRect().height).toBe(32);
+});
+
 test("CH23: the cursor starts on the default branch's tip; J/K and the arrows move it, a click moves it there", async () => {
     await mount(sampleWebappHistory());
 
@@ -129,6 +175,36 @@ test("CH23: the cursor starts on the default branch's tip; J/K and the arrows mo
 
     await userEvent.click(graphText('chore: bump vite to 6.2'));
     await expect.poll(() => cursor()?.textContent).toContain('chore: bump vite to 6.2');
+});
+
+test("CH54: the row's surface spans the graph; its dot is ringed softly under the mouse and in the accent on the cursor's row, a click on the dot moving the cursor there", async () => {
+    // Wide, so the rows are all on screen for the mouse.
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    const row = (text: string) => page.getByRole('listitem').filter({ hasText: text }).element();
+    const chore = row('chore: bump vite to 6.2');
+
+    // Both from the row's left edge, the graph column included.
+    expect(getComputedStyle(chore, '::after').left).toBe('4px');
+    expect(getComputedStyle(cursor()!, '::after').left).toBe('4px');
+    expect(getComputedStyle(chore).cursor).toBe('pointer');
+    // The mouse on the cursor's row, which keeps its accent.
+    await userEvent.hover(cursor()!);
+    expect(getRing(cursor()!)).toEqual({ stroke: ACCENT, opacity: '1' });
+    expect(getRing(chore).opacity).toBe('0');
+
+    await userEvent.hover(chore);
+    await expect.poll(() => getRing(chore)).toEqual({ stroke: FG_3, opacity: '0.5' });
+    expect(getRing(cursor()!).opacity).toBe('1');
+
+    // The dot's own circle, drawn last, at the ring's centre.
+    const dot = [...chore.querySelector('svg')!.querySelectorAll('circle')].at(-1)!;
+    await userEvent.click(dot);
+    await expect.poll(() => cursor()?.textContent).toContain('chore: bump vite to 6.2');
+    await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
+    expect(getRing(chore)).toEqual({ stroke: ACCENT, opacity: '1' });
 });
 
 test('the cursor starts on the top row when there is no default branch', async () => {
@@ -472,6 +548,63 @@ test('D17, CH10: by default a tenth of the pane: the lanes past those that fit s
         await userEvent.keyboard('j');
         await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe(String(position));
     }
+});
+
+test("CH61: each lane in its palette colour, the first lane taking the first without a default branch's; the fold the darker grey, its dots the light one", async () => {
+    await mount({ commits: parallelBranches(14), defaultBranch: null });
+    await expect.poll(() => graphCells().length).toBe(15);
+    const strokesAt = (lane: number) =>
+        new Set(
+            [...document.querySelectorAll('li svg path')]
+                .filter(path => path.getAttribute('d')?.startsWith(`M${8 + (lane + 0.5) * 12} 0V32`))
+                .map(path => getComputedStyle(path).stroke),
+        );
+
+    expect(strokesAt(0)).toEqual(new Set([LANES[0]]));
+    expect(strokesAt(1)).toEqual(new Set([LANES[1]]));
+    expect(strokesAt(6)).toEqual(new Set([LANES[6]]));
+    // The eighth lane holds the seven past it.
+    expect(strokesAt(7)).toEqual(new Set([GRAPH_LINE]));
+    const cells = graphCells();
+    expect(getDot(cells[0]).fill).toBe(LANES[0]);
+    expect(getDot(cells[1]).fill).toBe(LANES[1]);
+    expect(getDot(cells[7]).fill).toBe(GRAPH_LINE_MAIN);
+    expect(getDot(cells[13]).fill).toBe(GRAPH_LINE_MAIN);
+});
+
+test("CH61: the default branch's lane in its grey, the next lanes in the palette from its first colour; a merge hollow; a failing dot a red disc inside its lane's ring, the lines cut inside it, a running one amber", async () => {
+    await mount(sampleWebappHistory());
+    const cell = (text: string) =>
+        page.getByRole('listitem').filter({ hasText: text }).element().querySelector('svg') ?? undefined;
+    await expect.poll(() => cell('Initial commit')).toBeDefined();
+    const strokes = (svg: SVGSVGElement | undefined) =>
+        new Set([...(svg?.querySelectorAll('path') ?? [])].map(path => getComputedStyle(path).stroke));
+
+    // The merge on the default branch, hollow in its grey; the lane beside it the palette's first.
+    const merge = cell('Merge pull request #1226');
+    expect(getDot(merge)).toEqual({ fill: 'none', stroke: GRAPH_LINE_MAIN });
+    expect(strokes(merge)).toContain(GRAPH_LINE_MAIN);
+    expect(strokes(merge)).toContain(LANES[0]);
+    expect(merge?.querySelector('g')?.getAttribute('mask')).toMatch(/^url\(#.+\)$/);
+    // A plain dot is filled, and nothing is cut under it.
+    const chore = cell('chore: bump vite to 6.2');
+    expect(getDot(chore)).toEqual({ fill: GRAPH_LINE_MAIN, stroke: 'none' });
+    expect(chore?.querySelector('g')?.hasAttribute('mask')).toBe(false);
+
+    // Running, on the first lane past the default branch's; failing, on the next.
+    await expect.poll(() => getDot(cell('feat: preview a class while dragging it')).fill).toBe(AMBER);
+    expect(getMarker(cell('feat: preview a class while dragging it'))).toEqual({
+        ring: { fill: 'none', stroke: LANES[0], outer: 5 },
+        disc: { fill: AMBER, r: 2.5 },
+        cut: 3.5,
+    });
+    expect(getMarker(cell("fix: booking time uses the studio's timezone"))).toEqual({
+        ring: { fill: 'none', stroke: LANES[1], outer: 5 },
+        disc: { fill: RED, r: 2.5 },
+        cut: 3.5,
+    });
+    // Failing on the default branch's lane: its grey ring.
+    expect(getMarker(cell('chore: prepare the 4.2.1 release')).ring.stroke).toBe(GRAPH_LINE_MAIN);
 });
 
 test('D17: folded at any width the lanes stay continuous: each row ends where the next one starts', async () => {
@@ -1651,6 +1784,35 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('main');
 });
 
+test("a row's author and age follow its headline and marks 8px apart; a long headline gives way first, the age staying whole", async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const states = new Map<string, CommitState>([['c1', { pullRequest: samplePullRequest(1203), ci: 'FAILURE' }]]);
+    const longHeadline = `fix: ${'a headline that goes on and on '.repeat(12)}`;
+    await mount({
+        commits: [{ ...sampleCommit('c2', 20, ['c1']), headline: longHeadline }, sampleCommit('c1', 10)],
+        states,
+    });
+    const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
+    await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
+
+    const short = row('Commit c1').element();
+    const message = assertValue(short.querySelector('time')?.previousElementSibling?.previousElementSibling);
+    const author = assertValue(short.querySelector('time')?.previousElementSibling);
+    const age = assertValue(short.querySelector('time'));
+    expect(message.textContent).toContain('#1203');
+    expect(author.getBoundingClientRect().left - message.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(age.getBoundingClientRect().left - author.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(age.getBoundingClientRect().right).toBeLessThan(short.getBoundingClientRect().right - 100);
+
+    const long = row('a headline that goes').element();
+    const clipped = page.getByRole('listitem').getByText(longHeadline, { exact: true }).element();
+    expect(clipped.scrollWidth).toBeGreaterThan(clipped.clientWidth);
+    const longAge = assertValue(long.querySelector('time'));
+    expect(longAge.scrollWidth).toBeLessThanOrEqual(longAge.clientWidth);
+    expect(longAge.getBoundingClientRect().right).toBeLessThanOrEqual(long.getBoundingClientRect().right);
+});
+
 /** Esc: the details close, and the pane is the graph's again. */
 async function closeDetails() {
     await userEvent.keyboard('{Escape}');
@@ -1961,10 +2123,28 @@ function cursor() {
     return document.querySelector('li[aria-current="true"]');
 }
 
-/** Whether the row under the cursor looks it: its surface outlined in the accent, as a list's selected row. */
+/** Whether the row under the cursor looks it: its surface outlined in the accent, as a list's selected row, and its dot ringed. */
 function cursorDrawn() {
     const row = cursor();
-    return row !== null && getComputedStyle(row, '::after').boxShadow !== 'none';
+    if (row === null) {
+        return false;
+    }
+
+    const surface = getComputedStyle(row, '::after').boxShadow !== 'none';
+    // Both or neither.
+    expect(getRing(row).opacity).toBe(surface ? '1' : '0');
+    return surface;
+}
+
+/** How a row's dot is ringed (CH54): the first circle of its slice of the graph, under the lines. */
+function getRing(row: Element) {
+    const ring = row.querySelector('svg')?.querySelector('circle');
+    if (!ring) {
+        throw new Error('No ring');
+    }
+
+    const style = getComputedStyle(ring);
+    return { stroke: style.stroke, opacity: style.opacity };
 }
 
 /** The rows' slices of the graph, each the first drawing of its row. */
@@ -1974,6 +2154,39 @@ function graphCells() {
 
 function dotsX() {
     return graphCells().map(cell => Number(cell.querySelector('circle')?.getAttribute('cx')));
+}
+
+/** A row's dot as drawn: the last circle of its slice of the graph. */
+function getDot(cell: SVGSVGElement | undefined) {
+    const dot = [...(cell?.querySelectorAll('circle') ?? [])].at(-1);
+    if (!dot) {
+        throw new Error('No dot');
+    }
+
+    const style = getComputedStyle(dot);
+    return { fill: style.fill, stroke: style.stroke };
+}
+
+/** A failing or running dot: its ring (its outer edge), the disc inside, and how far round it the lines are cut. */
+function getMarker(cell: SVGSVGElement | undefined) {
+    const circles = [...(cell?.querySelectorAll('circle') ?? [])];
+    const [ring, disc] = circles.slice(-2);
+    const maskId = /^url\(#(.+)\)$/.exec(cell?.querySelector('g')?.getAttribute('mask') ?? '')?.[1];
+    const cut = maskId === undefined ? undefined : cell?.querySelector(`[id="${maskId}"] circle`);
+    if (!ring || !disc || !cut) {
+        throw new Error('No marker');
+    }
+
+    const ringStyle = getComputedStyle(ring);
+    return {
+        ring: {
+            fill: ringStyle.fill,
+            stroke: ringStyle.stroke,
+            outer: Number(ring.getAttribute('r')) + Number.parseFloat(ringStyle.strokeWidth) / 2,
+        },
+        disc: { fill: getComputedStyle(disc).fill, r: Number(disc.getAttribute('r')) },
+        cut: Number(cut.getAttribute('r')),
+    };
 }
 
 /** Where the lines reach a row's top or bottom edge. */

@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected — with no list (opened by its address or a link), to the item's repository, its Issues or Pull requests by the item's kind (mobile D20, the computer too). On a phone the view's top bar has back, naming where it goes — the list, or with none the repository — which returns by the history's Back when the entry behind is that list, so it comes back scrolled and selected, else goes to its address. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -23,8 +23,12 @@ import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemLookedStore } from '@/store/ItemLookedStore.js';
 import type { ItemOpening } from '@/store/ItemLookedStore.js';
+import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneBackButton from '@/shell/PhoneBackButton.vue';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
@@ -49,6 +53,7 @@ const TICK_MS = 30_000;
 const t = useTranslate();
 const details = useService(ItemDetailStore);
 const navigation = useService(ItemNavigation);
+const phone = useService(PhoneLayout);
 const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
 const auth = useService(AuthStore);
@@ -60,6 +65,10 @@ const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
+/** The item's repository, as GitHub names it once the item is known. */
+const repositoryName = computed(
+  () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
+);
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 const arranging = useItemArrangement({
   routes: IssueRoutes,
@@ -67,6 +76,14 @@ const arranging = useItemArrangement({
   arrangement: () => props.arrangement,
   pagePath: () => getItemPagePath(props.reference, opened.item?.kind),
   id: () => opened.id,
+  // With no list behind it, closing goes up to the item's repository, its Issues or Pull requests by its kind.
+  parent: () => {
+    const kind = opened.item?.kind ?? (route.name === 'item-pull' ? 'pullRequest' : 'issue');
+    return {
+      path: getRepositoryPath(repositoryName.value, kind === 'pullRequest' ? 'pullRequests' : 'issues'),
+      title: repositoryName.value,
+    };
+  },
   resolveStep,
   // The move to the page would lose an edit open in its thread: it moves once the last one closes.
   holdsPanel: () => viewRef.value?.hasOpenEditor ?? false,
@@ -141,6 +158,8 @@ const waitingDetail = computed(() => {
 
   return opened.failed ? t(l.unreachableDetail) : undefined;
 });
+/** Whether the item's page draws the phone's top bar itself while the item is not there (its route has `ownTopBar`). */
+const showsPhoneBar = computed(() => phone.active && props.arrangement === 'page');
 const closes = computed((): Item[] => {
   const { item } = opened;
   if (item?.kind !== 'pullRequest') {
@@ -347,6 +366,7 @@ interface LookedRead extends ItemOpening {
     :review-draft-first="tracking.reviewCommentChoice === 'draft'"
     :looked-at="opening?.lookedAt ?? null"
     :opened-at="opening?.openedAt ?? null"
+    :back-title="arranging.backTitle"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"
@@ -363,8 +383,17 @@ interface LookedRead extends ItemOpening {
   />
   <div
     v-else
-    :class="css.openedItem_waiting"
+    :class="[css.openedItem_waiting, showsPhoneBar && css.openedItem_waiting_phone]"
   >
+    <!-- On a phone the screen's top bar is the item's (mobile D20), so back is there before the item is. -->
+    <PhoneTopBar v-if="showsPhoneBar">
+      <template #start>
+        <PhoneBackButton
+          :place="arranging.backTitle"
+          @click="arranging.close()"
+        />
+      </template>
+    </PhoneTopBar>
     <EmptyState
       :icon="opened.failed ? CloudOff : SearchX"
       :tone="opened.failed ? 'warning' : 'muted'"
@@ -410,5 +439,15 @@ interface LookedRead extends ItemOpening {
   justify-content: center;
   height: 100%;
   background: $color-bg-item;
+}
+
+// The top bar above, the state in the room left.
+.openedItem_waiting_phone {
+  flex-direction: column;
+  justify-content: flex-start;
+
+  > :last-child {
+    flex: 1;
+  }
 }
 </style>

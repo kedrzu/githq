@@ -1,5 +1,6 @@
 <!-- `/owner/name/actions` (actions W3a, W35, D15): a tracked repository's Workflows section, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A workflow opens as an item (`OpenedWorkflow`): in the panel beside the section when it fits (`?pane=workflow&workflow=…`), else on its page; the one open in the panel expands to its page, marked for Back to the panel; ⇧Enter opens one full screen straight, Esc there coming back here. The section is the list the opened workflow steps through (`ItemNavigation.list`, by `WorkflowRoutes.formatKey`). F opens a workflow's latest failed run on its page in githq (W4a). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there, as from a run's page, comes back here to the same row (`WorkflowTabPlaces`, W13); from a workflow, to the row of the one opened last (`ItemNavigation.lastOpenedId`). -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -13,6 +14,7 @@ import type { RepositoryWorkflowList } from './buildRepositoryWorkflows.js';
 import RepositoryWorkflowsView from './RepositoryWorkflowsView.vue';
 import { useAnyRefRead } from './useAnyRefRead.js';
 import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
+import * as l from './RepositoryWorkflowsTab.loc.js';
 import { getWorkflowFile } from './utils/getWorkflowFile.js';
 import { WorkflowRoutes } from './workflowRoutes.js';
 import type { WorkflowReference } from './workflowRoutes.js';
@@ -26,6 +28,7 @@ const props = defineProps<{
   now: number;
 }>();
 
+const t = useTranslate();
 const browser = useService(Browser);
 const navigation = useService(ItemNavigation);
 const places = useService(WorkflowTabPlaces);
@@ -74,13 +77,14 @@ const listPath = computed(
 
 // Back from a workflow — or with one stepped to in the panel —, the workflow opened last is the selected row; once.
 watch([() => navigation.lastOpenedId, references], ([key, found]) => followOpened(key, found), { immediate: true });
-// What an opened workflow steps through (`⇧J`/`⇧K`), and where closing it comes back to.
+// What an opened workflow steps through (`⇧J`/`⇧K`), and where closing it comes back to, by its name.
 watch(
-  [references, listPath],
-  ([found, path]) =>
+  [references, listPath, () => t(l.title)],
+  ([found, path, title]) =>
     navigation.setList({
       kind: 'workflow',
       path,
+      title,
       steps: [...found.values()].map(reference => WorkflowRoutes.formatKey(reference)),
       stepOf: new Map(),
       around: null,

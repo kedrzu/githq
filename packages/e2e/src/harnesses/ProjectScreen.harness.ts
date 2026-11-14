@@ -55,6 +55,18 @@ export class ProjectScreenHarness {
         return this.root.locator('li[aria-current="true"]');
     }
 
+    /** Turns on the properties `names` rows show, from the toolbar's Properties menu (a toggle button each), and closes it. */
+    async showProperties(...names: readonly string[]): Promise<void> {
+        await this.root.getByRole('button', { name: /^Properties/ }).click();
+        for (const name of names) {
+            const property = this.page.getByRole('button', { name, exact: true });
+            if ((await property.getAttribute('aria-pressed')) !== 'true') {
+                await property.click();
+            }
+        }
+        await this.page.keyboard.press('Escape');
+    }
+
     /** The tab of the saved view `name`. */
     tab(name: string): Locator {
         return this.tabs.filter({ hasText: name });

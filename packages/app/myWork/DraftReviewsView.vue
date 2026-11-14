@@ -1,4 +1,4 @@
-<!-- The pull requests with the viewer's draft review (code review D28, CR34): a head with the count, what a draft means for the others, then the list, the one waiting longest first, each saying how long. `J`/`K`, the selection and its actions are the list engine's (`ListView`); Enter opens the review, where the draft is, and ⇧S opens it at its submit dialog (CR34). The sidebar's entry goes with the last draft, and if the list is what was open it says so. -->
+<!-- The pull requests with the viewer's draft review (code review D28, CR34): a head with the count and, right after it, the actions of the selection, what a draft means for the others, then the list, the one waiting longest first, each saying how long. `J`/`K`, the selection and its actions are the list engine's (`ListView`); Enter opens the review, where the draft is, and ⇧S opens it at its submit dialog (CR34). The sidebar's entry goes with the last draft, and if the list is what was open it says so. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck, PencilLine } from 'lucide-vue-next';
@@ -185,10 +185,8 @@ const groups = computed((): ListGroup<Item>[] =>
 
 .draftReviewsView_selection {
   display: flex;
-  flex: 1;
   gap: $spacing-8;
   align-items: center;
-  justify-content: flex-end;
   min-width: 0;
 }
 

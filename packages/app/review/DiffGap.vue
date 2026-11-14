@@ -267,7 +267,6 @@ function expandFromRow() {
 
 .diffGap_count {
   flex: none;
-  margin-left: auto;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
   white-space: nowrap;

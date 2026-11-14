@@ -1,6 +1,7 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowRef, toValue, watch } from 'vue';
+import type { MaybeRefOrGetter } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { EditQueue } from '@/edits/EditQueue.js';
@@ -53,9 +54,10 @@ export interface ItemListViewModel {
  * history for Back to the panel (`IssueRoutes.getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
  * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
  * request to select the items that failed (K2) selects those the list shows, and an Undo of a close (D29) brings the
- * selection, and an item open, back to the undone item the list shows.
+ * selection, and an item open, back to the undone item the list shows. Its `title` is what back on an opened item's
+ * page says it returns to (mobile D20).
  */
-export function useItemList(): ItemListViewModel {
+export function useItemList(title: MaybeRefOrGetter<string>): ItemListViewModel {
     const items = useService(ItemStore);
     const navigation = useService(ItemNavigation);
     const resolver = useService(ItemResolver);
@@ -139,10 +141,11 @@ export function useItemList(): ItemListViewModel {
         }
     });
 
-    // What an opened item steps through, and where closing it comes back to: on every move of the cursor.
+    // What an opened item steps through, and where closing it comes back to, by its name: on every move of the cursor.
     watch(
-        [listed, listPath],
-        ([{ steps, stepOf, around }, path]) => navigation.setList({ kind: 'issue', path, steps, stepOf, around }),
+        [listed, listPath, () => toValue(title)],
+        ([{ steps, stepOf, around }, path, name]) =>
+            navigation.setList({ kind: 'issue', path, title: name, steps, stepOf, around }),
         { immediate: true },
     );
 

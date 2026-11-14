@@ -1,4 +1,4 @@
-import type { RouteLocation } from 'vue-router';
+import type { HistoryState, RouteLocation } from 'vue-router';
 
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -92,6 +92,17 @@ export function getOpenedItemRoute(route: OpenedItemRouteSource): OpenedItemRout
  */
 export function getItemPagePath(reference: ItemReference, kind: Item['kind'] = 'issue') {
     return `/${reference.owner}/${reference.name}/${kind === 'issue' ? 'issues' : 'pull'}/${reference.number}`;
+}
+
+/**
+ * The address of the entry behind the current one in the history, as vue-router keeps it in the entry's state (`back`,
+ * kept through a replace); `null` at the first entry, or where the history keeps no such state (a memory history).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getHistoryBack(state: HistoryState): string | null {
+    const { back } = state;
+    return typeof back === 'string' ? back : null;
 }
 
 /**

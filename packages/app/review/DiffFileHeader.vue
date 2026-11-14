@@ -1,4 +1,4 @@
-<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its threads (CR2), its size, if it has lines to count, and its viewed mark (`V`). One gone from the diff (D30) has only a file-x, a struck name that says so, and its threads. A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
+<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its threads (CR2) and its size, if it has lines to count, each after the path, and its viewed mark (`V`) at the head's edge. One gone from the diff (D30) has only a file-x, a struck name that says so, and its threads. A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight, FileX, MessageSquare, Square, SquareCheckBig } from 'lucide-vue-next';
@@ -129,7 +129,6 @@ function onClick(event: MouseEvent) {
       :class="[css.diffFileHeader_why, css.diffFileHeader_why_changed]"
       >{{ t(l.changedSince) }}</span
     >
-    <span :class="css.diffFileHeader_spacer" />
     <span
       v-if="threadsText"
       :class="css.diffFileHeader_threads"
@@ -145,6 +144,7 @@ function onClick(event: MouseEvent) {
       :additions="file.additions"
       :deletions="file.deletions"
     />
+    <span :class="css.diffFileHeader_spacer" />
     <Button
       v-if="!file.gone"
       :class="[css.diffFileHeader_viewed, viewed && css.diffFileHeader_viewed_on]"
@@ -256,6 +256,7 @@ function onClick(event: MouseEvent) {
   white-space: nowrap;
 }
 
+// Only before the Viewed button: the threads and the size follow the path, the button stays at the edge.
 .diffFileHeader_spacer {
   flex: 1;
 }
