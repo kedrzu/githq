@@ -18,6 +18,7 @@ import type { DiffLayout, DiffLineSide, DiffSplitRow, DiffUnifiedRow } from './d
 import type { FileDiff } from './diff/computeFileDiff.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
+import type { LineMark, RowMarks } from './find/RowMarks.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { ReviewSubmoduleChange } from './submodules/ReviewSubmodules.js';
@@ -51,6 +52,8 @@ import { replayQueue } from './queue'`,
         'private pending = new PendingStore(db)',
         `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has', badge: '<img src=x>' })`,
     );
+/** What {@link SplitMarked} finds: a name, a word in comments, part of a string. */
+const FOUND = /MAX_BATCH|nobody|xponen/gu;
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 /** The change undone: two lines become one, which leaves a deleted line alone on its row. */
 const UNDONE_DIFF = computeFileDiff({ before: AFTER, after: BEFORE, ignoreWhitespace: false });
@@ -144,6 +147,23 @@ export const SplitColoured: Story = {
 export const UnifiedColoured: Story = {
     loaders: [loadTokens],
     render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) })),
+};
+
+/**
+ * D47: find's matches marked over the colours, one inside a string and one across a comment, the current one in
+ * `MAX_BATCH = 50` outlined; axe holds every colour to AA over the marks.
+ */
+export const SplitMarked: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) =>
+        renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split', loaded.syntax) }), { getMarks: findMarks }),
+};
+
+/** Unified, the same. */
+export const UnifiedMarked: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) =>
+        renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) }), { getMarks: findMarks }),
 };
 
 /** Each kind of token in its own colour: the title, tag and built-in kinds, which the TypeScript sample has no scopes for. */
@@ -782,13 +802,25 @@ interface RenderRowsOptions {
     readonly towardGap?: () => ReviewGapDirection;
     /** Told what happens to a line's number or a comment button. */
     readonly onGutter?: GutterHandler;
+    /** Find's matches on each row. */
+    readonly getMarks?: (row: ReviewRow) => RowMarks | null;
 }
 
 type GutterHandler = (event: MouseEvent, side: DiffLineSide, line: number) => void;
 
 function renderRows(
     rows: readonly ReviewRow[],
-    { commented, layout, currentPath, pushed, submodule, cursorKey, towardGap, onGutter }: RenderRowsOptions = {},
+    {
+        commented,
+        layout,
+        currentPath,
+        pushed,
+        submodule,
+        cursorKey,
+        towardGap,
+        onGutter,
+        getMarks = () => null,
+    }: RenderRowsOptions = {},
 ) {
     return {
         components: { ReviewDiffRow },
@@ -803,13 +835,40 @@ function renderRows(
             towardGap,
             isCurrent,
             onGutter,
+            getMarks,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :cursor="row.key === cursorKey" :toward-gap="towardGap" :submodule="row.kind === 'submodule' ? submodule : null" @gutter="onGutter" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :cursor="row.key === cursorKey" :toward-gap="towardGap" :submodule="row.kind === 'submodule' ? submodule : null" :marks="getMarks(row)" @gutter="onGutter" /></div>`,
     };
 
     function isCurrent(row: ReviewRow) {
         return getReviewRowPath(row.key) === currentPath;
     }
+}
+
+/** {@link FOUND}'s matches on a line's row, by the side each half shows, as the review's find gives them. */
+function findMarks(row: ReviewRow): RowMarks | null {
+    if (row.kind !== 'line') {
+        return null;
+    }
+
+    const { line, diff } = row;
+    if (line.layout === 'split') {
+        return { before: markLine(diff.before, line.left?.line), after: markLine(diff.after, line.right?.line) };
+    }
+
+    return line.sign === '-'
+        ? { before: markLine(diff.before, line.oldLine), after: [] }
+        : { before: [], after: markLine(diff.after, line.newLine) };
+}
+
+/** {@link FOUND}'s matches in a line, the one in `MAX_BATCH = 50` current. */
+function markLine(texts: readonly string[], line: number | null | undefined): LineMark[] {
+    const text = line == null ? '' : (texts[line - 1] ?? '');
+    return [...text.matchAll(FOUND)].map(match => ({
+        start: match.index,
+        end: match.index + match[0].length,
+        current: text.includes('MAX_BATCH = 50') && match[0] === 'MAX_BATCH',
+    }));
 }
 
 function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {

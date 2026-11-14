@@ -49,3 +49,11 @@ families, seven screens in a new group "Find in the diff" in App · Code review 
   field"; the sheet (`upmZG`) 840 → 1120 px wide, x 300 → 160; caption (`V0GWA`) gains a sentence on find, and notes
   that ⌘G stays Suggest a change inside a comment box.
 - [ ] Layout: `CEDLB` grew 2244 px; every top-level frame from the menus row down moved down as much.
+
+## Round 2 · implementation
+
+Forced by: `styles/tokens.test.ts` and axe on the `ReviewDiffRow` marked stories. `#E3B341` at 24% and 46% took the
+comment colour over an added line to 3.3:1 and 2:1. The owner chose a darker amber (2026-11-14).
+
+- [x] Variable `find-match`: `#E3B3413D` → `#BB800914` (8%).
+- [x] Variable `find-match-current`: `#E3B34175` → `#BB800924` (14%); `find-match-outline` unchanged.

@@ -24,10 +24,12 @@ const {
     Split,
     SplitColoured,
     SplitCommented,
+    SplitMarked,
     ThreadReplying,
     Unified,
     UnifiedColoured,
     UnifiedCommented,
+    UnifiedMarked,
 } = composeStories(stories);
 
 test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
@@ -210,6 +212,34 @@ test.each([
     expect(document.querySelector('code img')).toBeNull();
     expect(plain.texts.join('\n')).toContain('<img src=x>');
 });
+
+test.each([
+    ['split', SplitColoured, SplitMarked],
+    ['unified', UnifiedColoured, UnifiedMarked],
+])(
+    "find's marks change no text and no height, keep the colours inside, the current one outlined, %s",
+    async (_layout, Coloured, Marked) => {
+        await Coloured.run();
+        const coloured = readCode();
+        await Marked.run();
+
+        expect(readCode()).toEqual(coloured);
+        const marks = [...document.querySelectorAll('code mark')];
+        const current = marks.filter(mark => mark.hasAttribute('data-current-match'));
+        expect(current.map(mark => mark.textContent)).toEqual(['MAX_BATCH']);
+        expect(getComputedStyle(current[0]!).boxShadow).not.toBe('none');
+        expect(marks.map(mark => mark.textContent)).toContain('xponen');
+        const inString = marks.find(mark => mark.textContent === 'xponen')!;
+        expect(inString.querySelector('[tid="code-string"]')).not.toBeNull();
+        const inComment = marks.find(mark => mark.textContent === 'nobody')!;
+        expect(getComputedStyle(inComment.firstElementChild!).color).toBe(
+            getComputedStyle(document.querySelector('[tid="code-comment"]')!).color,
+        );
+        const other = marks.find(mark => !mark.hasAttribute('data-current-match'))!;
+        expect(getComputedStyle(other).boxShadow).toBe('none');
+        expect(getCode('RETRY_DELAY_MS').querySelector('mark')).toBeNull();
+    },
+);
 
 function readCode() {
     const codes = [...document.querySelectorAll('code')];

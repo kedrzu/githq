@@ -452636,11 +452636,11 @@
     },
     "find-match": {
       "type": "color",
-      "value": "#E3B3413D"
+      "value": "#BB800914"
     },
     "find-match-current": {
       "type": "color",
-      "value": "#E3B34175"
+      "value": "#BB800924"
     },
     "find-match-outline": {
       "type": "color",
