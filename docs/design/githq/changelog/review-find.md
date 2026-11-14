@@ -57,3 +57,9 @@ comment colour over an added line to 3.3:1 and 2:1. The owner chose a darker amb
 
 - [x] Variable `find-match`: `#E3B3413D` → `#BB800914` (8%).
 - [x] Variable `find-match-current`: `#E3B34175` → `#BB800924` (14%); `find-match-outline` unchanged.
+
+## Round 3 · implementation
+
+Forced by: axe's target-size rule (WCAG 2.5.8) on the `ReviewFindBar` stories: toggles 1 px apart fail it.
+
+- [ ] `Review / Find bar` (`iWL1w`): the gap between the three toggles 1 → 4 px (built; the frame still to follow).

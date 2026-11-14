@@ -1,0 +1,26 @@
+label:
+  en: Find in the code
+placeholder:
+  en: Find
+matchCase:
+  en: Match case
+wholeWord:
+  en: Match whole word
+regex:
+  en: Use a regular expression
+position:
+  en: '{position} of {total}'
+noPosition:
+  en: '? of {total}'
+noResults:
+  en: No results
+invalid:
+  en: Invalid regular expression
+tooSlow:
+  en: Pattern too slow
+previous:
+  en: Previous match
+next:
+  en: Next match
+close:
+  en: Close
