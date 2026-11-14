@@ -1,9 +1,9 @@
-<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here; the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
+<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key) —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here; the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowLeft, SearchX } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import Button from '@/components/Button.vue';
@@ -53,6 +53,17 @@ const arranging = useItemArrangement({
   },
 });
 const { walk } = arranging;
+
+// The workflow opened last, by its key: the list it was opened from selects it when it comes back (`⇧J`/`⇧K` moved on).
+watch(
+  () => (opened.state ? WorkflowRoutes.formatKey(props.reference) : null),
+  key => {
+    if (key !== null) {
+      navigation.setLastOpened(key);
+    }
+  },
+  { immediate: true },
+);
 
 const referenceText = computed(() => `${opened.nameWithOwner} ${props.reference.file}`);
 /** Escape from full screen goes back to the panel when the page was expanded from it and the panel fits. */

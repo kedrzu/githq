@@ -4,6 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import { getRepositoryWorkflowState, RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRowRef } from './utils/getRowRef.js';
+import { getRunVerdict } from './utils/getRunVerdict.js';
 import { getStandingVerdict } from './utils/getStandingVerdict.js';
 import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
 import { isPullRequestRun } from './utils/isPullRequestRun.js';
@@ -60,6 +61,8 @@ export interface RepositoryWorkflowEntry {
     readonly moreRefCount: number;
     /** The runs its strip shows, oldest first, at most five. */
     readonly runs: readonly GitHubWorkflowRun[];
+    /** Its latest failed run the sync keeps, on any ref — what `F` opens; `null` without one. */
+    readonly latestFailure: GitHubWorkflowRun | null;
 }
 
 /** One group of the tab, never empty. */
@@ -180,7 +183,13 @@ interface PlacedWorkflow {
 
 function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowParams): PlacedWorkflow {
     const runs = sortRunsByCreation(entry.runs);
-    const row = { key: `${workflow.workflow.id}`, workflow, moreRefCount: 0 };
+    const row = {
+        key: `${workflow.workflow.id}`,
+        workflow,
+        moreRefCount: 0,
+        // The kept runs are the newest first.
+        latestFailure: entry.runs.find(run => getRunVerdict(run) === 'failed') ?? null,
+    };
 
     switch (workflow.state) {
         case 'broken': {

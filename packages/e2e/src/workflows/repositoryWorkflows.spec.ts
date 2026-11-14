@@ -5,7 +5,10 @@ import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test("a repository's Workflows section lists every workflow — runs on any ref read as it opens —, counts the broken one, and Enter opens its failed run", async ({
+/** Probe of the sample repository, as the panel's address names it (`owner|name|probe.yml`, encoded). */
+const PROBE_PANE = encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|probe.yml`);
+
+test("a repository's Workflows section lists every workflow — runs on any ref read as it opens —, counts the broken one, and F opens its latest failed run", async ({
     page,
     github,
 }) => {
@@ -63,7 +66,7 @@ test("a repository's Workflows section lists every workflow — runs on any ref 
     await repository.section('Workflows').click();
     // The tab takes the keys as it opens, on its first row.
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('f');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/2`);
     await expect(new WorkflowRunScreenHarness(page).root).toBeVisible();
 
@@ -73,62 +76,77 @@ test("a repository's Workflows section lists every workflow — runs on any ref 
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
 });
 
-test('Enter unfolds a workflow in place — the kept runs at once, older ones read on demand, a pull request’s among them —, F narrows them to a ref, Enter opens one, ← folds', async ({
+test('Enter opens a workflow in the panel with its runs — older ones than the sync keeps too — and details; Enter on it again goes full screen, Esc back; J opens the next in its place', async ({
     page,
     github,
 }) => {
     const { world } = createSampleTrackedWork();
-    // 24 runs, more than the 20 the sync keeps: the 4 oldest are read only as the workflow unfolds.
+    // 24 runs, more than the 20 the sync keeps: the 4 oldest are read only as the workflow opens.
     world.workflow({
         repository: SAMPLE_REPOSITORY,
         name: 'Probe',
-        runs: Array.from({ length: 22 }, (_, index) => ({ conclusion: 'success', minutesAgo: 600 - index * 20 })),
+        runs: Array.from({ length: 24 }, (_, index) => ({ conclusion: 'success', minutesAgo: 600 - index * 20 })),
     });
-    world.workflowRun(SAMPLE_REPOSITORY, 'Probe', {
-        conclusion: 'failure',
-        minutesAgo: 120,
-        branch: 'feature',
-        event: 'pull_request',
-    });
-    world.workflowRun(SAMPLE_REPOSITORY, 'Probe', { conclusion: 'success', minutesAgo: 5, branch: 'feature' });
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Lint', runs: [{ conclusion: 'success', minutesAgo: 25 }] });
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
     const repository = new RepositoryScreenHarness(page);
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
-    await expect(repository.root.getByText(/Other runs/u)).toBeVisible();
+    await expect(repository.root.getByText(/Full screen/u)).toBeVisible();
     await page.keyboard.press('Enter');
-    const runs = repository.runsOf('Probe');
-    await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'true');
-    await expect(repository.runLines('Probe')).toHaveCount(24);
-    await expect(repository.runLines('Probe').last()).toContainText(/^#1\s*main\s*push/u);
-    await expect(runs).toContainText(/#23\s*feature\s*pull_request/u);
-    await expect(repository.root.getByText(/Open run/u)).toBeVisible();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions?pane=workflow&workflow=${PROBE_PANE}`);
+    const probe = page.getByRole('article', { name: 'Probe' });
+    await expect(probe.getByRole('region', { name: 'Runs' })).toContainText(/Run 1#1(?!\d)/u);
+    await expect(probe.getByRole('region', { name: 'Runs' })).toContainText(/Run 24#24(?!\d)/u);
 
-    await page.keyboard.press('f');
-    await page.keyboard.type('feat');
+    // Enter on the open row expands it, marked: Esc comes back to the panel.
     await page.keyboard.press('Enter');
-    await expect(runs.getByRole('button', { name: 'feature', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.runLines('Probe')).toHaveCount(2);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/probe.yml`);
+    await expect(page.getByRole('article', { name: 'Probe' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions?pane=workflow&workflow=${PROBE_PANE}`);
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
 
-    const run = `/${SAMPLE_REPOSITORY}/actions/runs/24`;
+    // The selection moving opens the next workflow in its place.
     await page.keyboard.press('j');
-    await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(run);
-
-    // Back from the run, unfolded and filtered as it was; Esc shows every ref again, then folds.
+    await expect(page.getByRole('article', { name: 'Lint' })).toBeVisible();
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
-    await expect(repository.runLines('Probe')).toHaveCount(2);
-    await page.keyboard.press('Escape');
-    await expect(repository.runLines('Probe')).toHaveCount(24);
-    await page.keyboard.press('ArrowLeft');
-    await expect(runs).toHaveCount(0);
-    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
-    await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('article')).toHaveCount(0);
 });
 
-test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the same row, unfolded as it was', async ({
+test('⇧Enter opens a workflow full screen straight, ⇧J steps to the next, and Esc there comes back to the list on the one stepped to; F on a workflow that never failed does nothing', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Probe', runs: [{ conclusion: 'success', minutesAgo: 20 }] });
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Lint', runs: [{ conclusion: 'success', minutesAgo: 25 }] });
+    await openTrackedWork(page, github, world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('j');
+    await page.keyboard.press('f');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+
+    await page.keyboard.press('k');
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('Shift+Enter');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/probe.yml`);
+    await expect(page.getByRole('article', { name: 'Probe' })).toBeVisible();
+    await page.keyboard.press('Shift+J');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/lint.yml`);
+    await expect(page.getByRole('article', { name: 'Lint' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
+});
+
+test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the same row', async ({
     page,
     github,
 }) => {
@@ -143,16 +161,12 @@ test('P opens the repository’s settings on Workflow alerts, and Esc there come
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('j');
     await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
-    await page.keyboard.press('ArrowRight');
-    await expect(repository.workflow('Lint')).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('p');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts`);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
-    await expect(repository.workflow('Lint')).toHaveAttribute('aria-expanded', 'true');
-    await expect(repository.runsOf('Lint')).toBeVisible();
 });
 
 test('a repository’s settings opened on their own read the runs on any ref: other refs show, and a pattern says what it would alert on', async ({

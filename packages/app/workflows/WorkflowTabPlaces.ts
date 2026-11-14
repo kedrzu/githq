@@ -6,19 +6,20 @@ import { AccountSession } from '@/auth/AccountSession.js';
 
 /** Where the user is in a repository's Workflows section. */
 export interface WorkflowTabPlace {
-    /** The selected row's key; `null` until the user moves. */
+    /** The selected row's key; `null` until the user moves or opens a workflow. */
     readonly selected: string | null;
-    /** The unfolded workflow's row's key; `null` with none. */
-    readonly unfolded: string | null;
-    /** The ref the unfolded workflow's runs are filtered by; `null`: every ref. */
-    readonly refFilter: string | null;
+    /**
+     * The workflow opened last (`ItemNavigation.lastOpenedId`) the selection already went to: one opened since — a step
+     * of `⇧J`/`⇧K` on its page — takes the selection; this one no longer overrides where the user moved.
+     */
+    readonly followed: string | null;
 }
 
-const NOWHERE: WorkflowTabPlace = { selected: null, unfolded: null, refFilter: null };
+const NOWHERE: WorkflowTabPlace = { selected: null, followed: null };
 
 /**
- * Where the user was in each repository's Workflows section and on the broken workflows' screen, so P or a run's page and
- * back to it lands on the same row, unfolded as it was (actions W13, W4a) — the screen is gone meanwhile. For this
+ * Where the user was in each repository's Workflows section and on the broken workflows' screen, so P, a run's page or a
+ * workflow's and back to it lands on the same row (actions W13, W4a, D15) — the screen is gone meanwhile. For this
  * session of the app, never persisted; forgotten when another account signs in.
  */
 export type WorkflowTabPlaces = Resolved<typeof WorkflowTabPlaces>;

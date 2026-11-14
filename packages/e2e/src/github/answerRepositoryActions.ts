@@ -90,9 +90,11 @@ export const NO_ACTIONS: GitHubActionsState = {
  * Answers what the app reads of a tracked repository's GitHub Actions, from `read()` at each request: the
  * repository's latest runs (`GET /repos/{o}/{r}/actions/runs`), the repository itself for its default branch
  * (`GET /repos/{o}/{r}`), its tags (`…/git/matching-refs/tags`), its workflows (`…/actions/workflows`) and a
- * workflow's runs by `branch` or on any ref (`…/actions/workflows/{id}/runs`, one page, no `Link`), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
+ * workflow's runs on any ref or filtered by `branch`, `event`, `status` and `actor` (`…/actions/workflows/{id}/runs`,
+ * one page, no `Link`), a workflow's file (`…/contents/.github/workflows/<name>.yml`: run on push, one job), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
  * job's log (`…/actions/jobs/{id}/logs`, plain text), each `404` for an id it does not know. Every JSON answer carries an ETag hashed from its body and is
- * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs are answered once the list named it.
+ * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs and file are answered once the list
+ * named it.
  */
 export function answerRepositoryActions(
     github: GitHubMock,
@@ -122,11 +124,19 @@ export function answerRepositoryActions(
     );
     github.rest('GET', `${base}/actions/workflows`, request => {
         const { workflows } = read();
-        for (const { id } of workflows) {
+        for (const { id, name } of workflows) {
             if (!answered.has(id)) {
                 answered.add(id);
                 github.rest('GET', `${base}/actions/workflows/${id}/runs`, runsRequest =>
                     answerWorkflowRuns(runsRequest, id),
+                );
+                github.rest('GET', `${base}/contents/${getWorkflowPath(name)}`, fileRequest =>
+                    conditional(fileRequest, {
+                        type: 'file',
+                        path: getWorkflowPath(name),
+                        encoding: 'base64',
+                        content: Buffer.from(getWorkflowFile(name)).toString('base64'),
+                    }),
                 );
             }
         }
@@ -137,7 +147,7 @@ export function answerRepositoryActions(
                 id: workflow.id,
                 node_id: `W_${workflow.id}`,
                 name: workflow.name,
-                path: `.github/workflows/${workflow.name.toLowerCase()}.yml`,
+                path: getWorkflowPath(workflow.name),
                 state: workflow.state,
                 html_url: `https://github.com/${nameWithOwner}/actions/workflows/${workflow.name.toLowerCase()}.yml`,
             })),
@@ -152,7 +162,7 @@ export function answerRepositoryActions(
                   name: read().workflows.find(workflow => workflow.id === run.workflowId)?.name ?? null,
                   head_commit: { message: `Run ${run.id}` },
                   run_attempt: run.attempt ?? 1,
-                  actor: { login: 'monalisa' },
+                  actor: { login: ACTOR },
               })
             : NOT_FOUND;
     });
@@ -183,9 +193,19 @@ export function answerRepositoryActions(
     }
 
     function answerWorkflowRuns(request: GitHubRestRequest, workflowId: number) {
-        const branch = request.url.searchParams.get('branch');
+        const { searchParams } = request.url;
+        const branch = searchParams.get('branch');
+        const event = searchParams.get('event');
+        const status = searchParams.get('status');
+        // Every run of the mock is credited to the same login (`…/actions/runs/{id}`).
+        const actor = searchParams.get('actor');
         const matching = newestFirst(read().runs).filter(
-            run => run.workflowId === workflowId && (branch === null || run.headBranch === branch),
+            run =>
+                run.workflowId === workflowId &&
+                (branch === null || run.headBranch === branch) &&
+                (event === null || run.event === event) &&
+                (status === null || run.status === status || run.conclusion === status) &&
+                (actor === null || actor === ACTOR),
         );
         return conditional(request, {
             total_count: matching.length,
@@ -195,6 +215,27 @@ export function answerRepositoryActions(
 }
 
 const NOT_FOUND: GitHubRestAnswer = { status: 404, json: { message: 'Not Found' } };
+/** Who every run is credited to. */
+const ACTOR = 'monalisa';
+
+/** Where the workflow `name`'s file is in its repository. */
+function getWorkflowPath(name: string) {
+    return `.github/workflows/${name.toLowerCase()}.yml`;
+}
+
+/** The workflow `name`'s file: run on every push, one job. */
+function getWorkflowFile(name: string) {
+    return [
+        `name: ${name}`,
+        'on: push',
+        'jobs:',
+        '  build:',
+        '    runs-on: ubuntu-latest',
+        '    steps:',
+        '      - run: echo ok',
+        '',
+    ].join('\n');
+}
 
 function conditional(request: GitHubRestRequest, json: unknown): GitHubRestAnswer {
     const etag = etagOf(json);

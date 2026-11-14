@@ -101,12 +101,6 @@ const state = computed({
   },
 });
 
-/** The workflow unfolded in the Workflows section (actions W3b), which the toolbar's key hints follow; `null` with none. */
-const unfoldedWorkflow = computed({
-  get: () => workflowPlaces.get(repositoryName).unfolded,
-  set: (unfolded: string | null) => workflowPlaces.update(repositoryName, { unfolded }),
-});
-
 // The section shown is remembered, so the links to this repository open it next time (`LastRepositoryTab.getPath`).
 // Leaving, the address already names another repository or none, and this page's section is not theirs.
 watch(
@@ -249,6 +243,15 @@ const shownList = computed(() => {
       describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
     }),
   };
+});
+/**
+ * Whether the workflow selected in the Workflows section — the first row until the user moves — has a failed run F
+ * opens (actions W35): the toolbar's hint is dimmed while it hasn't.
+ */
+const selectedWorkflowFails = computed(() => {
+  const rows = workflowList.value.groups.flatMap(group => group.rows);
+  const key = workflowPlaces.get(nameWithOwner.value).selected;
+  return (rows.find(row => row.key === key) ?? rows[0])?.latestFailure != null;
 });
 /** Its Workflows section (actions W3a), and the tab's count. */
 const workflowList = computed(() =>
@@ -472,7 +475,6 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
   >
     <template #workflows>
       <RepositoryWorkflowsTab
-        v-model:unfolded="unfoldedWorkflow"
         :name-with-owner="nameWithOwner"
         :list="workflowList"
         :now="list.now"
@@ -481,7 +483,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     <template #workflowsHints>
       <RepositoryWorkflowsHints
         v-if="workflowList.groups.length > 0"
-        :unfolded="unfoldedWorkflow !== null"
+        :failure="selectedWorkflowFails"
       />
     </template>
     <template #menu>

@@ -6,20 +6,8 @@ import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import * as stories from './RepositoryWorkflowsView.stories.js';
 
-const {
-    ActionsOff,
-    AlertsOff,
-    Default,
-    NoWorkflows,
-    NotKnownYet,
-    NotReadYet,
-    Refused,
-    Unfolded,
-    UnfoldedNotRead,
-    UnfoldedOnRef,
-    UnfoldedReadFailed,
-    WithPatterns,
-} = composeStories(stories);
+const { ActionsOff, AlertsOff, Default, NoWorkflows, NotKnownYet, NotReadYet, Opened, Refused, WithPatterns } =
+    composeStories(stories);
 
 const group = (name: string) => page.getByRole('region', { name, exact: true });
 const bar = () => page.getByTestId('workflow-alerts-bar');
@@ -32,10 +20,6 @@ const groupNames = () =>
 const like = (pattern: string) => new RegExp(pattern.replaceAll(' ', '\\s'), 'u');
 /** The name of the selected row's workflow; `null` with none. */
 const selected = () => document.querySelector('button[aria-current="true"]')?.firstElementChild?.textContent ?? null;
-/** The selected line's text, spaces collapsed; `null` with none. */
-const selectedText = () =>
-    document.querySelector('[aria-current="true"]')?.textContent?.replaceAll(/\s+/gu, ' ').trim() ?? null;
-const runs = () => page.getByRole('group', { name: 'Runs of Probe' });
 
 test('W13: every workflow is a row, in Broken, Pull requests only, No alerts, Passing and Disabled; the bar shows the default branch', async () => {
     await Default.run();
@@ -92,30 +76,37 @@ test('W3c: rows not read yet have no verdict and no green, and what is known is 
     );
 });
 
-test('J/K move from the first row; Enter and a click open a broken workflow’s failed run and unfold any other, → too; "Alert settings" and P ask for the settings — on the add field from a row without alerts', async () => {
+test('J/K move from the first row; Enter and a click open the workflow, ⇧Enter full screen, F its latest failure on any ref — nothing without one; "Alert settings" and P ask for the settings — on the add field from a row without alerts', async () => {
+    const open = vi.fn();
+    const fullScreen = vi.fn();
     const openRun = vi.fn();
-    const unfold = vi.fn();
     const settings = vi.fn();
-    await Default.run({ args: { ...Default.args, onOpenRun: openRun, onUnfold: unfold, onSettings: settings } });
+    await Default.run({
+        args: { ...Default.args, onOpen: open, onFullScreen: fullScreen, onOpenRun: openRun, onSettings: settings },
+    });
 
     expect(selected()).toBe('Deploy');
     await userEvent.keyboard('{Enter}');
-    expect(openRun.mock.calls[0]?.[0]).toMatchObject({
-        htmlUrl: 'https://github.com/fitloop/webapp/actions/runs/1005',
-    });
-    await userEvent.keyboard('{ArrowRight}');
-    expect(unfold).toHaveBeenLastCalledWith('1');
-    await userEvent.keyboard('jj');
-    expect(selected()).toBe('Release');
-    await userEvent.keyboard('{Enter}');
-    expect(unfold).toHaveBeenLastCalledWith('3');
-    await userEvent.keyboard('k');
+    expect(open).toHaveBeenLastCalledWith('1');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(fullScreen).toHaveBeenLastCalledWith('1');
+    await userEvent.keyboard('f');
+    expect(openRun).toHaveBeenLastCalledWith(
+        expect.objectContaining({ htmlUrl: 'https://github.com/fitloop/webapp/actions/runs/1005' }),
+    );
+    // CLA's failure was a pull request's: F opens it all the same.
+    await userEvent.keyboard('j');
     expect(selected()).toBe('CLA');
+    await userEvent.keyboard('f');
+    expect(openRun).toHaveBeenLastCalledWith(expect.objectContaining({ event: 'pull_request_target' }));
+    expect(open).toHaveBeenCalledTimes(1);
 
     await userEvent.click(page.getByRole('button', { name: 'Probe', exact: true }));
     expect(selected()).toBe('Probe');
-    expect(unfold).toHaveBeenLastCalledWith('5');
-    expect(openRun).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenLastCalledWith('5');
+    // Probe never failed.
+    await userEvent.keyboard('f');
+    expect(openRun).toHaveBeenCalledTimes(2);
 
     await userEvent.click(bar().getByRole('button', { name: /Alert settings/ }));
     expect(settings).toHaveBeenLastCalledWith(false);
@@ -128,14 +119,34 @@ test('J/K move from the first row; Enter and a click open a broken workflow’s 
     expect(settings).toHaveBeenLastCalledWith(true);
 });
 
+test('D15: with a workflow open in the panel its row is selected: Enter or a click on it expands it and ⇧Enter is the item’s; moving the selection or clicking another row opens that one in its place', async () => {
+    const open = vi.fn();
+    const expand = vi.fn();
+    const fullScreen = vi.fn();
+    await Opened.run({ args: { ...Opened.args, onOpen: open, onExpand: expand, onFullScreen: fullScreen } });
+
+    expect(selected()).toBe('Probe');
+    await userEvent.keyboard('{Enter}');
+    expect(expand).toHaveBeenLastCalledWith('5');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(fullScreen).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('j');
+    await vi.waitFor(() => expect(open).toHaveBeenLastCalledWith('6'));
+    await userEvent.click(page.getByRole('button', { name: 'Deploy', exact: true }));
+    await vi.waitFor(() => expect(open).toHaveBeenLastCalledWith('1'));
+    expect(open).toHaveBeenCalledTimes(2);
+    expect(expand).toHaveBeenCalledTimes(1);
+});
+
 test('after a click, J/K take the keys back: Enter acts on the selected row, not on the button clicked', async () => {
-    const openRun = vi.fn();
-    const unfold = vi.fn();
-    await Default.run({ args: { ...Default.args, onOpenRun: openRun, onUnfold: unfold } });
+    const open = vi.fn();
+    await Default.run({ args: { ...Default.args, onOpen: open } });
 
     await userEvent.click(page.getByRole('button', { name: 'Probe', exact: true }));
-    expect(unfold).toHaveBeenLastCalledWith('5');
-    unfold.mockClear();
+    expect(open).toHaveBeenLastCalledWith('5');
+    open.mockClear();
 
     await userEvent.keyboard('k');
     const moved = selected();
@@ -143,16 +154,16 @@ test('after a click, J/K take the keys back: Enter acts on the selected row, not
     await userEvent.keyboard('{Enter}');
 
     expect(selected()).toBe(moved);
-    expect(unfold).not.toHaveBeenCalledWith('5');
-    expect(unfold.mock.calls.length + openRun.mock.calls.length).toBe(1);
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open).not.toHaveBeenCalledWith('5');
 });
 
 test("a control Tab reached above the rows holds the keys and the commands on the rows; Enter presses it, one Escape gives them back; a row's own button holds nothing", async () => {
     trackTabFocus();
+    const open = vi.fn();
     const openRun = vi.fn();
-    const unfold = vi.fn();
     const settings = vi.fn();
-    await Default.run({ args: { ...Default.args, onOpenRun: openRun, onUnfold: unfold, onSettings: settings } });
+    await Default.run({ args: { ...Default.args, onOpen: open, onOpenRun: openRun, onSettings: settings } });
     const control = bar()
         .getByRole('button', { name: /Alert settings/ })
         .element();
@@ -162,122 +173,23 @@ test("a control Tab reached above the rows holds the keys and the commands on th
 
     await userEvent.keyboard('j{ArrowDown}k');
     expect(selected()).toBe('Deploy');
-    await userEvent.keyboard('{ArrowRight}p');
-    expect(unfold).not.toHaveBeenCalled();
+    await userEvent.keyboard('fp');
+    expect(openRun).not.toHaveBeenCalled();
     expect(settings).not.toHaveBeenCalled();
 
     await userEvent.keyboard('{Enter}');
     expect(settings).toHaveBeenCalledTimes(1);
-    expect(openRun).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
 
     await userEvent.keyboard('{Escape}');
-    await userEvent.keyboard('{ArrowRight}');
-    expect(unfold).toHaveBeenLastCalledWith('1');
+    await userEvent.keyboard('f');
+    expect(openRun).toHaveBeenCalledTimes(1);
 
     const rowButton = page.getByRole('button', { name: 'Deploy', exact: true }).element();
     await tabTo(rowButton);
     expect(rowButton.hasAttribute('data-tab-focus')).toBe(false);
     await userEvent.keyboard('j');
     expect(selected()).not.toBe('Deploy');
-});
-
-test('W3b: an unfolded workflow lists its runs under its row — kept ones, then older ones read — and J/K walk into them and back out', async () => {
-    const openRun = vi.fn();
-    const unfold = vi.fn();
-    await Unfolded.run({ args: { ...Unfolded.args, onOpenRun: openRun, onUnfold: unfold } });
-
-    await expect
-        .element(page.getByRole('button', { name: 'Probe', exact: true }))
-        .toHaveAttribute('aria-expanded', 'true');
-    const lines = [...runs().element().querySelectorAll('button[data-mark]')].map(line =>
-        [...line.children]
-            .map(cell => cell.textContent)
-            .filter(Boolean)
-            .join(' '),
-    );
-    expect(lines).toEqual([
-        '#204 main push Show the waiting list on the class page in progress 1m ago',
-        '#203 main push Bump vite to 7.1.7 3m 12s 14m ago',
-        '#202 sofiab/tokens pull_request Move design tokens into the ui package 4m 02s 1h ago',
-        '#201 chore/probe-target workflow_dispatch Try a second probe target cancelled 2h ago',
-        '#200 main push Fix the timezone on recurring classes 4m 11s 3h ago',
-        '#199 sofiab/tokens pull_request Move design tokens into the ui package 1m 04s Nov 1',
-        '#198 v0.1.0 push Release v0.1.0 3m 25s Oct 31',
-        '#197 main push Add a stale-while-revalidate cache to the API client 2m 58s Oct 30',
-    ]);
-    await expect.element(runs()).toHaveTextContent(like('Reading older runs…'));
-    // The filter offers the refs seen, the most recent first.
-    await expect
-        .element(runs())
-        .toHaveTextContent(like('^Ref\\s*All refs\\s*main\\s*sofiab/tokens\\s*chore/probe-target\\s*v0\\.1\\.0'));
-
-    // A click would leave the focus on the row's button, whose Enter is its own: the keys go there.
-    await userEvent.keyboard('jjjj');
-    expect(selected()).toBe('Probe');
-    await userEvent.keyboard('j');
-    expect(selectedText()).toMatch(/^#204/u);
-    await userEvent.keyboard('jj{Enter}');
-    expect(openRun).toHaveBeenLastCalledWith(expect.objectContaining({ runNumber: 202, event: 'pull_request' }));
-    await userEvent.keyboard('kkk');
-    expect(selected()).toBe('Probe');
-
-    // ← folds from a run, its workflow selected; so does Esc with no ref filtered.
-    await userEvent.keyboard('jj{ArrowLeft}');
-    expect(unfold).toHaveBeenLastCalledWith(null);
-    expect(selected()).toBe('Probe');
-    await userEvent.keyboard('{Escape}');
-    expect(unfold).toHaveBeenCalledTimes(2);
-    expect(unfold).toHaveBeenLastCalledWith(null);
-
-    // Its number, at the line's start: the story's frame is narrower than the tab.
-    await userEvent.click(runs().getByText('#198', { exact: true }));
-    expect(openRun).toHaveBeenLastCalledWith(expect.objectContaining({ runNumber: 198 }));
-});
-
-test('W3b: F types a ref — the first seen one holding it, or the ref typed —, a chip picks one, and Esc shows every ref again', async () => {
-    const filter = vi.fn();
-    await Unfolded.run({ args: { ...Unfolded.args, onFilter: filter } });
-
-    await userEvent.keyboard('f');
-    await expect.element(runs().getByRole('textbox', { name: 'Filter by ref' })).toHaveFocus();
-    await userEvent.keyboard('tok{Enter}');
-    expect(filter).toHaveBeenLastCalledWith('sofiab/tokens');
-    await userEvent.keyboard('f');
-    await userEvent.keyboard('release/2{Enter}');
-    expect(filter).toHaveBeenLastCalledWith('release/2');
-    await userEvent.keyboard('f');
-    await userEvent.keyboard('main{Escape}');
-    expect(filter).toHaveBeenCalledTimes(2);
-    await expect.element(runs().getByRole('textbox')).not.toBeInTheDocument();
-
-    await userEvent.click(runs().getByRole('button', { name: 'v0.1.0', exact: true }));
-    expect(filter).toHaveBeenLastCalledWith('v0.1.0');
-
-    const unfold = vi.fn();
-    await UnfoldedOnRef.run({ args: { ...UnfoldedOnRef.args, onFilter: filter, onUnfold: unfold } });
-    await expect
-        .element(runs().getByRole('button', { name: 'sofiab/tokens', exact: true }))
-        .toHaveAttribute('aria-pressed', 'true');
-    expect(runs().element().querySelectorAll('button[data-mark]')).toHaveLength(2);
-    await userEvent.keyboard('{Escape}');
-    expect(filter).toHaveBeenLastCalledWith(null);
-    expect(unfold).not.toHaveBeenCalled();
-});
-
-test('W3b: a failed read says so under the runs, and Enter on it asks again; the end in view asks for older runs', async () => {
-    const readMore = vi.fn();
-    await UnfoldedReadFailed.run({ args: { ...UnfoldedReadFailed.args, onReadMore: readMore } });
-
-    await expect.element(runs()).toHaveTextContent(like("Couldn't read older runs from GitHub\\s*Retry"));
-    expect(readMore).not.toHaveBeenCalled();
-    await userEvent.keyboard('jjjjjjjjjj');
-    expect(selectedText()).toMatch(/^Couldn't read older runs/u);
-    await userEvent.keyboard('{Enter}');
-    expect(readMore).toHaveBeenCalledTimes(1);
-
-    const asked = vi.fn();
-    await UnfoldedNotRead.run({ args: { ...UnfoldedNotRead.args, onReadMore: asked } });
-    await vi.waitFor(() => expect(asked).toHaveBeenCalled());
 });
 
 test('first run and loading D17, ES27: before the first read, ghost workflow rows, read out as one line — no message, no bar', async () => {

@@ -1,4 +1,4 @@
-<!-- The Workflows section's key hints in the repository's toolbar (actions W3a, W3b): Enter opens and → unfolds the other runs; with a workflow unfolded, Enter opens a run, ← folds and F filters by ref. For the eye only: the keys are in the help sheet. -->
+<!-- The Workflows section's key hints in the repository's toolbar (actions W35): Enter opens the selected workflow, ⇧Enter full screen and F its latest failure — dimmed while it has none. For the eye only: the keys are in the help sheet. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -8,24 +8,17 @@ import Kbd from '@/components/Kbd.vue';
 import * as l from './RepositoryWorkflowsHints.loc.js';
 
 const props = defineProps<{
-  /** A workflow is unfolded. */
-  unfolded: boolean;
+  /** The selected workflow has a failed run F opens. */
+  failure: boolean;
 }>();
 
 const t = useTranslate();
 
-const hints = computed(() =>
-  props.unfolded
-    ? [
-        { keys: 'Enter', label: t(l.openRun) },
-        { keys: 'ArrowLeft', label: t(l.fold) },
-        { keys: 'F', label: t(l.ref) },
-      ]
-    : [
-        { keys: 'Enter', label: t(l.open) },
-        { keys: 'ArrowRight', label: t(l.otherRuns) },
-      ],
-);
+const hints = computed(() => [
+  { keys: 'Enter', label: t(l.open), off: false },
+  { keys: 'Shift+Enter', label: t(l.fullScreen), off: false },
+  { keys: 'F', label: t(l.latestFailure), off: !props.failure },
+]);
 </script>
 
 <template>
@@ -36,7 +29,8 @@ const hints = computed(() =>
     <span
       v-for="hint in hints"
       :key="hint.keys"
-      :class="css.repositoryWorkflowsHints_hint"
+      :class="[css.repositoryWorkflowsHints_hint, hint.off && css.repositoryWorkflowsHints_hint_off]"
+      :aria-disabled="hint.off || undefined"
     >
       <Kbd :keys="hint.keys" />
       {{ hint.label }}
@@ -59,5 +53,10 @@ const hints = computed(() =>
   font-size: $font-size-xs;
   color: $color-fg-dim;
   white-space: nowrap;
+}
+
+// Nothing to open: the key does nothing on this row. Inactive, so below the contrast text needs (WCAG 1.4.3).
+.repositoryWorkflowsHints_hint_off {
+  color: $color-fg-3;
 }
 </style>

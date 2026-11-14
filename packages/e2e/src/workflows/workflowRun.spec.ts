@@ -131,7 +131,7 @@ test('with no job to select, O opens the run on GitHub', async ({ page, github }
     await seen.close();
 });
 
-test('a click on a broken workflow’s strip is a click on its row: the failed run in githq, and Esc comes back', async ({
+test('F on a broken workflow’s row opens the failed run in githq; a job selected leaves no history, and Esc comes back', async ({
     page,
     github,
 }) => {
@@ -140,7 +140,8 @@ test('a click on a broken workflow’s strip is a click on its row: the failed r
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
-    await page.getByRole('main').getByTestId('run-strip').first().click();
+    await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('f');
     await expect(page).toHaveURL(path);
 
     await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
@@ -162,7 +163,7 @@ test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ p
     const repository = new RepositoryScreenHarness(page);
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
     github.holdAnswers();
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('f');
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(page).toHaveURL(path);
@@ -558,7 +559,7 @@ test('searching a job’s log: from memory, folded steps included, next and only
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
 
     // The query didn't stay for the next time the page opens.
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('f');
     await expect(page).toHaveURL(path);
     await expect(screen.cursorLine).toContainText('Process completed');
     await expect(screen.search).toHaveCount(0);

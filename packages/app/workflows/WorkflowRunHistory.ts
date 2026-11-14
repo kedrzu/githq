@@ -42,7 +42,7 @@ export interface WorkflowRunFilters {
 export const NO_WORKFLOW_RUN_FILTERS: WorkflowRunFilters = { ref: null, event: null, status: null, actor: null };
 
 /** Whose runs: one workflow's, every one of them or those the filters let through. */
-export interface WorkflowRunHistoryQuery extends WorkflowRunsTarget, WorkflowRunFilters {}
+interface WorkflowRunHistoryQuery extends WorkflowRunsTarget, WorkflowRunFilters {}
 
 /** Whether a workflow's older runs are being read; `failed`: the last page asked was not read, asking again asks it again. */
 export type WorkflowRunHistoryStatus = 'idle' | 'reading' | 'failed';
@@ -98,9 +98,9 @@ interface ReadParams {
 const UNREAD: HistoryEntry = { runs: [], status: 'idle', complete: false, nextPageUrl: null };
 
 /**
- * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time a repository's
- * Workflows section unfolds the workflow or the workflow opens as an item, the next ones as the list reaches the end of
- * its runs (W3b) — every run or those the filters let through, nothing asked while the core allowance is used up. Held
+ * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time the workflow opens
+ * as an item or its filters change, the next ones as the list reaches the end of its runs — every run or those the
+ * filters let through, nothing asked while the core allowance is used up. Held
  * in memory for the signed-in user only, never kept on disk nor merged into the workflows' store: the sync's runs stay
  * what decides a workflow's state.
  *
@@ -129,7 +129,7 @@ export const WorkflowRunHistory = defineService({
             session = account ? { account, rest: createRest(account.getToken) } : null;
         });
 
-        return { get, refresh, readMore, open, getRuns, setFilters, readMoreRuns };
+        return { open, getRuns, setFilters, readMoreRuns };
 
         /**
          * Opens the workflow as an item: its filters are cleared when another workflow was open, kept when it was this
@@ -176,11 +176,6 @@ export const WorkflowRunHistory = defineService({
         function getFilters(target: WorkflowRunsTarget): WorkflowRunFilters {
             const browsed = browsedRef.value;
             return browsed && isSameTarget(browsed.target, target) ? browsed.filters : NO_WORKFLOW_RUN_FILTERS;
-        }
-
-        /** What was read of the workflow's runs; nothing before the first page is asked. Reactive. */
-        function get(query: WorkflowRunHistoryQuery): WorkflowRunHistoryState {
-            return entriesRef.value.get(getKey(query)) ?? UNREAD;
         }
 
         /**
@@ -273,7 +268,7 @@ export const WorkflowRunHistory = defineService({
 
 /**
  * The entry after a read that did not happen. Reading anew over what is known is only a check: it stays as it was, and
- * the next unfold asks again; a page the user waits for says it was not read, asking again asks it again.
+ * the next opening asks again; a page the user waits for says it was not read, asking again asks it again.
  */
 function getNotRead({ entry, anew }: ReadParams): HistoryEntry {
     return anew && (entry.runs.length > 0 || entry.complete) ? entry : { ...entry, status: 'failed' };

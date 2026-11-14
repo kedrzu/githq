@@ -263,12 +263,6 @@ $workflow-repository-width: 130px;
 $workflow-ref-width: 130px;
 // A row's height: its 34px line and the 2px its surface is inset by above and below.
 $workflow-row-height: 38px;
-// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`): 30px and the 2px its
-// surface is inset by above and below.
-$workflow-run-line-height: 34px;
-// What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
-// icon and the gap after it.
-$workflow-run-indent: 41px;
 // A workflow row's state icon, square (`WorkflowRow`, its ghost `GhostWorkflowRow`).
 $workflow-icon-size: 15px;
 // A tick of the strip of runs (`RunStrip`, its ghost in `GhostWorkflowRow`): 7 wide, 3 apart, bottom-aligned in 14.
@@ -477,7 +471,7 @@ $row-surface-inset: $spacing-2 $spacing-8;
     box-shadow: inset 0 0 0 1px rgba($color-accent, 0.3);
 }
 
-// A line of an unfolded workflow that is its own button: the whole line is the hit area, its surface lights up, and
+// A line of runs that is its own button: the whole line is the hit area, its surface lights up, and
 // the keyboard's ring goes round the surface.
 @mixin workflow-line-button {
     @include row-surface($color-bg-3);
