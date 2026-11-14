@@ -1,0 +1,162 @@
+# The phone in line with the desktop
+
+The phone design (`App · Mobile`, `jy6bO`, codes `MB`) was drawn before the desktop's item thread landed. This log
+brings it back in line: the owner's picks of 2026-11-14 settled (D49, MB173, MB97) and the phone's item thread made
+of the desktop's own `Activity / *` parts in their narrow layout (D50), with the thread's states drawn as phone
+screens. Base: `50220f18`.
+
+## Round 1 · agent brief
+
+Asked (`.context/mobile-thread-brief.md`): settle D49's variants and the Empty groups question; replace the phone's
+old activity list with the desktop's thread on every phone item; new screens for the thread's states.
+
+Changed: MB222–MB224 moved out of their Variants frame and MB225 deleted; the Empty groups row gone from the options
+sheet; MB173 and MB97 settled. A new `The thread` section in `Components · Mobile` holds no-gutter variants of the
+desktop's rail parts, two narrow cards the desktop lacked, the comment menu and the `Phone / Thread` family; every
+phone item pane now draws its thread from them and the old activity components are deleted. Ten new screens,
+MB226–MB235, in a new row `Row · The thread`.
+
+Decisions taken in this round:
+
+- The desktop's rail parts (event, push, fold, loading, failed) keep a 42 px left padding for the gutter avatar. On a
+  phone the narrow cards have no gutter, so these parts got `· no gutter` variants with 2 px instead, and the rail
+  runs 16 px in from the card edge, as on the desktop.
+- The description card hides its Author chip, as on the desktop's I1.
+- The pull request panes (#1205, opened 20 min ago) had shown the issue's thread with comments older than the pull
+  request. Their thread is now the pull request's own: its description, mlaine's push of a3f91c2, the review request
+  to dkim, and sbrandt's comment moved to 10 min ago.
+- MB97 is scrolled to the end, as the desktop's I2 is, so the fold, the new-since line and the newest items are in
+  view. The earlier review's four threads are folded to its "4 threads · 4 resolved" line. The "3 new" pill is gone
+  because the desktop has none.
+- `Activity / Comment · narrow, editing, discard?` reads "Discard your changes?" and drops the Esc and ↵ chips. The
+  desktop's sentence and chips don't fit a card under 360 px; the narrow not-sent card drops its chips too.
+- The thread's state screens use items already in the file: loading on #1201 (MB98's pull request), empty on the
+  draft #1209 (MB99), failed on #290 (MB95).
+
+Settling the owner's picks:
+
+- [ ] Row · A changed project view (`bEY9X`): new row in `Screens · Lists and new issue`, after `Row · Created, and
+  drafts`.
+- [ ] MB222 (`B3AIHc`, screen `S82jM`), MB223 (`PtoUJ`, `p2Pc6D`), MB224 (`CR021`, `uWIPq`): moved into it;
+  `Variant A · ` dropped from slot, screen and caption names (`Ga1Gx`, `BjLCm`, `UMV3X`); "Recommended." dropped from
+  their notes (`d4KNL`, `IrorN`, `swzBA`).
+- [ ] MB225 · Variant B · A strip under the top bar (`r4SINY`): deleted.
+- [ ] Variants · Where a changed project view is marked (`Oi2Nq`): deleted.
+- [ ] Phone / Sheet / View options (`BcxyQ`): the `Empty groups` row (`KwOQp`) deleted, so it is gone from MB173,
+  MB224 and every list options sheet; the override hiding it on `txdRW` removed.
+- [ ] MB206's caption (`Hs41m`): "Empty groups is gone until something is grouped." removed.
+- [ ] MB173 (`s3IZJ`, screen `ffCro`, title `n662Oc`): `Question · ` and the amber dropped; the question removed from
+  the note (`VnUCy`).
+- [ ] MB97 (`N6uRDK`, screen `RnDn2`, title `ZyJ4c`): `Question · ` and the amber dropped; note (`DFcul`) rewritten
+  for the desktop's fold and new-since line; the `3 new` pill holder (`u6U8h`) deleted.
+
+Components (`Components · Mobile`, `F3mZHt`, new section `The thread`, `tkeG6`):
+
+- [ ] Activity / Event · no gutter (`W3NY8`), Activity / Fold · narrow, no gutter (`S8sSel`), Activity / Push · no
+  gutter (`dsBwi`), Activity / Thread · failed, no gutter (`HI7L7`): new, instances of `umLcQ`, `SeqKu`, `lkjfC`,
+  `V75cQv` with left padding 42 → 2.
+- [ ] Activity / Thread · loading, no gutter (`UActV`): new, instance of `FZHVU`. Its rows' padding is 42 → 2, the
+  skeleton card's rail is hidden and its bars fit the narrow card.
+- [ ] Activity / Comment · narrow, editing, discard? (`SSKJn`): new, instance of `BVHXx`. Like `DFWqj`, it has no
+  gutter and folded tools; the hint reads "Discard your changes?" and wraps, and the key chips are hidden.
+- [ ] Activity / Comment · narrow, linked (`Kt0hV`): new, instance of `iMK9U` with the narrow head.
+- [ ] Phone / Menu / Comment (`Hvbw2`): new, instance of `Phone / Menu`, no search. Entries: Edit, Quote reply, Copy
+  link, Delete… (red), as in `Activity / Comment menu`.
+- [ ] Phone / Thread (`ShZ5Q`): new, 390 px, 16 px sides. The feed holds the rail line, then #1187: dkim's
+  description, sbrandt's comment, mlaine's commit a3f91c2, mlaine's comment. A hidden reply of mlaine's (`PTknx`)
+  ends it.
+- [ ] Phone / Thread · reply sent (`mkptX`): new, instance of `Phone / Thread` with the reply shown.
+- [ ] Phone / Thread · pull request (`S2bNY`): new, #1205's description, push, review request and sbrandt's comment.
+- [ ] Phone / Thread · eighty events (`SL9Ha`): new. Description, two events, "Show 74 earlier events · 18 commits ·
+  21 comments · 35 other events", dkim's review, "2 new since you looked", sbrandt's changes requested, mlaine's push
+  of two commits.
+- [ ] Phone / Thread · loading (`CBVcb`), · failed (`TZXjq`), · empty (`OAc3d`, #1209's description alone): new.
+- [ ] Phone / Thread · editing (`NZWBY`), · editing, discard? (`ykeMB`), · sending (`Fqq9i`), · not sent (`xBpyV`),
+  · linked (`uNjm3`): new, instances of `Phone / Thread`. Each replaces one card with the narrow state card.
+- [ ] Phone / Thread · reviews (`CySKi`): new, #1205. Description, dkim's approval with its resolved thread folded,
+  sbrandt's changes requested with the code thread on `src/series/migrate.ts`, mlaine's push.
+
+Item panes (every screen using them follows):
+
+- [ ] Phone / Item / Issue (`Z50g0`): `Body` (`V0Kas`) deleted, `Timeline` → `Phone / Thread` (`waUHW`).
+- [ ] Phone / Item / Issue · summary (`qZhtg`): `Body` (`K3gLO`) deleted, `Timeline` → `Phone / Thread` (`ICvuM`).
+- [ ] Phone / Item / Issue · every property (`D4CI1`): `Body` (`cZAFZ`) → `Phone / Thread` (`o0o33Z`).
+- [ ] Phone / Item / Issue · further down (`UXIHb`): `Body` and `Timeline` deleted, layout none, `Phone / Thread`
+  (`E039u`) scrolled 96 px.
+- [ ] Phone / Item / Issue · reply sent (`aUYA5`): `Body`, `Timeline` and the extra comment deleted, layout none,
+  `Phone / Thread · reply sent` (`rYB83`) scrolled 96 px.
+- [ ] Phone / Item / Issue · arriving (`e1palS`): `Arriving` placeholder → `Phone / Thread · loading` (`o4sq4`).
+- [ ] Phone / Item / Pull request (`PWGSV`): `Timeline` → `Phone / Thread · pull request` (`C9LWDp`).
+- [ ] Phone / Item / Pull request · summary (`j4OTf`): `Body` (`edpHW`) deleted, `Timeline` → `Phone / Thread ·
+  pull request` (`XHsMY`); MB98's pane (`Efidb`) overrides the description's text and age through it.
+- [ ] Phone / Item / Pull request · stacked, a strip (`GSjJM`): `Body` (`wkAmz`) deleted, `Timeline` → `Phone /
+  Thread · pull request` (`XVKTO`).
+- [ ] Phone / Item / Pull request · long thread (`EkP8V`): the old section head, lines, gap, new-since line and
+  comment deleted. The summary and `Phone / Thread · eighty events` (`dVt5j`) now sit in `Scrolled` (`hLill`), offset
+  so the thread's end shows.
+- [ ] Deleted, left unused: Phone / Item / Timeline (`KJnIN`), Phone / Comment (`Qidd9`), Phone / Timeline commit
+  (`i4d4tt`), Phone / Timeline · new since you looked (`vpKWS`), Phone / Timeline gap (`G0HyHM`), Phone / Body
+  placeholder (`OpGLL`).
+
+New screens (`Screens · Acting on My work`, `pM9rS`, new row `Row · The thread`, `wjdFg`):
+
+- [ ] MB226 · ⋯ on your comment: a menu at the bottom (`g17l5`).
+- [ ] MB227 · Editing your comment in place (`wspHj`): keyboard up, the card above it.
+- [ ] MB228 · Editing · Discard your changes? (`M6WDy`).
+- [ ] MB229 · Your reply, sending (`n8tdw`).
+- [ ] MB230 · Your reply, not sent (`pLbvn`): Discard and Retry.
+- [ ] MB231 · A pull request's reviews in the thread (`zEtJB`).
+- [ ] MB232 · A comment linked from the address (`dhXfc`): opened from a shared link, outlined.
+- [ ] MB233 · The thread loading, the first time (`vgUMQ`), on #1201.
+- [ ] MB234 · No comments yet (`OdPYY`), on the draft #1209.
+- [ ] MB235 · The thread couldn't be loaded (`fUINC`), on #290.
+
+Canvas:
+
+- [ ] The nine top-level frames of the web and brand row (landing, docs, logo, icons, OpenGraph) moved 2057 px down.
+  `App · Mobile` grew to 37161 px, and the row keeps 1200 px below it.
+
+## Round 1b · summary variants, an agent brief run in parallel
+
+Merged with round 1 by `bun nzyme pen merge`: 12 conflicts — the web and brand row's `y` (both rounds moved it; round 1's value kept, overlap fixed in round 2) and `Phone / Item / Timeline` (`KJnIN`), `Phone / Comment` (`Qidd9`), `Phone / Timeline commit` (`i4d4tt`), deleted by round 1 and still used by the variants (kept; repointed in round 2).
+
+- [ ] Components · Mobile (`F3mZHt`): new section `In line with the desktop` (`e2bDp`) at the end, with
+  `Summary parts · phone` (`MYTQO`) and `Summaries · phone` (`b0UBc`).
+- [ ] Item / PR merge · phone (`T6Pdf7`): new, an instance of `Item / PR merge` (`BioKQ`) at 358 px. The key hints are
+  hidden. Merge… and Review files get a ↗ in place of their keys (mobile D4, D11). The buttons' leading icons are
+  hidden so the three buttons fit in 358 px. Data: 1 check failing, changes requested by sbrandt, the right-hand
+  "1 approval" note hidden, the PR's branch and size.
+- [ ] Item / Reviews · phone (`egNv9`): new, an instance of `Item / Reviews` (`JqSRM`), without ⇧R. Shows sbrandt
+  (changes requested, 2h) and dkim (requested, 20m); the third reviewer is hidden.
+- [ ] Item / Checks · phone (`KeFvH`): new, an instance of `Item / Checks` (`JKPLA`). One failing required check
+  (`ci / e2e (chromium)`, its detail shortened to `6m 02s` so Log ↗ fits), 8 passed in one line; the other failing
+  and running rows are hidden.
+- [ ] Item / Properties · phone (`TK7Iu`): new, an instance of `Item / Properties` (`Ww7Se`), without the A, L, M keys.
+- [ ] Item / Projects · phone (`FNp3Y`): new, an instance of `Item / Projects` (`UjUqQ`), without the S, P, I keys.
+- [ ] Phone / Summary · pull request · as on the desktop (`WNkfa`): new. Standing card, Reviews, Checks, Closes
+  (`Item / Linked` `MGnYu` as it is, its title shortened to fit), Properties (no bug label), Platform Q4's card.
+- [ ] Phone / Summary · issue · as on the desktop (`YrWzg`): new. Properties with Sub-issues, then Platform Q4 and Bug
+  triage as cards.
+- [ ] Phone / Summary · pull request · hybrid (`yV0N7`): new. The standing card, Reviews and Checks, then the phone's
+  `Phone / Property` rows for Assignees and Status, then `Phone / Property chips · pull request` (`ozxE4`) with
+  its branch-and-size line hidden (the card shows them).
+- [ ] App · Mobile (`jy6bO`): new section `In line with the desktop on a phone` (`GpTuZ`) after `mZPlf`. It has a
+  header and the amber frame `Variants · The item's summary on a phone` (`vSNo8`).
+- [ ] `MB260 · Variant A · A pull request that can't merge yet` (`l2kHV`), slot `LhUrW`: recommended, caption says why.
+- [ ] `MB261 · Variant A · Where the summary ends` (`kSgXR`), slot `CUFCu`: the same pull request scrolled 536 px.
+- [ ] `MB262 · Variant A · An issue with two projects` (`BBaIf`), slot `g77yYE`.
+- [ ] `MB263 · Variant A · Ready to merge` (`RvliB`), slot `spk23`: the green card, Merge… primary.
+- [ ] `MB264 · Variant B · A pull request that can't merge yet` (`B4hmjU`), slot `zb89T`.
+- [ ] `MB265 · Variant B · Where the summary ends` (`on11A`), slot `VyoKi`: scrolled 430 px.
+- [ ] `MB266 · Variant B · An issue with two projects` (`I77kBU`), slot `USt4O`: the phone's summary as in MB128.
+- [ ] `MB267 · Variant B · Ready to merge` (`ta2np`), slot `eZbZr`.
+- [ ] Landing — githq.dev (`JJOFX`), Landing — githq.dev (mobile) (`ucqck`), Landing — motion storyboard (`XCfAD`),
+  Logo — git/hq (`S5J7kt`), App icons — generated (review) (`nCTdq`), OpenGraph images (`PiKGF`), Landing ·
+  Download page (`jv9Tp`), Landing · Hero picture as built (`ykYxo`), Docs · githq.dev/docs — template (`I5wWZ`):
+  moved down 3533 px (y 119232 → 122765), so the row stays 1200 px under `App · Mobile`.
+
+Below each summary, the thread is the phone's today (`Phone / Item / Timeline` `KJnIN` with the item's body). Another
+round replaces it.
+
+Measured: in A the pull request's summary is 782 px tall, so its description starts more than a screen down. The issue's
+is 384 px. In B the pull request's summary is 562 px.
