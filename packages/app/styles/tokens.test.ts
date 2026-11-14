@@ -11,6 +11,8 @@ const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
 /** What a failure's message sits on: every surface, and a danger band over the window. */
 const DANGER_SURFACES = [...SURFACES, 'bg-danger'];
+/** The lanes of a commit graph past the default branch's (CH61). */
+const GRAPH_LANES = Array.from({ length: 8 }, (_, index) => `graph-lane-${index + 1}`);
 const SYNTAX = ['comment', 'keyword', 'string', 'constant', 'title', 'tag', 'builtin'].map(name => `syntax-${name}`);
 /** What a line of a diff sits on: the window, the cursor's tint, an added and a deleted line's fill. */
 const DIFF_SURFACES = ['bg', 'sel', 'diff-bg-added', 'diff-bg-deleted'];
@@ -38,6 +40,7 @@ const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
     ['red-quiet', SURFACES, GRAPHICS],
     ['graph-line', GRAPH_SURFACES, GRAPHICS],
     ['graph-line-main', GRAPH_SURFACES, GRAPHICS],
+    ...GRAPH_LANES.map(token => [token, GRAPH_SURFACES, GRAPHICS] as const),
     ['find-match-outline', CURRENT_MARK_SURFACES, GRAPHICS],
     ['find-match-ring', DIFF_SURFACES, GRAPHICS],
     ...SYNTAX.map(token => [token, [...CODE_SURFACES, ...MARK_SURFACES], TEXT] as const),
@@ -82,6 +85,9 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     sel: 'accent at 10.2% over bg, as bgColor-accent-muted is over GitHub',
     'fg-dim': 'Primer has two levels of text, we have three',
     'graph-line-main': "the default branch's line stays brighter",
+    ...Object.fromEntries(
+        GRAPH_LANES.map(token => [token, 'a lane of the commit graph (CH61): Primer has no palette for lanes']),
+    ),
     accent: 'the brand',
     'red-quiet': "Primer's #B62324 reads 2.93 on bg",
     'border-danger': "red at 35%, a little weaker than Primer's borderColor-danger-muted (40%)",

@@ -16,15 +16,18 @@ import { computed, shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
+import type { RefTreeGroup, RefTreeOrder } from '@/commits/buildRefTree.js';
 import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
     readAnimations,
     readMaxWidth,
     readUsageStatistics,
+    readRefSort,
     readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
+    writeRefSort,
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
 import type {
@@ -193,6 +196,10 @@ export const TrackingStore = defineService({
             get reviewCommentChoice() {
                 return readReviewCommentChoice(keptRef.value.document);
             },
+            /** How each group of a repository's ref list is ordered, the same in every repository (CH60); reactive. */
+            get refSort() {
+                return readRefSort(keptRef.value.document);
+            },
             /** The full-screen item page box's maximum width, `null` for the view's default; reactive. */
             get itemPageWidth() {
                 return readMaxWidth(keptRef.value.document.itemPageWidth);
@@ -224,6 +231,7 @@ export const TrackingStore = defineService({
             setAnimations,
             setUsageStatistics,
             setReviewCommentChoice,
+            setRefSort,
             setMaxWidth,
             onUntrack,
             onLocalChange,
@@ -384,6 +392,21 @@ export const TrackingStore = defineService({
                     ? null
                     : { ...kept, document: { ...kept.document, reviewCommentChoice: choice } },
             );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's order for a group of the ref list, in the settings as the slot holds them now. Nothing when the
+         * group reads as that order already: a value of a newer build, which reads as newest first, stays until the user
+         * picks the other; the other group's value is left as it is.
+         */
+        function setRefSort(group: RefTreeGroup, order: RefTreeOrder) {
+            const written = write(kept => {
+                const document = writeRefSort({ document: kept.document, group, order });
+                return document && { ...kept, document };
+            });
             if (written) {
                 changedHere();
             }

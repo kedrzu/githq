@@ -1,4 +1,4 @@
-<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number, a link to it) and its CI mark; the author (avatar and name) and the age at the right edge. A failure is the red dot and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
+<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number, a link to it) and its CI mark; the author (avatar and name) and the age at the right edge. A failure is a red centre in its dot (`CommitGraphCell`) and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
 <script lang="ts">
 /** A row's height: the graph's lines span it, and the list places and sizes rows by it. */
 export const COMMIT_ROW_HEIGHT = 32;
@@ -129,8 +129,9 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   height: 100%;
 }
 
+// The message's gap is 6 px; the headline sits 4 px from the marks.
 .commitRow_marks {
-  padding-left: $spacing-4;
+  margin-left: -$spacing-2;
 }
 
 .commitRow_message {

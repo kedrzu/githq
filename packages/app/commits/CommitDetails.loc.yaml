@@ -20,28 +20,44 @@ readFailed:
   en: GitHub can't be asked for this commit right now.
 bodyFailed:
   en: GitHub can't be asked for the rest of this message right now.
-author:
-  en: Author
-committed:
-  en: Committed
 committedAt:
   en: '{age} · {date}, {time}'
-commit:
-  en: Commit
+copySha:
+  en: Copy the commit's sha
 parent:
   en: Parent
 parents:
   en: Parents
-refsHere:
-  en: Branches and tags here
+refs:
+  en: Refs
 noRefs:
   en: None.
 noRefsAnyMore:
   en: None any more.
 pullRequest:
   en: Pull request
-ci:
-  en: CI on this commit
+pullRequestNotKnown:
+  en: Pull request not known yet
+noPullRequest:
+  en: No pull request
+pullRequestOpen:
+  en: open
+pullRequestDraft:
+  en: draft
+pullRequestMerged:
+  en: merged
+pullRequestClosed:
+  en: closed
+checks:
+  en: Checks
+checksNotKnown:
+  en: Checks not known yet
+noChecks:
+  en: No checks
+failingCount:
+  en: '{count} failing'
+ofCount:
+  en: of {count}
 ciPassing:
   en: Passing
 ciFailing:
@@ -50,11 +66,3 @@ ciRunning:
   en: Running
 checksOnGitHub:
   en: The checks are listed on GitHub
-keyCommit:
-  en: Commit
-keyParent:
-  en: Parent
-keyPullRequest:
-  en: Pull request
-keyGitHub:
-  en: GitHub
