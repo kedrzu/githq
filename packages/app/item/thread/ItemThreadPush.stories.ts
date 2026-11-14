@@ -9,6 +9,8 @@ import ItemThreadPush from './ItemThreadPush.vue';
 
 /** The thread's width in a panel. */
 const IN_PANEL = 512;
+/** The widest the thread stretches: the one-column panel at its widest. */
+const WIDEST = 1300;
 
 const [SIX_COMMITS, THREE_COMMITS] = buildThread({ detail: F5_PULL_REQUEST_DETAIL }).filter(
     (entry): entry is ThreadPush => entry.kind === 'push',
@@ -17,12 +19,12 @@ const [SIX_COMMITS, THREE_COMMITS] = buildThread({ detail: F5_PULL_REQUEST_DETAI
 const meta = {
     component: ItemThreadPush,
     args: { push: THREE_COMMITS!, now: SAMPLE_NOW },
-    // On an item view's background, as wide as the thread, with the rail behind the badge.
-    render: args => ({
+    // On an item view's background, as wide as the thread (or `parameters.width`), with the rail behind the badge.
+    render: (args, { parameters }) => ({
         components: { ItemThreadPush },
-        setup: () => ({ args }),
+        setup: () => ({ args, width: parameters.width ?? IN_PANEL }),
         template: `
-          <div style="position: relative; width: ${IN_PANEL}px; padding: 20px 0; background: #11161c">
+          <div :style="{ position: 'relative', width: width + 'px', padding: '20px 0', background: '#11161c' }" tid="frame">
             <div style="position: absolute; inset: 0 auto 0 55px; width: 2px; background: #2f353d" />
             <div style="position: relative"><ItemThreadPush v-bind="args" /></div>
           </div>`,
@@ -43,3 +45,6 @@ export const SixCommits: Story = { args: { push: SIX_COMMITS! } };
 export const NoAccount: Story = {
     args: { push: { ...THREE_COMMITS!, actor: null, authorName: 'Maja Laine' } },
 };
+
+/** The thread at its widest: the time after "pushed 3 commits", the CI mark and hash after each message. */
+export const Wide: Story = { parameters: { width: WIDEST } };

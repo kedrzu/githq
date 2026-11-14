@@ -99,7 +99,6 @@ const id = useId();
 }
 
 .reviewSubmodulePanel_title {
-  flex: 1;
   min-width: 0;
   font-weight: $font-weight-semibold;
 }

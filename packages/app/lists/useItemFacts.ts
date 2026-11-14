@@ -111,8 +111,15 @@ type StandingPhase = Exclude<PullRequestPhase, 'merged' | 'closed' | 'beingMerge
 /** What a row and a card of an item show, worked out once for both. */
 export interface ItemFactsViewModel {
     readonly kind: ItemKindFact;
-    /** `owner/name#123`, or `#123` in a repository's list or under an issue of the same repository. */
+    /**
+     * `owner/name#123`, or `#123` in a repository's list or under an issue of the same repository: {@link repository}
+     * and {@link number} together, as a card and an issue's row name it.
+     */
     readonly reference: string;
+    /** `#123`, `#…` while it is on its way to GitHub. */
+    readonly number: string;
+    /** `owner/name`, or `null` where the number alone names it: in its repository's list or under an issue of it. */
+    readonly repository: string | null;
     readonly people: readonly ItemUser[];
     readonly age: string;
     readonly status: ItemStatusFact | null;
@@ -135,7 +142,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
     const item = makeRef(options.item);
     const parent = makeRef(options.parent);
-    const repository = makeRef(options.repository);
+    const listRepository = makeRef(options.repository);
     const viewerLogin = makeRef(options.viewerLogin);
     const now = makeRef(options.now);
     const reviewRequested = makeRef(options.reviewRequested);
@@ -143,14 +150,14 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const mergeRecord = makeRef(options.mergeRecord ?? null);
 
     const kind = computed(() => getKind(item.value));
-    const reference = computed(() => {
-        const listed = item.value;
-        const { nameWithOwner } = listed.repository;
-        const number = isPendingItem(listed) ? '…' : String(listed.number);
-        return parent.value?.repository.nameWithOwner === nameWithOwner || repository.value === nameWithOwner
-            ? `#${number}`
-            : `${nameWithOwner}#${number}`;
+    const number = computed(() => `#${isPendingItem(item.value) ? '…' : String(item.value.number)}`);
+    const repository = computed(() => {
+        const { nameWithOwner } = item.value.repository;
+        return parent.value?.repository.nameWithOwner === nameWithOwner || listRepository.value === nameWithOwner
+            ? null
+            : nameWithOwner;
     });
+    const reference = computed(() => `${repository.value ?? ''}${number.value}`);
     const people = computed(() =>
         getItemPeople({ item: item.value, shown: peopleShown.value, viewerLogin: viewerLogin.value }),
     );
@@ -206,7 +213,18 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         };
     });
 
-    return reactive<ItemFactsViewModel>({ kind, reference, people, age, status, checks, size, projectField });
+    return reactive<ItemFactsViewModel>({
+        kind,
+        reference,
+        number,
+        repository,
+        people,
+        age,
+        status,
+        checks,
+        size,
+        projectField,
+    });
 
     function getKind(listed: Item): ItemKindFact {
         const look = getItemKind(listed);

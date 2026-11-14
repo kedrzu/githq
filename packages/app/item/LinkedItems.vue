@@ -48,7 +48,6 @@ const emit = defineEmits<{
         <span :class="css.linkedItems_reference">{{
           formatRelativeReference({ repository: linked.repository.nameWithOwner, number: linked.number }, repository)
         }}</span>
-        <span :class="css.linkedItems_spacer" />
         <span
           v-if="linked.projects[0]?.status"
           :class="css.linkedItems_field"
@@ -121,10 +120,6 @@ const emit = defineEmits<{
   font-family: $font-family-mono;
   font-size: $font-size-xs;
   color: $color-fg-dim;
-}
-
-.linkedItems_spacer {
-  flex: 1;
 }
 
 .linkedItems_field {

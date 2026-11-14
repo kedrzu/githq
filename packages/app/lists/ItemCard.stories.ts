@@ -84,11 +84,15 @@ export const LoneCard: Story = {
     },
 };
 
-/** A pull request shows its size, nested under an issue too; "Size" off in Display hides it. */
+/**
+ * A pull request shows its size, nested under an issue too; "Size" off in Display hides it. Under an issue of its
+ * repository its number alone names it.
+ */
 export const Size: Story = {
     args: { item: SIZED, parent: ISSUE },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
+        await expect(canvas.getByText('#1203', { exact: true })).toBeVisible();
         await expect(canvas.getByText('+1,092')).toBeVisible();
         await expect(canvas.getByText('−640')).toBeVisible();
     },
@@ -109,11 +113,12 @@ export const IssueHasNoSize: Story = {
     },
 };
 
-/** A pull request GitHub would merge with no review decision and no review asked. */
+/** A pull request GitHub would merge with no review decision and no review asked, named by repository and number. */
 export const ReadyToMerge: Story = {
     args: { item: { ...READY, reviewDecision: null, reviewRequests: [] } },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
+        await expect(canvas.getByText('skyline-labs/api#477', { exact: true })).toBeVisible();
         await expect(canvas.getByText('ready to merge')).toBeVisible();
         await expect(canvas.queryByText('checks passed')).toBeNull();
     },

@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ItemThreadPush.stories.js';
 
-const { SixCommits, NoAccount } = composeStories(stories);
+const { SixCommits, NoAccount, Wide } = composeStories(stories);
 
 test('"Show 3 more commits" shows the rest in place and gives the focus to the first of them', async () => {
     await SixCommits.run();
@@ -23,4 +23,32 @@ test('commits of an author with no GitHub account are under the name git records
     const line = page.getByText('pushed 3 commits').element().closest('p');
     expect(line?.textContent).toContain('Maja Laine');
     expect(line?.querySelector('[data-initials], img')).toBeNull();
+});
+
+test('at the thread\'s widest the time follows "pushed 3 commits" and each commit\'s hash its message, nothing at the far edge', async () => {
+    await Wide.run();
+    const frame = page.getByTestId('frame').element().getBoundingClientRect();
+
+    const time = document.querySelector('time');
+    const what = time?.previousElementSibling?.getBoundingClientRect();
+    if (!time || !what) {
+        throw new Error('The head has no time after what was pushed.');
+    }
+
+    expect(time.getBoundingClientRect().left - what.right).toBeCloseTo(6, 0);
+    expect(time.getBoundingClientRect().right).toBeLessThan(frame.right - 300);
+
+    const hashes = page.getByRole('link', { name: /^[0-9a-f]{7}$/u }).elements();
+    expect(hashes).toHaveLength(3);
+    for (const hash of hashes) {
+        const message = hash.parentElement?.querySelector('span')?.getBoundingClientRect();
+        const before = hash.previousElementSibling?.getBoundingClientRect();
+        const last = before && before.width > 0 ? before : message;
+        if (!last) {
+            throw new Error('The commit has no message before its hash.');
+        }
+
+        expect(hash.getBoundingClientRect().left - last.right).toBeCloseTo(8, 0);
+        expect(hash.getBoundingClientRect().right).toBeLessThan(frame.right - 300);
+    }
 });

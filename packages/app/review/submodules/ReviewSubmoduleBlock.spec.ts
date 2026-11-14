@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ReviewSubmoduleBlock.stories.js';
 
-const { Ahead, Failed, Large, LargeNarrow, NoPullRequest, Removed, RolledBack } = composeStories(stories);
+const { Ahead, Failed, Large, LargeNarrow, LargeWidest, NoPullRequest, Removed, RolledBack } = composeStories(stories);
 
 const BEFORE = 'a1c9e2f0b7d84c3e9a5f1b2c3d4e5f6a7b8c9d0e';
 const AFTER = 'd4f7b21c0e9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c';
@@ -94,6 +94,37 @@ test('the commits and the files sit side by side, tops aligned, on a wide block,
     [commits, files] = await getPanels();
     expect(files.top).toBeGreaterThan(commits.bottom);
     expect(files.left).toBe(commits.left);
+});
+
+test("at the block's widest a commit's author follows its subject, a file's size its path and a panel's count its title", async () => {
+    await LargeWidest.run();
+    const [commits, files] = await getPanels();
+
+    const commit = page.getByRole('list', { name: 'Commits' }).getByRole('listitem').first().element();
+    const subject = commit.querySelector('a')?.getBoundingClientRect();
+    const author = commit.lastElementChild?.getBoundingClientRect();
+    if (!subject || !author) {
+        throw new Error('The commit has no subject or author.');
+    }
+    expect(author.left - subject.right).toBeCloseTo(10, 0);
+    expect(author.right).toBeLessThan(commits.right - 200);
+
+    const file = page.getByRole('list', { name: 'Files' }).getByRole('listitem').first().element();
+    const path = page.getByText('packages/ioc/src/lazy/Step1.ts', { exact: true }).element().getBoundingClientRect();
+    const size = file.lastElementChild?.getBoundingClientRect();
+    if (!size) {
+        throw new Error('The file has no size.');
+    }
+    expect(size.left - path.right).toBeCloseTo(10, 0);
+    expect(size.right).toBeLessThan(files.right - 200);
+
+    const title = page.getByRole('list', { name: 'Commits' }).element().parentElement?.querySelector('span[id]');
+    const count = title?.nextElementSibling?.getBoundingClientRect();
+    if (!title || !count) {
+        throw new Error('The panel has no title or count.');
+    }
+    expect(count.left - title.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(count.right).toBeLessThan(commits.right - 200);
 });
 
 test('the comparison goes from the old pointer to the new one, and for a rollback the other way round', async () => {

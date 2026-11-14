@@ -212,7 +212,6 @@ function refusedAside(reason: EditFailureReason) {
         aria-hidden="true"
         >{{ pr.baseRefName }}</span
       >
-      <span :class="css.pullRequestMerge_spacer" />
       <PullRequestSize
         :additions="pr.additions"
         :deletions="pr.deletions"
@@ -276,7 +275,6 @@ function refusedAside(reason: EditFailureReason) {
       >
         {{ t(l.reviewFiles) }}
       </Button>
-      <span :class="css.pullRequestMerge_spacer" />
       <span
         v-if="note"
         :class="css.pullRequestMerge_note"
@@ -354,7 +352,6 @@ $narrow: 480px;
 }
 
 .pullRequestMerge_conditionText {
-  flex: 1;
   min-width: 0;
   color: $color-fg;
 }
@@ -394,11 +391,8 @@ $narrow: 480px;
   @include visually-hidden;
 }
 
-.pullRequestMerge_spacer {
-  flex: 1;
-}
-
 .pullRequestMerge_files {
+  flex: none;
   font-family: $font-family-sans;
   font-size: $font-size-xs;
   color: $color-fg-dim;

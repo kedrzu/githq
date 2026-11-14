@@ -11,7 +11,7 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeRecord, SentMerge } from '@/merge/MergeTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { D1_ITEMS, SAMPLE_NOW, sampleUser } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import { ITEM_PROPERTIES } from './ItemProperty.js';
@@ -35,6 +35,85 @@ const MAY_MERGE: MergeContext = {
 /** A merge sent from the panel, with GitHub's text, naming the head the row shows. */
 const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
 const DRAFT = { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' };
+
+test.each<{ name: string; item: Item; parent?: Item; lineOne: RegExp; lineTwo: RegExp }>([
+    {
+        name: 'a pull request: its number on line one, its repository alone on line two',
+        item: READY,
+        lineOne: /^Retry Stripe webhook delivery on 5xx\s*#477\s*\S+$/,
+        lineTwo: /^skyline-labs\/api(?!.*#477)/,
+    },
+    {
+        name: 'a pull request under an issue of its repository: line two starts with its status',
+        item: findPullRequest('PR_1205'),
+        parent: findItem('I_1187'),
+        lineOne: /^Fix timezone offset for recurring bookings\s*#1205/,
+        lineTwo: /^(?!.*skyline-labs)(?!.*#1205)checks running/,
+    },
+    {
+        name: 'an issue: its reference stays on line two',
+        item: findItem('I_1187'),
+        lineOne: /^Calendar shows wrong timezone for recurring bookings(?!.*#)/,
+        lineTwo: /^skyline-labs\/portal#1187/,
+    },
+])('$name', ({ item, parent, lineOne, lineTwo }) => {
+    mount(item, null, { parent });
+
+    const [one, two] = readLines();
+    expect(one).toMatch(lineOne);
+    expect(two).toMatch(lineTwo);
+});
+
+test('on a wide row the number, the people and the age follow the title 8px apart, none of them pushed to the far edge', () => {
+    const host = mount({ ...READY, author: sampleUser('olam', '#7fb3d5') }, null);
+    host.style.width = '1200px';
+
+    const line = assertValue(document.querySelector('[class*="itemRow_line"]'));
+    const parts = [...line.children].map(part => part.getBoundingClientRect());
+    expect(parts).toHaveLength(4);
+    for (const [index, part] of parts.slice(1).entries()) {
+        expect(part.left - assertValue(parts[index]).right).toBeCloseTo(8, 0);
+    }
+
+    expect(assertValue(parts.at(-1)).right).toBeLessThan(line.getBoundingClientRect().right - 400);
+});
+
+test('beside an opened item (440px) the title gives way; the number, the people and the age stay whole', async () => {
+    const title = 'Retry Stripe webhook delivery on 5xx with exponential backoff and a dead-letter queue for the rest';
+    const host = mount({ ...READY, title, author: sampleUser('olam', '#7fb3d5') }, null);
+    host.style.width = '440px';
+
+    const titleElement = assertValue(document.querySelector('[class*="itemRow_title"]'));
+    expect(titleElement.scrollWidth).toBeGreaterThan(titleElement.clientWidth);
+    const lineRight = assertValue(document.querySelector('[class*="itemRow_line"]')).getBoundingClientRect().right;
+    for (const shown of [
+        page.getByText('#477', { exact: true }),
+        page.getByRole('img', { name: 'olam' }),
+        page.getByText('3h', { exact: true }),
+    ]) {
+        await expect.element(shown).toBeVisible();
+        const element = shown.element();
+        expect(element.getBoundingClientRect().right).toBeLessThanOrEqual(lineRight);
+        expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth);
+    }
+});
+
+test('nested under its issue, a pull request is indented with a smaller icon, its title set as any other', () => {
+    mount(READY, null);
+    mount(findPullRequest('PR_1205'), null, { parent: findItem('I_1187') });
+
+    const [top, nested] = document.querySelectorAll('[class*="itemRow_title"]');
+    const [topStyle, nestedStyle] = [assertValue(top), assertValue(nested)].map(title => getComputedStyle(title));
+    expect(pickTitleStyle(assertValue(nestedStyle))).toEqual(pickTitleStyle(assertValue(topStyle)));
+
+    const [topIcon, nestedIcon] = page.getByRole('img', { name: 'Open pull request' }).elements();
+    expect(assertValue(nestedIcon).getBoundingClientRect().width).toBeLessThan(
+        assertValue(topIcon).getBoundingClientRect().width,
+    );
+    expect(assertValue(nestedIcon).getBoundingClientRect().left).toBeGreaterThan(
+        assertValue(topIcon).getBoundingClientRect().left,
+    );
+});
 
 const READY_ROWS = [
     { name: 'approved', ready: READY },
@@ -359,6 +438,18 @@ test('PM37: under auto-merge, the row says how and what it waits for, and offers
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
+/** What the lines of the rows say, top to bottom, normalised as {@link readStatuses}. */
+function readLines() {
+    return Array.from(document.querySelectorAll('[class*="itemRow_line"]'), line =>
+        line.textContent.replaceAll(/\s+/g, ' ').trim(),
+    );
+}
+
+/** What makes a title look as it does. */
+function pickTitleStyle(style: CSSStyleDeclaration) {
+    return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color };
+}
+
 /** What line two of the rows says, in order. */
 function readStatuses() {
     return Array.from(document.querySelectorAll('[class*="itemStatus_text"]'), status =>
@@ -370,7 +461,7 @@ function readStatuses() {
 function mount(
     item: Item,
     merging: MergeContext | null,
-    props: { reviewRequested?: boolean; properties?: readonly ItemProperty[] } = {},
+    props: { reviewRequested?: boolean; properties?: readonly ItemProperty[]; parent?: Item } = {},
 ) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -398,13 +489,18 @@ function mount(
         app.unmount();
         host.remove();
     });
+    return host;
 }
 
 function findPullRequest(id: string): PullRequestItem {
-    const item = assertValue(D1_ITEMS.find(candidate => candidate.id === id));
+    const item = findItem(id);
     if (item.kind !== 'pullRequest') {
         throw new Error(`${id} is not a pull request`);
     }
 
     return item;
+}
+
+function findItem(id: string): Item {
+    return assertValue(D1_ITEMS.find(candidate => candidate.id === id));
 }

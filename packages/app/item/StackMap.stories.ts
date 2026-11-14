@@ -62,6 +62,16 @@ export const PanelTen: Story = {
     },
 };
 
+/** SP82 in a wide panel: the keys and the states follow the titles, the end of the row left empty. */
+export const PanelTenWide: Story = {
+    args: PanelTen.args,
+    render: args => ({
+        components: { StackMap },
+        setup: () => ({ args }),
+        template: `<div style="width: 1200px; display: flex; background: #151b23"><StackMap v-bind="args" style="flex: 1" /></div>`,
+    }),
+};
+
 /** SP35: a stack of two in a page's left column, as tall as the page. */
 export const PageTwo: Story = { args: { arrangement: 'page' } };
 

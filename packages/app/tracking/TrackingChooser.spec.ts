@@ -252,6 +252,23 @@ test("a range stays within its list: the projects' anchor is their own", async (
     await expect.element(page.getByRole('checkbox', { name: /^kedrzu\/skills / })).not.toBeChecked();
 });
 
+test("on a wide screen a repository's open count follows its name and visibility 10px after them, nothing at the row's far edge", async () => {
+    await page.viewport(1440, 900);
+    onTestFinished(() => page.viewport(414, 896));
+    await Choose.run();
+
+    const row = repositoryRow('blog').element().closest('[data-tracking-row]');
+    const label = repositoryRow('blog').element().parentElement?.getBoundingClientRect();
+    const open = [...(row?.querySelectorAll('span') ?? [])].find(span => /\sopen$/u.test(span.textContent ?? ''));
+    const rowEdge = row?.getBoundingClientRect();
+    if (!label || !open || !rowEdge) {
+        throw new Error('The row has no name or open count.');
+    }
+
+    expect(open.getBoundingClientRect().left - label.right).toBeCloseTo(10, 0);
+    expect(open.getBoundingClientRect().right).toBeLessThan(rowEdge.right - 100);
+});
+
 /** The rows of the repositories' column, in order, by the name after the owner. */
 function repositoryNames() {
     return page

@@ -32,6 +32,7 @@ const {
     UnifiedColoured,
     UnifiedCommented,
     UnifiedMarked,
+    Wide,
 } = composeStories(stories);
 
 test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
@@ -422,6 +423,32 @@ test('every row names the cursor stop it is part of: a line its own, a row of a 
     for (const placeholder of placeholders) {
         expect(placeholder.parentElement!.getAttribute('data-cursor-key')).toBe(header);
     }
+});
+
+test("at the diff's widest a header's threads and size follow its path 8px after it, Viewed stays at the edge, and a gap's count follows its declaration", async () => {
+    await Wide.run();
+    const frame = page.getByTestId('frame').element().getBoundingClientRect();
+
+    const heading = page.getByRole('heading', { level: 3 }).element();
+    const path = heading.getBoundingClientRect();
+    const header = heading.parentElement?.getBoundingClientRect();
+    if (!header) {
+        throw new Error('The path has no header.');
+    }
+
+    const threads = page.getByText('1 open').element().getBoundingClientRect();
+    expect(threads.left - path.right).toBeCloseTo(8, 0);
+    expect(threads.right).toBeLessThan(frame.right - 300);
+    const viewed = page
+        .getByRole('button', { name: /Viewed/u })
+        .element()
+        .getBoundingClientRect();
+    expect(viewed.right).toBeGreaterThan(header.right - 20);
+
+    const enclosing = page.getByText('export class Outbox {').first().element().getBoundingClientRect();
+    const count = page.getByText('33 lines').element().getBoundingClientRect();
+    expect(count.left - enclosing.right).toBeCloseTo(8, 0);
+    expect(count.right).toBeLessThan(frame.right - 300);
 });
 
 function getCursorRow() {
