@@ -6,8 +6,16 @@ import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './StackMap.stories.js';
 
-const { PageTen, PagePartlyRead, PanelBeingMerged, PanelLastOpen, PanelReviewRequested, PanelTen, PanelTwo } =
-    composeStories(stories);
+const {
+    PageTen,
+    PagePartlyRead,
+    PanelBeingMerged,
+    PanelLastOpen,
+    PanelReviewRequested,
+    PanelTen,
+    PanelTenWide,
+    PanelTwo,
+} = composeStories(stories);
 
 /** The rows' buttons, top to bottom, by their accessible names. */
 function getRowNames() {
@@ -29,7 +37,7 @@ test('SP30: a stack of two shows both rows, this one marked, K on the one before
     await expect.element(page.getByText('#41 is waiting for review')).toBeVisible();
 });
 
-test('D25: a stack of ten in a panel shows every row, none folded, K and J right after the titles and the state at the far end', async () => {
+test('D25: a stack of ten in a panel shows every row, none folded, K and J right after the titles and the state after them', async () => {
     await PanelTen.run();
 
     expect(getRowNames().map(name => name.slice(0, 3))).toEqual(SYNC_ENGINE_STACK.map(pr => `#${pr.number}`));
@@ -40,7 +48,7 @@ test('D25: a stack of ten in a panel shows every row, none folded, K and J right
     await expect.element(page.getByRole('button', { name: /#64/u })).toHaveAttribute('aria-keyshortcuts', 'K');
     await expect.element(page.getByRole('button', { name: /#65/u })).toHaveTextContent('2 checks failing');
 
-    // The key follows the title, the state ends the row.
+    // The key follows the title, the state the key.
     const row = next.element();
     const title = [...row.querySelectorAll('span')].find(span => span.textContent === SYNC_ENGINE_STACK[6]!.title);
     const key = row.querySelector('kbd');
@@ -51,6 +59,38 @@ test('D25: a stack of ten in a panel shows every row, none folded, K and J right
     const [first, last] = [key.getBoundingClientRect(), title.getBoundingClientRect()];
     expect(first.left - last.right).toBeLessThan(16);
     expect(row.textContent.trim().endsWith('Waiting for review')).toBe(true);
+});
+
+test('in a wide panel a row says its state 8px after the title, none pushed to the far edge', async () => {
+    await PanelTenWide.run();
+
+    const row = page.getByRole('button', { name: /#65/u }).element();
+    const parts = [...row.children].map(part => part.getBoundingClientRect());
+    const state = parts.at(-1);
+    if (!state) {
+        throw new Error('The row has no parts.');
+    }
+
+    for (const [index, part] of parts.slice(1).entries()) {
+        expect(part.left - parts[index]!.right).toBeCloseTo(8, 0);
+    }
+
+    expect(state.right).toBeLessThan(row.getBoundingClientRect().right - 400);
+    expect(row.textContent).toContain('2 checks failing');
+});
+
+test('on a page the stack fits its column: nothing wider than it, the place right after the name', async () => {
+    await PageTen.run();
+
+    const map = page.getByRole('region', { name: 'The stack' }).element();
+    expect(map.scrollWidth).toBeLessThanOrEqual(map.clientWidth);
+    const list = page.getByRole('list', { name: 'Pull requests of the stack' }).element();
+    for (const row of list.querySelectorAll('button')) {
+        expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth);
+    }
+
+    const [name, place] = [...map.children[0]!.children].slice(1).map(part => part.getBoundingClientRect());
+    expect(place!.left - name!.right).toBeCloseTo(8, 0);
 });
 
 test('SP36: on a page the stack of ten shows whole, merged ones included, without state in words', async () => {

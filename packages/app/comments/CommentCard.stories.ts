@@ -117,3 +117,8 @@ export const NarrowLongLogin: Story = {
 export const WideReview: Story = {
     parameters: { menu: true, verdict: 'CHANGES_REQUESTED', tail: '2 threads · 1 resolved' },
 };
+
+/** The thread at its widest: the threads and the Author chip follow the time, the ⋯ stays at the edge. */
+export const WidestReview: Story = {
+    parameters: { width: 1300, menu: true, verdict: 'CHANGES_REQUESTED', tail: '2 threads · 1 resolved' },
+};

@@ -1,4 +1,4 @@
-<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D25, SP30, SP35–SP36), read from the local copy: its pull requests first to last — merged ones too, none folded — each with its number and title, `K`/`J` right after the titles of the rows those keys open, its state at the far end, this one highlighted; then a line saying what stops the stack — being merged, every one going says so and the line that stacks take longer, none merged until GitHub confirms (SP7). A click on a row opens that pull request in this one's place. With `arrangement` `panel` it is the rows alone, each saying its state in words: the item in one column, whose stack bar above the content (`StackBar`) names the stack, shows the map at the top of its content, or dropped over it from the bar (D27). With `page` it carries the stack's name and this one's place, the icons carrying each state: the head of the item's summary in two columns, where there is no bar. No merge here: `⇧M` merges. -->
+<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D25, SP30, SP35–SP36), read from the local copy: its pull requests first to last — merged ones too, none folded — each with its number and title, `K`/`J` right after the titles of the rows those keys open, its state after them, this one highlighted; then a line saying what stops the stack — being merged, every one going says so and the line that stacks take longer, none merged until GitHub confirms (SP7). A click on a row opens that pull request in this one's place. With `arrangement` `panel` it is the rows alone, each saying its state in words: the item in one column, whose stack bar above the content (`StackBar`) names the stack, shows the map at the top of its content, or dropped over it from the bar (D27). With `page` it carries the stack's name and this one's place, the icons carrying each state: the head of the item's summary in two columns, where there is no bar. No merge here: `⇧M` merges. -->
 <script lang="ts">
 /** The items `K` and `J` open from the opened one, by id; `null` at either end of the list or outside one. */
 export interface StackNeighbours {
@@ -192,7 +192,7 @@ function openRow(row: StackMapRow) {
           <span :class="css.stackMap_number">#{{ row.pullRequest.number }}</span>
           <span :class="css.stackMap_title">{{ row.pullRequest.title }}</span>
           <DraftDot v-if="row.pullRequest.pendingReview" />
-          <!-- Right after the title: the states stay aligned at the far end while the keys move (D25). -->
+          <!-- Right after the title, the key and then the state (D25). -->
           <Kbd
             v-if="row.key"
             :keys="row.key"
@@ -250,7 +250,6 @@ function openRow(row: StackMapRow) {
 }
 
 .stackMap_name {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -308,7 +307,7 @@ function openRow(row: StackMapRow) {
   height: 12px;
 }
 
-// Only as wide as its text: the key follows it, the state keeps the far end.
+// Only as wide as its text: the key and the state follow it.
 .stackMap_title {
   flex: 0 1 auto;
   min-width: 0;
@@ -319,7 +318,6 @@ function openRow(row: StackMapRow) {
 
 .stackMap_rowText {
   flex: none;
-  margin-left: auto;
   font-size: $font-size-xs;
   white-space: nowrap;
 }

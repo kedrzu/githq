@@ -127,8 +127,27 @@ test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub h
     await expect.element(page.getByRole('button', { name: text })).not.toBeInTheDocument();
 });
 
+test('paused on a wide bar, "edits still go through" follows the segment\'s text, not pushed to the bar\'s end', async () => {
+    await page.viewport(2400, 600);
+    onTestFinished(() => page.viewport(414, 896));
+    mount({ kind: 'paused', since: NOW - 60_000, until: NOW + 3_600_000 }, null, true);
+    const detail = page.getByText('edits still go through', { exact: true }).element();
+    const segment = detail.parentElement;
+    const text = detail.previousElementSibling;
+    if (!(segment instanceof HTMLElement) || !text) {
+        throw new Error('The detail sits in the segment, after its text.');
+    }
+    // As wide as the status bar stretches it on a big screen.
+    segment.style.flex = '0 0 2000px';
+
+    const gap = detail.getBoundingClientRect().left - text.getBoundingClientRect().right;
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(10);
+    expect(detail.getBoundingClientRect().right).toBeLessThan(segment.getBoundingClientRect().right - 1000);
+});
+
 /** Mounts the segment showing `freshness` — or the user's `edits` — on a clock that moves only when told. */
-function mount(freshness: Freshness, edits: SegmentEdits | null = null) {
+function mount(freshness: Freshness, edits: SegmentEdits | null = null, editsHint = false) {
     let now = NOW;
     let timers: { at: number; callback: () => void }[] = [];
     const clock: ClockShape = {
@@ -153,7 +172,7 @@ function mount(freshness: Freshness, edits: SegmentEdits | null = null) {
 
     let shown = 0;
     const app = createApp({
-        setup: () => () => h(FreshnessSegment, { freshness, edits, onShowFailure: () => shown++ }),
+        setup: () => () => h(FreshnessSegment, { freshness, edits, editsHint, onShowFailure: () => shown++ }),
     });
     app.use(IocPlugin, { container });
     app.mount(host);

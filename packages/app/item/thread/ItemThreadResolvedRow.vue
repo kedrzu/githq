@@ -68,7 +68,6 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
       :class="css.itemThreadResolvedRow_excerpt"
       >· {{ firstLine }}</span
     >
-    <span :class="css.itemThreadResolvedRow_spacer" />
     <span :class="css.itemThreadResolvedRow_people">
       <Avatar
         v-for="person in people.slice(0, MAX_AVATARS)"
@@ -145,10 +144,6 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
   font-size: $font-size-xs;
 }
 
-.itemThreadResolvedRow_spacer {
-  flex: 1;
-}
-
 .itemThreadResolvedRow_people {
   display: flex;
   flex: none;
@@ -169,8 +164,10 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
   color: $color-fg-dim;
 }
 
+// The control: it stays at the row's edge, whatever follows the content.
 .itemThreadResolvedRow_show {
   flex: none;
+  margin-left: auto;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   color: $color-accent;

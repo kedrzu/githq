@@ -105,7 +105,6 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
 }
 
 .candidateRepositoryRow_label {
-  flex: 1;
   min-width: 0;
   padding: 7px 0;
 }
@@ -159,10 +158,8 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
 
 .candidateRepositoryRow_active {
   flex: none;
-  min-width: 110px;
   font-size: $font-size-xs;
   color: $color-fg-dim;
-  text-align: right;
   white-space: nowrap;
 }
 

@@ -94,6 +94,7 @@ function ofWidth(width: number): Decorator {
 
 const WIDE = ofWidth(1100);
 const NARROW = ofWidth(600);
+const WIDEST = ofWidth(1600);
 
 const meta = {
     component: ReviewSubmoduleBlock,
@@ -113,6 +114,9 @@ export const Large: Story = { decorators: [WIDE, withSubmoduleHistory({ kind: 'r
 
 /** A large bump, narrow: the files' panel under the commits'. */
 export const LargeNarrow: Story = { decorators: [NARROW, withSubmoduleHistory({ kind: 'ready', ...LARGE })] };
+
+/** The panels at their widest: each commit's author and each file's size follow the subject and the path. */
+export const LargeWidest: Story = { decorators: [WIDEST, withSubmoduleHistory({ kind: 'ready', ...LARGE })] };
 
 /** A small bump no pull request carries: a quiet card saying so, and panels with no foot. */
 export const NoPullRequest: Story = {
