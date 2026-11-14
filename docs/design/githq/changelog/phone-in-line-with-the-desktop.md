@@ -266,3 +266,146 @@ Canvas:
 
 - [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
   121289 → 126793, 1200 px under `App · Mobile`'s bottom (125593); x and order kept.
+
+## Round 3 · agent brief
+
+Asked (`.context/mobile-summary-apply-brief.md`): settle Variant A of the summary (D52), give every phone item the
+desktop's summary in place of D25's rows and chips, redraw MB98 and MB125, delete MB128 and D25's components, and two
+platform fixes from round 2: 16 px text in every phone field, and the formatting tools above the keyboard as 44 × 44
+targets.
+
+Changed: MB260–MB263 settled and Variant B deleted; ten state variants of the phone summaries; all ten `Phone / Item /
+…` panes draw them, and every screen through them follows; MB98 shows its checks unfolded in the summary; MB125 is the
+issue with every property, scrolled; MB128 deleted; D25's components deleted; `Phone / Editor tools` in the composer
+and the editing cards.
+
+Decisions taken in this round:
+
+- A pull request's states are variants of `Phone / Summary · pull request · as on the desktop`, with the desktop's own
+  standing-card texts (`App · Merging a pull request`, `App · Stacked pull requests`): waiting for review, changes
+  requested, checks failing, conflicts, ready, draft, merged. The base stays MB260's "1 check failing · changes
+  requested". Merge… keeps its ↗; Mark ready… on a draft has none, as a phone marks a draft ready (MB99); Resolve… on
+  conflicts and Delete branch on a merged one keep it.
+- Each screen keeps its pull request: #1205 waiting for review (MB33, MB60, MB110, MB122, MB126, MB220), #1205 with
+  changes requested (MB97), #1201 with e2e (chromium) failing and dkim's approval (MB98, MB233), the draft #1209
+  (MB99, MB234). #1201 and #1209 had inherited #1205's branch, size, Closes #1187 and calendar label through
+  overrides; they now have their own (`chore/payment-sdk-12` +46 −31, 7 files, payments; `series-timezone-label` +38
+  −6, 3 files) and close nothing.
+- #290 (MB95, MB235) shows the desktop's empty values: Assignees "No one", Milestone "None", and its Platform Q4 card
+  Todo with Priority, Iteration and Estimate "Empty" (`ItemProperties`, `ItemProjects` in the app).
+- The issue summary has a hidden `Closed by` block (#1205, waiting for review), as the desktop's issue summary has.
+  MB125's "every property" variant shows it; MB262 and the other issue screens are unchanged.
+- Screens whose story is the thread (MB233, MB234) or the checks (MB98) are scrolled the way MB261 is: a `Pane` frame
+  with a `Scrolled` frame of the head, summary and thread instances, since the longer summary pushed their thread below
+  the fold.
+- MB110's reviewer menu read sbrandt's latest verdict as "changes requested" while #1205 waits for review; it reads
+  "commented", as the thread has it.
+- The tools above the keyboard are bold, italic, code and link, each a 44 × 44 `Phone / Editor tool`, then ⋯ (5 × 44
+  fits beside Write and Preview in 390 px). Heading goes behind ⋯, at the top of `Phone / Menu / Editor tools`. The
+  editing cards (MB227, MB228) are 312 px wide, so they keep bold and italic, then ⋯.
+- The new issue form (MB194–MB196) still draws D25's rows and chips: it is not an item summary, and redrawing it after
+  the desktop's form is a separate decision. Its captions say so; its titles drop "The item's".
+
+Settling the pick (`In line with the desktop on a phone`, `GpTuZ`):
+
+- [ ] Row · Variant B · Hybrid (`g75QcV`) with MB264–MB267 (`B4hmjU`, `on11A`, `I77kBU`, `ta2np`): deleted.
+- [ ] Row · Variant A · As on the desktop (`bpIOu`): moved out of the Variants frame into `GpTuZ`, renamed `Row · The
+  desktop's summary`.
+- [ ] Variants · The item's summary on a phone (`vSNo8`): deleted.
+- [ ] MB260 (`LhUrW`, `l2kHV`, `sFElk`), MB261 (`CUFCu`, `kSgXR`, `ghCn7`), MB262 (`g77yYE`, `BBaIf`, `JCvED`), MB263
+  (`spk23`, `RvliB`, `S3Ivs`): `Variant A · ` dropped from slot, screen and caption names; notes (`ovXji`, `j6bgZG`,
+  `z4xGc`, `PqUdr`) rewritten to describe the screen.
+- [ ] Header description (`XI1fv`): rewritten for the settled summary.
+- [ ] MB263's summary (`ekKZV`, 21 overrides on the base) → `Phone / Summary · pull request · ready` (`s51yWH`), no
+  overrides.
+
+Components (`Components · Mobile` → `In line with the desktop`, `e2bDp`):
+
+- [ ] Title (`HXxwW`): names the states instead of the two variants.
+- [ ] Item / Check · passed, nested (`jA2Lv`): new in `Summary parts · phone`, the desktop's unfolded passed check
+  (`CheckList.vue`): icon, name, "passed in …", Log ↗, 29 px in.
+- [ ] Item / Checks · phone, passed unfolded (`nJ9Rk`): new. `Item / Checks · phone` with #1201's checks and the
+  chevron down, then eight nested rows (e2e (webkit), unit, lint, typecheck, build, Cloudflare Pages, CodeQL,
+  license / policy).
+- [ ] Phone / Summary · issue · as on the desktop (`YrWzg`): new hidden first block `Closed by` (`V9gH1h`, `Item /
+  Linked`: #1205, waiting for review).
+- [ ] Phone / Summary · issue · every property (`L0fAQ`), · unassigned, one project (`vWAbl`): new in `Summaries ·
+  phone` (`b0UBc`).
+- [ ] Pull request summaries by state · phone (`T78Ak`): new row in `e2bDp`, holding `Phone / Summary · pull request ·`
+  waiting for review (`FUWE9`), changes requested (`nkkJy`), checks failing (`AB1Wt`), conflicts (`q5Pag`), ready
+  (`lCo9U`), draft (`OA04b`), merged (`xySZQ`), and checks failing, passed unfolded (`SNC2N`, an instance of `AB1Wt`
+  with its Checks block swapped for `nJ9Rk`).
+- [ ] Phone / Summary · pull request · hybrid (`yV0N7`): deleted with Variant B.
+
+Item panes (every screen using them follows):
+
+- [ ] Phone / Item / Issue (`Z50g0`): Properties (`P7E2C`) → Summary `YrWzg` (`JSGY3`).
+- [ ] Phone / Item / Issue · summary (`qZhtg`): Properties (`N4tkj`) → Summary `YrWzg` (`BKc8Y`).
+- [ ] Phone / Item / Issue · arriving (`e1palS`): Properties (`Y39abV`) → Summary `vWAbl` (`zqNGB`).
+- [ ] Phone / Item / Issue · every property (`D4CI1`): Properties (`Z5P6y`) → Summary `L0fAQ` (`s2ybkM`); layout
+  none, the head, summary and thread moved into `Scrolled` (`hH5Bn`) at y −135.
+- [ ] Phone / Item / Pull request (`PWGSV`): Where it stands (`w0l8bC`), Properties (`u2twM5`) and the `On GitHub` row
+  (`zN7xb`) → Summary `FUWE9` (`bjoiN`).
+- [ ] Phone / Item / Pull request · summary (`j4OTf`): Where it stands (`Qifsd`), Properties (`M5WUcK`) → Summary
+  `FUWE9` (`h1HFvp`).
+- [ ] Phone / Item / Pull request · stacked, a strip (`GSjJM`): Where it stands (`ayltP`), Properties (`gBAmb`) →
+  Summary `FUWE9` (`rzjbl`) under the strip.
+- [ ] Phone / Item / Pull request · long thread (`EkP8V`): Where it stands (`b6cRD`), Properties (`q9nAzO`) → Summary
+  `nkkJy` (`jJXPX`); `Scrolled` (`hLill`) y −533 → −1029 so the thread's end stays in view.
+- [ ] Phone / Item / Issue · further down (`UXIHb`), · reply sent (`aUYA5`): unchanged, they show only the thread.
+
+Screens:
+
+- [ ] MB99 (`h4L9nQ`): its pane's (`y0oJ22`) summary → `OA04b` (`mXWQO`).
+- [ ] MB234 (`JPEcV`): pane `a2fwn3` → frame `Pane` (`h24rh`) with `Scrolled` (`X29LeN`, y −420): #1209's head, `OA04b`,
+  `Phone / Thread · empty`.
+- [ ] MB233 (`YwFN7`): pane `H5pUxC` → frame `Pane` (`Yw3Ny`) with `Scrolled` (`lrpd9`, y −470): #1201's head,
+  `AB1Wt`, `Phone / Thread · loading`.
+- [ ] MB98 (`jcNAD`): pane `Efidb` → frame `Pane` (`JshP2`) with `Scrolled` (`G1K0H`, y −300): #1201's head, `SNC2N`,
+  #1201's thread; the scrim (`wHuo7`) and the sheet's holder (`tld0a`) deleted. Caption (`nCQMK`) rewritten.
+- [ ] MB125 (`ZD5YG`): follows `D4CI1`; caption (`soGyJ`) rewritten.
+- [ ] MB128 · Rows, then chips (`Cx98x`, screen `x5PLpW`): deleted. Its code is not reused.
+- [ ] MB110 (`UlxQo`): sbrandt's verdict in the reviewer menu (`l7tTt/lV2f9/s255dF`) "changes requested" →
+  "commented"; caption (`Sgxsl`) names Request at the head of Reviews.
+- [ ] Captions rewritten for the summary: MB40 (`SEWnG`), MB60 (`kA1Ux`), MB94 (`bUUCb`), MB99 (`JsH6J`), MB108
+  (`mTZ17`), MB126 (`rqs3g`).
+- [ ] MB194 (`H1y1T`, `Prb2P`, `qeB56`), MB195 (`kaOWp`, `h12PVi`, `relhT`), MB196 (`hqCS9`, `SE9dq`, `GeR5v`): "The
+  item's rows and chips" → "The form's rows and chips"; notes `pwD8s` and `v6CkJ` no longer say the form reads like the
+  item.
+- [ ] MB33, MB35, MB38, MB40, MB41, MB52, MB60, MB62, MB70, MB73, MB74, MB82, MB94, MB95, MB108, MB109, MB112, MB122,
+  MB126, MB220, MB235: follow their item pane, no change of their own.
+
+Deleted, left unused: Phone / Properties · issue (`Mg3Qu`), · pull request (`ZgPo0`), · issue, every property
+(`k9uHBB`), Phone / Property chips · issue (`EywvE`), · pull request (`ozxE4`), Phone / Property · more (`gKSlh`), ·
+fewer (`DYbxw`), Phone / Where it stands (`Pv3sV`) with · waiting for review (`Rir6O`), · ready (`BSocv`), · conflicts
+(`QVCVx`), · changes requested (`G2sL42`), · checks failing (`AfKnp`), Phone / Sheet / Checks (`MZluT`), Phone / Check
+row (`N1d0ew`).
+
+- [ ] Kept, still used by the new issue form: Phone / Chip (`oEda7`), Phone / Property (`VILkz`), Phone / Property ·
+  assignees, assign to me (`W7sKw0`).
+
+Platform fixes (`Components · Mobile` → `Writing`, `O1nNc`):
+
+- [ ] Phone / Editor tool (`Ysz3O`): new in `Composer docks` (`WSlci`), a 44 × 44 target with an 18 px icon in
+  `$fg-2`. Phone / Editor tool · open (`Nzg7Y`): new, its instance with `$bg-3` and the icon in `$fg`.
+- [ ] Phone / Editor tools (`hcgsH`): new. Bold, Italic, Code, Link, More tools (⋯).
+- [ ] Phone / Composer dock · typing (`BGx6I`): `Activity / Editor tools · folded` (`t5hvVi`) → `Phone / Editor tools`
+  (`PUCUW`); Head (`syXj3`) padding [0,6,6,8] → [0,6,0,8], Tools (`lyqOI`) padding [0,6] → 0. Every composer variant
+  follows.
+- [ ] Phone / Composer dock · tools open (`s9Gv7y`): its ⋯ override (`t5hvVi/DLIm0` → `KYOL3`) → `PUCUW/HbK87` →
+  `Phone / Editor tool · open`.
+- [ ] Phone / Menu / Editor tools (`cFbzw`): Heading first; the rest move down one slot, "Insert" heads Mention someone
+  (slot 6, `NNPB0`), Reference is slot 7 (`JPkVG`).
+- [ ] MB237 (`wDKN7`): the pane (`pm4ci`) 179 → 131 px tall and its thread (`rBRWj`) y −315 → −363, for the taller
+  menu.
+- [ ] Activity / Comment · narrow, editing · phone (`w6BzvV`): text (`pehHx/mnTU1`) 13 → 16 px; the tools (`pehHx/UP6a5`)
+  → `Phone / Editor tools` with Code and Link hidden.
+- [ ] Activity / Comment · narrow, editing, discard? (`SSKJn`): the same (`xJp53` → `rx8oL`, `pehHx/mnTU1` 16 px).
+- [ ] MB227 (`aEhjZ`) y −51 → −66, MB228 (`ti4Gd`) y −50 → −65: the taller card stays above the keyboard.
+- [ ] Phone / Menu (`gf3JG`): search text (`qig8z`) 15 → 16 px; every phone menu with search follows.
+- [ ] Captions for the tools and the 16 px text: MB71 (`F6Tds`), MB227 (`dRKVg`), MB236 (`LkFLu`), MB237 (`YdTpK`).
+
+Canvas:
+
+- [ ] The web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`): y
+  126793 → 124906, 1200 px under `App · Mobile`'s bottom (123706); x and order kept.
