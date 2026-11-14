@@ -15,12 +15,10 @@ import {
   FileDiff,
   GitBranch,
   Hash,
-  Github,
   Link,
   MessageSquare,
   SquareKanban,
   RotateCcw,
-  X,
 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
@@ -33,7 +31,6 @@ import type { StateOption } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
-import IconButton from '@/components/IconButton.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -55,7 +52,6 @@ import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
@@ -66,12 +62,12 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
 import type { ItemEditing } from './ItemEditing.js';
+import ItemHeader from './ItemHeader.vue';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
 import { formatShortReference } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import * as l from './ItemView.loc.js';
-import ItemWalkStepper from './ItemWalkStepper.vue';
 import LinkedItems from './LinkedItems.vue';
 import PullRequestChecks from './PullRequestChecks.vue';
 import PullRequestMerge from './PullRequestMerge.vue';
@@ -81,7 +77,7 @@ import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
-import { ITEM_ARRANGEMENT_KEYS, useItemKeys } from './useItemArrangement.js';
+import { useItemKeys } from './useItemArrangement.js';
 
 /** From this width of the item below its header on a page, the summary and the timeline stand side by side. */
 const TWO_COLUMNS_WIDTH = 1000;
@@ -656,77 +652,52 @@ function getProjectOptions(): CommandOption[] {
     :class="[css.itemView, css[`itemView_${arrangement}`]]"
     :aria-label="item.title"
   >
-    <header
-      :class="css.itemView_toolbar"
-      v-bind="WINDOW_DRAG_REGION"
+    <ItemHeader
+      :position="position ?? null"
+      :other-arrangement="keys.otherArrangement"
+      :url="item.url"
+      :step-keys="keys.stepKeys"
+      @previous="emit('previous')"
+      @next="emit('next')"
+      @arrange="emit('arrange', $event)"
+      @close="emit('close')"
     >
-      <Menu
-        v-model:open="itemMenuOpen"
-        align="start"
-      >
-        <template #trigger>
-          <button
-            type="button"
-            :class="css.itemView_reference"
-            :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
-            :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
-          >
-            <component
-              :is="state.icon"
-              :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
-              aria-hidden="true"
-            />
-            <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
-            <span :class="css.itemView_number">#{{ item.number }}</span>
-            <ChevronDown
-              :class="css.itemView_chevron"
-              aria-hidden="true"
-            />
-          </button>
-        </template>
-        <CommandMenuSections :sections="itemMenuSections" />
-        <MenuSeparator />
-        <MenuLabel>
-          <span :class="css.itemView_menuFooter">
-            {{ t(l.itemMenu) }}
-            <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
-          </span>
-        </MenuLabel>
-      </Menu>
-      <span :class="css.itemView_spacer" />
-      <ItemWalkStepper
-        v-if="position"
-        :position="position"
-        :previous-label="keys.commands.previous.title"
-        :next-label="keys.commands.next.title"
-        @previous="emit('previous')"
-        @next="emit('next')"
-      />
-      <IconButton
-        v-if="keys.otherArrangement"
-        :icon="keys.otherArrangement.icon"
-        :label="keys.otherArrangement.title"
-        :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
-        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
-        @click="emit('arrange', keys.otherArrangement.arrangement)"
-      />
-      <IconButton
-        :icon="Github"
-        :label="keys.commands.openOnGitHub.title"
-        :kbd="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
-        :link="item.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
-      />
-      <IconButton
-        :icon="X"
-        :label="keys.commands.close.title"
-        :kbd="ITEM_ARRANGEMENT_KEYS.close"
-        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.close"
-        @click="emit('close')"
-      />
-    </header>
+      <template #identity>
+        <Menu
+          v-model:open="itemMenuOpen"
+          align="start"
+        >
+          <template #trigger>
+            <button
+              type="button"
+              :class="css.itemView_reference"
+              :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
+            >
+              <component
+                :is="state.icon"
+                :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
+                aria-hidden="true"
+              />
+              <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
+              <span :class="css.itemView_number">#{{ item.number }}</span>
+              <ChevronDown
+                :class="css.itemView_chevron"
+                aria-hidden="true"
+              />
+            </button>
+          </template>
+          <CommandMenuSections :sections="itemMenuSections" />
+          <MenuSeparator />
+          <MenuLabel>
+            <span :class="css.itemView_menuFooter">
+              {{ t(l.itemMenu) }}
+              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+            </span>
+          </MenuLabel>
+        </Menu>
+      </template>
+    </ItemHeader>
 
     <div
       ref="body"
@@ -1001,13 +972,6 @@ $item-column-inset: var(--item-column-inset);
   --item-column-inset: #{$spacing-32};
 }
 
-.itemView_toolbar {
-  @include list-header;
-
-  padding: 0 14px 0 $spacing-16;
-  font-size: $font-size-sm;
-}
-
 .itemView_reference {
   display: flex;
   gap: $spacing-10;
@@ -1063,10 +1027,6 @@ $item-column-inset: var(--item-column-inset);
   flex: none;
   font-family: $font-family-mono;
   color: $color-fg-dim;
-}
-
-.itemView_spacer {
-  flex: 1;
 }
 
 // Its width decides the layout (`twoColumns`): the stack bar and the content in one column, the summary's column and
