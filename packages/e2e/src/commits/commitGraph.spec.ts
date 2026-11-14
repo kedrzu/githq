@@ -70,6 +70,10 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
     await graph.row('chore: set up the build').click();
     await expect(graph.cursorRow).toContainText('chore: set up the build');
+    // CH54: the dot is the row's too, its details following.
+    await graph.dot(graph.row('docs: describe the setup')).click();
+    await expect(graph.cursorRow).toContainText('docs: describe the setup');
+    await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
 
     // Asked of GitHub through the graph's store alone: the refs once, the unjoined branch once, the states.
     const asked = github.graphqlCalls.filter(call => COMMIT_OPERATIONS.has(call.name)).map(call => call.name);

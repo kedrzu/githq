@@ -31,7 +31,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * CH3, CH12: branches, a tag, merges, pull requests of every state and CI — a failure as a red dot and a red ✕, running
+ * CH3, CH12: branches, a tag, merges, pull requests of every state and CI — a failure as a red centre in its lane's ring and a red ✕, running
  * amber.
  */
 export const Graph: Story = {

@@ -68,6 +68,11 @@ export interface CommitGraph {
     /** The branches and tags as last read, `null` until they first are. */
     readonly refs: KeptCommitRefs | null;
     /**
+     * {@link refs} are a complete read — the kept copy, or a check that read every page — not a first open's first
+     * pages, which a failed page can leave them at. Only a complete read may say a ref is gone.
+     */
+    readonly refsComplete: boolean;
+    /**
      * The commits shown, in `git log --date-order` (`orderCommits`): the loaded commits reachable from the current
      * refs through loaded parents — a force-pushed or deleted branch's old commits are not.
      */
@@ -98,6 +103,8 @@ interface RepositoryGraph {
     /** Every commit loaded, shown or not, by oid. */
     readonly commits: Map<string, KeptCommit>;
     refs: KeptCommitRefs | null;
+    /** {@link CommitGraph.refsComplete}. */
+    refsComplete: boolean;
     /** {@link refs} list every branch: the kept ones do, and those being read once their last page came. */
     branchesRead: boolean;
     /**
@@ -519,6 +526,7 @@ export const CommitGraphStore = defineService({
                 nameWithOwner,
                 commits: new Map(),
                 refs: null,
+                refsComplete: false,
                 branchesRead: false,
                 drawnTips: new Map(),
                 ready: Promise.resolve(),
@@ -562,7 +570,11 @@ export const CommitGraphStore = defineService({
                 }
             }
 
-            graph.refs ??= persisted.refs;
+            if (graph.refs === null && persisted.refs !== null) {
+                graph.refs = persisted.refs;
+                graph.refsComplete = true;
+            }
+
             graph.branchesRead = persisted.refs !== null;
             regraph(graph);
         }
@@ -677,6 +689,7 @@ export const CommitGraphStore = defineService({
 
                 const refs: KeptCommitRefs = { ...allBranches, tags, fetchedAt: clock.now() };
                 graph.refs = refs;
+                graph.refsComplete = true;
                 graph.checkedAt = refs.fetchedAt;
                 regraph(graph);
                 persistence.saveCommitRefs(current.account.login, refs).catch((error: unknown) => {
@@ -1074,6 +1087,7 @@ export const CommitGraphStore = defineService({
             const { shown, refs } = graph;
             const view: CommitGraph = {
                 refs,
+                refsComplete: graph.refsComplete,
                 commits: shown.commits,
                 layout: shown.layout,
                 // A branch not read yet, or left unjoined — its read failed or the allowance ran out — has history yet

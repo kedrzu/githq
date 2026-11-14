@@ -309,6 +309,37 @@ test('a repository’s workflows setting is written only when the user changes i
     expect(second.tracking.document).toEqual(first.tracking.document);
 });
 
+test('the ref sort is set per group over what the document holds, only when it changes, told as a local change and kept', async () => {
+    const login = uniqueLogin();
+    const key = `githq.settings.${login}`;
+    const document: SettingsDocument = {
+        version: 1,
+        repositories: [{ ...WEB, tracking: true }],
+        projects: [],
+        reviewCommentChoice: 'draft',
+        refSort: { tags: 'by-semver' },
+    };
+    const localStorage = new Map([[key, JSON.stringify({ chosen: true, document, saving: { state: 'off' } })]]);
+    const { tracking } = await open({ login, localStorage });
+    let changes = 0;
+    tracking.onLocalChange(() => changes++);
+    expect(tracking.refSort).toEqual({ branches: 'newest', tags: 'newest' });
+
+    // Newest first already, the tags' value of a newer build included: nothing is written.
+    tracking.setRefSort('branches', 'newest');
+    tracking.setRefSort('tags', 'newest');
+    expect(changes).toBe(0);
+    expect(tracking.document).toEqual(document);
+
+    tracking.setRefSort('branches', 'name');
+    tracking.setRefSort('branches', 'name');
+    expect(changes).toBe(1);
+    expect(tracking.refSort).toEqual({ branches: 'name', tags: 'newest' });
+    const expected: SettingsDocument = { ...document, refSort: { tags: 'by-semver', branches: 'name' } };
+    expect(tracking.document).toEqual(expected);
+    expect(JSON.parse(localStorage.get(key) ?? 'null')).toMatchObject({ document: expected });
+});
+
 test('the user’s settings repository is never offered to track; someone else’s of that name is', async () => {
     const login = uniqueLogin();
     const { tracking } = await open({

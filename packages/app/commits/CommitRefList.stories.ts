@@ -43,13 +43,41 @@ export const NotKnownYet: Story = {
     },
 };
 
-/** CH10: dozens of branches and hundreds of tags: the newest of each, the rest counted, typing finds them. */
+/** CH10: dozens of branches in a folder and hundreds of tags: the newest 20 of a level, a row to show more. */
 export const LongList: Story = {
     render: () => renderList(longList()),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(await canvas.findByText('46 more branches · type to find one')).toBeVisible();
-        await expect(canvas.getByText('319 more tags · type to find one')).toBeVisible();
+        await expect(await canvas.findByRole('gridcell', { name: /^renovate/ })).toHaveAttribute(
+            'aria-expanded',
+            'false',
+        );
+        await expect(canvas.getByText('Show 319 more')).toBeVisible();
+    },
+};
+
+/** CH53: branches and a hundred `testing/v…` tags in folders, `testing` unfolded: its newest 20 and a row to show more. */
+export const Folders: Story = {
+    render: () => renderList(folders()),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(await canvas.findByRole('gridcell', { name: /^testing/ }));
+        await expect(canvas.getByRole('gridcell', { name: /^testing/ })).toHaveAttribute('aria-expanded', 'true');
+        await expect(await canvas.findByText('Show 80 more')).toBeVisible();
+    },
+};
+
+/** CH60: branches by name — folders first, then A to Z, numbers compared as numbers — tags still newest first. */
+export const ByName: Story = {
+    render: () => renderList(folders()),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(await canvas.findByRole('button', { name: /^Sort branches:/ }));
+        await userEvent.click(
+            await within(canvasElement.ownerDocument.body).findByRole('menuitemradio', { name: /^By\sname$/ }),
+        );
+        await expect(canvas.getByRole('button', { name: /^Sort branches:/ })).toHaveTextContent(/^By\sname$/);
+        await expect(canvas.getByRole('button', { name: /^Sort tags:/ })).toHaveTextContent('Newest first');
     },
 };
 
@@ -70,7 +98,7 @@ export const FilteringMany: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.type(await canvas.findByRole('combobox'), 'v3.1');
-        await expect(await canvas.findByText(/\d+ more · keep typing/)).toBeVisible();
+        await expect(await canvas.findByText(/^Show \d+ more$/)).toBeVisible();
     },
 };
 
@@ -80,6 +108,28 @@ function webapp(): CommitGraphTestOptions {
     return {
         ...sample,
         branches: [...sample.branches, sampleCommitRef('release/4.2', 'a7')],
+    };
+}
+
+/** Branches with shared prefixes, one nested two deep, and a hundred `testing/v…` tags beside a few releases. */
+function folders(): CommitGraphTestOptions {
+    const commits = Array.from({ length: 120 }, (_, index) => sampleCommit(`c${index}`, index));
+    const branches = [
+        'main',
+        'develop',
+        'feature/login',
+        'feature/search',
+        'release/2026/q3',
+        'release/2026/q4',
+        'kedrzu/fix-x',
+    ].map((name, index) => sampleCommitRef(name, `c${119 - index}`));
+    return {
+        commits,
+        branches,
+        tags: [
+            ...Array.from({ length: 100 }, (_, index) => sampleCommitRef(`testing/v${index + 1}`, `c${index}`)),
+            ...['v1.0.0', 'v1.1.0', 'v1.2.0'].map((name, index) => sampleCommitRef(name, `c${100 + index}`)),
+        ],
     };
 }
 
@@ -124,6 +174,7 @@ function renderList(options: CommitGraphTestOptions) {
             void open();
             return () => {
                 const refs = opened.value ? store.get(REPOSITORY)?.refs : null;
+                const refsComplete = store.get(REPOSITORY)?.refsComplete ?? false;
                 return h(
                     'div',
                     { style: 'display: flex; width: 280px; height: 100vh' },
@@ -132,6 +183,7 @@ function renderList(options: CommitGraphTestOptions) {
                               h(CommitRefList, {
                                   nameWithOwner: REPOSITORY,
                                   refs,
+                                  refsComplete,
                                   now: SAMPLE_COMMITS_NOW,
                               }),
                           ]

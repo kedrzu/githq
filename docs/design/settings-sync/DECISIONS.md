@@ -125,7 +125,12 @@ layout, grouping, sort, visible properties and filter, a project's row field, th
 sizes, plus new issue drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the
 design agent's reading; 2026-11-02, owner for the repository layout, [git-client D14](../git-client/DECISIONS.md#d14)) Added
 since, as a chosen preference rather than a view detail: what a comment does by default
-([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on).
+([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on), and
+how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)).
+
+**The rule (2026-11-14, owner):** "what changes often and is only an aspect of the current temporary view is saved only in
+local storage; what may be more portable between devices — a user preference — can be synced; e.g. the branch sort: it
+depends on the user, who will rarely change it". So the unfolded folders of the ref list are local and the sort is synced.
 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
@@ -137,9 +142,11 @@ later; they are not part of this design.
 |How a code review's comment goes out|`reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Ref list sort, per group|`refSort` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
 |Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
 |How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
+|Ref list's unfolded folders|`githq.refFolders.<login>`, `commits/CommitRefFolders.ts`|local|
 |Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
 |New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
 
