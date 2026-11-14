@@ -154,3 +154,42 @@ Changed: `Workflow / Row`, `Workflow / Item · Deploy · two columns`, W34 and t
 Guesses for the owner: the splitter ranges (jobs 200–480 px, details 320–640 px); whether the run page's box shares
 its width with the item page's box or keeps its own (the caption says neither); the jobs edge keeps the column's line
 at rest, like the sidebar's and CH46's, while the workflow's two columns, one `$bg-item` surface, draw none.
+
+## Round 6 · agent brief, how a run row reads
+
+Asked (`.context/workflow-browser-brief-6.md`): `Workflow / Run row` (`Y8FSMM`) pins the time and duration to the right
+edge, against the rule, and its second line's pieces (number, ref, event, actor) look alike. Two or three variants as
+components, each drawn as W31's eight runs (#4822–#4809) at 900 px (the two-column item's runs column) and 560 px (the
+narrow item's Runs tab). Made in the Pen app through the MCP, not the CLI.
+Changed: new components and one `Variants` frame; `Workflow / Run row` and every screen using it (W30, W31…) unchanged
+until the owner picks.
+
+- [ ] Components · Workflows › Workflow item (`Lxfnv`): new atoms after `Workflow / Run row`: `Workflow / Run event`
+  (`OMB9S`: lucide icon in `$fg-3` and a short word in `$fg-dim`: push `git-commit-horizontal`, PR `git-pull-request`,
+  manual `play`, schedule `calendar-clock`), `Workflow / Run actor` (`rpWu3`: 14 px avatar and the login in `$fg-2`),
+  `Workflow / Run duration` (`PGg7V`: `timer` icon and the duration in mono `$fg-dim`, amber while running). The ref is
+  an instance of `Workflow alerts / Ref` (`J7hppF`), the look of `WorkflowRefChip`; a pull request's run shows its head
+  branch with the branch icon, the event says PR.
+- [ ] `Workflow / Run row · variant A` (`aRcyG`): line 1 state, title (fit to content), `#4821` in mono `$fg-dim` right
+  after it; line 2 ref chip, event, actor, duration, age (plain `$fg-dim`), 14 px apart, nothing pinned right; 57 px a
+  row.
+- [ ] `Workflow / Run row · variant B` (`JpzWZ`, 900 px): one line, state, number, title, then ref chip, event and actor
+  as icons only (label and login hidden), duration, age; 37 px a row.
+- [ ] `Workflow / Run row · variant B, narrow` (`kMZzn`): number and title, then the same icons-only line 2.
+- [ ] `Workflow / Run row · variant C` (`y7yiv`): line 1 as A; line 2 starts with the result in words (`Result`
+  `ME793`: Running for / Failed after / Passed in / Cancelled after and the duration, the word amber, red, `$fg-2` or
+  `$fg-dim`), `·`, the age, then ref chip, event and actor.
+- [ ] `Workflow / Run row · variant C, narrow` (`hoHPi`): an instance of variant C with the login hidden (avatar only),
+  since line 2 does not fit a long ref at 560 px otherwise.
+- [ ] App · Workflows (`IEyTW`): new `Variants · How a run row reads` (`SPZBF`, amber) at the end, one row per variant:
+  `W49 · Variant A · Number after the title, a second line of distinct pieces` (`tHjyE`, 900 px, recommended), `W50 ·
+  Variant A · In the narrow item` (`i90V6v`, 560 px), `W51 · Variant B · One line on a wide column` (`gIGGI`), `W52 ·
+  Variant B · Two lines in the narrow item` (`PqOkw`), `W53 · Variant C · The result in words` (`CWenq`), `W54 ·
+  Variant C · In the narrow item` (`jsxuT`). Each: the Run filters (copied from W30's), the narrow ones also the Runs |
+  Details tabs, eight rows with the cursor on #4821.
+
+Agent's choices the brief left open: the cancelled run #4811 shows a duration (41 s) instead of the word "cancelled",
+since the icon says it (C says it in words); the failure on `chore/deploy-workflow` (#4809, `$red-quiet` icon) gets a
+`$fg-2` word in C because `$red-quiet` fails contrast as text; B and C swap components below a width (about 760 and
+620 px), A has one shape at every width. Not touched: the Run filters' count and Group control still sit at the bar's
+right edge.
