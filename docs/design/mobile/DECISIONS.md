@@ -521,11 +521,11 @@ asks for a template does not miss it.
 
 ## D42
 
-**A new issue's details are set as on an item: under the title the rows that need their name — Assignees with Assign
-to me at its end, the project's field when there is one, the parent — then the rest as chips, empty ones saying what
-they would hold; tapping any of them opens its menu at the bottom, as
-on an item ([D45](#d45)).** (2026-11-08, owner, picked from the drawings:
-`MB194`–`MB196`)
+**A new issue's details are set as on an item: under the title the item summary's rows — Assignees with Assign to me
+at its end, Labels, Milestone, Type, Parent — and the project as a card with its fields, as the desktop's full form has
+them (H3); tapping any of them opens its menu at the bottom, as on an item ([D45](#d45)).** (2026-11-08, owner, picked
+from the drawings: `MB194`–`MB196`; rows and chips replaced by the desktop's rows and card 2026-11-14, following
+[D52](#d52))
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
 ([D52](#d52)), changed the same way ([D45](#d45)), and assigning yourself is one tap.

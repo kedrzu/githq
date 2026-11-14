@@ -102,3 +102,4 @@ Append-only. One line per decision, rejection or answer from the owner.
   desktop's (D50, applying the review's rule). The summary — the desktop's blocks or the phone's D25 — the owner wants
   to see drawn: Variant A as on the desktop, Variant B a hybrid.
 - 2026-11-14 — Owner picked Variant A of the summary (MB260–MB263): the desktop's summary on a phone (D52), D25 retired.
+- 2026-11-14 — The new issue form follows the item's summary (D42 updated after D52): its rows and project card, as on the desktop's full form (H3).
