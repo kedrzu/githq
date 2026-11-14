@@ -27,6 +27,7 @@ import type { ItemOpening } from '@/store/ItemLookedStore.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
@@ -61,6 +62,7 @@ const TICK_MS = 30_000;
 const t = useTranslate();
 const details = useService(ItemDetailStore);
 const navigation = useService(ItemNavigation);
+const phone = useService(PhoneLayout);
 const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
 const auth = useService(AuthStore);
@@ -143,8 +145,17 @@ const waitingDetail = computed(() => {
 const repositoryName = computed(
   () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
 );
+/**
+ * The list the item was opened from: the last one shown, while the item is in it — or not known yet. An item opened from a
+ * link after a list was shown has no list behind it (mobile D20).
+ */
+const ownList = computed(() => {
+  const { list } = navigation;
+  const { id } = opened;
+  return list && (id === null || list.steps.includes(id) || list.stepOf.has(id)) ? list : null;
+});
 /** What back on a phone says it returns to (mobile D20): the list's name, or with no list the repository's. */
-const backTitle = computed(() => navigation.list?.title ?? repositoryName.value);
+const backTitle = computed(() => ownList.value?.title ?? repositoryName.value);
 const closes = computed((): Item[] => {
   const { item } = opened;
   if (item?.kind !== 'pullRequest') {
@@ -437,6 +448,11 @@ function openReview() {
  * with none to the item's repository.
  */
 function close() {
+  if (phone.active && props.arrangement === 'page') {
+    goBack();
+    return;
+  }
+
   if (expandedFrom() !== null && navigation.panelFits) {
     backToPanel();
     return;
@@ -453,7 +469,7 @@ function close() {
  * list, so it comes back scrolled and selected as it was, else to its address; with no list, to the item's repository.
  */
 function goBack() {
-  const { list } = navigation;
+  const list = ownList.value;
   const behind = getHistoryBack(router.options.history.state);
   if (list && behind !== null && router.resolve(behind).fullPath === router.resolve(list.path).fullPath) {
     router.back();
@@ -476,8 +492,8 @@ function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: I
 
 /** The list the item was opened from; with none, its repository's issues or pull requests by its kind (mobile D20). */
 function listPath() {
-  if (navigation.list) {
-    return navigation.list.path;
+  if (ownList.value) {
+    return ownList.value.path;
   }
 
   const kind = opened.item?.kind ?? (route.name === 'item-pull' ? 'pullRequest' : 'issue');

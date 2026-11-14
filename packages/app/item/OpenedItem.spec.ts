@@ -41,7 +41,7 @@ test('mobile D20: back on a phone, another item behind (a link followed), goes t
         phone: true,
         visits: [LIST, '/acme/web/issues/2', '/acme/web/issues/1'],
     });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i2'], stepOf: new Map(), around: null });
+    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1', 'i2'], stepOf: new Map(), around: null });
 
     await userEvent.click(page.getByRole('button', { name: 'Back to Issues' }));
 
@@ -57,6 +57,26 @@ test('mobile D20: back on a phone with no list (opened from a link) goes up to t
     await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
 
     await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/acme/web/pulls'));
+});
+
+test('mobile D20: an item opened from a link after a list was shown, not in that list, goes up to its repository', async () => {
+    const { router, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/1'] });
+    navigation.setList({ path: LIST, title: 'Issues', steps: ['i2'], stepOf: new Map(), around: null });
+
+    await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
+
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/acme/web/issues'));
+});
+
+test('mobile D20: Escape on a phone goes back as back does, by the history’s Back to the list behind', async () => {
+    const { router, history, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/1'] });
+    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
+    await expect.element(page.getByRole('button', { name: 'Back to Issues' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe(LIST));
+    expect(history.position()).toBe(0);
 });
 
 test('D20: on the computer, closing an item’s page with no list goes to its repository, not My work', async () => {
