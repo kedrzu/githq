@@ -60,7 +60,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: HOME_PATH,
         name: 'my-work',
         component: HomePage,
-        meta: { auth: 'home', layout: false, key: 'my-work', gitHubScreen: true },
+        meta: { auth: 'home', layout: false, key: 'my-work', itemPanel: true, gitHubScreen: true },
     };
     for (const group of MY_WORK_GROUPS) {
         yield {
@@ -68,14 +68,21 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             alias: group === 'mentioned' ? ['/pulls/mentioned'] : [],
             name: `my-work-${group}`,
             component: HomePage,
-            meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group, gitHubScreen: true },
+            meta: {
+                auth: 'home',
+                layout: false,
+                key: 'my-work',
+                myWorkGroup: group,
+                itemPanel: true,
+                gitHubScreen: true,
+            },
         };
     }
     yield {
         path: DRAFT_REVIEWS_PATH,
         name: 'draft-reviews',
         component: () => import('@/myWork/DraftReviewsPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell' },
+        meta: { auth: 'signedIn', layout: 'shell', itemPanel: true },
     };
     // A pull request's review, at GitHub's address of its changed files: before the addresses that settle on the item.
     yield {
@@ -149,14 +156,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: REPOSITORY_PATH,
         name: 'repository',
         component: () => import('@/repository/RepositoryPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner, gitHubScreen: true },
+        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner, itemPanel: true, gitHubScreen: true },
     };
     for (const [index, path] of PROJECT_PATHS.entries()) {
         yield {
             path,
             name: index === 0 ? 'project-org' : 'project-user',
             component: () => import('@/projects/ProjectPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', gitHubScreen: true },
+            meta: { auth: 'signedIn', layout: 'shell', itemPanel: true, gitHubScreen: true },
         };
     }
     // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their

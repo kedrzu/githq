@@ -2024,7 +2024,8 @@ async function mountRouted(options: CommitGraphTestOptions) {
     const router = createRouter({
         history: createMemoryHistory(),
         routes: [
-            { path: '/:owner/:name/commits', name: 'repository', component: section },
+            // The repository's route, a list an item opens over in the panel, as `app/router.options.ts` has it.
+            { path: '/:owner/:name/commits', name: 'repository', component: section, meta: { itemPanel: true } },
             { path: WORKFLOW_RUN_PATH, name: 'workflow-run', component: elsewhere },
             { path: '/:path(.*)*', component: elsewhere },
         ],
@@ -2101,7 +2102,10 @@ async function mount(
     const loadMore = vi.spyOn(store, 'loadMore');
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+        // The repository's commits, a list an item opens over in the panel, as `app/router.options.ts` has it.
+        routes: [
+            { path: '/:path(.*)*', component: defineComponent({ render: () => null }), meta: { itemPanel: true } },
+        ],
     });
     const host = document.createElement('div');
     host.style.display = 'flex';
