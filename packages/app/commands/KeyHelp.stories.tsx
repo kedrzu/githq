@@ -1,3 +1,4 @@
+import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, within } from 'storybook/test';
@@ -7,6 +8,7 @@ import ItemView from '@/item/ItemView.vue';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
 import type { Command, CommandKeySheet } from './CommandTypes.js';
@@ -19,6 +21,8 @@ const Harness = defineComponent({
         startOpen: { type: Boolean, default: true },
     },
     setup(props) {
+        // The open item keeps what the user chose in their settings, which are kept in the local copy.
+        setIndexedDbPersistence(useContainer());
         const registry = useService(CommandRegistry);
         const closed = ref('open');
 

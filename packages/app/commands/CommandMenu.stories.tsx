@@ -130,6 +130,8 @@ const Harness = defineComponent({
         levels: { type: Boolean, default: false },
     },
     setup(props) {
+        // The open item keeps what the user chose in their settings, which are kept in the local copy.
+        setIndexedDbPersistence(useContainer());
         if (props.github) {
             useRepositorySearchStory(props.github);
         }
@@ -387,9 +389,7 @@ export const FoundInRepository: Story = {
 
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
-    const container = useContainer();
-    setIndexedDbPersistence(container);
-    container.set(
+    useContainer().set(
         Browser,
         createSignedInBrowser((_input, init) =>
             typeof init?.body === 'string' && init.body.includes('query RepositoryBrowseSearch')
