@@ -12,10 +12,15 @@ const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
 /** What a failure's message sits on: every surface, and a danger band over the window. */
 const DANGER_SURFACES = [...SURFACES, 'bg-danger'];
 const SYNTAX = ['comment', 'keyword', 'string', 'constant', 'title', 'tag', 'builtin'].map(name => `syntax-${name}`);
+/** What a line of a diff sits on: the window, the cursor's tint, an added and a deleted line's fill. */
+const DIFF_SURFACES = ['bg', 'sel', 'diff-bg-added', 'diff-bg-deleted'];
+/** A match of find (D47) over every line of a diff, and the current match. */
+const CURRENT_MARK_SURFACES = DIFF_SURFACES.map(surface => `find-match-current over ${surface}`);
+const MARK_SURFACES = [...DIFF_SURFACES.map(surface => `find-match over ${surface}`), ...CURRENT_MARK_SURFACES];
 
 /** Every token against the surfaces it sits on (D30). Axe checks text, not icons, outlines and lines. */
 const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
-    ['fg', [...CODE_SURFACES, 'bg-danger'], TEXT],
+    ['fg', [...CODE_SURFACES, 'bg-danger', ...MARK_SURFACES], TEXT],
     ['fg-2', SURFACES, TEXT],
     ['fg-dim', SURFACES, TEXT],
     ['accent', SURFACES, TEXT],
@@ -33,7 +38,9 @@ const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
     ['red-quiet', SURFACES, GRAPHICS],
     ['graph-line', GRAPH_SURFACES, GRAPHICS],
     ['graph-line-main', GRAPH_SURFACES, GRAPHICS],
-    ...SYNTAX.map(token => [token, CODE_SURFACES, TEXT] as const),
+    ['find-match-outline', CURRENT_MARK_SURFACES, GRAPHICS],
+    ['find-match-ring', DIFF_SURFACES, GRAPHICS],
+    ...SYNTAX.map(token => [token, [...CODE_SURFACES, ...MARK_SURFACES], TEXT] as const),
 ];
 
 /** The Primer dark value (a `#rrggbb`, or `<hex>/<alpha>` composited over the window) each colour is taken from. */
@@ -81,6 +88,10 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
     'current-edge': "accent at 60% over the window, opaque so the block's overlapping corners don't show stronger",
     'current-header': "accent at 6% over bg-2, the current file's header, faint enough for AA on it",
+    'find-match': "the amber of a match of find (D47), dark and faint enough for every syntax colour's AA on it",
+    'find-match-current': 'the current match, stronger than a match and outlined, still AA for every syntax colour',
+    'find-match-outline': "the design's outline of the current match",
+    'find-match-ring': "a match's light ring (owner, 2026-11-14), drawn outside its text, as faint as keeps 3:1",
 };
 
 const tokens = readTokens();
@@ -122,20 +133,25 @@ interface Color {
 }
 
 function contrast(a: string, b: string) {
-    const [lighter, darker] = [luminance(composite(a, b)), luminance(composite(b, 'bg'))].toSorted((x, y) => y - x) as [
+    const surface = paint(b);
+    const [lighter, darker] = [luminance(blend(get(a), surface)), luminance(surface)].toSorted((x, y) => y - x) as [
         number,
         number,
     ];
     return (lighter + 0.05) / (darker + 0.05);
 }
 
-/** The token as it looks over a surface: a translucent colour painted over it (a surface itself over the window). */
-function composite(token: string, surface: string): Color {
-    const color = get(token);
-    const under = color.a < 1 && surface !== token ? composite(surface, 'bg') : { r: 0, g: 0, b: 0, a: 1 };
-    if (color.a === 1) {
-        return color;
+/** A surface as it looks: its layers, the top first (`find-match over diff-bg-added`), painted over the window. */
+function paint(surface: string): Color {
+    let color = get('bg');
+    for (const layer of surface.split(' over ').toReversed()) {
+        color = blend(get(layer), color);
     }
+    return color;
+}
+
+/** A colour painted over an opaque one. */
+function blend(color: Color, under: Color): Color {
     return {
         r: color.r * color.a + under.r * (1 - color.a),
         g: color.g * color.a + under.g * (1 - color.a),

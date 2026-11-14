@@ -406,6 +406,57 @@ export class ReviewScreenHarness {
         );
     }
 
+    /** Find's bar over the diff (D47). */
+    get findBar(): Locator {
+        return this.page.getByTestId('review-find-bar');
+    }
+
+    /** The query's field of {@link findBar}. */
+    get findField(): Locator {
+        return this.findBar.getByTestId('review-find-field').getByRole('textbox');
+    }
+
+    /** Where the search stands in {@link findBar}: "3 of 128", "No results", "Pattern too slow"… */
+    get findCounter(): Locator {
+        return this.findBar.getByTestId('review-find-counter');
+    }
+
+    /** A switch at the end of find's field, by its name; `aria-pressed` says whether it is on. */
+    findToggle(name: 'Match case' | 'Match whole word' | 'Use a regular expression'): Locator {
+        return this.findBar.getByRole('button', { name, exact: true });
+    }
+
+    /** Every match marked in the drawn code. */
+    get findMarks(): Locator {
+        return this.diff.locator('mark');
+    }
+
+    /** The current match's mark. */
+    get currentMatch(): Locator {
+        return this.diff.locator('mark[data-current-match]');
+    }
+
+    /** The stop holding the current match. */
+    get currentMatchRow(): Locator {
+        return this.diff.locator('[data-cursor-key]', { has: this.page.locator('mark[data-current-match]') });
+    }
+
+    /** The key of the stop holding the current match: the cursor's, once find has gone to it. */
+    async currentMatchKey(): Promise<string> {
+        const key = await this.currentMatchRow.getAttribute('data-cursor-key');
+        if (key === null) {
+            throw new Error('No row holds the current match');
+        }
+
+        return key;
+    }
+
+    /** Opens find with ⌘F (Ctrl+F) and types `query` into its field. */
+    async find(query: string): Promise<void> {
+        await this.page.keyboard.press('ControlOrMeta+f');
+        await this.findField.fill(query);
+    }
+
     /** Opens the view options and picks the layout; closes them again. */
     async chooseLayout(layout: 'Split' | 'Unified'): Promise<void> {
         await this.viewOptionsButton.click();
