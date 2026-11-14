@@ -26,6 +26,7 @@ import {
   Eye,
   EyeOff,
   FileSearch,
+  FunnelX,
   Search,
   ChevronDown,
   ChevronsUpDown,
@@ -39,6 +40,7 @@ import {
   MessageSquare,
   MessageSquarePlus,
   Reply,
+  RotateCw,
   Send,
   PanelLeft,
   PanelRight,
@@ -2526,39 +2528,45 @@ function readAgain() {
                 :icon="CircleAlert"
                 :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
                 :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
-              >
-                <template #action>
-                  <div :class="css.reviewView_actions">
-                    <Button
-                      size="sm"
-                      @click="readAgain"
-                    >
-                      {{ t(l.tryAgain) }}
-                    </Button>
-                    <Button
-                      size="sm"
-                      :link="githubUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {{ t(l.openOnGitHub) }}
-                    </Button>
-                  </div>
-                </template>
-              </EmptyState>
-              <EmptyState
-                v-else-if="files?.list.kind === 'paused'"
-                :icon="Pause"
-                :title="t(l.paused)"
-                :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+                tone="warning"
               >
                 <template #action>
                   <Button
+                    variant="secondary"
+                    size="sm"
+                    @click="readAgain"
+                  >
+                    <RotateCw aria-hidden="true" />
+                    {{ t(l.tryAgain) }}
+                  </Button>
+                  <Button
+                    variant="secondary"
                     size="sm"
                     :link="githubUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <Github aria-hidden="true" />
+                    {{ t(l.openOnGitHub) }}
+                  </Button>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else-if="files?.list.kind === 'paused'"
+                :icon="Pause"
+                :title="t(l.paused, { time: formatTime(files.list.until) })"
+                :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+                tone="warning"
+              >
+                <template #action>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    :link="githubUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github aria-hidden="true" />
                     {{ t(l.openOnGitHub) }}
                   </Button>
                 </template>
@@ -2568,12 +2576,15 @@ function readAgain() {
                 :icon="FileSearch"
                 :title="t(l.noMatch)"
                 :detail="hideViewed && matchedFiles.length > 0 ? t(l.noMatchViewedHidden) : undefined"
+                :fact="filterPattern === '' ? undefined : t(l.noMatchFact, { filter: filterPattern })"
               >
                 <template #action>
                   <Button
+                    variant="secondary"
                     size="sm"
                     @click="filterPattern = ''"
                   >
+                    <FunnelX aria-hidden="true" />
                     {{ t(l.clearFilter) }}
                   </Button>
                 </template>
@@ -2583,35 +2594,38 @@ function readAgain() {
                 :icon="CircleCheck"
                 :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
                 :detail="t(l.allViewedDetail)"
+                :fact="t(l.allViewedFact, { total: numbers.format(allFiles.length) })"
+                tone="good"
               >
                 <template #action>
-                  <div :class="css.reviewView_actions">
-                    <Button
-                      size="sm"
-                      variant="light"
-                      :kbd="REVIEW_KEYS.submit"
-                      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
-                      :busy="finish.kind === 'sending'"
-                      @click="submitOpen = true"
-                    >
-                      {{ t(allViewedLoc.submit) }}
-                    </Button>
-                    <Button
-                      v-if="nextNumber !== null"
-                      size="sm"
-                      :kbd="REVIEW_KEYS.nextPullRequest"
-                      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
-                      @click="stepPullRequest(nextPullRequest, 'K')"
-                    >
-                      {{ t(allViewedLoc.next, { number: nextNumber }) }}
-                    </Button>
-                    <Button
-                      size="sm"
-                      @click="hideViewed = false"
-                    >
-                      {{ t(l.showViewed) }}
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    :kbd="REVIEW_KEYS.submit"
+                    :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+                    :busy="finish.kind === 'sending'"
+                    @click="submitOpen = true"
+                  >
+                    {{ t(allViewedLoc.submit) }}
+                  </Button>
+                  <Button
+                    v-if="nextNumber !== null"
+                    variant="secondary"
+                    size="sm"
+                    :kbd="REVIEW_KEYS.nextPullRequest"
+                    :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+                    @click="stepPullRequest(nextPullRequest, 'K')"
+                  >
+                    {{ t(allViewedLoc.next, { number: nextNumber }) }}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    @click="hideViewed = false"
+                  >
+                    <Eye aria-hidden="true" />
+                    {{ t(l.showViewed) }}
+                  </Button>
                 </template>
               </EmptyState>
               <EmptyState
@@ -2623,26 +2637,31 @@ function readAgain() {
                     ? t(l.noChangesDetail, { head: branches.headRefName, base: branches.baseRefName })
                     : t(l.noChangesPlain)
                 "
+                :fact="
+                  branches ? t(l.noChangesFact, { head: branches.headRefName, base: branches.baseRefName }) : undefined
+                "
               >
                 <template #action>
-                  <div :class="css.reviewView_actions">
-                    <Button
-                      v-if="!conversationShown"
-                      size="sm"
-                      @click="conversationShown = true"
-                    >
-                      {{ t(l.conversation) }}
-                      <Kbd :keys="REVIEW_KEYS.conversation" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      :link="githubUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {{ t(l.openOnGitHub) }}
-                    </Button>
-                  </div>
+                  <Button
+                    v-if="!conversationShown"
+                    variant="secondary"
+                    size="sm"
+                    @click="conversationShown = true"
+                  >
+                    <MessageSquare aria-hidden="true" />
+                    {{ t(l.conversation) }}
+                    <Kbd :keys="REVIEW_KEYS.conversation" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    :link="githubUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github aria-hidden="true" />
+                    {{ t(l.openOnGitHub) }}
+                  </Button>
                 </template>
               </EmptyState>
               <EmptyState
@@ -2814,10 +2833,5 @@ function readAgain() {
   align-items: center;
   justify-content: center;
   background: $color-bg;
-}
-
-.reviewView_actions {
-  display: flex;
-  gap: $spacing-8;
 }
 </style>

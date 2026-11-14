@@ -215,5 +215,5 @@ test("W2b: a repository GitHub refused stays out of the green, which says what i
 test('with no repository tracked it says so', async () => {
     await NothingTracked.run();
 
-    await expect.element(page.getByRole('heading', { name: 'No repositories tracked' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No repositories tracked yet' })).toBeVisible();
 });

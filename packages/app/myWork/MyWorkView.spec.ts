@@ -149,9 +149,9 @@ test('first run and loading G16, G17: a full screen of ghosts while nothing has 
     await expect.element(mentioned).toHaveTextContent('Still arriving from GitHub');
 });
 
-test('first run and loading D8: "Nothing on your plate" never while a group is still arriving, only once every group is in and empty', async () => {
+test('first run and loading D8: "Inbox zero. Savour it." never while a group is still arriving, only once every group is in and empty', async () => {
     const view = mount([], {});
-    const nothing = page.getByText('Nothing on your plate');
+    const nothing = page.getByText('Inbox zero. Savour it.');
     await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
     await expect.element(nothing).not.toBeInTheDocument();
 

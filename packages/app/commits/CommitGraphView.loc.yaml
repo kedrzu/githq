@@ -9,9 +9,11 @@ beginning:
 theCommits:
   en: the commits
 emptyTitle:
-  en: No commits yet
+  en: A blank slate
+emptyFact:
+  en: 'git log → no commits yet'
 emptyDetail:
-  en: '{name} is empty on GitHub. Commits appear here after the first push.'
+  en: '{name} is empty on GitHub. Commits show up after the first push.'
 next:
   en: Next commit
 previous:

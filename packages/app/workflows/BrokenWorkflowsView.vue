@@ -15,7 +15,6 @@ import { useRowSelection } from '@/utils/useRowSelection.js';
 import type { BrokenWorkflowEntry, BrokenWorkflows, UnavailableWorkflowsEntry } from './buildBrokenWorkflows.js';
 import * as l from './BrokenWorkflowsView.loc.js';
 import RunStrip from './RunStrip.vue';
-import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRow from './WorkflowRow.vue';
 import WorkflowsArriving from './WorkflowsArriving.vue';
 
@@ -161,19 +160,18 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
     </header>
 
     <div
-      :class="[css.brokenWorkflowsView_body, (unreadable || noneShown) && css.brokenWorkflowsView_body_note]"
+      :class="[
+        css.brokenWorkflowsView_body,
+        (unreadable || noneShown || allGreen) && css.brokenWorkflowsView_body_note,
+      ]"
       data-route-scroll="broken-workflows"
     >
-      <div
+      <EmptyState
         v-if="allGreen && trackedCount === 0"
-        :class="css.brokenWorkflowsView_message"
-      >
-        <WorkflowEmptyState
-          :icon="Workflow"
-          :title="t(l.nothingTrackedTitle)"
-          :text="t(l.nothingTrackedText)"
-        />
-      </div>
+        :icon="Workflow"
+        :title="t(l.nothingTrackedTitle)"
+        :detail="t(l.nothingTrackedText)"
+      />
       <CantBeRead
         v-else-if="unreadable"
         place="screen"
@@ -181,18 +179,14 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         :thing="unreadableThing"
         plural
       />
-      <div
+      <EmptyState
         v-else-if="allGreen && broken.readCount > 0"
-        :class="css.brokenWorkflowsView_message"
-      >
-        <WorkflowEmptyState
-          :icon="Coffee"
-          tone="green"
-          :title="t(l.allGreenTitle)"
-          :text="allGreenText"
-          :detail="allGreenDetail"
-        />
-      </div>
+        :icon="Coffee"
+        tone="good"
+        :title="t(l.allGreenTitle)"
+        :detail="allGreenText"
+        :fact="allGreenDetail"
+      />
       <EmptyState
         v-else-if="noneShown"
         :icon="EyeOff"
@@ -338,12 +332,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
 .brokenWorkflowsView_body_note {
   display: flex;
   flex-direction: column;
-}
-
-.brokenWorkflowsView_message {
-  display: flex;
-  justify-content: center;
-  padding: $spacing-96 $spacing-16 $spacing-48;
 }
 
 .brokenWorkflowsView_group {

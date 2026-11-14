@@ -85,17 +85,31 @@ inNoProject:
     one: 1 in no project
     many: '{count} in no project'
 noIssues:
-  en: No issues
+  en: No issues. Suspiciously clean.
 noOpenIssues:
-  en: No open issues
+  en: No open issues. Enjoy the quiet.
 noClosedIssues:
-  en: No closed issues
+  en: No closed issues, yet
 noPullRequests:
-  en: No pull requests
+  en: No pull requests. Quiet in here.
 noOpenPullRequests:
-  en: No open pull requests
+  en: No open pull requests. Nothing to review.
 noClosedPullRequests:
-  en: No closed pull requests
+  en: No closed pull requests, yet
+noIssuesFact:
+  en: 'issues: []'
+noOpenIssuesFact:
+  en: 'open issues: []'
+noClosedIssuesFact:
+  en: 'closed issues: []'
+noPullRequestsFact:
+  en: 'pull requests: []'
+noOpenPullRequestsFact:
+  en: 'open pull requests: []'
+noClosedPullRequestsFact:
+  en: 'closed pull requests: []'
+filteredToZeroFact:
+  en: '{total} → 0'
 nothingDetail:
   en: GitHub lists none in {repository}.
 stateIsOpen:

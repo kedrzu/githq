@@ -390,11 +390,12 @@ test('CH38, CH32, first run and loading D17: before anything arrives, the skelet
     await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
 
     answered.resolve();
-    await expect.element(page.getByRole('heading', { name: 'No commits yet' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'A blank slate' })).toBeVisible();
     await expect.element(page.getByText('Loading commits…')).not.toBeInTheDocument();
     await expect
-        .element(page.getByText('acme/web is empty on GitHub. Commits appear here after the first push.'))
+        .element(page.getByText('acme/web is empty on GitHub. Commits show up after the first push.'))
         .toBeVisible();
+    await expect.element(page.getByText('git log → no commits yet')).toBeVisible();
 });
 
 test('a page too short to fill the screen is followed by the next, without a scroll', async () => {

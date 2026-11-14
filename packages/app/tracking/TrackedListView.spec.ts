@@ -95,7 +95,7 @@ test('ES24: nothing tracked: the note says what tracking does, and its button an
     const onAdd = vi.fn();
     await NothingTracked.run({ args: { ...NothingTracked.args, onAdd } });
 
-    await expect.element(page.getByRole('heading', { name: 'No repositories tracked', level: 2 })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No repositories tracked yet', level: 2 })).toBeVisible();
     await expect.element(page.getByText(/^0\stracked/u)).not.toBeInTheDocument();
     await expect.element(page.getByRole('listitem')).not.toBeInTheDocument();
 
@@ -107,13 +107,13 @@ test('ES24: nothing tracked: the note says what tracking does, and its button an
 test('ES24: before what is tracked is known, nothing says none', async () => {
     await NothingTracked.run({ args: { ...NothingTracked.args, loaded: false } });
 
-    await expect.element(page.getByRole('heading', { name: 'No repositories tracked' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: 'No repositories tracked yet' })).not.toBeInTheDocument();
 });
 
 test('ES24: no projects tracked has its own words', async () => {
     await NothingTracked.run({ args: { ...NothingTracked.args, kind: 'projects' } });
 
-    await expect.element(page.getByRole('heading', { name: 'No projects tracked', level: 2 })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No projects tracked yet', level: 2 })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Track projects' })).toBeVisible();
 });
 
