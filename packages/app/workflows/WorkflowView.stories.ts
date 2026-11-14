@@ -67,6 +67,8 @@ export const NarrowDetails: Story = {
     render: renderAt(700),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
+        // Only pull requests ran it: it stands as the Workflows list says, not as "No verdict yet".
+        await expect(canvas.getByText('Pull requests only')).toBeVisible();
         await userEvent.click(canvas.getByRole('button', { name: 'Details' }));
         await expect(canvas.getByText('Never counts')).toBeVisible();
         // No dispatch: nothing to run, even where it is offered.

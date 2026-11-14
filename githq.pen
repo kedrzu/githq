@@ -166870,93 +166870,128 @@
                   "alignItems": "center",
                   "children": [
                     {
-                      "id": "o2YrjP",
-                      "type": "ref",
-                      "ref": "L2hg3T",
-                      "name": "Filter active",
-                      "enabled": false
-                    },
-                    {
-                      "id": "V2bcUx",
-                      "type": "ref",
-                      "ref": "dpOwt",
-                      "name": "Filter Ref",
-                      "descendants": {
-                        "a0faAQ": {
-                          "icon": "git-branch"
+                      "type": "frame",
+                      "id": "vUVTv",
+                      "name": "Filters",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "o2YrjP",
+                          "type": "ref",
+                          "ref": "L2hg3T",
+                          "name": "Filter active",
+                          "enabled": false
                         },
-                        "HZIW1": {
-                          "content": "Ref"
-                        }
-                      }
-                    },
-                    {
-                      "id": "u6dTf",
-                      "type": "ref",
-                      "ref": "dpOwt",
-                      "name": "Filter Event",
-                      "descendants": {
-                        "a0faAQ": {
-                          "icon": "zap"
+                        {
+                          "id": "V2bcUx",
+                          "type": "ref",
+                          "ref": "dpOwt",
+                          "name": "Filter Ref",
+                          "descendants": {
+                            "a0faAQ": {
+                              "icon": "git-branch"
+                            },
+                            "HZIW1": {
+                              "content": "Ref"
+                            }
+                          }
                         },
-                        "HZIW1": {
-                          "content": "Event"
-                        }
-                      }
-                    },
-                    {
-                      "id": "lEx9u",
-                      "type": "ref",
-                      "ref": "dpOwt",
-                      "name": "Filter Status",
-                      "descendants": {
-                        "a0faAQ": {
-                          "icon": "circle-dashed"
+                        {
+                          "id": "u6dTf",
+                          "type": "ref",
+                          "ref": "dpOwt",
+                          "name": "Filter Event",
+                          "descendants": {
+                            "a0faAQ": {
+                              "icon": "zap"
+                            },
+                            "HZIW1": {
+                              "content": "Event"
+                            }
+                          }
                         },
-                        "HZIW1": {
-                          "content": "Status"
-                        }
-                      }
-                    },
-                    {
-                      "id": "F7glA",
-                      "type": "ref",
-                      "ref": "dpOwt",
-                      "name": "Filter Actor",
-                      "descendants": {
-                        "a0faAQ": {
-                          "icon": "user"
+                        {
+                          "id": "lEx9u",
+                          "type": "ref",
+                          "ref": "dpOwt",
+                          "name": "Filter Status",
+                          "descendants": {
+                            "a0faAQ": {
+                              "icon": "circle-dashed"
+                            },
+                            "HZIW1": {
+                              "content": "Status"
+                            }
+                          }
                         },
-                        "HZIW1": {
-                          "content": "Actor"
+                        {
+                          "id": "F7glA",
+                          "type": "ref",
+                          "ref": "dpOwt",
+                          "name": "Filter Actor",
+                          "descendants": {
+                            "a0faAQ": {
+                              "icon": "user"
+                            },
+                            "HZIW1": {
+                              "content": "Actor"
+                            }
+                          }
                         }
-                      }
+                      ]
                     },
                     {
                       "type": "frame",
-                      "id": "m8G3qJ",
-                      "name": "Divider",
-                      "width": 1,
-                      "height": 14,
-                      "fill": "$border"
-                    },
-                    {
-                      "type": "text",
-                      "id": "w1mGO",
-                      "name": "Count",
-                      "fill": "$fg-dim",
-                      "content": "48 runs · newest first",
-                      "fontFamily": "$font",
-                      "fontSize": 11.5,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "id": "z2TR0",
-                      "type": "ref",
-                      "ref": "Bwra9",
-                      "name": "Group"
+                      "id": "aDZxw",
+                      "name": "Count and grouping",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "m8G3qJ",
+                          "name": "Divider",
+                          "width": 1,
+                          "height": 14,
+                          "fill": "$border"
+                        },
+                        {
+                          "type": "text",
+                          "id": "w1mGO",
+                          "name": "Count",
+                          "fill": "$fg-dim",
+                          "content": "48+ runs · newest first",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "id": "z2TR0",
+                          "type": "ref",
+                          "ref": "Bwra9",
+                          "name": "Group"
+                        }
+                      ]
                     }
                   ]
+                },
+                {
+                  "id": "RPP7b",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "gTzqv",
+                  "name": "Workflow / Run filters · narrow",
+                  "x": 0,
+                  "y": 513,
+                  "layout": "vertical",
+                  "alignItems": "start",
+                  "gap": 8,
+                  "descendants": {
+                    "m8G3qJ": {
+                      "enabled": false
+                    }
+                  }
                 },
                 {
                   "type": "frame",
@@ -167212,6 +167247,34 @@
                         "b2amx": {
                           "content": "Deploy"
                         },
+                        "FCNjO": {
+                          "id": "SjoPB",
+                          "type": "ref",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧K",
+                          "descendants": {
+                            "pINSd": {
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
+                              "content": "K"
+                            }
+                          }
+                        },
+                        "K0EK1S": {
+                          "id": "hsM45",
+                          "type": "ref",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧J",
+                          "descendants": {
+                            "pINSd": {
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
+                              "content": "J"
+                            }
+                          }
+                        },
                         "VYOFz": {
                           "content": "1 / 8"
                         }
@@ -167275,9 +167338,9 @@
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "K3M99s",
+                              "id": "Y2VY5",
                               "type": "ref",
-                              "ref": "gTzqv",
+                              "ref": "RPP7b",
                               "name": "Run filters",
                               "width": "fill_container"
                             },
@@ -167910,7 +167973,7 @@
                                       "id": "rPssQ",
                                       "name": "More runs label",
                                       "fill": "$fg-dim",
-                                      "content": "Older runs load as you scroll",
+                                      "content": "Reading older runs…",
                                       "fontFamily": "$font",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
@@ -169511,7 +169574,7 @@
                                   "fill": "$red"
                                 },
                                 "PtMSM": {
-                                  "content": "Broken for 3h",
+                                  "content": "Broken",
                                   "fontFamily": "$font"
                                 },
                                 "r9JYaP": {
@@ -169540,7 +169603,8 @@
                                   "fontFamily": "$font"
                                 },
                                 "r9JYaP": {
-                                  "content": "Deploy isn't triggered by tags"
+                                  "content": "Deploy isn't triggered by tags",
+                                  "enabled": false
                                 }
                               }
                             }
@@ -169621,7 +169685,7 @@
                                   "fontFamily": "$font"
                                 },
                                 "r9JYaP": {
-                                  "content": "Median of the last 20 runs"
+                                  "content": "Median of the last 20 successful runs"
                                 }
                               }
                             },
@@ -169644,7 +169708,8 @@
                                   "fontFamily": "$font"
                                 },
                                 "r9JYaP": {
-                                  "enabled": false
+                                  "enabled": true,
+                                  "content": "Retry the cache warmup on deploy"
                                 }
                               }
                             }
@@ -202116,7 +202181,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42). The edge between the runs and the details is a splitter, drawn here hovered (2 px accent): at rest a 1 px line in the colour of the runs' separators, which end on it, so the two columns read apart. Dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device.",
+                      "content": "The panel dragged to 1300 px, Direction D's two-column width for an item in the panel. Runs on the left with their filters and the Group control (None by default); the workflow's details on the right: triggers, the refs that count, last success and typical duration, dispatch inputs, the file and its state. The Run workflow button has no key: it opens the dispatch form in the command menu (W37). Below 1300 px the same content splits into the tabs Runs and Details (W32, W42). The edge between the runs and the details is a splitter, drawn here hovered (2 px accent): at rest a 1 px line in the colour of the runs' separators, which end on it, so the two columns read apart. Dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 400 by default, kept on this device.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -202286,6 +202351,34 @@
                                 },
                                 "b2amx": {
                                   "content": "Deploy"
+                                },
+                                "FCNjO": {
+                                  "id": "FnA85",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "iTDWm",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
                                 },
                                 "VYOFz": {
                                   "content": "1 / 8"
@@ -202529,6 +202622,34 @@
                                 "b2amx": {
                                   "content": "Deploy"
                                 },
+                                "FCNjO": {
+                                  "id": "iKAEI",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "RF1UK",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "1 / 8"
                                 }
@@ -202542,12 +202663,6 @@
                               "width": "fill_container",
                               "height": "fill_container",
                               "descendants": {
-                                "sJEQe/z2TR0": {
-                                  "id": "EHBgc",
-                                  "type": "ref",
-                                  "ref": "oAVxG",
-                                  "name": "Group"
-                                },
                                 "z7FElg": {
                                   "type": "frame",
                                   "id": "Zdmjh",
@@ -203192,6 +203307,34 @@
                                 "b2amx": {
                                   "content": "Deploy"
                                 },
+                                "FCNjO": {
+                                  "id": "vPjNl",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "cwTRF",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "1 / 8"
                                 }
@@ -203205,9 +203348,6 @@
                               "width": "fill_container",
                               "height": "fill_container",
                               "descendants": {
-                                "sJEQe/z2TR0/HZIW1": {
-                                  "content": "Group: Ref"
-                                },
                                 "z7FElg": {
                                   "type": "frame",
                                   "id": "hCsOC",
@@ -203945,6 +204085,34 @@
                                 "b2amx": {
                                   "content": "Test"
                                 },
+                                "FCNjO": {
+                                  "id": "W0bgU",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "MAljm",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "6 / 8"
                                 }
@@ -204044,7 +204212,7 @@
                                   "width": "fill_container",
                                   "descendants": {
                                     "bQVLn/Mv9uV": {
-                                      "content": "212"
+                                      "content": "1"
                                     }
                                   }
                                 },
@@ -204060,9 +204228,9 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "A1TbUJ",
+                                      "id": "iewHR",
                                       "type": "ref",
-                                      "ref": "gTzqv",
+                                      "ref": "RPP7b",
                                       "name": "Run filters",
                                       "width": "fill_container",
                                       "descendants": {
@@ -204073,7 +204241,7 @@
                                           "enabled": false
                                         },
                                         "w1mGO": {
-                                          "content": "1 of 212 runs"
+                                          "content": "1+ run · newest first"
                                         }
                                       }
                                     },
@@ -204157,7 +204325,7 @@
                                               "fill": "$fg-dim",
                                               "textGrowth": "fixed-width",
                                               "width": "fill_container",
-                                              "content": "Only runs on sofiab/tokens. Older runs on this ref are read as you scroll.",
+                                              "content": "Reading older runs…",
                                               "fontFamily": "$font",
                                               "fontSize": 12,
                                               "fontWeight": "normal"
@@ -204217,7 +204385,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "CLA, which GitHub starts on pull requests only, on its Details tab (the panel narrower than 1300 px). No Run workflow button in the head and no dispatch inputs: the trigger itself says GitHub starts it on pull requests and that githq can't run it. The refs that count say it never counts. The command menu disables Run workflow here with the same reason (W48).",
+                      "content": "CLA, which GitHub starts on pull requests only, on its Details tab (the panel narrower than 1300 px). Only pull requests have run it, so the head says what the Workflows list says: the pill reads “Pull requests only”, muted with a pull-request icon, and “never counts” follows it. No Run workflow button in the head and no dispatch inputs. The pull_request trigger reads “any pull request” with the hint every pull_request trigger has, “Never counts”; main, the ref that counts, says “No runs on a branch yet”. The command menu disables Run workflow here, as the file has no workflow_dispatch (W48).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -204337,6 +204505,34 @@
                                 "b2amx": {
                                   "content": "CLA"
                                 },
+                                "FCNjO": {
+                                  "id": "lrREO",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "EcQ5Z",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "3 / 8"
                                 }
@@ -204389,7 +204585,8 @@
                                           "fill": "$fg-2"
                                         },
                                         "CsX98": {
-                                          "content": "never counts · 1 of the last 5 failed"
+                                          "content": "never counts",
+                                          "enabled": true
                                         },
                                         "bMSlX": {
                                           "enabled": false
@@ -204440,7 +204637,7 @@
                                   "width": "fill_container",
                                   "descendants": {
                                     "bQVLn/Mv9uV": {
-                                      "content": "186"
+                                      "content": "48"
                                     }
                                   }
                                 },
@@ -204473,20 +204670,21 @@
                                           "enabled": false
                                         },
                                         "DpGhK/PtMSM": {
-                                          "content": "opened, synchronize"
+                                          "content": "any pull request"
                                         },
                                         "DpGhK/r9JYaP": {
-                                          "content": "GitHub starts it on pull requests. The file has no workflow_dispatch, so it can't be run from githq."
+                                          "content": "Never counts"
                                         },
                                         "o09Rr/DTq5k": {
                                           "icon": "circle-dashed",
                                           "fill": "$fg-3"
                                         },
                                         "o09Rr/PtMSM": {
-                                          "content": "Never counts"
+                                          "content": "No runs on a branch yet"
                                         },
                                         "o09Rr/r9JYaP": {
-                                          "content": "Runs only on pull requests, never on a ref that counts"
+                                          "content": "Runs only on pull requests, never on a ref that counts",
+                                          "enabled": false
                                         },
                                         "f1zuCy": {
                                           "enabled": false
@@ -204673,6 +204871,34 @@
                                 },
                                 "b2amx": {
                                   "content": "Deploy"
+                                },
+                                "FCNjO": {
+                                  "id": "WAZF3",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "jfZfI",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
                                 },
                                 "VYOFz": {
                                   "content": "1 / 8"
@@ -204912,6 +205138,34 @@
                                 "b2amx": {
                                   "content": "Deploy"
                                 },
+                                "FCNjO": {
+                                  "id": "kJ5vi",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "sJEEW",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "1 / 8"
                                 }
@@ -204971,9 +205225,9 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "EnJFz",
+                                      "id": "pSG30",
                                       "type": "ref",
-                                      "ref": "gTzqv",
+                                      "ref": "RPP7b",
                                       "name": "Run filters",
                                       "width": "fill_container",
                                       "descendants": {
@@ -205666,7 +205920,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The edge between the runs and the details is a splitter, a 1 px line at rest in the colour of the runs' separators, which end on it (hovered it turns 2 px accent, W30): dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 420 by default, kept on this device, and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
+                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The edge between the runs and the details is a splitter, a 1 px line at rest in the colour of the runs' separators, which end on it (hovered it turns 2 px accent, W30): dragging it, or ←/→ on the focused edge, sets the details from 320 to 640 px, 400 by default, kept on this device, and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, its hint reading “Back to the panel”, or to the list when full screen was reached straight from the list (⇧↵), its hint reading “Back to the list”.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -206032,7 +206286,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A successful Deploy run, opened from the workflow's run list. Unlike a failed run (W4a), which opens at the error, a passing run has nothing to point at, so it opens at a summary: every job with its status and how long it took, when each ran, and what the run was. No log is open; the cursor is on the first job and Enter opens its log in the W4a layout. The toolbar reads as a path, fitloop/webapp › Deploy › #4825: Deploy is the way back to the workflow (Esc goes there too). The run is text to read, not a list, so like an item page (D9) it stands in a centred box, 1424 px by default, shown here in a 1920 × 1080 window: the run's line, the jobs and the summary sit inside it, the toolbar above stays full width. The box's side edges are dragged symmetrically from 920 px to the width there is, kept on this device, and drawn only while hovered, dragged or focused; in a window narrower than the box it takes the whole width. The edge between the jobs and the summary is a splitter, drawn here hovered: the column's line lights up in accent while hovered, dragged or focused, as the sidebar's and the item panel's do. Dragging it, or ←/→ on the focused edge, sets the jobs column from 200 to 480 px, 268 by default, kept on this device.",
+                      "content": "A successful Deploy run, opened from the workflow's run list. Unlike a failed run (W4a), which opens at the error, a passing run has nothing to point at, so it opens at a summary: every job with its status and how long it took, when each ran, and what the run was. No log is open; the cursor is on the first job and Enter opens its log in the W4a layout. The toolbar reads as a path, fitloop/webapp › Deploy › #4825: Deploy is the way back to the workflow (Esc goes there too). The run is text to read, not a list, so like an item page (D9) it stands in a centred box, 1424 px by default, shown here in a 1920 × 1080 window: the run's line, the jobs and the summary sit inside it, the toolbar above stays full width. The box's side edges are dragged symmetrically from 920 px to the width there is; it is one setting with the item page's box, so dragging either sets both, kept on this device. Its edges are drawn only while hovered, dragged or focused; in a window narrower than the box it takes the whole width. The edge between the jobs and the summary is a splitter, drawn here hovered: the column's line lights up in accent while hovered, dragged or focused, as the sidebar's and the item panel's do. Dragging it, or ←/→ on the focused edge, sets the jobs column from 200 to 480 px, 268 by default, kept on this device. The key bar along the bottom shows only at this overview: ⌥J/⌥K step through the jobs, ↵ opens the log, Esc goes back to Deploy, O opens GitHub. Once a job's log is open, the log's own toolbar takes over.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -206375,16 +206629,6 @@
                                                           "name": "spacer",
                                                           "width": "fill_container",
                                                           "height": 1
-                                                        },
-                                                        {
-                                                          "type": "text",
-                                                          "id": "nHG4E",
-                                                          "name": "Start",
-                                                          "fill": "$fg-dim",
-                                                          "content": "0s",
-                                                          "fontFamily": "$mono",
-                                                          "fontSize": 11,
-                                                          "fontWeight": "normal"
                                                         }
                                                       ]
                                                     },
@@ -206982,11 +207226,33 @@
                                                   "ref": "r1lx0",
                                                   "name": "Hint Job",
                                                   "descendants": {
-                                                    "fjIpR/luKkY": {
-                                                      "content": "J"
+                                                    "fjIpR": {
+                                                      "id": "fBSOZ",
+                                                      "type": "ref",
+                                                      "ref": "L44zw",
+                                                      "name": "Kbd ⌥J",
+                                                      "descendants": {
+                                                        "pINSd": {
+                                                          "icon": "option"
+                                                        },
+                                                        "Q8v43": {
+                                                          "content": "J"
+                                                        }
+                                                      }
                                                     },
-                                                    "H0UIIx/luKkY": {
-                                                      "content": "K"
+                                                    "H0UIIx": {
+                                                      "id": "vJKy0",
+                                                      "type": "ref",
+                                                      "ref": "L44zw",
+                                                      "name": "Kbd ⌥K",
+                                                      "descendants": {
+                                                        "pINSd": {
+                                                          "icon": "option"
+                                                        },
+                                                        "Q8v43": {
+                                                          "content": "K"
+                                                        }
+                                                      }
                                                     },
                                                     "rNLpb": {
                                                       "content": "Job"
@@ -207038,20 +207304,6 @@
                                                   "name": "spacer",
                                                   "width": "fill_container",
                                                   "height": 1
-                                                },
-                                                {
-                                                  "id": "N2P7qq",
-                                                  "type": "ref",
-                                                  "ref": "xfbOl",
-                                                  "name": "Hint All keys",
-                                                  "descendants": {
-                                                    "m5wIG9/luKkY": {
-                                                      "content": "?"
-                                                    },
-                                                    "IOvfA": {
-                                                      "content": "All keys"
-                                                    }
-                                                  }
                                                 }
                                               ]
                                             }
@@ -212232,6 +212484,34 @@
                                 "b2amx": {
                                   "content": "Deploy"
                                 },
+                                "FCNjO": {
+                                  "id": "TcB2q",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "L9YLz",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "1 / 8"
                                 }
@@ -213783,9 +214063,9 @@
                       "layout": "vertical",
                       "children": [
                         {
-                          "id": "w0R1fM",
+                          "id": "uXgr2",
                           "type": "ref",
-                          "ref": "gTzqv",
+                          "ref": "RPP7b",
                           "name": "Run filters",
                           "width": "fill_container",
                           "padding": [

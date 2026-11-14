@@ -14,6 +14,10 @@ passingOn:
   en: Passing on {ref}
 noVerdict:
   en: No verdict yet
+pullRequestsOnly:
+  en: Pull requests only
+neverCounts:
+  en: never counts
 disabled:
   en: Disabled on GitHub
 brokenFor:

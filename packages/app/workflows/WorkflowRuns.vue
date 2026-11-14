@@ -237,33 +237,36 @@ function describeGroup(label: WorkflowRunGroupLabel): { text: string; icon: Luci
         :class="css.workflowRuns_divider"
         aria-hidden="true"
       />
-      <span :class="css.workflowRuns_count">{{ countText }}</span>
-      <Menu align="start">
-        <template #trigger>
-          <Button
-            variant="outline"
-            size="sm"
-            :icon="Rows3"
+      <!-- The count and the grouping wrap together, onto a line of their own under the filters when narrow (W32). -->
+      <span :class="css.workflowRuns_summary">
+        <span :class="css.workflowRuns_count">{{ countText }}</span>
+        <Menu align="start">
+          <template #trigger>
+            <Button
+              variant="outline"
+              size="sm"
+              :icon="Rows3"
+            >
+              {{ t(l.group, { grouping: grouping?.label ?? '' }) }}
+            </Button>
+          </template>
+          <MenuLabel>{{ t(l.groupRunsBy) }}</MenuLabel>
+          <MenuRadioGroup
+            :model-value="groupBy"
+            @update:model-value="chooseGrouping"
           >
-            {{ t(l.group, { grouping: grouping?.label ?? '' }) }}
-          </Button>
-        </template>
-        <MenuLabel>{{ t(l.groupRunsBy) }}</MenuLabel>
-        <MenuRadioGroup
-          :model-value="groupBy"
-          @update:model-value="chooseGrouping"
-        >
-          <MenuRadioItem
-            v-for="choice in groupings"
-            :key="choice.value"
-            :value="choice.value"
-            :icon="choice.icon"
-            :detail="choice.detail"
-          >
-            {{ choice.label }}
-          </MenuRadioItem>
-        </MenuRadioGroup>
-      </Menu>
+            <MenuRadioItem
+              v-for="choice in groupings"
+              :key="choice.value"
+              :value="choice.value"
+              :icon="choice.icon"
+              :detail="choice.detail"
+            >
+              {{ choice.label }}
+            </MenuRadioItem>
+          </MenuRadioGroup>
+        </Menu>
+      </span>
     </div>
 
     <div
@@ -383,6 +386,13 @@ function describeGroup(label: WorkflowRunGroupLabel): { text: string; icon: Luci
   width: 1px;
   height: 16px;
   background: $color-border-2;
+}
+
+.workflowRuns_summary {
+  display: flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
 }
 
 .workflowRuns_count {

@@ -15,7 +15,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheck, CircleDashed, CircleSlash, CircleX, Play } from 'lucide-vue-next';
+import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest, Play } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
@@ -36,6 +36,7 @@ import type { WorkflowDetails as Details } from './buildWorkflowDetails.js';
 import { useDescribeRunWhen } from './useDescribeRunWhen.js';
 import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
+import { isPullRequestRun } from './utils/isPullRequestRun.js';
 import { isRunInGroup } from './utils/isRunInGroup.js';
 import WorkflowDetails from './WorkflowDetails.vue';
 import type { WorkflowRunFilters, WorkflowRunsBrowse } from './WorkflowRunHistory.js';
@@ -143,13 +144,20 @@ const standing = computed((): Standing => {
         sentence: counted?.streak ? t(l.lastRunsPassed, { count: counted.streak.count, ref: refName }) : '',
       };
     }
-    case 'unknown':
+    case 'unknown': {
+      // As the Workflows list says it (`buildRepositoryWorkflows`): runs only pull requests started never count.
+      const known = props.runs.runs;
+      if (known.length > 0 && known.every(isPullRequestRun)) {
+        return { tone: 'muted', icon: GitPullRequest, label: t(l.pullRequestsOnly), sentence: t(l.neverCounts) };
+      }
+
       return {
         tone: 'muted',
         icon: CircleDashed,
         label: t(l.noVerdict),
         sentence: state.groups.length === 0 ? t(l.nothingCounts) : '',
       };
+    }
     case 'disabled':
       return { tone: 'muted', icon: CircleSlash, label: t(l.disabled), sentence: '' };
     default:
