@@ -18,8 +18,9 @@ export interface OpenItemOptions {
 
 /**
  * `useOpenItem` for an item known by its address and kind, which the local copy may not hold: a commit's pull
- * request, in whichever repository it is. With an item open, the new one opens where it is shown; else in the panel
- * beside the screen when the window has room for it (`ItemNavigation.panelFits`), on its page when it hasn't.
+ * request, in whichever repository it is. With an item open, the new one opens where it is shown; else over a list
+ * (`meta.itemPanel`) in the panel beside it when the window has room for it (`ItemNavigation.panelFits`), and on its
+ * page anywhere else — a review, Settings, a run — or when the window hasn't.
  */
 export function useOpenItemReference() {
     const navigation = useService(ItemNavigation);
@@ -30,8 +31,8 @@ export function useOpenItemReference() {
 
     function openItemReference(reference: ItemReference, kind: Item['kind'], options: OpenItemOptions = {}) {
         const opened = getOpenedItemRoute(route);
-        // An item opened already keeps where it is shown; else the panel, when the window has room for it.
-        if (opened ? opened.onPage : !navigation.panelFits) {
+        // An item opened already keeps where it is shown; else the panel, over a list whose window has room for it.
+        if (opened ? opened.onPage : !route.meta.itemPanel || !navigation.panelFits) {
             void router.push(getItemPagePath(reference, kind));
             return;
         }
