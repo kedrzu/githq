@@ -6,7 +6,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
-import { ArrowLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
+import { ArrowLeft, ChevronLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onScopeDispose, ref, useTemplateRef, watch } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
@@ -28,6 +28,7 @@ import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
@@ -154,6 +155,8 @@ const ownList = computed(() => {
   const { id } = opened;
   return list && (id === null || list.steps.includes(id) || list.stepOf.has(id)) ? list : null;
 });
+/** Whether the item's page draws the phone's top bar itself while the item is not there (its route has `ownTopBar`). */
+const showsPhoneBar = computed(() => phone.active && props.arrangement === 'page');
 /** What back on a phone says it returns to (mobile D20): the list's name, or with no list the repository's. */
 const backTitle = computed(() => ownList.value?.title ?? repositoryName.value);
 const closes = computed((): Item[] => {
@@ -584,8 +587,22 @@ interface LookedRead extends ItemOpening {
   />
   <div
     v-else
-    :class="css.openedItem_waiting"
+    :class="[css.openedItem_waiting, showsPhoneBar && css.openedItem_waiting_phone]"
   >
+    <!-- On a phone the screen's top bar is the item's (mobile D20), so back is there before the item is. -->
+    <PhoneTopBar v-if="showsPhoneBar">
+      <template #start>
+        <Button
+          variant="ghost"
+          :icon="ChevronLeft"
+          :class="css.openedItem_back"
+          :aria-label="t(l.backTo, { place: backTitle })"
+          @click="goBack"
+        >
+          {{ backTitle }}
+        </Button>
+      </template>
+    </PhoneTopBar>
     <EmptyState
       :icon="opened.failed ? CloudOff : SearchX"
       :tone="opened.failed ? 'warning' : 'muted'"
@@ -631,5 +648,22 @@ interface LookedRead extends ItemOpening {
   justify-content: center;
   height: 100%;
   background: $color-bg-item;
+}
+
+// The top bar above, the state in the room left.
+.openedItem_waiting_phone {
+  flex-direction: column;
+  justify-content: flex-start;
+
+  > :last-child {
+    flex: 1;
+  }
+}
+
+.openedItem_back {
+  min-width: 0;
+  max-width: 100%;
+  margin-left: -$spacing-6;
+  font-size: $font-size-xl;
 }
 </style>

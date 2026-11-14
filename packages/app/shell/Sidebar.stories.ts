@@ -5,11 +5,16 @@ import { useRoute, useRouter } from 'vue-router';
 
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
+import {
+    SAMPLE_MY_WORK_COUNTS,
+    SAMPLE_TRACKED,
+    sampleTrackedProject,
+    sampleTrackedRepository,
+} from '@/testing/samplePlaces.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import Sidebar from './Sidebar.vue';
-import type { SidebarTrackedEntry, SidebarTrackedStatus } from './Sidebar.vue';
 import type { SidebarWorkflowMarker } from './SidebarTypes.js';
 
 /** As tall as the window and as wide as the panel it has in the app. */
@@ -24,20 +29,8 @@ const meta = {
     args: {
         viewer: SAMPLE_VIEWER,
         collapsed: false,
-        counts: { reviewRequested: 2, authored: 3, assigned: 5, mentioned: 3, total: 13 },
-        tracked: {
-            projects: [
-                project('Platform Q4', 'skyline-labs', 1, { kind: 'count', count: 128 }),
-                project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 }),
-                project('Docs revamp', 'skyline-labs', 3, { kind: 'count', count: 12 }),
-            ],
-            repositories: [
-                repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('kedrzu/skills', { kind: 'count', count: 7 }),
-                repository('skyline-labs/portal', { kind: 'count', count: 142 }, true),
-                repository('skyline-labs/api', { kind: 'count', count: 96 }, true),
-            ],
-        },
+        counts: SAMPLE_MY_WORK_COUNTS,
+        tracked: SAMPLE_TRACKED,
         onToggle: fn(),
         onSignOut: fn(),
     },
@@ -66,12 +59,12 @@ export const SomeCountsArriving: Story = {
 export const Downloading: Story = {
     args: {
         tracked: {
-            projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
+            projects: [sampleTrackedProject('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
             repositories: [
-                repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('skyline-labs/portal', { kind: 'downloading' }, true),
-                repository('skyline-labs/api', { kind: 'downloading' }, true),
-                repository('acme-health/vault', { kind: 'hidden' }),
+                sampleTrackedRepository('kedrzu/githq', { kind: 'count', count: 18 }),
+                sampleTrackedRepository('skyline-labs/portal', { kind: 'downloading' }, true),
+                sampleTrackedRepository('skyline-labs/api', { kind: 'downloading' }, true),
+                sampleTrackedRepository('acme-health/vault', { kind: 'hidden' }),
             ],
         },
     },
@@ -79,13 +72,21 @@ export const Downloading: Story = {
 
 /** Repositories only: no Projects section. */
 export const NoProjects: Story = {
-    args: { tracked: { projects: [], repositories: [repository('kedrzu/githq', { kind: 'count', count: 18 })] } },
+    args: {
+        tracked: {
+            projects: [],
+            repositories: [sampleTrackedRepository('kedrzu/githq', { kind: 'count', count: 18 })],
+        },
+    },
 };
 
 /** Projects only: no Repositories section. */
 export const NoRepositories: Story = {
     args: {
-        tracked: { projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })], repositories: [] },
+        tracked: {
+            projects: [sampleTrackedProject('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
+            repositories: [],
+        },
     },
 };
 
@@ -98,7 +99,7 @@ export const LongLists: Story = {
         tracked: {
             projects: [],
             repositories: Array.from({ length: 60 }, (_, index) =>
-                repository(`kedrzu/repository-${index}`, { kind: 'count', count: index }),
+                sampleTrackedRepository(`kedrzu/repository-${index}`, { kind: 'count', count: index }),
             ),
         },
     },
@@ -160,7 +161,7 @@ export const CollapsedManyProjects: Story = {
         collapsed: true,
         tracked: {
             projects: Array.from({ length: 60 }, (_, index) =>
-                project(`Project ${index}`, 'kedrzu', index, { kind: 'count', count: index }),
+                sampleTrackedProject(`Project ${index}`, 'kedrzu', index, { kind: 'count', count: index }),
             ),
             repositories: [],
         },
@@ -176,12 +177,18 @@ export const CollapsedNothingTracked: Story = {
 function withMarkers(markers: readonly (SidebarWorkflowMarker | null)[]) {
     const [first, second, third, fourth] = markers;
     return {
-        projects: [project('Platform Q4', 'skyline-labs', 1, { kind: 'count', count: 128 })],
+        projects: [sampleTrackedProject('Platform Q4', 'skyline-labs', 1, { kind: 'count', count: 128 })],
         repositories: [
-            { ...repository('kedrzu/githq', { kind: 'count', count: 18 }), workflowMarker: first },
-            { ...repository('kedrzu/skills', { kind: 'count', count: 7 }), workflowMarker: second },
-            { ...repository('skyline-labs/portal', { kind: 'count', count: 142 }, true), workflowMarker: third },
-            { ...repository('skyline-labs/api', { kind: 'count', count: 96 }, true), workflowMarker: fourth },
+            { ...sampleTrackedRepository('kedrzu/githq', { kind: 'count', count: 18 }), workflowMarker: first },
+            { ...sampleTrackedRepository('kedrzu/skills', { kind: 'count', count: 7 }), workflowMarker: second },
+            {
+                ...sampleTrackedRepository('skyline-labs/portal', { kind: 'count', count: 142 }, true),
+                workflowMarker: third,
+            },
+            {
+                ...sampleTrackedRepository('skyline-labs/api', { kind: 'count', count: 96 }, true),
+                workflowMarker: fourth,
+            },
         ],
     };
 }
@@ -281,7 +288,7 @@ export const WindowControlsOverflowing: Story = {
         tracked: {
             projects: [],
             repositories: Array.from({ length: 60 }, (_, index) =>
-                repository(`kedrzu/repository-${index}`, { kind: 'count', count: index }),
+                sampleTrackedRepository(`kedrzu/repository-${index}`, { kind: 'count', count: index }),
             ),
         },
     },
@@ -289,27 +296,6 @@ export const WindowControlsOverflowing: Story = {
 
 /** The rail in the macOS desktop app. */
 export const WindowControlsCollapsed: Story = { args: { windowControls: true, collapsed: true } };
-
-function project(title: string, owner: string, number: number, status: SidebarTrackedStatus): SidebarTrackedEntry {
-    return {
-        key: `project:${number}`,
-        label: title,
-        to: `/orgs/${owner}/projects/${number}`,
-        target: { kind: 'project', id: `PVT_${number}` },
-        status,
-    };
-}
-
-function repository(nameWithOwner: string, status: SidebarTrackedStatus, isPrivate = false): SidebarTrackedEntry {
-    return {
-        key: `repository:${nameWithOwner}`,
-        label: nameWithOwner,
-        to: `/${nameWithOwner}`,
-        target: { kind: 'repository', nameWithOwner },
-        status,
-        isPrivate,
-    };
-}
 
 /** CR33: "Draft reviews" at the very top, above My work, while there is any. */
 export const DraftReviews: Story = { args: { draftReviews: 2 } };

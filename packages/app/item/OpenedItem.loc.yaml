@@ -14,3 +14,5 @@ tryAgain:
   en: Try again
 backToList:
   en: Back to the list
+backTo:
+  en: Back to {place}

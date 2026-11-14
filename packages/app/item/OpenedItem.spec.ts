@@ -79,6 +79,14 @@ test('mobile D20: Escape on a phone goes back as back does, by the history’s B
     expect(history.position()).toBe(0);
 });
 
+test('mobile D20: on a phone an item not in the local copy yet still has back in its top bar', async () => {
+    const { router } = await mountItemPage({ phone: true, visits: ['/acme/web/issues/99'] });
+
+    await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
+
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/acme/web/issues'));
+});
+
 test('D20: on the computer, closing an item’s page with no list goes to its repository, not My work', async () => {
     const { router } = await mountItemPage({ phone: false, visits: ['/acme/web/issues/1'] });
 
