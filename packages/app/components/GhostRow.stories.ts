@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 /** `Empty / Ghost row`: the icon dot and the title strong, the meta and the age weak. */
 export const Default: Story = {};
 
-/** In a pane narrower than its title: the title bar shrinks, the age stays at the end. */
+/** In a pane narrower than its title: the title bar shrinks, the age stays right after it. */
 export const Narrow: Story = {
     args: { titleWidth: 510 },
     decorators: [() => ({ template: '<div style="width: 320px"><story /></div>' })],

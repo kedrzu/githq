@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed, each right after the one before; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented, without the repository the issue shares. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -277,9 +277,9 @@ const nameWithOwner = computed(() => {
   }
 }
 
+// No spacer, as `ItemRow`: the faces and the age sit right after the name, which gives way first when narrow.
 .stackRow_name {
   display: flex;
-  flex: 1;
   gap: $spacing-8;
   align-items: baseline;
   min-width: 0;
@@ -293,10 +293,6 @@ const nameWithOwner = computed(() => {
   font-weight: $font-weight-medium;
   line-height: 18px;
   color: $color-fg;
-
-  .stackRow_nested & {
-    font-size: $font-size-sm;
-  }
 }
 
 .stackRow_count,

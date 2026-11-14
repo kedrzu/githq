@@ -510,7 +510,6 @@ function getCommitUrl(oid: string) {
 .reviewSubmoduleBlock_link {
   @include focus-ring;
 
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   color: $color-fg;
@@ -535,7 +534,6 @@ function getCommitUrl(oid: string) {
 }
 
 .reviewSubmoduleBlock_file {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   font-family: $font-family-mono;

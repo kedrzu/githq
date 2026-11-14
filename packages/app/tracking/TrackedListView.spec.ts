@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './TrackedListView.stories.jsx';
@@ -216,4 +216,28 @@ test('no key acts while a field has the focus or a layer is open', async () => {
     expect(onAdd).not.toHaveBeenCalled();
     expect(onUntrack).not.toHaveBeenCalled();
     layer.remove();
+});
+
+test("on a wide screen a project row's source, count and sync follow its name 10px apart, while Untrack and the chevron stay at the row's edge", async () => {
+    await page.viewport(1440, 900);
+    onTestFinished(() => page.viewport(414, 896));
+    await Projects.run();
+
+    const title = page.getByText('Platform Q4', { exact: true }).element();
+    const rowBox = title.parentElement?.getBoundingClientRect();
+    const number = title.nextElementSibling;
+    const source = number?.nextElementSibling;
+    const count = source?.nextElementSibling;
+    const sync = count?.nextElementSibling;
+    if (!rowBox || !number || !source || !count || !sync) {
+        throw new Error('The row lacks its number, source, count or sync note.');
+    }
+
+    expect(source.getBoundingClientRect().left - number.getBoundingClientRect().right).toBeCloseTo(10, 0);
+    expect(count.getBoundingClientRect().left - source.getBoundingClientRect().right).toBeCloseTo(10, 0);
+    expect(sync.getBoundingClientRect().left - count.getBoundingClientRect().right).toBeCloseTo(10, 0);
+    expect(sync.getBoundingClientRect().right).toBeLessThan(rowBox.right - 300);
+
+    const actions = sync.nextElementSibling?.nextElementSibling?.getBoundingClientRect();
+    expect(actions?.right).toBeCloseTo(rowBox.right - 12, 0);
 });

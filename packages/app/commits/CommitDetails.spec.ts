@@ -1,3 +1,4 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
@@ -77,6 +78,18 @@ test('CH18, CH55: what it says of a commit: author, when, sha, parent, refs, pul
     await expect
         .element(panel.getByRole('link', { name: 'Open on GitHub' }))
         .toHaveAttribute('href', 'https://github.com/acme/web/commit/a2');
+});
+
+test("a pull request's state follows its title 8px after it, not pushed to the panel's edge", async () => {
+    const { panel } = await mount(sampleWebappHistory(), 'a2', { width: 600 });
+
+    await expect.element(panel.getByRole('button', { name: /Pull request 1228/ })).toBeVisible();
+    const button = panel.getByRole('button', { name: /Pull request 1228/ }).element();
+    const state = assertValue(button.lastElementChild);
+    const title = assertValue(state.previousElementSibling);
+    expect(state.textContent).toBe('open');
+    expect(state.getBoundingClientRect().left - title.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(state.getBoundingClientRect().right).toBeLessThan(button.getBoundingClientRect().right - 100);
 });
 
 test('CH55: with a 40-line message every fact comes before it, a failing check is named without a click, and the message reads in the text colour with its list as a list', async () => {

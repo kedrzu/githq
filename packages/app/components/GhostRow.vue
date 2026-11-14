@@ -1,4 +1,4 @@
-<!-- A list's row still on its way (first run and loading D8, `Empty / Ghost row`): an icon dot, a title and a meta bar and an age, laid out to the metrics of `ItemRow`, so the row that replaces it lands without a jump. -->
+<!-- A list's row still on its way (first run and loading D8, `Empty / Ghost row`): an icon dot, a title bar with an age right after it, a meta bar, laid out to the metrics of `ItemRow`, so the row that replaces it lands without a jump. -->
 <script lang="ts" setup>
 import Skeleton from './Skeleton.vue';
 import SkeletonBar from './SkeletonBar.vue';
@@ -28,7 +28,6 @@ withDefaults(
       <span :class="css.ghostRow_line">
         <SkeletonBar :width="titleWidth" />
         <SkeletonBar
-          :class="css.ghostRow_age"
           :width="18"
           :height="8"
           tone="weak"
@@ -79,12 +78,12 @@ withDefaults(
   overflow: hidden;
 }
 
-.ghostRow_line_meta {
-  height: 16px;
+// The title's line keeps `ItemRow`'s 8px between the title and the age.
+.ghostRow_line:first-child {
+  gap: $spacing-8;
 }
 
-// At the end of the title's line, as the row's age.
-.ghostRow_age {
-  margin-left: auto;
+.ghostRow_line_meta {
+  height: 16px;
 }
 </style>

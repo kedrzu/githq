@@ -1,4 +1,4 @@
-<!-- One segment of the status bar (`StatusBar`): what the surface above it shows and how fresh it is — dim when all is well, grey while downloading or sending the user's edits, purple when it is slower by design (a view GitHub answers), amber when something is off, red when an edit failed. Fills the width left unless given one, with dim words at its end if any. With `action` it is a button (an edit failed: click for why). -->
+<!-- One segment of the status bar (`StatusBar`): what the surface above it shows and how fresh it is — dim when all is well, grey while downloading or sending the user's edits, purple when it is slower by design (a view GitHub answers), amber when something is off, red when an edit failed. Fills the width left unless given one, with dim words after its text if any. With `action` it is a button (an edit failed: click for why). -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   default?(): unknown;
-  /** Dim words at the segment's end ("edits still go through"). */
+  /** Dim words after the segment's text ("edits still go through"). */
   detail?(): unknown;
 }>();
 </script>
@@ -98,7 +98,6 @@ defineSlots<{
 
 .statusSegment_detail {
   flex: none;
-  margin-left: auto;
   color: $color-fg-dim;
 }
 

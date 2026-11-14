@@ -67,7 +67,6 @@ const range = computed(() => {
         :class="css.itemThreadExcerpt_lines"
         >{{ range }}</span
       >
-      <span :class="css.itemThreadExcerpt_spacer" />
       <span
         v-if="thread.isOutdated"
         :class="css.itemThreadExcerpt_outdated"
@@ -170,10 +169,6 @@ const range = computed(() => {
   font-family: $font-family-mono;
   font-size: $font-size-3xs;
   color: $color-fg-dim;
-}
-
-.itemThreadExcerpt_spacer {
-  flex: 1;
 }
 
 .itemThreadExcerpt_outdated {

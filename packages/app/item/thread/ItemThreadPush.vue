@@ -1,4 +1,4 @@
-<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, at the right) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. -->
+<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, right after the message) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { GitCommitHorizontal } from 'lucide-vue-next';
@@ -143,11 +143,12 @@ async function showMore() {
 }
 
 .itemThreadPush_what {
-  flex: 1;
+  min-width: 0;
   color: $color-fg-2;
 }
 
 .itemThreadPush_when {
+  flex: none;
   font-size: $font-size-xs;
   color: $color-fg-dim;
 }
@@ -177,7 +178,6 @@ async function showMore() {
 }
 
 .itemThreadPush_message {
-  flex: 1;
   min-width: 0;
   font-size: $font-size-sm;
   line-height: 1.45;
@@ -186,6 +186,7 @@ async function showMore() {
 }
 
 .itemThreadPush_ci {
+  flex: none;
   margin-top: 2.5px;
 }
 
