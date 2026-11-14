@@ -35,6 +35,11 @@ export class CommitGraphHarness {
         return this.rows.filter({ hasText: headline });
     }
 
+    /** A row's dot in the graph: the last circle of its slice of the graph, drawn over the lines (`CommitGraphCell.vue`). */
+    dot(row: Locator): Locator {
+        return row.locator('svg').first().locator('circle').last();
+    }
+
     /** The header's tool opening the branch and tag list. */
     get refListTool(): Locator {
         return this.page.getByRole('main').getByRole('button', { name: 'Branches and tags' });

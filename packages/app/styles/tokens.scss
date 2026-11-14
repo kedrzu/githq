@@ -59,6 +59,27 @@ $color-fg-dim: #8b929b;
 $color-graph-line: $color-fg-3;
 // Exception: the default branch's line stays brighter than the rest.
 $color-graph-line-main: #8b929b;
+// The other lanes of a commit graph, by lane, cycling (CH61): eight hues, none red or amber (CI's colours), each at
+// 3:1 on every graph surface. Exception: a palette of ours, Primer has none for lanes.
+$color-graph-lane-1: #5899e4;
+$color-graph-lane-2: #91b54a;
+$color-graph-lane-3: #b190ea;
+$color-graph-lane-4: #41aa90;
+$color-graph-lane-5: #c784cd;
+$color-graph-lane-6: #39aec6;
+$color-graph-lane-7: #5db669;
+$color-graph-lane-8: #86aecb;
+// The same palette by its number, for a rule per lane.
+$graph-lanes: (
+    1: $color-graph-lane-1,
+    2: $color-graph-lane-2,
+    3: $color-graph-lane-3,
+    4: $color-graph-lane-4,
+    5: $color-graph-lane-5,
+    6: $color-graph-lane-6,
+    7: $color-graph-lane-7,
+    8: $color-graph-lane-8,
+);
 // Text on the light button ("Sign in with GitHub") and on the accent.
 $color-on-light: #0d1117;
 

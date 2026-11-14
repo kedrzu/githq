@@ -8,13 +8,16 @@ import {
     readMaxWidth,
     readUsageStatistics,
     readRepositoryLayout,
+    readRefSort,
     readReviewCommentChoice,
     readWorkflowSettings,
     serializeSettings,
+    writeRefSort,
     writeWorkflowSettings,
 } from './SettingsDocument.js';
 import type {
     MaxWidth,
+    RefSort,
     RepositoryLayout,
     ReviewCommentChoice,
     SettingsDocument,
@@ -252,6 +255,56 @@ test.each<[unknown, ReviewCommentChoice]>([
 
     expect(readReviewCommentChoice(parsed.document)).toBe(reads);
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, reviewCommentChoice: written });
+});
+
+test.each<[unknown, RefSort]>([
+    [undefined, { branches: 'newest', tags: 'newest' }],
+    [
+        { branches: 'name', tags: 'name' },
+        { branches: 'name', tags: 'name' },
+    ],
+    // Each group on its own: one not understood reads as newest first, the other as written.
+    [
+        { branches: 'name', tags: 'by-semver' },
+        { branches: 'name', tags: 'newest' },
+    ],
+    [{ tags: 'name' }, { branches: 'newest', tags: 'name' }],
+    ['name', { branches: 'newest', tags: 'newest' }],
+    [[], { branches: 'newest', tags: 'newest' }],
+])('a file with the ref sort %j is readable, reads as %j and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, refSort: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readRefSort(parsed.document)).toEqual(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, refSort: written });
+});
+
+test("a group's order is written over what else the ref sort holds, the rest of the document as it was", () => {
+    const document: SettingsDocument = {
+        ...DOCUMENT,
+        reviewCommentChoice: 'draft',
+        refSort: { tags: 'by-semver', pinned: ['main'] },
+    };
+
+    const written = writeRefSort({ document, group: 'branches', order: 'name' });
+
+    const expected: SettingsDocument = {
+        ...document,
+        refSort: { tags: 'by-semver', pinned: ['main'], branches: 'name' },
+    };
+    expect(written).toEqual(expected);
+});
+
+test('an order the group reads as already writes nothing, so a value not understood stays until the user picks the other', () => {
+    expect(writeRefSort({ document: DOCUMENT, group: 'branches', order: 'newest' })).toBeNull();
+    const newer: SettingsDocument = { ...DOCUMENT, refSort: { branches: 'by-semver' } };
+    expect(writeRefSort({ document: newer, group: 'branches', order: 'newest' })).toBeNull();
+    expect(writeRefSort({ document: newer, group: 'branches', order: 'name' })).toEqual({
+        ...DOCUMENT,
+        refSort: { branches: 'name' },
+    });
 });
 
 test.each<[unknown, MaxWidth | null]>([
