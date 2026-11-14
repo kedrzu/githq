@@ -339,32 +339,6 @@ drawings: `MB100`)
 - A chip on the issue's row (MB101) — a small target, and the pull request's title is gone.
 - The full row, indented (MB102) — two near-identical rows read as two items.
 
-## D25
-
-**An item's properties are split: what needs its name stays a row under the title — assignees and the first project's
-row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands" — and what reads
-on its own follows as one block of chips without names: labels, the milestone, sub-issues, another project's field;
-on a pull request the branch, its size and the issues it closes. A chevron at the right of the chips unfolds every
-property as rows in place, the chips giving way to them — every project with all its fields, the empty ones too, and
-Add to a project — and Fewer folds it back.** (2026-11-08, owner: rows first with only the important ones, the rest
-unfolding inline, not hidden; then chips after the rows (`MB128`) with a chevron beside them, not a small "All" chip,
-and the chips gone once unfolded; drawn in `MB125`, `MB126`, `MB128`)
-
-**Why.** The owner preferred the desktop's rows to a line of chips alone, but not every row before the conversation.
-The drawing's case: the activity starts under 570 px down instead of under the fold, labels and the milestone read at
-a glance without a key, and nothing slides over the item to see the rest.
-
-**Rejected.**
-
-- A summary line of chips with a sheet for every property (MB103–MB105) — the design agent's recommendation; the owner
-  preferred rows.
-- The properties after the body (MB107) — the newest comment is as far as with all rows at the top, and a long body
-  hides the properties.
-- A More row naming what else there is (MB124) — superseded by the chips, which show the values themselves.
-- The chips under the title, beside the state (MB127, MB130–MB132) — the owner picked them after the rows; a small
-  "… All" chip as the way to every property was too small a target.
-- The chips after the body (MB129) — on a long body the labels and milestone are out of sight.
-
 ## D27
 
 **Swiping a list row to the left reveals Status, Assign and Close; each opens that property's menu at the bottom, the
@@ -547,14 +521,14 @@ asks for a template does not miss it.
 
 ## D42
 
-**A new issue's details are set as on an item: under the title the rows that need their name — Assignees with Assign
-to me at its end, the project's field when there is one, the parent — then the rest as chips, empty ones saying what
-they would hold; tapping any of them opens its menu at the bottom, as
-on an item ([D45](#d45)).** (2026-11-08, owner, picked from the drawings:
-`MB194`–`MB196`)
+**A new issue's details are set as on an item: under the title the item summary's rows — Assignees with Assign to me
+at its end, Labels, Milestone, Type, Parent — and the project as a card with its fields, as the desktop's full form has
+them (H3); tapping any of them opens its menu at the bottom, as on an item ([D45](#d45)).** (2026-11-08, owner, picked
+from the drawings: `MB194`–`MB196`; rows and chips replaced by the desktop's rows and card 2026-11-14, following
+[D52](#d52))
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
-([D25](#d25)), changed the same way ([D45](#d45)), and assigning yourself is one tap.
+([D52](#d52)), changed the same way ([D45](#d45)), and assigning yourself is one tap.
 
 **Rejected.**
 
@@ -631,6 +605,9 @@ later, on both.** (2026-11-09, owner: no filters on a phone for now, keep the de
 **Why.** The desktop has no editor for filters by field values; building it on the phone first would make the phone a
 second solution.
 
+The list options' Empty groups switch (MB173) goes with it: the desktop has none, and a list there decides on its own
+whether to show an empty group (`packages/app/myWork/buildMyWork.ts:41`). (2026-11-14, owner)
+
 > **Checked 2026-11-09:** the desktop's filters — `packages/app/repository/RepositoryView.vue:242` (state),
 > `packages/app/myWork/MyWorkView.vue:133` (All, Needs me, Waiting on others), the project view's GitHub filter, cleared
 > here (`packages/app/projects/ProjectView.loc.yaml`).
@@ -665,8 +642,9 @@ githq is a layer over that view, kept per device (`packages/app/lists/useListVie
 it with Reset (`packages/app/projects/ProjectView.vue:1`). Without the mark a phone would show a view that silently
 differs from the team's.
 
-> **Not settled by this:** where the mark and the way back sit on a phone, where a project's views are a menu under the
-> command line, not tabs. The variants drawn for it were deleted when D37 dropped the question.
+**Where it sits** (2026-11-14, owner, picked from the drawings: `MB222`–`MB224`): a dot on the view's chip in the
+command line, the same dot beside the view in the views menu, and at the top of the list's options one line, "Changed
+on this device", with Back to GitHub's view. Nothing else on the list changes.
 
 **Rejected.**
 
@@ -674,3 +652,56 @@ differs from the team's.
   from GitHub.
 - Syncing view preferences between devices — the owner: not for now; it would reverse
   [settings-sync D7](../settings-sync/DECISIONS.md#d7), where they stay local as too volatile.
+- The mark as a strip under the top bar for as long as the change lasts (MB225) — it reads as a passing state, while
+  the change is there for good.
+
+## D50
+
+**An item's thread on a phone is the desktop's: one thread on a rail, the description as its first comment card,
+events one line on the rail, comments and reviews as cards with a ⋯ menu, with their sending, not sent and
+editing-in-place states, the fold past 20 items and "N new since you looked". The cards take the narrow layout the
+desktop already has for a container under 480 px.** (2026-11-14, applying the rule of
+[the review](history/2026-11-08-review-against-the-desktop.md): the phone does what the computer does)
+
+**Why.** The desktop's thread (`docs/design/githq/changelog/item-activity.md`, `conversation-cards.md`) replaced the
+activity list the phone was drawn on. Its narrow cards were made for code review's 340 px sidebar, which is a phone's
+width, so the phone needs no thread of its own. A comment's ⋯ menu is a menu at the bottom ([D45](#d45)). It also
+answers MB97's question: the desktop now has both the fold and the new-since line (I2).
+
+**Rejected.**
+
+- The phone's own activity list, kept from #214 — a second thread to design, build and keep in step.
+
+## D51
+
+**Writing on a phone is the desktop's editor. At rest the comment box stays in the command line
+([D17](#d17)); once tapped it grows into the desktop's composer: Write and Preview, the formatting tools folded to ⋯
+as on a narrow desktop card, the @ and # menus, and beside sending the item's own closing — Close issue with its
+reason, Reopen, Close pull request — as on the desktop's composer. Its tools sit just above the keyboard; its menus
+are menus at the bottom ([D45](#d45)).** (2026-11-14, owner: the full editor)
+
+**Why.** The desktop's composer offers closing with a comment and Markdown with a preview; a phone without them
+would have to go to github.com for both.
+
+**Rejected.**
+
+- The editor without closing, which would stay only in the state chip's menu (MB109).
+- Text and send only, the tools later.
+
+## D52
+
+**An opened item's summary on a phone is the desktop's one-column summary: the title and its standing; on a pull
+request the standing card (what stops it — checks, reviews, conflicts — the branch, size and files, and Merge…, Open on
+GitHub, Review files), Reviews with Request, Checks failing first; what it closes; then Assignees, Labels, Milestone and
+Sub-issues as rows, and every project as a card with its fields. No key hints. Merge… and Review files, which a phone
+does not have yet ([D4](#d4)), are marked ↗ and open github.com ([D11](#d11)). Tapping a property opens its menu at the
+bottom ([D45](#d45)).** (2026-11-14, owner, picked from the drawings: `MB260`–`MB263`)
+
+**Why.** One summary to design and build for both, and nothing behind a chevron. The owner took the cost the drawing
+named: on a pull request the description starts more than a screen down.
+
+**Rejected.**
+
+- The phone's rows and chips ([D25, retired](history/RETIRED.md#d25)).
+- A hybrid: the desktop's standing card, Reviews and Checks, then the phone's rows and chips (MB264–MB267) — shorter,
+  but two summaries to keep in step.
