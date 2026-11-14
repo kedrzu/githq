@@ -18,6 +18,8 @@ import type { DiffLayout, DiffLineSide, DiffSplitRow, DiffUnifiedRow } from './d
 import type { FileDiff } from './diff/computeFileDiff.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
+import { compileFindQuery } from './find/compileFindQuery.js';
+import { findDiffMatches } from './find/findDiffMatches.js';
 import type { LineMark, RowMarks } from './find/RowMarks.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
@@ -164,6 +166,25 @@ export const UnifiedMarked: Story = {
     loaders: [loadTokens],
     render: (_args, { loaded }) =>
         renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) }), { getMarks: findMarks }),
+};
+
+/** A line with more matches than find keeps: only the first ones are marked (`MAX_MATCHES_PER_LINE`). */
+export const CappedMarks: Story = {
+    render: () => ({
+        components: { DiffCode },
+        setup: () => {
+            const text = 'a'.repeat(1005);
+            const expression = compileFindQuery('a', { matchCase: false, wholeWord: false, regex: false });
+            const found = expression instanceof RegExp ? findDiffMatches([{ text, counted: true }], expression) : null;
+            const marks: LineMark[] = [...(found?.starts ?? [])].map((start, index) => ({
+                start,
+                end: found?.ends[index] ?? start,
+                current: index === 0,
+            }));
+            return { text, marks };
+        },
+        template: `<DiffCode :text="text" :tokens="null" :line="0" :marks="marks" />`,
+    }),
 };
 
 /** Each kind of token in its own colour: the title, tag and built-in kinds, which the TypeScript sample has no scopes for. */

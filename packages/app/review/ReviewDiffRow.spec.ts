@@ -5,8 +5,10 @@ import { page, userEvent } from 'vitest/browser';
 import { estimateReviewRowHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
+import { MAX_MATCHES_PER_LINE } from '@/workflows/utils/findLogMatches.js';
 
 const {
+    CappedMarks,
     CodeKinds,
     Collapsed,
     CursorSplit,
@@ -273,6 +275,13 @@ test('each kind of token has a colour of its own', async () => {
     const code = getComputedStyle(document.querySelector('code')!).color;
 
     expect(new Set([...colours, code]).size).toBe(kinds.length + 1);
+});
+
+test("a line with more of find's matches than are kept marks only the first ones", async () => {
+    await CappedMarks.run();
+
+    expect(document.querySelectorAll('code mark')).toHaveLength(MAX_MATCHES_PER_LINE);
+    expect(document.querySelector('code mark')?.closest('code')?.textContent).toHaveLength(1005);
 });
 
 function getCode(text: string) {

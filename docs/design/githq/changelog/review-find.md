@@ -3,7 +3,7 @@
 The diff is a virtual list, so the browser's own find misses lines off screen. ⌘F opens a find bar like VS Code's,
 floating at the top right of the diff over the code: every match in the diff's shown lines is marked in the code, the
 current one stronger, and ↵ ⇧↵, ⌘G ⇧⌘G or F3 ⇧F3 walk them, the line cursor (D44) landing on each match's row. Spec:
-draft PR #292. Waiting for the owner's approval; the D-entry in `docs/design/code-review/DECISIONS.md` follows it.
+PR #292. Approved by the owner on 2026-11-14: D47 in `docs/design/code-review/DECISIONS.md`.
 Base: `7333c8bd`.
 
 ## Round 1 · agent in the app, from the brief
@@ -63,3 +63,12 @@ comment colour over an added line to 3.3:1 and 2:1. The owner chose a darker amb
 Forced by: axe's target-size rule (WCAG 2.5.8) on the `ReviewFindBar` stories: toggles 1 px apart fail it.
 
 - [x] `Review / Find bar` (`iWL1w`): the gap between the three toggles 1 → 4 px (built; frame `Toggles` `M4y1z` updated).
+
+## Round 4 · implementation
+
+Forced by: the app's shared popover shadow and a state the design didn't draw.
+
+- [x] `Review / Find bar` (`iWL1w`): the built bar uses the app's `$shadow-popover` (0 8 24 at 40%) instead of the
+  frame's 0 6 20 `#00000080`; the difference is too small to redraw.
+- [x] No matches while files are still read: the counter says "No results yet" (not drawn; the "+" of CR139 needs a
+  count to follow).

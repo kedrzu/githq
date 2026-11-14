@@ -46,7 +46,7 @@ export interface ReviewFindViewModel {
     readonly position: number | null;
     /** Some line had more matches than are kept. */
     readonly capped: boolean;
-    /** Every file's lines are in the rows: no placeholder could add matches. */
+    /** Every file's lines are in the rows: no placeholder, nor a file paused by the rate limit, could add matches. */
     readonly final: boolean;
     /** How the query is read, kept in every review. */
     readonly options: FindOptions;
@@ -110,7 +110,7 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
     const rowMatches = computed(() =>
         result.value ? indexRowMatches(result.value.lines, result.value.matches) : null,
     );
-    const final = computed(() => !rows.value.some(row => row.kind === 'placeholder'));
+    const final = computed(() => !rows.value.some(row => row.kind === 'placeholder' || row.kind === 'paused'));
     const runner = createFindRunner({ onChange: receive });
     let pending: PendingSearch | null = null;
     let cancelSearch: (() => void) | null = null;

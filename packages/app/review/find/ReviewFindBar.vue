@@ -172,7 +172,7 @@ function onKeydown(event: KeyboardEvent) {
       <span
         v-if="problem"
         :class="[css.reviewFindBar_message, problem !== 'noResults' && css.reviewFindBar_message_error]"
-        >{{ t(l[problem]) }}</span
+        >{{ problem === 'noResults' && incomplete ? t(l.noResultsYet) : t(l[problem]) }}</span
       >
       <template v-else-if="positionText">
         <span :class="css.reviewFindBar_position">{{ positionText }}</span>

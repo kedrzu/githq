@@ -14,6 +14,8 @@ noPosition:
   en: '? of {total}'
 noResults:
   en: No results
+noResultsYet:
+  en: No results yet
 invalid:
   en: Invalid regular expression
 tooSlow:
