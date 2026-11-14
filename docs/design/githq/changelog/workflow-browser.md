@@ -70,3 +70,26 @@ Changed: variants settled, layout-dependent screens redrawn, seven new screens.
 
 Agent's guesses in captions, for the owner: the chosen tab stays for the next workflow (W42); grouping is remembered per
 workflow (W43).
+
+## Round 3 · agent brief, the navigation model
+
+Asked (`.context/workflow-browser-brief-3.md`): W31 edge to edge with keys at the bottom, W35's header keys and the
+captions of W30–W48 in line with `docs/design/githq/navigation.md`. W34 checked, unchanged.
+Changed: W31 and W35 only; no component touched.
+
+- [ ] W31 (`wp5Sn`): the item (`w4yea2` → `zsvUd`, still an instance of `v95xB`) fills the page between the sidebar and
+  the window's edge, 1140 px centred box with side borders → `fill_container`, no stroke; details column keeps 420 px,
+  runs take the rest; Columns (`e709i4`) no longer centred.
+- [ ] W31 (`wp5Sn`): new key bar `Keys` (`QEdqU`) under the columns, copied from W34's: `J K` Run (`ViXuv`), `↵` Open
+  run (`LxpRj`), `Esc` Back to the panel (`C18rI8`).
+- [ ] W31 caption (`F9SxGw`): how full screen is reached (↵ on the open row, ⇧↵ from the panel or the list), why there
+  is no centred box, what Esc does.
+- [ ] W35 (`r5c1Mr`): header hints `↵` Open workflow → Open (`DF37Q`), new `⇧↵` Full screen (`w404Pz`, `Hint / two-icon
+  key`) before `F` Latest failure.
+- [ ] W35 caption (`MpRSm`): ↵ opens the panel, ↵ again or ⇧↵ full screen (W31); the stale reference to W28 gone.
+
+W34 (`J8Gad`) already shows `fitloop/webapp › Deploy › #4825` and `Esc` Back to Deploy. The other captions of W30–W48
+describe no Enter or Esc against navigation.md (W37's Esc steps back inside the command menu, which closes first).
+
+Open after round 3: W31 shows both the item's `K` `J` stepper (next workflow) and `J K` Run in the key bar. In the app,
+`j`/`k` step to the next item full screen (`item/ItemView.vue`, `item.next`), so W31's runs need a decision.

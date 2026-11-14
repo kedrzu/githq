@@ -341,10 +341,13 @@ switch, keeps the health overview of the list, and gives a workflow a place for 
 **How it looks** (2026-11-14, owner after round 1 of the variants): the item has two columns, runs on the left and the
 workflow's details on the right (triggers, the refs that count, last success, typical duration, dispatch inputs).
 Narrower than Direction D's two-column width, the same content splits into the tabs Runs and Details; full screen is
-always two columns. Grouping the runs is an option of their toolbar (None, Status, Ref, Event, Day, Actor), not a
+always two columns and fills the page's width, unlike the centred box of an issue or a pull request ([githq
+D9](../githq/DECISIONS.md#d9)): it is a list and a details column, not text to read. Grouping the runs is an option of their toolbar (None, Status, Ref, Event, Day, Actor), not a
 layout. "Run workflow" works from the command menu in context: on the selected or open workflow directly, inside a
 repository among its workflows, elsewhere after picking the repository first, since names like Deploy repeat across
-repositories. The form for the inputs opens inside the command menu. The Run workflow button has no key.
+repositories. The form for the inputs opens inside the command menu. The Run workflow button has no key. Moving in and out follows
+[the app's navigation](../githq/navigation.md): `↵` on the open workflow goes full screen, `Esc` from a run returns to
+the workflow, `Esc` again to the list.
 
 **Rejected.**
 

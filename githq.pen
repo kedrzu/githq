@@ -205476,7 +205476,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same workflow item full screen (Direction D's switch: ⇧↵ in the panel, the toolbar's arrangement button). The sidebar stays, the list goes, and the item sits centred in its resizable box like any other item. Full screen is always two columns, whatever the width: runs on the left, details on the right. The cursor is on #4821, so Enter opens that run (W4a).",
+                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The details keep their width on the right and the runs take the rest; full screen is always two columns, whatever the width. Here the item has the keyboard: the cursor is on #4821 and ↵ opens that run (W4a). Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -205585,25 +205585,81 @@
                               "name": "Columns",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "justifyContent": "center",
                               "children": [
                                 {
-                                  "id": "w4yea2",
+                                  "id": "zsvUd",
                                   "type": "ref",
                                   "ref": "v95xB",
-                                  "name": "Box",
-                                  "width": 1140,
+                                  "name": "Item",
+                                  "width": "fill_container",
                                   "height": "fill_container",
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "right": 1,
-                                    "left": 1
-                                  },
                                   "descendants": {
                                     "e1lQB/vUvjs": {
                                       "fill": "$sel",
                                       "stroke": "#7B87F74D",
                                       "strokeWidth": 1
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QEdqU",
+                              "name": "Keys",
+                              "width": "fill_container",
+                              "height": 30,
+                              "fill": "$bg-2",
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "top": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                14
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "ViXuv",
+                                  "type": "ref",
+                                  "ref": "r1lx0",
+                                  "name": "Hint Run",
+                                  "descendants": {
+                                    "fjIpR/luKkY": {
+                                      "content": "J"
+                                    },
+                                    "H0UIIx/luKkY": {
+                                      "content": "K"
+                                    },
+                                    "rNLpb": {
+                                      "content": "Run"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "LxpRj",
+                                  "type": "ref",
+                                  "ref": "dxCfd",
+                                  "name": "Hint Open log",
+                                  "descendants": {
+                                    "IJcUr": {
+                                      "content": "Open run"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "C18rI8",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Back",
+                                  "descendants": {
+                                    "m5wIG9/luKkY": {
+                                      "content": "Esc"
+                                    },
+                                    "IOvfA": {
+                                      "content": "Back to the panel"
                                     }
                                   }
                                 }
@@ -206760,7 +206816,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "W3a with the keys of the new model. Enter opens the workflow (W28), not a run, so every row opens the same way, passing or broken. On a broken row one more key goes straight to its latest failure, F, which replaces W3b's “Other runs →”: the runs no longer unfold under the row, they live in the workflow. The same jump is the command Open latest failure.",
+                      "content": "W3a with the keys of the navigation model. ↵ opens the workflow in the panel beside the list (W30, W32), not a run, so every row opens the same way, passing or broken; ↵ again on the open row, or ⇧↵ straight from the list, opens it full screen (W31). On a broken row F goes straight to its latest failure and replaces W3b's “Other runs →”: the runs no longer unfold under the row, they live in the workflow. The same jump is the command Open latest failure.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -206985,8 +207041,31 @@
                                       "content": "↵"
                                     },
                                     "IOvfA": {
-                                      "name": "Open workflow",
-                                      "content": "Open workflow"
+                                      "name": "Open",
+                                      "content": "Open"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "w404Pz",
+                                  "type": "ref",
+                                  "ref": "XSeiZ",
+                                  "name": "Hint Full screen",
+                                  "descendants": {
+                                    "HWvRC": {
+                                      "name": "Kbd ⇧↵"
+                                    },
+                                    "HWvRC/q1SXG": {
+                                      "name": "Key arrow-big-up",
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "HWvRC/lhKUf": {
+                                      "name": "Key corner-down-left",
+                                      "icon": "corner-down-left"
+                                    },
+                                    "z2kG0": {
+                                      "name": "Full screen",
+                                      "content": "Full screen"
                                     }
                                   }
                                 },
