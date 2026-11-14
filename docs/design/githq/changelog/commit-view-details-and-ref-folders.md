@@ -129,3 +129,64 @@ branch list rows and the details' facts; a new screen shows it at actual size an
 
 Not changed: `Item / Linked` (`MGnYu`, the issue's linked pull request card) keeps its loose number; it is not the
 commit view's mark.
+
+## Round 4 · agent brief
+
+Asked (`.context/commit-view-brief-4.md`): the owner's feedback on CH59 (1 px more padding in the chip; half the gap
+between a graph row's headline and its chip), and the settled choices applied everywhere: the details panel is CH55,
+the variants resolved, folders in every branch and tag list, every selected row checked. Changed: two components
+retuned, `Commit details` rebuilt on the facts and the message, the `Variants` frame gone, folders in every list.
+
+- [ ] Commit / PR chip (`O4txr`): height 16 → 18, padding [0,4] → [1,5]. Reaches `· hover` (`aOd0f`), the graph rows,
+  the ref list rows and the facts.
+- [ ] Ref list row (`Bcpzl`): height fit → 26 fixed, padding [5,10] → [0,10], so the 18 px chip doesn't grow it;
+  `Ref list row · in a folder` (`lF1Ct`) padding [5,10,5,28] → [0,10,0,28]. Rows stay 26 px.
+- [ ] Commit row (`EMjBX`): new `Headline` frame (`eAF8P`, gap 4, height 18) in `Surface` holding `Message cell`
+  (`QL19z`) and `PR` (`RHE4I`); `PR`'s padding-left 4 → 0. Headline → chip 12 → 4 px; chip → CI mark stays 8 px; the
+  surface stays 28 px.
+- [x] Moving `Message cell` and `PR` dropped the instance overrides that pointed into them (853 keys in 229 instances:
+  headlines, refs, chips, hidden PR marks, the screens' truncated headlines); restored from `HEAD`. Nothing to build.
+- [ ] Commit details / Facts (`NIaPG`): new hidden `Failing check 2` (`HnGZA`) under the failing check, for a commit
+  with two; new hidden `Ref branch` (`NobMY`, a `Commit / Ref · branch`) first in the refs; new hidden `Refs none`
+  (`gM8aD`, 12.5 px `$fg-dim`) for a commit no ref points at.
+- [ ] Commit details (`CKaTw`): rebuilt as CH55. The scroll (padding [16,20,24,20], gap 20) holds the `Notice` (kept,
+  hidden), `Facts` (`AGnlT`, an instance of `NIaPG`) and `Message` (`ZDGIn`, an instance of `c1E2q`). Removed: the
+  headline, body, meta, parents, refs, the `Item / Linked` pull request card, the CI line and the `Keys` footer. The
+  toolbar hides the Arrangement button as CH55 does. Its commit stays `e81c4a2` (`fix: booking time uses the studio's
+  timezone`, Marta Laine, #1228 open, 2 failing of 9 checks named, 7 passed, parent `4be91d0`, `fix/booking-tz`), the
+  message one paragraph and `Refs #1187`. Reaches `Commit details / bottom` (`sVyY2`) and CH18, CH42, CH48, CH27.
+- [ ] Instances of `Commit details` with their own commit, overrides moved to the facts and message: CH16 (`SYbeQ`:
+  release 3.9.1, Sam Becker, no pull request, 9 passed, parent sha only, tag `v3.9.1`, the notice), CH20 (`Bwf4W`:
+  the merge, #1226 merged, two parents, `main`, 12 passed), CH28 (`I5SpAE`: `4be91d0`, 9 passed, parent `0a7e3c1`,
+  refs "None"), CH41 (`QcGmF`: the notice, refs "None any more"). CH18, CH27, CH42, CH48 take the default.
+- [ ] App · Commits (`DtWFt`): deleted `Variants · How a commit's details read` (`WCpKZ`) with `CH52 · Variant C · Facts
+  fixed, the message in tabs` and `CH56 · Variant B · C, facts fixed`. New `Row of screens · The panel` (`arqcr`) after
+  CH20's row, holding the three chosen panels, renamed: `CH55 · One scroll: the facts, then the message` (`BMfTt`),
+  `CH57 · Checks passed, no pull request` (`Yuudr`), `CH58 · Pull request and checks not known yet` (`egAi8`), slots
+  and captions the same; "Variant A" and "Recommended" dropped from the captions. No amber left in the frame.
+- [ ] Components · Commits › Parts (`C2tGlJ`): new `Ref list row · selected, in a folder` (`PhUDv`), an instance of
+  `lF1Ct` with `$sel` and the icon `$fg-2`, after `lF1Ct`.
+- [ ] Ref list / fitloop/webapp (`JCWhs`): the seven prefixed branch rows → folded folders `feat` 1, `fix` 1,
+  `release` 2, `spike` 1, `renovate` 1, `docs` 1, then `gh-pages`. Reaches CH3, CH15, CH16, CH18, CH20, CH23, CH24,
+  CH26–CH29, CH31–CH36, CH40, CH41, CH47, CD4, CD6. CH32's overrides on the removed rows deleted.
+- [ ] Ref list / nuxt/nuxt (`H98y7`): the eleven prefixed branch rows → folded folders `renovate` 22, `fix` 12, `feat`
+  18, `docs` 6, `perf` 3, `refactor` 4, then `nitro-v3` and `3.x` (67 in all); the "53 more branches" note and its
+  frame removed. Reaches CH10, CH11, CH44, CH45.
+- [ ] CH6, CH46, CH42 lists (`xRuvw`, `P9lmm`, `K4zv6`): the same folded folders as `JCWhs`.
+- [ ] CH25 (`uIg6J`): "book" unfolds `fix` (`rb4N7`, open) around the match; the match is a `Ref list row · selected, in
+  a folder` (`lbdta`) with its full name, cut to `fix/booking…` where the row runs out. Caption says so.
+- [ ] CH17 (`bDTtx`): a `testing` folder (`hrB5l`, open, 4) unfolded around four matches with full names
+  (`testing/v3.19.3-rc.2`, `-rc.1`, `testing/v3.19.0-rc.1`, `testing/v3.18.0-rc.1`), before the loose tags; the five
+  oldest loose tags dropped to keep the column's height. Caption says how it folds back.
+- [ ] Desktop · Commits CD2, CD3, CD5, CD7 (`zsRfC`, `en41z`, `jyMiC`, `Fd4dV`): `feat` (2) and `fix` (1) unfolded with
+  their branches as rows in a folder and their worktrees under them (wrapper padding 18 → 36); `release`, `spike`,
+  `renovate` folded. CD2's caption says so.
+- [ ] CH59 (`Q8tHB`): the 2× chips height 32 → 36, padding [0,8] → [2,10]; the 2× list rows height 52, padding
+  [0,20,0,56]; the 2× graph row's headline and chip in a `Headline` frame (`N4uNh`, gap 8), `PR` padding 0. Notes and
+  caption give 18 px, 1/5 px padding, 4 px to the headline, 8 px to the CI mark.
+- [ ] Captions: CH18 (the panel is CH55's, the Checks group says red), CH53 (matched rows show full names while
+  filtering).
+
+Checked, nothing to change: the 17 selected rows all have `$sel`, the accent outline and the ring; no loose pull request
+number, old panel or flat prefixed name is left in App · Commits or Desktop · Commits; App · Repository shows neither
+the graph nor the details.
