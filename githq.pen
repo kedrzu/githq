@@ -301200,7 +301200,7 @@
                               "type": "frame",
                               "id": "M4y1z",
                               "name": "Toggles",
-                              "gap": 1,
+                              "gap": 4,
                               "alignItems": "center",
                               "children": [
                                 {
