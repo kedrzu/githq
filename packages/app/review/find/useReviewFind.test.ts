@@ -51,6 +51,17 @@ test('a step goes to the next match and wraps; the match stepped to stays curren
     view.stop();
 });
 
+test('the first step forward after a new query goes to the match it landed on, not past it', async () => {
+    const view = open();
+    view.query.value = 'needle';
+    await view.searched();
+
+    expect(view.find.position).toBe(0);
+    expect(view.find.next()).toBe(rowWithAfter('split', 20));
+    expect(view.find.next()).toBe(rowWithAfter('split', 21));
+    view.stop();
+});
+
 test('a new query lands from the cursor; closing find takes the marks away at once', async () => {
     const view = open();
     view.cursorKey.value = rowWithAfter('split', 21);

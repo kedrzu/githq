@@ -120,6 +120,8 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
     let querySearching = false;
     /** A step asked for before the query's matches landed, taken as they do. */
     let waitingStep: 1 | -1 | null = null;
+    /** A new query landed on the first match from the cursor, which nothing has gone to yet: a step forward goes there. */
+    let landedAhead = false;
 
     // Typing waits for a pause; the rows, rebuilt every few frames while diffs are computed, don't push the search back.
     watch([searched, findOptions], () => schedule(true), { immediate: true });
@@ -201,6 +203,7 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
                 : { kind: 'cursor', cursorKey: cursorKey.value };
         result.value = found;
         setCurrent(findCurrentMatch({ ...found, from }));
+        landedAhead ||= from.kind === 'cursor';
     }
 
     function next() {
@@ -234,31 +237,29 @@ export function useReviewFind(options: UseReviewFindOptions): ReviewFindViewMode
             return null;
         }
 
+        // Landed and not gone to, the current match is where a step forward goes, back the one before it.
+        const ahead = landedAhead;
+        landedAhead = false;
         const at = current.value?.position;
         const position =
             at === undefined
                 ? (findCurrentMatch({ ...found, from: { kind: 'cursor', cursorKey: cursorKey.value } }) ?? 0) +
                   (by > 0 ? 0 : -1)
-                : at + by;
+                : at + (ahead && by > 0 ? 0 : by);
         const wrapped = (position + total) % total;
         setCurrent(wrapped);
         return getRowKey(found, wrapped);
     }
 
-    /** A new query landed on the first match from the cursor: that is where a step forward goes, back the one before it. */
+    /** Takes the step asked for while the query was still being searched, now that its matches landed. */
     function takeWaitingStep() {
         const by = waitingStep;
         waitingStep = null;
-        const found = result.value;
-        const at = current.value?.position;
-        if (by === null || !found || at === undefined) {
+        if (by === null || !result.value) {
             return;
         }
 
-        const total = found.matches.counted.length;
-        const position = by > 0 ? at : (at - 1 + total) % total;
-        setCurrent(position);
-        const rowKey = getRowKey(found, position);
+        const rowKey = step(by);
         if (rowKey !== null) {
             options.onGo(rowKey);
         }
