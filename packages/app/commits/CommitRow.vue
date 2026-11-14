@@ -1,4 +1,4 @@
-<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number, a link to it) and its CI mark; the author (avatar and name) and the age at the right edge. A failure is the red dot and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
+<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number, a link to it) and its CI mark; the author (avatar and name) and the age, each right after the one before — nothing pinned to the right edge. A failure is the red dot and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
 <script lang="ts">
 /** A row's height: the graph's lines span it, and the list places and sizes rows by it. */
 export const COMMIT_ROW_HEIGHT = 32;
@@ -104,7 +104,6 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
         @open-pull-request="emit('openPullRequest', $event)"
       />
     </div>
-    <span :class="css.commitRow_spacer" />
     <span :class="css.commitRow_author">
       <Avatar
         :name="commit.author.login ?? authorName"
@@ -154,10 +153,6 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   color: $color-fg-2;
 }
 
-.commitRow_spacer {
-  flex: 1 0 0;
-}
-
 .commitRow_author {
   display: inline-flex;
   flex: none;
@@ -180,7 +175,6 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   width: $commit-row-age-width;
   font-size: $font-size-xs;
   color: $color-fg-dim;
-  text-align: right;
   white-space: nowrap;
 }
 

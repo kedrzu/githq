@@ -1,3 +1,4 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
@@ -73,6 +74,18 @@ test('CH18: what it says of a commit: author, when, sha, parent, refs, pull requ
     await expect
         .element(panel.getByRole('link', { name: 'Open on GitHub' }))
         .toHaveAttribute('href', 'https://github.com/acme/web/commit/a2');
+});
+
+test("a pull request's number follows its title 8px after it, not pushed to the panel's edge", async () => {
+    const { panel } = await mount(sampleWebappHistory(), 'a2', { width: 600 });
+
+    await expect.element(panel.getByRole('button', { name: /Pull request 1228/ })).toBeVisible();
+    const button = panel.getByRole('button', { name: /Pull request 1228/ }).element();
+    const number = assertValue(button.lastElementChild);
+    const title = assertValue(number.previousElementSibling);
+    expect(number.textContent).toBe('#1228');
+    expect(number.getBoundingClientRect().left - title.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(number.getBoundingClientRect().right).toBeLessThan(button.getBoundingClientRect().right - 100);
 });
 
 test('a long subject GitHub cuts in the headline reads whole once read, nothing of it repeated in the body', async () => {

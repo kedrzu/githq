@@ -1,4 +1,5 @@
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
+import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -1649,6 +1650,35 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     await userEvent.keyboard('b');
     await userEvent.keyboard('main');
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('main');
+});
+
+test("a row's author and age follow its headline and marks 8px apart; a long headline gives way first, the age staying whole", async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const states = new Map<string, CommitState>([['c1', { pullRequest: samplePullRequest(1203), ci: 'FAILURE' }]]);
+    const longHeadline = `fix: ${'a headline that goes on and on '.repeat(12)}`;
+    await mount({
+        commits: [{ ...sampleCommit('c2', 20, ['c1']), headline: longHeadline }, sampleCommit('c1', 10)],
+        states,
+    });
+    const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
+    await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
+
+    const short = row('Commit c1').element();
+    const message = assertValue(short.querySelector('time')?.previousElementSibling?.previousElementSibling);
+    const author = assertValue(short.querySelector('time')?.previousElementSibling);
+    const age = assertValue(short.querySelector('time'));
+    expect(message.textContent).toContain('#1203');
+    expect(author.getBoundingClientRect().left - message.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(age.getBoundingClientRect().left - author.getBoundingClientRect().right).toBeCloseTo(8, 0);
+    expect(age.getBoundingClientRect().right).toBeLessThan(short.getBoundingClientRect().right - 100);
+
+    const long = row('a headline that goes').element();
+    const clipped = page.getByRole('listitem').getByText(longHeadline, { exact: true }).element();
+    expect(clipped.scrollWidth).toBeGreaterThan(clipped.clientWidth);
+    const longAge = assertValue(long.querySelector('time'));
+    expect(longAge.scrollWidth).toBeLessThanOrEqual(longAge.clientWidth);
+    expect(longAge.getBoundingClientRect().right).toBeLessThanOrEqual(long.getBoundingClientRect().right);
 });
 
 /** Esc: the details close, and the pane is the graph's again. */
