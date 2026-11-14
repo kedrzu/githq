@@ -202367,7 +202367,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The Group control at the end of the runs' toolbar opens the same grouping menu as the lists (J2): None (the default), Status, Ref, Event, Day, Actor. Status chosen: In progress, Failed, Succeeded, Cancelled, each with its count over the runs read so far. Groups fold like any list's; here Succeeded is folded, so the one cancelled run is in view. The choice is remembered per workflow.",
+                      "content": "The Group control at the end of the runs' toolbar opens the same grouping menu as the lists (J2): None (the default), Status, Ref, Event, Day, Actor. Status chosen: In progress, Failed, Succeeded, Cancelled, each with its count over the runs read so far. Groups fold like any list's; here Succeeded is folded, so the one cancelled run is in view. Grouping is one setting for every workflow, saved with the settings, so it follows the user between computers when saving settings to GitHub is on. The filters (Ref, Event, Status, Actor) are different: they clear when another workflow opens.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -204441,7 +204441,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Deploy in the panel narrower than 1300 px, on its Details tab: the two-column layout's right column (W30), full width. Tab or a click on Runs goes back to the runs; the tab chosen stays for the next workflow opened in this panel.",
+                      "content": "Deploy in the panel narrower than 1300 px, on its Details tab: the two-column layout's right column (W30), full width. Tab or a click on Runs goes back to the runs. The tab chosen carries over to the next workflow opened in the narrow item until the app reloads; then it starts on Runs again, as the arrangement isn't remembered either.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -205476,7 +205476,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The details keep their width on the right and the runs take the rest; full screen is always two columns, whatever the width. Here the item has the keyboard: the cursor is on #4821 and ↵ opens that run (W4a). Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
+                      "content": "The same workflow item full screen: ↵ on the row already open in the panel, ⇧↵ or the toolbar's arrangement button from the panel, or ⇧↵ on the Workflows list to skip the panel. The sidebar stays and the list goes. Unlike an issue or a pull request there is no centred box: a workflow is a list of runs and a details column, not text to read, so it fills the page edge to edge. The details keep their width on the right and the runs take the rest; full screen is always two columns, whatever the width. Its content is a list of its own, so the runs have the keyboard: J/K walk them (the cursor is on #4821) and ↵ opens that run (W4a). ⇧J/⇧K step to the next or previous workflow of the list it was opened from, which is why the header's stepper shows ⇧K ⇧J. F opens the latest failed run, whatever its ref. Esc goes back to the panel it was expanded from, or to the list when it was opened straight full screen.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -205574,6 +205574,34 @@
                                 "b2amx": {
                                   "content": "Deploy"
                                 },
+                                "FCNjO": {
+                                  "id": "KcBtL",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧K",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                "K0EK1S": {
+                                  "id": "B9fqA",
+                                  "type": "ref",
+                                  "ref": "L44zw",
+                                  "name": "Kbd ⇧J",
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "arrow-big-up"
+                                    },
+                                    "Q8v43": {
+                                      "content": "J"
+                                    }
+                                  }
+                                },
                                 "VYOFz": {
                                   "content": "1 / 8"
                                 }
@@ -205639,6 +205667,45 @@
                                   }
                                 },
                                 {
+                                  "id": "XcJJC",
+                                  "type": "ref",
+                                  "ref": "r1lx0",
+                                  "name": "Hint Workflow",
+                                  "descendants": {
+                                    "fjIpR": {
+                                      "id": "pmhmq",
+                                      "type": "ref",
+                                      "ref": "L44zw",
+                                      "name": "Kbd ⇧J",
+                                      "descendants": {
+                                        "pINSd": {
+                                          "icon": "arrow-big-up"
+                                        },
+                                        "Q8v43": {
+                                          "content": "J"
+                                        }
+                                      }
+                                    },
+                                    "H0UIIx": {
+                                      "id": "zMxFQ",
+                                      "type": "ref",
+                                      "ref": "L44zw",
+                                      "name": "Kbd ⇧K",
+                                      "descendants": {
+                                        "pINSd": {
+                                          "icon": "arrow-big-up"
+                                        },
+                                        "Q8v43": {
+                                          "content": "K"
+                                        }
+                                      }
+                                    },
+                                    "rNLpb": {
+                                      "content": "Workflow"
+                                    }
+                                  }
+                                },
+                                {
                                   "id": "LxpRj",
                                   "type": "ref",
                                   "ref": "dxCfd",
@@ -205646,6 +205713,24 @@
                                   "descendants": {
                                     "IJcUr": {
                                       "content": "Open run"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "er0ja",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Latest failure",
+                                  "descendants": {
+                                    "m5wIG9": {
+                                      "name": "Kbd F"
+                                    },
+                                    "m5wIG9/luKkY": {
+                                      "content": "F"
+                                    },
+                                    "IOvfA": {
+                                      "name": "Latest failure",
+                                      "content": "Latest failure"
                                     }
                                   }
                                 },
@@ -205994,7 +206079,7 @@
                                               "fill": "$fg-2",
                                               "textGrowth": "fixed-width",
                                               "width": "fill_container",
-                                              "content": "All 7 jobs passed. Deploy shipped 9b07d1e to production; the next run on main replaces it.",
+                                              "content": "All 7 jobs passed.",
                                               "fontFamily": "$font",
                                               "fontSize": 13,
                                               "fontWeight": "normal"
@@ -206594,29 +206679,6 @@
                                                   }
                                                 },
                                                 {
-                                                  "id": "K6AoEt",
-                                                  "type": "ref",
-                                                  "ref": "csWLC",
-                                                  "name": "Property Environment",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "HQuNe": {
-                                                      "content": "Environment"
-                                                    },
-                                                    "DTq5k": {
-                                                      "icon": "server",
-                                                      "fill": "$fg-3"
-                                                    },
-                                                    "PtMSM": {
-                                                      "content": "production",
-                                                      "fontFamily": "$font"
-                                                    },
-                                                    "r9JYaP": {
-                                                      "enabled": false
-                                                    }
-                                                  }
-                                                },
-                                                {
                                                   "id": "kmYlJ",
                                                   "type": "ref",
                                                   "ref": "csWLC",
@@ -206632,29 +206694,6 @@
                                                     },
                                                     "PtMSM": {
                                                       "content": "1 of 1",
-                                                      "fontFamily": "$font"
-                                                    },
-                                                    "r9JYaP": {
-                                                      "enabled": false
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "id": "T1tGqo",
-                                                  "type": "ref",
-                                                  "ref": "csWLC",
-                                                  "name": "Property Artifacts",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "HQuNe": {
-                                                      "content": "Artifacts"
-                                                    },
-                                                    "DTq5k": {
-                                                      "icon": "package",
-                                                      "fill": "$fg-3"
-                                                    },
-                                                    "PtMSM": {
-                                                      "content": "webapp-dist · 12.4 MB",
                                                       "fontFamily": "$font"
                                                     },
                                                     "r9JYaP": {
@@ -206816,7 +206855,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "W3a with the keys of the navigation model. ↵ opens the workflow in the panel beside the list (W30, W32), not a run, so every row opens the same way, passing or broken; ↵ again on the open row, or ⇧↵ straight from the list, opens it full screen (W31). On a broken row F goes straight to its latest failure and replaces W3b's “Other runs →”: the runs no longer unfold under the row, they live in the workflow. The same jump is the command Open latest failure.",
+                      "content": "W3a with the keys of the navigation model. ↵ opens the workflow in the panel beside the list (W30, W32), not a run, so every row opens the same way, passing or broken; ↵ again on the open row, or ⇧↵ straight from the list, opens it full screen (W31). F opens the latest failed run of the workflow under the cursor, on whatever ref it failed, and replaces W3b's “Other runs →”: the runs no longer unfold under the row, they live in the workflow. On a workflow without a failure F does nothing and its hint is dimmed. The same jump is the command Open latest failure.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,

@@ -359,3 +359,27 @@ the workflow, `Esc` again to the list.
 - Runs as the list, grouped by workflow: a workflow then has no place of its own for its triggers and dispatch.
 - A feed of runs across repositories: the owner expects it to be noisy; the Broken workflows page (D6) stays the
   cross-repository view.
+
+## D16
+
+**How a workflow's item remembers what the user chose.** (2026-11-14, owner on the agent's recommendations)
+
+- **The tab, Runs or Details, carries over to the next workflow opened in the narrow item, until the app reloads.** Then
+  it starts on Runs again, as the arrangement is not remembered either ([githq D9](../githq/DECISIONS.md#d9)).
+- **Grouping the runs is one setting for every workflow, kept in the settings file, so it follows the user between
+  computers when saving settings to GitHub is on** ([settings-sync D13](../settings-sync/DECISIONS.md#d13)): an
+  optional root field, `"workflowRuns": { "groupBy": "day" }`, absent meaning None.
+- **The runs' filters (Ref, Event, Status, Actor) are cleared when another workflow opens.** A filter is a question about
+  one workflow; carried over unseen, it reads as "no runs".
+- **`F` opens the latest failed run of the workflow under the cursor** (list, panel, full screen; also "Open latest
+  failure" in the command menu), whatever ref it failed on; without a failure it does nothing and its hint is dimmed.
+  On the Broken workflows page `↵` still opens the latest failure directly, since that page asks what is broken, and
+  `Esc` from the run returns there.
+- **A passing run's summary shows no artifacts and no environment in the first version:** each needs reads githq does
+  not make today, and downloading an artifact from the browser is untested.
+
+**Rejected.**
+
+- Grouping per workflow, as lists keep their options per list: every workflow would start at None.
+- Keeping the grouping only in this browser (`ListViewOptionsStore`): the owner wants it synced.
+- `⇧F` to keep `F` for a filter: the app's filters are in toolbars, not on letters.

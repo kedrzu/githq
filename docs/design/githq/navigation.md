@@ -35,6 +35,8 @@ An item is anything opened from a list: an issue, a pull request, a workflow.
 - **In the panel the list keeps the keyboard:** `j`/`k` move the list and the panel follows the selection.
 - **Full screen, `j`/`k` step to the next or previous item** of the list it was opened from, without going back to
   it.
+- **An item whose content is a list of its own** (a workflow's runs) gives `j`/`k` to that list full screen, and steps
+  to the next or previous item with `⇧J`/`⇧K` instead. Its stepper in the header shows `⇧K` `⇧J`.
 - **A page whose content has rows of its own** (a run's log: lines, steps, jobs) gives `j`/`k` to those rows; it has no
   list of siblings to step through.
 

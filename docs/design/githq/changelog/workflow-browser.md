@@ -93,3 +93,29 @@ describe no Enter or Esc against navigation.md (W37's Esc steps back inside the 
 
 Open after round 3: W31 shows both the item's `K` `J` stepper (next workflow) and `J K` Run in the key bar. In the app,
 `j`/`k` step to the next item full screen (`item/ItemView.vue`, `item.next`), so W31's runs need a decision.
+
+## Round 4 · agent brief, keys full screen and what the item remembers
+
+Asked (`.context/workflow-browser-brief-4.md`): W31's keys after navigation.md (`j`/`k` walk the runs, `⇧J`/`⇧K` step
+to the next workflow), W34 without what D16 leaves out, captions of W35, W42 and W43 after D16, `F` wherever the panel
+hints the latest failure.
+Changed: W31, W34 and three captions; no component touched. The panel's screens hint the latest failure nowhere except
+the Workflows list headers (W35, W47, W48), which already show `F`.
+
+- [ ] W31 toolbar (`Hfxsk`): stepper keys `K` `J` (`FCNjO`, `K0EK1S`, `Kbd`) → `⇧K` (`KcBtL`) `⇧J` (`B9fqA`), both
+  `Kbd / icon + key` with `arrow-big-up`, replaced inside the instance; `Item / Toolbar` (`I6JTP`) unchanged.
+- [ ] W31 key bar (`QEdqU`): new `⇧J ⇧K` Workflow (`XcJJC`, `Hint / two keys` with `Kbd / icon + key` keys) after
+  `J K` Run, new `F` Latest failure (`er0ja`, `Hint`) after `↵` Open run; order now Run, Workflow, Open run, Latest
+  failure, Back to the panel.
+- [ ] W31 caption (`F9SxGw`): the runs have the keyboard, `J`/`K` walk them, `⇧J`/`⇧K` step to the next workflow (why
+  the stepper shows `⇧K` `⇧J`), `F` opens the latest failed run on any ref.
+- [ ] W34 About this run (`l4D9bX`): Environment (`K6AoEt`) and Artifacts (`T1tGqo`) rows deleted; Started by, Commit,
+  Attempt remain.
+- [ ] W34 heading detail (`IHomv`): "All 7 jobs passed. Deploy shipped 9b07d1e to production; the next run on main
+  replaces it." → "All 7 jobs passed."
+- [ ] W42 caption (`ozJLW`): the tab carries over to the next workflow in the narrow item until the app reloads, then
+  starts on Runs.
+- [ ] W43 caption (`iI0bb`): "remembered per workflow" → one setting for every workflow, saved with the settings and
+  synced when saving to GitHub is on; filters clear when another workflow opens.
+- [ ] W35 caption (`MpRSm`): `F` opens the latest failed run of the workflow under the cursor on whatever ref, does
+  nothing with its hint dimmed on a workflow without a failure.
