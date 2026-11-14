@@ -1,4 +1,4 @@
-<!-- A repository's branches and tags, filling what holds them, left of its commit graph (git-client D15, CH3, CH10, CH15–CH17, CH53): the default branch first, then branches and tags, their names nested by `/` into folders at every level (`buildRefTree`), folded until opened, which folders are unfolded kept per repository on this device (`CommitRefFolders`). Each level draws folders first, then refs, newest first, its first 20 entries and a "Show N more" row of its own for the next 20, back to 20 when the filter changes. Typing in its filter narrows both groups by name, every folder holding a match unfolded and counting its matches, the matches under their full names and the best one selected, wherever it sits; ↑/↓ move through folders, "Show more" rows and refs; `Enter` or a click folds or unfolds a folder, shows more or chooses a ref; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip, the pull request a real link, which a click on takes alone and Tab passes; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key. It is ARIA's combobox with a grid popup, for an option can't hold a link: the keys stay in the filter and the selection is a row's name cell — a folder's with `aria-expanded` — the whole row looking selected -->
+<!-- A repository's branches and tags, filling what holds them, left of its commit graph (git-client D15, CH3, CH10, CH15–CH17, CH53): the default branch first, then branches and tags, their names nested by `/` into folders at every level (`buildRefTree`), folded until opened, which folders are unfolded kept per repository on this device (`CommitRefFolders`). Each level draws folders first, then refs, in its group's order — newest first or by name, chosen from the group's heading and kept in the synced settings (`TrackingStore.refSort`, CH60), filtering keeping it — its first 20 entries and a "Show N more" row of its own for the next 20, back to 20 when the filter changes. Typing in its filter narrows both groups by name, every folder holding a match unfolded and counting its matches, the matches under their full names and the best one selected, wherever it sits; ↑/↓ move through folders, "Show more" rows and refs; `Enter` or a click folds or unfolds a folder, shows more or chooses a ref; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip, the pull request a real link, which a click on takes alone and Tab passes; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key. It is ARIA's combobox with a grid popup, for an option can't hold a link: the keys stay in the filter and the selection is a row's name cell — a folder's with `aria-expanded` — the whole row looking selected -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -6,10 +6,14 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ChevronDown, ChevronRight, ChevronsDown, Folder, FolderOpen, GitBranch, Tag } from 'lucide-vue-next';
 import { computed, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
+import Menu from '@/components/Menu.vue';
+import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
+import MenuRadioItem from '@/components/MenuRadioItem.vue';
 import SearchField from '@/components/SearchField.vue';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
 import { buildRefTree, flattenRefTree } from './buildRefTree.js';
@@ -55,10 +59,11 @@ type RefKind = 'branch' | 'default' | 'tag';
 
 interface RefGroup {
   readonly key: string;
-  /** `null`: the default branch's own group, above the headings. */
+  /** `null`: the default branch's own group, above the headings, with no heading and no order of its own. */
   readonly title: string | null;
   readonly count: number;
-  readonly newestFirst: boolean;
+  /** The ref tree's group it draws, whose order its heading picks. */
+  readonly group: RefTreeGroup | null;
   readonly rows: readonly ListRow[];
   /** A quiet line under the rows: that none match. */
   readonly note: string | null;
@@ -73,13 +78,12 @@ interface BestMatch {
 
 /** How many entries of each level are drawn at first, and how many more each "Show more" draws. */
 const SHOWN_PER_LEVEL = 20;
-/** From how many matches the order is worth saying (CH15, CH17). */
-const NEWEST_FIRST_MATCHES = 3;
-/** The order of every level; a later change lets the user pick it. */
-const ORDER: RefTreeOrder = 'newest';
+/** The orders a group's heading offers, in the menu's order. */
+const ORDERS: readonly RefTreeOrder[] = ['newest', 'name'];
 
 const store = useService(CommitGraphStore);
 const folders = useService(CommitRefFolders);
+const tracking = useService(TrackingStore);
 const t = useTranslate();
 const gridId = useId();
 const nameIdPrefix = useId();
@@ -132,7 +136,7 @@ const bestMatch = computed((): BestMatch | null => {
     const rows = flattenRefTree(tree, {
       isUnfolded: () => true,
       shownAt: () => Infinity,
-      order: ORDER,
+      order: tracking.refSort[group],
       matches: matching,
     });
     // The entries drawn so far at each level on the way to the row, the root's first.
@@ -166,7 +170,7 @@ const groups = computed((): RefGroup[] => {
       key: 'default',
       title: null,
       count: 1,
-      newestFirst: false,
+      group: null,
       rows: [
         { kind: 'ref', key: getRefKey('branches', onTop), refKind: 'default', ref: onTop, label: onTop.name, depth: 0 },
       ],
@@ -244,7 +248,8 @@ defineExpose({
 });
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.isComposing || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+  // A key a control took — a heading's sort button opening its menu by Enter, Space or ↓ — is not the list's.
+  if (event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
     return;
   }
 
@@ -335,7 +340,7 @@ function toGroup(group: RefTreeGroup, tree: RefTreeFolder, count: number): RefGr
   const rows = flattenRefTree(tree, {
     isUnfolded: path => folders.isUnfolded(props.nameWithOwner, path),
     shownAt: getShownAt,
-    order: ORDER,
+    order: tracking.refSort[group],
     matches: matches.value,
   }).map(row => toListRow(group, row));
   const noMatch =
@@ -346,7 +351,7 @@ function toGroup(group: RefTreeGroup, tree: RefTreeFolder, count: number): RefGr
     key: group,
     title: group === 'tags' ? t(l.tags) : t(l.branches),
     count,
-    newestFirst: !filtering.value || count >= NEWEST_FIRST_MATCHES,
+    group,
     rows,
     note: filtering.value && count === 0 ? noMatch : null,
   };
@@ -389,6 +394,30 @@ function countMatches(refs: readonly CommitRef[]) {
 /** Every folder path of the tree, at every level: what pruning the kept folders checks them against. */
 function getFolderPaths(tree: RefTreeFolder): string[] {
   return tree.folders.flatMap(folder => [folder.path, ...getFolderPaths(folder)]);
+}
+
+function getOrderLabel(order: RefTreeOrder) {
+  switch (order) {
+    case 'newest':
+      return t(l.newestFirst);
+    case 'name':
+      return t(l.byName);
+    default:
+      return assertNever(order);
+  }
+}
+
+/** The sort button's name: which group it sorts, then the order its text says. */
+function getSortLabel(group: RefTreeGroup) {
+  const order = getOrderLabel(tracking.refSort[group]);
+  return group === 'tags' ? t(l.sortTags, { order }) : t(l.sortBranches, { order });
+}
+
+function setOrder(group: RefTreeGroup, order: string) {
+  const chosen = ORDERS.find(known => known === order);
+  if (chosen) {
+    tracking.setRefSort(group, chosen);
+  }
 }
 
 function getNameId(row: ListRow) {
@@ -439,11 +468,36 @@ function getNameId(row: ListRow) {
           >
             <span>{{ group.title }}</span>
             <span :class="css.commitRefList_count">{{ group.count }}</span>
-            <span
-              v-if="group.newestFirst"
-              :class="css.commitRefList_order"
-              >{{ t(l.newestFirst) }}</span
+            <Menu
+              v-if="group.group"
+              align="end"
             >
+              <template #trigger>
+                <button
+                  type="button"
+                  :class="css.commitRefList_sort"
+                  :aria-label="getSortLabel(group.group)"
+                >
+                  {{ getOrderLabel(tracking.refSort[group.group]) }}
+                  <ChevronDown
+                    :class="css.commitRefList_sortChevron"
+                    aria-hidden="true"
+                  />
+                </button>
+              </template>
+              <MenuRadioGroup
+                :model-value="tracking.refSort[group.group]"
+                @update:model-value="setOrder(group.group, $event)"
+              >
+                <MenuRadioItem
+                  v-for="order in ORDERS"
+                  :key="order"
+                  :value="order"
+                >
+                  {{ getOrderLabel(order) }}
+                </MenuRadioItem>
+              </MenuRadioGroup>
+            </Menu>
           </div>
         </div>
         <!-- `mousedown.prevent`: a click leaves the focus where it was, so the graph's keys go on working after it. -->
@@ -597,8 +651,35 @@ function getNameId(row: ListRow) {
   color: $color-fg-dim;
 }
 
-.commitRefList_order {
+.commitRefList_sort {
+  display: inline-flex;
+  gap: $spacing-2;
+  align-items: center;
+  // Lower than the heading's line, so the row is no taller for it (CH60).
+  padding: 0 $spacing-4 0 $spacing-6;
   margin-left: auto;
+  font: inherit;
+  font-size: $font-size-2xs;
+  line-height: $line-height-tight;
+  color: $color-fg-2;
+  cursor: pointer;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+
+  &:hover,
+  &[data-state='open'] {
+    color: $color-fg;
+    border-color: $color-border-2;
+  }
+
+  @include focus-ring;
+}
+
+.commitRefList_sortChevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
 }
 
 .commitRefList_row {

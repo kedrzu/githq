@@ -13,7 +13,13 @@ branches:
 tags:
   en: Tags
 newestFirst:
-  en: newest first
+  en: Newest first
+byName:
+  en: By name
+sortBranches:
+  en: 'Sort branches: {order}'
+sortTags:
+  en: 'Sort tags: {order}'
 showMore:
   en: 'Show {count} more'
 folderRefs:

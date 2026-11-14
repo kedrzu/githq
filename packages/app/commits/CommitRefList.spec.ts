@@ -6,6 +6,7 @@ import { createApp, h } from 'vue';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { sampleCommit, sampleCommitRef } from '@/testing/sampleCommits.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
 import { CommitRefFolders } from './CommitRefFolders.js';
@@ -24,8 +25,8 @@ test('D15: the default branch first, then branches and tags, each newest first b
     await expect.element(page.getByRole('row', { name: /main/ })).toHaveTextContent('default');
     await expect
         .element(page.getByRole('rowgroup', { name: 'Branches' }))
-        .toHaveTextContent(/^Branches\s*3\s*newest first/);
-    await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent(/^Tags\s*3\s*newest first/);
+        .toHaveTextContent(/^Branches\s*3\s*Newest first/);
+    await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent(/^Tags\s*3\s*Newest first/);
 });
 
 test('hundreds of refs draw a bounded number of rows and a row to show the rest; typing searches all of them', async () => {
@@ -62,7 +63,8 @@ test('CH15, CH17: typing narrows both groups; a group left with none says so; th
     await expect.poll(rowNames).toEqual(['release/ 2', 'release/4.2', 'release/4.1']);
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('release/4.2');
     await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent('No tag matches "rel".');
-    await expect.element(page.getByRole('rowgroup', { name: 'Branches' })).not.toHaveTextContent('newest first');
+    // The order stays said, and chosen, while filtering (CH60).
+    await expect.element(sortButton('branches')).toHaveAccessibleName('Sort branches: Newest first');
 
     // The exact name wins over a newer branch holding it.
     await filter().fill('v4.1');
@@ -350,6 +352,131 @@ test('CH53: ↑/↓ reach folder and "Show more" rows; Enter folds or unfolds a 
     // All shown: the selection on the first of the last ones.
     await expect.element(selected).toHaveAttribute('title', 'testing/v5');
 });
+
+test('CH60: By name for branches orders them naturally, folders first, leaves tags and the default branch as they were, and is the synced setting every repository reads', async () => {
+    const view = await mount({
+        branches: [
+            ref('main', 1),
+            ref('fix/hld-100-ical', 60),
+            ref('fix/hld-9-retry', 10),
+            ref('fix/hld-98-week', 40),
+            ref('develop', 50),
+            ref('billing', 20),
+        ],
+        tags: [ref('v1', 5), ref('v3', 25), ref('v2', 15)],
+    });
+    view.container.resolve(CommitRefFolders).toggle(REPOSITORY, 'branches:fix', null);
+    await expect
+        .poll(rowNames)
+        .toEqual([
+            'main',
+            'fix/ 3',
+            'fix/hld-100-ical',
+            'fix/hld-98-week',
+            'fix/hld-9-retry',
+            'develop',
+            'billing',
+            'v3',
+            'v2',
+            'v1',
+        ]);
+
+    await userEvent.click(sortButton('branches'));
+    await userEvent.click(page.getByRole('menuitemradio', { name: /^By\sname$/ }));
+
+    await expect
+        .poll(rowNames)
+        .toEqual([
+            'main',
+            'fix/ 3',
+            'fix/hld-9-retry',
+            'fix/hld-98-week',
+            'fix/hld-100-ical',
+            'billing',
+            'develop',
+            'v3',
+            'v2',
+            'v1',
+        ]);
+    await expect.element(sortButton('branches')).toHaveTextContent(/^By\sname$/);
+    await expect.element(sortButton('tags')).toHaveAccessibleName('Sort tags: Newest first');
+    const tracking = view.container.resolve(TrackingStore);
+    expect(tracking.document.refSort).toEqual({ branches: 'name' });
+
+    // Filtering keeps the order.
+    await filter().fill('hld');
+    await expect.poll(rowNames).toEqual(['fix/ 3', 'fix/hld-9-retry', 'fix/hld-98-week', 'fix/hld-100-ical']);
+
+    view.remount('acme/other');
+    await expect.element(sortButton('branches')).toHaveAccessibleName(/^Sort branches: By\sname$/);
+});
+
+test("CH60: the sort menu is the keyboard's: Enter opens it, ↓ and Enter pick, Esc closes it alone, the focus back on the button and the filter kept", async () => {
+    const view = await mount({ branches: [ref('main', 1), ref('b', 20), ref('a', 10)] });
+    await filter().fill('a');
+    await expect.poll(rowNames).toEqual(['a', 'main']);
+    const button = sortButton('branches');
+    button.element().focus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+    await expect.element(button).toHaveFocus();
+    await expect.element(filter()).toHaveValue('a');
+    expect(view.leave).not.toHaveBeenCalled();
+    expect(view.choose).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+        .element(page.getByRole('menuitemradio', { name: 'Newest first' }))
+        .toHaveAttribute('aria-checked', 'true');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('menuitemradio', { name: /^By\sname$/ })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+    await expect.element(button).toHaveAccessibleName(/^Sort branches: By\sname$/);
+    await expect.element(button).toHaveFocus();
+    // The pick chose no ref and left the list where it was.
+    expect(view.choose).not.toHaveBeenCalled();
+    expect(view.leave).not.toHaveBeenCalled();
+});
+
+test('CH60: an order the settings do not know reads as Newest first and stays in them until the user picks one', async () => {
+    const view = await mount({
+        branches: [ref('main', 1), ref('b', 10), ref('a', 20)],
+        tags: [ref('v2', 2), ref('v10', 3)],
+    });
+    const tracking = view.container.resolve(TrackingStore);
+    await tracking.ready();
+    tracking.replaceDocument({ ...tracking.document, refSort: { branches: 'by-semver', tags: 'name' } });
+
+    await expect.element(sortButton('branches')).toHaveAccessibleName('Sort branches: Newest first');
+    await expect.element(sortButton('tags')).toHaveAccessibleName(/^Sort tags: By\sname$/);
+    expect(rowNames()).toEqual(['main', 'a', 'b', 'v2', 'v10']);
+    expect(tracking.document.refSort).toEqual({ branches: 'by-semver', tags: 'name' });
+});
+
+test('CH60: the sort button leaves the heading row as tall as its text', async () => {
+    await mount({ branches: [ref('main', 1), ref('a', 10)] });
+    const button = sortButton('branches');
+    await expect.element(button).toBeVisible();
+    const header = page.getByRole('columnheader', { name: /^Branches/ }).element();
+    const height = header.getBoundingClientRect().height;
+    expect(getComputedStyle(button.element()).borderTopWidth).toBe('1px');
+
+    // The same heading without the button: the title and the count alone set its height.
+    if (!(button.element() instanceof HTMLElement)) {
+        throw new TypeError('No button');
+    }
+
+    button.element().style.display = 'none';
+    expect(header.getBoundingClientRect().height).toBe(height);
+});
+
+function sortButton(group: 'branches' | 'tags') {
+    return page.getByRole('button', { name: new RegExp(`^Sort ${group}:`) });
+}
 
 function filter() {
     return page.getByRole('combobox', { name: 'Filter branches and tags' });

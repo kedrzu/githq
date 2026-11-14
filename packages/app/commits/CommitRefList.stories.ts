@@ -67,6 +67,20 @@ export const Folders: Story = {
     },
 };
 
+/** CH60: branches by name — folders first, then A to Z, numbers compared as numbers — tags still newest first. */
+export const ByName: Story = {
+    render: () => renderList(folders()),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(await canvas.findByRole('button', { name: /^Sort branches:/ }));
+        await userEvent.click(
+            await within(canvasElement.ownerDocument.body).findByRole('menuitemradio', { name: /^By\sname$/ }),
+        );
+        await expect(canvas.getByRole('button', { name: /^Sort branches:/ })).toHaveTextContent(/^By\sname$/);
+        await expect(canvas.getByRole('button', { name: /^Sort tags:/ })).toHaveTextContent('Newest first');
+    },
+};
+
 /** CH15: typing narrows both groups, the best match selected; the group left with none says so. */
 export const Filtering: Story = {
     render: () => renderList(webapp()),
