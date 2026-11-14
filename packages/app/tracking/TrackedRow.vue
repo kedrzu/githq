@@ -1,4 +1,4 @@
-<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`): its icon, name (a project's with its mono `#number`) and visibility tag, then on the right where its items come from (a project's), how many it holds, how it stands (`TrackedRowNote`), Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it and runs the keys. -->
+<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`): its icon, name (a project's with its mono `#number`) and visibility tag, then, each after the one before, where its items come from (a project's), how many it holds and how it stands (`TrackedRowNote`); at the row's edge Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it and runs the keys. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -57,7 +57,6 @@ const t = useTranslate();
       :class="css.trackedRow_badge"
       >{{ badge }}</span
     >
-    <span :class="css.trackedRow_spacer" />
     <span
       v-if="source"
       :class="css.trackedRow_source"
@@ -70,6 +69,7 @@ const t = useTranslate();
         :now="now"
       />
     </span>
+    <span :class="css.trackedRow_spacer" />
     <span :class="css.trackedRow_actions">
       <Button
         variant="outline"
@@ -144,6 +144,7 @@ const t = useTranslate();
   border-radius: $radius-sm;
 }
 
+// Only before the actions: what the row says follows its name, Untrack and the chevron stay at the edge.
 .trackedRow_spacer {
   flex: 1;
 }
@@ -159,16 +160,10 @@ const t = useTranslate();
 .trackedRow_count,
 .trackedRow_sync {
   flex: none;
-  text-align: right;
 }
 
 .trackedRow_count {
-  width: 80px;
   color: $color-fg-dim;
-}
-
-.trackedRow_sync {
-  width: 120px;
 }
 
 .trackedRow_actions {

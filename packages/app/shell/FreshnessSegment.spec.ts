@@ -128,7 +128,7 @@ test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub h
 });
 
 /** Mounts the segment showing `freshness` — or the user's `edits` — on a clock that moves only when told. */
-function mount(freshness: Freshness, edits: SegmentEdits | null = null) {
+function mount(freshness: Freshness, edits: SegmentEdits | null = null, editsHint = false) {
     let now = NOW;
     let timers: { at: number; callback: () => void }[] = [];
     const clock: ClockShape = {
@@ -153,7 +153,7 @@ function mount(freshness: Freshness, edits: SegmentEdits | null = null) {
 
     let shown = 0;
     const app = createApp({
-        setup: () => () => h(FreshnessSegment, { freshness, edits, onShowFailure: () => shown++ }),
+        setup: () => () => h(FreshnessSegment, { freshness, edits, editsHint, onShowFailure: () => shown++ }),
     });
     app.use(IocPlugin, { container });
     app.mount(host);
