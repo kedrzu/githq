@@ -882,3 +882,32 @@ resizable, container queries; CR120–CR126; amends D24's fixed 340 px)
 - The phone's flat comment row (`Phone / Comment`) as the narrow card — it is not the same component as the pull
   request's.
 - A narrow card with its avatar beside it as on the pull request's thread — about 260 px left for the text at 340 px.
+
+## D47
+
+**Find in the diff, as VS Code's find widget: ⌘F opens a bar floating at the top right of the diff over the code, with
+Match Case, Match Whole Word and Use Regular Expression (JavaScript, one line at a time), a counter, previous, next and
+close. It searches the lines the diff shows (added, deleted and context, lines expanded out of a gap and a thread's
+code included), never lines still hidden in a gap, collapsed, too large or unread files, paths or comments; nothing is
+fetched for it. Each line counts once (a deleted line on its older side, others on the newer), so the total is the same
+in both layouts. Every match is marked in the code over its syntax colours, the current one stronger with an outline;
+going to one draws it first and holds it (D7) and puts the cursor on its row (D44).** (2026-11-14, owner: scope "only
+the lines shown", the floating bar, designed in Pen first; CR137–CR143)
+
+Keys: ⌘F opens the bar or selects its query, except in a text field, where it is the field's own; Enter ⇧Enter in the
+field, ⌘G ⇧⌘G and F3 ⇧F3 anywhere step, wrapping (⌘G stays "suggest" in a comment box, D32); Esc in the field closes
+it, the view staying on the match; outside it Esc closes it after a range and a selection, before the filter. A new
+query starts at the first match from the cursor; new results of the same query (files arriving, a layout or whitespace
+switch, a gap opened) keep the current match. While files are still read the counter ends in "+" ("3 of 128+"), as it
+does when a line had more than 1,000 matches. The toggles are kept on the device; the query stays while the review is
+open, across J/K, and goes when it is left.
+
+A pattern runs in a worker stopped after 1.5 s, and the bar then says "Pattern too slow": a regular expression can take
+exponential time and can't be interrupted on the page's own thread. An invalid one says "Invalid regular expression".
+
+**Rejected.**
+
+- Searching hidden gap lines and opening the gap on landing (agent's recommendation) — more noise for short queries.
+- Fetching collapsed files to search them — lock and generated files for nothing.
+- The bar in the toolbar's place, as the workflow log's (W4b) — the toolbar's place and the stack stay in view.
+- N ⇧N for matches, as in the log — they are the threads' here (D32).
