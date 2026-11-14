@@ -12,7 +12,7 @@ import { buildUnfoldedWorkflow } from './buildUnfoldedWorkflow.js';
 import RepositoryWorkflowsView from './RepositoryWorkflowsView.vue';
 import { useAnyRefRead } from './useAnyRefRead.js';
 import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
-import { WorkflowRunHistory } from './WorkflowRunHistory.js';
+import { NO_WORKFLOW_RUN_FILTERS, WorkflowRunHistory } from './WorkflowRunHistory.js';
 import type { WorkflowRunHistoryQuery } from './WorkflowRunHistory.js';
 import { WorkflowStore } from './WorkflowStore.js';
 import { WorkflowTabPlaces } from './WorkflowTabPlaces.js';
@@ -50,7 +50,9 @@ const selected = computed({
 /** Whose runs are read on demand: the unfolded workflow's, on the ref filtered by. */
 const query = computed((): WorkflowRunHistoryQuery | null => {
   const key = unfoldedKey.value;
-  return key === null ? null : { nameWithOwner: props.nameWithOwner, workflowId: Number(key), ref: refFilter.value };
+  return key === null
+    ? null
+    : { ...NO_WORKFLOW_RUN_FILTERS, nameWithOwner: props.nameWithOwner, workflowId: Number(key), ref: refFilter.value };
 });
 const unfolded = computed(() => {
   const stored = workflows.get(props.nameWithOwner);

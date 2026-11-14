@@ -69,6 +69,12 @@ export type WorkflowRefGroup =
     | { readonly kind: 'defaultBranch'; readonly branch: string }
     | { readonly kind: 'pattern'; readonly pattern: string };
 
+/**
+ * How a workflow's runs are grouped (settings `workflowRuns.groupBy`): not at all, by result, by the ref they ran on
+ * (the refs that count first), by what started them, by the day they started, or by who started them.
+ */
+export type WorkflowRunsGroupBy = 'none' | 'status' | 'ref' | 'event' | 'day' | 'actor';
+
 /** What a finished run says of its workflow (actions D1); a run that says nothing has none. */
 export type RunVerdict = 'failed' | 'passed';
 
