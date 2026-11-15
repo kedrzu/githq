@@ -13,13 +13,11 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { getTrackedStatus } from '@/tracking/utils/getTrackedStatus.js';
 import { goBack } from '@/utils/goBack.js';
 
-import PhoneSettingsScreen from './PhoneSettingsScreen.vue';
 import ProjectSettingsView from './ProjectSettingsView.vue';
+import SettingsFrame from './SettingsFrame.vue';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import type { SettingsSection } from './settingsRoutes.js';
-import { getPhoneSettingsPath, getSettingsPath } from './settingsRoutes.js';
-import SettingsView from './SettingsView.vue';
-import { SettingsSync } from './sync/SettingsSync.js';
+import { getLayoutSettingsPath, getSettingsPath } from './settingsRoutes.js';
 
 /** How often "synced 14s ago" moves on. */
 const TICK_MS = 15_000;
@@ -27,7 +25,6 @@ const TICK_MS = 15_000;
 const tracking = useService(TrackingStore);
 const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
-const sync = useService(SettingsSync);
 const phone = useService(PhoneLayout);
 const route = useRoute();
 const router = useRouter();
@@ -48,7 +45,7 @@ const section = computed({
   set: value => void router.push(getSettingsPath(value)),
 });
 /** Projects, at its own address on a phone, where `/settings` alone is the list of the sections. */
-const projectsPath = computed(() => (phone.active ? getPhoneSettingsPath('projects') : getSettingsPath('projects')));
+const projectsPath = computed(() => getLayoutSettingsPath('projects', phone.active));
 const status = computed(() => {
   if (!project.value) {
     return null;
@@ -81,8 +78,8 @@ function untrack() {
 </script>
 
 <template>
-  <PhoneSettingsScreen
-    v-if="phone.active"
+  <SettingsFrame
+    v-model:section="section"
     :title="project?.title ?? ''"
     back
     :back-place="t(sectionLabels.projects)"
@@ -96,27 +93,9 @@ function untrack() {
       :status="status"
       :now="now"
       :open-count="trackedItems.getOpenCount({ kind: 'project', id: project.id })"
-      phone
+      :phone="phone.active"
       @back="goBack(router, projectsPath)"
       @untrack="untrack"
     />
-  </PhoneSettingsScreen>
-  <SettingsView
-    v-else
-    v-model:section="section"
-    :tracked-repositories="tracking.repositories.length"
-    :tracked-projects="tracking.projects.length"
-    :saving-stopped="sync.state.state === 'stopped'"
-  >
-    <ProjectSettingsView
-      v-if="tracking.loaded && project && status"
-      :title="project.title"
-      :owner="project.owner"
-      :status="status"
-      :now="now"
-      :open-count="trackedItems.getOpenCount({ kind: 'project', id: project.id })"
-      @back="goBack(router, projectsPath)"
-      @untrack="untrack"
-    />
-  </SettingsView>
+  </SettingsFrame>
 </template>

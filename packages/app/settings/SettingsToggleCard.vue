@@ -75,8 +75,7 @@ const id = useId();
 
   // Focus on the Switch rings the card, in place of the Switch's own ring; focus on the link keeps the link's.
   &:has(.settingsToggleCard_switch:focus-visible) {
-    outline: 2px solid $color-focus;
-    outline-offset: 1px;
+    @include focus-outline;
   }
 }
 

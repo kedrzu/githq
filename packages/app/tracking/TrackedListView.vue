@@ -253,10 +253,7 @@ function onRowClick(event: MouseEvent, row: T) {
     background: $color-bg-3;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include focus-ring(-2px);
 }
 
 .trackedListView_phoneAdd {

@@ -17,13 +17,11 @@ import { goBack } from '@/utils/goBack.js';
 import { useAnyRefRead } from '@/workflows/useAnyRefRead.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
-import PhoneSettingsScreen from './PhoneSettingsScreen.vue';
 import RepositorySettingsView from './RepositorySettingsView.vue';
+import SettingsFrame from './SettingsFrame.vue';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import type { SettingsSection } from './settingsRoutes.js';
-import { getPhoneSettingsPath, getSettingsPath } from './settingsRoutes.js';
-import SettingsView from './SettingsView.vue';
-import { SettingsSync } from './sync/SettingsSync.js';
+import { getLayoutSettingsPath, getSettingsPath } from './settingsRoutes.js';
 
 /** How often "synced 14s ago" moves on. */
 const TICK_MS = 15_000;
@@ -31,7 +29,6 @@ const TICK_MS = 15_000;
 const tracking = useService(TrackingStore);
 const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
-const sync = useService(SettingsSync);
 const workflows = useService(WorkflowStore);
 const phone = useService(PhoneLayout);
 const route = useRoute();
@@ -50,9 +47,7 @@ const section = computed({
   set: value => void router.push(getSettingsPath(value)),
 });
 /** Repositories, at its own address on a phone, where `/settings` alone is the list of the sections. */
-const repositoriesPath = computed(() =>
-  phone.active ? getPhoneSettingsPath('repositories') : getSettingsPath('repositories'),
-);
+const repositoriesPath = computed(() => getLayoutSettingsPath('repositories', phone.active));
 const status = computed(() => {
   const target = { kind: 'repository', nameWithOwner: nameWithOwner.value } as const;
   return getTrackedStatus(tracking.getProgress(target), tracking.getSyncState(target));
@@ -104,8 +99,8 @@ const isPrivate = computed(() => {
 </script>
 
 <template>
-  <PhoneSettingsScreen
-    v-if="phone.active"
+  <SettingsFrame
+    v-model:section="section"
     :title="nameWithOwner"
     back
     :back-place="t(sectionLabels.repositories)"
@@ -122,32 +117,10 @@ const isPrivate = computed(() => {
       :workflows="workflows.get(repository.nameWithOwner)"
       :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
       :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
-      phone
+      :phone="phone.active"
       @back="goBack(router, repositoriesPath)"
       @untrack="untrack"
       @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"
     />
-  </PhoneSettingsScreen>
-  <SettingsView
-    v-else
-    v-model:section="section"
-    :tracked-repositories="tracking.repositories.length"
-    :tracked-projects="tracking.projects.length"
-    :saving-stopped="sync.state.state === 'stopped'"
-  >
-    <RepositorySettingsView
-      v-if="tracking.loaded && repository"
-      :name-with-owner="repository.nameWithOwner"
-      :is-private="isPrivate"
-      :status="status"
-      :now="now"
-      :open-count="trackedItems.getOpenCount({ kind: 'repository', nameWithOwner: repository.nameWithOwner })"
-      :workflows="workflows.get(repository.nameWithOwner)"
-      :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
-      :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
-      @back="goBack(router, repositoriesPath)"
-      @untrack="untrack"
-      @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"
-    />
-  </SettingsView>
+  </SettingsFrame>
 </template>

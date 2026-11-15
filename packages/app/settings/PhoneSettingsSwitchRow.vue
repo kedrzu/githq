@@ -50,8 +50,7 @@ const id = useId();
   }
 
   &:has(.phoneSettingsSwitchRow_switch:focus-visible) {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
+    @include focus-outline(-2px);
   }
 }
 

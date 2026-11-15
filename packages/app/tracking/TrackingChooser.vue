@@ -4,7 +4,7 @@ import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { ArrowDownWideNarrow, Building2, CircleX, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
+import { ArrowDownWideNarrow, Building2, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watch, watchEffect } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -14,7 +14,6 @@ import type { ButtonSize, ButtonVariant } from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ChoiceList from '@/components/ChoiceList.vue';
 import type { ChoiceListOption } from '@/components/ChoiceList.vue';
-import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import SearchField from '@/components/SearchField.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
@@ -31,6 +30,7 @@ import FoundOnGitHub from './FoundOnGitHub.vue';
 import HiddenOrganizationNotice from './HiddenOrganizationNotice.vue';
 import { getCandidateProjects, getCandidateRepositories } from './trackingCandidates.js';
 import * as l from './TrackingChooser.loc.js';
+import TrackingChooserPhoneTools from './TrackingChooserPhoneTools.vue';
 import type {
   CandidateProject,
   CandidateRepositories,
@@ -860,29 +860,14 @@ function projectMeta(project: CandidateProject) {
           <h1 :class="css.trackingChooser_title">{{ t(l.title) }}</h1>
           <p :class="css.trackingChooser_subtitle">{{ t(l.subtitlePhone) }}</p>
         </div>
-        <div :class="css.trackingChooser_phoneTools">
-          <SearchField
-            ref="filterField"
-            v-model="filter"
-            :class="css.trackingChooser_phoneSearch"
-            :label="t(l.searchLabel)"
-            :placeholder="t(l.searchPlaceholderPhone)"
-            @keydown="onFilterKeydown"
-            @focusin="filterFocused = true"
-            @focusout="filterFocused = false"
-          >
-            <template
-              v-if="filter !== ''"
-              #end
-            >
-              <IconButton
-                :icon="CircleX"
-                :label="t(l.clearSearch)"
-                @click="filter = ''"
-              />
-            </template>
-          </SearchField>
-        </div>
+        <TrackingChooserPhoneTools
+          ref="filterField"
+          v-model="filter"
+          v-model:focused="filterFocused"
+          :label="t(l.searchLabel)"
+          :placeholder="t(l.searchPlaceholderPhone)"
+          @keydown="onFilterKeydown"
+        />
         <div
           v-if="needle === '' && found.length === 0"
           :class="css.trackingChooser_fresh"
@@ -1070,31 +1055,15 @@ function projectMeta(project: CandidateProject) {
           </div>
 
           <!-- A phone's search, pinned at the top while the list scrolls, and the two segments (MB135). -->
-          <div
+          <TrackingChooserPhoneTools
             v-if="phone"
-            :class="css.trackingChooser_phoneTools"
+            ref="filterField"
+            v-model="filter"
+            v-model:focused="filterFocused"
+            :label="t(picker ? l.filterLabel : l.findLabel)"
+            :placeholder="t(picker ? l.filterPlaceholder : l.findPlaceholder, { count: totalRepositories })"
+            @keydown="onFilterKeydown"
           >
-            <SearchField
-              ref="filterField"
-              v-model="filter"
-              :class="css.trackingChooser_phoneSearch"
-              :label="t(picker ? l.filterLabel : l.findLabel)"
-              :placeholder="t(picker ? l.filterPlaceholder : l.findPlaceholder, { count: totalRepositories })"
-              @keydown="onFilterKeydown"
-              @focusin="filterFocused = true"
-              @focusout="filterFocused = false"
-            >
-              <template
-                v-if="filter !== ''"
-                #end
-              >
-                <IconButton
-                  :icon="CircleX"
-                  :label="t(l.clearSearch)"
-                  @click="filter = ''"
-                />
-              </template>
-            </SearchField>
             <SegmentedTabs
               v-if="!picker"
               v-model="segment"
@@ -1102,7 +1071,7 @@ function projectMeta(project: CandidateProject) {
               :label="t(l.segments)"
               :options="segmentOptions"
             />
-          </div>
+          </TrackingChooserPhoneTools>
 
           <div :class="[css.trackingChooser_main, phone && css.trackingChooser_main_phone]">
             <template v-if="!phone">
@@ -1786,27 +1755,6 @@ function projectMeta(project: CandidateProject) {
 // The question folded away: the search right under the setup bar.
 .trackingChooser_body.trackingChooser_body_typing {
   padding-top: $spacing-4;
-}
-
-// The search and the segments, pinned at the top of the screen's scroll.
-.trackingChooser_phoneTools {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-10;
-  padding: $spacing-8 $spacing-16 $spacing-6;
-  background: $color-bg;
-
-  .trackingChooser_phoneSearch {
-    --search-field-background: #{$color-bg-2};
-
-    min-height: $touch-target-size;
-    padding: $spacing-4 $spacing-6 $spacing-4 $spacing-12;
-    font-size: $font-size-phone-input;
-    border-radius: $radius-lg;
-  }
 }
 
 .trackingChooser_main_phone {

@@ -424,7 +424,8 @@ function showWindow(layoutChanged: boolean) {
 
 <style lang="scss" module="css">
 .anchoredList {
-  @include focus-ring;
+  // Inside the scroller, which clips what is drawn outside it.
+  @include focus-ring(-2px);
 
   position: relative;
   height: 100%;
@@ -432,11 +433,6 @@ function showWindow(layoutChanged: boolean) {
   overflow-y: auto;
   // The browser's own anchoring would fight ours.
   overflow-anchor: none;
-
-  // Inside the scroller, which clips what is drawn outside it.
-  &:focus-visible {
-    outline-offset: -2px;
-  }
 }
 
 .anchoredList_quiet:focus-visible {

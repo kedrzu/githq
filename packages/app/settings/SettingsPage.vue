@@ -19,11 +19,11 @@ import DisplaySection from './DisplaySection.vue';
 import PhoneSettingsScreen from './PhoneSettingsScreen.vue';
 import PrivacySection from './PrivacySection.vue';
 import SavingSection from './SavingSection.vue';
+import SettingsFrame from './SettingsFrame.vue';
 import * as l from './SettingsPage.loc.js';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import SettingsSectionsList from './SettingsSectionsList.vue';
 import { getSettingsPath, readPhoneSettingsSection, readSettingsSection, SETTINGS_PATH } from './settingsRoutes.js';
-import SettingsView from './SettingsView.vue';
 import { SettingsSync } from './sync/SettingsSync.js';
 import { useSettingsOrigin } from './useSettingsOrigin.js';
 
@@ -65,85 +65,45 @@ function add() {
 </script>
 
 <template>
-  <template v-if="phone.active">
-    <PhoneSettingsScreen
-      v-if="phoneSection === null"
-      :title="t(sectionLabels.settings)"
-      :back="origin.exists"
-      :back-place="origin.place"
-      scroll-key="settings-sections"
-      @back="router.back()"
-    >
-      <SettingsSectionsList
-        :tracked-repositories="tracking.repositories.length"
-        :tracked-projects="tracking.projects.length"
-        :animations="tracking.animations"
-        :review-comment-choice="tracking.reviewCommentChoice"
-        :usage-statistics="tracking.usageStatistics"
-        :saving="sync.state.state"
-        :login="auth.viewer?.login ?? null"
-      />
-    </PhoneSettingsScreen>
-    <PhoneSettingsScreen
-      v-else
-      :key="phoneSection"
-      :title="t(sectionLabels[phoneSection])"
-      back
-      :back-place="t(sectionLabels.settings)"
-      :scroll-key="`settings-phone:${phoneSection}`"
-      @back="backToList"
-    >
-      <template
-        v-if="phoneSection === 'repositories' || phoneSection === 'projects'"
-        #actions
-      >
-        <IconButton
-          :icon="Plus"
-          :label="t(phoneSection === 'projects' ? l.trackProjects : l.trackRepositories)"
-          @click="add"
-        />
-      </template>
-      <AccountSection
-        v-if="phoneSection === 'account'"
-        phone
-      />
-      <SavingSection
-        v-else-if="phoneSection === 'sync'"
-        phone
-      />
-      <PrivacySection
-        v-else-if="phoneSection === 'privacy'"
-        phone
-      />
-      <CodeReviewSection
-        v-else-if="phoneSection === 'review'"
-        phone
-      />
-      <DisplaySection
-        v-else-if="phoneSection === 'display'"
-        phone
-      />
-      <TrackedProjectsSection
-        v-else-if="phoneSection === 'projects'"
-        ref="trackedProjects"
-        phone
-        :initial-search="search"
-      />
-      <TrackedRepositoriesSection
-        v-else-if="phoneSection === 'repositories'"
-        ref="trackedRepositories"
-        phone
-        :initial-search="search"
-      />
-    </PhoneSettingsScreen>
-  </template>
-  <SettingsView
-    v-else
-    v-model:section="section"
-    :tracked-repositories="tracking.repositories.length"
-    :tracked-projects="tracking.projects.length"
-    :saving-stopped="sync.state.state === 'stopped'"
+  <PhoneSettingsScreen
+    v-if="phone.active && phoneSection === null"
+    :title="t(sectionLabels.settings)"
+    :back="origin.exists"
+    :back-place="origin.place"
+    scroll-key="settings-sections"
+    @back="router.back()"
   >
+    <SettingsSectionsList
+      :tracked-repositories="tracking.repositories.length"
+      :tracked-projects="tracking.projects.length"
+      :animations="tracking.animations"
+      :review-comment-choice="tracking.reviewCommentChoice"
+      :usage-statistics="tracking.usageStatistics"
+      :saving="sync.state.state"
+      :login="auth.viewer?.login ?? null"
+    />
+  </PhoneSettingsScreen>
+  <!-- On a phone, a section's own screen (`section` is the `?tab=` there too), remounted with each. -->
+  <SettingsFrame
+    v-else
+    :key="phone.active ? section : undefined"
+    v-model:section="section"
+    :title="t(sectionLabels[section])"
+    back
+    :back-place="t(sectionLabels.settings)"
+    :scroll-key="`settings-phone:${section}`"
+    @back="backToList"
+  >
+    <template
+      v-if="phone.active && (section === 'repositories' || section === 'projects')"
+      #actions
+    >
+      <IconButton
+        :icon="Plus"
+        :label="t(section === 'projects' ? l.trackProjects : l.trackRepositories)"
+        @click="add"
+      />
+    </template>
     <component
       :is="UpdatesSection"
       v-if="UpdatesSection && section === 'updates'"
@@ -152,18 +112,37 @@ function add() {
       :is="ChangelogSection"
       v-else-if="ChangelogSection && section === 'changelog'"
     />
-    <AccountSection v-else-if="section === 'account'" />
-    <SavingSection v-else-if="section === 'sync'" />
-    <PrivacySection v-else-if="section === 'privacy'" />
-    <CodeReviewSection v-else-if="section === 'review'" />
-    <DisplaySection v-else-if="section === 'display'" />
+    <AccountSection
+      v-else-if="section === 'account'"
+      :phone="phone.active"
+    />
+    <SavingSection
+      v-else-if="section === 'sync'"
+      :phone="phone.active"
+    />
+    <PrivacySection
+      v-else-if="section === 'privacy'"
+      :phone="phone.active"
+    />
+    <CodeReviewSection
+      v-else-if="section === 'review'"
+      :phone="phone.active"
+    />
+    <DisplaySection
+      v-else-if="section === 'display'"
+      :phone="phone.active"
+    />
     <TrackedProjectsSection
       v-else-if="section === 'projects'"
+      ref="trackedProjects"
+      :phone="phone.active"
       :initial-search="search"
     />
     <TrackedRepositoriesSection
       v-else
+      ref="trackedRepositories"
+      :phone="phone.active"
       :initial-search="search"
     />
-  </SettingsView>
+  </SettingsFrame>
 </template>

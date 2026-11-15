@@ -166,8 +166,6 @@ findLabel:
   en: Find a repository or project
 findPlaceholder:
   en: Find a repository or project
-clearSearch:
-  en: Clear the search
 segments:
   en: Repositories or projects
 showAllShort:

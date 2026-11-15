@@ -96,10 +96,7 @@ const interactive = computed(() => props.to !== undefined || props.href !== unde
     background: $color-bg-3;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include focus-ring(-2px);
 }
 
 .phoneSettingsRow_icon {

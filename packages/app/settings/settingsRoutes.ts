@@ -75,6 +75,15 @@ export function getPhoneSettingsPath(section: SettingsSection) {
 }
 
 /**
+ * The address of a section of Settings in the layout shown: on a phone its own `?tab=` (`getPhoneSettingsPath`), else
+ * `getSettingsPath`'s.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getLayoutSettingsPath(section: SettingsSection, phone: boolean) {
+    return phone ? getPhoneSettingsPath(section) : getSettingsPath(section);
+}
+
+/**
  * Whether the screen at `route` is one of Settings whose status bar says where the settings are saved (githq D26).
  * @__NO_SIDE_EFFECTS__
  */
