@@ -1,3 +1,4 @@
+import type { Translation } from '@nzyme/i18n-core';
 import { assertValue } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -5,7 +6,9 @@ import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
+    Check,
     CircleCheck,
+    CircleHelp,
     CircleX,
     Eye,
     GitMerge,
@@ -15,6 +18,7 @@ import {
     Loader,
     PencilLine,
     Timer,
+    X,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
@@ -78,15 +82,28 @@ export interface ItemKindFact {
     readonly tone: 'closed' | 'done' | 'draft' | 'open';
 }
 
-/** Where a pull request stands, in one line ("2 checks failing · changes requested"). */
-export interface ItemStatusFact {
+/** What a status draws: its icon and words in its tone. */
+export interface ItemStatusLook {
     readonly icon: LucideIcon;
     readonly tone: 'accent' | 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
     readonly text: string;
+}
+
+/** Where a pull request stands, in one line ("2 checks failing · changes requested"). */
+export interface ItemStatusFact extends ItemStatusLook {
     /** Ready to merge: "Merge" follows where the viewer may merge it, else "Open on GitHub". */
     readonly readyToMerge: boolean;
     /** Its merge was refused: "Back to the merge" follows where the viewer may merge it (PM37). */
     readonly backToMerge?: boolean;
+    /** The user's draft review takes the words (D28): a list showing no status still marks it (D21). */
+    readonly draftReview?: boolean;
+    /** The same on a phone's row, in a word or two each ("Changes", "Conflicts"; mobile D23, MB89). */
+    readonly short?: readonly ItemShortFact[];
+}
+
+/** One short fact of a phone's row: an icon and a word or a count, with the full sentence for a screen reader. */
+export interface ItemShortFact extends ItemStatusLook {
+    readonly label: string;
 }
 
 /** The row field of the item's first project (D12) and how many more projects it is in. */
@@ -105,8 +122,11 @@ export interface ItemSizeFact {
     readonly deletions: number;
 }
 
-/** Where a pull request stands: its status and, apart from it, that its checks passed. */
-type PullRequestStandingFacts = Pick<ItemFactsViewModel, 'status' | 'checks'>;
+/** Where a pull request stands: its status and, apart from it, its checks. */
+type PullRequestStandingFacts = Pick<ItemFactsViewModel, 'status' | 'checks' | 'shortChecks'>;
+
+/** A closed pull request, or an issue: nothing of where it stands. */
+const NO_STANDING: PullRequestStandingFacts = { status: null, checks: null, shortChecks: null };
 
 /** The phases of an open pull request with no merge under way: its standing speaks for it. */
 type StandingPhase = Exclude<PullRequestPhase, 'merged' | 'closed' | 'beingMerged' | 'inQueue' | 'autoMerge'>;
@@ -128,6 +148,13 @@ export interface ItemFactsViewModel {
     readonly status: ItemStatusFact | null;
     /** "Checks passed", said before {@link status} unless a green status already says as much. */
     readonly checks: ItemStatusFact | null;
+    /**
+     * A phone's row says its checks as a count before its status' short facts ("✓ 12/12", "✕ 8/9", a spinner and
+     * "3/9" while some run: mobile D23, MB89); `null` without checks and where what is under way says all there is.
+     */
+    readonly shortChecks: ItemShortFact | null;
+    /** The same count whatever its phase, merged or merging too: all a nested line says of it (mobile D24). */
+    readonly checksCount: ItemShortFact | null;
     /** A pull request's lines added and removed, nested under an issue or not; an issue and a draft have none. */
     readonly size: ItemSizeFact | null;
     readonly projectField: ItemProjectFieldFact | null;
@@ -168,7 +195,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const pullRequestFacts = computed((): PullRequestStandingFacts => {
         const listed = item.value;
         if (listed.kind !== 'pullRequest') {
-            return { status: null, checks: null };
+            return NO_STANDING;
         }
 
         const standing = getPhaseFacts(listed, getPullRequestPhase(listed, { reviewRequested: reviewRequested.value }));
@@ -177,6 +204,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         // merge on its way goes first, for the moment it takes. The draft takes the words, not what can be done: `⇧M`
         // still merges.
         if (listed.pendingReview && !listed.merging) {
+            const text = t(l.draftReview, { count: listed.pendingReview.commentCount });
             return {
                 checks: null,
                 status: {
@@ -184,8 +212,11 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                     ...standing.status,
                     icon: PencilLine,
                     tone: 'warning',
-                    text: t(l.draftReview, { count: listed.pendingReview.commentCount }),
+                    text,
+                    draftReview: true,
+                    short: [getShortFact({ icon: PencilLine, tone: 'warning', text }, l.shortDraftReview)],
                 },
+                shortChecks: getShortChecks(listed),
             };
         }
 
@@ -193,6 +224,8 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     });
     const status = computed(() => pullRequestFacts.value.status);
     const checks = computed(() => pullRequestFacts.value.checks);
+    const shortChecks = computed(() => pullRequestFacts.value.shortChecks);
+    const checksCount = computed(() => (item.value.kind === 'pullRequest' ? getShortChecks(item.value) : null));
     const size = computed((): ItemSizeFact | null => {
         const listed = item.value;
         return listed.kind === 'pullRequest' ? { additions: listed.additions, deletions: listed.deletions } : null;
@@ -226,6 +259,8 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         age,
         status,
         checks,
+        shortChecks,
+        checksCount,
         size,
         projectField,
     });
@@ -253,34 +288,40 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     }
 
     /** PM37: how the last merge of it ended when it did not merge — refused, a new commit, or not known yet. */
-    function getEndStatus(end: MergeEnd): ItemStatusFact {
+    function getEndFacts(end: MergeEnd): PullRequestStandingFacts {
         const look = getMergeEndLook(end.kind);
         switch (end.kind) {
             case 'refused':
             case 'methodNotAllowed':
-                return { ...look, text: t(l.mergeRefused), readyToMerge: false, backToMerge: true };
+                return getStatusAlone(
+                    { ...look, text: t(l.mergeRefused), readyToMerge: false, backToMerge: true },
+                    l.shortRefused,
+                );
             case 'headMoved': {
                 const author = end.commit?.author;
                 const text = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
-                return { ...look, text, readyToMerge: false, backToMerge: true };
+                return getStatusAlone({ ...look, text, readyToMerge: false, backToMerge: true }, l.shortNewCommit);
             }
             case 'unknown':
-                return { ...look, text: t(l.outcomeUnknown), readyToMerge: false };
+                return getStatusAlone({ ...look, text: t(l.outcomeUnknown), readyToMerge: false }, l.shortSent);
             default:
                 return assertNever(end);
         }
     }
 
     /** PM37: "In queue · 3rd · about 12 min"; GitHub saying it won't merge, in red. */
-    function getQueueStatus(entry: PullRequestQueueEntry): ItemStatusFact {
+    function getQueueFacts(entry: PullRequestQueueEntry): PullRequestStandingFacts {
         const place = queueTexts.place(entry);
         if (entry.state === 'UNMERGEABLE') {
-            return { icon: ListOrdered, tone: 'danger', text: t(l.inQueueWontMerge, { place }), readyToMerge: false };
+            return getStatusAlone(
+                { icon: ListOrdered, tone: 'danger', text: t(l.inQueueWontMerge, { place }), readyToMerge: false },
+                l.shortWontMerge,
+            );
         }
 
         const about = queueTexts.estimate(entry);
         const text = about === null ? t(l.inQueue, { place }) : t(l.inQueueAbout, { place, about });
-        return { icon: ListOrdered, tone: 'accent', text, readyToMerge: false };
+        return getStatusAlone({ icon: ListOrdered, tone: 'accent', text, readyToMerge: false }, l.shortInQueue);
     }
 
     /** PM37: "Auto-merge on · squash · waiting for checks", or for whichever else it waits. */
@@ -297,24 +338,23 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         return { icon: Timer, tone: 'accent', text, readyToMerge: false };
     }
 
-    /** The two facts of a pull request in its phase, worked out together so they cannot disagree. */
+    /** The facts of a pull request in its phase, worked out together so they cannot disagree. */
     function getPhaseFacts(pr: PullRequestItem, phase: PullRequestPhase): PullRequestStandingFacts {
         switch (phase) {
             case 'merged':
-                return { status: getMergedStatus(pr), checks: null };
+                return getStatusAlone(getMergedStatus(pr), l.shortMerged);
             case 'closed':
-                return { status: null, checks: null };
-            // What is under way with its merge says all there is, with nothing of its checks.
+                return NO_STANDING;
             case 'beingMerged':
-                return {
-                    status: { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false },
-                    checks: null,
-                };
+                return getStatusAlone(
+                    { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false },
+                    l.shortMerging,
+                );
             // GitHub's own state (merging D3).
             case 'inQueue':
-                return { status: getQueueStatus(assertValue(pr.mergeQueueEntry)), checks: null };
+                return getQueueFacts(assertValue(pr.mergeQueueEntry));
             case 'autoMerge':
-                return { status: getAutoMergeStatus(pr, assertValue(pr.autoMerge)), checks: null };
+                return getStatusAlone(getAutoMergeStatus(pr, assertValue(pr.autoMerge)), l.shortAutoMerge);
             case 'needsAuthor':
             case 'checksRunning':
             case 'approvedReady':
@@ -330,16 +370,21 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         }
     }
 
-    /** How the last merge of an open pull request ended, else its standing and that its checks passed. */
+    /** What is under way with its merge says all there is, with nothing of its checks; a phone says it in a word. */
+    function getStatusAlone(said: ItemStatusFact, short: Translation): PullRequestStandingFacts {
+        return { status: { ...said, short: [getShortFact(said, short)] }, checks: null, shortChecks: null };
+    }
+
+    /** How the last merge of an open pull request ended, else its standing and its checks. */
     function getOpenFacts(pr: PullRequestItem, phase: StandingPhase): PullRequestStandingFacts {
-        // The ending says all there is, with nothing of its checks.
         const end = getMergeEnd(mergeRecord.value, pr, null);
         if (end) {
-            return { status: getEndStatus(end), checks: null };
+            return getEndFacts(end);
         }
 
         const standing = getPullRequestStanding(pr);
-        const said = getStandingStatus(standing, phase);
+        const counted = getShortChecks(pr);
+        const said = getStandingStatus(standing, phase, counted !== null);
         // A green status already speaks for the checks.
         return {
             status: said,
@@ -347,51 +392,127 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 standing.checksPassed && said?.tone !== 'success'
                     ? { icon: CircleCheck, tone: 'success', text: t(l.checksPassed), readyToMerge: false }
                     : null,
+            shortChecks: counted,
         };
     }
 
-    function getStandingStatus(standing: PullRequestStanding, phase: StandingPhase): ItemStatusFact | null {
+    /** Its status by its standing; on a phone a word or two, what its checks' count already says left out. */
+    function getStandingStatus(
+        standing: PullRequestStanding,
+        phase: StandingPhase,
+        checksCounted: boolean,
+    ): ItemStatusFact | null {
         switch (phase) {
             case 'needsAuthor': {
                 const parts: string[] = [];
+                const short: ItemShortFact[] = [];
                 if (standing.checksFailing) {
                     parts.push(
                         standing.failingChecks > 0
                             ? t(l.checksFailing, { count: standing.failingChecks })
                             : t(l.checksFailingUncounted),
                     );
+                    if (!checksCounted) {
+                        short.push(
+                            getShortFact(
+                                { icon: X, tone: 'danger', text: t(l.checksFailingUncounted) },
+                                l.shortFailing,
+                            ),
+                        );
+                    }
                 }
 
                 if (standing.changesRequested) {
                     parts.push(t(l.changesRequested));
+                    short.push(
+                        getShortFact({ icon: CircleX, tone: 'danger', text: t(l.changesRequested) }, l.shortChanges),
+                    );
                 }
 
                 if (standing.conflicts) {
                     parts.push(t(l.conflicts));
+                    short.push(getShortFact({ icon: CircleX, tone: 'danger', text: t(l.conflicts) }, l.shortConflicts));
                 }
 
-                return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false };
+                return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false, short };
             }
             case 'checksRunning':
-                return { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false };
+                return withShort(
+                    { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false },
+                    checksCounted ? null : l.shortRunning,
+                );
             case 'approvedReady':
-                return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
+                return withShort(
+                    { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true },
+                    l.shortReady,
+                );
             case 'readyWithoutReview':
-                return { icon: CircleCheck, tone: 'success', text: t(l.readyToMerge), readyToMerge: true };
+                return withShort(
+                    { icon: CircleCheck, tone: 'success', text: t(l.readyToMerge), readyToMerge: true },
+                    l.shortReady,
+                );
             case 'approved': {
                 const text = standing.checksPassed ? t(l.approvedChecksPassed) : t(l.approved);
-                return { icon: CircleCheck, tone: 'success', text, readyToMerge: false };
+                return withShort({ icon: CircleCheck, tone: 'success', text, readyToMerge: false }, l.shortApproved);
             }
-            case 'reviewRequested':
-                return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), readyToMerge: false };
+            case 'reviewRequested': {
+                const text = t(l.yourReviewRequested);
+                return {
+                    icon: Eye,
+                    tone: 'muted',
+                    text,
+                    readyToMerge: false,
+                    short: [getShortFact({ icon: CircleHelp, tone: 'muted', text }, l.shortReview)],
+                };
+            }
             case 'draft':
-                return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false };
+                return withShort(
+                    { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false },
+                    l.shortDraft,
+                );
             case 'waitingForReview':
-                return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false };
+                return withShort(
+                    { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false },
+                    l.shortWaiting,
+                );
             case 'none':
                 return null;
             default:
                 return assertNever(phase);
         }
+    }
+
+    /** The status with its one short word on a phone, in its icon and tone; none for `null`. */
+    function withShort(said: ItemStatusFact, short: Translation | null): ItemStatusFact {
+        return { ...said, short: short ? [getShortFact(said, short)] : [] };
+    }
+
+    /** The sentence's short word, in its icon and tone, the sentence said in full to a screen reader. */
+    function getShortFact(sentence: ItemStatusLook, key: Translation): ItemShortFact {
+        return { icon: sentence.icon, tone: sentence.tone, text: t(key), label: sentence.text };
+    }
+
+    /** "✓ 12/12" all passed, "✕ 8/9" any failed, a spinner and "3/9" while some run; nothing without checks. */
+    function getShortChecks(pr: PullRequestItem): ItemShortFact | null {
+        if (!pr.checks) {
+            return null;
+        }
+
+        const { passing, failing, pending } = pr.checks;
+        const total = passing + failing + pending;
+        if (total === 0) {
+            return null;
+        }
+
+        const text = t(l.checksCount, { passing, total });
+        if (failing > 0) {
+            return { icon: X, tone: 'danger', text, label: t(l.checksFailingCount, { failing, total }) };
+        }
+
+        if (pending > 0) {
+            return { icon: Loader, tone: 'warning', text, label: t(l.checksRunningCount, { passing, pending, total }) };
+        }
+
+        return { icon: Check, tone: 'success', text, label: t(l.checksPassedCount, { passing, total }) };
     }
 }

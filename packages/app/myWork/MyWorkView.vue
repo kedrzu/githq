@@ -45,6 +45,7 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { useRepositoryTracked } from '@/lists/useRepositoryTracked.js';
 import { useShownLayout } from '@/lists/useShownLayout.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { usePhonePart } from '@/shell/usePhonePart.js';
@@ -197,7 +198,7 @@ const reviewRequestedIds = computed(
       ),
     ),
 );
-const trackedSet = computed(() => new Set(props.trackedRepositories));
+const isTracked = useRepositoryTracked(() => props.trackedRepositories);
 /** The reason groups shown: the narrowed one alone, or all four. */
 const reasons = computed(() => props.work.groups.filter(entry => !props.group || entry.group === props.group));
 /** Every reason group shown is in: their counts are final. */
@@ -355,11 +356,6 @@ function arriving() {
 /** The repository a group of the list is of: its rows are named by number alone. */
 function repositoryOf(group: ListGroup<Item>) {
   return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
-}
-
-/** A phone's row names a tracked repository without its owner (mobile D23). */
-function isTracked(nameWithOwner: string | undefined) {
-  return nameWithOwner !== undefined && trackedSet.value.has(nameWithOwner);
 }
 
 /** A row as the engine lists it: a stack's entry or a plain row, with the stacks nested under an issue (D12). */

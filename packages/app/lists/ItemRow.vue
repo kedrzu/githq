@@ -1,30 +1,17 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, a pull request's number, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed, each right after the one before — nothing pinned to the far edge, the title giving way first; under them an issue's repository and number, a pull request's repository unless the list or the issue it is nested under already names it, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented, its icon smaller, its title as any other; one of a stack with a header of its own under an issue one step further (D23). On a phone (mobile D23) the title wraps to two lines and line two keeps what tells whether to open it: the reference (`webapp#1187` for a repository the list says is tracked, with its owner for another, the number alone where the list names it), the stack's marker or summary, a pull request's standing short as MB89 draws it — its checks as a count ("✓ 12/12", red "✕ 8/9", a spinner and "3/9" while some run), then a word or two ("Review", "Approved", "Ready", "Changes", "Draft", "Auto-merge"…), each said in full to a screen reader — the row field with its colour dot and "+N" for its other projects, the labels as dots (named together for a screen reader), a project's values, and at its end one avatar and the age; size, milestone and the Merge and Open buttons wait in the item, and the field and a project's values give way before the rest. A pull request nested under an issue is one indented line there (mobile D24): an arrow, its number, its title as far as it fits and its first short fact, its checks where it has them. -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, a pull request's number, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed, each right after the one before — nothing pinned to the far edge, the title giving way first; under them an issue's repository and number, a pull request's repository unless the list or the issue it is nested under already names it, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented, its icon smaller, its title as any other; one of a stack with a header of its own under an issue one step further (D23). On a phone (mobile D23) the title wraps to two lines and line two keeps what tells whether to open it: the reference (`webapp#1187` for a repository the list says is tracked, with its owner for another, the number alone where the list names it), the stack's marker or summary, a pull request's standing short as MB89 draws it — its checks as a count ("✓ 12/12", red "✕ 8/9", a spinner and "3/9" while some run), then a word or two ("Review", "Approved", "Ready", "Changes", "Draft", "Auto-merge"…), each said in full to a screen reader — the row field with its colour dot and "+N" for its other projects, the labels as dots (named together for a screen reader), a project's values, and at its end one avatar and the age; size, milestone and the Merge and Open buttons wait in the item, and the field and a project's values give way before the rest. A pull request nested under an issue is one indented line there (mobile D24): an arrow, its number, its title as far as it fits and its checks, whatever its phase, where it has them. -->
 <script lang="ts" setup>
-import type { Translation } from '@nzyme/i18n-core';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowUpRight,
   Check,
-  CircleCheck,
-  CircleHelp,
-  CircleX,
   CornerDownRight,
   GitMerge,
-  GitPullRequestDraft,
-  Hourglass,
-  ListOrdered,
   ListPlus,
-  Loader,
   Milestone,
-  PencilLine,
   SquareKanban,
-  Timer,
   Undo2,
-  X,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -32,29 +19,24 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
-import { getMergeEnd } from '@/merge/getMergeEnd.js';
-import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
-import { getPullRequestPhase } from '@/store/getPullRequestPhase.js';
-import type { PullRequestPhase } from '@/store/getPullRequestPhase.js';
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { formatAge } from '@/utils/formatAge.js';
-import { formatList } from '@/utils/formatList.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import ItemField from './ItemField.vue';
 import * as l from './ItemRow.loc.js';
 import ItemStatus from './ItemStatus.vue';
+import LabelDots from './LabelDots.vue';
 import type { ListStack } from './ListTypes.js';
 import PullRequestSize from './PullRequestSize.vue';
 import StackMarker from './StackMarker.vue';
 import StackSummary from './StackSummary.vue';
 import StackToggle from './StackToggle.vue';
 import { useItemFacts } from './useItemFacts.js';
-import type { ItemStatusFact } from './useItemFacts.js';
+import type { ItemShortFact } from './useItemFacts.js';
 import { getPhoneRepositoryName } from './utils/getPhoneRepositoryName.js';
 
 const props = withDefaults(
@@ -108,12 +90,6 @@ const props = withDefaults(
   },
 );
 
-/** One short fact of a phone's row: an icon and a word or a count, with the full sentence for a screen reader. */
-interface PhoneFact {
-  readonly status: ItemStatusFact;
-  readonly label: string;
-}
-
 const emit = defineEmits<{
   /** The chevron of the stack it is the header of was clicked: the list expands or collapses it, opening nothing. */
   toggle: [];
@@ -165,153 +141,16 @@ const phoneReference = computed(() => {
  * merge in a word or two ("Review", "Approved", "Draft") — each said in full to a screen reader. A list showing no
  * status still marks a draft review (D21).
  */
-const phoneFacts = computed((): PhoneFact[] => {
-  const pr = props.item;
-  if (pr.kind !== 'pullRequest') {
-    return [];
+const phoneFacts = computed((): readonly ItemShortFact[] => {
+  const short = facts.status?.short ?? [];
+  if (shown.value.has('status')) {
+    return facts.shortChecks ? [facts.shortChecks, ...short] : short;
   }
 
-  if (pr.pendingReview && !pr.merging) {
-    const draft = getShortFact(PencilLine, 'warning', l.phoneDraftReview);
-    return shown.value.has('status') ? [...getChecksFacts(pr), draft] : [draft];
-  }
-
-  return shown.value.has('status') ? getPhaseFacts(pr) : [];
+  return facts.status?.draftReview ? short : [];
 });
-/** Mobile D24: a nested line's one fact, its checks first. */
-const nestedFact = computed(() => phoneFacts.value[0] ?? null);
-/** Mobile D23: its labels as dots, named together for a screen reader and on hover. */
-const phoneLabels = computed(() =>
-  shown.value.has('labels') && props.item.labels.length > 0
-    ? t(l.labels, { names: formatList(props.item.labels.map(label => label.name)) })
-    : null,
-);
-
-function getPhaseFacts(pr: PullRequestItem): PhoneFact[] {
-  const phase = getPullRequestPhase(pr, { reviewRequested: props.reviewRequested });
-  switch (phase) {
-    case 'merged':
-      return [getShortFact(GitMerge, 'done', l.phoneMerged)];
-    case 'closed':
-      return [];
-    case 'beingMerged':
-      return [getShortFact(Loader, 'warning', l.phoneMerging)];
-    case 'inQueue':
-      return [
-        pr.mergeQueueEntry?.state === 'UNMERGEABLE'
-          ? getShortFact(ListOrdered, 'danger', l.phoneWontMerge)
-          : getShortFact(ListOrdered, 'accent', l.phoneInQueue),
-      ];
-    case 'autoMerge':
-      return [getShortFact(Timer, 'accent', l.phoneAutoMerge)];
-    case 'needsAuthor':
-    case 'checksRunning':
-    case 'approvedReady':
-    case 'readyWithoutReview':
-    case 'approved':
-    case 'reviewRequested':
-    case 'draft':
-    case 'waitingForReview':
-    case 'none':
-      return getOpenFacts(pr, phase);
-    default:
-      return assertNever(phase);
-  }
-}
-
-/** How its last merge ended when it did not merge, else its checks and its review. */
-function getOpenFacts(pr: PullRequestItem, phase: PullRequestPhase): PhoneFact[] {
-  const end = getMergeEnd(merging?.getRecord(pr.id) ?? null, pr, null);
-  if (end) {
-    const { icon, tone } = getMergeEndLook(end.kind);
-    switch (end.kind) {
-      case 'refused':
-      case 'methodNotAllowed':
-        return [getShortFact(icon, tone, l.phoneRefused)];
-      case 'headMoved':
-        return [getShortFact(icon, tone, l.phoneNewCommit)];
-      case 'unknown':
-        return [getShortFact(icon, tone, l.phoneSent)];
-      default:
-        return assertNever(end);
-    }
-  }
-
-  const checks = getChecksFacts(pr);
-  const standing = getPullRequestStanding(pr);
-  switch (phase) {
-    case 'needsAuthor': {
-      const said: PhoneFact[] = [];
-      if (standing.checksFailing && checks.length === 0) {
-        said.push(getShortFact(X, 'danger', l.phoneFailing, t(l.phoneFailingLabel)));
-      }
-
-      if (standing.changesRequested) {
-        said.push(getShortFact(CircleX, 'danger', l.phoneChanges, t(l.phoneChangesLabel)));
-      }
-
-      if (standing.conflicts) {
-        said.push(getShortFact(CircleX, 'danger', l.phoneConflicts, t(l.phoneConflictsLabel)));
-      }
-
-      return [...checks, ...said];
-    }
-    case 'checksRunning':
-      return checks.length > 0 ? checks : [getShortFact(Loader, 'warning', l.phoneRunning)];
-    case 'approvedReady':
-    case 'readyWithoutReview':
-      return [...checks, getShortFact(CircleCheck, 'success', l.phoneReady)];
-    case 'approved':
-      return [...checks, getShortFact(CircleCheck, 'success', l.phoneApproved)];
-    case 'reviewRequested':
-      return [...checks, getShortFact(CircleHelp, 'muted', l.phoneReview)];
-    case 'waitingForReview':
-      return [...checks, getShortFact(Hourglass, 'muted', l.phoneWaiting)];
-    case 'draft':
-      return [...checks, getShortFact(GitPullRequestDraft, 'dim', l.phoneDraft)];
-    default:
-      return checks;
-  }
-}
-
-/** "✓ 12/12" all passed, "✕ 8/9" any failed, a spinner and "3/9" while some run; nothing without checks. */
-function getChecksFacts(pr: PullRequestItem): PhoneFact[] {
-  if (!pr.checks) {
-    return [];
-  }
-
-  const { passing, failing, pending } = pr.checks;
-  const total = passing + failing + pending;
-  if (total === 0) {
-    return [];
-  }
-
-  const text = t(l.checksCount, { passing, total });
-  if (failing > 0) {
-    return [{ status: fact(X, 'danger', text), label: t(l.checksFailingCount, { failing, total }) }];
-  }
-
-  if (pending > 0) {
-    return [{ status: fact(Loader, 'warning', text), label: t(l.checksRunningCount, { passing, pending, total }) }];
-  }
-
-  return [{ status: fact(Check, 'success', text), label: t(l.checksPassedCount, { passing, total }) }];
-}
-
-/** A short word, said in full as the desktop's sentence for it — or `label` where the sentence says more. */
-function getShortFact(
-  icon: LucideIcon,
-  tone: ItemStatusFact['tone'],
-  key: Translation,
-  label = facts.status?.text,
-): PhoneFact {
-  const text = t(key);
-  return { status: fact(icon, tone, text), label: label ?? text };
-}
-
-function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): ItemStatusFact {
-  return { icon, tone, text, readyToMerge: false };
-}
+/** Mobile D24: a nested line's one fact, its checks whatever its phase; nothing without them. */
+const nestedFact = computed(() => (shown.value.has('status') ? facts.checksCount : null));
 </script>
 
 <template>
@@ -346,7 +185,7 @@ function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): Ite
       :aria-label="nestedFact.label"
       :title="nestedFact.label"
     >
-      <ItemStatus :status="nestedFact.status" />
+      <ItemStatus :status="nestedFact" />
     </span>
     <span
       v-if="undone"
@@ -405,13 +244,13 @@ function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): Ite
           />
           <span
             v-for="phoneFact in phoneFacts"
-            :key="phoneFact.status.text"
+            :key="phoneFact.text"
             :class="css.itemRow_shared"
             role="img"
             :aria-label="phoneFact.label"
             :title="phoneFact.label"
           >
-            <ItemStatus :status="phoneFact.status" />
+            <ItemStatus :status="phoneFact" />
           </span>
           <span
             v-if="undone"
@@ -433,20 +272,10 @@ function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): Ite
             :more="facts.projectField.more"
             :title="facts.projectField.title"
           />
-          <span
-            v-if="phoneLabels"
-            :class="css.itemRow_dots"
-            role="img"
-            :aria-label="phoneLabels"
-            :title="phoneLabels"
-          >
-            <span
-              v-for="label in item.labels"
-              :key="label.name"
-              :class="css.itemRow_dot"
-              :style="{ background: `#${label.color}` }"
-            />
-          </span>
+          <LabelDots
+            v-if="shown.has('labels')"
+            :labels="item.labels"
+          />
           <span :class="css.itemRow_phoneValues"><slot name="fields" /></span>
         </span>
         <span :class="css.itemRow_aside">
@@ -791,18 +620,6 @@ function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): Ite
 .itemRow_phoneField {
   flex: 0 1000 auto;
   min-width: 40px;
-}
-
-.itemRow_dots {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-4;
-}
-
-.itemRow_dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
 }
 
 // A project's values come last and give way first, never squeezing what comes before them.

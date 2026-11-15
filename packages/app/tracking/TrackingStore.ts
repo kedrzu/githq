@@ -136,6 +136,7 @@ export const TrackingStore = defineService({
         const keptRef = shallowRef<KeptSettings>(NOTHING_KEPT);
         const savingRef = shallowRef<SettingsSaving>(SETTINGS_SAVING_OFF);
         const trackingRef = computed(() => toTracking(keptRef.value));
+        const repositoryNamesRef = computed(() => trackingRef.value.repositories.map(repo => repo.nameWithOwner));
         const syncRef = shallowRef<ReadonlyMap<string, TrackedSyncState>>(new Map());
         const loadedRef = shallowRef(false);
         const candidatesRef = shallowRef<TrackingCandidates | null>(null);
@@ -170,6 +171,10 @@ export const TrackingStore = defineService({
             /** The tracked repositories in the user's order; reactive. */
             get repositories() {
                 return trackingRef.value.repositories;
+            },
+            /** The tracked repositories' `owner/name`, in the user's order; reactive. */
+            get repositoryNames() {
+                return repositoryNamesRef.value;
             },
             /** The tracked projects in the user's order; reactive. */
             get projects() {

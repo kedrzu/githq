@@ -16,7 +16,7 @@ if (GREEN?.kind !== 'pullRequest') {
 
 const NESTED = D1_ITEMS.find(item => item.id === 'PR_1205');
 const CLOSED_BY_IT = D1_ITEMS.find(item => item.id === 'I_1187');
-if (!NESTED || !CLOSED_BY_IT) {
+if (NESTED?.kind !== 'pullRequest' || !CLOSED_BY_IT) {
     throw new Error('The sample work needs the pull request PR_1205 and the issue I_1187 it closes.');
 }
 
@@ -134,6 +134,33 @@ export const PhoneNested: Story = {
             canvasElement,
             canvas.getByRole('img', { name: matchText('3 of 9 checks passed, 6 running') }),
         );
+    },
+};
+
+/** Mobile D24: without checks the nested line says nothing of where it stands — only its kind is an image. */
+export const PhoneNestedWithoutChecks: Story = {
+    args: { item: { ...NESTED, checks: null }, parent: CLOSED_BY_IT, repositoryTracked: true },
+    decorators: onPhone,
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getAllByRole('img')).toHaveLength(1);
+    },
+};
+
+/** Mobile D24: merged, the nested line still says its checks — not "Merged", which the full row would. */
+export const PhoneNestedMerged: Story = {
+    args: {
+        item: { ...NESTED, state: 'MERGED', merged: true, closedAt: NESTED.updatedAt },
+        parent: CLOSED_BY_IT,
+        repositoryTracked: true,
+    },
+    decorators: onPhone,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expectWithinRow(
+            canvasElement,
+            canvas.getByRole('img', { name: matchText('3 of 9 checks passed, 6 running') }),
+        );
+        await expect(canvas.queryByText('Merged')).toBeNull();
     },
 };
 

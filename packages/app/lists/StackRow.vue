@@ -13,11 +13,11 @@ import LabelPill from '@/components/LabelPill.vue';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { formatList } from '@/utils/formatList.js';
 
 import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
 import ItemStatus from './ItemStatus.vue';
+import LabelDots from './LabelDots.vue';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
 import PullRequestSize from './PullRequestSize.vue';
@@ -122,12 +122,6 @@ const nameWithOwner = computed(() => {
 const phoneRepository = computed(() =>
   nameWithOwner.value === null ? null : getPhoneRepositoryName(nameWithOwner.value, props.repositoryTracked),
 );
-/** Mobile D23: the labels all its pull requests carry as dots, named together for a screen reader and on hover. */
-const phoneLabels = computed(() =>
-  shown.value.has('labels') && stackFacts.labels.shared.length > 0
-    ? t(l.labels, { names: formatList(stackFacts.labels.shared.map(label => label.name)) })
-    : null,
-);
 </script>
 
 <template>
@@ -190,20 +184,10 @@ const phoneLabels = computed(() =>
             :more="stackFacts.projectField.more"
             :title="stackFacts.projectField.title"
           />
-          <span
-            v-if="phoneLabels"
-            :class="css.stackRow_dots"
-            role="img"
-            :aria-label="phoneLabels"
-            :title="phoneLabels"
-          >
-            <span
-              v-for="label in stackFacts.labels.shared"
-              :key="label.name"
-              :class="css.stackRow_dot"
-              :style="{ background: `#${label.color}` }"
-            />
-          </span>
+          <LabelDots
+            v-if="shown.has('labels')"
+            :labels="stackFacts.labels.shared"
+          />
           <span :class="css.stackRow_phoneValues"><slot name="fields" /></span>
         </span>
         <span :class="css.stackRow_aside">
@@ -467,18 +451,6 @@ const phoneLabels = computed(() =>
 .stackRow_phoneField {
   flex: 0 1000 auto;
   min-width: 40px;
-}
-
-.stackRow_dots {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-4;
-}
-
-.stackRow_dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
 }
 
 // A project's values come last and give way first, never squeezing what comes before them.

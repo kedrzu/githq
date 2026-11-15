@@ -33,6 +33,7 @@ import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
 import FilteredOut from '@/components/FilteredOut.vue';
+import { countListRows } from '@/lists/countListRows.js';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
 import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
@@ -52,6 +53,7 @@ import type {
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
+import { useRepositoryTracked } from '@/lists/useRepositoryTracked.js';
 import { useShownLayout } from '@/lists/useShownLayout.js';
 import { usePhonePart } from '@/shell/usePhonePart.js';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
@@ -246,8 +248,8 @@ const shownFields = computed((): ProjectField[] => {
     field => shown.has(`field:${field.id}`) && `field:${field.id}` !== options.value.grouping,
   );
 });
+const isTracked = useRepositoryTracked(() => props.trackedRepositories);
 /** The filter applied: the view's, unless cleared here. */
-const trackedSet = computed(() => new Set(props.trackedRepositories));
 const filter = computed(() => options.value.filter ?? '');
 const filterTerms = computed(() => {
   const applied = filter.value;
@@ -277,16 +279,7 @@ const draftable = computed(
 const phoneCount = computed(() =>
   props.arriving || props.groups === null || unreadable.value ? null : shownCount.value,
 );
-const shownCount = computed(() => {
-  const ids = new Set<string>();
-  for (const group of props.groups ?? []) {
-    for (const row of group.rows) {
-      ids.add(row.id);
-    }
-  }
-
-  return ids.size;
-});
+const shownCount = computed(() => countListRows(props.groups ?? []));
 /**
  * With nothing on screen, what stands in the way (D6): GitHub not showing it stands whatever has arrived, as nothing more
  * comes; the others only while its items are on their way.
@@ -354,11 +347,6 @@ function getPhoneParts(): CommandParts {
       return [{ kind: 'command', command: marked }];
     }),
   };
-}
-
-/** A phone's row names a tracked repository without its owner (mobile D23). */
-function isTracked(nameWithOwner: string | undefined) {
-  return nameWithOwner !== undefined && trackedSet.value.has(nameWithOwner);
 }
 
 function addDraft(title: string, group: string | null) {

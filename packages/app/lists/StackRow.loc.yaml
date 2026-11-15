@@ -10,5 +10,3 @@ addToQueue:
   en: Add to queue
 rebaseOnGitHub:
   en: Rebase on GitHub
-labels:
-  en: 'Labels: {names}'
