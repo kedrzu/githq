@@ -125,6 +125,21 @@ export interface Command extends CommandMarks {
     readonly children?: () => readonly Command[];
     /** What its level says while it lists nothing, in place of "Nothing matches" ("Reading the workflow files…"). */
     readonly message?: string;
+    /** The field's text while its level is open, in place of "Type a command or search…" ("Pick a repository…"). */
+    readonly placeholder?: string;
+    /** Quiet text at the footer's end while its level is open ("Run workflow · step 1 of 3"). */
+    readonly levelHint?: string;
+    /**
+     * Quiet text at the footer's end while it is highlighted, over its level's ("Enter opens Deploy's form", W47). One that
+     * can't run is never highlighted: its hint shows while it is listed and the highlighted line has none ("Enter picks
+     * another workflow", W48).
+     */
+    readonly hint?: string;
+    /**
+     * The heading it sits under in a level (W46's "Tracked repositories"); rows of one heading are shown together. The
+     * menu's top level heads its rows by `section` and ignores it, as it does for a row found deeper than the level shown.
+     */
+    readonly group?: string;
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
     /**

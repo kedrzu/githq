@@ -142,6 +142,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             icon: Play,
             keywords: [t(l.dispatchKeyword), t(l.actionsKeyword)],
             detail: described ? `${where} — ${described}` : where,
+            hint: block ? t(l.pickAnother) : t(l.opensForm, { workflow: workflow.name }),
             unavailable: block ? describeBlock(block, workflow) : undefined,
             prepare: () => files.read(target),
             form: values => getForm({ nameWithOwner, workflow, fallback: null }, values),
@@ -164,6 +165,8 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
                       .join(' · ')
                 : undefined,
             start: inRepository ? getRepositoryRowId(repository) : undefined,
+            placeholder: t(l.pickRepository),
+            levelHint: t(l.firstStep),
             prepare: () => {
                 for (const name of tracked) {
                     void readRunnable(name);
@@ -199,19 +202,30 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             section: 'app',
             icon: BookMarked,
         };
+        const cantRun: Command = { ...row, group: t(l.nothingToRunHeading) };
         // Until its metadata is read, whether the user may run anything there is not known: it reads as being read.
         const block = repositories.get(nameWithOwner) ? getRepositoryBlock(nameWithOwner) : null;
         if (block !== null) {
-            return { ...row, unavailable: block === 'archived' ? t(l.archived) : t(l.noAccess) };
+            return { ...cantRun, unavailable: block === 'archived' ? t(l.archived) : t(l.noAccess) };
         }
 
         const found = dispatchable.get(nameWithOwner);
         if (found.status === 'read' && found.workflows.length === 0) {
-            return { ...row, unavailable: t(l.nothingToRun, { trigger: DISPATCH_TRIGGER }) };
+            return { ...cantRun, unavailable: t(l.nothingToRun, { trigger: DISPATCH_TRIGGER }) };
         }
 
         return {
             ...row,
+            group: t(l.trackedRepositories),
+            placeholder: t(l.pickWorkflow),
+            levelHint:
+                found.status === 'read'
+                    ? t(l.onlyDispatchCounted, {
+                          trigger: DISPATCH_TRIGGER,
+                          count: found.workflows.length,
+                          total: found.total,
+                      })
+                    : t(l.onlyDispatch, { trigger: DISPATCH_TRIGGER }),
             detail: describeRepository(found),
             message:
                 found.status === 'reading' || found.status === 'unread'
@@ -229,6 +243,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             title: workflow.name,
             section: 'app',
             icon: Play,
+            group: t(l.workflowsIn, { repository: nameWithOwner }),
             detail: describeWorkflow(nameWithOwner, parse) ?? undefined,
             prepare: () => files.read({ nameWithOwner, path: workflow.path, ref: null }),
             form: values => getForm({ nameWithOwner, workflow, fallback: parse }, values),
