@@ -379,7 +379,9 @@ function countView(viewId: string) {
   }
 
   const matched = selectView(compileFilter(current.fields, other.filter), other.filter ?? '');
-  return matched === null ? null : countListRows(foldGroups(current, matched, 'none'));
+  // Grouped as the view is saved on GitHub, as its filter is: a stack its grouping splits counts as the view shows it.
+  const saved = getProjectViewDefaults(current, other).options.grouping;
+  return matched === null ? null : countListRows(foldGroups(current, matched, saved));
 }
 
 /** A filter of the project's entries as the views read it, for the signed-in user today. */

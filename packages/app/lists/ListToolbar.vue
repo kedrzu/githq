@@ -18,7 +18,7 @@ import ListOptionsSheet from './ListOptionsSheet.vue';
 import ListTitle from './ListTitle.vue';
 import * as l from './ListToolbar.loc.js';
 import ListToolbarControl from './ListToolbarControl.vue';
-import type { ListToolbarOption } from './ListToolbarControl.vue';
+import type { ListToolbarMenuOption, ListToolbarOption } from './ListToolbarControl.vue';
 import type { ListChoice, ListViewOptions } from './ListTypes.js';
 
 const props = withDefaults(
@@ -93,7 +93,7 @@ const sortChoice = computed(() => props.sorts.find(choice => choice.value === op
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
 /** The filters a phone's options sheet shows as rows of chips. */
 const menuFilters = computed(() =>
-  props.filters.filter((filter): filter is Extract<ListToolbarOption, { kind: 'menu' }> => filter.kind === 'menu'),
+  props.filters.filter((filter): filter is ListToolbarMenuOption => filter.kind === 'menu'),
 );
 /** Whether the phone's options sheet is up. */
 const sheetOpen = ref(false);

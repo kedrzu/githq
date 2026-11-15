@@ -11,7 +11,7 @@ import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 
 import * as l from './ListOptionsSheet.loc.js';
-import type { ListToolbarOption } from './ListToolbarControl.vue';
+import type { ListToolbarMenuOption } from './ListToolbarControl.vue';
 import type { ListChoice, ListViewOptions } from './ListTypes.js';
 
 const props = withDefaults(
@@ -25,7 +25,7 @@ const props = withDefaults(
     /** The orders the list offers; with only one, no row. */
     sorts: readonly ListChoice[];
     /** What narrows the list as the desktop has it (a repository's state), each a row of chips under Filter. */
-    filters?: readonly Extract<ListToolbarOption, { kind: 'menu' }>[];
+    filters?: readonly ListToolbarMenuOption[];
     /** The options differ from the list's defaults: a line says so, with the way back. */
     modified?: boolean;
     /**

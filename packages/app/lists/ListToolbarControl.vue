@@ -46,6 +46,9 @@ export type ListToolbarOption =
       readonly value: readonly string[];
       readonly choose: (value: readonly string[]) => void;
     };
+
+/** A toolbar option choosing one of many: the grouping, the order, a repository's state, a project's row field. */
+export type ListToolbarMenuOption = Extract<ListToolbarOption, { kind: 'menu' }>;
 </script>
 
 <script lang="ts" setup>
