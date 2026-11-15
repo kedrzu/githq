@@ -58,7 +58,7 @@ export const Phone: Story = {
     }),
 };
 
-/** On a phone, the display options opened: every option is there, none being on the bar. */
+/** On a phone, the options opened: a sheet from below with the grouping (`ListOptionsSheet`, mobile D36). */
 export const PhoneDisplay: Story = {
     ...Phone,
     play: async ({ canvasElement }) => {

@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). "Run workflow…" (W46, W36) picks a tracked repository — the screen's straight away, ⌫ showing the others —, one of its workflows that can be run by hand, and fills its form (`useRunWorkflowCommand`). "Documentation", beside "Keyboard shortcuts" among the app's own, opens the docs in a new tab (`DOCS_URL`; in the desktop app githq.dev's, in the system browser). In the web builds "Open in desktop app" opens the screen in the githq desktop app. The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). "Run workflow…" (W46, W36) picks a tracked repository — the screen's straight away, ⌫ showing the others —, one of its workflows that can be run by hand, and fills its form (`useRunWorkflowCommand`). "Documentation", beside "Keyboard shortcuts" among the app's own, opens the docs in a new tab (`DOCS_URL`; in the desktop app githq.dev's, in the system browser). In the web builds "Open in desktop app" opens the screen in the githq desktop app. The phone's command line on a list opens the menu with the place's parts first (`CommandRegistry.openParts`, mobile D17): the screen names them, and they are these same rows — a repository's sections, a project's saved views (`useProjectCommands`), My work and its groups (`useMyWorkPlaces`). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -12,7 +12,6 @@ import {
   Clock,
   CloudUpload,
   Command as CommandIcon,
-  Eye,
   FileDiff,
   GitBranch,
   LogOut,
@@ -35,12 +34,11 @@ import { IssueRoutes, formatShortReference, getOpenedItemRoute } from '@/item/it
 import { useOpenItem } from '@/item/useOpenItem.js';
 import { DOCS_URL } from '@/landing/docsUrl.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
-import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getDraftReviews } from '@/myWork/getDraftReviews.js';
-import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { DRAFT_REVIEWS_PATH } from '@/myWork/myWorkRoutes.js';
+import { useMyWorkPlaces } from '@/myWork/useMyWorkPlaces.js';
 import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
-import { ProjectStore } from '@/projects/ProjectStore.js';
 import { useProjectCommands } from '@/projects/useProjectCommands.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { useRepositoryCommands } from '@/repository/useRepositoryCommands.js';
@@ -85,7 +83,6 @@ const registry = useService(CommandRegistry);
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
 const pendingUntracks = useService(PendingUntracks);
-const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
 const update = useService(AppUpdate);
@@ -98,6 +95,7 @@ const repositorySearchCommand = useRepositorySearchCommand();
 const repositoryCommands = useRepositoryCommands();
 const projectCommands = useProjectCommands();
 const runWorkflowCommands = useRunWorkflowCommand();
+const myWorkPlace = useMyWorkPlaces();
 // Opening the screen in the desktop app is for the web builds; the desktop build has none of it.
 const openInDesktopCommand = !__DESKTOP__ ? useOpenInDesktopCommand() : null;
 
@@ -327,15 +325,8 @@ function startNewIssue() {
 
 function getPlaces(): NavigationPlace[] {
   const places: NavigationPlace[] = [
-    { id: 'myWork', group: 'goTo', kind: 'myWork', title: t(l.myWork), path: '/' },
-    ...MY_WORK_GROUPS.map((group): NavigationPlace => ({
-      id: `myWork:${group}`,
-      group: 'goTo',
-      kind: 'myWork',
-      title: t(groupLabels[group]),
-      detail: t(l.myWork),
-      path: getMyWorkGroupPath(group),
-    })),
+    myWorkPlace(null),
+    ...MY_WORK_GROUPS.map(group => myWorkPlace(group)),
     {
       id: 'workflows',
       group: 'goTo',
@@ -373,7 +364,7 @@ function getPlaces(): NavigationPlace[] {
       keywords: [project.owner],
       path: getProjectPath(project),
       children: () => getProjectChildren(project),
-      foundAlone: () => getProjectViews(project),
+      foundAlone: () => projectCommands(project).savedViews,
     });
   }
 
@@ -424,18 +415,7 @@ function getSettingsRow(section: SettingsSection): Command {
 
 function getProjectChildren(project: TrackedProject): Command[] {
   const commands = projectCommands(project);
-  return [...getProjectViews(project), commands.newIssue, commands.openOnGitHub, commands.copyLink, commands.settings];
-}
-
-function getProjectViews(project: TrackedProject): Command[] {
-  return (projects.get(project.id)?.views ?? []).map(view => ({
-    id: `view:${view.id}`,
-    title: view.name,
-    detail: t(l.savedView),
-    icon: Eye,
-    section: 'view',
-    run: () => void router.push(getProjectPath(project, view.number)),
-  }));
+  return [...commands.savedViews, commands.newIssue, commands.openOnGitHub, commands.copyLink, commands.settings];
 }
 
 /** A repository's level, tracked or not: `when` of each row says which it is offered. Track last, as in its group (D34). */
@@ -476,6 +456,7 @@ function navigate(result: NavigationResult) {
     :repository="contextRepository"
     :navigation="navigationData"
     :start-command-id="registry.menu?.commandId ?? null"
+    :parts="registry.menu?.parts ?? null"
     @navigate="navigate"
   />
   <KeyHelp

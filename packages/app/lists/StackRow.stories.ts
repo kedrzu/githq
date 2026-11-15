@@ -8,6 +8,7 @@ import type { ItemProject } from '@/store/ItemTypes.js';
 import { matchText } from '@/testing/matchText.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_STACKS, sampleListStack } from '@/testing/sampleStacks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import { ITEM_PROPERTIES } from './ItemProperty.js';
 import StackRow from './StackRow.vue';
@@ -40,6 +41,7 @@ const meta = {
         properties: ITEM_PROPERTIES,
         now: SAMPLE_NOW,
     },
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof StackRow>;
 
 export default meta;
@@ -312,6 +314,20 @@ export const DraftReviews: Story = {
 };
 
 /** The heights of the pips drawn, first to last. */
+/**
+ * Mobile D23, as an item's phone row: the name and count; under them the tracked repository without its owner, the
+ * pips and the state, the shared label as a dot, one face and the age — at an iPhone's 390 px.
+ */
+export const Phone: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.held), repositoryTracked: true },
+    decorators: [withPhoneLayout(true), () => ({ template: '<div style="width: 390px"><story /></div>' })],
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText('webapp')).toBeVisible();
+        await expect(canvas.getByText('2 of 4 ready, #1206 blocks')).toBeVisible();
+    },
+};
+
 function getPipHeights(canvasElement: HTMLElement) {
     const pips = canvasElement.querySelector('[aria-hidden="true"]:has(> span)')?.children ?? [];
     return [...pips].map(pip => pip.getBoundingClientRect().height);

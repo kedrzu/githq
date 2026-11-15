@@ -1,4 +1,4 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). On a phone every state has the phone's top bar with the project's name (mobile D14), the view's its options too (`ListToolbar`). -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). On a phone every state has the phone's top bar with the project's name (mobile D14), the view's its options too (`ListToolbar`), and a board view keeps its columns as its grouping while drawn as a list (mobile D9). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -19,7 +19,7 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import type { ProjectFieldInput } from '@/edits/EditTypes.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
 import { getItemComparator } from '@/lists/getItemComparator.js';
-import { foldStacks } from '@/lists/foldStacks.js';
+import { countListRows } from '@/lists/countListRows.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
@@ -28,7 +28,7 @@ import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
-import { withStackMembers } from '@/lists/withStackMembers.js';
+import { useShownLayout } from '@/lists/useShownLayout.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
@@ -36,7 +36,7 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { ProjectIteration } from '@/store/ItemDetailTypes.js';
+import type { ProjectField, ProjectIteration } from '@/store/ItemDetailTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
@@ -51,6 +51,8 @@ import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
 import type { ProjectListTexts } from './buildProjectList.js';
 import { buildProjectList, getProjectEntryId } from './buildProjectList.js';
 import { compileProjectFilter } from './filter/compileProjectFilter.js';
+import type { CompiledProjectFilter } from './filter/compileProjectFilter.js';
+import { foldProjectGroups } from './foldProjectGroups.js';
 import * as l from './ProjectPage.loc.js';
 import ProjectDraftDialog from './ProjectDraftDialog.vue';
 import { ProjectStore } from './ProjectStore.js';
@@ -180,6 +182,8 @@ useCommands(() => [
     detail: tracked.value?.title ?? `${owner.value}#${number.value}`,
   },
 ]);
+/** Going to each saved view, as the command menu's level under the project: the phone's menu of the views (mobile D17). */
+const viewCommands = computed(() => projectCommands({ ...address.value, id: tracked.value?.id ?? null }).savedViews);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;
@@ -201,7 +205,10 @@ const options = useListViewOptions({
       ? getProjectViewChoices(project.value, defaults.value.options)
       : { groupings: [], sorts: [], properties: [] },
 });
-/** On the board the grouping is the columns: a single select or iteration field. */
+/**
+ * On the board the grouping is the columns: a single select or iteration field — on a phone too, where the board kept
+ * is drawn as a list grouped by its columns (mobile D9).
+ */
 const grouping = computed((): ProjectGrouping => {
   const chosen = options.options.grouping;
   if (options.options.layout !== 'board' || !project.value || isColumnGrouping(project.value, chosen)) {
@@ -211,6 +218,7 @@ const grouping = computed((): ProjectGrouping => {
   return getColumnGrouping(project.value, view.value) ?? 'none';
 });
 const shownOptions = computed((): ProjectViewOptions => ({ ...options.options, grouping: grouping.value }));
+const layout = useShownLayout(() => options.options.layout);
 const today = computed(() => new Date(list.now).toISOString().slice(0, 10));
 /** The project's entries as shown: items with their issue's or pull request's row, and drafts. */
 const entries = computed((): ProjectEntry[] => {
@@ -223,7 +231,6 @@ const entries = computed((): ProjectEntry[] => {
     return content || item.draft ? [{ item, content }] : [];
   });
 });
-/** The filter applied: the saved view's, unless cleared here or all items are shown. */
 // One array until they change: the menu finds in it per keystroke, and it readies an array once (`filterOptions`).
 const addableItems = computed((): CommandOption[] => {
   const current = project.value;
@@ -242,30 +249,17 @@ const addableItems = computed((): CommandOption[] => {
       pick: () => void editor.edit([item.id], { kind: 'addToProject', project: current }),
     }));
 });
+/** The filter applied: the saved view's, unless cleared here or all items are shown. */
 const filter = computed(() => options.options.filter ?? '');
-const compiled = computed(() =>
-  compileProjectFilter({
-    filter: filter.value || null,
-    fields: project.value?.fields ?? [],
-    viewerLogin: auth.viewer?.login ?? '',
-    today: today.value,
-    hasDrafts: hasDrafts(),
-    hasDraftPullRequests: hasDraftPullRequests(),
-  }),
-);
+const compiled = computed(() => compileFilter(project.value?.fields ?? [], filter.value));
 const answered = computed(() => {
   const evaluated = compiled.value;
   return evaluated.kind === 'github' && project.value && filter.value
     ? { projectId: project.value.id, filter: filter.value, term: evaluated.term }
     : null;
 });
-const selected = computed(() =>
-  selectProjectEntries({
-    entries: entries.value,
-    filter: compiled.value,
-    answered: answered.value ? answers.get(answered.value.projectId, answered.value.filter).ids : null,
-  }),
-);
+const selected = computed(() => selectView(compiled.value, filter.value));
+const stacks = computed(() => groupStacks(items.all));
 const texts = computed((): ProjectListTexts => ({
   all: t(l.allItems),
   noValue: field => t(l.noValue, { field }),
@@ -279,28 +273,7 @@ const texts = computed((): ProjectListTexts => ({
 }));
 const groups = computed(() => {
   const current = project.value;
-  if (!current || !selected.value) {
-    return null;
-  }
-
-  const matched = selected.value;
-  // D3, SP25: a stack any of whose pull requests the filter matches shows them all, in the groups the filter alone gives.
-  const shown = withStackMembers({
-    matched,
-    all: entries.value.filter(entry => !entry.item.isArchived),
-    getPullRequest,
-  });
-  const built = buildGroups(current, matched);
-  const keys = new Set(built.map(group => group.key));
-  // D3: a stack's pull requests in a group share an entry — described from the whole stack, which the local copy holds
-  // even where the project does not.
-  return foldStacks({
-    groups: shown === matched ? built : buildGroups(current, shown).filter(group => keys.has(group.key)),
-    getPullRequest,
-    stacks: groupStacks(items.all),
-    describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
-    matched: shown === matched ? null : new Set(matched.map(getProjectEntryId)),
-  });
+  return current && selected.value ? foldGroups(current, selected.value, grouping.value) : null;
 });
 const itemCount = computed(() => entries.value.filter(entry => !entry.item.isArchived).length);
 const tabs = computed((): ProjectTab[] => {
@@ -318,16 +291,7 @@ const tabs = computed((): ProjectTab[] => {
       to: getProjectPath(current, other.number),
       current: shown,
       modified: shown ? options.modified : listViewOptions.has(listKey(current.id, other.id)),
-      answered: shown
-        ? answered.value !== null
-        : compileProjectFilter({
-            filter: other.filter,
-            fields: current.fields,
-            viewerLogin: auth.viewer?.login ?? '',
-            today: today.value,
-            hasDrafts: hasDrafts(),
-            hasDraftPullRequests: hasDraftPullRequests(),
-          }).kind === 'github',
+      answered: shown ? answered.value !== null : compileFilter(current.fields, other.filter).kind === 'github',
     };
   });
   const all: ProjectTab = {
@@ -348,10 +312,17 @@ const sorts = computed((): ListChoice[] => {
     return [];
   }
 
-  return getProjectViewChoices(current, defaults.value.options).sorts.map(sort => ({
-    value: sort,
-    label: describeSort(current, sort),
-  }));
+  return getProjectViewChoices(current, defaults.value.options).sorts.map((sort): ListChoice => {
+    const levels = parseProjectSort(current, sort);
+    const level = levels.length === 1 ? levels[0] : undefined;
+    return {
+      value: sort,
+      label: describeSort(current, sort),
+      ...(level && {
+        sortDirection: { key: level.key, keyLabel: describeSortKey(current, level.key), direction: level.direction },
+      }),
+    };
+  });
 });
 const rowFieldId = computed(() => (project.value ? (projects.getRowField(project.value.id)?.id ?? null) : null));
 const openedDraft = computed(() => {
@@ -383,11 +354,11 @@ function isThisProject(place: { readonly url: string }) {
   return place.url.toLowerCase() === githubUrl.value.toLowerCase();
 }
 
-function buildGroups(current: Project, shown: readonly ProjectEntry[]) {
+function buildGroups(current: Project, shown: readonly ProjectEntry[], by: ProjectGrouping) {
   return buildProjectList({
     project: current,
     entries: shown,
-    grouping: grouping.value,
+    grouping: by,
     sort: options.options.sort,
     texts: texts.value,
     today: today.value,
@@ -395,8 +366,58 @@ function buildGroups(current: Project, shown: readonly ProjectEntry[]) {
   });
 }
 
-function getPullRequest(entry: ProjectEntry) {
-  return entry.content?.kind === 'pullRequest' ? entry.content : null;
+/**
+ * How many entries another saved view lists, for the phone's menu of the views (mobile D17): its filter as saved on
+ * GitHub evaluated here, or as GitHub last answered it — a stack one entry, as the view shown counts it; `null` until it
+ * has.
+ */
+function countView(viewId: string) {
+  const current = project.value;
+  const other = current?.views.find(candidate => candidate.id === viewId);
+  if (!current || !other) {
+    return null;
+  }
+
+  const matched = selectView(compileFilter(current.fields, other.filter), other.filter ?? '');
+  // Grouped as the view is saved on GitHub, as its filter is: a stack its grouping splits counts as the view shows it.
+  const saved = getProjectViewDefaults(current, other).options.grouping;
+  return matched === null ? null : countListRows(foldGroups(current, matched, saved));
+}
+
+/** A filter of the project's entries as the views read it, for the signed-in user today. */
+function compileFilter(fields: readonly ProjectField[], source: string | null) {
+  return compileProjectFilter({
+    filter: source || null,
+    fields,
+    viewerLogin: auth.viewer?.login ?? '',
+    today: today.value,
+    hasDrafts: hasDrafts(),
+    hasDraftPullRequests: hasDraftPullRequests(),
+  });
+}
+
+/** The entries a compiled filter keeps: evaluated here, or as GitHub last answered it (K6); `null` until it has. */
+function selectView(compiledFilter: CompiledProjectFilter, source: string) {
+  const current = project.value;
+  return selectProjectEntries({
+    entries: entries.value,
+    filter: compiledFilter,
+    answered: compiledFilter.kind === 'github' && current && source ? answers.get(current.id, source).ids : null,
+  });
+}
+
+/**
+ * The groups of the entries a filter keeps (`foldProjectGroups`): a stack described from the whole stack, which the
+ * local copy holds even where the project does not.
+ */
+function foldGroups(current: Project, matched: readonly ProjectEntry[], by: ProjectGrouping) {
+  return foldProjectGroups({
+    matched,
+    entries: entries.value.filter(entry => !entry.item.isArchived),
+    build: shown => buildGroups(current, shown, by),
+    stacks: stacks.value,
+    describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
+  });
 }
 
 function listKey(projectId: string, viewId: string) {
@@ -576,6 +597,8 @@ function setRowField(fieldId: string | null) {
     v-model:checked-ids="list.checkedIds"
     :project="project"
     :tabs="tabs"
+    :view-commands="viewCommands"
+    :count-view="countView"
     :view="showAll ? null : view"
     :groups="groups"
     :item-count="itemCount"
@@ -585,7 +608,7 @@ function setRowField(fieldId: string | null) {
     :answered-term="answered?.term ?? null"
     :options="shownOptions"
     :modified="options.modified"
-    :roadmap="defaults.roadmap && options.options.layout === 'list'"
+    :roadmap="defaults.roadmap && layout === 'list'"
     :sorts="sorts"
     :row-field-id="rowFieldId"
     :viewer-login="auth.viewer.login"
@@ -594,6 +617,7 @@ function setRowField(fieldId: string | null) {
     :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
+    :tracked-repositories="tracking.repositoryNames"
     @update:options="options.set($event)"
     @update:row-field-id="setRowField"
     @reset="options.reset()"

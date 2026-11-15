@@ -5,7 +5,8 @@ import type { MyWorkGroup, MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { IssueItem, Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
-import { sampleStack } from '@/testing/sampleStacks.js';
+import { sampleMyWork } from '@/testing/sampleMyWork.js';
+import { sampleStack, STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
 
 import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { buildMyWork } from './buildMyWork.js';
@@ -97,6 +98,21 @@ test('the counts are the top-level rows of each group and "My work" is their sum
     for (const { group, rows } of work.groups) {
         expect(work.counts[group]).toBe(rows.length);
     }
+});
+
+test("each filter's counts are what that filter shows, whichever filter is on — a stack once", () => {
+    const filters: readonly MyWorkFilter[] = ['all', 'needsMe', 'waitingOnOthers'];
+    for (const on of filters) {
+        const work = sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, on);
+        for (const other of filters) {
+            const shown = sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, other);
+            expect(work.filterCounts[other]).toEqual(shown.counts);
+        }
+    }
+
+    // A true negative: the filters do differ on this sample, so equal counts would be a coincidence of nothing filtered.
+    const all = sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all');
+    expect(new Set(filters.map(filter => all.filterCounts[filter].total)).size).toBe(3);
 });
 
 test('"Needs me": reviews asked of me, my pull requests failing, sent back or conflicting, and assigned issues — not mentions', () => {

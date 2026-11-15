@@ -38,7 +38,6 @@ const t = useTranslate();
 const view = useListViewOptions({ list: 'myWork', defaults: MY_WORK_VIEW_DEFAULTS, choices: MY_WORK_VIEW_CHOICES });
 
 const filter = ref<MyWorkFilter>('all');
-const trackedRepositories = computed(() => tracking.repositories.map(repository => repository.nameWithOwner));
 
 const group = computed(() => route.meta.myWorkGroup ?? null);
 // Back on an item opened from here says My work, or the group it is narrowed to (mobile D20).
@@ -96,7 +95,7 @@ const waitingCount = computed(() => {
     :get-item="id => items.get(id)"
     :now="list.now"
     :waiting-count="waitingCount"
-    :tracked-repositories="trackedRepositories"
+    :tracked-repositories="tracking.repositoryNames"
     :opened-id="list.openedId"
     :is-edited="list.isEdited"
     :undone="list.undone"

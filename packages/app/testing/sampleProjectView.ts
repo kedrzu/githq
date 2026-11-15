@@ -68,16 +68,24 @@ export function sampleProjectView(params: SampleProjectViewParams) {
         modified: modifiedViews.includes(saved.number),
         answered: compile(project, saved.filter, entries).kind === 'github',
     }));
-    const sorts: ListChoice[] = getProjectViewChoices(project, defaults.options).sorts.map(sort => ({
-        value: sort,
-        label:
-            parseProjectSort(project, sort)
-                .map(
-                    level =>
-                        `${getGroupingField(project, level.key)?.name ?? level.key} ${level.direction === 'asc' ? '↑' : '↓'}`,
-                )
-                .join(', ') || "GitHub's order",
-    }));
+    const sorts: ListChoice[] = getProjectViewChoices(project, defaults.options).sorts.map((sort): ListChoice => {
+        const levels = parseProjectSort(project, sort);
+        const level = levels.length === 1 ? levels[0] : undefined;
+        return {
+            value: sort,
+            label:
+                levels
+                    .map(({ key, direction }) => `${describeKey(project, key)} ${direction === 'asc' ? '↑' : '↓'}`)
+                    .join(', ') || "GitHub's order",
+            ...(level && {
+                sortDirection: {
+                    key: level.key,
+                    keyLabel: describeKey(project, level.key),
+                    direction: level.direction,
+                },
+            }),
+        };
+    });
 
     return {
         project,
@@ -101,6 +109,11 @@ export function sampleProjectView(params: SampleProjectViewParams) {
         answeredTerm: filter.kind === 'github' ? filter.term : null,
         sorts,
     };
+}
+
+function describeKey(project: Project, key: string) {
+    // GitHub's own keys by their name: `title` as "Title".
+    return getGroupingField(project, key)?.name ?? `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
 }
 
 function compile(project: Project, filter: string | null, entries: readonly ProjectEntry[]) {

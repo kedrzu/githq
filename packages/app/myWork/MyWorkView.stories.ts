@@ -333,5 +333,24 @@ export const DraftReview: Story = {
     },
 };
 
-/** On a phone (mobile MB32): the phone's top bar — places, "My work" and the display options; no filters. */
+/**
+ * On a phone (mobile MB32): the phone's top bar — places, "My work" and the display options — and under it the filters
+ * in a strip, each with how many rows it shows (mobile D23).
+ */
 export const Phone: Story = { decorators: [withPhoneLayout(true)] };
+
+/** MB89: on a phone, filtered to "Needs me". */
+export const PhoneNeedsMe: Story = { ...NeedsMe, decorators: [withPhoneLayout(true)] };
+
+/** A board kept in the options is drawn on a phone as the list, the groups as they would be its columns (mobile D9). */
+export const PhoneBoardAsList: Story = {
+    args: { options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' } },
+    decorators: [withPhoneLayout(true)],
+    play: async ({ canvasElement }) => {
+        // A list's group heads collapse their group; a board's column heads don't.
+        await expect(within(canvasElement).getByRole('button', { name: /^Review\srequested\s\d+$/u })).toHaveAttribute(
+            'aria-expanded',
+            'true',
+        );
+    },
+};

@@ -150,9 +150,10 @@ function getCiLook(state: StatusState): CiLook {
 
   text-decoration: none;
 
+  // The text turns white, the border only steps up: a white border would shout louder than the number.
   &:hover {
     color: $color-fg;
-    border-color: $color-fg;
+    border-color: $color-fg-3;
   }
 }
 

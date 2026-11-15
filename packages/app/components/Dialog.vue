@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge. Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
@@ -35,8 +35,11 @@ withDefaults(
     fitContent?: boolean;
     /** Centred on the window both ways (the merge panel), instead of hanging from near its top. */
     centered?: boolean;
-    /** A sheet along the window's left edge, all its height (the phone's places panel), instead of hanging from near its top. */
-    edge?: 'left';
+    /**
+     * A sheet along an edge instead of hanging from near the top: `left` all the window's height (the phone's places
+     * panel), `bottom` all its width, as tall as its content, rising from below (a phone's list options).
+     */
+    edge?: 'bottom' | 'left';
   }>(),
   { description: undefined },
 );
@@ -57,7 +60,7 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
-/** Width in px; it never grows past the window. */
+/** Width in px; it never grows past the window. Not for `edge="bottom"`, as wide as the window. */
 const width = defineModel<number>('width', { default: 560 });
 const t = useTranslate();
 </script>
@@ -77,9 +80,9 @@ const t = useTranslate();
           css.dialog,
           bare && (fitContent ? css.dialog_fit : css.dialog_bare),
           centered && css.dialog_centered,
-          edge === 'left' && css.dialog_left,
+          edge && css[`dialog_${edge}`],
         ]"
-        :style="{ width: `${width}px` }"
+        :style="edge === 'bottom' ? undefined : { width: `${width}px` }"
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
         @open-auto-focus="emit('openAutoFocus', $event)"
@@ -209,6 +212,23 @@ const t = useTranslate();
   &[data-state='open'] {
     --motion-slide-x: #{-$motion-slide-distance};
     --motion-slide-y: 0;
+  }
+}
+
+.dialog_bottom {
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-width: none;
+  max-height: calc(100vh - #{$phone-top-bar-height});
+  padding-bottom: $phone-home-indicator-room;
+  border-width: 1px 0 0;
+  border-radius: $radius-xl $radius-xl 0 0;
+  transform: none;
+
+  &[data-state='open'] {
+    --motion-slide-y: #{$motion-slide-distance};
   }
 }
 

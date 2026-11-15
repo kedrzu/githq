@@ -444,3 +444,36 @@ does. Round 7's unticked `aaIw8` entry is corrected above.
 - [x] W39 (`JlrIz`): the workflow item `aaIw8` replaced by `ApQ6Z`, the same `Workflow / Item · Deploy · two columns`
   instance showing `Run #4826` (`ruZPm`) with no fill override on its surface (`ruZPm/yvmhP` `#D299220F` → none): it
   reads as the other run rows. Caption `M92RyW` unchanged: it never mentioned the highlight.
+
+## Round 13 · implementation, Run workflow's levels get their headings, notes and placeholders back
+
+Asked (`.context/workflow-browser-brief-13.md`, follow-up `.context/workflow-browser-brief-14.md`): the command menu's
+levels can now carry what round 11 hid to match the first build: a heading per group of a level's rows
+(`Command.group`), the level's own placeholder (`Command.placeholder`), a quiet note at the footer's end while a level
+is open (`Command.levelHint`) or while a line is highlighted (`Command.hint`), and the ▷ icon on the crumb of an action
+whose levels are walked into (`CommandMenu.vue`, `useRunWorkflowCommand.ts`). Made through the `pen` CLI. Forced by: the
+build. Ticked because each records what the code does. Round 11's "left as drawn" point on the placeholders is settled
+by the build.
+
+- [x] `Workflow / Command step` (`W4hVe`): ▷ icon `FXqwp` hidden → shown; the "Run workflow" crumbs in W46, W36 and W37
+  (`iNUyC`, `NsWdk`, `n10Otc`) show it; `UgPYO` (W37's "Deploy" crumb) keeps it hidden.
+
+- [x] W46 (`YhWZy`): headings `G80zw` "Tracked repositories" and `K6P7S` "Nothing to run" shown; placeholder `rcVzr` "Type
+  a command or search…" → "Pick a repository…"; footer note `wAZs8` "Run workflow · step 1 of 3" shown at the end.
+
+- [x] W36 (`cgrai`): heading `fCfmV` shown, "Workflows in fitloop/webapp you can run"; placeholder `gP7Nm` "Type a command
+  or search…" → "Pick a workflow…"; footer note `hAU0l` "Only workflows with workflow_dispatch · 3 of 8" shown, on a
+  line of its own at the footer's right end, under the hints: it doesn't fit beside them, and the build's footer
+  (`FilterList.vue`) wraps an end note that doesn't fit to its own line rather than breaking the hints. The footer
+  `DGmJy` stacks two lines 4 px apart, its padding unchanged: the hints in a new row `Hints` (`cshiA`, the same 14 px
+  gap), the spacer `G8kkxh` moved into it and still hidden, the note on one line at the right. The count is of the
+  repository's enabled workflows (`useDispatchableWorkflows`).
+
+- [x] W47 (`TkD8j`): note `E2i67` "Enter opens Deploy's form" shown, while "Run workflow · Deploy" is highlighted.
+
+- [x] Captions W46 `wDk8I`, W36 `P7pzk`, W47 `pdEqw`, W37 `Vv2I7`: the headings, placeholders, footer notes and the ▷;
+  round 11's "no headings inside the levels" wording removed; W36's adds that a note that doesn't fit takes its own line.
+
+- [x] W48 (`z8MX76`, brief `.context/workflow-browser-brief-15.md`): note `jkREd` "Enter picks another workflow" shown at
+  the footer's end. The build shows the hint of a listed line that can't run ("Run workflow · CLA") while the line the
+  cursor skipped to ("Run workflow…") has none of its own. Caption `eGpI8` says so.

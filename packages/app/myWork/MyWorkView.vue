@@ -1,6 +1,7 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). On a phone the toolbar is the phone's top bar, without the filters (`ListToolbar`), and the command line names the list — "My work" or the group — with its count once in (mobile D17). -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). On a phone the toolbar is the phone's top bar (`ListToolbar`), the filters in a strip under it that stays as the list scrolls, each with how many rows it shows, scrolling sideways when they don't fit (mobile D23); the groups are a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9); and the command line names the list — "My work" or the group — with its count once in, its menu listing My work and its groups first, each with its count, the one shown checked (mobile D17); the rows are the phone's (`ItemRow`, `StackRow`: mobile D23, D24), a tracked repository named without its owner. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -15,6 +16,7 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import type { CommandPart, CommandParts } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -43,14 +45,18 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { useRepositoryTracked } from '@/lists/useRepositoryTracked.js';
+import { useShownLayout } from '@/lists/useShownLayout.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { usePhonePart } from '@/shell/usePhonePart.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
+import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import type { PullRequestStack } from '@/store/stacks/groupStacks.js';
 
-import type { MyWork, MyWorkFilter, MyWorkRow, MyWorkStatus } from './buildMyWork.js';
+import type { MyWork, MyWorkCounts, MyWorkFilter, MyWorkRow, MyWorkStatus } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
 import { groupMyWorkByRepository } from './groupMyWorkByRepository.js';
 import { groupMyWorkByAuthor, groupMyWorkByStatus } from './groupMyWorkRows.js';
@@ -59,6 +65,7 @@ import * as groupLabels from './MyWorkGroupLabel.loc.js';
 import * as l from './MyWorkView.loc.js';
 import { MY_WORK_VIEW_DEFAULTS } from './myWorkViewOptions.js';
 import type { MyWorkGrouping } from './myWorkViewOptions.js';
+import { useMyWorkPlaces } from './useMyWorkPlaces.js';
 
 const props = withDefaults(
   defineProps<{
@@ -76,7 +83,10 @@ const props = withDefaults(
     waitingCount: number;
     /** Why what hasn't arrived can't arrive now, as the sync tells it; `null` when nothing stands in its way. */
     cantBeRead?: CantBeReadCause | null;
-    /** The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, and the empty "my work" (K4). */
+    /**
+     * The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, the empty "my work" (K4),
+     * and a phone's rows naming them without their owner (mobile D23).
+     */
     trackedRepositories?: readonly string[];
     /** The item opened over the list, in the panel: moving the selection opens the next one in its place. */
     openedId?: string | null;
@@ -133,6 +143,10 @@ defineSlots<{
 
 const t = useTranslate();
 const choices = useItemListChoices();
+const phone = useService(PhoneLayout);
+const myWorkPlace = useMyWorkPlaces();
+/** What is drawn: a list on a phone, whatever the options keep (mobile D9). */
+const layout = useShownLayout(() => options.value.layout);
 
 /** The key of the group of repositories the user doesn't track; no repository's `owner/name` can take it. */
 const OTHER_REPOSITORIES = 'otherRepositories';
@@ -145,11 +159,13 @@ const STATUS_ICONS: Readonly<Record<MyWorkStatus, LucideIcon>> = {
   other: AtSign,
 };
 
+/** On a phone each filter says how many rows it shows (mobile D23) — of the narrowed group alone — once they are all in. */
 const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
   MY_WORK_FILTERS.map(candidate => ({
     value: candidate,
     label: t(l[candidate]),
     keyshortcuts: FILTER_KEYS[candidate],
+    count: phone.active && arrived.value ? countOf(props.work.filterCounts[candidate]) : undefined,
   })),
 );
 const groupings = computed((): ListChoice[] => [
@@ -182,8 +198,11 @@ const reviewRequestedIds = computed(
       ),
     ),
 );
+const isTracked = useRepositoryTracked(() => props.trackedRepositories);
 /** The reason groups shown: the narrowed one alone, or all four. */
 const reasons = computed(() => props.work.groups.filter(entry => !props.group || entry.group === props.group));
+/** Every reason group shown is in: their counts are final. */
+const arrived = computed(() => reasons.value.every(entry => entry.arrived));
 /** The reason groups as the engine lists them. */
 const reasonGroups = computed((): ListGroup<Item>[] =>
   reasons.value.map(entry => ({
@@ -221,7 +240,7 @@ const groups = computed((): ListGroup<Item>[] => {
       }
 
       const shown = reasonGroups.value.filter(entry => !entry.arrived || entry.rows.length > 0);
-      return options.value.layout === 'board' && shown.length > 0 ? reasonGroups.value : shown;
+      return layout.value === 'board' && shown.length > 0 ? reasonGroups.value : shown;
     }
     case 'repository':
       return [...repositoryGroups(), ...arriving()];
@@ -234,14 +253,12 @@ const groups = computed((): ListGroup<Item>[] => {
   }
 });
 
-// On a phone the command line names the list with its count, once every group shown is in (mobile D17).
+// On a phone the command line names the list with its count, once every group shown is in, and its menu lists My work and
+// its groups first, each with its count once in (mobile D17).
 usePhonePart(() => ({
   label: title.value,
-  count: reasons.value.every(entry => entry.arrived)
-    ? props.group
-      ? props.work.counts[props.group]
-      : props.work.counts.total
-    : null,
+  count: arrived.value ? countOf(props.work.counts) : null,
+  parts: getPhoneParts,
 }));
 
 // `1`–`3` switch the filters; the command menu offers them too.
@@ -258,6 +275,33 @@ useCommands(() =>
     },
   })),
 );
+
+function getPhoneParts(): CommandParts {
+  const { counts } = props.work;
+  const all = props.work.groups.every(entry => entry.arrived);
+  return {
+    heading: t(l.title),
+    rows: [
+      { kind: 'place', place: { ...myWorkPlace(null), count: all ? counts.total : null, current: !props.group } },
+      ...MY_WORK_GROUPS.map((group): CommandPart => {
+        const arrivedGroup = props.work.groups.find(entry => entry.group === group)?.arrived ?? false;
+        // Under the heading "My work" its groups need not say whose they are.
+        const place = {
+          ...myWorkPlace(group),
+          detail: undefined,
+          count: arrivedGroup ? counts[group] : null,
+          current: props.group === group,
+        };
+        return { kind: 'place', place };
+      }),
+    ],
+  };
+}
+
+/** The rows the list shows of these counts: the narrowed group's, or all of them. */
+function countOf(counts: MyWorkCounts) {
+  return props.group ? counts[props.group] : counts.total;
+}
 
 function clearFilter() {
   filter.value = 'all';
@@ -377,13 +421,25 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
         :options="filterOptions"
       />
     </ListToolbar>
+    <!-- On a phone the filters sit under the top bar, which has no room for them (mobile D23), and stay as the list scrolls. -->
+    <div
+      v-if="phone.active"
+      :class="css.myWorkView_strip"
+    >
+      <SegmentedTabs
+        v-model="filter"
+        variant="strip"
+        :label="t(l.filters)"
+        :options="filterOptions"
+      />
+    </div>
 
     <ListView
       v-model:selected-id="selectedId"
       v-model:checked-ids="checkedIds"
       :scroll-key="`my-work:${group ?? 'all'}`"
       :groups="groups"
-      :layout="options.layout"
+      :layout="layout"
       :opened-id="openedId"
       :is-edited="isEdited"
       :get-url="item => item.url"
@@ -413,6 +469,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :stack="stack"
           :properties="properties"
           :repository="repositoryOf(listGroup)"
+          :repository-tracked="isTracked(stack.pullRequests[0]?.repository.nameWithOwner)"
           :parent="parent?.value"
           people="author"
           :viewer-login="viewerLogin"
@@ -428,6 +485,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           v-else
           :item="entry.value"
           :parent="parent?.value"
+          :repository-tracked="isTracked(entry.value.repository.nameWithOwner)"
           :deep="depth > 1"
           :header="header"
           :expanded="expanded"
@@ -558,5 +616,11 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
 
 .myWorkView_filters {
   padding-left: $spacing-8;
+}
+
+.myWorkView_strip {
+  display: flex;
+  flex: none;
+  padding: $spacing-4 $spacing-8 0;
 }
 </style>
