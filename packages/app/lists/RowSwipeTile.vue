@@ -43,7 +43,7 @@ const { Button } = useButton();
   gap: $spacing-6;
   align-items: center;
   justify-content: center;
-  width: 76px;
+  width: $phone-swipe-tile-width;
   padding: 0 $spacing-4;
   font: inherit;
   font-size: $font-size-md;
@@ -53,7 +53,7 @@ const { Button } = useButton();
   border: none;
 
   &:focus-visible {
-    outline-offset: -3px;
+    outline-offset: -2px;
   }
 }
 

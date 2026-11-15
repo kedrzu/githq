@@ -142,6 +142,7 @@ useCommands(
       setField: (place, field, value) =>
         apply({ kind: 'projectFieldInProject', projectId: place.projectId, fieldId: field.id, value }),
       summarize: phone.active,
+      getPlaces: item => editor.getPlaces(item),
       // A phone draws no toolbar: an action opens its menu in the command menu.
       inline: phone.active
         ? undefined

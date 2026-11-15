@@ -21,7 +21,7 @@ import type { SelectionSpan } from './getSelectionSpan.js';
 import SelectionActions from './SelectionActions.vue';
 import * as stories from './SelectionActions.stories.js';
 
-const { PhoneMenuOverSelection } = composeStories(stories);
+const { PhoneMenuOverSelection, PhoneMenuOverMixedStatuses } = composeStories(stories);
 
 const PULL_REQUESTS = Array.from({ length: 9 }, (_, index) => samplePullRequest(`PR_${index + 1}`));
 
@@ -59,6 +59,7 @@ test('mobile D28: on a phone ⌘ over the selection offers its actions as on the
     await expect.element(menu.getByRole('option', { name: /^Set milestone…\s*mixed/u })).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Assign to…\s*mlaine/u })).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Close 3 items…/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Set status…\s*In progress · Platform Q4/u })).toBeVisible();
 
     await userEvent.click(menu.getByRole('option', { name: /^Add or remove labels…/u }));
     await userEvent.click(page.getByRole('option', { name: /^calendar/u }));
@@ -66,6 +67,13 @@ test('mobile D28: on a phone ⌘ over the selection offers its actions as on the
     await expect
         .element(page.getByRole('status', { name: 'Asked' }))
         .toHaveTextContent('I_1187 I_1204 I_1176: {"kind":"labels","add":["calendar"],"remove":[]}');
+});
+
+test('mobile D28: on a phone the Status row over items in different statuses says "mixed"', async () => {
+    await PhoneMenuOverMixedStatuses.run();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+
+    await expect.element(menu.getByRole('option', { name: /^Set status…\s*mixed/u })).toBeVisible();
 });
 
 /** The bar over `items`, all selected, spanning `span` in the list. */

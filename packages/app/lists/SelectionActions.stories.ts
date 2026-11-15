@@ -14,6 +14,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import type { IssueItem } from '@/store/ItemTypes.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
@@ -32,6 +33,14 @@ const PORTAL = {
     viewerPermission: 'WRITE',
 } as const;
 const PLACES = D1_ISSUE_DETAIL.projects.slice(0, 1);
+/** {@link PLACES} with the status "In review" in place of "In progress". */
+const PLACES_IN_REVIEW = PLACES.map(place => ({
+    ...place,
+    values: {
+        ...place.values,
+        status: { kind: 'singleSelect', optionId: 'status-review', name: 'In review', color: 'BLUE' },
+    } satisfies ItemDetailProject['values'],
+}));
 const MLAINE = sampleUser('mlaine', '#81c995');
 /** Nothing to go to: only the selection's actions are looked at. */
 const NAVIGATION: NavigationData = { places: [], trackedRepositories: [], items: [] };
@@ -78,7 +87,11 @@ const SELECTED_IDS = SELECTED.map(item => item.id);
  * command line opens it (mobile D28): each change they ask for is written out above it, as the edit engine got it.
  */
 const Harness = defineComponent({
-    setup() {
+    props: {
+        /** #1204 is "In review" in the project, the others "In progress". */
+        mixedStatus: { type: Boolean, default: false },
+    },
+    setup(props) {
         const container = createContainer();
         container.set(LanguageContext, () => APP_LANGUAGE);
         container.set(Browser, createSignedInBrowser());
@@ -95,7 +108,7 @@ const Harness = defineComponent({
         const editor = container.resolve(ItemEditor);
         container.set(ItemEditor, {
             ...editor,
-            getPlaces: () => PLACES,
+            getPlaces: item => (props.mixedStatus && item.id === 'I_1204' ? PLACES_IN_REVIEW : PLACES),
             edit: (ids, request) => {
                 asked.value = `${ids.join(' ')}: ${JSON.stringify(request)}`;
                 return Promise.resolve({ failed: [] });
@@ -151,6 +164,10 @@ type Story = StoryObj<typeof meta>;
 
 /**
  * Mobile D28, MB118: ⌘ over three selected issues on a phone — the chip "3 items", the actions headed "Only what applies
- * to all 3", Close 3 items, and the milestone and labels they don't share said "mixed", the assignee they share named.
+ * to all 3", Close 3 items, and the milestone and labels they don't share said "mixed", the assignee and the status they
+ * share named.
  */
 export const PhoneMenuOverSelection: Story = {};
+
+/** The same, one of them in another status: the Status row says "mixed" (MB118). */
+export const PhoneMenuOverMixedStatuses: Story = { args: { mixedStatus: true } };
