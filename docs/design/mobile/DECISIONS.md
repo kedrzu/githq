@@ -349,18 +349,19 @@ drawings: `MB100`)
 ## D27
 
 **Swiping a list row to the left reveals Status, Assign and Close; each opens that property's menu at the bottom, the
-same as tapping it on the item ([D45](#d45)). Everything stays reachable by opening the item.** (2026-11-08, owner,
-picked from the drawings: `MB114`; the menu it opens changed 2026-11-09)
+same as tapping it on the item ([D45](#d45)). A pull request's row reveals the same three, Close closing the pull
+request; Status only while it is in a project. Everything stays reachable by opening the item.** (2026-11-08, owner,
+picked from the drawings: `MB114`; the menu it opens changed 2026-11-09; a pull request's row 2026-11-15, owner)
 
 **Why.** The owner: a great idea. Swiping a row is not an edge swipe ([D2](#d2)), and it makes triage from the list
 fast. The three are a subset of the desktop's right-click menu on a row (`packages/app/item/getItemMenuSections.ts`).
-
-> **Not settled by this:** which three actions a pull request's row reveals; the drawing shows an issue's.
 
 **Rejected.**
 
 - A long press opening the command menu at the row (MB113) — the design agent's recommendation.
 - Nothing, open the item first (MB115).
+- A pull request's row revealing Reviewers instead of Status (or of Assign) — the owner kept one gesture for both kinds
+  of row.
 - Each action opening the command menu's step — the command menu stands for the desktop's ⌘K, not its dropdowns
   ([D45](#d45)).
 

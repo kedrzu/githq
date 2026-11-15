@@ -1,5 +1,7 @@
+import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
+import { defineComponent, h } from 'vue';
 
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleMyWork } from '@/testing/sampleMyWork.js';
 import {
@@ -11,6 +13,7 @@ import {
     TWO_STACKS_UNDER_ISSUE_MEMBERSHIP,
 } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import MyWorkView from './MyWorkView.vue';
@@ -338,6 +341,43 @@ export const DraftReview: Story = {
  * in a strip, each with how many rows it shows (mobile D23).
  */
 export const Phone: Story = { decorators: [withPhoneLayout(true)] };
+
+/**
+ * Mobile D28, MB117: selecting several on a phone — the top bar "× 3 selected" and the options, a checkbox at each row's
+ * left, the three checked a rounded surface in the accent's outline. The rows have actions (a context menu), and the
+ * selection's are the command menu's (nothing drawn).
+ */
+export const PhoneSelecting: Story = {
+    args: { checkedIds: ['I_1187', 'PR_1203', 'PR_15'] },
+    decorators: [
+        withPhoneLayout(true),
+        // The rows' actions read the local copy.
+        story => {
+            const Story = story();
+            return defineComponent({
+                setup() {
+                    setIndexedDbPersistence(useContainer());
+                    return () => h(Story);
+                },
+            });
+        },
+    ],
+    render: args => ({
+        components: { MyWorkView },
+        setup: () => ({ args }),
+        template: `<div style="display: flex; height: 100vh">
+            <MyWorkView v-bind="args">
+                <template #selection />
+                <template #contextMenu />
+            </MyWorkView>
+        </div>`,
+    }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByRole('heading', { name: '3 selected' })).toBeVisible();
+        await expect(canvas.getAllByRole('checkbox', { checked: true })).toHaveLength(3);
+    },
+};
 
 /** MB89: on a phone, filtered to "Needs me". */
 export const PhoneNeedsMe: Story = { ...NeedsMe, decorators: [withPhoneLayout(true)] };

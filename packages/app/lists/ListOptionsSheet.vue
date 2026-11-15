@@ -1,7 +1,7 @@
-<!-- A list's options on a phone (mobile D36, D46, D49; MB173–MB175, MB224): the top bar's options button opens one sheet rising from below over the dimmed list. Its head names the list ("Current sprint", under it "Platform Q4 · how this list shows"), Done — or a tap above it — closes it. While the list is changed on this device, one line says so with the way back: "Back to GitHub's view" on a project's saved view, Reset elsewhere. Then only the filtering the desktop has (D46): a project view's filter from GitHub as a chip whose × clears it on this device, a repository's state as a row of chips. Group by and Sort by are rows of single-choice chips — the list's own choices, a row scrolling sideways when it doesn't fit, brought to its chosen chip as the sheet opens — changed in place, the list behind following while the sheet stays up; an order by one key both ways (a project's) is one chip, tapped again to flip its direction. Last, a project's saved view on github.com ↗. The properties rows show, the layout (a phone has no board) and the project's row field stay in the command menu. -->
+<!-- A list's options on a phone (mobile D36, D46, D49; MB173–MB175, MB224): the top bar's options button opens one sheet rising from below over the dimmed list. Its head names the list ("Current sprint", under it "Platform Q4 · how this list shows"), Done — or a tap above it — closes it. While the list is changed on this device, one line says so with the way back: "Back to GitHub's view" on a project's saved view, Reset elsewhere. Then only the filtering the desktop has (D46): a project view's filter from GitHub as a chip whose × clears it on this device, a repository's state as a row of chips. Group by and Sort by are rows of single-choice chips — the list's own choices, a row scrolling sideways when it doesn't fit, brought to its chosen chip as the sheet opens — changed in place, the list behind following while the sheet stays up; an order by one key both ways (a project's) is one chip, tapped again to flip its direction. Then, on a list whose items can be selected together, "Select items" (D28), which closes it and turns the rows into checkboxes — its button showing the checklist while they are, and the row reading "Stop selecting". Last, a project's saved view on github.com ↗. The properties rows show, the layout (a phone has no board) and the project's row field stay in the command menu. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, Github, SlidersHorizontal, X } from 'lucide-vue-next';
+import { ArrowUpRight, Github, ListChecks, SlidersHorizontal, X } from 'lucide-vue-next';
 import { computed, useTemplateRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -33,8 +33,10 @@ const props = withDefaults(
      * view", and the sheet ends with a link there. `null` for a list not saved on GitHub.
      */
     gitHubView?: string | null;
+    /** The list's items can be selected together (mobile D28): "Select items" is offered. */
+    selectable?: boolean;
   }>(),
-  { place: undefined, filters: () => [], modified: false, gitHubView: null },
+  { place: undefined, filters: () => [], modified: false, gitHubView: null, selectable: false },
 );
 
 const emit = defineEmits<{
@@ -45,6 +47,8 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+/** The list is selecting several items (mobile D28): its rows are checkboxes. */
+const selecting = defineModel<boolean>('selecting', { default: false });
 /** Grouping and order, changed in place; the filter is only shown and cleared through `clearFilter`. */
 const options = defineModel<ListViewOptions>('options', { required: true });
 
@@ -104,6 +108,12 @@ function flip(value: string) {
   }
 }
 
+/** "Select items", or "Stop selecting": the sheet closes onto the list. */
+function toggleSelecting() {
+  selecting.value = !selecting.value;
+  open.value = false;
+}
+
 function change(changes: Partial<ListViewOptions>) {
   options.value = { ...options.value, ...changes };
 }
@@ -124,7 +134,7 @@ function toOption(choice: ListChoice): SegmentedTabsOption<string> {
   >
     <template #trigger>
       <IconButton
-        :icon="SlidersHorizontal"
+        :icon="selecting ? ListChecks : SlidersHorizontal"
         :label="t(l.display)"
       />
     </template>
@@ -222,6 +232,18 @@ function toOption(choice: ListChoice): SegmentedTabsOption<string> {
             @repeat="flip"
           />
         </div>
+        <button
+          v-if="selectable"
+          type="button"
+          :class="[css.listOptionsSheet_link, css.listOptionsSheet_select]"
+          @click="toggleSelecting"
+        >
+          <ListChecks
+            :class="css.listOptionsSheet_linkIcon"
+            aria-hidden="true"
+          />
+          <span :class="css.listOptionsSheet_linkText">{{ selecting ? t(l.stopSelecting) : t(l.selectItems) }}</span>
+        </button>
         <a
           v-if="gitHubView"
           :class="css.listOptionsSheet_link"
@@ -382,6 +404,22 @@ function toOption(choice: ListChoice): SegmentedTabsOption<string> {
 
 .listOptionsSheet_linkText {
   flex: 1;
+}
+
+// A row of its own as the link is, a button: no border, background or font of a button's own.
+.listOptionsSheet_select {
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-top: 1px solid $color-border;
+}
+
+// The link right after it keeps one line between them.
+.listOptionsSheet_select + .listOptionsSheet_link {
+  margin-top: 0;
 }
 
 .listOptionsSheet_linkIcon {

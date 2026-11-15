@@ -22,3 +22,7 @@ sortBy:
   en: Sort by
 onGitHub:
   en: This view on GitHub
+selectItems:
+  en: Select items
+stopSelecting:
+  en: Stop selecting

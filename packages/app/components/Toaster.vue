@@ -1,13 +1,14 @@
-<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`), the region "Notifications": in the bottom right corner of the window, above the status bar (desktop releases D7) — on a phone across its width, above the command line (`aboveCommandLine`, mobile D12) — or `contained` in the one of the positioned element it is in, for a screen's own toasts that live and go with it (code review's discarded comment, above the pending review's toolbar). Put the `Toast`s inside it; F8 moves focus to them. They stack in the order they opened, the newest at the bottom, and only the newest takes keys (`ToasterStack`). -->
+<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`), the region "Notifications": in the bottom right corner of the window, above the status bar (desktop releases D7) — on a phone across its width, above the command line, with no key hints (`aboveCommandLine`, mobile D12, D52) — or `contained` in the one of the positioned element it is in, for a screen's own toasts that live and go with it (code review's discarded comment, above the pending review's toolbar). Put the `Toast`s inside it; F8 moves focus to them. They stack in the order they opened, the newest at the bottom, and only the newest takes keys (`ToasterStack`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { ToastProvider, ToastViewport } from 'reka-ui';
 
+import { KeyHintsContext } from './KeyHintsContext.js';
 import * as l from './Toaster.loc.js';
 import { ToasterStack } from './ToasterStack.js';
 
-defineProps<{
+const props = defineProps<{
   /** In the bottom right corner of the positioned element it is in, not of the window; its region is named apart from the window's. */
   contained?: boolean;
   /** On a phone: across the window, above the command line floating over its bottom (mobile D12). */
@@ -20,6 +21,12 @@ defineSlots<{
 
 const t = useTranslate();
 provideContext(ToasterStack);
+// A phone's toasts show no key hints (mobile D52): no keyboard to press them on.
+provideContext(KeyHintsContext, {
+  get hidden() {
+    return props.aboveCommandLine;
+  },
+});
 
 /** Told apart from the window's region, whose key it shares (F8). */
 function getContainedLabel(hotkey: string) {

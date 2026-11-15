@@ -92,6 +92,14 @@ export interface EditCommandsParams {
     /** The close / reopen entries the user may use; the action is there when there are any. */
     readonly stateOptions: readonly StateOption[];
     readonly stateTitle: string;
+    /**
+     * The selection's assignees, labels, milestone and project fields (status, priority, iteration) say on their rows
+     * the value every item has, or "mixed" when they differ: a phone's command menu, which has no toolbar of pickers
+     * showing them (mobile MB118). A project field's row reads each item's value through {@link getPlaces}.
+     */
+    readonly summarize?: boolean;
+    /** Each item's places in projects: what a project field's row summarizes over a selection. */
+    readonly getPlaces?: (item: Item) => readonly ItemDetailProject[];
     /** Makes the change of every item (through the edit engine). */
     edit(request: EditRequest): void;
     /** Sets a project field's value of every item: of one place for one item, of the project for a selection. */
@@ -176,8 +184,17 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             }
         }
 
+        const command = base(params, kind, spec.title, spec.icon);
         return {
-            ...base(params, kind, spec.title, spec.icon),
+            ...command,
+            detail:
+                command.detail ??
+                summarize(params, item =>
+                    spec
+                        .current(item)
+                        .toSorted((a, b) => a.localeCompare(b))
+                        .join(', '),
+                ),
             keywords: spec.keywords,
             options: () => ({
                 loading: params.loading,
@@ -208,7 +225,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         const command = base(params, 'milestone', t(l.setMilestone), Milestone);
         return {
             ...command,
-            detail: current ?? command.detail,
+            detail: current ?? command.detail ?? summarize(params, item => item.milestone?.title ?? ''),
             options: () => ({
                 loading: params.loading,
                 note: note(params, 'milestone'),
@@ -280,7 +297,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             section: params.section,
             key: EDIT_KEYS[role],
             icon,
-            detail: params.items.length === 1 ? describeFirst(places, role) : undefined,
+            detail: params.items.length === 1 ? describePlace(places[0], role) : summarizeField(params, places, role),
             run: () => params.inline?.[role]?.() ?? false,
             options: () => ({
                 options: fieldOptions({
@@ -436,6 +453,24 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         };
     }
 
+    /**
+     * With `summarize`, of several items: the value all of them have (none when it is empty), else "mixed" — the row's
+     * detail of the assignees, the labels, the milestone and a project field.
+     */
+    function summarize(params: EditCommandsParams, valueOf: (item: Item) => string) {
+        if (!params.summarize || params.items.length < 2) {
+            return undefined;
+        }
+
+        const values = new Set(params.items.map(valueOf));
+        const [value] = values;
+        if (values.size > 1) {
+            return t(l.mixed);
+        }
+
+        return value === '' ? undefined : value;
+    }
+
     function note(params: EditCommandsParams, kind: ItemPermission) {
         return countEditable(params, kind) < params.items.length ? editableText(params, kind) : undefined;
     }
@@ -444,12 +479,18 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         return t(l.editable, { editable: countEditable(params, kind), total: params.items.length });
     }
 
-    function describeFirst(places: readonly ItemDetailProject[], role: ProjectFieldRole) {
+    /** Of several items, the field's value in the first of the projects, shared or "mixed" ({@link summarize}). */
+    function summarizeField(params: EditCommandsParams, places: readonly ItemDetailProject[], role: ProjectFieldRole) {
         const [first] = places;
-        const field = first?.fields.find(candidate => getProjectFieldRole(candidate) === role);
-        const value = field && first?.values[field.id];
-        const text = value ? describeValue(value) : null;
-        return text && first ? `${text} · ${first.title}` : undefined;
+        const { getPlaces } = params;
+        if (!first || !getPlaces) {
+            return undefined;
+        }
+
+        return summarize(params, item => {
+            const place = getPlaces(item).find(candidate => candidate.projectId === first.projectId);
+            return describePlace(place, role) ?? '';
+        });
     }
 
     function describeReview(waiting: boolean, state: PullRequestItem['latestReviews'][number]['state'] | undefined) {
@@ -491,6 +532,14 @@ function countEditable(params: EditCommandsParams, kind: ItemPermission) {
 function getOnePullRequest(params: EditCommandsParams) {
     const [one] = params.items;
     return params.items.length === 1 && one?.kind === 'pullRequest' ? one : null;
+}
+
+/** "In progress · Platform Q4": the field's value in the place, and the project's name. */
+function describePlace(place: ItemDetailProject | undefined, role: ProjectFieldRole) {
+    const field = place?.fields.find(candidate => getProjectFieldRole(candidate) === role);
+    const value = field && place?.values[field.id];
+    const text = value ? describeValue(value) : null;
+    return text && place ? `${text} · ${place.title}` : undefined;
 }
 
 function describeValue(value: ProjectFieldValue) {

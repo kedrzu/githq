@@ -580,12 +580,17 @@ function getSectionCount(value: RepositorySection) {
               />
               <NotTrackedChip v-if="!inColumn && !tracked" />
             </template>
-            <slot
-              v-if="checkedIds.length > 0"
-              name="selection"
-              :ids="checkedIds"
-              :span="getSelectionSpan(list.groups, checkedIds)"
-            />
+            <template
+              v-if="$slots.selection"
+              #selection
+            >
+              <slot
+                v-if="checkedIds.length > 0"
+                name="selection"
+                :ids="checkedIds"
+                :span="getSelectionSpan(list.groups, checkedIds)"
+              />
+            </template>
             <SegmentedTabs
               v-if="!inColumn"
               v-model="section"
