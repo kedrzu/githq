@@ -1,4 +1,4 @@
-<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key), or with no list behind it (opened by its address) up to the repository's Workflows section —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
+<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key), or with no list behind it (opened by its address) up to the repository's Workflows section —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens on its page, Back returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. "Run workflow…", offered with write access to a repository that isn't archived for an enabled workflow of its own, opens the command menu at its form (`useRunWorkflowCommand`). Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -6,11 +6,14 @@ import { ArrowLeft, SearchX } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
 import { useItemArrangement } from '@/item/useItemArrangement.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { useNow } from '@/services/useNow.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -18,6 +21,8 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import * as l from './OpenedWorkflow.loc.js';
 import { useOpenedWorkflow } from './useOpenedWorkflow.js';
 import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
+import { useRunWorkflowCommand } from './useRunWorkflowCommand.js';
+import { getDispatchBlock } from './utils/getDispatchBlock.js';
 import { WorkflowRunHistory } from './WorkflowRunHistory.js';
 import { WorkflowTabPlaces } from './WorkflowTabPlaces.js';
 import type { WorkflowRunFilters } from './WorkflowRunHistory.js';
@@ -32,12 +37,17 @@ const props = defineProps<{
 
 /** How often the ages ("2h") move on. */
 const TICK_MS = 30_000;
+/** "Run workflow · Deploy" for the workflow open: what its Run workflow… button opens the command menu at. */
+const RUN_COMMAND = 'workflow.run';
 
 const t = useTranslate();
 const history = useService(WorkflowRunHistory);
 const tracking = useService(TrackingStore);
 const navigation = useService(ItemNavigation);
 const places = useService(WorkflowTabPlaces);
+const registry = useService(CommandRegistry);
+const repositories = useService(RepositoryStore);
+const runWorkflowCommands = useRunWorkflowCommand();
 const route = useRoute();
 const router = useRouter();
 const now = useNow(TICK_MS);
@@ -68,6 +78,30 @@ watch(
     }
   },
   { immediate: true },
+);
+
+useCommands(() => {
+  const command = opened.state
+    ? runWorkflowCommands.forWorkflow({
+        nameWithOwner: opened.nameWithOwner,
+        state: opened.state,
+        id: RUN_COMMAND,
+        kind: 'open',
+      })
+    : null;
+  return command ? [command] : [];
+});
+
+/** "Run workflow…" is offered where the user may run it and GitHub may run it by hand: the file decides the rest. */
+const offerRun = computed(
+  () =>
+    opened.state !== null &&
+    getDispatchBlock({
+      workflow: opened.state.workflow,
+      generated: opened.state.generated,
+      metadata: repositories.get(opened.nameWithOwner),
+      parse: null,
+    }) === null,
 );
 
 /** The run selected among its runs, kept for the session so coming back from a run's page lands on it. */
@@ -113,6 +147,7 @@ function readMore() {
     :group-by="tracking.workflowRunsGroupBy"
     :latest-failure="opened.latestFailure"
     :escape-to="escapeTo"
+    :offer-run="offerRun"
     :now="now"
     @close="arranging.close()"
     @previous="arranging.step(-1)"
@@ -122,6 +157,7 @@ function readMore() {
     @filter="setFilters"
     @read-more="readMore"
     @group-by="tracking.setWorkflowRunsGroupBy($event)"
+    @run-workflow="registry.openMenu(RUN_COMMAND)"
   />
   <div
     v-else

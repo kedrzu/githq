@@ -1,4 +1,4 @@
-<!-- An opened workflow's Details (actions W30, W42): what starts it (Triggers, from its file at the default branch: each event with its branches or tags — a pull request's never counting —, a dispatch with how many inputs; or why the file says nothing: GitHub generates the workflow, the file is being read, could not be read, is missing, not YAML or names no trigger), how it stands on each ref that counts (Counts on: broken or passing since which run, how many in a row, or no runs there yet), its runs (the last success, the typical run — the median of the last 20 successful ones —, the run going now), what a dispatch asks for (Dispatch inputs: name, type, default, choices) and the workflow itself (File, State). Each value has its icon; a dim line under it says more. -->
+<!-- An opened workflow's Details (actions W30, W42): what starts it (Triggers, from its file at the default branch: each event with its branches or tags — a pull request's never counting —, a dispatch with how many inputs — and, where the user can run it, that "Run workflow…" in the command menu does —; or why the file says nothing: GitHub generates the workflow, the file is being read, could not be read, is missing, not YAML or names no trigger), how it stands on each ref that counts (Counts on: broken or passing since which run, how many in a row, or no runs there yet), its runs (the last success, the typical run — the median of the last 20 successful ones —, the run going now), what a dispatch asks for (Dispatch inputs: name, type, default, choices) and the workflow itself (File, State). Each value has its icon; a dim line under it says more. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowTrigger, WorkflowInput } from '@githq/github/workflows/parseWorkflowFile.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -31,11 +31,16 @@ import type { WorkflowCountedRef, WorkflowDetails } from './buildWorkflowDetails
 import { useDescribeRunWhen } from './useDescribeRunWhen.js';
 import * as l from './WorkflowDetails.loc.js';
 
-const props = defineProps<{
-  details: WorkflowDetails;
-  /** Epoch ms the ages are counted to. */
-  now: number;
-}>();
+const props = withDefaults(
+  defineProps<{
+    details: WorkflowDetails;
+    /** Epoch ms the ages are counted to. */
+    now: number;
+    /** The user can run it by hand: its dispatch says where. */
+    offerRun?: boolean;
+  }>(),
+  { offerRun: false },
+);
 
 /** One row of a section: a name, a value with its icon, a dim line under it. */
 interface DetailRow {
@@ -119,7 +124,12 @@ function getTriggerRow(trigger: GitHubWorkflowTrigger, index: number): DetailRow
     case 'workflow_dispatch': {
       const { file } = props.details;
       const count = file.kind === 'parsed' ? (file.file.dispatch?.inputs.length ?? 0) : 0;
-      return { ...base, icon: Play, value: count === 0 ? t(l.manually) : t(l.inputs, { count }) };
+      return {
+        ...base,
+        icon: Play,
+        value: count === 0 ? t(l.manually) : t(l.inputs, { count }),
+        hint: props.offerRun ? t(l.runInCommandMenu) : undefined,
+      };
     }
     case 'workflow_call':
       return { ...base, icon: Workflow, value: t(l.calledOnly) };

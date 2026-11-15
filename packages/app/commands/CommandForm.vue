@@ -163,7 +163,7 @@ function getControls() {
           <label
             :for="`${id}-${field.name}`"
             :class="css.commandForm_label"
-            >{{ field.name }}</label
+            >{{ field.label ?? field.name }}</label
           >
           <span
             v-if="field.detail"
@@ -180,7 +180,7 @@ function getControls() {
           <Switch
             :id="`${id}-${field.name}`"
             :model-value="readValue(field) === true"
-            :label="field.name"
+            :label="field.label ?? field.name"
             :aria-describedby="getDescribedBy(field)"
             data-control
             @update:model-value="setValue(field, $event)"

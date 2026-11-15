@@ -73,6 +73,7 @@ import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
 import OpenedWorkflow from '@/workflows/OpenedWorkflow.vue';
+import WorkflowDispatchToast from '@/workflows/WorkflowDispatchToast.vue';
 import WorkflowRerunToast from '@/workflows/WorkflowRerunToast.vue';
 import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
@@ -462,6 +463,7 @@ function showLastFailure() {
     <EditToasts />
     <MergeToasts />
     <WorkflowRerunToast />
+    <WorkflowDispatchToast />
     <SyncStoppedToast :login="auth.viewer.login" />
     <UntrackToast />
     <TrackFailedToast />

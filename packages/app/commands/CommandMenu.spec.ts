@@ -22,6 +22,7 @@ const {
     FoundInRepository,
     FormStep,
     FormCantRun,
+    RunWorkflowInRepository,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -624,4 +625,32 @@ test("a required field left empty, or a form that can't run, makes Run unavailab
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
     await expect.element(page.getByRole('dialog', { name: 'Command menu' })).toBeInTheDocument();
+});
+
+test("W48: an action that can't run says why, and picking it neither runs nor opens it", async () => {
+    await RunWorkflowInRepository.run();
+
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const cla = menu.getByRole('option', { name: /Run workflow · CLA CLA has no workflow_dispatch trigger/u });
+    await expect.element(cla).toHaveTextContent("can't run");
+    await expect.element(cla).toHaveAttribute('data-disabled');
+    await userEvent.click(cla, { force: true });
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+    await expect.element(menu).toBeInTheDocument();
+});
+
+test('W36: an action with a start goes straight into that level, saying what it waits for; ⌫ steps back to the rest', async () => {
+    await RunWorkflowInRepository.run();
+
+    await userEvent.keyboard('run workflow…');
+    await userEvent.keyboard('{Enter}');
+    const repository = page.getByRole('listbox', { name: 'fitloop/webapp' });
+    await expect.element(repository).toBeInTheDocument();
+    await expect.element(page.getByText('Reading the workflow files…')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}');
+    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    await expect.element(repositories.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
+    await userEvent.keyboard('api{Enter}{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('api Deploy ran');
 });

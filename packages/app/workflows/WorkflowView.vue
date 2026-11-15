@@ -308,6 +308,7 @@ interface Standing {
             <WorkflowDetails
               :details="details"
               :now="now"
+              :offer-run="canRun"
             />
           </div>
         </template>
@@ -373,6 +374,7 @@ interface Standing {
             <WorkflowDetails
               :details="details"
               :now="now"
+              :offer-run="canRun"
             />
           </div>
         </div>

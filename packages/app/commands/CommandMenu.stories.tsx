@@ -131,6 +131,11 @@ const Harness = defineComponent({
         levels: { type: Boolean, default: false },
         /** "Run workflow" with two workflows to run through a form: Deploy, and Release that can't run. */
         workflows: { type: Boolean, default: false },
+        /**
+         * On a workflow nobody can run by hand (W48): "Run workflow · CLA", disabled, and "Run workflow…" starting at the
+         * screen's repository (W36), whose workflows are still being read; fitloop/api beside it has Deploy.
+         */
+        repositoryWorkflows: { type: Boolean, default: false },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -152,6 +157,10 @@ const Harness = defineComponent({
 
         if (props.workflows) {
             useCommands(() => [createRunWorkflowCommand(say)]);
+        }
+
+        if (props.repositoryWorkflows) {
+            useCommands(() => createRepositoryWorkflowCommands(say));
         }
 
         useCommands(() => [
@@ -422,6 +431,9 @@ export const FormCantRun: Story = {
     },
 };
 
+/** W48 → W36: on CLA, which has no workflow_dispatch: its own line disabled, and "Run workflow…" at the repository. */
+export const RunWorkflowInRepository: Story = { args: { subject: 'none', repositoryWorkflows: true } };
+
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
     useContainer().set(
@@ -601,4 +613,42 @@ function createRunWorkflowCommand(say: (text: string) => void): Command {
             },
         ],
     };
+}
+
+/** W48 and W36 (`repositoryWorkflows`): running says which workflow ran. */
+function createRepositoryWorkflowCommands(say: (text: string) => void): Command[] {
+    return [
+        {
+            id: 'workflows.run',
+            title: 'Run workflow · CLA',
+            section: 'view',
+            icon: Play,
+            unavailable: 'CLA has no workflow_dispatch trigger',
+            run: () => say('CLA ran'),
+        },
+        {
+            id: 'app.runWorkflow',
+            title: 'Run workflow…',
+            section: 'app',
+            icon: Play,
+            start: 'webapp',
+            children: () => [
+                {
+                    id: 'webapp',
+                    title: 'fitloop/webapp',
+                    section: 'app',
+                    message: 'Reading the workflow files…',
+                    children: () => [],
+                },
+                {
+                    id: 'api',
+                    title: 'fitloop/api',
+                    section: 'app',
+                    children: () => [
+                        { id: 'deploy', title: 'Deploy', section: 'app', run: () => say('api Deploy ran') },
+                    ],
+                },
+            ],
+        },
+    ];
 }

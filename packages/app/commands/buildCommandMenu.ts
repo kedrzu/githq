@@ -307,7 +307,7 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
             match,
             score: score * trail.factor * getContextFactor(trail.group),
             ancestors: trail.ancestors,
-            path: command.options || command.children || command.form ? [...trail.path, id] : trail.path,
+            path: hasSubmenu(command) ? [...trail.path, id] : trail.path,
         });
     }
 
@@ -385,11 +385,16 @@ function findChildStep(parent: MenuPathStep, id: string) {
 }
 
 function toCommandStep(command: Command, path: readonly string[]): MenuPathStep | null {
-    if (!command.options && !command.children && !command.form) {
+    if (!hasSubmenu(command)) {
         return null;
     }
 
     return { title: command.title, command, path, rows: getOfferedChildren(command.children?.() ?? []) };
+}
+
+/** It opens a level, a picker or a form, unless it can't run. */
+function hasSubmenu(command: Command) {
+    return command.unavailable === undefined && Boolean(command.options || command.children || command.form);
 }
 
 /** The section checks are the top level's: a nested row is shown by what is above it. */
@@ -398,8 +403,8 @@ function getOfferedChildren(children: readonly Command[]) {
 }
 
 function toCommandParent(command: Command, trail: MenuTrail): MenuParent | null {
-    // A search has no options to look through, so only children make it a parent.
-    if (!command.children && (!command.options || command.search)) {
+    // A search has no options to look through, so only children make it a parent; one that can't run is none.
+    if (command.unavailable !== undefined || (!command.children && (!command.options || command.search))) {
         return null;
     }
 

@@ -48,6 +48,16 @@ export interface Command {
     /** `false`: run by its key and listed in the help, never offered in the menu. */
     readonly menu?: boolean;
     /**
+     * Why it can't run here ("CLA has no workflow_dispatch trigger", W48): the menu shows it dimmed with this reason and
+     * "can't run", and nothing runs or opens from it — its key neither.
+     */
+    readonly unavailable?: string;
+    /**
+     * The id of one of its `children` to go straight into (the repository a screen is in, W36): Enter, Tab or → open that
+     * child's level, and a step back from there shows the others.
+     */
+    readonly start?: string;
+    /**
      * It acts on what a list's keys are on (its selected row, the commit opened from it) though its section says `view`:
      * as the `selection` and `item` sections' actions, it doesn't run from what Tab focused outside the list.
      */
@@ -66,7 +76,7 @@ export interface Command {
     readonly run?: () => boolean | void;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */
     readonly options?: () => CommandOptions;
-    /** Called as its submenu opens: what it offers may still have to be read. */
+    /** Called as its submenu or level is shown, coming back to it too: what it offers may still have to be read. */
     readonly prepare?: () => void;
     /**
      * Receives what is typed in its submenu, `''` as the submenu opens and once it is left, and maybe the same text
@@ -79,6 +89,8 @@ export interface Command {
      * sheet. `options` is the other kind of submenu, a picker, which ends the path.
      */
     readonly children?: () => readonly Command[];
+    /** What its level says while it lists nothing, in place of "Nothing matches" ("Reading the workflow files…"). */
+    readonly message?: string;
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
     /**
@@ -117,8 +129,10 @@ export interface CommandForm {
 
 /** What every {@link CommandFormField} has. */
 interface CommandFormFieldBase {
-    /** Its key in the values, and its label (drawn monospaced: a workflow input's name). */
+    /** Its key in the values, and its label unless it has one. */
     readonly name: string;
+    /** Its label in place of its name (drawn monospaced: a workflow input's name), where the name is a key it can't clash on. */
+    readonly label?: string;
     /** Under the name: its type, or what it takes ("branch or tag"). */
     readonly detail?: string;
     /** Quiet text after the control ("the default branch", "default: staging", "optional"). */

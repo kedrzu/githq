@@ -196,7 +196,8 @@ const message = computed(() => {
   }
 
   const options = submenuOptions.value;
-  return options?.message ?? (options?.loading ? t(l.loading) : t(l.noMatch));
+  const levelMessage = query.value === '' ? step.value?.command?.message : undefined;
+  return options?.message ?? levelMessage ?? (options?.loading ? t(l.loading) : t(l.noMatch));
 });
 const hints = computed((): FilterListHint[] => {
   const leaving: FilterListHint[] = [
@@ -246,6 +247,17 @@ watch(
   { immediate: true },
 );
 
+// What a level offers may still have to be read, coming back to it too; a registration recomputing is no new level.
+watch(
+  () => (open.value && step.value ? step.value.path.join('/') : null),
+  key => {
+    if (key !== null) {
+      step.value?.command?.prepare?.();
+    }
+  },
+  { immediate: true },
+);
+
 // A registration recomputing makes a new object of the same action, which is told the same text: not a leaving.
 watch([searching, query], ([command, text], [before]) => {
   if (before && before.id !== command?.id) {
@@ -282,7 +294,22 @@ function toRow(entry: CommandMenuEntry): Row {
   switch (entry.kind) {
     case 'command': {
       const { command } = entry;
-      const enter = command.options || command.children || command.form ? () => enterLevel(entry.path) : undefined;
+      if (command.unavailable !== undefined) {
+        return {
+          value: entry.id,
+          icon: command.icon ?? Zap,
+          title: command.title,
+          detail: command.unavailable,
+          aside: t(l.cantRun),
+          ancestors: entry.ancestors,
+          match: entry.match,
+          disabled: true,
+          activate: () => {},
+        };
+      }
+
+      const enter =
+        command.options || command.children || command.form ? () => enterLevel(getEnteredPath(entry)) : undefined;
       return {
         value: entry.id,
         icon: command.icon ?? Zap,
@@ -408,6 +435,13 @@ function getRanges(row: Row, field: CommandMenuMatch['field']) {
   return row.match?.field === field ? row.match.ranges : null;
 }
 
+/** Where entering a line goes: its own level, or straight into the child it starts at. */
+function getEnteredPath(entry: CommandMenuEntry): readonly string[] {
+  const start = entry.kind === 'command' ? entry.command.start : undefined;
+  const id = entry.path.at(-1);
+  return start === undefined || id === undefined ? entry.path : [...entry.path, `${id}/${start}`];
+}
+
 function withoutEllipsis(title: string) {
   return title.replace(/…$/u, '');
 }
@@ -438,7 +472,6 @@ function submitForm(values: CommandFormValues) {
 function enterLevel(target: readonly string[]) {
   path.value = target;
   query.value = '';
-  step.value?.command?.prepare?.();
 }
 
 /** One level up, from the level shown: ids of levels no longer there go with it. */

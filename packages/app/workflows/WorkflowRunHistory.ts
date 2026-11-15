@@ -129,7 +129,7 @@ export const WorkflowRunHistory = defineService({
             session = account ? { account, rest: createRest(account.getToken) } : null;
         });
 
-        return { open, getRuns, setFilters, readMoreRuns };
+        return { open, getRuns, setFilters, readMoreRuns, addRun };
 
         /**
          * Opens the workflow as an item: its filters are cleared when another workflow was open, kept when it was this
@@ -166,11 +166,31 @@ export const WorkflowRunHistory = defineService({
                 return { runs: entry.runs, status: entry.status, complete: entry.complete, filters, seeded: false };
             }
 
+            const runs = getStoredRuns(target, filters);
+            return { runs, status: entry.status, complete: false, filters, seeded: runs.length > 0 };
+        }
+
+        /**
+         * Puts a run the user just started at the top of the workflow's runs — unfiltered, and under its filters when they
+         * let it through — before any read or the sync's poll brings it.
+         */
+        function addRun(target: WorkflowRunsTarget, run: GitHubWorkflowRun) {
+            const filters = getFilters(target);
+            for (const shown of filters === NO_WORKFLOW_RUN_FILTERS ? [filters] : [NO_WORKFLOW_RUN_FILTERS, filters]) {
+                if (isRunFiltered(run, shown)) {
+                    const key = getKey({ ...target, ...shown });
+                    const entry = entriesRef.value.get(key) ?? UNREAD;
+                    const known = entry.runs.length > 0 || entry.complete ? entry.runs : getStoredRuns(target, shown);
+                    put(key, { ...entry, runs: mergeRunsById([known, [run]]) });
+                }
+            }
+        }
+
+        function getStoredRuns(target: WorkflowRunsTarget, filters: WorkflowRunFilters) {
             const stored = workflows
                 .get(target.nameWithOwner)
                 ?.workflows.find(candidate => candidate.workflow.id === target.workflowId);
-            const runs = (stored?.runs ?? []).filter(run => isRunFiltered(run, filters));
-            return { runs, status: entry.status, complete: false, filters, seeded: runs.length > 0 };
+            return (stored?.runs ?? []).filter(run => isRunFiltered(run, filters));
         }
 
         function getFilters(target: WorkflowRunsTarget): WorkflowRunFilters {

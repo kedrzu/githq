@@ -1,10 +1,11 @@
-<!-- `/owner/name/actions` (actions W3a, W35, D15): a tracked repository's Workflows section, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A workflow opens as an item (`OpenedWorkflow`): in the panel beside the section when it fits (`?pane=workflow&workflow=…`), else on its page; the one open in the panel expands to its page, marked for Back to the panel; ⇧Enter opens one full screen straight, Esc there coming back here. The section is the list the opened workflow steps through (`ItemNavigation.list`, by `WorkflowRoutes.formatKey`). F opens a workflow's latest failed run on its page in githq (W4a). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there, as from a run's page, comes back here to the same row (`WorkflowTabPlaces`, W13); from a workflow, to the row of the one opened last (`ItemNavigation.lastOpenedId`). -->
+<!-- `/owner/name/actions` (actions W3a, W35, D15): a tracked repository's Workflows section, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A workflow opens as an item (`OpenedWorkflow`): in the panel beside the section when it fits (`?pane=workflow&workflow=…`), else on its page; the one open in the panel expands to its page, marked for Back to the panel; ⇧Enter opens one full screen straight, Esc there coming back here. The section is the list the opened workflow steps through (`ItemNavigation.list`, by `WorkflowRoutes.formatKey`). F opens a workflow's latest failed run on its page in githq (W4a). "Run workflow · Deploy" in the command menu runs the selected workflow, or says why it can't (W47, W48). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there, as from a run's page, comes back here to the same row (`WorkflowTabPlaces`, W13); from a workflow, to the row of the one opened last (`ItemNavigation.lastOpenedId`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { Browser } from '@/services/Browser.js';
 import { getRepositorySettingsPath } from '@/tracking/trackingRoutes.js';
@@ -14,6 +15,7 @@ import type { RepositoryWorkflowList } from './buildRepositoryWorkflows.js';
 import RepositoryWorkflowsView from './RepositoryWorkflowsView.vue';
 import { useAnyRefRead } from './useAnyRefRead.js';
 import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
+import { useRunWorkflowCommand } from './useRunWorkflowCommand.js';
 import * as l from './RepositoryWorkflowsTab.loc.js';
 import { getWorkflowFile } from './utils/getWorkflowFile.js';
 import { WorkflowRoutes } from './workflowRoutes.js';
@@ -35,6 +37,7 @@ const places = useService(WorkflowTabPlaces);
 const route = useRoute();
 const router = useRouter();
 const openRun = useOpenWorkflowRun();
+const runWorkflowCommands = useRunWorkflowCommand();
 useAnyRefRead(() => props.nameWithOwner);
 
 /** The selected row's key: back from the repository's settings, a run or a workflow's page, the same row (W13). */
@@ -74,6 +77,22 @@ const openedKey = computed(() => {
 const listPath = computed(
   () => router.resolve({ path: route.path, query: WorkflowRoutes.getQuery(route.query, null) }).fullPath,
 );
+
+// "Run workflow · Deploy" for the selected row (the first until moved); the workflow open in the panel offers its own.
+useCommands(() => {
+  const rows = props.list.groups.flatMap(group => group.rows);
+  const row = rows.find(candidate => candidate.key === selected.value) ?? rows[0];
+  const command =
+    row && openedKey.value === null
+      ? runWorkflowCommands.forWorkflow({
+          nameWithOwner: props.nameWithOwner,
+          state: row.workflow,
+          id: 'workflows.run',
+          kind: 'selected',
+        })
+      : null;
+  return command ? [command] : [];
+});
 
 // Back from a workflow — or with one stepped to in the panel —, the workflow opened last is the selected row; once.
 watch([() => navigation.lastOpenedId, references], ([key, found]) => followOpened(key, found), { immediate: true });
