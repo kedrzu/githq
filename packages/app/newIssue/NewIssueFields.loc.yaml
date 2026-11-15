@@ -30,3 +30,25 @@ noPush:
   en: You can't push to {repository}, so GitHub won't take labels, assignees, a milestone or a type from you.
 notInRepository:
   en: 'Not in {repository}, so left out: {values}.'
+details:
+  en: Details
+newIssue:
+  en: New issue
+pickerContext:
+  en: New issue · {repository}
+valueLabel:
+  en: '{property}: {value}'
+noOne:
+  en: No one
+noLabels:
+  en: No labels
+noParent:
+  en: No parent
+projects:
+  en: Projects
+noProject:
+  en: No project
+addToAnotherProject:
+  en: Add to another project
+removeProject:
+  en: Remove from {project}

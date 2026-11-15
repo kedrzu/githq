@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`, `UpdateReadyToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `IssueCreatedToast.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`, `UpdateReadyToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -132,6 +132,11 @@ export class AppShellHarness {
         return this.sidebar.getByRole('button', { name: `Account: ${login} · syncing stopped`, exact: true });
     }
 
+    /** The toast of an issue just created, with Create another and Open (mobile D44): "Created in acme/web". */
+    get issueCreatedToast(): Locator {
+        return this.toasts.filter({ hasText: /^Created in / });
+    }
+
     /** The toast saying syncing the settings stopped, and why (settings-sync T9). */
     get syncStoppedToast(): Locator {
         return this.toasts.filter({ hasText: 'Syncing settings stopped' });
@@ -139,7 +144,7 @@ export class AppShellHarness {
 
     /**
      * The toasts showing, oldest first: what was just closed, with Undo (D29), the failures of edits (K1, K2), merges refused or confirmed after the user moved
-     * on (merging PM34, PM35), and that syncing the settings stopped (T9).
+     * on (merging PM34, PM35), that syncing the settings stopped (T9), and an issue just created (mobile D44).
      */
     get toasts(): Locator {
         return this.page.getByRole('region', { name: /^Notifications/ }).getByRole('listitem');

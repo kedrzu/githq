@@ -258,6 +258,8 @@ $phone-icon-size: 22px;
 $phone-row-icon-size: 18px;
 // A text field on a phone: iOS Safari zooms the page into a field whose text is smaller as it is focused.
 $font-size-phone-input: 16px;
+// A new issue's title on a phone (MB194): larger than a field's, as the item it becomes is titled.
+$font-size-phone-title: 18px;
 // The bar along a phone screen's top: the places button or back, the title, the screen's actions (mobile D14).
 $phone-top-bar-height: 48px;
 // The strip under it while something holds the whole app back (mobile D12).
@@ -488,6 +490,17 @@ $motion-slide-distance: 4px;
         outline: 2px solid $color-focus;
         outline-offset: 1px;
     }
+}
+
+// A project's card of fields under the item's properties — on an item (`ItemProjects`) and in the new issue form on a phone
+// (`NewIssueFields`, mobile D42) — its border given.
+@mixin property-card($border: $color-border) {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: $spacing-10 $spacing-12;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
 }
 
 // Every `IconButton` inside a finger's size (the phone layout), its glyph `$glyph-size`, its corners `$radius` when given.

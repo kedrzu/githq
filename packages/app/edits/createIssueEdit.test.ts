@@ -39,7 +39,7 @@ test('a new issue shows at once — in "my work" when assigned to the user — a
     expect(items.membership.assigned?.has(pending?.id ?? '')).toBe(true);
 
     held.resolve();
-    expect(await done).toEqual({ created: true, failed: [] });
+    expect(await done).toEqual({ created: true, issueId: 'I_new', failed: [] });
 
     expect(items.getStored('I_new')).toMatchObject({ number: 42, labels: [{ name: 'bug' }] });
     expect(items.all.filter(item => item.title === 'Reminders skip DST').map(item => item.id)).toEqual(['I_new']);
@@ -129,7 +129,7 @@ test('an edit asked of an issue still being created waits for it and is made of 
     const closing = editor.edit([pending?.id ?? ''], { kind: 'close', reason: 'COMPLETED' });
     held.resolve();
 
-    expect(await creating).toEqual({ created: true, failed: [] });
+    expect(await creating).toEqual({ created: true, issueId: 'I_new', failed: [] });
     expect(await closing).toEqual({ failed: [] });
     expect(github.closed()).toEqual([{ issueId: 'I_new', stateReason: 'COMPLETED' }]);
     expect(items.get('I_new')?.state).toBe('CLOSED');
