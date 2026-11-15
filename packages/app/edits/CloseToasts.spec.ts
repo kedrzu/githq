@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { holdToastLifetimes } from '@/testing/holdToastLifetimes.js';
+
 import * as stories from './CloseToasts.stories.js';
 
 const { One, Several } = composeStories(stories);
@@ -9,7 +11,7 @@ const { One, Several } = composeStories(stories);
 const toast = () => page.getByRole('listitem');
 
 test('Undo names what closed and takes it back', async () => {
-    await One.run();
+    await holdToastLifetimes(() => One.run());
     await expect.element(toast()).toHaveTextContent('Closed fitloop/api#477');
 
     await userEvent.click(toast().getByRole('button', { name: 'Undo' }));
@@ -18,7 +20,7 @@ test('Undo names what closed and takes it back', async () => {
 });
 
 test('⌘Z takes it back while it shows', async () => {
-    await One.run();
+    await holdToastLifetimes(() => One.run());
     await expect.element(toast()).toBeVisible();
 
     await userEvent.keyboard('{ControlOrMeta>}z{/ControlOrMeta}');
@@ -27,7 +29,7 @@ test('⌘Z takes it back while it shows', async () => {
 });
 
 test('several closed together are counted, with one Undo', async () => {
-    await Several.run();
+    await holdToastLifetimes(() => Several.run());
 
     await expect.element(toast()).toHaveTextContent('Closed 3 items');
     await expect.element(toast().getByRole('button', { name: 'Undo' })).toBeVisible();
