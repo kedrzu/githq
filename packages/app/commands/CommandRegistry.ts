@@ -4,7 +4,7 @@ import { computed, shallowRef } from 'vue';
 
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
-import type { Command, CommandKeySheet, CommandSubject } from './CommandTypes.js';
+import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 
@@ -18,6 +18,11 @@ export interface CommandSource {
 export interface CommandMenuRequest {
     /** The action whose submenu it opens in. */
     readonly commandId: string | null;
+    /**
+     * The place's parts it lists first (the phone's command line on a list, mobile D17); read as the menu draws, so a
+     * part's count is worked out only while it is open. `null` for ⌘K's own menu.
+     */
+    readonly parts: (() => CommandParts) | null;
 }
 
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
@@ -78,6 +83,7 @@ export const CommandRegistry = defineService({
             findByKey,
             run,
             openMenu,
+            openParts,
             closeMenu,
             setHelpOpen,
         };
@@ -134,7 +140,13 @@ export const CommandRegistry = defineService({
 
         function openMenu(commandId: string | null = null) {
             helpRef.value = false;
-            menuRef.value = { commandId };
+            menuRef.value = { commandId, parts: null };
+        }
+
+        /** Opens the menu at the top with the place's parts first (mobile D17). */
+        function openParts(parts: () => CommandParts) {
+            helpRef.value = false;
+            menuRef.value = { commandId: null, parts };
         }
 
         function closeMenu() {

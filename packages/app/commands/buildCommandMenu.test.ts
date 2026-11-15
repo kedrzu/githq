@@ -694,6 +694,44 @@ test('a path walks from a command, a place or an untracked repository to the las
     ).toEqual(['Settings']);
 });
 
+test("mobile D17: the place's parts lead the top while nothing is typed, out of their own groups; typing finds them as ever", () => {
+    const issues: Command = { id: 'repository.section.issues', title: 'Issues', section: 'repository', key: '1' };
+    const commits: Command = { id: 'repository.section.commits', title: 'Commits', section: 'repository', key: '3' };
+    const copyLink: Command = { id: 'repository.copyLink', title: 'Copy link', section: 'repository' };
+    const assigned = place('myWork:assigned', 'Assigned to me');
+    const settings = place('settings', 'Settings');
+    const params: Partial<BuildCommandMenuParams> = {
+        commands: [issues, commits, copyLink, SIDEBAR],
+        repository: 'fitloop/webapp',
+        navigation: { ...NOTHING, places: [assigned, settings] },
+        parts: {
+            heading: 'fitloop/webapp',
+            rows: [
+                { kind: 'command', command: { ...commits, external: true } },
+                { kind: 'command', command: { ...issues, count: 142 } },
+                { kind: 'place', place: assigned },
+            ],
+        },
+    };
+
+    const menu = build(params);
+    expect(menu.map(group => group.key)).toEqual(['parts', 'repository', 'goTo', 'app']);
+    expect(menu[0]?.entries.map(entry => entry.id)).toEqual([
+        'repository.section.commits',
+        'repository.section.issues',
+        'place:myWork:assigned',
+    ]);
+    expect(ids(menu)).toEqual([
+        'repository.section.commits',
+        'repository.section.issues',
+        'place:myWork:assigned',
+        'repository.copyLink',
+        'place:settings',
+        'app.sidebar',
+    ]);
+    expect(build({ ...params, query: 'issues' }).map(group => group.key)).toEqual(['repository']);
+});
+
 function build(params: Partial<BuildCommandMenuParams>) {
     return buildCommandMenu({
         query: '',

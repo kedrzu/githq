@@ -104,3 +104,5 @@ rowFieldCommand:
   en: Row field…
 itemsOf:
   en: "{project}'s items"
+phoneViews:
+  en: '{project} · views'

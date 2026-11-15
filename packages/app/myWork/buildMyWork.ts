@@ -31,6 +31,8 @@ export interface MyWork {
     readonly groups: readonly MyWorkGroupRows[];
     /** Top-level rows per group — what the sidebar shows next to each group. */
     readonly counts: MyWorkCounts;
+    /** The same under each filter, whichever is on — what a phone's filters show beside their names (mobile D23). */
+    readonly filterCounts: Readonly<Record<MyWorkFilter, MyWorkCounts>>;
 }
 
 /** How many top-level rows each group has, and their sum ("My work" in the sidebar). */
@@ -110,7 +112,7 @@ export interface BuildMyWorkParams {
  *   need me (an assigned issue stays, as their parent, when such a pull request is nested under it);
  * - `all`.
  *
- * Counts are of the top-level rows left: a stack counts once.
+ * Counts are of the top-level rows left: a stack counts once. Each filter's are counted in the same pass.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -193,8 +195,9 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
 
     const entered = new Set<string>();
     const groups: MyWorkGroupRows[] = [];
-    const counts: Record<MyWorkGroup, number> = { reviewRequested: 0, authored: 0, assigned: 0, mentioned: 0 };
-    let total = 0;
+    const filterCounts = { all: createCounts(), needsMe: createCounts(), waitingOnOthers: createCounts() };
+    /** The stacks each filter has counted an entry of. */
+    const counted = { all: new Set<string>(), needsMe: new Set<string>(), waitingOnOthers: new Set<string>() };
     for (const group of MY_WORK_GROUPS) {
         const rows: MyWorkRow[] = [];
         for (const item of rowsByGroup.get(group) ?? []) {
@@ -207,6 +210,22 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
                 stack: null,
                 ...(stacks ? { stacks } : {}),
             };
+            for (const candidate of MY_WORK_FILTERS) {
+                if (
+                    !matchesFilter(row, group, candidate) ||
+                    (stackId !== undefined && counted[candidate].has(stackId))
+                ) {
+                    continue;
+                }
+
+                if (stackId !== undefined && members) {
+                    counted[candidate].add(stackId);
+                }
+
+                filterCounts[candidate][group]++;
+                filterCounts[candidate].total++;
+            }
+
             // A stack's entry is placed by the best sorted of its pull requests that matches; the others place nothing.
             if (!matchesFilter(row, group, filter) || (stackId !== undefined && entered.has(stackId))) {
                 continue;
@@ -234,11 +253,9 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
         }
 
         groups.push({ group, arrived: membership[group] !== undefined, rows });
-        counts[group] = rows.length;
-        total += rows.length;
     }
 
-    return { groups, counts: { ...counts, total } };
+    return { groups, counts: filterCounts[filter], filterCounts };
 }
 
 /**
@@ -267,6 +284,10 @@ export function getMyWorkStatus(row: MyWorkRow, group: MyWorkGroup): MyWorkStatu
     }
 
     return stage === 'draft' ? 'draft' : 'other';
+}
+
+function createCounts(): Record<keyof MyWorkCounts, number> {
+    return { reviewRequested: 0, authored: 0, assigned: 0, mentioned: 0, total: 0 };
 }
 
 /** The row matches — a stack's entry when any of its pull requests does as a row, as the filter keeps it. */

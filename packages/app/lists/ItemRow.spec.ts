@@ -10,7 +10,9 @@ import { createApp, h } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeRecord, SentMerge } from '@/merge/MergeTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { D1_ITEMS, SAMPLE_NOW, sampleUser } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
@@ -465,6 +467,8 @@ function mount(
 ) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The frame is narrower than a phone; these are the desktop's rows.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({

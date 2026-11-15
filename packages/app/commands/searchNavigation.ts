@@ -5,7 +5,7 @@ import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import type { PreparedMatchTexts } from '@/utils/findMatches.js';
 
-import type { Command } from './CommandTypes.js';
+import type { Command, CommandMarks } from './CommandTypes.js';
 import { findMenuRows } from './findMenuRows.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
 
@@ -13,7 +13,7 @@ import type { CommandMenuMatch } from './findMenuRows.js';
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
 /** A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken workflows, a tracked project, a repository, Settings. */
-export interface NavigationPlace {
+export interface NavigationPlace extends CommandMarks {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
     readonly kind: 'draftReviews' | 'myWork' | 'workflows' | 'project' | 'repository' | 'settings';

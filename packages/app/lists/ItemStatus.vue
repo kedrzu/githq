@@ -1,9 +1,9 @@
 <!-- Where a pull request stands, in one line: the status's icon and words in its tone, the first letter capitalised. The same in a row, a card and a stack's row; the parent gives it its place (`flex: none` or `min-width: 0`). -->
 <script lang="ts" setup>
-import type { ItemStatusFact } from './useItemFacts.js';
+import type { ItemStatusLook } from './useItemFacts.js';
 
 defineProps<{
-  status: ItemStatusFact;
+  status: ItemStatusLook;
 }>();
 </script>
 

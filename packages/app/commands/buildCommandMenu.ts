@@ -2,7 +2,14 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { findOptionLabels } from '@/components/filterOptions.js';
 
-import type { Command, CommandOption, CommandSection, CommandSubject } from './CommandTypes.js';
+import type {
+    Command,
+    CommandOption,
+    CommandPart,
+    CommandParts,
+    CommandSection,
+    CommandSubject,
+} from './CommandTypes.js';
 import { findMenuRows } from './findMenuRows.js';
 import type { CommandMenuMatch, MenuRowTexts } from './findMenuRows.js';
 import { findUntrackedRepository, isOnlyItemNumber, searchNavigation } from './searchNavigation.js';
@@ -46,8 +53,11 @@ export type CommandMenuEntry = CommandMenuEntryBase &
         | { readonly kind: 'navigation'; readonly result: NavigationResult }
     );
 
-/** The menu's headings: the subject's actions, the screen's, the repository's, the places, the app's; `level` is a submenu's rows, with no heading. */
-export type CommandMenuGroupKey = 'level' | 'subject' | 'view' | 'repository' | NavigationGroup | 'app';
+/**
+ * The menu's headings: the place's parts (mobile D17), the subject's actions, the screen's, the repository's, the places,
+ * the app's; `level` is a submenu's rows, with no heading.
+ */
+export type CommandMenuGroupKey = 'level' | 'parts' | 'subject' | 'view' | 'repository' | NavigationGroup | 'app';
 
 /** Entries under one heading. */
 export interface CommandMenuGroup {
@@ -78,6 +88,8 @@ export interface BuildCommandMenuParams {
     readonly navigation: NavigationData;
     /** Set inside a submenu: only what is under it is listed and found. */
     readonly level?: MenuLevel | null;
+    /** The place's parts, listed first at the top while nothing is typed, and then nowhere else (mobile D17). */
+    readonly parts?: CommandParts | null;
 }
 
 /** What {@link resolveMenuPath} walks. */
@@ -118,6 +130,7 @@ interface MenuParent extends MenuTrail, MenuRowTexts {
 /** The order of the headings while nothing is typed (E1). */
 const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
     'level',
+    'parts',
     'subject',
     'view',
     'repository',
@@ -157,7 +170,9 @@ const OUTSIDE_CONTEXT_FACTOR = 0.9;
  * of the submenus under them (E4: "in prog" finds "Set Status → In progress"), each paying for the levels above it:
  * words from the start of the text may name those levels, in path order, and the rest goes to the row. The heading
  * with the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
- * `#123` finds the items only.
+ * `#123` finds the items only. Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
+ * lists them first under their own heading, each in its order and out of the group it would have been in; typing
+ * finds them where it always does.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -168,6 +183,11 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     const typed = (commandsOnly ? query.trimStart().slice(1) : query).trim();
     const onlyNumber = isOnlyItemNumber(typed);
     const found = new Map<CommandMenuGroupKey, Map<string, CommandMenuEntry>>();
+    const parts = !level && typed === '' && !commandsOnly ? (params.parts ?? null) : null;
+    const partIds = new Set(parts?.rows.map(getPartId));
+    for (const part of parts?.rows ?? []) {
+        addPart(part);
+    }
 
     const rows = getTopRows();
     for (const { row, score, match } of findMenuRows(typed, rows)) {
@@ -177,7 +197,9 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     const roots = rows.flatMap(row => toCommandParent(row, getRowTrail(row)) ?? []);
     if (!level) {
         for (const result of commandsOnly ? [] : searchNavigation(typed, navigation)) {
-            addNavigation(result);
+            if (!partIds.has(getNavigationId(result))) {
+                addNavigation(result);
+            }
         }
 
         if (!onlyNumber) {
@@ -207,7 +229,10 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         return level
             ? level.rows
             : params.commands
-                  .filter(command => command.menu !== false && isOffered(command, subject, repository))
+                  .filter(
+                      command =>
+                          command.menu !== false && !partIds.has(command.id) && isOffered(command, subject, repository),
+                  )
                   .toSorted((a, b) => getRepositoryRank(a) - getRepositoryRank(b));
     }
 
@@ -322,6 +347,28 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
             ancestors: [],
             path: hasNavigationSubmenu(result, navigation) ? [id] : [],
         });
+    }
+
+    function addPart(part: CommandPart) {
+        switch (part.kind) {
+            case 'command':
+                addCommand(part.command, { id: null, path: [], ancestors: [], factor: 1, group: 'parts' }, 100, null);
+                return;
+            case 'place': {
+                const result: NavigationResult = { kind: 'place', score: 100, place: part.place, match: null };
+                add('parts', {
+                    kind: 'navigation',
+                    id: getNavigationId(result),
+                    result,
+                    score: 100,
+                    ancestors: [],
+                    path: hasNavigationSubmenu(result, navigation) ? [getNavigationId(result)] : [],
+                });
+                return;
+            }
+            default:
+                assertNever(part);
+        }
     }
 
     /** The best way of finding a row is the one that counts. */
@@ -463,6 +510,11 @@ function toUntrackedParent(word: string, navigation: NavigationData): MenuParent
     };
 }
 
+/** The id the part's row has in the menu: its action's, or its place's as a navigation line's. */
+function getPartId(part: CommandPart) {
+    return part.kind === 'command' ? part.command.id : `place:${part.place.id}`;
+}
+
 function getRowId(command: Command, trail: MenuTrail) {
     return trail.id === null ? command.id : `${trail.id}/${command.id}`;
 }
@@ -533,6 +585,7 @@ function getGroup(section: CommandSection): CommandMenuGroupKey {
 function getContextFactor(group: CommandMenuGroupKey) {
     switch (group) {
         case 'level':
+        case 'parts':
         case 'subject':
         case 'view':
         case 'repository':
