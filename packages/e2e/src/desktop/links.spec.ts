@@ -185,7 +185,7 @@ test('a click on a githq.dev link, or a github.com link to a screen githq shows,
         title: 'Explain how tokens expire',
         foundBy: ['assigned'],
         minutesAgo: 40,
-        bodyHtml: `<p>See <a href="https://githq.dev${ISSUE_PATH}?x=1">the sign-in issue</a>, <a href="https://github.com/acme/web/issues/12">#12</a> and <a href="https://github.com/acme/web/commit/a1b2c3d">the fix</a>.</p>`,
+        bodyHtml: `<p>See <a href="https://githq.dev${ISSUE_PATH}?x=1">the sign-in issue</a>, <a href="https://github.com/acme/web/issues/12">#12</a> and <a href="https://github.com/acme/web/blob/main/README.md">the fix</a>.</p>`,
     });
     await signInOnDesktop({ page, github, native, world: sample.world });
     await page.goto('/acme/web/issues/30');
@@ -193,7 +193,7 @@ test('a click on a githq.dev link, or a github.com link to a screen githq shows,
     await expect(item.title).toHaveText('Explain how tokens expire');
 
     await item.root.getByRole('link', { name: 'the fix' }).click();
-    await expect.poll(() => native.opened).toEqual(['https://github.com/acme/web/commit/a1b2c3d']);
+    await expect.poll(() => native.opened).toEqual(['https://github.com/acme/web/blob/main/README.md']);
     await expect(page).toHaveURL('/acme/web/issues/30');
 
     // A modifier changes nothing: the app has one window.
@@ -206,7 +206,7 @@ test('a click on a githq.dev link, or a github.com link to a screen githq shows,
     await item.root.getByRole('link', { name: 'the sign-in issue' }).click();
     await expect(item.title).toHaveText(ISSUE);
     await expect(page).toHaveURL(`${ISSUE_PATH}?x=1`);
-    expect(native.opened).toEqual(['https://github.com/acme/web/commit/a1b2c3d']);
+    expect(native.opened).toEqual(['https://github.com/acme/web/blob/main/README.md']);
     expect(page.context().pages()).toHaveLength(1);
 });
 
