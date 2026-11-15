@@ -36,12 +36,21 @@ app on the phone will trail the website by days, and that is accepted.
 The app is built with Tauri, the same as the desktop app, as one more target of the same project
 ([why Tauri](DECISIONS.md#d2)).
 
+## Signing in
+
+Signing in is the first screen a new user meets, so it has to be one tap. You tap Sign in with GitHub, iOS's own
+sign-in sheet slides up with GitHub's consent page — already signed in if you use GitHub in Safari — you tap
+Authorize, and you are back in githq. It is the website's sign-in, through githq's small token service, not the
+desktop app's code that you copy to github.com ([why not the desktop's way](DECISIONS.md#d3)). The token service
+already sees every token when it renews it every eight hours, so keeping it out of the first sign-in would protect
+nothing.
+
 ## What is still open
 
-- Signing in. The desktop app signs in with GitHub's Device Flow — a code you type on github.com — so the token never
-  passes through our server. On a phone that means leaving the app for the browser and typing a code; whether that
-  is good enough, and whether Apple's review asks for anything around it, is the next question.
+- Whether the desktop app moves to the same sign-in.
 - Where the token is kept on a phone (the iOS Keychain has no official Tauri plugin).
+- The account Apple's reviewers sign in with: App Review needs a working demo login, here a GitHub account with
+  something in it.
 - What the desktop-only parts become: the self-updater and the macOS window controls have no place on a phone.
 - How a build reaches TestFlight and the App Store, and how its version relates to the desktop app's.
 - Android, after iOS.

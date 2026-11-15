@@ -56,3 +56,42 @@ Tauri's mobile targets reuse both; Capacitor would start the native side from no
 
 - Capacitor — mature on mobile, but none of the desktop's native code carries over. Would win if Tauri's iOS target
   blocks something we need.
+
+## D3
+
+**The phone app signs in with GitHub's ordinary web flow through our Worker, the way the website does, not with the
+Device Flow the desktop app uses.** (2026-11-15, owner)
+
+How, as the design agent proposes it (not yet confirmed): the app opens GitHub's consent screen in an
+`ASWebAuthenticationSession` (iOS's system sign-in sheet, which shares Safari's cookies, so a user signed in to
+GitHub in Safari only taps Authorize). GitHub returns to a githq.dev path under the registered callback, which the
+Worker answers with a redirect to the app's own scheme (`githq://…`) carrying the code and `state`; the sheet hands
+that address to the app. The app trades the code for tokens at the Worker's token endpoint, with PKCE, so a code
+caught by another app that claimed the same scheme is worthless without the verifier the app kept.
+
+**Why.** On a phone the Device Flow means copying a code, pasting it on github.com and coming back — three steps
+more than one tap on Authorize, on the very first screen a new user meets. The cost the desktop app avoided — the
+token passing through our Worker — is already paid on the web, and by the desktop app too since GitHub's tokens
+expire after 8 hours and every refresh goes through the Worker ([githq D1](../githq/DECISIONS.md#d1)).
+
+> **Checked 2026-11-15:** GitHub supports PKCE on the OAuth App web flow since 2025-07-14, optional, `S256` only —
+> [changelog](https://github.blog/changelog/2025-07-14-pkce-support-for-oauth-and-github-app-authentication/). The
+> token request still lists `client_secret` as "Required", so PKCE adds to the Worker's exchange, it does not replace
+> it — [authorizing OAuth apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
+> A `redirect_uri` may point at "a subdirectory of the callback URL" on the same host and port (with wildcard
+> matching on); nothing on that page allows a custom scheme as the callback, hence the Worker's bounce.
+
+> **Checked 2026-11-15:** the token endpoint answers only the app's own origin, while refresh and revoke answer
+> every origin because the desktop webview calls them — `packages/worker/src/githubOAuth.ts:117-125,171`. The phone
+> app's origin is not githq.dev, so the exchange either runs on the native side or the endpoint opens to it.
+
+> **Checked 2026-11-15:** `ASWebAuthenticationSession` exists since iOS 12; an `https` callback
+> (`Callback.https(host:path:)`) only since iOS 17.4 —
+> [Apple](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession/callback/https(host:path:)).
+> No official Tauri plugin wraps it; the community `tauri-plugin-auth-session` 0.2.2 does (3 stars, last push
+> 2026-03-23) — [crates.io](https://crates.io/crates/tauri-plugin-auth-session).
+
+**Rejected.**
+
+- The Device Flow, as on the desktop — no client secret and the token never touches the Worker, but copying and
+  pasting a code on a phone is too clumsy for a first sign-in (owner).
