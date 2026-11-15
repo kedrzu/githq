@@ -4,8 +4,6 @@ inProjectColumn:
   en: in {project} · {value}
 fromIssue:
   en: from {reference}
-lastUsed:
-  en: last used repository
 inProjectSection:
   en: Repositories in {project}
 tracked:

@@ -7,11 +7,14 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -29,6 +32,8 @@ interface ChooserParams {
     /** Repositories of the items only held, read for a screen browsing them. */
     readonly browsed?: readonly string[];
     readonly found?: readonly FoundOnGitHub[];
+    /** The repository the user created an issue in last. */
+    readonly lastUsed?: string;
 }
 
 /** A repository GitHub's search answers with. */
@@ -79,6 +84,27 @@ test('sections come best first, each ranked; a repository stays in the first tha
     await expect.poll(() => composer.draft.repository).toBe('acme/web');
 });
 
+test('D43: outside a repository nothing is chosen; the repository used last tops the list, marked "last used"', async () => {
+    const composer = await openChooser({
+        tracked: ['acme/api'],
+        work: ['acme/web', 'acme/zeta'],
+        lastUsed: 'acme/zeta',
+    });
+
+    expect(composer.draft.repository).toBeNull();
+    await expect
+        .poll(sections)
+        .toEqual([
+            expect.stringMatching(/^From your work\s*acme\/zeta\s*last used.*acme\/web/u),
+            expect.stringMatching(/^Tracked.*acme\/api/u),
+        ]);
+    expect(page.getByText('last used', { exact: true }).elements()).toHaveLength(1);
+
+    // Typed, the best match leads; the mark stays on its row.
+    await chooserFilter('zeta');
+    await expect.poll(sections).toEqual([expect.stringMatching(/^From your work\s*acme\/zeta\s*last used/u)]);
+});
+
 test('a repository only browsed is not one of your work', async () => {
     await openChooser({ work: ['acme/web'], browsed: ['vitejs/vite', 'vuejs/core', 'vuejs/core-next'] });
 
@@ -100,8 +126,15 @@ test('a typed owner/name is offered though GitHub’s search does not rank it, a
 async function openChooser(params: ChooserParams) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(Browser, createSignedInBrowser(answerSearch(params.found ?? [])));
+    // The frame is narrower than a phone's width: the computer's chooser in place.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
+    const browser = createSignedInBrowser(answerSearch(params.found ?? []));
+    container.set(Browser, browser);
     setIndexedDbPersistence(container);
+    const login = container.resolve(AuthStore).viewer?.login;
+    if (params.lastUsed && login) {
+        browser.localStorage.setItem(`githq.newIssue.${login}`, JSON.stringify({ lastRepository: params.lastUsed }));
+    }
 
     const tracking = container.resolve(TrackingStore);
     await tracking.ready();

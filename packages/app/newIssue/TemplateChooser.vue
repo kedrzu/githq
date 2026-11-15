@@ -1,5 +1,6 @@
-<!-- A repository's issue templates offered before the body (H7): markdown templates fill the title, body and what they set; an issue form becomes a pre-filled body where the user can push (H8), and continues on GitHub's own form where they can't (D14) — GitHub applies its labels and checks its fields only there. "Blank issue" is last, or says the repository turned it off. ↑/↓ and Enter; Escape goes back. -->
+<!-- A repository's issue templates offered before the body (H7): markdown templates fill the title, body and what they set; an issue form becomes a pre-filled body where the user can push (H8), and continues on GitHub's own form where they can't (D14) — GitHub applies its labels and checks its fields only there. "Blank issue" is last, or says the repository turned it off. ↑/↓ and Enter; Escape goes back. On a phone (`PhoneLayout.active`) it is the inside of a menu at the bottom (MB200, the new issue form puts it there): rows a finger's height, no key hints, a template's description left out. -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ExternalLink, FileText } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
@@ -8,6 +9,7 @@ import { computed } from 'vue';
 import FilterList from '@/components/FilterList.vue';
 import type { FilterListGroup, FilterListRow } from '@/components/FilterList.vue';
 import Kbd from '@/components/Kbd.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 
 import type { IssueTemplate } from './IssueTemplateStore.js';
 import * as l from './TemplateChooser.loc.js';
@@ -40,6 +42,7 @@ const emit = defineEmits<{
 const BLANK = '\u0000blank';
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
 
 const rows = computed(() =>
   props.templates.map((template): TemplateRow =>
@@ -88,14 +91,19 @@ function pick(value: AcceptableValue | AcceptableValue[]) {
 <template>
   <FilterList
     :model-value="null"
-    :class="css.templateChooser"
+    :class="!phoneLayout.active && css.templateChooser"
     :label="t(l.label)"
     :groups="groups"
     :filterable="false"
-    :hints="[
-      { keys: 'Enter', label: t(l.useTemplate) },
-      { keys: 'Escape', label: t(l.back) },
-    ]"
+    :size="phoneLayout.active ? 'touch' : 'md'"
+    :hints="
+      phoneLayout.active
+        ? undefined
+        : [
+            { keys: 'Enter', label: t(l.useTemplate) },
+            { keys: 'Escape', label: t(l.back) },
+          ]
+    "
     back-on-escape
     @update:model-value="pick"
     @back="emit('back')"
@@ -124,13 +132,14 @@ function pick(value: AcceptableValue | AcceptableValue[]) {
         :class="css.templateChooser_badge"
         >{{ row.template.kind === 'markdown' ? t(l.markdown) : row.handOff ? t(l.formOnGitHub) : t(l.form) }}</span
       >
+      <!-- On a phone only why the blank issue is off: a template's description would crowd its name out. -->
       <span
-        v-if="row.about"
+        v-if="row.about && (!phoneLayout.active || !row.template)"
         :class="css.templateChooser_about"
         >{{ row.about }}</span
       >
       <span :class="css.templateChooser_spacer" />
-      <template v-if="highlighted && row.template">
+      <template v-if="highlighted && row.template && !phoneLayout.active">
         <span
           v-if="row.handOff"
           :class="css.templateChooser_about"

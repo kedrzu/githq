@@ -62,10 +62,6 @@ test('dismissed, its command goes with it', async () => {
 });
 
 test('brief: it goes by itself after 6 s, its command with it', async () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    onTestFinished(() => {
-        vi.useRealTimers();
-    });
     const { registry } = mount({ version: '0.2.0', previousVersion: '0.1.0' });
     await expect.element(toast()).toBeInTheDocument();
 
@@ -88,6 +84,12 @@ test('nothing to tell, the first ever run among it, shows nothing', async () => 
 });
 
 function mount(change: VersionChange | null) {
+    // The toast's 6 s lifetime runs on its clock, which only the test moves: on a loaded run it would otherwise close
+    // itself before the test clicks it.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    onTestFinished(() => {
+        vi.useRealTimers();
+    });
     const untold = shallowRef(change);
     const update = {
         state: null,

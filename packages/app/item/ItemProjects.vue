@@ -494,12 +494,7 @@ function addTo(projectId: string | null) {
 }
 
 .itemProjects_card {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: $spacing-10 $spacing-12;
-  border: 1px solid $color-border;
-  border-radius: $radius-lg;
+  @include property-card;
 }
 
 .itemProjects_name {
