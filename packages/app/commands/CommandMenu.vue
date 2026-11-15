@@ -1,4 +1,4 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about), a level the chip or a crumb already names not named again. ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject) — kept by the caller (`CommandRegistry`), so the actions that start from them, "Run workflow…" and New issue, then start from neither; Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assert } from '@nzyme/utils/assert.js';
@@ -82,6 +82,10 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+/** The subject was taken out of the menu (⌫): kept by the caller, whose actions then act on nothing. */
+const subjectRemoved = defineModel<boolean>('subjectRemoved', { default: false });
+/** The repository was taken out of the menu (⌫): kept by the caller, whose actions then act on no repository. */
+const repositoryRemoved = defineModel<boolean>('repositoryRemoved', { default: false });
 
 /** A line of the list as drawn. */
 interface Row extends FilterListRow {
@@ -126,8 +130,6 @@ const t = useTranslate();
 const phoneLayout = useService(PhoneLayout);
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const query = ref('');
-const subjectRemoved = ref(false);
-const repositoryRemoved = ref(false);
 /** The ids of the levels entered, from the top. */
 const path = shallowRef<readonly string[]>([]);
 const highlighted = shallowRef<string | null>(null);
@@ -177,14 +179,21 @@ const crumbs = computed((): CommandCrumb[] => {
   }
 
   for (const [index, crumb] of steps.value.entries()) {
+    const label = withoutEllipsis(crumb.title);
+    // A level named already — the repository in the chip that "Run workflow…" starts in (W36) — is not named again.
+    if (shown.some(candidate => candidate.label === label)) {
+      continue;
+    }
+
     const search = crumb.command?.search ? crumb.command : null;
     // A search, and an action whose levels are walked into (W36's "▷ Run workflow"), show their icon.
     const iconShown = search ?? (index === 0 && crumb.command?.children ? crumb.command : null);
+    const context = index === steps.value.length - 1 ? form.value?.context : undefined;
     shown.push({
       key: crumb.path.at(-1) ?? '',
-      label: withoutEllipsis(crumb.title),
+      label,
       icon: iconShown?.icon,
-      detail: index === steps.value.length - 1 ? form.value?.context : undefined,
+      detail: shown.some(candidate => candidate.label === context) ? undefined : context,
       arrow: index > 0 || (chip.value !== null && (subject.value !== null || !search)),
     });
   }

@@ -571,8 +571,9 @@ chosen automatically. An issue never lands in the wrong repository by a forgotte
 
 **Creating an issue closes the form and a toast follows, on the phone and on the computer alike: a title saying what was
 created, a detail line, a countdown, and real buttons — Create another, which opens the form again with the same
-repository, project and labels, and Open. On the computer its buttons carry no keyboard shortcuts; on a phone they are
-larger, for a finger, though the drawn ones may be too large.** (2026-11-09, owner)
+repository, project and labels, and Open. On the computer its buttons carry no keyboard shortcuts, and ⌘Enter still
+creates and keeps the form open for the next; on a phone they are larger, for a finger, though the drawn ones may be too
+large.** (2026-11-09, owner; ⌘Enter kept 2026-11-15, owner)
 
 **Why.** The owner wanted the toast on the phone, with an action that reads as a button; the desktop had none (it keeps
 the form open on ⌘Enter instead, `packages/app/newIssue/NewIssueDialog.vue:1`), so rather than a second solution the
@@ -581,6 +582,8 @@ building there.
 
 **Rejected.**
 
+- The toast replacing the computer's ⌘Enter, every Create closing the form (2026-11-15, owner) — the computer keeps its
+  quick series from the keyboard; the toast is the way for the mouse and the phone.
 - The toast on the phone only ([history](history/RETIRED.md#d40)) — it claimed to be the computer's toast, which did
   not exist.
 - A Create another switch in the form (MB202–MB203).

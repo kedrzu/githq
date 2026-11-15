@@ -138,6 +138,14 @@ const menuOpen = computed({
   get: () => registry.menu !== null,
   set: (open: boolean) => (open ? registry.openMenu() : registry.closeMenu()),
 });
+const subjectRemoved = computed({
+  get: () => registry.subjectRemoved,
+  set: (removed: boolean) => registry.setRemoved('subject', removed),
+});
+const repositoryRemoved = computed({
+  get: () => registry.repositoryRemoved,
+  set: (removed: boolean) => registry.setRemoved('repository', removed),
+});
 const helpOpen = computed({
   get: () => registry.helpOpen,
   set: (open: boolean) => registry.setHelpOpen(open),
@@ -191,7 +199,7 @@ useCommands(() => [
     },
   },
   repositorySearchCommand(),
-  runWorkflowCommands.anyWorkflow(contextRepository.value),
+  runWorkflowCommands.anyWorkflow(registry.repositoryRemoved ? null : contextRepository.value),
   ...(openInDesktopCommand ? [openInDesktopCommand()] : []),
   ...getUpdateCommands(),
 ]);
@@ -310,13 +318,16 @@ function getUpdateLaterCommand(): Command {
   };
 }
 
-/** The quick capture with the defaults of the screen: its repository, and the issue open as the parent. */
+/**
+ * The quick capture with the defaults of the screen: its repository, and the issue open as the parent — none of either
+ * once taken out of the command menu it ran from.
+ */
 function startNewIssue() {
-  const opened = IssueRoutes.getOpened(route);
+  const opened = registry.subjectRemoved ? null : IssueRoutes.getOpened(route);
   const openedId = opened ? resolver.peek(opened.reference) : null;
   const item = openedId ? items.get(openedId) : undefined;
   composer.start({
-    repository: repository.value,
+    repository: registry.repositoryRemoved ? null : repository.value,
     project: null,
     parent:
       item?.kind === 'issue' && !isPendingItem(item) ? { id: item.id, reference: formatShortReference(item) } : null,
@@ -451,6 +462,8 @@ function navigate(result: NavigationResult) {
 <template>
   <CommandMenu
     v-model:open="menuOpen"
+    v-model:subject-removed="subjectRemoved"
+    v-model:repository-removed="repositoryRemoved"
     :commands="registry.commands"
     :subject="registry.subject"
     :repository="contextRepository"
