@@ -121,7 +121,8 @@ function renderPanel(options: PanelOptions) {
                 bodies: new Map(options.body === undefined ? [] : [[OID, options.body]]),
                 failIf: operation => options.failed === true && operation === 'CommitChecks',
                 holdIf: operation =>
-                    options.notKnown === true && (operation === 'CommitStates' || operation === 'CommitChecks')
+                    options.notKnown === true &&
+                    (operation === 'CommitStates' || operation === 'CommitChecks' || operation === 'CommitDetail')
                         ? new Promise<void>(() => {})
                         : null,
             });
@@ -142,9 +143,9 @@ function renderPanel(options: PanelOptions) {
                 tracking.choose({ repositories: [{ nameWithOwner: REPOSITORY, id: 'R_web' }], projects: [] });
                 await store.open(REPOSITORY);
                 const commit = { oid: OID, id: `C_${OID}` };
-                store.ensureDetail(REPOSITORY, commit);
+                store.ensureDetail(REPOSITORY, OID);
                 store.ensureStates(REPOSITORY, [commit]);
-                store.ensureChecks(REPOSITORY, commit);
+                store.ensureChecks(REPOSITORY, OID);
                 shown.value = true;
             }
         },

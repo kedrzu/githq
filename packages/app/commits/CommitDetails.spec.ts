@@ -188,7 +188,9 @@ test('CH34, CH57, CH58: the pull request and checks not known yet: an empty bar 
     const { panel } = await mount(
         {
             commits: [sampleCommit('c1', 10)],
-            holdIf: operation => (operation === 'CommitStates' ? answered.promise : null),
+            // The details bring the state too.
+            holdIf: operation =>
+                operation === 'CommitStates' || operation === 'CommitDetail' ? answered.promise : null,
         },
         'c1',
     );
@@ -443,9 +445,9 @@ async function mount(options: CommitGraphTestOptions, oid: string, panel: MountO
 
     await store.open(REPOSITORY);
     const commit = { oid, id: `C_${oid}` };
-    store.ensureDetail(REPOSITORY, commit);
+    store.ensureDetail(REPOSITORY, oid);
     store.ensureStates(REPOSITORY, [commit]);
-    store.ensureChecks(REPOSITORY, commit);
+    store.ensureChecks(REPOSITORY, oid);
 
     const router = createRouter({
         history: createMemoryHistory(),

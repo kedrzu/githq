@@ -340,7 +340,7 @@ export const DetailsGone: Story = {
                 async function showOnceKept() {
                     await ready;
                     await store.open('acme/web');
-                    store.ensureDetail('acme/web', { oid: 'old', id: 'C_old' });
+                    store.ensureDetail('acme/web', 'old');
                     kept.value = true;
                 }
             },

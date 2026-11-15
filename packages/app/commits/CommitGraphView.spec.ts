@@ -112,7 +112,8 @@ test('D18, CH34: not known yet is an empty bar, never a blank; a commit with no 
     await mount({
         commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
         states,
-        holdIf: operation => (operation === 'CommitStates' ? answered.promise : null),
+        // The opened commit's details bring its state too.
+        holdIf: operation => (operation === 'CommitStates' || operation === 'CommitDetail' ? answered.promise : null),
     });
     const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
     const unknown = { name: 'Pull request and checks not known yet' };

@@ -982,7 +982,7 @@ test('opening a graph again reads its refs again, however soon', async () => {
     expect(shownOids(graphs, 'acme/web')[0]).toBe('c5');
 });
 
-test("D13, D12: a commit's details are read once, by oid, and a commit not loaded never joins the graph", async () => {
+test("D13, D12: a commit's details are read once, by repository and sha, and a commit not loaded never joins the graph", async () => {
     const world = fakeCommitGitHub();
     const web = world.repository('acme/web');
     web.add('old', 1, []);
@@ -996,13 +996,12 @@ test("D13, D12: a commit's details are read once, by oid, and a commit not loade
     await graphs.open('acme/web');
     expect(graphs.getCommitPlace('acme/web', 'c2')).toBe('shown');
     const shown = shownOids(graphs, 'acme/web');
-    const commit = { id: 'C_old', oid: 'old' };
 
     expect(graphs.getDetail('acme/web', 'old')).toBeUndefined();
     const before = graphs.getCommitPlace('acme/web', 'old');
-    graphs.ensureDetail('acme/web', commit);
+    graphs.ensureDetail('acme/web', 'old');
     expect(graphs.getDetail('acme/web', 'old')).toEqual({ kind: 'reading' });
-    graphs.ensureDetail('acme/web', commit);
+    graphs.ensureDetail('acme/web', 'old');
     await session.clock.advance(0);
 
     expect(graphs.getDetail('acme/web', 'old')).toMatchObject({
@@ -1013,10 +1012,10 @@ test("D13, D12: a commit's details are read once, by oid, and a commit not loade
     expect(graphs.getCommit('acme/web', 'old')?.headline).toBe('Commit old');
 
     // Read again it is not asked for; and it stays out of the graph, as loaded as it was.
-    graphs.ensureDetail('acme/web', commit);
+    graphs.ensureDetail('acme/web', 'old');
     await session.clock.advance(0);
     expect(requests().filter(request => request.operation === 'CommitDetail')).toEqual([
-        { operation: 'CommitDetail', variables: { id: 'C_old' } },
+        { operation: 'CommitDetail', variables: { owner: 'acme', name: 'web', rev: 'old' } },
     ]);
     expect(shownOids(graphs, 'acme/web')).toEqual(shown);
     expect(graphs.getCommitPlace('acme/web', 'old')).toBe(before);
@@ -1034,8 +1033,8 @@ test('D13: a long subject GitHub cuts in the headline reads whole in the details
     const { graphs, session } = setup(uniqueLogin(), world);
     await graphs.open('acme/web');
 
-    graphs.ensureDetail('acme/web', { id: 'C_long', oid: 'long' });
-    graphs.ensureDetail('acme/web', { id: 'C_short', oid: 'short' });
+    graphs.ensureDetail('acme/web', 'long');
+    graphs.ensureDetail('acme/web', 'short');
     await session.clock.advance(0);
 
     expect(graphs.getDetail('acme/web', 'long')).toMatchObject({
@@ -1045,6 +1044,43 @@ test('D13: a long subject GitHub cuts in the headline reads whole in the details
     });
     expect(graphs.getDetail('acme/web', 'short')).toMatchObject({ headline: 'Commit short', body: '' });
     expect(graphs.get('acme/web')?.commits.at(-1)?.headline).toBe(cut);
+});
+
+test('D12: a commit opened by a short sha in a fork, no row of a graph, is known by its full oid with its upstream pull request and CI', async () => {
+    const world = fakeCommitGitHub();
+    const fork = world.repository('me/web');
+    fork.add('deadbeef01', 10, []);
+    fork.add('deadc0de02', 20, ['deadbeef01']);
+    const upstream: CommitState = {
+        pullRequest: {
+            number: 7,
+            state: 'MERGED',
+            title: 'Fix the export',
+            url: 'https://github.com/acme/web/pull/7',
+            isDraft: false,
+        },
+        ci: 'FAILURE',
+    };
+    fork.states.set('deadbeef01', upstream);
+    const { graphs, session, requests } = setup(uniqueLogin(), world);
+
+    expect(graphs.resolveOid('me/web', 'deadbeef')).toBeUndefined();
+    graphs.ensureDetail('me/web', 'deadbeef');
+    await session.clock.advance(0);
+
+    expect(graphs.resolveOid('me/web', 'deadbeef')).toBe('deadbeef01');
+    expect(graphs.getDetail('me/web', 'deadbeef01')).toMatchObject({ kind: 'read', commit: { oid: 'deadbeef01' } });
+    expect(graphs.getDetail('me/web', 'deadbeef')).toEqual(graphs.getDetail('me/web', 'deadbeef01'));
+    expect(graphs.getState('me/web', 'deadbeef01')).toEqual(upstream);
+    expect(requests()).toEqual([
+        { operation: 'CommitDetail', variables: { owner: 'me', name: 'web', rev: 'deadbeef' } },
+    ]);
+
+    // A sha two commits share names neither, as git refuses it.
+    graphs.ensureDetail('me/web', 'dead');
+    await session.clock.advance(0);
+    expect(graphs.getDetail('me/web', 'dead')).toEqual({ kind: 'failed' });
+    expect(graphs.resolveOid('me/web', 'dead')).toBeUndefined();
 });
 
 test('D12: a commit not loaded is asked for its state by its id, though neither its history nor a ref knows it', async () => {
@@ -1074,14 +1110,13 @@ test('D13, CH40: a read that fails says so and opening again asks again; with th
     });
     let failing = true;
     await graphs.open('acme/web');
-    const commit = { id: 'C_c1', oid: 'c1' };
 
-    graphs.ensureDetail('acme/web', commit);
+    graphs.ensureDetail('acme/web', 'c1');
     await session.clock.advance(0);
     expect(graphs.getDetail('acme/web', 'c1')).toEqual({ kind: 'failed' });
 
     failing = false;
-    graphs.ensureDetail('acme/web', commit);
+    graphs.ensureDetail('acme/web', 'c1');
     await session.clock.advance(0);
     expect(graphs.getDetail('acme/web', 'c1')?.kind).toBe('read');
 
@@ -1091,7 +1126,7 @@ test('D13, CH40: a read that fails says so and opening again asks again; with th
     expect(session.container.resolve(GitHubRateLimitStore).remaining('graphql')).toBe(0);
     const after = requests().length;
     expect(after).toBeGreaterThan(asked);
-    graphs.ensureDetail('acme/web', { id: 'C_other', oid: 'other' });
+    graphs.ensureDetail('acme/web', 'other');
     await session.clock.advance(0);
     expect(requests()).toHaveLength(after);
     expect(graphs.getDetail('acme/web', 'other')).toEqual({ kind: 'failed' });
@@ -1108,7 +1143,7 @@ test('D13: details arriving after the user signed out, or another signed in, are
         await graphs.open('acme/web');
         const held = createPromise();
         session.github.hold = held.promise;
-        graphs.ensureDetail('acme/web', { id: 'C_c1', oid: 'c1' });
+        graphs.ensureDetail('acme/web', 'c1');
         await session.clock.advance(0);
 
         if (change === 'signOut') {
@@ -1136,15 +1171,17 @@ test('only the commit asked for has its checks read, once a minute, and a re-rea
     web.checks.set('c1', [checkRun('first')]);
     const { graphs, session, requests } = setup(uniqueLogin(), world);
     await graphs.open('acme/web');
-    const commit = { id: 'C_c1', oid: 'c1' };
 
     // The rows ask for their state, never for their checks.
-    graphs.ensureStates('acme/web', [commit, { id: 'C_c2', oid: 'c2' }]);
+    graphs.ensureStates('acme/web', [
+        { id: 'C_c1', oid: 'c1' },
+        { id: 'C_c2', oid: 'c2' },
+    ]);
     await session.clock.advance(100);
     expect(checkReads(requests())).toEqual([]);
 
     expect(graphs.getChecks('acme/web', 'c1')).toBeUndefined();
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     const first: CommitChecksRead = {
         kind: 'read',
@@ -1165,10 +1202,12 @@ test('only the commit asked for has its checks read, once a minute, and a re-rea
         readAt: session.clock.now(),
     };
     expect(graphs.getChecks('acme/web', 'c1')).toEqual(first);
-    expect(checkReads(requests())).toEqual([{ operation: 'CommitChecks', variables: { id: 'C_c1' } }]);
+    expect(checkReads(requests())).toEqual([
+        { operation: 'CommitChecks', variables: { owner: 'acme', name: 'web', rev: 'c1' } },
+    ]);
 
     await session.clock.advance(59_999);
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(checkReads(requests())).toHaveLength(1);
 
@@ -1176,8 +1215,8 @@ test('only the commit asked for has its checks read, once a minute, and a re-rea
     web.checks.set('c1', [checkRun('second')]);
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'CommitChecks' ? held.promise : null);
-    graphs.ensureChecks('acme/web', commit);
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(graphs.getChecks('acme/web', 'c1')).toEqual(first);
     expect(checkReads(requests())).toHaveLength(2);
@@ -1199,11 +1238,13 @@ test('a commit known to have no checks is not read, while one whose state is not
     await session.clock.advance(100);
     expect(graphs.getState('acme/web', 'none')?.ci).toBeNull();
 
-    graphs.ensureChecks('acme/web', { id: 'C_none', oid: 'none' });
-    graphs.ensureChecks('acme/web', { id: 'C_unknown', oid: 'unknown' });
+    graphs.ensureChecks('acme/web', 'none');
+    graphs.ensureChecks('acme/web', 'unknown');
     await session.clock.advance(0);
 
-    expect(checkReads(requests())).toEqual([{ operation: 'CommitChecks', variables: { id: 'C_unknown' } }]);
+    expect(checkReads(requests())).toEqual([
+        { operation: 'CommitChecks', variables: { owner: 'acme', name: 'web', rev: 'unknown' } },
+    ]);
     expect(graphs.getChecks('acme/web', 'none')).toBeUndefined();
     expect(graphs.getChecks('acme/web', 'unknown')).toMatchObject({ kind: 'read', checks: [], checkCount: 0 });
 });
@@ -1219,26 +1260,25 @@ test('a failed read of checks is not repeated for a minute, and a failed re-read
         answer: request => (request.operation === 'CommitChecks' && failing ? undefined : world.answer(request)),
     });
     await graphs.open('acme/web');
-    const commit = { id: 'C_c1', oid: 'c1' };
 
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     const failed: CommitChecksRead = { kind: 'failed', readAt: session.clock.now() };
     expect(graphs.getChecks('acme/web', 'c1')).toEqual(failed);
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(checkReads(requests())).toHaveLength(1);
 
     await session.clock.advance(60_000);
     failing = false;
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(graphs.getChecks('acme/web', 'c1')).toMatchObject({ kind: 'read' });
     expect(checkReads(requests())).toHaveLength(2);
 
     await session.clock.advance(60_000);
     failing = true;
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(graphs.getChecks('acme/web', 'c1')).toMatchObject({
         kind: 'read',
@@ -1247,7 +1287,7 @@ test('a failed read of checks is not repeated for a minute, and a failed re-read
     expect(checkReads(requests())).toHaveLength(3);
 
     await session.clock.advance(59_999);
-    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     expect(checkReads(requests())).toHaveLength(3);
 });
@@ -1263,7 +1303,7 @@ test('checks arriving after the user signed out, or another signed in, are dropp
         await graphs.open('acme/web');
         const held = createPromise();
         session.github.hold = held.promise;
-        graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
+        graphs.ensureChecks('acme/web', 'c1');
         await session.clock.advance(0);
 
         if (change === 'signOut') {
@@ -1287,7 +1327,7 @@ test('with the allowance spent no checks are asked for: an earlier list stays, a
     web.branch('main', 'c2');
     const { graphs, session, requests } = setup(uniqueLogin(), world);
     await graphs.open('acme/web');
-    graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
+    graphs.ensureChecks('acme/web', 'c1');
     await session.clock.advance(0);
     const read = graphs.getChecks('acme/web', 'c1');
     expect(read?.kind).toBe('read');
@@ -1296,8 +1336,8 @@ test('with the allowance spent no checks are asked for: an earlier list stays, a
     await graphs.open('acme/web');
     expect(session.container.resolve(GitHubRateLimitStore).remaining('graphql')).toBe(0);
     await session.clock.advance(60_000);
-    graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
-    graphs.ensureChecks('acme/web', { id: 'C_c2', oid: 'c2' });
+    graphs.ensureChecks('acme/web', 'c1');
+    graphs.ensureChecks('acme/web', 'c2');
     await session.clock.advance(0);
 
     expect(checkReads(requests())).toHaveLength(1);

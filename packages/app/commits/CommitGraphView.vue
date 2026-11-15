@@ -650,9 +650,9 @@ function goToCommit(commit: CommitParent) {
 }
 
 function readOpened(commit: OpenedCommit) {
-  store.ensureDetail(props.nameWithOwner, commit);
+  store.ensureDetail(props.nameWithOwner, commit.oid);
   store.ensureStates(props.nameWithOwner, [commit]);
-  store.ensureChecks(props.nameWithOwner, commit);
+  store.ensureChecks(props.nameWithOwner, commit.oid);
 }
 
 /** The details' keys are theirs: shown, and with nothing over them. A tooltip takes no keys. */

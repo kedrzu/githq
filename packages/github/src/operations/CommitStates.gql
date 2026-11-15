@@ -4,18 +4,7 @@ query CommitStates($ids: [ID!]!) {
     nodes(ids: $ids) {
         ... on Commit {
             id
-            associatedPullRequests(first: 1) {
-                nodes {
-                    number
-                    state
-                    title
-                    url
-                    isDraft
-                }
-            }
-            statusCheckRollup {
-                state
-            }
+            ...CommitStateFields
         }
     }
 }
