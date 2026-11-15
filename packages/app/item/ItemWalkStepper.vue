@@ -4,6 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 
@@ -30,13 +31,24 @@ const emit = defineEmits<{
 const t = useTranslate();
 
 /** A chord (`Shift+K`) draws two keycaps, wider than the square button. */
+/**
+ * A button's name, with its key's text when the chip shows more than one character ("Shift+K" off Apple's platforms):
+ * a control's visible text must be part of its name (axe `label-content-name-mismatch`). Glyphs are icons, not text; not in brackets, which axe leaves out of the name.
+ */
+const previousName = computed(() => withVisibleKey(props.previousLabel, props.stepKeys.previous));
+const nextName = computed(() => withVisibleKey(props.nextLabel, props.stepKeys.next));
 const wideKeys = computed(() => props.stepKeys.previous.length > 1 || props.stepKeys.next.length > 1);
+
+function withVisibleKey(label: string, key: string) {
+  const text = formatCommandKey(key).replace(/[⌘⇧⌥⌃↵⌫⇥←→↑↓]/gu, '');
+  return text.length > 1 ? `${label}, ${formatCommandKey(key)}` : label;
+}
 </script>
 
 <template>
   <div :class="[css.itemWalkStepper, wideKeys && css.itemWalkStepper_wideKeys]">
     <IconButton
-      :label="previousLabel"
+      :label="previousName"
       :kbd="stepKeys.previous"
       :keyshortcuts="formatAriaKeyShortcuts(stepKeys.previous)"
       :disabled="position.index <= 1"
@@ -45,7 +57,7 @@ const wideKeys = computed(() => props.stepKeys.previous.length > 1 || props.step
       <Kbd :keys="stepKeys.previous" />
     </IconButton>
     <IconButton
-      :label="nextLabel"
+      :label="nextName"
       :kbd="stepKeys.next"
       :keyshortcuts="formatAriaKeyShortcuts(stepKeys.next)"
       :disabled="position.index >= position.count"

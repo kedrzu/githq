@@ -78,6 +78,9 @@ export const ShiftStepKeys: Story = {
     args: { stepKeys: { previous: 'Shift+K', next: 'Shift+J' } },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('button', { name: 'Next item' })).toHaveAttribute('aria-keyshortcuts', 'Shift+J');
+        await expect(canvas.getByRole('button', { name: /^Next item/u })).toHaveAttribute(
+            'aria-keyshortcuts',
+            'Shift+J',
+        );
     },
 };
