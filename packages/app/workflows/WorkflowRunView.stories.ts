@@ -65,11 +65,13 @@ const meta = {
     component: WorkflowRunView,
     args: {
         ...viewOf({}, () => ({ status: 'ready', log: parseJobLog(LOG_TEXT, BUILD_STEPS) })),
+        arrangement: 'page',
         lineAddress: null,
         onSelectJob: fn(),
         onRetry: fn(),
         onOpenOnGitHub: fn(),
         onClose: fn(),
+        onArrange: fn(),
     },
     decorators: [() => ({ template: '<div style="height: 700px"><story /></div>' })],
 } satisfies Meta<typeof WorkflowRunView>;
@@ -80,6 +82,12 @@ type Story = StoryObj<typeof meta>;
 
 /** W4a: failed first; the failed job selected, its steps shown, its log in the pane, opened at its error. */
 export const Failed: Story = {};
+
+/** In the panel beside a repository's Workflows section, as narrow as it opens: the box fills it, no edges to drag. */
+export const InPanel: Story = {
+    args: { arrangement: 'panel', workflowPage: '/fitloop/webapp/actions/workflows/deploy.yml', backToWorkflow: true },
+    decorators: [() => ({ template: '<div style="width: 480px"><story /></div>' })],
+};
 
 /** The address names another job: it is selected, with its steps. */
 export const OtherJob: Story = {

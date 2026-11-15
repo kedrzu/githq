@@ -8,6 +8,7 @@ import * as stories from './WorkflowRunView.stories.js';
 
 const {
     Failed,
+    InPanel,
     InvalidFile,
     JobCancelled,
     JobSkipped,
@@ -112,6 +113,20 @@ test('W34: the toolbar links to the workflow, still named as the run is', async 
     await expect
         .element(page.getByRole('link', { name: 'Deploy' }))
         .toHaveAttribute('href', '/fitloop/webapp/actions/workflows/deploy.yml');
+});
+
+test('in the panel the box fills it with no edges to drag; the button and ⇧Enter open it full screen', async () => {
+    const arrange = vi.fn();
+    await InPanel.run({ args: { ...InPanel.args, onArrange: arrange } });
+
+    expect(page.getByRole('separator', { name: 'Resize the page' }).elements()).toHaveLength(0);
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(arrange).toHaveBeenLastCalledWith('page');
+    await userEvent.click(page.getByRole('button', { name: 'Open full screen' }));
+    expect(arrange).toHaveBeenCalledTimes(2);
+
+    await Failed.run();
+    expect(page.getByRole('separator', { name: 'Resize the page' }).elements()).toHaveLength(2);
 });
 
 test('the job the address names shows its steps, the others none', async () => {

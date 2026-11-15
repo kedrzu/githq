@@ -1,4 +1,4 @@
-<!-- A workflow's run on a page of its own (actions W4a, W34): the toolbar across the page — the repository, the workflow (a link to its page, when known) and the run's number, GitHub (`O`) and back (`Esc`) —, then in a centred box of the item page's width (D9, the same setting, its edges dragged), what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
+<!-- A workflow's run (actions W4a, W34), the same view on its page or in the panel beside a repository's Workflows section: the toolbar across it — the repository, the workflow (a link to its page, when known) and the run's number, the other arrangement ("Open full screen" from the panel, "Back to the panel" from the page while the panel fits: the button, `⇧Enter`, ⌘K), GitHub (`O`) and back (`Esc`) —, then, on the page in a centred box of the item page's width (D9, the same setting, its edges dragged), in the panel across its whole width, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
@@ -24,6 +24,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
+import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -32,6 +33,9 @@ import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import { useMaxWidth } from '@/components/useMaxWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
+import type { ItemArrangement } from '@/item/itemRoutes.js';
+import { ITEM_ARRANGEMENT_KEYS, useOtherArrangement } from '@/item/useItemArrangement.js';
+import type { OtherArrangement } from '@/item/useItemArrangement.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import type { MaxWidth } from '@/settings/sync/SettingsDocument.js';
@@ -49,6 +53,8 @@ import * as l from './WorkflowRunView.loc.js';
 import type { WorkflowRowRef } from './WorkflowTypes.js';
 
 const props = defineProps<{
+  /** On its page, in a centred box whose edges are dragged, or in the panel, filling it. */
+  arrangement: ItemArrangement;
   /** `owner/name`. */
   nameWithOwner: string;
   runId: number;
@@ -65,7 +71,10 @@ const props = defineProps<{
   workflowPage?: string | null;
   /** Esc goes back to the run's workflow, which the key bar names; otherwise it says "Back". */
   backToWorkflow?: boolean;
-  /** The box's maximum width the user chose, shared with the item page (`itemPageWidth`); none for the default. */
+  /**
+   * The box's maximum width the user chose, shared with the item page (`itemPageWidth`); none for the default. Only on
+   * the page: in the panel the box fills it.
+   */
   pageWidth?: MaxWidth | null;
   /** The run's workflow is broken as things stand. */
   stillBroken: boolean;
@@ -99,6 +108,8 @@ const emit = defineEmits<{
   cancel: [];
   /** "Open workflow" in ⌘K: the caller goes to the run's workflow's page. */
   openWorkflow: [];
+  /** "Open full screen" or "Back to the panel": the header's button, `⇧Enter` or ⌘K. */
+  arrange: [arrangement: ItemArrangement];
   /** The user dragged the box's edges to this maximum: the caller keeps it. */
   resizePage: [width: MaxWidth];
 }>();
@@ -123,6 +134,7 @@ const JOBS_WIDTH = { key: 'workflowRunJobs', default: 268, min: 200, max: 480 };
 const PAGE_WIDTH = { default: ITEM_PAGE_WIDTH.default, min: 600 };
 
 const t = useTranslate();
+const otherArrangement = useOtherArrangement(() => props.arrangement);
 const root = useTemplateRef('root');
 const roomRef = useTemplateRef('room');
 /** The width there is for the box. */
@@ -163,6 +175,7 @@ const gitHubUrl = computed(() =>
 const runUrl = computed(() =>
   getGitHubUrl(getWorkflowRunPath({ nameWithOwner: props.nameWithOwner, runId: props.runId })),
 );
+const page = computed(() => props.arrangement === 'page');
 const finished = computed(() => props.model.run?.status === 'completed');
 const atOverview = computed(() => props.model.body.kind === 'overview');
 const showsColumns = computed(() => {
@@ -241,6 +254,8 @@ const hints = computed(() => [
 ]);
 
 useCommands(() => [
+  // In the item's section, as every opened item's: it wins over the list's own ⇧Enter beside the panel.
+  ...(otherArrangement.value ? [getArrangeCommand(otherArrangement.value)] : []),
   // No key, here or anywhere: it starts something in the repository, so it is never one stray keystroke away (D10).
   {
     id: 'workflowRun.rerunFailedJobs',
@@ -374,6 +389,17 @@ onMounted(() => {
 });
 onBeforeUnmount(() => roomObserver?.disconnect());
 
+function getArrangeCommand(other: OtherArrangement): Command {
+  return {
+    id: `workflowRun.arrange.${other.arrangement}`,
+    title: other.title,
+    section: 'item',
+    key: ITEM_ARRANGEMENT_KEYS.arrange,
+    icon: other.icon,
+    run: () => emit('arrange', other.arrangement),
+  };
+}
+
 function selectJob(job: GitHubWorkflowJob) {
   // A job clicked gives the keys back: Enter tries a failed log again rather than pressing the job.
   root.value?.focus({ preventScroll: true });
@@ -478,6 +504,14 @@ function getInvalidFileMessage(): RunMessage {
       </h1>
       <span :class="css.workflowRunView_spacer" />
       <IconButton
+        v-if="otherArrangement"
+        :icon="otherArrangement.icon"
+        :label="otherArrangement.title"
+        :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
+        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
+        @click="emit('arrange', otherArrangement.arrangement)"
+      />
+      <IconButton
         :icon="Github"
         :label="t(l.openOnGitHub)"
         kbd="O"
@@ -499,19 +533,21 @@ function getInvalidFileMessage(): RunMessage {
       :class="css.workflowRunView_room"
     >
       <div
-        :class="css.workflowRunView_box"
-        :style="{ width: `${box.shown}px` }"
+        :class="[css.workflowRunView_box, !page && css.workflowRunView_box_panel]"
+        :style="page ? { width: `${box.shown}px` } : undefined"
       >
-        <WidthHandle
-          v-for="side in ['left', 'right'] as const"
-          :key="side"
-          v-model="box.current"
-          :side="side"
-          :label="t(l.resizePage)"
-          :min="PAGE_WIDTH.min"
-          :max="room"
-          @resized="box.save()"
-        />
+        <template v-if="page">
+          <WidthHandle
+            v-for="side in ['left', 'right'] as const"
+            :key="side"
+            v-model="box.current"
+            :side="side"
+            :label="t(l.resizePage)"
+            :min="PAGE_WIDTH.min"
+            :max="room"
+            @resized="box.save()"
+          />
+        </template>
         <WorkflowRunSummary
           :run="model.run"
           :git-ref="gitRef"
@@ -719,6 +755,13 @@ function getInvalidFileMessage(): RunMessage {
   flex-direction: column;
   min-height: 0;
   margin-inline: auto;
+}
+
+// In the panel the box is the panel's whole width.
+.workflowRunView_box_panel {
+  flex: 1;
+  min-width: 0;
+  margin-inline: 0;
 }
 
 .workflowRunView_overview {
