@@ -1,4 +1,4 @@
-<!-- An opened workflow (actions D15, W30–W33, W42): the same view in the panel beside the screen or full screen. The header (`ItemHeader`) names it — its state's icon, the repository and the workflow — and holds the way through the list it was opened from (`⇧K`/`⇧J`), the other arrangement (`⇧Enter`), GitHub (`O`) and close (`Esc`). Under it the workflow's name, how it stands ("Broken on main" for 3h · last passed yesterday in #4812) and, when asked to offer it and the file has `workflow_dispatch`, "Run workflow…". Its width below the header decides the layout, not the arrangement: from 1000px on a page, 1300px in the panel (as an issue's, `TWO_COLUMNS_WIDTH`), the runs (`WorkflowRuns`) beside the details (`WorkflowDetails`) at the right, their edge dragged or moved by the arrow keys from 320 to 640px, the width kept on this device (`ColumnSplit`); narrower, the tabs Runs and Details, the chosen one kept for the next workflow until the app reloads. The page fills the width: a list, not a text to read. Full screen, `j`/`k` walk the runs and `↵` opens one, `⇧J`/`⇧K` step to the next workflow, `F` opens its latest failure, and a key bar at the bottom says so; in the panel the list beside it keeps `j`/`k`. -->
+<!-- An opened workflow (actions D15, W30–W33, W42): the same view in the panel beside the screen or full screen. The header (`ItemHeader`) names it — its state's icon, the repository and the workflow — and holds the way through the list it was opened from (`⇧K`/`⇧J`), the other arrangement (`⇧Enter`), GitHub (`O`) and close (`Esc`). Under it the workflow's name, how it stands ("Broken on main" for 3h · last passed yesterday in #4812) and, when asked to offer it and the file has `workflow_dispatch`, "Run workflow…" at the heading's right. Its width below the header decides the layout, not the arrangement: from 1000px on a page, 1300px in the panel (as an issue's, `TWO_COLUMNS_WIDTH`), the runs (`WorkflowRuns`) beside the details (`WorkflowDetails`) at the right, their edge dragged or moved by the arrow keys from 320 to 640px, the width kept on this device (`ColumnSplit`); narrower, the tabs Runs and Details, the chosen one kept for the next workflow until the app reloads. The page fills the width: a list, not a text to read. Full screen, `j`/`k` walk the runs and `↵` opens one, `⇧J`/`⇧K` step to the next workflow, `F` opens its latest failure, and a key bar at the bottom says so; in the panel the list beside it keeps `j`/`k`. -->
 <script lang="ts">
 import { shallowRef } from 'vue';
 
@@ -491,6 +491,7 @@ interface Standing {
   flex: none;
   gap: $spacing-16;
   align-items: flex-start;
+  justify-content: space-between;
   padding: $spacing-20 $spacing-24 $spacing-16;
 }
 
