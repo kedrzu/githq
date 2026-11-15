@@ -1,10 +1,11 @@
-<!-- A tracked project's settings (T17), under Settings' header: its head ("← Projects › Roadmap  acme · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock` — Tracking alone until projects get settings of their own. -->
+<!-- A tracked project's settings (T17), under Settings' header: its head ("← Projects › Roadmap  acme · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock` — Tracking alone until projects get settings of their own. On a phone (`phone`, mobile MB155) one column in the screen's scroll: its head (`PhoneTrackedHead`; back is the screen's top bar's), then Tracking with Stop tracking. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { SquareKanban } from 'lucide-vue-next';
 
 import type { TrackedStatus } from '@/tracking/TrackingTypes.js';
 
+import PhoneTrackedHead from './PhoneTrackedHead.vue';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import SettingsPageHead from './SettingsPageHead.vue';
 import TrackingBlock from './TrackingBlock.vue';
@@ -18,6 +19,8 @@ defineProps<{
   /** What "synced 14s ago" is counted from. */
   now: number;
   openCount: number;
+  /** On a phone: one column in the screen's scroll, with no head of Settings. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -30,6 +33,28 @@ const t = useTranslate();
 
 <template>
   <div
+    v-if="phone"
+    :class="css.projectSettingsView_phone"
+  >
+    <PhoneTrackedHead
+      :icon="SquareKanban"
+      :title="title"
+      :meta="t(l.ownerTracked, { owner })"
+      :status="status"
+      :now="now"
+    />
+    <TrackingBlock
+      kind="project"
+      :name="title"
+      :status="status"
+      :now="now"
+      :open-count="openCount"
+      phone
+      @untrack="emit('untrack')"
+    />
+  </div>
+  <div
+    v-else
     :class="css.projectSettingsView"
     :data-route-scroll="`project-settings:${owner}/${title}`"
   >
@@ -42,6 +67,7 @@ const t = useTranslate();
     />
     <TrackingBlock
       kind="project"
+      :name="title"
       :status="status"
       :now="now"
       :open-count="openCount"
@@ -51,6 +77,11 @@ const t = useTranslate();
 </template>
 
 <style lang="scss" module="css">
+.projectSettingsView_phone {
+  display: flex;
+  flex-direction: column;
+}
+
 .projectSettingsView {
   flex: 1;
   min-height: 0;

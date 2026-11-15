@@ -1,4 +1,4 @@
-<!-- The Workflow alerts section of a repository's settings (actions T16, W7–W12, D5, D13, D14), a `SettingsBlock` with its card (`Workflow alerts / Card`): the default branch, as GitHub names it, with its switch; the patterns, each with what it matches of the refs githq has seen runs on and how many workflows are broken there; the add field, which turns into the editor; "No alerts from …" when nothing raises any; up to three other refs with recent runs that raise none; and, before the first read, that nothing can be matched yet. Each change is asked for as it is made (`change`), nothing while the user only looks. Keys while it is shown and no layer is open, never from a field: J/K and ↓/↑ move between the default branch and the patterns, Space switches the default branch, Enter edits a pattern in place and ⌫ removes it at once, A goes to the add field; in the editor Enter saves and Esc cancels — on the add field left empty, reached by the page's address, Esc goes back where the user came from (W13) —, and the list's key hints leave while it has the keys. Focused itself (`#workflow-alerts`), it selects the default branch. -->
+<!-- The Workflow alerts section of a repository's settings (actions T16, W7–W12, D5, D13, D14), a `SettingsBlock` with its card (`Workflow alerts / Card`): the default branch, as GitHub names it, with its switch; the patterns, each with what it matches of the refs githq has seen runs on and how many workflows are broken there; the add field, which turns into the editor; "No alerts from …" when nothing raises any; up to three other refs with recent runs that raise none; and, before the first read, that nothing can be matched yet. Each change is asked for as it is made (`change`), nothing while the user only looks. Keys while it is shown and no layer is open, never from a field: J/K and ↓/↑ move between the default branch and the patterns, Space switches the default branch, Enter edits a pattern in place and ⌫ removes it at once, A goes to the add field; in the editor Enter saves and Esc cancels — on the add field left empty, reached by the page's address, Esc goes back where the user came from (W13) —, and the list's key hints leave while it has the keys. Focused itself (`#workflow-alerts`), it selects the default branch. On a phone (`phone`) the section's text above the card and no key hints. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
@@ -41,6 +41,8 @@ const props = defineProps<{
   now: number;
   /** The page was opened on the add field by its address (W13). */
   openedOnAddField?: boolean;
+  /** On a phone: the text above the card, no key hints. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -271,6 +273,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
     :class="css.workflowAlertsBlock"
     :title="t(l.title)"
     :description="t(l.description, { name: nameWithOwner })"
+    :phone="phone"
     tabindex="-1"
     @focus="onFocus"
   >
@@ -463,7 +466,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
         :class="css.workflowAlertsBlock_footer"
         aria-hidden="true"
       >
-        <template v-if="!fieldActive">
+        <template v-if="!fieldActive && !phone">
           <span :class="css.workflowAlertsBlock_hint"><Kbd keys="J" /><Kbd keys="K" />{{ t(l.move) }}</span>
           <span
             v-for="hint in hints"

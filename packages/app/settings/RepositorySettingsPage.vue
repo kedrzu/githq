@@ -1,10 +1,12 @@
-<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another section of the column, or its key, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it; Esc on the add field reached so, nothing typed, goes back too. -->
+<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another section of the column, or its key, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it; Esc on the add field reached so, nothing typed, goes back too. On a phone (`PhoneLayout.active`, mobile D35, MB152) a screen of its own with no column of the sections: back "‹ Repositories" goes back where the user came from, else to Repositories at its own address (`?tab=repositories`), where Stop tracking and one not tracked settle too. -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useNow } from '@/services/useNow.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getCandidateRepositories } from '@/tracking/trackingCandidates.js';
@@ -15,9 +17,11 @@ import { goBack } from '@/utils/goBack.js';
 import { useAnyRefRead } from '@/workflows/useAnyRefRead.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
+import PhoneSettingsScreen from './PhoneSettingsScreen.vue';
 import RepositorySettingsView from './RepositorySettingsView.vue';
+import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import type { SettingsSection } from './settingsRoutes.js';
-import { getSettingsPath } from './settingsRoutes.js';
+import { getPhoneSettingsPath, getSettingsPath } from './settingsRoutes.js';
 import SettingsView from './SettingsView.vue';
 import { SettingsSync } from './sync/SettingsSync.js';
 
@@ -29,9 +33,11 @@ const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const sync = useService(SettingsSync);
 const workflows = useService(WorkflowStore);
+const phone = useService(PhoneLayout);
 const route = useRoute();
 const router = useRouter();
 const now = useNow(TICK_MS);
+const t = useTranslate();
 
 const nameWithOwner = computed(() => getRouteNameWithOwner(route));
 useAnyRefRead(nameWithOwner);
@@ -43,6 +49,10 @@ const section = computed({
   get: (): SettingsSection => 'repositories',
   set: value => void router.push(getSettingsPath(value)),
 });
+/** Repositories, at its own address on a phone, where `/settings` alone is the list of the sections. */
+const repositoriesPath = computed(() =>
+  phone.active ? getPhoneSettingsPath('repositories') : getSettingsPath('repositories'),
+);
 const status = computed(() => {
   const target = { kind: 'repository', nameWithOwner: nameWithOwner.value } as const;
   return getTrackedStatus(tracking.getProgress(target), tracking.getSyncState(target));
@@ -56,7 +66,7 @@ watch(
   () => route.name === ownRoute && tracking.loaded && !repository.value,
   leave => {
     if (leave) {
-      void router.replace(getSettingsPath('repositories'));
+      void router.replace(repositoriesPath.value);
     }
   },
   { immediate: true },
@@ -94,7 +104,32 @@ const isPrivate = computed(() => {
 </script>
 
 <template>
+  <PhoneSettingsScreen
+    v-if="phone.active"
+    :title="nameWithOwner"
+    back
+    :back-place="t(sectionLabels.repositories)"
+    :scroll-key="`repository-settings:${nameWithOwner}`"
+    @back="goBack(router, repositoriesPath)"
+  >
+    <RepositorySettingsView
+      v-if="tracking.loaded && repository"
+      :name-with-owner="repository.nameWithOwner"
+      :is-private="isPrivate"
+      :status="status"
+      :now="now"
+      :open-count="trackedItems.getOpenCount({ kind: 'repository', nameWithOwner: repository.nameWithOwner })"
+      :workflows="workflows.get(repository.nameWithOwner)"
+      :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
+      :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
+      phone
+      @back="goBack(router, repositoriesPath)"
+      @untrack="untrack"
+      @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"
+    />
+  </PhoneSettingsScreen>
   <SettingsView
+    v-else
     v-model:section="section"
     :tracked-repositories="tracking.repositories.length"
     :tracked-projects="tracking.projects.length"
@@ -110,7 +145,7 @@ const isPrivate = computed(() => {
       :workflows="workflows.get(repository.nameWithOwner)"
       :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
       :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
-      @back="goBack(router, getSettingsPath('repositories'))"
+      @back="goBack(router, repositoriesPath)"
       @untrack="untrack"
       @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"
     />

@@ -18,3 +18,17 @@ repositoryUntrackNote:
   en: The same as Untrack on its row in Repositories, then back to Repositories.
 projectUntrackNote:
   en: The same as Untrack on its row in Projects, then back to Projects.
+onThisPhone:
+  en: On this phone
+openItemsPhone:
+  plural: count
+  en:
+    zero: no open items
+    one: 1 open item
+    many: '{formatted} open items'
+stopTracking:
+  en: Stop tracking
+repositoryStopNote:
+  en: Deletes the copy of {name} on this phone. Nothing changes on GitHub, and Undo brings it back.
+projectStopNote:
+  en: Deletes the copy of {name} on this phone. Items from repositories you track stay. Nothing changes on GitHub, and Undo brings it back.

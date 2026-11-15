@@ -1,4 +1,4 @@
-<!-- The Code review section of Settings (code-review D17, D34, CR77): how a comment goes out while no draft is open, as two cards (`ChoiceCards`). The change applies at once; where it is saved shows in the status bar. -->
+<!-- The Code review section of Settings (code-review D17, D34, CR77): how a comment goes out while no draft is open, as two cards (`ChoiceCards`). The change applies at once; where it is saved shows in the status bar. On a phone (`phone`, mobile D30, MB159) the same choice as plain rows under Comments, its text saying where code review is — the setting is the user's, synced with the rest, though a phone has no code review yet. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, useId } from 'vue';
@@ -9,7 +9,13 @@ import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
 import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 
 import * as l from './CodeReviewView.loc.js';
+import PhoneSettingsGroup from './PhoneSettingsGroup.vue';
 import type { ReviewCommentChoice } from './sync/SettingsDocument.js';
+
+defineProps<{
+  /** In a phone's Settings: plain rows in one column. */
+  phone?: boolean;
+}>();
 
 const model = defineModel<ReviewCommentChoice>({ required: true });
 
@@ -23,7 +29,21 @@ const options = computed((): ChoiceCardsOption<ReviewCommentChoice>[] => [
 </script>
 
 <template>
+  <PhoneSettingsGroup
+    v-if="phone"
+    v-slot="{ titleId }"
+    :title="t(l.commentsTitle)"
+    :description="t(l.commentsDescriptionPhone)"
+  >
+    <ChoiceCards
+      v-model="model"
+      touch
+      :labelledby="titleId"
+      :options="options"
+    />
+  </PhoneSettingsGroup>
   <div
+    v-else
     :class="css.codeReviewView"
     data-route-scroll="settings-code-review"
   >

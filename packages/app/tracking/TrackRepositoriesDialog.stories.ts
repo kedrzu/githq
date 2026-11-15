@@ -21,13 +21,13 @@ const TRACKED = ['mlaine/tasklet', 'mlaine/mdlint', 'fitloop/webapp', 'fitloop/a
 const meta = {
     component: TrackRepositoriesDialog,
     // Over a real tracking store, GitHub answering what T18 shows.
-    render: () =>
+    render: (_args, { parameters }) =>
         defineComponent({
             setup() {
                 const container = createContainer();
                 container.set(LanguageContext, () => APP_LANGUAGE);
-                // The story frame is narrower than a phone's width: the computer's picker.
-                container.set(PhoneLayout, createFixedPhoneLayout(false));
+                // The story frame is narrower than a phone's width: the computer's picker, unless a story asks for a phone.
+                container.set(PhoneLayout, createFixedPhoneLayout(parameters.phone === true));
                 container.set(
                     Browser,
                     createSignedInBrowser(
@@ -86,4 +86,10 @@ export const TwoPicked: Story = {
         await userEvent.click(await body.findByRole('checkbox', { name: /^fitloop\/mobile/ }));
         await userEvent.click(await body.findByRole('checkbox', { name: /^fitloop\/platform-infra/ }));
     },
+};
+
+/** MB168: on a phone, the first sign-in's choosing screen as a screen of its own, back naming Repositories. */
+export const Phone: Story = {
+    parameters: { phone: true },
+    play: TwoPicked.play,
 };

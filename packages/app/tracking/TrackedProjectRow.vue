@@ -1,4 +1,4 @@
-<!-- A tracked project's row in Settings' Projects (T17 `L5sxR`, selected `jbKD6`): its title and `#number`, where its items come from as the local copy holds them — a tracked project brings its items even from repositories that aren't tracked, so with several it says how many of them are — how many items it holds, how it stands, and Untrack (`TrackedRow`). -->
+<!-- A tracked project's row in Settings' Projects (T17 `L5sxR`, selected `jbKD6`): its title and `#number`, where its items come from as the local copy holds them — a tracked project brings its items even from repositories that aren't tracked, so with several it says how many of them are — how many items it holds, how it stands, and Untrack (`TrackedRow`); on a phone no Untrack (MB154). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { SquareKanban } from 'lucide-vue-next';
@@ -23,6 +23,8 @@ const props = defineProps<{
   /** What "synced 14s ago" is counted from. */
   now: number;
   selected?: boolean;
+  /** On a phone: two lines, no Untrack (MB154). */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -60,6 +62,7 @@ const source = computed(() => {
     :status="status"
     :now="now"
     :selected="selected"
+    :phone="phone"
     @untrack="emit('untrack')"
   />
 </template>

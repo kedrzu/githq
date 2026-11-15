@@ -1,4 +1,4 @@
-<!-- One choice out of a few, each a card side by side (`RadioCards`): the repository layout in Settings; with `stacked`, rows in one box (the update stream); or with `rows`, cards one above the other (a code review's comments). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, each a card side by side (`RadioCards`): the repository layout in Settings; with `stacked`, rows in one box (the update stream); or with `rows`, cards one above the other (a code review's comments); with `touch`, plain rows a finger's height without frames (a phone's settings, mobile MB159). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
 <script lang="ts">
 /** One option of `ChoiceCards`. */
 export interface ChoiceCardsOption<T extends string> {
@@ -22,6 +22,8 @@ defineProps<{
   stacked?: boolean;
   /** One above the other, each a card of its own, the radio beside its label and detail. */
   rows?: boolean;
+  /** Plain rows one above the other, a finger's height, without frames: a phone's settings. */
+  touch?: boolean;
 }>();
 
 defineSlots<{
@@ -46,7 +48,12 @@ const id = useId();
       })
     "
     :aria-labelledby="labelledby"
-    :class="[css.choiceCards, stacked && css.choiceCards_stacked, rows && css.choiceCards_rows]"
+    :class="[
+      css.choiceCards,
+      stacked && css.choiceCards_stacked,
+      rows && css.choiceCards_rows,
+      touch && css.choiceCards_touch,
+    ]"
   >
     <template #default="{ option }">
       <slot :option="option" />
@@ -149,6 +156,56 @@ const id = useId();
   .choiceCards_detail {
     padding-left: 26px;
     font-size: $font-size-xs;
+  }
+}
+
+.choiceCards_touch {
+  grid-auto-flow: row;
+  gap: 0;
+
+  .choiceCards_card {
+    gap: $spacing-2;
+    min-height: $touch-target-size;
+    padding: $spacing-8 $spacing-16;
+    border: none;
+    border-radius: 0;
+
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+
+    &:active {
+      background: $color-bg-3;
+    }
+
+    &[data-state='checked'] {
+      background: none;
+    }
+  }
+
+  .choiceCards_head {
+    gap: $spacing-12;
+  }
+
+  .choiceCards_radio {
+    width: 18px;
+    height: 18px;
+  }
+
+  [data-state='checked'] > .choiceCards_head > .choiceCards_radio::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .choiceCards_label {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-normal;
+  }
+
+  .choiceCards_detail {
+    padding-left: 30px;
+    font-size: $font-size-md;
+    color: $color-fg-dim;
   }
 }
 

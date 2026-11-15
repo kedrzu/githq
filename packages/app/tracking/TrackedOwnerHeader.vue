@@ -1,4 +1,4 @@
-<!-- The header of an owner's group in Settings' Repositories and Projects (G8, T17 `r7z5p0`): a person or a building, the owner, and how the user stands to it with how many of its are tracked ("your repositories · 12 of 12 tracked", "organisation · 2 of 312 tracked", "not a member · 1 tracked") — of how many only once GitHub's lists are read. "Track more" opens the picker on that owner; there is none when nothing of it is left to track or GitHub doesn't list it to the user. -->
+<!-- The header of an owner's group in Settings' Repositories and Projects (G8, T17 `r7z5p0`): a person or a building, the owner, and how the user stands to it with how many of its are tracked ("your repositories · 12 of 12 tracked", "organisation · 2 of 312 tracked", "not a member · 1 tracked") — of how many only once GitHub's lists are read. "Track more" opens the picker on that owner; there is none when nothing of it is left to track or GitHub doesn't list it to the user. On a phone (`phone`, MB151) one grey line — the owner and the same words — with "Track more" a text link in the accent at its right. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -15,6 +15,8 @@ const props = defineProps<{
   group: TrackedOwnerGroup<unknown>;
   /** What is listed, and so the words: "your repositories", "your projects". */
   kind: 'repositories' | 'projects';
+  /** On a phone: one line, "Track more" a text link. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -49,7 +51,25 @@ function getStanding() {
 </script>
 
 <template>
-  <div :class="css.trackedOwnerHeader">
+  <div
+    v-if="phone"
+    :class="css.trackedOwnerHeader_phone"
+  >
+    <h3 :class="css.trackedOwnerHeader_phoneText">{{ group.login }} · {{ meta }}</h3>
+    <Button
+      v-if="group.canTrackMore"
+      variant="link"
+      tone="accent"
+      :class="css.trackedOwnerHeader_phoneMore"
+      @click="emit('trackMore')"
+    >
+      {{ t(l.trackMore) }}
+    </Button>
+  </div>
+  <div
+    v-else
+    :class="css.trackedOwnerHeader"
+  >
     <component
       :is="group.ownerKind === 'user' ? User : Building2"
       :class="css.trackedOwnerHeader_icon"
@@ -70,6 +90,30 @@ function getStanding() {
 </template>
 
 <style lang="scss" module="css">
+.trackedOwnerHeader_phone {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+  min-height: $touch-target-size;
+  padding: $spacing-8 $spacing-16 0;
+}
+
+.trackedOwnerHeader_phoneText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-fg-dim;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackedOwnerHeader_phoneMore {
+  flex: none;
+  min-height: $touch-target-size;
+}
+
 .trackedOwnerHeader {
   display: flex;
   gap: $spacing-8;

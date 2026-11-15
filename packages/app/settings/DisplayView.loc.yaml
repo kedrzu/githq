@@ -14,3 +14,7 @@ animationsTitle:
   en: Animations
 animationsDescription:
   en: Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once.
+motion:
+  en: Motion
+animationsDescriptionPhone:
+  en: Short fades and slides show where a sheet or panel comes from, so the screen doesn't jump. Off, everything appears at once.

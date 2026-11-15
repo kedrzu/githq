@@ -104,3 +104,13 @@ export const Refused: Story = { args: { status: { kind: 'refused' } } };
 
 /** GitHub no longer shows it (amber). */
 export const Hidden: Story = { args: { status: { kind: 'hidden' } } };
+
+/** MB152: on a phone, one column in the screen's scroll: its head, Tracking with Stop tracking, then Workflow alerts. */
+export const Phone: Story = {
+    args: { phone: true, workflowSettings: { defaultBranch: true, refs: ['v*'] } },
+    render: args => ({
+        components: { RepositorySettingsView },
+        setup: () => ({ args }),
+        template: '<div style="height: 100vh; overflow-y: auto"><RepositorySettingsView v-bind="args" /></div>',
+    }),
+};

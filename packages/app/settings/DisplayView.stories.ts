@@ -31,3 +31,6 @@ export const AnimationsOff: Story = { args: { animations: false } };
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 480px"><story /></div>' })],
 };
+
+/** MB158: on a phone, whether things animate alone, a switch row under Motion. */
+export const Phone: Story = { args: { phone: true } };

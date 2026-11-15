@@ -15,6 +15,7 @@ const {
     MatchingNothing,
     AlertsOff,
     NotRead,
+    Phone,
 } = composeStories(stories);
 
 const like = (pattern: string) => new RegExp(pattern.replaceAll(' ', '\\s'), 'u');
@@ -328,4 +329,16 @@ test('W12: Enter edits a pattern in place, with the same preview naming what sto
     await expect.element(page.getByText('No longer counted: the branch v2-experiment')).toBeVisible();
     await userEvent.keyboard('{Enter}');
     expect(onWorkflowSettings).toHaveBeenCalledExactlyOnceWith({ defaultBranch: true, refs: ['v*.*.*'] });
+});
+
+test('MB152: on a phone the head says how it stands, and Stop tracking says what it deletes before it untracks', async () => {
+    await page.viewport(390, 844);
+    const onUntrack = vi.fn();
+    await Phone.run({ args: { ...Phone.args, onUntrack } });
+
+    await expect.element(page.getByRole('heading', { name: 'fitloop/webapp', level: 2 })).toBeVisible();
+    await expect.element(page.getByText(like('private · tracked · synced'))).toBeVisible();
+    await expect.element(page.getByText(like('Deletes the copy of fitloop/webapp on this phone.'))).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Stop tracking' }));
+    expect(onUntrack).toHaveBeenCalledOnce();
 });

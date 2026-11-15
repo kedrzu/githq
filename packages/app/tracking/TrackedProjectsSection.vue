@@ -1,4 +1,4 @@
-<!-- Settings' Projects (T17, D25): like Repositories (G8) — what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`) — each row saying where its items come from and how many of those repositories are tracked, how many items it holds and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings; Untrack and ⌫ untrack at once, with Undo (T20); "Track projects" (A) and a group's "Track more" open the picker (T22), the latter on that owner. `?tab=projects&q=` (from an untracked project's screen) opens the picker at once with that search. -->
+<!-- Settings' Projects (T17, D25): like Repositories (G8) — what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`) — each row saying where its items come from and how many of those repositories are tracked, how many items it holds and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings; Untrack and ⌫ untrack at once, with Undo (T20); "Track projects" (A) and a group's "Track more" open the picker (T22), the latter on that owner. `?tab=projects&q=` (from an untracked project's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
@@ -32,6 +32,8 @@ interface ProjectRow extends ProjectContents {
 const props = defineProps<{
   /** What the picker's filter holds when it opens at once (`?q=`, from an untracked project's screen). */
   initialSearch?: string;
+  /** In a phone's Settings (mobile D35): rows that drill in, adding from the screen's "+" (`add`). */
+  phone?: boolean;
 }>();
 
 const tracking = useService(TrackingStore);
@@ -98,6 +100,9 @@ function untrack(row: ProjectRow) {
   pending.untrack({ kind: 'project', id: row.project.id }, row.project.title);
 }
 
+// A phone's "+" in the screen's top bar opens the picker.
+defineExpose({ add: openPicker });
+
 function openPicker(owner?: string) {
   pickerOwner.value = owner;
   pickerSearch.value = undefined;
@@ -111,6 +116,7 @@ function openPicker(owner?: string) {
     :groups="groups"
     :get-key="getKey"
     :loaded="tracking.loaded"
+    :phone="phone"
     @open="openSettings"
     @untrack="untrack"
     @add="openPicker"
@@ -125,6 +131,7 @@ function openPicker(owner?: string) {
         :status="getStatus(row.project.id)"
         :now="now"
         :selected="selected"
+        :phone="phone"
         @untrack="untrack(row)"
       />
     </template>

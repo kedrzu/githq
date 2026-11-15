@@ -10,3 +10,5 @@ draft:
   en: Add it to a draft review
 draftDetail:
   en: Comments collect in a draft that only you see, and go out together when you submit it.
+commentsDescriptionPhone:
+  en: What a new comment does while you have no draft review on that pull request. While a draft is open, comments join it either way. Code review is on the computer for now.

@@ -26,3 +26,6 @@ export const NotSharing: Story = { args: { modelValue: false } };
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 360px"><story /></div>' })],
 };
+
+/** MB240: on a phone, a switch row under Usage and "What githq counts" (↗) under it. */
+export const Phone: Story = { args: { phone: true } };

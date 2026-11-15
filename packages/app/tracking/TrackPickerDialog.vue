@@ -1,13 +1,20 @@
-<!-- The modal the pickers share (T18 `TrackRepositoriesDialog`, T22 `TrackProjectsDialog`, D25): its head with the title, the description and the Esc hint, the chooser in the default slot, and the footer naming what is picked with Cancel (Esc) and the track button (⌘↵, which the chooser emits), disabled with nothing picked. Esc clears a filter holding text first, then closes without asking. It opens focused on itself, not on its first control, so J, K and `/` are keys rather than text in the filter; the keys belong to it while it is open: nothing of the screen beneath runs (`data-no-commands`, `data-layer`). -->
+<!-- The modal the pickers share (T18 `TrackRepositoriesDialog`, T22 `TrackProjectsDialog`, D25): its head with the title, the description and the Esc hint, the chooser in the default slot, and the footer naming what is picked with Cancel (Esc) and the track button (⌘↵, which the chooser emits), disabled with nothing picked. Esc clears a filter holding text first, then closes without asking. It opens focused on itself, not on its first control, so J, K and `/` are keys rather than text in the filter; the keys belong to it while it is open: nothing of the screen beneath runs (`data-no-commands`, `data-layer`). On a phone (`PhoneLayout.active`, mobile D35, MB168, MB172) it is a screen of its own — the first sign-in's choosing screen — its top bar with back naming the screen it was opened from (`parent`, closing it as Cancel does) and the title, the footer pinned at the bottom with what is picked over the track button the width of the screen — the screen covering what the on-screen keyboard leaves of the window (`useVisualViewport`), so the footer rides above the keyboard while the search is typed into, as on the first sign-in (`FirstSignInFrame`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { provideContext } from '@nzyme/vue-utils/context.js';
 import { Plus } from 'lucide-vue-next';
-import { useTemplateRef } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
+import { KeyHintsContext } from '@/components/KeyHintsContext.js';
+import PhoneBackButton from '@/shell/PhoneBackButton.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneTopBar from '@/shell/PhoneTopBar.vue';
+import { useVisualViewport } from '@/shell/useVisualViewport.js';
 
 import * as l from './TrackPickerDialog.loc.js';
 
@@ -22,6 +29,8 @@ defineProps<{
   trackLabel: string;
   /** Something is picked: the track button can be pressed. */
   canTrack: boolean;
+  /** On a phone, the screen back returns to ("Repositories"). */
+  parent: string;
 }>();
 
 defineSlots<{
@@ -39,7 +48,19 @@ const open = defineModel<boolean>('open', { default: false });
 const filter = defineModel<string>('filter', { default: '' });
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
+// A phone has no keys to hint at (mobile D52).
+provideContext(KeyHintsContext, {
+  get hidden() {
+    return phone.active;
+  },
+});
 const layer = useTemplateRef<HTMLElement>('layer');
+const viewport = useVisualViewport();
+/** On a phone, the screen over what the keyboard leaves of the window: its bottom on the keyboard's top. */
+const phoneStyle = computed(() =>
+  phone.active ? { bottom: `${viewport.bottomInset}px`, height: `${viewport.height}px` } : undefined,
+);
 
 function onOpenFocus(event: Event) {
   event.preventDefault();
@@ -60,6 +81,7 @@ function onEscape(event: KeyboardEvent) {
     :title="title"
     :description="description"
     :width="width"
+    :edge="phone.active ? 'full' : undefined"
     bare
     fit-content
     @escape-key-down="onEscape"
@@ -67,13 +89,26 @@ function onEscape(event: KeyboardEvent) {
   >
     <div
       ref="layer"
-      :class="css.trackPickerDialog"
+      :class="[css.trackPickerDialog, phone.active && css.trackPickerDialog_phone]"
+      :style="phoneStyle"
       tabindex="-1"
       data-no-commands
       data-layer
     >
+      <PhoneTopBar
+        v-if="phone.active"
+        :title="title"
+      >
+        <template #start>
+          <PhoneBackButton
+            :place="parent"
+            @click="open = false"
+          />
+        </template>
+      </PhoneTopBar>
       <!-- What the dialog's own title and description read out already. -->
       <header
+        v-else
         :class="css.trackPickerDialog_head"
         aria-hidden="true"
       >
@@ -86,9 +121,10 @@ function onEscape(event: KeyboardEvent) {
 
       <slot />
 
-      <footer :class="css.trackPickerDialog_footer">
+      <footer :class="[css.trackPickerDialog_footer, phone.active && css.trackPickerDialog_footer_phone]">
         <p :class="css.trackPickerDialog_summary">{{ summary }}</p>
         <Button
+          v-if="!phone.active"
           kbd="Escape"
           @click="open = false"
         >
@@ -96,7 +132,9 @@ function onEscape(event: KeyboardEvent) {
         </Button>
         <Button
           variant="primary"
-          :icon="Plus"
+          :size="phone.active ? 'lg' : undefined"
+          :class="phone.active && css.trackPickerDialog_phoneTrack"
+          :icon="phone.active ? undefined : Plus"
           :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :disabled="!canTrack"
           @click="emit('track')"
@@ -117,6 +155,16 @@ function onEscape(event: KeyboardEvent) {
   height: max(535px, 70vh);
   max-height: 78vh;
   outline: none;
+}
+
+// A screen of its own on a phone, pinned over the part of the window the user sees, which the keyboard shrinks while
+// the window stays: the chooser scrolls between the top bar and the footer.
+.trackPickerDialog.trackPickerDialog_phone {
+  position: fixed;
+  right: 0;
+  left: 0;
+  max-height: none;
+  background: $color-bg;
 }
 
 .trackPickerDialog_head {
@@ -152,6 +200,17 @@ function onEscape(event: KeyboardEvent) {
   align-items: center;
   padding: $spacing-12 20px;
   border-top: 1px solid $color-border;
+}
+
+.trackPickerDialog_footer_phone {
+  flex-direction: column;
+  align-items: stretch;
+  padding: $spacing-12 $spacing-16 calc(#{$spacing-12} + #{$phone-home-indicator-room});
+}
+
+.trackPickerDialog_phoneTrack {
+  width: 100%;
+  min-height: $touch-target-size;
 }
 
 .trackPickerDialog_summary {
