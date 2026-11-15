@@ -368,7 +368,9 @@ Rejected: a thin webview loading githq.dev. Updates would come for free, but it 
 runs is whatever githq.dev serves at that moment, and native APIs would be exposed to a remote origin. That is
 the installable PWA with extra steps. Would win if releasing the shell became a real burden.
 
-- **Sign-in:** GitHub's OAuth Device Flow, with the same OAuth App as the web ([D3](#d3)) and Device Flow enabled
+- **Sign-in:** Superseded 2026-11-15 by the owner: the desktop app signs in through the Worker's web flow like the
+  phone app, see [mobile-app D4](../mobile-app/DECISIONS.md#d4). What follows is the former form.
+  GitHub's OAuth Device Flow, with the same OAuth App as the web ([D3](#d3)) and Device Flow enabled
   on it. The app needs no client secret and our Worker plays no part. The public client ID is compiled in
   (`GITHQ_GITHUB_CLIENT_ID`). The scopes are the same `repo project read:org`. A token granted with fewer scopes
   is refused and never stored. The token lives in the OS credential store (Keychain, Credential Manager, Secret

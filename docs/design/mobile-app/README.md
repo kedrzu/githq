@@ -45,9 +45,12 @@ desktop app's code that you copy to github.com ([why not the desktop's way](DECI
 already sees every token when it renews it every eight hours, so keeping it out of the first sign-in would protect
 nothing.
 
+For the same reason the desktop app gives up its code-copying sign-in and does the same: the browser opens on
+GitHub's consent page, you tap Authorize, and the browser hands you back to githq. One way to sign in, in every app
+([why the desktop follows](DECISIONS.md#d4)).
+
 ## What is still open
 
-- Whether the desktop app moves to the same sign-in.
 - Where the token is kept on a phone (the iOS Keychain has no official Tauri plugin).
 - The account Apple's reviewers sign in with: App Review needs a working demo login, here a GitHub account with
   something in it.

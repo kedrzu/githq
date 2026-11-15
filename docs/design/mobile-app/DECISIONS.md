@@ -95,3 +95,25 @@ expire after 8 hours and every refresh goes through the Worker ([githq D1](../gi
 
 - The Device Flow, as on the desktop — no client secret and the token never touches the Worker, but copying and
   pasting a code on a phone is too clumsy for a first sign-in (owner).
+
+## D4
+
+**The desktop app signs in the same way as the phone app: GitHub's web flow through the Worker, with PKCE, landing
+back in the app through the `githq://` address; the Device Flow goes from githq entirely.** (2026-11-15, owner)
+
+On the desktop the consent screen opens in the system browser, and the Worker's bounce to `githq://` reaches the
+app through the deep link it already registers ([desktop deep links](../../decisions/desktop-deep-links-and-web-hand-off.md)).
+The Worker's callback path, its bounce and the PKCE exchange are one mechanism for both apps; only what opens the
+consent screen differs (iOS's sign-in sheet, the desktop's browser).
+
+**Why.** The desktop's reason for the Device Flow — the token never passes through our server — stopped holding once
+every 8-hour refresh went through the Worker ([D3](#d3)). One way to sign in in the native apps is one thing to
+build, test and explain.
+
+**Rejected.**
+
+- Keeping the Device Flow on the desktop next to the web flow on the phone — it works and costs nothing to keep, but
+  two sign-ins to maintain for no remaining reason (owner; the design agent had recommended keeping it).
+- A loopback redirect on the desktop (a local port catching the callback) — rejected for the desktop originally
+  because it needed the client secret in the app; with the Worker doing the exchange that is gone, but it would
+  still be a second mechanism beside the phone's.
