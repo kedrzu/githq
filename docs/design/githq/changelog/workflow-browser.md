@@ -17,7 +17,7 @@ shared component touched.
   `Workflow / Run filters` (`gTzqv`), `Workflow / Filter chip · active` (`L2hg3T`), `Workflow / Item · Deploy`
   (`p8dmLt`), `Workflow / List pane · narrow` (`i7cCCB`), `Workflow / Ref group` (`BtLBS`), `Workflow / Property`
   (`csWLC`).
-- [ ] Components · Workflows › Workflow item (`Lxfnv`): `Workflow / Command step` (`W4hVe`), `Workflow / Dispatch
+- [x] Components · Workflows › Workflow item (`Lxfnv`): `Workflow / Command step` (`W4hVe`), `Workflow / Dispatch
   field` (`yQX5u`) and its `· focused` state (`bnUx8`). Built in PR 2 (starting runs).
 - [x] App · Workflows (`IEyTW`): new `Variants · How a workflow opens` (`qFSU8`): `W28 · Variant A · Header and a flat
   run list` (`KCBL9`, recommended), `W29 · Variant B · Runs grouped by ref` (`wxTdb`), `W30 · Variant C · Two columns`
@@ -25,10 +25,10 @@ shared component touched.
 - [x] App · Workflows (`IEyTW`): new `W31 · Workflow full screen` (`wp5Sn`), `W32 · A passing workflow` (`BRkFo`), `W33 ·
   A workflow without workflow_dispatch` (`pbJHk`), `W34 · A passing run, opened at its summary` (`J8Gad`), `W35 · The
   Workflows list with the new keys` (`r5c1Mr`: ↵ Open workflow, F Latest failure).
-- [ ] App · Workflows (`IEyTW`): new `Variants · Running a workflow` (`cGeEi`): `W36 · Variant A · Picking the workflow,
+- [x] App · Workflows (`IEyTW`): new `Variants · Running a workflow` (`cGeEi`): `W36 · Variant A · Picking the workflow,
   in the command menu` (`cgrai`), `W37 · Variant A · The form, filled, in the command menu` (`Tfe0G`), `W38 · Variant B ·
   A dialog` (`H59aHh`). Built in PR 2 (starting runs).
-- [ ] App · Workflows (`IEyTW`): new `W39 · After starting` (`JlrIz`), `W40 · Commands on a run` (`vyJvT`), `W41 ·
+- [x] App · Workflows (`IEyTW`): new `W39 · After starting` (`JlrIz`), `W40 · Commands on a run` (`vyJvT`), `W41 ·
   Commands on a workflow` (`Ehh4p`). Built in PR 2 (starting runs).
 
 Choices the brief left open, made by the agent: run rows on two lines in the panel (one line left ~70 px for the
@@ -42,7 +42,7 @@ and always two columns full screen; grouping runs as a toolbar option; no `⌘K`
 command menu, in context (selected workflow → its form; in a repository → its workflows; elsewhere → repository first).
 Changed: variants settled, layout-dependent screens redrawn, seven new screens.
 
-- [ ] `Workflow / Item head` (`oZJKi`): Run workflow button's key hint (`ZBaFq`) off; `⌘K` gone everywhere. The
+- [x] `Workflow / Item head` (`oZJKi`): Run workflow button's key hint (`ZBaFq`) off; `⌘K` gone everywhere. The
   button is built in PR 2.
 - [x] `Workflow / Run filters` (`gTzqv`): new `Group: None` control (`z2TR0`) at the end.
 - [x] `Workflow / Item · Deploy` (`p8dmLt`): now the narrow item: tabs (`F0wqZ`), head without file path and trigger
@@ -52,7 +52,7 @@ Changed: variants settled, layout-dependent screens redrawn, seven new screens.
   Actor), `Workflow / Tab · not current` (`m0Rfm4`), `Workflow / Item tabs` (`Av19q`) and `· Details` (`dpsv8`),
   `Workflow / Details · Deploy` (`upAGl`), `Workflow / Item · Deploy · two columns` (`v95xB`, hidden queued #4826 row
   `ruZPm`).
-- [ ] `Workflow / Details · Deploy` (`upAGl`): the hints "Run workflow… in the command menu" and "Disable workflow in
+- [x] `Workflow / Details · Deploy` (`upAGl`): the hints "Run workflow… in the command menu" and "Disable workflow in
   the command menu"; `Workflow / Repository chip` (`eosj5`). Built in PR 2, with the commands they name.
 - [x] Components · Workflows (`olSuI`): deleted `Workflow / Run row · selected` (`xB8bv`), unused.
 - [x] App · Workflows (`IEyTW`): deleted `Variants · How a workflow opens` (`qFSU8`) with W28 (`KCBL9`) and W29
@@ -62,13 +62,13 @@ Changed: variants settled, layout-dependent screens redrawn, seven new screens.
 - [x] W31 (`wp5Sn`): two columns (`w4yea2`, 1140 px), cursor on #4821.
 - [x] W32 (`BRkFo`): narrow item with tabs (`woFoa`, Runs 212), ref filter active.
 - [x] W33 (`pbJHk`): narrow item on Details (`eqJc2`, `R3jHPz`, `g2og1U`): CLA, `pull_request` only, no inputs.
-- [ ] W36 (`cgrai`, slot `O1r5h8`): `W36 · Picking the workflow, in a repository`, background from J1, repository chip
+- [x] W36 (`cgrai`, slot `O1r5h8`): `W36 · Picking the workflow, in a repository`, background from J1, repository chip
   (`aSPyN`), "⌫ All repositories" hint (`U4U90d`). Built in PR 2.
-- [ ] W37 (`Tfe0G`, slot `VBQrE`): "Variant A ·" dropped. Built in PR 2.
-- [ ] W39 (`JlrIz`, slot `z5HXO`): 1920×1080, two columns, #4826 queued, toast moved (`azttK`). Built in PR 2.
+- [x] W37 (`Tfe0G`, slot `VBQrE`): "Variant A ·" dropped. Built in PR 2.
+- [x] W39 (`JlrIz`, slot `z5HXO`): 1920×1080, two columns, #4826 queued, toast moved (`azttK`). Built in PR 2.
 - [x] New `W42 · Narrow item, Details tab` (`UH0jD`), `W43 · Runs grouped by status` (`wSULq`, menu open),
   `W44 · Runs grouped by ref` (`rfMFk`), `W45 · Runs grouped by day` (`I6Iyr`).
-- [ ] New `W46 · Run workflow, picking the repository` (`YhWZy`), `W47 · Run workflow on the selected workflow`
+- [x] New `W46 · Run workflow, picking the repository` (`YhWZy`), `W47 · Run workflow on the selected workflow`
   (`TkD8j`), `W48 · A workflow nobody can dispatch, from the command` (`z8MX76`). Built in PR 2.
 - [x] Rows: `hCV6c` W30, W43, W44; `IKwbs` W32, W33, W42, W45; `SwKGt` W31, W34, W35, W47; new `s4vOe` W46, W36, W37,
   W48; `WiYV2` W39, W40, W41.
@@ -378,3 +378,59 @@ code does.
 
 The narrow bar hides the divider, since the line break already separates the chips from the count. `WorkflowRuns.vue`
 keeps the count and Group in one element, so they wrap together onto the second line, as drawn.
+
+## Round 11 · implementation, starting runs follows the build
+
+Asked (`.context/workflow-browser-brief-11.md`): starting runs is built (PR 2, tasks 12–16: `CommandForm.vue`,
+`CommandCrumbs.vue`, `CommandMenu.vue`, `useRunWorkflowCommand.ts`, `WorkflowDispatchToast.vue`, the commands in
+`WorkflowRunView.vue` and `OpenedWorkflow.vue`, the hints in `WorkflowDetails.vue`); bring the drawing in line where it
+was built differently in small ways. Made through the `pen` CLI. Forced by: the build of PR 2. The entries of rounds 1
+and 2 left with "Built in PR 2" are ticked above; these are ticked because each records what the code does.
+Changed: content and visibility through overrides or on the component; hints, headings and an arrow added as instances
+of the ones beside them. W39 (`JlrIz`) already matched the build (toast "Deploy started on main · #4826", the inputs,
+"Queued on GitHub.", Open ⌥O; Run workflow… without a key hint; the Details hints) and is unchanged.
+
+- [x] `Workflow / Command step` (`W4hVe`): ▷ icon `FXqwp` shown → hidden; every "Run workflow" crumb follows (`iNUyC`,
+  `NsWdk`, `n10Otc`; `UgPYO` already hid it).
+- [x] `Workflow / Repository chip` (`eosj5`): lock `bQdjF` and × `a3cM7` hidden: a plain crumb, ⌫ (or ←) steps back to
+  all repositories.
+- [x] W46 (`YhWZy`): placeholder `rcVzr` "Pick a repository…" → "Type a command or search…"; headings `G80zw` "Tracked
+  repositories" and `K6P7S` "Nothing to run" hidden; repository icons `z7iSD` lock → `book-marked`; details `MXfcN`
+  folded with the names (`xNCFw` "3 workflows you can run · Deploy, Release, Nightly e2e", `Y6ErG` "1 workflow you can
+  run · Deploy", `nBawu` "1 workflow you can run · Deploy preview"), the right-hand names `IxzB4` hidden; mdlint
+  `FofHT/IxzB4` "" → "can't run" (the row was already dimmed as W48's). Footer: `LltgL` "Choose" → "Run", new `PA7pm`
+  → Open submenu, `xxkD0` ← Back, `e838Nd` Esc Close; "Run workflow · step 1 of 3" `wAZs8` hidden.
+- [x] W36 (`cgrai`): new arrow `HFBbv` (copy of W37's `aKV7v`) between `NsWdk` and the repository chip `aSPyN`;
+  placeholder `gP7Nm` "Pick a workflow…" → "Type a command or search…"; heading `fCfmV` hidden; rows `VAVKC`, `n0ASDU`,
+  `veQKw`: status icon → `play` (its colour override dropped, `$fg-2` as the component), detail "Broken on main" /
+  "Broken on main" / "failing, no alerts" → "main · 3 inputs" / "main · 1 input" / "main · no inputs", the right-hand
+  `IxzB4` hidden. Footer: `ACVL5` "Choose" → "Run", new `YwomG` → Open submenu, `U4U90d` ⌫ "All repositories" → ←
+  "Back", new `mRlsO` Esc Close; note `hAU0l` "Only workflows with workflow_dispatch · 3 of 8" hidden.
+- [x] W37 (`Tfe0G`): the `⌘↵ Run` hint `MHEqj` deleted, in its place `sAnyn`, an instance of `Button / label, icon key`
+  (`vAXUD`, the quiet button "Re-run ⇧E" uses) reading "Run ⌘↵": the build's clickable ghost button. The footer grew a
+  few px with it.
+- [x] W47 (`TkD8j`) and W48 (`z8MX76`): heading `n01rz` / `DYhrh` "Commands" → "This view"; new "App" headings `nZqar`
+  / `u8YnIH` over "Run workflow…". W47 `N21cs` detail "the selected workflow — main · 3 inputs", right-hand text
+  hidden; `XDjCY` / `V07KCN` detail "a workflow in fitloop/webapp · 3 can run", right-hand "3 can run" hidden. Footers:
+  `HhUvL` / `l7SSnT` "Choose" → "Run", new `lZrls` / `Bcs0w` → Open submenu and `sSbDG` / `b9Osi` > Commands only;
+  notes `E2i67` "Enter opens Deploy's form" / `jkREd` "Enter picks another workflow" hidden. W48's CLA row (reason as
+  detail, "can't run" aside) already matched.
+- [x] W40 (`vyJvT`): heading `k3rGuq` "This run" → "This view"; "Open workflow · Deploy" `Uh3QA` moved from "Go to" to
+  after "Copy link to the run"; "Go to" keeps "Broken workflows", the app's existing place.
+- [x] W41 (`Ehh4p`): heading `y2vnO` "This workflow" → "This view"; `atIpD` "Run workflow…" · "on main, 3 inputs" →
+  "Run workflow · Deploy" · "the open workflow — main · 3 inputs".
+- [x] Captions W36 `P7pzk`, W46 `wDk8I`, W37 `Vv2I7`, W47 `pdEqw`, W48 `eGpI8`, W40 `i8Q8K`, W41 `EOMe5`: say how the
+  build reads (no headings inside Run workflow's levels, a › between plain crumbs, ← or ⌫ steps back, "This view" and
+  "App", the "can't run" aside, the Run button). W37's adds: when the workflow can't run at the ref typed, a line under
+  the fields says why and the ref stays editable.
+
+Left as drawn, for the owner:
+
+- W39's amber tint on the just-started #4826 (round 7's `aaIw8` entry, still unticked): the build puts the run at the
+  top of the list (`WorkflowRunHistory.addRun`) with no tint. Build the tint, or drop it from W39.
+- W37's "can't run at this ref" state (the line under the fields) is described in the caption, not drawn: it would be a
+  new screen.
+- The top-level menu's subject or repository chip and "⌫ Remove context" in W47/W48, and the generic footer of W40/W41
+  ("Type > for commands only" against the build's `> Commands only` hint): the menu as a whole, not this feature.
+- The command menu's levels show the generic placeholder "Type a command or search…" (drawn so); "Pick a repository…" /
+  "Pick a workflow…" were clearer, a candidate change to the build rather than the drawing.

@@ -182295,7 +182295,10 @@
                     {
                       "type": "icon",
                       "id": "FXqwp",
+                      "x": 7,
+                      "y": 3.5,
                       "name": "Icon",
+                      "enabled": false,
                       "width": 12,
                       "height": 12,
                       "icon": "play",
@@ -184235,7 +184238,10 @@
                     {
                       "type": "icon",
                       "id": "bQdjF",
+                      "x": 8,
+                      "y": 4,
                       "name": "Icon",
+                      "enabled": false,
                       "width": 13,
                       "height": 13,
                       "icon": "lock",
@@ -184255,7 +184261,10 @@
                     {
                       "type": "icon",
                       "id": "a3cM7",
+                      "x": 123,
+                      "y": 4.5,
                       "name": "Remove",
+                      "enabled": false,
                       "width": 12,
                       "height": 12,
                       "icon": "x",
@@ -221612,7 +221621,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Deploy selected in the Workflows list, “Run workflow” typed in the command menu. The first result is the selected workflow itself, and Enter goes straight to its form (W37), breadcrumb “Run workflow › Deploy · fitloop/webapp”. The same holds with a workflow open as an item. Picking another workflow of the repository is the second result (W36).",
+                      "content": "Deploy selected in the Workflows list, “Run workflow” typed in the command menu. The first result, under This view, is the selected workflow itself, and Enter goes straight to its form (W37), breadcrumb “Run workflow › Deploy · fitloop/webapp”. The same holds with a workflow open as an item. Picking another workflow of the repository is the app-wide command under App (W36).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -222494,11 +222503,11 @@
                               "id": "n01rz",
                               "type": "ref",
                               "ref": "n8kYNM",
-                              "name": "Section Commands",
+                              "name": "Section This view",
                               "width": "fill_container",
                               "descendants": {
                                 "CcUdj": {
-                                  "content": "Commands"
+                                  "content": "This view"
                                 }
                               }
                             },
@@ -222519,13 +222528,26 @@
                                   "content": "Run workflow · Deploy"
                                 },
                                 "MXfcN": {
-                                  "content": "the selected workflow"
+                                  "content": "the selected workflow — main · 3 inputs"
                                 },
                                 "IxzB4": {
-                                  "content": "main · 3 inputs"
+                                  "content": "main · 3 inputs",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "id": "nZqar",
+                              "type": "ref",
+                              "ref": "n8kYNM",
+                              "name": "Section App",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CcUdj": {
+                                  "content": "App"
                                 }
                               }
                             },
@@ -222543,10 +222565,11 @@
                                   "content": "Run workflow…"
                                 },
                                 "MXfcN": {
-                                  "content": "another workflow in fitloop/webapp"
+                                  "content": "a workflow in fitloop/webapp · 3 can run"
                                 },
                                 "IxzB4": {
-                                  "content": "3 can run"
+                                  "content": "3 can run",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -222595,7 +222618,7 @@
                               "id": "HhUvL",
                               "type": "ref",
                               "ref": "xfbOl",
-                              "name": "Hint Choose",
+                              "name": "Hint Run",
                               "gap": 5,
                               "descendants": {
                                 "m5wIG9": {
@@ -222606,7 +222629,44 @@
                                 },
                                 "IOvfA": {
                                   "name": "Run",
-                                  "content": "Choose"
+                                  "content": "Run"
+                                }
+                              }
+                            },
+                            {
+                              "id": "lZrls",
+                              "type": "ref",
+                              "ref": "dxCfd",
+                              "name": "Hint Open submenu",
+                              "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd →"
+                                },
+                                "nIxfQ/YRrEc": {
+                                  "name": "Key arrow-right",
+                                  "icon": "arrow-right"
+                                },
+                                "IJcUr": {
+                                  "name": "Open submenu",
+                                  "content": "Open submenu"
+                                }
+                              }
+                            },
+                            {
+                              "id": "sSbDG",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint Commands only",
+                              "descendants": {
+                                "m5wIG9": {
+                                  "name": "Kbd >"
+                                },
+                                "m5wIG9/luKkY": {
+                                  "content": ">"
+                                },
+                                "IOvfA": {
+                                  "name": "Commands only",
+                                  "content": "Commands only"
                                 }
                               }
                             },
@@ -222620,7 +222680,10 @@
                             {
                               "type": "text",
                               "id": "E2i67",
+                              "x": 395,
+                              "y": 9,
                               "name": "Note",
+                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Enter opens Deploy's form",
                               "fontFamily": "$font",
@@ -222675,7 +222738,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "“Run workflow” outside any repository (here over My work). A name like Deploy exists in many repositories, so the repository comes first: the tracked ones, each with how many workflows it can run (with workflow_dispatch) and their names. A repository with none sinks to the bottom, dimmed, and can't be chosen. Enter goes to the repository's workflows (W36, with the repository as a chip).",
+                      "content": "“Run workflow” outside any repository (here over My work). A name like Deploy exists in many repositories, so the repository comes first: the tracked ones, each with how many workflows it can run (with workflow_dispatch) and their names, without section headings. A repository with none sinks to the bottom, dimmed, says can't run and can't be chosen. Enter or → goes to the repository's workflows (W36, with the repository as a plain chip); ← steps back.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -222807,7 +222870,7 @@
                               "id": "rcVzr",
                               "name": "Placeholder",
                               "fill": "$fg-dim",
-                              "content": "Pick a repository…",
+                              "content": "Type a command or search…",
                               "fontFamily": "$font",
                               "fontSize": 14,
                               "fontWeight": "normal"
@@ -222832,7 +222895,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Tracked repositories",
-                              "width": "fill_container",
+                              "width": "fill_container(668)",
+                              "enabled": false,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Tracked repositories"
@@ -222850,7 +222914,7 @@
                               "strokeWidth": 1,
                               "descendants": {
                                 "z7iSD": {
-                                  "icon": "lock",
+                                  "icon": "book-marked",
                                   "fill": "$fg-2"
                                 },
                                 "e2wbth": {
@@ -222858,10 +222922,11 @@
                                   "fill": "$fg"
                                 },
                                 "MXfcN": {
-                                  "content": "3 workflows you can run"
+                                  "content": "3 workflows you can run · Deploy, Release, Nightly e2e"
                                 },
                                 "IxzB4": {
-                                  "content": "Deploy, Release, Nightly e2e"
+                                  "content": "Deploy, Release, Nightly e2e",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -222876,7 +222941,7 @@
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
-                                  "icon": "lock",
+                                  "icon": "book-marked",
                                   "fill": "$fg-2"
                                 },
                                 "e2wbth": {
@@ -222884,10 +222949,11 @@
                                   "fill": "$fg"
                                 },
                                 "MXfcN": {
-                                  "content": "1 workflow you can run"
+                                  "content": "1 workflow you can run · Deploy"
                                 },
                                 "IxzB4": {
-                                  "content": "Deploy"
+                                  "content": "Deploy",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -222910,10 +222976,11 @@
                                   "fill": "$fg"
                                 },
                                 "MXfcN": {
-                                  "content": "1 workflow you can run"
+                                  "content": "1 workflow you can run · Deploy preview"
                                 },
                                 "IxzB4": {
-                                  "content": "Deploy preview"
+                                  "content": "Deploy preview",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -222925,7 +222992,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Nothing to run",
-                              "width": "fill_container",
+                              "width": "fill_container(668)",
+                              "enabled": false,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Nothing to run"
@@ -222951,7 +223019,8 @@
                                   "content": "no workflow with workflow_dispatch"
                                 },
                                 "IxzB4": {
-                                  "content": ""
+                                  "content": "can't run",
+                                  "enabled": true
                                 },
                                 "nsltD": {
                                   "enabled": false
@@ -223000,7 +223069,7 @@
                               "id": "LltgL",
                               "type": "ref",
                               "ref": "xfbOl",
-                              "name": "Hint Choose",
+                              "name": "Hint Run",
                               "gap": 5,
                               "descendants": {
                                 "m5wIG9": {
@@ -223010,8 +223079,64 @@
                                   "content": "↵"
                                 },
                                 "IOvfA": {
-                                  "name": "Choose",
-                                  "content": "Choose"
+                                  "name": "Run",
+                                  "content": "Run"
+                                }
+                              }
+                            },
+                            {
+                              "id": "PA7pm",
+                              "type": "ref",
+                              "ref": "dxCfd",
+                              "name": "Hint Open submenu",
+                              "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd →"
+                                },
+                                "nIxfQ/YRrEc": {
+                                  "name": "Key arrow-right",
+                                  "icon": "arrow-right"
+                                },
+                                "IJcUr": {
+                                  "name": "Open submenu",
+                                  "content": "Open submenu"
+                                }
+                              }
+                            },
+                            {
+                              "id": "xxkD0",
+                              "type": "ref",
+                              "ref": "dxCfd",
+                              "name": "Hint Back",
+                              "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd ←"
+                                },
+                                "nIxfQ/YRrEc": {
+                                  "name": "Key arrow-left",
+                                  "icon": "arrow-left"
+                                },
+                                "IJcUr": {
+                                  "name": "Back",
+                                  "content": "Back"
+                                }
+                              }
+                            },
+                            {
+                              "id": "e838Nd",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint Close",
+                              "descendants": {
+                                "m5wIG9": {
+                                  "name": "Kbd Esc"
+                                },
+                                "m5wIG9/luKkY": {
+                                  "content": "Esc"
+                                },
+                                "IOvfA": {
+                                  "name": "Close",
+                                  "content": "Close"
                                 }
                               }
                             },
@@ -223025,7 +223150,10 @@
                             {
                               "type": "text",
                               "id": "wAZs8",
+                              "x": 445,
+                              "y": 9,
                               "name": "Note",
+                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Run workflow · step 1 of 3",
                               "fontFamily": "$font",
@@ -223072,7 +223200,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "“Run workflow” inside a repository (any of its tabs, or an item of it): the repository is already chosen and shows as a chip after the step. Only its workflows with workflow_dispatch are listed, the counted ones' state beside each. Backspace on an empty query removes the chip and goes back to picking the repository (W46). Enter opens the form (W37).",
+                      "content": "“Run workflow” inside a repository (any of its tabs, or an item of it): the repository is already chosen and shows as a chip after the step, with › between them. Only its workflows with workflow_dispatch are listed, each with the ref it runs on and how many inputs it takes; like every level of the command, no section headings. ← or Backspace on an empty query removes the chip and goes back to picking the repository (W46). Enter or → opens the form (W37).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -223965,6 +224093,16 @@
                               "name": "Step Run workflow"
                             },
                             {
+                              "type": "icon",
+                              "id": "HFBbv",
+                              "name": "Chevron",
+                              "width": 12,
+                              "height": 12,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
                               "id": "aSPyN",
                               "type": "ref",
                               "ref": "eosj5",
@@ -223983,7 +224121,7 @@
                               "id": "gP7Nm",
                               "name": "Placeholder",
                               "fill": "$fg-dim",
-                              "content": "Pick a workflow…",
+                              "content": "Type a command or search…",
                               "fontFamily": "$font",
                               "fontSize": 14,
                               "fontWeight": "normal"
@@ -224008,7 +224146,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Workflows you can run",
-                              "width": "fill_container",
+                              "width": "fill_container(668)",
+                              "enabled": false,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Workflows in fitloop/webapp you can run"
@@ -224026,17 +224165,18 @@
                               "strokeWidth": 1,
                               "descendants": {
                                 "z7iSD": {
-                                  "icon": "circle-x",
-                                  "fill": "$red"
+                                  "icon": "play",
+                                  "fill": "$fg-2"
                                 },
                                 "e2wbth": {
                                   "content": "Deploy"
                                 },
                                 "MXfcN": {
-                                  "content": "Broken on main"
+                                  "content": "main · 3 inputs"
                                 },
                                 "IxzB4": {
-                                  "content": "main · 3 inputs"
+                                  "content": "main · 3 inputs",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -224051,17 +224191,18 @@
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
-                                  "icon": "circle-x",
-                                  "fill": "$red"
+                                  "icon": "play",
+                                  "fill": "$fg-2"
                                 },
                                 "e2wbth": {
                                   "content": "Release"
                                 },
                                 "MXfcN": {
-                                  "content": "Broken on main"
+                                  "content": "main · 1 input"
                                 },
                                 "IxzB4": {
-                                  "content": "main · 1 input"
+                                  "content": "main · 1 input",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -224076,17 +224217,18 @@
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
-                                  "icon": "circle-dashed",
-                                  "fill": "$fg-3"
+                                  "icon": "play",
+                                  "fill": "$fg-2"
                                 },
                                 "e2wbth": {
                                   "content": "Nightly e2e"
                                 },
                                 "MXfcN": {
-                                  "content": "failing, no alerts"
+                                  "content": "main · no inputs"
                                 },
                                 "IxzB4": {
-                                  "content": "main · no inputs"
+                                  "content": "main · no inputs",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -224135,7 +224277,7 @@
                               "id": "ACVL5",
                               "type": "ref",
                               "ref": "xfbOl",
-                              "name": "Hint Choose",
+                              "name": "Hint Run",
                               "gap": 5,
                               "descendants": {
                                 "m5wIG9": {
@@ -224145,8 +224287,27 @@
                                   "content": "↵"
                                 },
                                 "IOvfA": {
-                                  "name": "Choose",
-                                  "content": "Choose"
+                                  "name": "Run",
+                                  "content": "Run"
+                                }
+                              }
+                            },
+                            {
+                              "id": "YwomG",
+                              "type": "ref",
+                              "ref": "dxCfd",
+                              "name": "Hint Open submenu",
+                              "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd →"
+                                },
+                                "nIxfQ/YRrEc": {
+                                  "name": "Key arrow-right",
+                                  "icon": "arrow-right"
+                                },
+                                "IJcUr": {
+                                  "name": "Open submenu",
+                                  "content": "Open submenu"
                                 }
                               }
                             },
@@ -224154,13 +224315,36 @@
                               "id": "U4U90d",
                               "type": "ref",
                               "ref": "dxCfd",
-                              "name": "Hint All repositories",
+                              "name": "Hint Back",
                               "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd ←"
+                                },
                                 "nIxfQ/YRrEc": {
-                                  "icon": "delete"
+                                  "icon": "arrow-left",
+                                  "name": "Key arrow-left"
                                 },
                                 "IJcUr": {
-                                  "content": "All repositories"
+                                  "content": "Back",
+                                  "name": "Back"
+                                }
+                              }
+                            },
+                            {
+                              "id": "mRlsO",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint Close",
+                              "descendants": {
+                                "m5wIG9": {
+                                  "name": "Kbd Esc"
+                                },
+                                "m5wIG9/luKkY": {
+                                  "content": "Esc"
+                                },
+                                "IOvfA": {
+                                  "name": "Close",
+                                  "content": "Close"
                                 }
                               }
                             },
@@ -224174,7 +224358,10 @@
                             {
                               "type": "text",
                               "id": "hAU0l",
+                              "x": 352,
+                              "y": 9,
                               "name": "Note",
+                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Only workflows with workflow_dispatch · 3 of 8",
                               "fontFamily": "$font",
@@ -224221,7 +224408,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "After picking Deploy the menu keeps its place and becomes a short form: the ref first, the default branch already chosen, then the inputs from the workflow file in its order, each with its type and default. Tab and ⇧Tab move between rows; a choice opens its options on Enter or ↑↓; a boolean flips on Space. ⌘Enter runs, Esc steps back to the list of workflows. Here environment and version were changed and dry_run switched off.",
+                      "content": "After picking Deploy the menu keeps its place and becomes a short form: the ref first, the default branch already chosen, then the inputs from the workflow file in its order, each with its type and default. Tab and ⇧Tab move between rows; a choice opens its options on Enter or ↑↓; a boolean flips on Space. ⌘Enter or the Run button in the footer runs, Esc steps back to the list of workflows. When the workflow can't run at the ref typed, a line under the fields says why and the ref stays editable. Here environment and version were changed and dry_run switched off.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -224539,21 +224726,19 @@
                               }
                             },
                             {
-                              "id": "MHEqj",
+                              "id": "sAnyn",
                               "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Run",
-                              "gap": 5,
+                              "ref": "vAXUD",
+                              "name": "Button Run",
                               "descendants": {
-                                "m5wIG9": {
+                                "G36gb": {
+                                  "content": "Run"
+                                },
+                                "E6FRCf": {
                                   "name": "Kbd ⌘↵"
                                 },
-                                "m5wIG9/luKkY": {
+                                "E6FRCf/luKkY": {
                                   "content": "⌘↵"
-                                },
-                                "IOvfA": {
-                                  "name": "Run",
-                                  "content": "Run"
                                 }
                               }
                             },
@@ -224633,7 +224818,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same command with CLA selected (or open). CLA has no workflow_dispatch trigger, so “Run workflow · CLA” is listed but disabled, with the reason in place of its details, and the cursor skips it to the next command. The workflow's own panel says the same in its triggers (W33).",
+                      "content": "The same command with CLA selected (or open). CLA has no workflow_dispatch trigger, so “Run workflow · CLA” is listed under This view but disabled, with the reason in place of its details and can't run beside it, and the cursor skips it to the App command below. The workflow's own panel says the same in its triggers (W33).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -225520,11 +225705,11 @@
                               "id": "DYhrh",
                               "type": "ref",
                               "ref": "n8kYNM",
-                              "name": "Section Commands",
+                              "name": "Section This view",
                               "width": "fill_container",
                               "descendants": {
                                 "CcUdj": {
-                                  "content": "Commands"
+                                  "content": "This view"
                                 }
                               }
                             },
@@ -225552,6 +225737,18 @@
                               }
                             },
                             {
+                              "id": "u8YnIH",
+                              "type": "ref",
+                              "ref": "n8kYNM",
+                              "name": "Section App",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CcUdj": {
+                                  "content": "App"
+                                }
+                              }
+                            },
+                            {
                               "id": "V07KCN",
                               "type": "ref",
                               "ref": "k3mGr",
@@ -225568,10 +225765,11 @@
                                   "content": "Run workflow…"
                                 },
                                 "MXfcN": {
-                                  "content": "another workflow in fitloop/webapp"
+                                  "content": "a workflow in fitloop/webapp · 3 can run"
                                 },
                                 "IxzB4": {
-                                  "content": "3 can run"
+                                  "content": "3 can run",
+                                  "enabled": false
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -225620,7 +225818,7 @@
                               "id": "l7SSnT",
                               "type": "ref",
                               "ref": "xfbOl",
-                              "name": "Hint Choose",
+                              "name": "Hint Run",
                               "gap": 5,
                               "descendants": {
                                 "m5wIG9": {
@@ -225631,7 +225829,44 @@
                                 },
                                 "IOvfA": {
                                   "name": "Run",
-                                  "content": "Choose"
+                                  "content": "Run"
+                                }
+                              }
+                            },
+                            {
+                              "id": "Bcs0w",
+                              "type": "ref",
+                              "ref": "dxCfd",
+                              "name": "Hint Open submenu",
+                              "descendants": {
+                                "nIxfQ": {
+                                  "name": "Kbd →"
+                                },
+                                "nIxfQ/YRrEc": {
+                                  "name": "Key arrow-right",
+                                  "icon": "arrow-right"
+                                },
+                                "IJcUr": {
+                                  "name": "Open submenu",
+                                  "content": "Open submenu"
+                                }
+                              }
+                            },
+                            {
+                              "id": "b9Osi",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint Commands only",
+                              "descendants": {
+                                "m5wIG9": {
+                                  "name": "Kbd >"
+                                },
+                                "m5wIG9/luKkY": {
+                                  "content": ">"
+                                },
+                                "IOvfA": {
+                                  "name": "Commands only",
+                                  "content": "Commands only"
                                 }
                               }
                             },
@@ -225645,7 +225880,10 @@
                             {
                               "type": "text",
                               "id": "jkREd",
+                              "x": 381,
+                              "y": 9,
                               "name": "Note",
+                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Enter picks another workflow",
                               "fontFamily": "$font",
@@ -225994,7 +226232,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "⌘K on a failed run (W4a). The run's actions are commands only, never single keys (D10): re-run the failed jobs, all jobs, or the job under the cursor; Cancel run is listed but disabled, because the run has finished, so the command stays where it is expected. Open on GitHub keeps its key. Open workflow leads back to Deploy.",
+                      "content": "⌘K on a failed run (W4a), its commands under This view. The run's actions are commands only, never single keys (D10): re-run the failed jobs, all jobs, or the job under the cursor; Cancel run is listed but disabled, because the run has finished, so the command stays where it is expected. Open on GitHub keeps its key. Open workflow, among the run's commands, leads back to Deploy.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -226119,11 +226357,11 @@
                               "id": "k3rGuq",
                               "type": "ref",
                               "ref": "n8kYNM",
-                              "name": "Section This run",
+                              "name": "Section This view",
                               "width": "fill_container",
                               "descendants": {
                                 "CcUdj": {
-                                  "content": "This run"
+                                  "content": "This view"
                                 }
                               }
                             },
@@ -226275,18 +226513,6 @@
                               }
                             },
                             {
-                              "id": "p1os6",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Go to",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "content": "Go to"
-                                }
-                              }
-                            },
-                            {
                               "id": "Uh3QA",
                               "type": "ref",
                               "ref": "k3mGr",
@@ -226306,6 +226532,18 @@
                                 },
                                 "IxzB4": {
                                   "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "p1os6",
+                              "type": "ref",
+                              "ref": "n8kYNM",
+                              "name": "Section Go to",
+                              "width": "fill_container",
+                              "descendants": {
+                                "CcUdj": {
+                                  "content": "Go to"
                                 }
                               }
                             },
@@ -226446,7 +226684,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "⌘K with the workflow open (W28). Run workflow… goes straight to its form (W37), the workflow already picked; it is missing for a workflow without workflow_dispatch (W33). Open latest failure is the same jump as F on its row. Disable workflow asks GitHub to stop new runs and moves the row to Disabled; on a disabled workflow it reads Enable workflow.",
+                      "content": "⌘K with the workflow open (W28), its commands under This view. Run workflow · Deploy goes straight to its form (W37), the workflow already picked; it is missing for a workflow without workflow_dispatch (W33). Open latest failure is the same jump as F on its row. Disable workflow asks GitHub to stop new runs and moves the row to Disabled; on a disabled workflow it reads Enable workflow.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -226633,11 +226871,11 @@
                               "id": "y2vnO",
                               "type": "ref",
                               "ref": "n8kYNM",
-                              "name": "Section This workflow",
+                              "name": "Section This view",
                               "width": "fill_container",
                               "descendants": {
                                 "CcUdj": {
-                                  "content": "This workflow"
+                                  "content": "This view"
                                 }
                               }
                             },
@@ -226645,7 +226883,7 @@
                               "id": "atIpD",
                               "type": "ref",
                               "ref": "k3mGr",
-                              "name": "Result Run workflow…",
+                              "name": "Result Run workflow · Deploy",
                               "width": "fill_container",
                               "fill": "$sel",
                               "stroke": "#7B87F74D",
@@ -226656,11 +226894,11 @@
                                   "fill": "$fg-2"
                                 },
                                 "e2wbth": {
-                                  "content": "Run workflow…",
+                                  "content": "Run workflow · Deploy",
                                   "fill": "$fg"
                                 },
                                 "MXfcN": {
-                                  "content": "on main, 3 inputs"
+                                  "content": "the open workflow — main · 3 inputs"
                                 },
                                 "IxzB4": {
                                   "enabled": false
