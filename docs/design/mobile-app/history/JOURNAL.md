@@ -34,3 +34,9 @@ Append-only. One line per decision, rejection or answer from the owner.
   Proposed to the owner: Development stream → TestFlight, Stable → App Store, version `0.3.0` + build number N.
 - 2026-11-15 — Owner: release to the App Store automatically after approval. Recorded D5 (Development → TestFlight,
   Stable → App Store, version split into `x.y.z` + build number). README folded up to here.
+- 2026-11-15 — Reviewer account, checked (2026-11-15, docs.github.com "Verifying new devices when signing in", via a
+  summarising fetch): an account without 2FA may get an emailed code "when you access your account from an
+  unrecognized device for the first time"; "GitHub will not ask you to perform device verification when you have 2FA
+  enabled, or when you sign in using a passkey"; recovery codes are single-use. So neither a plain account nor a TOTP
+  account lets an Apple reviewer sign in through GitHub's page unaided. Put to the owner: a token sign-in for the
+  reviewer vs a dedicated mailbox vs demo mode.
