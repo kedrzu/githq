@@ -238,9 +238,17 @@ function chooseRepository(nameWithOwner: string) {
   void focusTitle();
 }
 
-/** A phone's menu at the bottom closed — by ×, Escape or a tap above it: back to the form. */
+/**
+ * A phone's menu at the bottom closed — by ×, Escape or a tap above it: back to the form. Templates offered and dismissed
+ * where a blank issue may be written count as declined, so they don't rise again as the repository's templates are read
+ * anew (mobile D39).
+ */
 function onSheetOpen(isOpen: boolean) {
   if (!isOpen) {
+    if (choosingTemplate.value && !templateRequired.value) {
+      templateDecided.value = true;
+    }
+
     backToTitle();
   }
 }
@@ -493,231 +501,214 @@ function onEscape(event: KeyboardEvent) {
 
       <template v-else>
         <div :class="css.newIssueDialog_content">
-            <div
-              v-if="rejection"
-              :class="css.newIssueDialog_banner"
-              role="alert"
+          <div
+            v-if="rejection"
+            :class="css.newIssueDialog_banner"
+            role="alert"
+          >
+            <AlertTriangle
+              :class="css.newIssueDialog_bannerIcon"
+              aria-hidden="true"
+            />
+            <div :class="css.newIssueDialog_bannerText">
+              <strong>{{ t(l.rejectedTitle) }}</strong>
+              <span>{{ t(l.rejectedDetail, { reason: rejection }) }}</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              kbd="Alt+R"
+              @click="choosingRepository = true"
+              >{{ t(l.anotherRepository) }}</Button
+            >
+          </div>
+
+          <ul
+            v-if="waiting && waiting.length > 0"
+            :class="css.newIssueDialog_waiting"
+            :aria-label="t(l.waitingLabel)"
+          >
+            <li
+              v-for="entry in waiting"
+              :key="entry.id"
+              :class="css.newIssueDialog_waitingEntry"
             >
               <AlertTriangle
                 :class="css.newIssueDialog_bannerIcon"
                 aria-hidden="true"
               />
               <div :class="css.newIssueDialog_bannerText">
-                <strong>{{ t(l.rejectedTitle) }}</strong>
-                <span>{{ t(l.rejectedDetail, { reason: rejection }) }}</span>
+                <strong>{{ t(l.waitingTitle, { title: entry.title, repository: entry.repository ?? '' }) }}</strong>
+                <span>{{ entry.why }}</span>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                kbd="Alt+R"
-                @click="choosingRepository = true"
-                >{{ t(l.anotherRepository) }}</Button
+                :aria-label="t(l.restoreLabel, { title: entry.title })"
+                @click="restore(entry.id)"
+                >{{ t(l.restore) }}</Button
               >
-            </div>
-
-            <ul
-              v-if="waiting && waiting.length > 0"
-              :class="css.newIssueDialog_waiting"
-              :aria-label="t(l.waitingLabel)"
-            >
-              <li
-                v-for="entry in waiting"
-                :key="entry.id"
-                :class="css.newIssueDialog_waitingEntry"
-              >
-                <AlertTriangle
-                  :class="css.newIssueDialog_bannerIcon"
-                  aria-hidden="true"
-                />
-                <div :class="css.newIssueDialog_bannerText">
-                  <strong>{{ t(l.waitingTitle, { title: entry.title, repository: entry.repository ?? '' }) }}</strong>
-                  <span>{{ entry.why }}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  :aria-label="t(l.restoreLabel, { title: entry.title })"
-                  @click="restore(entry.id)"
-                  >{{ t(l.restore) }}</Button
-                >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  :icon="X"
-                  :aria-label="t(l.discardLabel, { title: entry.title })"
-                  @click="emit('discard', entry.id)"
-                />
-              </li>
-            </ul>
-
-            <div
-              v-if="handoff"
-              :class="css.newIssueDialog_banner"
-              role="status"
-            >
-              <ExternalLink
-                :class="css.newIssueDialog_bannerIcon"
-                aria-hidden="true"
-              />
-              <div :class="css.newIssueDialog_bannerText">
-                <strong>{{ t(l.handedOffTitle, { form: handoff }) }}</strong>
-                <span>{{ t(l.handedOffDetail) }}</span>
-              </div>
-            </div>
-
-            <div
-              v-if="unavailable"
-              :class="css.newIssueDialog_banner"
-              role="status"
-            >
-              <AlertTriangle
-                :class="css.newIssueDialog_bannerIcon"
-                aria-hidden="true"
-              />
-              <div :class="css.newIssueDialog_bannerText">
-                <strong>{{ t(l.unavailableTitle, { repository: unavailable.nameWithOwner }) }}</strong>
-                <span>{{ t(l[unavailable.why]) }}</span>
-              </div>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                kbd="Alt+R"
-                @click="choosingRepository = true"
-                >{{ t(l.anotherRepository) }}</Button
-              >
-            </div>
+                :icon="X"
+                :aria-label="t(l.discardLabel, { title: entry.title })"
+                @click="emit('discard', entry.id)"
+              />
+            </li>
+          </ul>
 
-            <template v-if="phone">
-              <dl :class="css.newIssueDialog_phoneRepository">
-                <PropertyRow :label="t(l.repository)">
-                  <PropertyValueButton
-                    :label="repositoryName ? t(l.repositoryLabel, { repository: repositoryName }) : t(l.chooseRepository)"
-                    @click="choosingRepository = true"
-                  >
-                    <span :class="repositoryName ? css.newIssueDialog_phoneRepositoryName : css.newIssueDialog_hint">{{
-                      repositoryName ?? t(l.chooseRepository)
-                    }}</span>
-                    <ChevronRight
-                      :class="css.newIssueDialog_phoneChevron"
-                      aria-hidden="true"
-                    />
-                  </PropertyValueButton>
-                </PropertyRow>
-              </dl>
-              <div :class="css.newIssueDialog_phoneSection">
-                <div
-                  :class="css.newIssueDialog_phoneTitle"
-                  @keydown="onTitleKeydown"
+          <div
+            v-if="handoff"
+            :class="css.newIssueDialog_banner"
+            role="status"
+          >
+            <ExternalLink
+              :class="css.newIssueDialog_bannerIcon"
+              aria-hidden="true"
+            />
+            <div :class="css.newIssueDialog_bannerText">
+              <strong>{{ t(l.handedOffTitle, { form: handoff }) }}</strong>
+              <span>{{ t(l.handedOffDetail) }}</span>
+            </div>
+          </div>
+
+          <div
+            v-if="unavailable"
+            :class="css.newIssueDialog_banner"
+            role="status"
+          >
+            <AlertTriangle
+              :class="css.newIssueDialog_bannerIcon"
+              aria-hidden="true"
+            />
+            <div :class="css.newIssueDialog_bannerText">
+              <strong>{{ t(l.unavailableTitle, { repository: unavailable.nameWithOwner }) }}</strong>
+              <span>{{ t(l[unavailable.why]) }}</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              kbd="Alt+R"
+              @click="choosingRepository = true"
+              >{{ t(l.anotherRepository) }}</Button
+            >
+          </div>
+
+          <template v-if="phone">
+            <dl :class="css.newIssueDialog_phoneRepository">
+              <PropertyRow :label="t(l.repository)">
+                <PropertyValueButton
+                  :label="repositoryName ? t(l.repositoryLabel, { repository: repositoryName }) : t(l.chooseRepository)"
+                  @click="choosingRepository = true"
                 >
-                  <TextField
-                    ref="title"
-                    :model-value="draft.title"
-                    :label="t(l.titleLabel)"
-                    label-hidden
-                    bare
-                    :placeholder="t(l.titlePlaceholder)"
-                    autocomplete="off"
-                    @update:model-value="emit('update', { title: $event ?? '' })"
-                  />
-                </div>
-                <span
-                  v-if="draft.form"
-                  :class="css.newIssueDialog_form"
-                >
-                  <FileText
-                    :class="css.newIssueDialog_repositoryIcon"
+                  <span :class="repositoryName ? css.newIssueDialog_phoneRepositoryName : css.newIssueDialog_hint">{{
+                    repositoryName ?? t(l.chooseRepository)
+                  }}</span>
+                  <ChevronRight
+                    :class="css.newIssueDialog_phoneChevron"
                     aria-hidden="true"
                   />
-                  {{ t(l.fromForm, { form: draft.form }) }}
-                </span>
-                <NewIssueFields
-                  v-if="!unavailable"
-                  :draft="draft"
-                  :metadata="metadata"
-                  :can-push="canPush"
-                  :viewer-login="viewerLogin"
-                  :parent-options="parentOptions"
-                  :project-options="projectOptions"
-                  layout="summary"
-                  @update="emit('update', $event)"
-                />
-              </div>
-              <div :class="css.newIssueDialog_phoneBody">
-                <p
-                  v-if="missingFields.length > 0"
-                  :class="css.newIssueDialog_missing"
-                  role="status"
-                >
-                  {{ t(l.stillRequired, { fields: missingFields.join(', ') }) }}
-                </p>
-                <p
-                  v-else-if="templateRequired && !choosingTemplate"
-                  :class="css.newIssueDialog_missing"
-                  role="status"
-                >
-                  {{ t(l.templateRequired) }}
-                  <Button
-                    variant="link"
-                    @click="choosingTemplate = true"
-                    >{{ t(l.chooseTemplate) }}</Button
-                  >
-                </p>
-                <TextArea
-                  ref="body"
-                  :model-value="draft.body"
-                  :label="t(l.bodyLabel)"
+                </PropertyValueButton>
+              </PropertyRow>
+            </dl>
+            <div :class="css.newIssueDialog_phoneSection">
+              <div
+                :class="css.newIssueDialog_phoneTitle"
+                @keydown="onTitleKeydown"
+              >
+                <TextField
+                  ref="title"
+                  :model-value="draft.title"
+                  :label="t(l.titleLabel)"
                   label-hidden
                   bare
-                  :placeholder="t(l.phoneBodyPlaceholder)"
-                  @update:model-value="emit('update', { body: $event ?? '' })"
+                  :placeholder="t(l.titlePlaceholder)"
+                  autocomplete="off"
+                  @update:model-value="emit('update', { title: $event ?? '' })"
                 />
               </div>
-            </template>
-
-            <TemplateChooser
-              v-else-if="choosingTemplate && templates && repositoryName"
-              :repository="repositoryName"
-              :templates="templates.templates"
-              :blank-issues-enabled="templates.blankIssuesEnabled"
-              :can-push="canPush"
-              @use="useTemplate"
-              @blank="useBlank"
-              @back="backToTitle"
-            />
-
-            <div
-              v-else-if="expanded"
-              :class="css.newIssueDialog_columns"
-            >
-              <div :class="css.newIssueDialog_body">
-                <TextArea
-                  ref="body"
-                  :model-value="draft.body"
-                  :label="t(l.bodyLabel)"
-                  label-hidden
-                  bare
-                  :placeholder="t(l.bodyPlaceholder)"
-                  @update:model-value="emit('update', { body: $event ?? '' })"
+              <span
+                v-if="draft.form"
+                :class="css.newIssueDialog_form"
+              >
+                <FileText
+                  :class="css.newIssueDialog_repositoryIcon"
+                  aria-hidden="true"
                 />
-              </div>
-              <div :class="css.newIssueDialog_side">
-                <NewIssueFields
-                  :draft="draft"
-                  :metadata="metadata"
-                  :can-push="canPush"
-                  :viewer-login="viewerLogin"
-                  :parent-options="parentOptions"
-                  :project-options="projectOptions"
-                  layout="rows"
-                  @update="emit('update', $event)"
-                />
-              </div>
+                {{ t(l.fromForm, { form: draft.form }) }}
+              </span>
+              <NewIssueFields
+                v-if="!unavailable"
+                :draft="draft"
+                :metadata="metadata"
+                :can-push="canPush"
+                :viewer-login="viewerLogin"
+                :parent-options="parentOptions"
+                :project-options="projectOptions"
+                layout="summary"
+                @update="emit('update', $event)"
+              />
             </div>
+            <div :class="css.newIssueDialog_phoneBody">
+              <p
+                v-if="missingFields.length > 0"
+                :class="css.newIssueDialog_missing"
+                role="status"
+              >
+                {{ t(l.stillRequired, { fields: missingFields.join(', ') }) }}
+              </p>
+              <p
+                v-else-if="templateRequired && !choosingTemplate"
+                :class="css.newIssueDialog_missing"
+                role="status"
+              >
+                {{ t(l.templateRequired) }}
+                <Button
+                  variant="link"
+                  @click="choosingTemplate = true"
+                  >{{ t(l.chooseTemplate) }}</Button
+                >
+              </p>
+              <TextArea
+                ref="body"
+                :model-value="draft.body"
+                :label="t(l.bodyLabel)"
+                label-hidden
+                bare
+                :placeholder="t(l.phoneBodyPlaceholder)"
+                @update:model-value="emit('update', { body: $event ?? '' })"
+              />
+            </div>
+          </template>
 
-            <div
-              v-else-if="!unavailable"
-              :class="css.newIssueDialog_chips"
-            >
+          <TemplateChooser
+            v-else-if="choosingTemplate && templates && repositoryName"
+            :repository="repositoryName"
+            :templates="templates.templates"
+            :blank-issues-enabled="templates.blankIssuesEnabled"
+            :can-push="canPush"
+            @use="useTemplate"
+            @blank="useBlank"
+            @back="backToTitle"
+          />
+
+          <div
+            v-else-if="expanded"
+            :class="css.newIssueDialog_columns"
+          >
+            <div :class="css.newIssueDialog_body">
+              <TextArea
+                ref="body"
+                :model-value="draft.body"
+                :label="t(l.bodyLabel)"
+                label-hidden
+                bare
+                :placeholder="t(l.bodyPlaceholder)"
+                @update:model-value="emit('update', { body: $event ?? '' })"
+              />
+            </div>
+            <div :class="css.newIssueDialog_side">
               <NewIssueFields
                 :draft="draft"
                 :metadata="metadata"
@@ -725,10 +716,27 @@ function onEscape(event: KeyboardEvent) {
                 :viewer-login="viewerLogin"
                 :parent-options="parentOptions"
                 :project-options="projectOptions"
-                layout="chips"
+                layout="rows"
                 @update="emit('update', $event)"
               />
             </div>
+          </div>
+
+          <div
+            v-else-if="!unavailable"
+            :class="css.newIssueDialog_chips"
+          >
+            <NewIssueFields
+              :draft="draft"
+              :metadata="metadata"
+              :can-push="canPush"
+              :viewer-login="viewerLogin"
+              :parent-options="parentOptions"
+              :project-options="projectOptions"
+              layout="chips"
+              @update="emit('update', $event)"
+            />
+          </div>
         </div>
 
         <footer

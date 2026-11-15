@@ -28,6 +28,16 @@ watch(
   },
 );
 
+// A creation GitHub refused leaves the list with its toast: an Open waiting on it waits no more.
+watch(
+  () => composer.created.map(entry => entry.id),
+  ids => {
+    if ([...opening.value].some(id => !ids.includes(id))) {
+      opening.value = new Set([...opening.value].filter(id => ids.includes(id)));
+    }
+  },
+);
+
 function open(entry: NewIssueCreated) {
   const issue = getIssue(entry);
   if (issue === null) {
