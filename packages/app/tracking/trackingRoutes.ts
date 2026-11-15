@@ -236,7 +236,7 @@ export function isTrackedOnlyRoute(route: IsTrackedOnlyRouteParams) {
 
 /**
  * Whether the phone layout shows a route (mobile D3, D4): not a pull request's review, Draft reviews, the broken
- * workflows, a workflow's page or run, or a repository's Commits and Workflows sections — those are handed off to github.com when
+ * workflows, a workflow's page or run, a commit's page, or a repository's Commits and Workflows sections — those are handed off to github.com when
  * navigated to below the phone's width, as every address githq does not show at all is.
  *
  * @__NO_SIDE_EFFECTS__
@@ -249,6 +249,7 @@ export function isRouteShownOnPhone(route: IsTrackedOnlyRouteParams) {
         case 'workflow-page':
         case 'workflow-run':
         case 'workflow-run-job':
+        case 'commit-page':
             return false;
         case 'repository': {
             const section = getRepositorySection(route.params.section);

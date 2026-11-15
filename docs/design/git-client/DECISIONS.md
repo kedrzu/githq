@@ -347,37 +347,40 @@ both, so it has one place and one width. Panel widths are local ([settings-sync 
 
 ## D16
 
-**A commit's details show in a panel, never as a modal or a page, and the selection shows them: the panel is open from the
-moment the section opens, on the selected commit, which starts as the newest commit of the default branch, or the top row
-when that one is not loaded. `J`, `K` and a click move through the graph and it follows; `P` goes to the first parent, `⇧P`
-to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub. `Esc` closes it and
-the next move shows it again, as does `↵`; a row disappearing is not a move. `B` goes to the list's filter and the panel
-stays. On a wide window the panel is on the right of the graph with the list staying on its left, in both layouts: 440 px by
-default, its left edge dragged or moved with `←`/`→` from 320 px to what leaves the graph 240 px, kept on the device under
-its own name, and giving up width where the graph would have under 240 px. Below about 1,200 px of window, one threshold in
-both layouts, it sits under the graph at the pane's full width and a fixed 45% of the height (CH48); the list over the graph
-covers the graph only.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29,
-CH42; on the right with the list staying by the owner 2026-11-03; following the selection, the default branch's start, `Esc`,
-the width and the place under the graph by the owner 2026-11-03, the numbers the agent's)
+**A commit opens as an item, by the same mechanism as an issue, a pull request or a workflow: in the shared panel beside
+the screen (`?pane=commit&commit=owner|name|<sha>`), and on a page of its own at GitHub's address
+(`/owner/name/commit/<sha>`), never as a modal. It moves as any item does: "Open full screen" expands it, `Esc` closes it,
+a window with no room for the panel opens it on its page, and the panel's width is every item's. The Commits section
+behaves like a list: entering it opens nothing, a click, `↵`, a chosen ref or `P`/`⇧P` (to the first parent, `⇧P` the
+second of a merge) opens the commit, in place of any item open there, a workflow included; while a commit is open `J`/`K`
+move the graph's cursor and the panel follows, with no room for the panel they only move the cursor. An item opened
+elsewhere stays in the panel as the user moves between the repository's sections. `⇧↵` opens the commit's pull request
+as any item opens and `O` opens it on GitHub; "Open full screen" has no key for a commit, only the header's button and
+the command menu. On its page `K`/`J` step through the loaded commits. The details' content keeps the item view's reading
+width, aligned left, however wide the panel.** (2026-11-15, owner: a click on a commit showed nothing while a workflow
+was open in the panel — "commits should work by the same mechanism as the other item details"; the narrow window, `⇧↵`
+and the list behaviour by the owner the same day, on the agent's recommendation)
 
 **The keys footer of the details goes: each key sits on the row it acts on** (`⇧↵` on the pull request, `P`/`⇧P` on the
 parents). (2026-11-14, owner's layout CH55, [D13](#d13))
 
-**Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
-it, which a modal or a page would hide. Selecting a commit is already asking about it, so a key to see it adds a step and
-nothing else. Over the graph on a narrow window it would hide the rows it follows for as long as it is open, which is now
-all the time, so it goes under them. The default branch is where a repository stands, while the top row may be any branch.
+**Why.** Two panels on one screen — the commit's beside the graph and the shared one — hid each other: a workflow left
+open in the panel blocked the commit's details. One mechanism means one place, one width and one set of moves. The
+commit is still read against the graph, which stays on screen beside the panel; opening nothing on entry keeps the query,
+which the repository's tabs carry, from leaving a commit over Issues, Pull requests and Workflows.
 
 **Rejected.**
 
+- A commit's own panel beside the graph, 440 px by default and its width kept apart, docked under the graph at 45% of the
+  height below about 1,200 px, open from the moment the section opens ("a commit is not an item", the version of
+  2026-11-02/03) — it hid itself whenever another item was open over the section, so a click on a commit showed nothing
+  (owner, 2026-11-15, [history](history/DECISIONS.md#d16)).
 - The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
 - The details in the list's place, the first version of this decision and now on the left — gives the graph more width,
   but moves it sideways at every open and close, and keeps the two layouts different (owner, 2026-11-03,
   [history](history/DECISIONS.md#d16)).
-- The details opening only on `↵` (the first version of this decision) — a step between selecting a commit and reading it
-  (owner, 2026-11-03, [history](history/DECISIONS.md#d16)).
-- `Esc` keeping the details closed until `↵` — a way to walk the graph at full width, but the selection would then show them
-  only sometimes (owner, 2026-11-03).
+- The details opening with the selection, from the section's opening (the version of 2026-11-03) — with the panel shared
+  and carried by the tabs' query, it would leave a commit over every other section (owner, 2026-11-15).
 - On a narrow window, the details over the graph from the right, one at a time with the list, opening only on `↵` — the
   graph's rows hidden, or a different behaviour under one threshold (owner, 2026-11-03,
   [history](history/DECISIONS.md#d16)).

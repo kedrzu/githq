@@ -1,5 +1,7 @@
 import type { HistoryState, RouteLocation } from 'vue-router';
 
+import { CommitRoutes } from '@/commits/commitRoutes.js';
+import type { CommitReference } from '@/commits/commitRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -24,7 +26,8 @@ export interface ItemReference extends RepositoryName {
 /** What a route opens: an item of a kind, on its own page or over a list. */
 export type OpenedItemRoute =
     | (OpenedKindRoute<ItemReference> & { readonly kind: 'issue' })
-    | (OpenedKindRoute<WorkflowReference> & { readonly kind: 'workflow' });
+    | (OpenedKindRoute<WorkflowReference> & { readonly kind: 'workflow' })
+    | (OpenedKindRoute<CommitReference> & { readonly kind: 'commit' });
 
 /**
  * The route paths of an item's own page, shaped like GitHub's: a github.com path pasted after the app's host
@@ -81,7 +84,12 @@ export function getOpenedItemRoute(route: OpenedItemRouteSource): OpenedItemRout
     }
 
     const workflow = WorkflowRoutes.getOpened(route);
-    return workflow ? { kind: 'workflow', ...workflow } : null;
+    if (workflow) {
+        return { kind: 'workflow', ...workflow };
+    }
+
+    const commit = CommitRoutes.getOpened(route);
+    return commit ? { kind: 'commit', ...commit } : null;
 }
 
 /**
@@ -188,7 +196,7 @@ function toReference(owner: string, name: string, number: unknown): ItemReferenc
 
 declare module 'vue-router' {
     interface RouteMeta {
-        /** The route is the own page of an item of this kind (`ITEM_PAGE_PATHS`, `WORKFLOW_PAGE_PATH`). */
+        /** The route is the own page of an item of this kind (`ITEM_PAGE_PATHS`, `WORKFLOW_PAGE_PATH`, `COMMIT_PAGE_PATH`). */
         itemPage?: OpenedItemKind;
         /**
          * The screen is a list an item opens over, in the panel beside it (D9): opening one from anywhere else — a

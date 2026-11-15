@@ -1,10 +1,15 @@
-# A commit's details as they open (git-client D13): its full message, which the graph doesn't keep, and for a commit not
-# loaded the rest of what the panel shows. Never adds it to the graph (D12).
-query CommitDetail($id: ID!) {
-    node(id: $id) {
-        ... on Commit {
-            ...CommitFields
-            message
+# A commit's details as they open (git-client D13): its full message, which the graph doesn't keep, the rest of what the
+# panel shows for a commit not loaded, and its pull request and CI state for a commit no row asks it for. Read by
+# repository and sha, as an address carries them; `$rev` may be a short sha, and `oid` answers with the full one. Never
+# adds it to the graph (D12).
+query CommitDetail($owner: String!, $name: String!, $rev: String!) {
+    repository(owner: $owner, name: $name) {
+        object(expression: $rev) {
+            ... on Commit {
+                ...CommitFields
+                ...CommitStateFields
+                message
+            }
         }
     }
 }

@@ -3,21 +3,22 @@ import type { Locator, Page } from '@playwright/test';
 /**
  * Playwright harness for a repository's Commits section (`CommitGraphView.vue`, `/owner/name/commits`): its rows —
  * only those near the viewport are drawn — the row under the cursor, a row's pull request and CI marks, the lines
- * under the rows and in place of them, the list of branches and tags left of them, and a commit's details right of them.
+ * under the rows and in place of them, the list of branches and tags left of them, and a commit's details — the commit
+ * opened as an item, in the shell's panel beside the section or on its page.
  */
 export class CommitGraphHarness {
     readonly page: Page;
     readonly root: Locator;
     /** The list of branches and tags left of the graph, wherever it renders. */
     readonly refList: Locator;
-    /** A commit's details (`CommitDetails.vue`). */
+    /** A commit's details (`CommitDetails.vue`), in the panel beside the section or on the commit's page. */
     readonly details: Locator;
 
     constructor(page: Page, nameWithOwner: string) {
         this.page = page;
         this.root = page.getByRole('main').getByRole('region', { name: `Commits of ${nameWithOwner}` });
         this.refList = page.getByRole('main').getByRole('region', { name: 'Branches and tags' });
-        this.details = page.getByRole('main').getByRole('region', { name: 'Commit details' });
+        this.details = page.getByRole('region', { name: 'Commit details' });
     }
 
     /** The headline in the details. */
