@@ -7,7 +7,9 @@ import { defineComponent, h, ref } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { answerTrackingCandidates } from '@/testing/answerTrackingCandidates.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
@@ -24,6 +26,8 @@ const meta = {
             setup() {
                 const container = createContainer();
                 container.set(LanguageContext, () => APP_LANGUAGE);
+                // The story frame is narrower than a phone's width: the computer's picker.
+                container.set(PhoneLayout, createFixedPhoneLayout(false));
                 container.set(
                     Browser,
                     createSignedInBrowser(

@@ -1,6 +1,7 @@
-<!-- Settings saved to GitHub found on the first sign-in (settings-sync D3, G11), in place of choosing what to track: where they are, how many repositories and projects they track and their names, and the choice — "Load these" (`⌘↵`) or "No, I'll choose here". -->
+<!-- Settings saved to GitHub found on the first sign-in (settings-sync D3, G11), in place of choosing what to track: where they are, how many repositories and projects they track and their names, and the choice — "Load these" (`⌘↵`) or "No, I'll choose here". On a phone (`PhoneLayout.active`, mobile MB134) one column, each repository's owner dimmed before its name, the two answers across the screen at its bottom, where the thumb is, pinned under the note while the list scrolls. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { BookMarked, Lock, SquareKanban } from 'lucide-vue-next';
 import { computed, ref, useId } from 'vue';
@@ -8,6 +9,8 @@ import { computed, ref, useId } from 'vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './SavedSettingsOffer.loc.js';
 import type { SettingsDocument } from './sync/SettingsDocument.js';
@@ -31,6 +34,7 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
 const titleId = useId();
 const loading = ref(false);
 
@@ -60,7 +64,7 @@ async function loadOnce() {
 
 <template>
   <section
-    :class="css.savedSettingsOffer"
+    :class="[css.savedSettingsOffer, phone.active && css.savedSettingsOffer_phone]"
     :aria-labelledby="titleId"
   >
     <h1
@@ -87,7 +91,13 @@ async function loadOnce() {
               :class="css.savedSettingsOffer_icon"
               aria-hidden="true"
             />
-            {{ saved.nameWithOwner }}
+            <span v-if="phone.active"
+              ><span :class="css.savedSettingsOffer_owner">{{ parseRepositoryName(saved.nameWithOwner).owner }}/</span
+              ><span :class="css.savedSettingsOffer_name">{{
+                parseRepositoryName(saved.nameWithOwner).name
+              }}</span></span
+            >
+            <template v-else>{{ saved.nameWithOwner }}</template>
           </li>
         </ul>
       </section>
@@ -117,23 +127,27 @@ async function loadOnce() {
         {{ t(l.nothing) }}
       </p>
     </div>
-    <p :class="css.savedSettingsOffer_note">{{ t(l.note) }}</p>
-    <div :class="css.savedSettingsOffer_actions">
-      <Button
-        variant="primary"
-        :kbd="LOAD_KEY"
-        :keyshortcuts="formatAriaKeyShortcuts(LOAD_KEY)"
-        :busy="loading"
-        @click="loadOnce"
-      >
-        {{ t(l.load) }}
-      </Button>
-      <Button
-        :disabled="loading"
-        @click="emit('decline')"
-      >
-        {{ t(l.decline) }}
-      </Button>
+    <div :class="css.savedSettingsOffer_foot">
+      <p :class="css.savedSettingsOffer_note">{{ t(l.note) }}</p>
+      <div :class="css.savedSettingsOffer_actions">
+        <Button
+          variant="primary"
+          :size="phone.active ? 'lg' : undefined"
+          :kbd="LOAD_KEY"
+          :keyshortcuts="formatAriaKeyShortcuts(LOAD_KEY)"
+          :busy="loading"
+          @click="loadOnce"
+        >
+          {{ t(l.load) }}
+        </Button>
+        <Button
+          :size="phone.active ? 'lg' : undefined"
+          :disabled="loading"
+          @click="emit('decline')"
+        >
+          {{ t(l.decline) }}
+        </Button>
+      </div>
     </div>
   </section>
 </template>
@@ -226,5 +240,77 @@ async function loadOnce() {
 .savedSettingsOffer_actions {
   display: flex;
   gap: $spacing-10;
+}
+
+// The note and the answers: on the computer they sit in the column like the rest.
+.savedSettingsOffer_foot {
+  display: contents;
+}
+
+.savedSettingsOffer_owner {
+  color: $color-fg-dim;
+}
+
+.savedSettingsOffer_name {
+  font-weight: $font-weight-medium;
+}
+
+// A phone (MB134): from the top, the list in one column, the answers pinned at the bottom.
+.savedSettingsOffer_phone {
+  justify-content: flex-start;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 20px 0 0;
+
+  .savedSettingsOffer_title,
+  .savedSettingsOffer_detail {
+    padding: 0 $spacing-16;
+  }
+
+  .savedSettingsOffer_title {
+    font-size: 22px;
+  }
+
+  .savedSettingsOffer_detail {
+    font-size: $font-size-md;
+  }
+
+  .savedSettingsOffer_saved {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 $spacing-16;
+    border: none;
+  }
+
+  .savedSettingsOffer_list {
+    gap: $spacing-2;
+  }
+
+  .savedSettingsOffer_entry {
+    min-height: 32px;
+    font-size: $font-size-lg;
+  }
+
+  .savedSettingsOffer_foot {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-10;
+    padding: $spacing-12 $spacing-16 calc(#{$spacing-12} + #{$phone-home-indicator-room});
+    margin-top: auto;
+    background: $color-bg-2;
+    border-top: 1px solid $color-border;
+  }
+
+  .savedSettingsOffer_note {
+    font-size: $font-size-xs;
+  }
+
+  .savedSettingsOffer_actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

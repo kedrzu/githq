@@ -26,3 +26,15 @@ requestApproval:
   en: Request approval on GitHub
 requested:
   en: You opened GitHub's page to request approval on {date}.
+stackedTitle:
+  en: '{organization} hides its private repositories'
+stackedPublic:
+  plural: count
+  en:
+    zero: It hasn't approved githq, so GitHub shows none of its repositories.
+    one: It hasn't approved githq, so GitHub shows only its one public one.
+    many: It hasn't approved githq, so GitHub shows only its {count} public ones.
+stackedNothingBroken:
+  en: 'Nothing is broken: an owner approves githq on GitHub.'
+explainPhone:
+  en: Why, and how to ask for approval

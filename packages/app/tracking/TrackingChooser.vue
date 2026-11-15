@@ -1,19 +1,27 @@
-<!-- Choosing what to track (G2, D20), on the first sign-in and in a modal afterwards (T18, D25; `TrackRepositoriesDialog`): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. The filter also asks GitHub (mobile D34, G18, G19): from two typed characters, once typing pauses and over all owners, GitHub's repository search follows the user's own matches under "On GitHub", with what the filter names by its address looked up first; what the user's lists show is not repeated there, a row found ticks like any other and is handed on (`found`), and while GitHub answers one line says so. On the first sign-in the projects sit beside the repositories; with nothing at all to pick (G10), the field is that search, a project's address looked up too; the `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). As the picker (`tracked` given, T18) it has no heading, projects, footer or G10, and the model is only what is picked: the tracked repositories show with a grey, fixed tick and "tracked", no key or group action changes them, an owner with all of them tracked folds to its header, counts say "tracked", and J and K move too. -->
+<!-- Choosing what to track (G2, D20), on the first sign-in and in a modal afterwards (T18, D25; `TrackRepositoriesDialog`): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. The filter also asks GitHub (mobile D34, G18, G19): from two typed characters, once typing pauses and over all owners, GitHub's repository search follows the user's own matches under "On GitHub", with what the filter names by its address looked up first; what the user's lists show is not repeated there, a row found ticks like any other and is handed on (`found`), and while GitHub answers one line says so. On the first sign-in the projects sit beside the repositories; with nothing at all to pick (G10), the field is that search, a project's address looked up too; the `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). As the picker (`tracked` given, T18) it has no heading, projects, footer or G10, and the model is only what is picked: the tracked repositories show with a grey, fixed tick and "tracked", no key or group action changes them, an owner with all of them tracked folds to its header, counts say "tracked", and J and K move too. On a phone (`PhoneLayout.active`; mobile D7, D34, MB135–MB138, MB163, MB164) it is one column: the question, then the search pinned at the top while the list scrolls — finding projects too — with Repositories and Projects as two segments counting picked / all (matches while searching), no owners on the left: each owner's group folds and unfolds by its own "Show all", an organisation hiding its private repositories says so in its group and explains itself in a sheet from below (MB137); rows a finger's height; the saving choice at the end of the list; the footer pinned at the bottom, and while the search has the cursor or text the question folds away and the footer is one line, "Track these" at its end with how many of the matches are ticked (it rides above the keyboard where the screen follows it, `FirstSignInFrame`). No key hints are drawn on a phone (`KeyHintsContext`). -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { ArrowDownWideNarrow, Building2, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
+import { ArrowDownWideNarrow, Building2, CircleX, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watch, watchEffect } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
+import type { ButtonSize, ButtonVariant } from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ChoiceList from '@/components/ChoiceList.vue';
 import type { ChoiceListOption } from '@/components/ChoiceList.vue';
+import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
+import { KeyHintsContext } from '@/components/KeyHintsContext.js';
 import SearchField from '@/components/SearchField.vue';
+import SegmentedTabs from '@/components/SegmentedTabs.vue';
+import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -42,6 +50,16 @@ const FOLDED_PROJECTS = 6;
 const FOLDED_ROWS = 4;
 /** G10: what its field takes besides a search. */
 const EXAMPLES = ['vitejs/vite', 'github.com/orgs/tauri-apps/projects/2'];
+
+/** How a group's action is drawn. */
+interface GroupActionLook {
+  readonly variant: ButtonVariant;
+  readonly tone?: 'accent';
+  readonly size: ButtonSize;
+}
+
+/** What a phone's segments show (mobile MB135): the repositories' groups, or the projects. */
+type PhoneSegment = 'projects' | 'repositories';
 
 /** A repository a row shows: offered by GitHub's lists, or (the picker) tracked yet not among what they gave so far. */
 type ListedRepository = CandidateRepository | TrackedRepositoryEntry;
@@ -147,12 +165,25 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
+// A phone has no keys to hint at (mobile D52): the field's `/`, "Track these"'s ⌘↵.
+provideContext(KeyHintsContext, {
+  get hidden() {
+    return phoneLayout.active;
+  },
+});
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
 const owner = ref<string>(props.initialOwner ?? 'all');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const projectsUnfolded = ref(false);
+/** The segment a phone shows. */
+const segment = ref<PhoneSegment>('repositories');
+/** The filter has the cursor: on a phone the question folds away and the footer shrinks to a line (MB163). */
+const filterFocused = ref(false);
+/** The organisation hiding its private repositories whose sheet is up, on a phone (MB137). */
+const explained = ref<string | null>(null);
 /** The repository and the project last clicked in each list: where a Shift+click's range starts. */
 const repositoryAnchor = ref<string | null>(null);
 const projectAnchor = ref<string | null>(null);
@@ -164,6 +195,9 @@ const listKeys = useFilteredListKeys({
 });
 
 const picker = computed(() => props.tracked !== undefined);
+const phone = computed(() => phoneLayout.active);
+/** On a phone, the search has the cursor or text (MB163, MB164): the list is its matches. */
+const typing = computed(() => phone.value && (filterFocused.value || needle.value !== ''));
 const trackedNames = computed(() => new Set(props.tracked?.map(entry => entry.nameWithOwner)));
 const readRepositories = computed(() => (props.candidates ? getCandidateRepositories(props.candidates) : []));
 const listedGroups = computed((): OwnerGroup[] => {
@@ -239,9 +273,10 @@ const reference = computed(() => {
 const filteredGroups = computed(() =>
   groups.value.filter(group => owner.value === 'all' || group.login === owner.value).map(showGroup),
 );
-// In the picker a search leaves out the owners it matches nothing of, unless more of theirs is still to read (T1).
+// In the picker and on a phone (MB163) a search leaves out the owners it matches nothing of, unless more of theirs is
+// still to read (T1).
 const shownGroups = computed(() =>
-  picker.value && needle.value !== ''
+  (picker.value || phone.value) && needle.value !== ''
     ? filteredGroups.value.filter(group => group.matching.length > 0 || group.list?.nextCursor != null)
     : filteredGroups.value,
 );
@@ -337,6 +372,39 @@ const shownProjects = computed(() =>
     ? ownerProjects.value
     : ownerProjects.value.filter((project, index) => index < FOLDED_PROJECTS || chosenProjects.value.has(project.id)),
 );
+/** The projects a phone's segment shows: the search finds them too (MB163). */
+const phoneProjects = computed(() =>
+  needle.value === ''
+    ? shownProjects.value
+    : findMatches(
+        filter.value,
+        prepareMatchTexts(ownerProjects.value, project => [project.title, project.owner]),
+      ).map(({ row }) => row),
+);
+const segmentOptions = computed((): SegmentedTabsOption<PhoneSegment>[] => [
+  {
+    value: 'repositories',
+    label: t(l.repositories),
+    count:
+      needle.value === ''
+        ? t(l.ownerCount, { selected: repositories.value.length, total: totalRepositories.value })
+        : shownRepositoryNames.value.length,
+  },
+  {
+    value: 'projects',
+    label: t(l.projects),
+    count:
+      needle.value === ''
+        ? t(l.ownerCount, { selected: projects.value.length, total: allProjects.value.length })
+        : phoneProjects.value.length,
+  },
+]);
+/** How many of the matches shown on a phone are ticked, repositories and projects. */
+const tickedMatches = computed(
+  () =>
+    shownRepositoryNames.value.filter(name => chosenRepositories.value.has(name)).length +
+    phoneProjects.value.filter(project => chosenProjects.value.has(project.id)).length,
+);
 const empty = computed(
   () =>
     !picker.value &&
@@ -354,6 +422,23 @@ const summaryDetail = computed(() => {
   const detail = t(l.summaryDetail, { count: openToCopy.value });
   return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
 });
+/** The footer's line under the count: on a phone shorter, and while searching how many of the matches are ticked. */
+const footerDetail = computed(() => {
+  if (!phone.value) {
+    return summaryDetail.value;
+  }
+
+  if (needle.value !== '') {
+    return t(l.matchesTicked, { count: tickedMatches.value });
+  }
+
+  const detail = t(l.summaryDetailPhone, { count: openToCopy.value });
+  return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
+});
+/** A phone's group action ("Select none", "Show all"): a text link in the accent, a finger's height. */
+const groupActionLook = computed((): GroupActionLook =>
+  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'framed', size: 'sm' },
+);
 // What the filter names, once nothing listed matches it: not while the lists are first read — after reading them
 // failed it still is — and not under an owner picked that it doesn't name. G10 looks a project's address up too.
 const lookupReference = computed(() => {
@@ -650,6 +735,21 @@ function selectAllMatching() {
   );
 }
 
+/** "Why, and how to fix": the panel of the organisation picked on the left; on a phone, its sheet from below. */
+function explain(login: string) {
+  if (phone.value) {
+    explained.value = login;
+  } else {
+    owner.value = login;
+  }
+}
+
+function requestExplainedApproval() {
+  if (explained.value !== null) {
+    emit('requestApproval', explained.value);
+  }
+}
+
 function unfold(login: string) {
   unfoldedOwners.value = new Set([...unfoldedOwners.value, login]);
 }
@@ -757,33 +857,79 @@ function projectMeta(project: CandidateProject) {
     <!-- G10: nothing to pick. -->
     <div
       v-if="empty"
-      :class="css.trackingChooser_empty"
+      :class="[css.trackingChooser_empty, phone && css.trackingChooser_empty_phone]"
     >
-      <Inbox
-        :class="css.trackingChooser_emptyIcon"
-        aria-hidden="true"
-      />
-      <h1 :class="css.trackingChooser_emptyTitle">{{ t(l.emptyTitle) }}</h1>
-      <p :class="css.trackingChooser_subtitle">{{ t(l.emptyDetail) }}</p>
-      <div :class="css.trackingChooser_search">
-        <SearchField
-          ref="filterField"
-          v-model="filter"
-          :class="css.trackingChooser_searchField"
-          :label="t(l.searchLabel)"
-          :placeholder="t(l.searchPlaceholder)"
-          @keydown="onFilterKeydown"
-        />
-        <p :class="css.trackingChooser_examples">
-          {{ t(l.examples) }}
-          <code
-            v-for="example in EXAMPLES"
-            :key="example"
-            :class="css.trackingChooser_example"
-            >{{ example }}</code
+      <!-- MB138: the question, the field to track one by name, and what a fresh account still has. -->
+      <template v-if="phone">
+        <div
+          v-if="!typing"
+          :class="css.trackingChooser_heading"
+        >
+          <h1 :class="css.trackingChooser_title">{{ t(l.title) }}</h1>
+          <p :class="css.trackingChooser_subtitle">{{ t(l.subtitlePhone) }}</p>
+        </div>
+        <div :class="css.trackingChooser_phoneTools">
+          <SearchField
+            ref="filterField"
+            v-model="filter"
+            :class="css.trackingChooser_phoneSearch"
+            :label="t(l.searchLabel)"
+            :placeholder="t(l.searchPlaceholderPhone)"
+            @keydown="onFilterKeydown"
+            @focusin="filterFocused = true"
+            @focusout="filterFocused = false"
           >
-        </p>
-      </div>
+            <template
+              v-if="filter !== ''"
+              #end
+            >
+              <IconButton
+                :icon="CircleX"
+                :label="t(l.clearSearch)"
+                @click="filter = ''"
+              />
+            </template>
+          </SearchField>
+        </div>
+        <div
+          v-if="needle === '' && found.length === 0"
+          :class="css.trackingChooser_fresh"
+        >
+          <Inbox
+            :class="css.trackingChooser_emptyIcon"
+            aria-hidden="true"
+          />
+          <h2 :class="css.trackingChooser_freshTitle">{{ t(l.emptyTitle) }}</h2>
+          <p :class="css.trackingChooser_freshDetail">{{ t(l.emptyDetailPhone) }}</p>
+        </div>
+      </template>
+      <template v-else>
+        <Inbox
+          :class="css.trackingChooser_emptyIcon"
+          aria-hidden="true"
+        />
+        <h1 :class="css.trackingChooser_emptyTitle">{{ t(l.emptyTitle) }}</h1>
+        <p :class="css.trackingChooser_subtitle">{{ t(l.emptyDetail) }}</p>
+        <div :class="css.trackingChooser_search">
+          <SearchField
+            ref="filterField"
+            v-model="filter"
+            :class="css.trackingChooser_searchField"
+            :label="t(l.searchLabel)"
+            :placeholder="t(l.searchPlaceholder)"
+            @keydown="onFilterKeydown"
+          />
+          <p :class="css.trackingChooser_examples">
+            {{ t(l.examples) }}
+            <code
+              v-for="example in EXAMPLES"
+              :key="example"
+              :class="css.trackingChooser_example"
+              >{{ example }}</code
+            >
+          </p>
+        </div>
+      </template>
       <section
         v-if="shownFoundRepositories.length > 0 || shownFoundProjects.length > 0"
         :class="css.trackingChooser_found"
@@ -794,16 +940,18 @@ function projectMeta(project: CandidateProject) {
           :key="repository.nameWithOwner"
           :repository="repository"
           :now="now"
+          :touch="phone"
           :model-value="chosenRepositories.has(repository.nameWithOwner)"
           @update:model-value="setRepository(repository.nameWithOwner, $event)"
         />
         <div
           v-for="project in shownFoundProjects"
           :key="project.id"
-          :class="css.trackingChooser_project"
+          :class="[css.trackingChooser_project, phone && css.trackingChooser_project_touch]"
           data-tracking-row
         >
           <Checkbox
+            :size="phone ? 'touch' : undefined"
             :model-value="chosenProjects.has(project.id)"
             @update:model-value="setProject(project.id, $event)"
           >
@@ -826,13 +974,15 @@ function projectMeta(project: CandidateProject) {
           :state="gitHubSearch.kind"
           :text="needle"
           :count="gitHubRepositories.length + (lookedUpProject ? 1 : 0)"
+          :touch="phone"
         >
           <div
             v-if="lookedUpProject"
-            :class="css.trackingChooser_project"
+            :class="[css.trackingChooser_project, phone && css.trackingChooser_project_touch]"
             data-tracking-row
           >
             <Checkbox
+              :size="phone ? 'touch' : undefined"
               :model-value="chosenProjects.has(lookedUpProject.id)"
               @update:model-value="setProject(lookedUpProject.id, $event)"
             >
@@ -850,13 +1000,53 @@ function projectMeta(project: CandidateProject) {
             :key="repository.nameWithOwner"
             :repository="repository"
             :now="now"
+            :touch="phone"
             :model-value="chosenRepositories.has(repository.nameWithOwner)"
             @update:model-value="setRepository(repository.nameWithOwner, $event)"
           />
         </FoundOnGitHub>
       </section>
-      <slot name="saving" />
-      <div>
+      <div
+        v-if="phone && $slots.saving"
+        :class="css.trackingChooser_phoneSaving"
+      >
+        <slot name="saving" />
+      </div>
+      <slot
+        v-else-if="!phone"
+        name="saving"
+      />
+      <!-- On a phone the footer pinned at the bottom (MB138): what is picked, and "Continue to My work". -->
+      <div
+        v-if="phone"
+        :class="css.trackingChooser_bottom"
+      >
+        <div :class="[css.trackingChooser_footer, css.trackingChooser_footer_phone]">
+          <p :class="css.trackingChooser_summary">
+            {{
+              repositories.length + projects.length === 0
+                ? t(l.nothingPicked)
+                : t(l.summary, {
+                    repositories: t(l.summaryRepositories, { count: repositories.length }),
+                    projects: t(l.summaryProjects, { count: projects.length }),
+                  })
+            }}
+          </p>
+          <p :class="css.trackingChooser_summaryDetail">
+            {{ repositories.length + projects.length === 0 ? t(l.nothingPickedDetail) : footerDetail }}
+          </p>
+          <Button
+            variant="primary"
+            size="lg"
+            :class="css.trackingChooser_track"
+            :busy="busy"
+            @click="emit('track')"
+          >
+            {{ t(l.continue) }}
+          </Button>
+        </div>
+      </div>
+      <div v-else>
         <Button
           variant="primary"
           kbd="Mod+Enter"
@@ -870,30 +1060,78 @@ function projectMeta(project: CandidateProject) {
     </div>
 
     <template v-else>
-      <div :class="css.trackingChooser_body">
+      <div
+        :class="[
+          css.trackingChooser_body,
+          phone && css.trackingChooser_body_phone,
+          typing && css.trackingChooser_body_typing,
+        ]"
+      >
         <div :class="css.trackingChooser_column">
+          <!-- On a phone the question folds away while searching (MB163). -->
           <div
-            v-if="!picker"
+            v-if="!picker && !typing"
             :class="css.trackingChooser_heading"
           >
             <h1 :class="css.trackingChooser_title">{{ t(l.title) }}</h1>
-            <p :class="css.trackingChooser_subtitle">{{ t(l.subtitle) }}</p>
+            <p :class="css.trackingChooser_subtitle">{{ phone ? t(l.subtitlePhone) : t(l.subtitle) }}</p>
           </div>
 
-          <div :class="css.trackingChooser_main">
-            <ChoiceList
-              v-if="candidates"
-              v-model="owner"
-              :label="t(l.owners)"
-              :options="ownerOptions"
+          <!-- A phone's search, pinned at the top while the list scrolls, and the two segments (MB135). -->
+          <div
+            v-if="phone"
+            :class="css.trackingChooser_phoneTools"
+          >
+            <SearchField
+              ref="filterField"
+              v-model="filter"
+              :class="css.trackingChooser_phoneSearch"
+              :label="t(picker ? l.filterLabel : l.findLabel)"
+              :placeholder="t(picker ? l.filterPlaceholder : l.findPlaceholder, { count: totalRepositories })"
+              @keydown="onFilterKeydown"
+              @focusin="filterFocused = true"
+              @focusout="filterFocused = false"
+            >
+              <template
+                v-if="filter !== ''"
+                #end
+              >
+                <IconButton
+                  :icon="CircleX"
+                  :label="t(l.clearSearch)"
+                  @click="filter = ''"
+                />
+              </template>
+            </SearchField>
+            <SegmentedTabs
+              v-if="!picker"
+              v-model="segment"
+              variant="strip"
+              :label="t(l.segments)"
+              :options="segmentOptions"
             />
-            <div v-else />
+          </div>
+
+          <div :class="[css.trackingChooser_main, phone && css.trackingChooser_main_phone]">
+            <template v-if="!phone">
+              <ChoiceList
+                v-if="candidates"
+                v-model="owner"
+                :label="t(l.owners)"
+                :options="ownerOptions"
+              />
+              <div v-else />
+            </template>
 
             <section
+              v-show="!phone || segment === 'repositories'"
               :class="css.trackingChooser_repositories"
               :aria-label="t(l.repositories)"
             >
-              <div :class="css.trackingChooser_tools">
+              <div
+                v-if="!phone"
+                :class="css.trackingChooser_tools"
+              >
                 <SearchField
                   ref="filterField"
                   v-model="filter"
@@ -962,8 +1200,7 @@ function projectMeta(project: CandidateProject) {
                   </template>
                   <Button
                     v-if="!group.unfolded && group.allTracked"
-                    variant="framed"
-                    size="sm"
+                    v-bind="groupActionLook"
                     :class="css.trackingChooser_groupAction"
                     @click="unfold(group.login)"
                   >
@@ -971,17 +1208,15 @@ function projectMeta(project: CandidateProject) {
                   </Button>
                   <Button
                     v-else-if="!group.unfolded && (picker || !group.own) && group.folded > 0"
-                    variant="framed"
-                    size="sm"
+                    v-bind="groupActionLook"
                     :class="css.trackingChooser_groupAction"
                     @click="unfold(group.login)"
                   >
-                    {{ t(l.showAll, { count: group.total }) }}
+                    {{ phone ? t(l.showAllShort) : t(l.showAll, { count: group.total }) }}
                   </Button>
                   <Button
                     v-else-if="group.choosable.length > 0"
-                    variant="framed"
-                    size="sm"
+                    v-bind="groupActionLook"
                     :class="css.trackingChooser_groupAction"
                     @click="toggleGroup(group)"
                   >
@@ -992,9 +1227,9 @@ function projectMeta(project: CandidateProject) {
                 <HiddenOrganizationNotice
                   v-if="group.hidden && !pickedHidden"
                   :organization="group.login"
-                  variant="banner"
+                  :variant="phone ? 'stacked' : 'banner'"
                   :public-count="group.list ? group.total : null"
-                  @explain="owner = group.login"
+                  @explain="explain(group.login)"
                 />
 
                 <CandidateRepositoryRow
@@ -1002,6 +1237,7 @@ function projectMeta(project: CandidateProject) {
                   :key="repository.nameWithOwner"
                   :repository="repository"
                   :now="now"
+                  :touch="phone"
                   :tracked="trackedNames.has(repository.nameWithOwner)"
                   :model-value="chosenRepositories.has(repository.nameWithOwner)"
                   @update:model-value="setRepository(repository.nameWithOwner, $event)"
@@ -1015,6 +1251,15 @@ function projectMeta(project: CandidateProject) {
                   @click="unfold(group.login)"
                 >
                   {{ foldedText(group) }}
+                </Button>
+                <Button
+                  v-else-if="group.folded > 0 && !picker && phone"
+                  variant="link"
+                  tone="accent"
+                  :class="css.trackingChooser_showAll"
+                  @click="unfold(group.login)"
+                >
+                  {{ t(l.showAllOf, { count: group.total, owner: group.login }) }}
                 </Button>
                 <p
                   v-else-if="group.folded > 0 && !picker"
@@ -1045,12 +1290,14 @@ function projectMeta(project: CandidateProject) {
                 :state="gitHubSearch.kind"
                 :text="needle"
                 :count="gitHubRepositories.length"
+                :touch="phone"
               >
                 <CandidateRepositoryRow
                   v-for="repository in gitHubRepositories"
                   :key="repository.nameWithOwner"
                   :repository="repository"
                   :now="now"
+                  :touch="phone"
                   :tracked="trackedNames.has(repository.nameWithOwner)"
                   :model-value="chosenRepositories.has(repository.nameWithOwner)"
                   @update:model-value="setRepository(repository.nameWithOwner, $event)"
@@ -1058,7 +1305,7 @@ function projectMeta(project: CandidateProject) {
               </FoundOnGitHub>
 
               <p
-                v-if="needle !== ''"
+                v-if="needle !== '' && !phone"
                 :class="css.trackingChooser_hints"
               >
                 <span><Kbd keys="ArrowUp ArrowDown" /> {{ t(l.hintMove) }}</span>
@@ -1071,10 +1318,14 @@ function projectMeta(project: CandidateProject) {
 
             <section
               v-if="!picker"
+              v-show="!phone || segment === 'projects'"
               :class="css.trackingChooser_projects"
               :aria-label="t(l.projects)"
             >
-              <div :class="css.trackingChooser_group">
+              <div
+                v-if="!phone"
+                :class="css.trackingChooser_group"
+              >
                 <h2 :class="css.trackingChooser_groupName">{{ t(l.projects) }}</h2>
                 <span :class="css.trackingChooser_groupDetail">{{
                   t(l.projectsSelected, {
@@ -1084,13 +1335,14 @@ function projectMeta(project: CandidateProject) {
                 }}</span>
               </div>
               <div
-                v-for="project in shownProjects"
+                v-for="project in phone ? phoneProjects : shownProjects"
                 :key="project.id"
-                :class="css.trackingChooser_project"
+                :class="[css.trackingChooser_project, phone && css.trackingChooser_project_touch]"
                 data-tracking-row
               >
                 <Checkbox
                   :class="css.trackingChooser_projectLabel"
+                  :size="phone ? 'touch' : undefined"
                   :model-value="chosenProjects.has(project.id)"
                   @update:model-value="setProject(project.id, $event)"
                 >
@@ -1109,7 +1361,7 @@ function projectMeta(project: CandidateProject) {
                 </Checkbox>
               </div>
               <Button
-                v-if="shownProjects.length < ownerProjects.length"
+                v-if="needle === '' && shownProjects.length < ownerProjects.length"
                 variant="link"
                 size="sm"
                 :class="css.trackingChooser_more"
@@ -1123,8 +1375,22 @@ function projectMeta(project: CandidateProject) {
               >
                 {{ t(l.noProjects) }}
               </p>
+              <p
+                v-else-if="phoneProjects.length === 0 && phone"
+                :class="css.trackingChooser_moreText"
+              >
+                {{ t(l.noProjectMatches, { filter: needle }) }}
+              </p>
               <p :class="css.trackingChooser_hint">{{ t(l.projectHint) }}</p>
             </section>
+          </div>
+
+          <!-- On a phone the saving choice ends the list (MB136). -->
+          <div
+            v-if="phone && $slots.saving && !picker"
+            :class="css.trackingChooser_phoneSaving"
+          >
+            <slot name="saving" />
           </div>
         </div>
       </div>
@@ -1134,30 +1400,40 @@ function projectMeta(project: CandidateProject) {
         :class="css.trackingChooser_bottom"
       >
         <div
-          v-if="$slots.saving"
+          v-if="$slots.saving && !phone"
           :class="css.trackingChooser_saving"
         >
           <slot name="saving" />
         </div>
-        <div :class="css.trackingChooser_footer">
+        <div
+          :class="[
+            css.trackingChooser_footer,
+            phone && css.trackingChooser_footer_phone,
+            typing && css.trackingChooser_footer_typing,
+          ]"
+        >
           <p :class="css.trackingChooser_summary">
             {{
-              t(l.summary, {
+              t(typing ? l.summaryShort : l.summary, {
                 repositories: t(l.summaryRepositories, { count: repositories.length }),
                 projects: t(l.summaryProjects, { count: projects.length }),
               })
             }}
           </p>
-          <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
+          <p :class="css.trackingChooser_summaryDetail">{{ footerDetail }}</p>
           <Button
+            v-if="!typing"
+            :variant="phone ? 'ghost' : undefined"
             :class="css.trackingChooser_onlyMine"
             :unavailable="busy"
             @click="emit('onlyMine')"
           >
-            {{ t(l.onlyMine) }}
+            {{ phone ? t(l.onlyMinePhone) : t(l.onlyMine) }}
           </Button>
           <Button
             variant="primary"
+            :size="phone && !typing ? 'lg' : undefined"
+            :class="css.trackingChooser_track"
             kbd="Mod+Enter"
             :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="busy"
@@ -1168,6 +1444,17 @@ function projectMeta(project: CandidateProject) {
         </div>
       </div>
     </template>
+
+    <!-- MB137: why an organisation's private repositories are missing, rising from below on a phone. -->
+    <HiddenOrganizationNotice
+      v-if="explained !== null"
+      variant="sheet"
+      :open="true"
+      :organization="explained"
+      :requested-at="approvals[explained] ?? null"
+      @update:open="explained = null"
+      @request-approval="requestExplainedApproval"
+    />
   </div>
 </template>
 
@@ -1451,6 +1738,196 @@ function projectMeta(project: CandidateProject) {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
+}
+
+// A phone (mobile MB135): one column across the screen, rows and headings at its 16px gutter.
+.trackingChooser_body_phone {
+  padding: 20px 0 0;
+
+  .trackingChooser_column {
+    gap: $spacing-12;
+    max-width: none;
+  }
+
+  .trackingChooser_heading {
+    padding: 0 $spacing-16;
+  }
+
+  .trackingChooser_title {
+    font-size: 22px;
+  }
+
+  .trackingChooser_subtitle {
+    font-size: $font-size-md;
+  }
+
+  .trackingChooser_group {
+    align-items: center;
+    min-height: $touch-target-size;
+    padding: $spacing-8 $spacing-16 0;
+  }
+
+  .trackingChooser_groupAction {
+    min-height: $touch-target-size;
+  }
+
+  // Under the rows' names: the gutter, the phone's box and its gap.
+  .trackingChooser_more,
+  .trackingChooser_showAll {
+    min-height: $touch-target-size;
+    margin-left: $spacing-16 + 20px + $spacing-12;
+  }
+
+  .trackingChooser_moreText {
+    padding-left: $spacing-16 + 20px + $spacing-12;
+  }
+
+  .trackingChooser_hint {
+    padding: $spacing-12 $spacing-16 0;
+  }
+}
+
+.trackingChooser_showAll {
+  align-self: flex-start;
+}
+
+// The question folded away: the search right under the setup bar.
+.trackingChooser_body.trackingChooser_body_typing {
+  padding-top: $spacing-4;
+}
+
+// The search and the segments, pinned at the top of the screen's scroll.
+.trackingChooser_phoneTools {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+  padding: $spacing-8 $spacing-16 $spacing-6;
+  background: $color-bg;
+
+  .trackingChooser_phoneSearch {
+    --search-field-background: #{$color-bg-2};
+
+    min-height: $touch-target-size;
+    padding: $spacing-4 $spacing-6 $spacing-4 $spacing-12;
+    font-size: $font-size-phone-input;
+    border-radius: $radius-lg;
+  }
+}
+
+.trackingChooser_main_phone {
+  display: flex;
+  flex-direction: column;
+}
+
+.trackingChooser_project_touch {
+  display: flex;
+  align-items: center;
+  min-height: $touch-target-size + $spacing-12;
+  padding: $spacing-6 $spacing-16;
+  font-size: $font-size-lg;
+  border-radius: 0;
+
+  &:hover {
+    background: none;
+  }
+}
+
+// The saving choice at the end of a phone's list.
+.trackingChooser_phoneSaving {
+  padding: $spacing-16;
+  margin-top: $spacing-8;
+  border-top: 1px solid $color-border;
+}
+
+// The count, "Only mine" beside it and "Track these" across the screen under them; while searching, one line with
+// "Track these" at its end, over the keyboard.
+.trackingChooser_footer_phone {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: $spacing-2 $spacing-12;
+  padding: $spacing-12 $spacing-16 calc(#{$spacing-12} + #{$phone-home-indicator-room});
+
+  .trackingChooser_summary {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .trackingChooser_summaryDetail {
+    grid-row: 2;
+    grid-column: 1;
+    font-size: $font-size-xs;
+  }
+
+  .trackingChooser_onlyMine {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    align-self: center;
+  }
+
+  .trackingChooser_track {
+    grid-row: 3;
+    grid-column: 1 / -1;
+    margin-top: $spacing-10;
+  }
+}
+
+.trackingChooser_footer_typing {
+  padding-bottom: $spacing-12;
+
+  .trackingChooser_track {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    align-self: center;
+    margin-top: 0;
+  }
+}
+
+// MB138: from the top of the screen, the footer at its bottom.
+.trackingChooser_empty_phone {
+  flex: 1;
+  gap: $spacing-12;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 20px 0 0;
+
+  .trackingChooser_heading {
+    padding: 0 $spacing-16;
+  }
+
+  .trackingChooser_title {
+    font-size: 22px;
+  }
+
+  .trackingChooser_subtitle {
+    font-size: $font-size-md;
+  }
+
+  .trackingChooser_bottom {
+    margin-top: auto;
+  }
+}
+
+.trackingChooser_fresh {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-8;
+  padding: $spacing-16;
+}
+
+.trackingChooser_freshTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-fg;
+}
+
+.trackingChooser_freshDetail {
+  font-size: $font-size-md;
+  line-height: 1.5;
+  color: $color-fg-2;
 }
 
 // The picker fills its dialog: the owners and the repositories scroll apart, the filter staying over the rows.
