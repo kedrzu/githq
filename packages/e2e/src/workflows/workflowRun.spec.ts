@@ -732,10 +732,7 @@ test('W40: ⌘K re-runs all the jobs or the one under the cursor, cancel dimmed 
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
 });
 
-test('W40: a running run is cancelled from ⌘K', async ({
-    page,
-    github,
-}) => {
+test('W40: a running run is cancelled from ⌘K', async ({ page, github }) => {
     const { world, runId, path } = createFailedRun(null);
     world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
     await openTrackedWork(page, github, world);
