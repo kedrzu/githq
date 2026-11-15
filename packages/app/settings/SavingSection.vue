@@ -141,9 +141,9 @@ function reload() {
     :turn-on="turnOn"
     :combine="combine"
     :retry="retry"
+    :phone="phone"
     @cancel="connecting = { kind: 'idle' }"
     @turn-off="turnOff"
-    :phone="phone"
     @reload="reload"
   />
 </template>
