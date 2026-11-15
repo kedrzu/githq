@@ -1,5 +1,6 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
 import {
@@ -12,6 +13,9 @@ import {
   DialogTrigger,
   VisuallyHidden,
 } from 'reka-ui';
+import { onScopeDispose, watch } from 'vue';
+
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 
 import * as l from './Dialog.loc.js';
 import IconButton from './IconButton.vue';
@@ -19,7 +23,7 @@ import IconButton from './IconButton.vue';
 // Without a description reka-ui still points `aria-describedby` at one; this drops the dangling reference.
 const NO_DESCRIPTION = { 'aria-describedby': undefined };
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** The dialog's name: its heading, or with `titleHidden` read out only. */
     title: string;
@@ -63,6 +67,27 @@ const open = defineModel<boolean>('open', { default: false });
 /** Width in px; it never grows past the window. Not for `edge="bottom"`, as wide as the window. */
 const width = defineModel<number>('width', { default: 560 });
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
+let closeTask: (() => void) | null = null;
+
+// A sheet from below is a task: the phone's command line leaves while it is open (mobile D18).
+watch(
+  () => open.value && props.edge === 'bottom',
+  isTask => {
+    if (isTask) {
+      closeTask = phoneLayout.openTask();
+    } else {
+      endTask();
+    }
+  },
+  { immediate: true },
+);
+onScopeDispose(endTask);
+
+function endTask() {
+  closeTask?.();
+  closeTask = null;
+}
 </script>
 
 <template>

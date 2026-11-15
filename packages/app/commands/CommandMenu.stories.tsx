@@ -15,6 +15,8 @@ import type { ItemEditing } from '@/item/ItemEditing.js';
 import ItemView from '@/item/ItemView.vue';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Browser } from '@/services/Browser.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import type { PhonePart } from '@/shell/PhoneLayout.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
@@ -27,6 +29,7 @@ import {
 } from '@/testing/sampleRepositories.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import CommandMenu from './CommandMenu.vue';
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
@@ -149,6 +152,7 @@ const Harness = defineComponent({
         }
 
         const registry = useService(CommandRegistry);
+        const phoneLayout = useService(PhoneLayout);
         const editCommands = useEditCommands();
         const asked = ref('Nothing asked');
         const went = ref('Nowhere');
@@ -247,6 +251,8 @@ const Harness = defineComponent({
                 went.value = path;
             });
             useCommands(() => shown.registered);
+            // What the list's screen gives the command line, whose chip the menu shows on a phone.
+            phoneLayout.setPart(PHONE_PARTS[parts]);
             registry.openParts(() => shown.parts);
         } else if (props.startOpen) {
             registry.openMenu(props.startCommandId);
@@ -311,6 +317,8 @@ const Harness = defineComponent({
 const meta = {
     component: Harness,
     args: { subject: 'item' },
+    // The story frame is narrower than a phone's width: the computer's menu unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof Harness>;
 
 export default meta;
@@ -471,8 +479,55 @@ export const PartsOfProject: Story = { args: { subject: 'none', parts: 'project'
 /** Mobile D17: on My work — the whole of it and its groups, each with its count once in, the one shown checked. */
 export const PartsOfMyWork: Story = { args: { subject: 'none', parts: 'myWork' } };
 
+/**
+ * Mobile D16, MB223: on a phone the menu rises from below over a project's view — its saved views right above the
+ * field, "This view" above them, the places above that; the field at the bottom with ⌘, the command line's chip (the view, dotted as changed here), "Do or find…" and ×, not focused,
+ * so no keyboard comes; no keys on the rows nor a footer of them.
+ */
+export const PhonePartsOfProject: Story = {
+    args: { subject: 'none', parts: 'project' },
+    decorators: [withPhoneLayout(true)],
+};
+
+/** Mobile D17, MB39: on a phone over a repository's Issues — its sections nearest the thumb, the Issues chip in the field. */
+export const PhonePartsOfRepository: Story = {
+    args: { ...PartsOfRepository.args },
+    decorators: [withPhoneLayout(true)],
+};
+
+/** Mobile MB38: on a phone over an open item — its actions nearest the thumb, the item's chip in the field. */
+export const PhoneOnOpenItem: Story = { decorators: [withPhoneLayout(true)] };
+
+/**
+ * Mobile MB40: a picker from below — over it the way back, the item and "Set status"; the statuses read downwards above
+ * a field that finds only them, a magnifier in it.
+ */
+export const PhoneStatusInTwoProjects: Story = {
+    args: { startCommandId: 'item.status' },
+    decorators: [withPhoneLayout(true)],
+};
+
+/**
+ * Mobile MB41: typed on a phone (a hardware keyboard here; the on-screen one is not drawn) — the whole list upwards, the
+ * best match nearest the field and highlighted.
+ */
+export const PhoneTyping: Story = {
+    args: { subject: 'none' },
+    decorators: [withPhoneLayout(true)],
+    play: async () => {
+        await userEvent.keyboard('plat');
+    },
+};
+
 /** The list a phone's command line is on, for its parts. */
 type PhonePlace = 'repository' | 'project' | 'myWork';
+
+/** The part each list shows, as its screen gives it to the command line. */
+const PHONE_PARTS: Readonly<Record<PhonePlace, PhonePart>> = {
+    repository: { label: 'Issues', count: 142 },
+    project: { label: 'Current sprint', count: 34, changed: true },
+    myWork: { label: 'Assigned to me', count: 7 },
+};
 
 /** The parts of a place as its screen gives them, and what the screen registers of them (a repository's sections). */
 function createParts(place: PhonePlace, go: (path: string) => void): { parts: CommandParts; registered: Command[] } {

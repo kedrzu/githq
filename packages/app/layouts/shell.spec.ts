@@ -253,7 +253,8 @@ test("on a phone, the command line on a list opens the menu with the place's par
     await expect.element(page.getByRole('button', { name: /Issues\s*12/u })).toBeVisible();
 
     await userEvent.click(page.getByRole('button', { name: /Do or find/u }));
-    const parts = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group').first();
+    // From below: the first group is the last in the page, nearest the field (mobile D16).
+    const parts = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group').last();
     await expect.element(parts).toHaveTextContent(new RegExp(`^${WEB}`, 'u'));
     const rows = parts.getByRole('option');
     await expect.element(rows.nth(0)).toHaveAccessibleName('Issues 12 current');
@@ -265,6 +266,36 @@ test("on a phone, the command line on a list opens the menu with the place's par
     await userEvent.click(rows.nth(1));
     await expect.poll(() => router.currentRoute.value.path).toBe('/acme/web/pulls');
     await expect.element(page.getByRole('button', { name: /Pull requests\s*3/u })).toBeVisible();
+});
+
+test('on a phone, the command menu rises from below with its field unfocused, its first group nearest the field; the command line steps aside until it closes', async () => {
+    const { router } = await open('phone');
+    await router.push('/acme/web/issues');
+    const line = page.getByRole('button', { name: /Do or find/u });
+    await userEvent.click(line);
+
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const field = page.getByRole('textbox', { name: 'Do or find…' });
+    await expect.element(menu).toHaveFocus();
+    await expect.element(field).not.toHaveFocus();
+    // Hidden, so no longer a button anyone can reach.
+    await expect.element(line).not.toBeInTheDocument();
+
+    // The place's parts sit right above the field, the row nearest it highlighted; ↑ goes up the screen.
+    const parts = menu.getByRole('group').last();
+    await expect.element(parts).toHaveTextContent(new RegExp(`^${WEB}`, 'u'));
+    expect(parts.element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        field.element().getBoundingClientRect().top,
+    );
+    const rows = parts.getByRole('option');
+    await expect.element(rows.nth(3)).toHaveAttribute('data-highlighted');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(rows.nth(2)).toHaveAttribute('data-highlighted');
+
+    await userEvent.click(rows.nth(1));
+    await expect.poll(() => router.currentRoute.value.path).toBe('/acme/web/pulls');
+    await expect.element(menu).not.toBeInTheDocument();
+    await expect.element(line).toBeVisible();
 });
 
 function sidebarLink(name: string) {
