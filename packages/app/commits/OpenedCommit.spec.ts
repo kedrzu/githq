@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-rou
 
 import ItemPage from '@/item/ItemPage.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import type { ClockShape } from '@/services/Clock.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { sampleCommit } from '@/testing/sampleCommits.js';
 
@@ -106,19 +107,66 @@ test("J/K: on its page they step through the list of commits it was opened from;
 });
 
 test('what it shows is read once it rests on a commit: two moves in a row read only where they stop', async () => {
-    const { router, github } = await mountOpened([COMMITS, panelPath(OID)]);
+    // Timers wait while it moves, however long the two moves take on a loaded machine: a move made within the pause.
+    const timers = holdTimers();
+    const { router, github } = await mountOpened([COMMITS, panelPath(OID)], timers.schedule);
     await expect.element(page.getByRole('heading', { name: `Commit ${OID}` })).toBeVisible();
     await vi.waitFor(() => expect(github.requests).toContain('CommitDetail'));
     const before = github.requests.length;
 
-    await userEvent.keyboard('pp');
+    timers.hold();
+    await userEvent.keyboard('p');
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe(panelPath(FIRST_PARENT)));
+    await userEvent.keyboard('p');
     await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe(panelPath(GRANDPARENT)));
+    timers.release();
+
     await vi.waitFor(() =>
         expect(github.requests.slice(before).filter(request => request === 'CommitDetail')).toHaveLength(1),
     );
     await wait(300);
     expect(github.requests.slice(before).filter(request => request === 'CommitDetail')).toHaveLength(1);
 });
+
+/**
+ * Real timers, except that those scheduled between `hold` and `release` start only on `release`, and not at all if
+ * cancelled before it.
+ */
+function holdTimers() {
+    let held: { callback: () => void; delayMs: number; cancel: () => void }[] | null = null;
+
+    return { schedule, hold, release };
+
+    function schedule(callback: () => void, delayMs: number) {
+        if (held === null) {
+            return startTimer(callback, delayMs);
+        }
+
+        const timer = { callback, delayMs, cancel: () => {} };
+        held.push(timer);
+        return () => {
+            held = held?.filter(other => other !== timer) ?? null;
+            timer.cancel();
+        };
+    }
+
+    function hold() {
+        held = [];
+    }
+
+    function release() {
+        for (const timer of held ?? []) {
+            timer.cancel = startTimer(timer.callback, timer.delayMs);
+        }
+
+        held = null;
+    }
+}
+
+function startTimer(callback: () => void, delayMs: number) {
+    const timer = setTimeout(callback, delayMs);
+    return () => clearTimeout(timer);
+}
 
 /** Longer than a key's effect or the read's pause takes, for a test that nothing came of it. */
 function wait(ms: number) {
@@ -138,10 +186,11 @@ function key(oid: string) {
 /**
  * The commit opened over the real store and a GitHub holding a merge (two parents, the first with a parent of its own)
  * whose pull request is #1228: in the panel over the Commits section, or on its page, as the shell and `ItemPage` show
- * it. `visits` are pushed in order.
+ * it. `visits` are pushed in order; `schedule` times its timers in place of real time.
  */
-async function mountOpened(visits: readonly string[]) {
+async function mountOpened(visits: readonly string[], schedule?: ClockShape['schedule']) {
     const { container, store, github, ready } = createCommitGraphTest({
+        schedule,
         commits: [
             sampleCommit(OID, 30, [FIRST_PARENT, SECOND_PARENT]),
             sampleCommit(FIRST_PARENT, 20, [GRANDPARENT]),
