@@ -1,0 +1,10 @@
+title:
+  en: Created in {repository}
+numberOnItsWay:
+  en: '{title} · number on its way'
+numbered:
+  en: '#{number} · {title}'
+createAnother:
+  en: Create another
+open:
+  en: Open

@@ -19,7 +19,12 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import type { IssueTemplate } from './IssueTemplateStore.js';
-import type { NewIssueContext, NewIssueWaitingReason } from './NewIssueComposer.js';
+import type {
+    NewIssueContext,
+    NewIssueCreated,
+    NewIssueProjectChoice,
+    NewIssueWaitingReason,
+} from './NewIssueComposer.js';
 import { NewIssueComposer } from './NewIssueComposer.js';
 
 const IN_WEB: NewIssueContext = { repository: 'acme/web', project: null, parent: null };
@@ -77,7 +82,7 @@ test('closing keeps what was written; it is back after a reload, in its reposito
     expect(reloaded.browser.localStorage.getItem(`githq.newIssue.${login}`)).toBeNull();
 });
 
-test('create another keeps the capture open in the same repository with the title cleared; the next one starts there', async () => {
+test('create another keeps the capture open in the same repository with the title cleared', async () => {
     const { composer } = await setup();
 
     composer.start(IN_WEB);
@@ -86,13 +91,104 @@ test('create another keeps the capture open in the same repository with the titl
 
     expect(composer.open).toBe(true);
     expect(composer.draft).toMatchObject({ repository: 'acme/web', title: '', labels: ['bug'] });
+});
 
-    composer.update({ title: 'Second' });
+test('D43: started outside a repository, nothing is chosen in advance — the one used last is only remembered, also after a reload', async () => {
+    const { composer, browser, login } = await setup();
+
+    composer.start(IN_WEB);
+    composer.update({ title: 'Done' });
     await composer.submit(false);
-    expect(composer.open).toBe(false);
 
     composer.start(ANYWHERE);
-    expect(composer.draft).toMatchObject({ repository: 'acme/web', title: '', labels: [] });
+    expect(composer.draft).toMatchObject({ repository: null, title: '' });
+    expect(composer.lastRepository).toBe('acme/web');
+    composer.close();
+
+    // Inside a repository it still starts there.
+    composer.start({ repository: 'acme/api', project: null, parent: null });
+    expect(composer.draft.repository).toBe('acme/api');
+    composer.close();
+
+    const reloaded = await setup({ login, storage: browser.localStorage.getItem(`githq.newIssue.${login}`) });
+    reloaded.composer.start(ANYWHERE);
+    expect(reloaded.composer.draft.repository).toBeNull();
+    expect(reloaded.composer.lastRepository).toBe('acme/web');
+});
+
+test('D44: Create closes the capture and its toast follows — the number on its way, then GitHub’s issue', async () => {
+    const { composer, session } = await setup();
+    const held = createPromise();
+    session.github.hold = held.promise;
+
+    composer.start(IN_WEB);
+    composer.update({ title: ' Waitlist ignores paused memberships ' });
+    const sent = composer.submit(false);
+
+    expect(composer.open).toBe(false);
+    const expected: Partial<NewIssueCreated> = {
+        repository: 'acme/web',
+        title: 'Waitlist ignores paused memberships',
+        issueId: null,
+    };
+    expect(composer.created).toEqual([expect.objectContaining(expected)]);
+
+    held.resolve();
+    await sent;
+    expect(composer.created).toEqual([expect.objectContaining({ ...expected, issueId: 'I_new' })]);
+    expect(session.container.resolve(ItemStore).get('I_new')).toMatchObject({ number: 7 });
+
+    composer.forgetCreated(composer.created[0]?.id ?? 0);
+    expect(composer.created).toEqual([]);
+});
+
+test('D44: Create another from the toast reopens the capture with the same repository, project and labels', async () => {
+    const { composer } = await setup();
+    const project: NewIssueProjectChoice = { projectId: 'PVT_1', title: 'Roadmap', values: [] };
+
+    composer.start(ANYWHERE);
+    composer.update({ repository: 'acme/web', title: 'First', body: 'more', labels: ['bug'], projects: [project] });
+    await composer.submit(false);
+    composer.start(ANYWHERE);
+    expect(composer.draft.repository).toBeNull();
+    composer.close();
+
+    composer.startAnother(composer.created[0]?.id ?? 0);
+
+    expect(composer.open).toBe(true);
+    expect(composer.draft).toMatchObject({
+        repository: 'acme/web',
+        title: '',
+        body: '',
+        labels: ['bug'],
+        projects: [project],
+    });
+});
+
+test('D44: Create another from the toast of an issue started on an item leaves that item’s parent behind', async () => {
+    const { composer } = await setup();
+    const parent = { id: 'I_web_3', reference: 'web#3' };
+
+    composer.start({ repository: 'acme/web', project: null, parent });
+    expect(composer.draft.parent).toEqual(parent);
+    composer.update({ title: 'Child', labels: ['bug'] });
+    await composer.submit(false);
+
+    composer.startAnother(composer.created[0]?.id ?? 0);
+
+    expect(composer.draft).toMatchObject({ repository: 'acme/web', title: '', labels: ['bug'], parent: null });
+});
+
+test('D44: a creation GitHub refuses takes its toast away', async () => {
+    const { composer, github } = await setup();
+    github.refuse = 'Repository was archived so is read-only.';
+
+    composer.start(IN_WEB);
+    composer.update({ title: 'Keep me' });
+    await composer.submit(false);
+
+    expect(composer.created).toEqual([]);
+    expect(composer.open).toBe(true);
 });
 
 test('H9: a creation GitHub refuses opens the capture again with everything as written and the reason', async () => {

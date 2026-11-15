@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu), or the whole screen (a phone's new issue form, mobile D42) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -41,9 +41,10 @@ const props = withDefaults(
     centered?: boolean;
     /**
      * A sheet along an edge instead of hanging from near the top: `left` all the window's height (the phone's places
-     * panel), `bottom` all its width, as tall as its content, rising from below (a phone's list options).
+     * panel), `bottom` all its width, as tall as its content, rising from below (a phone's list options). `full`: the
+     * whole window, a screen of its own (a phone's new issue form); the content draws its own top bar.
      */
-    edge?: 'bottom' | 'left';
+    edge?: 'bottom' | 'full' | 'left';
   }>(),
   { description: undefined },
 );
@@ -66,15 +67,15 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
-/** Width in px; it never grows past the window. Not for `edge="bottom"`, as wide as the window. */
+/** Width in px; it never grows past the window. Not for `edge="bottom"` or `"full"`, as wide as the window. */
 const width = defineModel<number>('width', { default: 560 });
 const t = useTranslate();
 const phoneLayout = useService(PhoneLayout);
 let closeTask: (() => void) | null = null;
 
-// A sheet from below is a task: the phone's command line leaves while it is open (mobile D18).
+// A sheet from below or a screen of its own is a task: the phone's command line leaves while it is open (mobile D18).
 watch(
-  () => open.value && props.edge === 'bottom',
+  () => open.value && (props.edge === 'bottom' || props.edge === 'full'),
   isTask => {
     if (isTask) {
       closeTask = phoneLayout.openTask();
@@ -109,7 +110,7 @@ function endTask() {
           centered && css.dialog_centered,
           edge && css[`dialog_${edge}`],
         ]"
-        :style="edge === 'bottom' ? undefined : { width: `${width}px` }"
+        :style="edge === 'bottom' || edge === 'full' ? undefined : { width: `${width}px` }"
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
         @open-auto-focus="emit('openAutoFocus', $event)"
@@ -253,6 +254,24 @@ function endTask() {
   padding-bottom: $phone-home-indicator-room;
   border-width: 1px 0 0;
   border-radius: $radius-xl $radius-xl 0 0;
+  transform: none;
+
+  &[data-state='open'] {
+    --motion-slide-y: #{$motion-slide-distance};
+  }
+}
+
+.dialog_full {
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  padding-bottom: $phone-home-indicator-room;
+  background: $color-bg;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   transform: none;
 
   &[data-state='open'] {
