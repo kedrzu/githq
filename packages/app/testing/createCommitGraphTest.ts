@@ -10,6 +10,7 @@ import { orderCommits } from '@/commits/orderCommits.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
+import type { ClockShape } from '@/services/Clock.js';
 import { ItemStore } from '@/store/ItemStore.js';
 
 import { createSignedInBrowser } from './createSignedInBrowser.js';
@@ -46,6 +47,8 @@ export interface CommitGraphTestOptions {
     failIf?(operation: string): boolean;
     /** `false`: the browser starts offline. */
     readonly online?: boolean;
+    /** Times the timers in place of real time; the time stays the sample's moment either way. */
+    readonly schedule?: ClockShape['schedule'];
 }
 
 /**
@@ -118,10 +121,12 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
     });
     container.set(Clock, {
         now: () => SAMPLE_COMMITS_NOW,
-        schedule: (callback, delayMs) => {
-            const timer = setTimeout(callback, delayMs);
-            return () => clearTimeout(timer);
-        },
+        schedule:
+            options.schedule ??
+            ((callback, delayMs) => {
+                const timer = setTimeout(callback, delayMs);
+                return () => clearTimeout(timer);
+            }),
     });
     setIndexedDbPersistence(container);
     const store = container.resolve(CommitGraphStore);
