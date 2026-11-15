@@ -31,6 +31,7 @@ import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRou
 
 import CommitGraphView from './CommitGraphView.vue';
 import { CommitRoutes } from './commitRoutes.js';
+import { COMMIT_ROW_DOT_Y, COMMIT_ROW_HEIGHT } from './CommitRow.vue';
 import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
 import type { CommitRef, CommitState, KeptCommit } from './CommitTypes.js';
 import OpenedCommit from './OpenedCommit.vue';
@@ -71,10 +72,11 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     expect(rows.elements().length).toBeLessThan(60);
     // What the rows on screen ask is the longer call.
     const asksOfScreen = () => view.ensureStates.mock.calls.findLast(([, asked]) => asked.length > 1)?.[1];
-    // 600 px of 32 px rows: about 20 on screen, from the newest.
-    await expect.poll(() => asksOfScreen()?.length).toBeGreaterThan(15);
+    // About 600 px of rows on screen, from the newest.
+    const mostOnScreen = Math.ceil(600 / COMMIT_ROW_HEIGHT) + 1;
+    await expect.poll(() => asksOfScreen()?.length).toBeGreaterThan(Math.floor(500 / COMMIT_ROW_HEIGHT));
     for (const [, asked] of view.ensureStates.mock.calls) {
-        expect(asked.length).toBeLessThanOrEqual(21);
+        expect(asked.length).toBeLessThanOrEqual(mostOnScreen);
     }
     const newest = view.store.get(REPOSITORY)?.commits;
     expect(asksOfScreen()?.[0]?.oid).toBe(newest?.[0]?.oid);
@@ -82,12 +84,12 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
 
     // Far down: the rows there, still a few dozen, and only they ask for their state.
     const scroller = view.scroller();
-    scroller.scrollTop = 2500 * 32;
+    scroller.scrollTop = 2500 * COMMIT_ROW_HEIGHT;
     await expect.poll(() => rows.first().element().getAttribute('aria-posinset')).toBe(String(2500 - 8 + 1));
     expect(rows.elements().length).toBeLessThan(60);
     await expect.poll(() => asksOfScreen()?.[0]?.oid).toBe(newest?.[2500]?.oid);
     const last = asksOfScreen();
-    expect(last?.length).toBeLessThanOrEqual(21);
+    expect(last?.length).toBeLessThanOrEqual(mostOnScreen);
     expect(view.loadMore).not.toHaveBeenCalled();
 
     // Within a screen of the last loaded row, the next page.
@@ -134,31 +136,47 @@ test('D18, CH34: not known yet is an empty bar, never a blank; a commit with no 
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 });
 
-test('CH59: a commit with a pull request keeps its 32 px row, the pull request a chip with the CI mark outside it', async () => {
+test('CH59, CH64: every row is two lines in 52 px: the headline and its pull request, the CI mark outside the chip, on the first, centred on the dot; the refs, author, age and short sha on the second', async () => {
     const states = new Map<string, CommitState>([
-        [
-            'c1',
-            {
-                pullRequest: {
-                    number: 1203,
-                    state: 'MERGED',
-                    title: 'Fix',
-                    url: 'https://github.com/acme/web/pull/1203',
-                    isDraft: false,
-                },
-                ci: 'FAILURE',
-            },
-        ],
+        ['beef12345', { pullRequest: samplePullRequest(1203), ci: 'FAILURE' }],
     ]);
-    await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)], states });
-    const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
-    const chip = row('Commit c1').getByRole('link', { name: /1203/ });
+    await mount({
+        commits: [sampleCommit('f00dcafe1', 20, ['beef12345']), sampleCommit('beef12345', 10)],
+        tags: [sampleCommitRef('v1.0.0', 'beef12345')],
+        states,
+    });
+    const row = page.getByRole('listitem').filter({ hasText: 'Commit beef12345' });
+    const chip = row.getByRole('link', { name: /1203/ });
+    const mark = row.getByRole('img', { name: 'Checks failing' });
     await expect.element(chip).toBeVisible();
+    await expect.element(mark).toBeVisible();
     expect(getComputedStyle(chip.element()).borderTopWidth).toBe('1px');
     expect(chip.element().querySelector('[aria-label="Checks failing"]')).toBeNull();
-    await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
-    expect(row('Commit c1').element().getBoundingClientRect().height).toBe(32);
-    expect(row('Commit c2').element().getBoundingClientRect().height).toBe(32);
+    for (const each of page.getByRole('listitem').elements()) {
+        expect(each.getBoundingClientRect().height).toBe(COMMIT_ROW_HEIGHT);
+    }
+
+    const top = row.element().getBoundingClientRect().top;
+    const middle = (element: Element) => {
+        const box = element.getBoundingClientRect();
+        return (box.top + box.bottom) / 2 - top;
+    };
+    const firstLine = [row.getByText('Commit beef12345', { exact: true }).element(), chip.element(), mark.element()];
+    for (const element of firstLine) {
+        expect(middle(element)).toBeCloseTo(COMMIT_ROW_DOT_Y, 0);
+    }
+    const secondLine = [
+        row.getByText('v1.0.0', { exact: true }).element(),
+        row.getByText('Octo Cat', { exact: true }).element(),
+        assertValue(row.element().querySelector('time')),
+        row.getByText('beef123', { exact: true }).element(),
+    ];
+    const secondMiddle = middle(assertValue(secondLine[0]));
+    expect(secondMiddle).toBeGreaterThan(COMMIT_ROW_DOT_Y + 10);
+    for (const element of secondLine) {
+        expect(middle(element)).toBeCloseTo(secondMiddle, 0);
+        expect(element.getBoundingClientRect().bottom - top).toBeLessThanOrEqual(COMMIT_ROW_HEIGHT);
+    }
 });
 
 test("CH23: the cursor starts on the default branch's tip; J/K and the arrows move it, a click moves it there", async () => {
@@ -203,8 +221,15 @@ test("CH54: the row's surface spans the graph; its dot is ringed softly under th
     await expect.poll(() => getRing(chore)).toEqual({ stroke: FG_3, opacity: '0.5' });
     expect(getRing(cursor()!).opacity).toBe('1');
 
-    // The dot's own circle, drawn last, at the ring's centre.
+    // The dot's own circle, drawn last, at the ring's centre, on the first line of the taller row.
     const dot = [...chore.querySelector('svg')!.querySelectorAll('circle')].at(-1)!;
+    const middle = (element: Element) => {
+        const box = element.getBoundingClientRect();
+        return { x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 - chore.getBoundingClientRect().top };
+    };
+    const ring = chore.querySelector('svg')!.querySelector('circle')!;
+    expect(middle(ring).y).toBeCloseTo(COMMIT_ROW_DOT_Y, 0);
+    expect(middle(dot)).toEqual(middle(ring));
     await userEvent.click(dot);
     await expect.poll(() => cursor()?.textContent).toContain('chore: bump vite to 6.2');
     await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
@@ -365,7 +390,7 @@ test('J moves the cursor past the screen and keeps its row in view', async () =>
 
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('41');
     const scroller = view.scroller();
-    expect(scroller.scrollTop).toBe(41 * 32 - scroller.clientHeight);
+    expect(scroller.scrollTop).toBe(41 * COMMIT_ROW_HEIGHT - scroller.clientHeight);
 });
 
 test('D19: commits arriving above stay out of the way — the cursor stays on its commit, moved or not, and its row keeps its place', async () => {
@@ -382,7 +407,7 @@ test('D19: commits arriving above stay out of the way — the cursor stays on it
     };
     const scroller = view.scroller();
     await arrive(hexCommit(sampleCommit('n1', 5000, ['c99'])));
-    await expect.poll(() => scroller.scrollTop).toBe(32);
+    await expect.poll(() => scroller.scrollTop).toBe(COMMIT_ROW_HEIGHT);
     expect(cursor()?.textContent).toContain('Commit c99');
 
     // Moved, the same: it stays on its commit, whose row stays where it was on screen.
@@ -392,7 +417,7 @@ test('D19: commits arriving above stay out of the way — the cursor stays on it
     const n2 = hexCommit(sampleCommit('n2', 5001, ['n1']));
     repository.commits.set(n2.oid, n2);
     await arrive(hexCommit(sampleCommit('n3', 5002, ['n2'])));
-    await expect.poll(() => scroller.scrollTop).toBe(3 * 32);
+    await expect.poll(() => scroller.scrollTop).toBe(3 * COMMIT_ROW_HEIGHT);
     expect(cursor()?.textContent).toBe(under);
     expect(cursor()?.getBoundingClientRect().top).toBe(before);
 
@@ -401,7 +426,7 @@ test('D19: commits arriving above stay out of the way — the cursor stays on it
     repository.commits.set(n4.oid, n4);
     repository.branch('main', n4.oid);
     await view.store.open(REPOSITORY);
-    await expect.poll(() => scroller.scrollTop).toBe(4 * 32);
+    await expect.poll(() => scroller.scrollTop).toBe(4 * COMMIT_ROW_HEIGHT);
     expect(cursor()?.textContent).toBe(under);
     expect(cursor()?.getBoundingClientRect().top).toBe(before);
 });
@@ -434,7 +459,7 @@ test("the cursor's commit gone, with commits arriving above in the same read: on
     // The third row is now c98: the cursor follows the old order, not its place in the list.
     await expect.poll(() => cursor()?.textContent).toContain('Commit c97');
     await expect.poll(() => cursor()?.getBoundingClientRect().top).toBe(before);
-    expect(view.scroller().scrollTop).toBe(32);
+    expect(view.scroller().scrollTop).toBe(COMMIT_ROW_HEIGHT);
 });
 
 test("a commit's refs: the default branch first, then branches, then tags, three named and the rest counted", async () => {
@@ -446,8 +471,8 @@ test("a commit's refs: the default branch first, then branches, then tags, three
 
     await expect
         .element(page.getByRole('listitem').first())
-        .toHaveTextContent(/^\s*main\s*feat\/a\s*fix\/b\s*\+1\s*Commit c2/);
-    await expect.element(page.getByRole('listitem').nth(1)).toHaveTextContent(/^\s*v0\.9\.0\s*Commit c1/);
+        .toHaveTextContent(/^\s*Commit c2\s*main\s*feat\/a\s*fix\/b\s*\+1\s*Octo Cat/);
+    await expect.element(page.getByRole('listitem').nth(1)).toHaveTextContent(/^\s*Commit c1\s*v0\.9\.0\s*Octo Cat/);
 });
 
 test('CH35, CH36: under the rows, the next page on its way, then the beginning of the history', async () => {
@@ -637,7 +662,7 @@ test('D17, CH10: by default a tenth of the pane: the lanes past those that fit s
     expect(Math.max(...dotsX())).toBe(8 + 7.5 * 12);
     const widths = (x: number) =>
         [...document.querySelectorAll('li svg path')]
-            .filter(path => path.getAttribute('d')?.startsWith(`M${x} 0V32`))
+            .filter(path => path.getAttribute('d')?.startsWith(`M${x} 0V${COMMIT_ROW_HEIGHT}`))
             .map(path => getComputedStyle(path).strokeWidth);
     expect(new Set(widths(8 + 7.5 * 12))).toEqual(new Set(['3px']));
     expect(new Set(widths(8 + 0.5 * 12))).toEqual(new Set(['1.5px']));
@@ -655,7 +680,7 @@ test("CH61: each lane in its palette colour, the first lane taking the first wit
     const strokesAt = (lane: number) =>
         new Set(
             [...document.querySelectorAll('li svg path')]
-                .filter(path => path.getAttribute('d')?.startsWith(`M${8 + (lane + 0.5) * 12} 0V32`))
+                .filter(path => path.getAttribute('d')?.startsWith(`M${8 + (lane + 0.5) * 12} 0V${COMMIT_ROW_HEIGHT}`))
                 .map(path => getComputedStyle(path).stroke),
         );
 
@@ -1632,7 +1657,7 @@ test("a section entered with the graph already in memory starts on the default b
     await expect.poll(() => scroller.scrollTop).toBeGreaterThan(0);
     const row = (cursor()?.getBoundingClientRect().top ?? 0) - scroller.getBoundingClientRect().top;
     expect(row).toBeGreaterThanOrEqual(0);
-    expect(row + 32).toBeLessThanOrEqual(scroller.clientHeight);
+    expect(row + COMMIT_ROW_HEIGHT).toBeLessThanOrEqual(scroller.clientHeight);
     await expect.element(details()).not.toBeInTheDocument();
     await expect
         .poll(() => view.github.requests.filter(request => request === 'CommitStates').length)
@@ -1667,33 +1692,90 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('main');
 });
 
-test("a row's author and age follow its headline and marks 8px apart; a long headline gives way first, the age staying whole", async () => {
+test("a row reads on: its pull request after the headline; under it, from the headline's left edge, the refs, the author, the age and the sha, each after the one before; a long headline gives way first, the age staying whole", async () => {
     await page.viewport(1500, 800);
     onTestFinished(() => page.viewport(414, 896));
     const states = new Map<string, CommitState>([['c1', { pullRequest: samplePullRequest(1203), ci: 'FAILURE' }]]);
     const longHeadline = `fix: ${'a headline that goes on and on '.repeat(12)}`;
-    await mount({
-        commits: [{ ...sampleCommit('c2', 20, ['c1']), headline: longHeadline }, sampleCommit('c1', 10)],
-        states,
-    });
+    await mount(
+        {
+            commits: [
+                { ...sampleCommit('c2', 20, ['c1']), headline: longHeadline },
+                sampleCommit('c1', 10, ['c0']),
+                sampleCommit('c0', 5),
+            ],
+            tags: [sampleCommitRef('v1.0.0', 'c1')],
+            states,
+        },
+        { width: 1500 },
+    );
+    await closeDetails();
     const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 
-    const short = row('Commit c1').element();
-    const message = assertValue(short.querySelector('time')?.previousElementSibling?.previousElementSibling);
-    const author = assertValue(short.querySelector('time')?.previousElementSibling);
-    const age = assertValue(short.querySelector('time'));
-    expect(message.textContent).toContain('#1203');
-    expect(author.getBoundingClientRect().left - message.getBoundingClientRect().right).toBeCloseTo(8, 0);
-    expect(age.getBoundingClientRect().left - author.getBoundingClientRect().right).toBeCloseTo(8, 0);
-    expect(age.getBoundingClientRect().right).toBeLessThan(short.getBoundingClientRect().right - 100);
+    const short = row('Commit c1');
+    const box = (element: Element) => element.getBoundingClientRect();
+    const headline = short.getByText('Commit c1', { exact: true }).element();
+    const chip = short.getByRole('link', { name: /1203/ }).element();
+    const tag = short.getByText('v1.0.0', { exact: true }).element();
+    // The author's segment: the avatar and the name.
+    const author = assertValue(short.getByText('Octo Cat', { exact: true }).element().parentElement);
+    const age = assertValue(short.element().querySelector('time'));
+    const sha = short.getByText('c1', { exact: true }).element();
+    expectFollows(chip, headline);
+    expect(box(tag).left).toBeCloseTo(box(headline).left, 0);
+    expectFollows(author, tag);
+    expectFollows(age, author);
+    expectFollows(sha, age);
+    expect(box(sha).right).toBeLessThan(box(short.element()).right - 100);
+
+    // No refs: the author starts the line.
+    const bare = row('Commit c0');
+    const bareAuthor = assertValue(bare.getByText('Octo Cat', { exact: true }).element().parentElement);
+    expect(box(bareAuthor).left).toBeCloseTo(box(bare.getByText('Commit c0', { exact: true }).element()).left, 0);
 
     const long = row('a headline that goes').element();
     const clipped = page.getByRole('listitem').getByText(longHeadline, { exact: true }).element();
     expect(clipped.scrollWidth).toBeGreaterThan(clipped.clientWidth);
     const longAge = assertValue(long.querySelector('time'));
     expect(longAge.scrollWidth).toBeLessThanOrEqual(longAge.clientWidth);
-    expect(longAge.getBoundingClientRect().right).toBeLessThanOrEqual(long.getBoundingClientRect().right);
+    expect(box(longAge).right).toBeLessThanOrEqual(box(long).right);
+
+    /** `next` sits right after `previous` on its line: a gap, a "·" at most, between them. */
+    function expectFollows(next: Element, previous: Element) {
+        const gap = box(next).left - box(previous).right;
+        expect(gap).toBeGreaterThanOrEqual(0);
+        expect(gap).toBeLessThanOrEqual(20);
+    }
+});
+
+test('CH64: on a wide list a long headline and a long author name are shown whole', async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const headline = 'feat: preview a class while dragging it across the days of the week view';
+    const commit = sampleCommit('c1', 10);
+    await mount(
+        { commits: [{ ...commit, headline, author: { ...commit.author, name: 'Ola Wiśniewska-Kowalczyk' } }] },
+        { width: 1500 },
+    );
+    await closeDetails();
+    const row = page.getByRole('listitem').filter({ hasText: headline });
+
+    for (const text of [headline, 'Ola Wiśniewska-Kowalczyk']) {
+        const element = row.getByText(text, { exact: true }).element();
+        expect(element.clientWidth).toBeGreaterThan(0);
+        expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth);
+    }
+});
+
+test('CH65: on a list narrower than 640 px the short sha goes first, the author staying', async () => {
+    await mount({ commits: [sampleCommit('beef12345', 10)] }, { width: 560 });
+    const row = page.getByRole('listitem').filter({ hasText: 'Commit beef12345' });
+    await expect.element(row).toBeVisible();
+    expect(row.element().getBoundingClientRect().width).toBeLessThan(640);
+
+    await expect.element(row.getByText('beef123', { exact: true })).not.toBeVisible();
+    await expect.element(row.getByText('Octo Cat', { exact: true })).toBeVisible();
 });
 
 /** An open pull request of `acme/web`. */
@@ -2018,7 +2100,7 @@ function getLanesAt(edge: 'bottom' | 'top', cell: SVGSVGElement | undefined) {
         const numbers = (path.getAttribute('d')?.match(/[\d.]+/g) ?? []).map(Number);
         if (edge === 'top' && numbers[1] === 0) {
             lanes.add(numbers[0] ?? -1);
-        } else if (edge === 'bottom' && numbers.at(-1) === 32) {
+        } else if (edge === 'bottom' && numbers.at(-1) === COMMIT_ROW_HEIGHT) {
             lanes.add(numbers.length === 3 ? (numbers[0] ?? -1) : (numbers.at(-2) ?? -1));
         }
     }
