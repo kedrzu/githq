@@ -87,8 +87,8 @@ function focusFirstEntry(event: Event) {
           aria-hidden="true"
         >
           <span
-            :class="css.bottomMenu_title"
             :id="headingId"
+            :class="css.bottomMenu_title"
             ><slot name="heading">{{ title }}</slot></span
           >
           <span

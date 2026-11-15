@@ -452,8 +452,8 @@ function openCommandLineMenu() {
       <PhoneCommandLine
         :variant="opened?.onPage ? 'item' : 'list'"
         :part="phone.part"
-        @menu="openCommandLineMenu"
         :draft="opened?.onPage && openedId !== null ? drafts.get(openedId) : ''"
+        @menu="openCommandLineMenu"
         @comment="navigation.requestComment(openedId)"
       />
     </template>
