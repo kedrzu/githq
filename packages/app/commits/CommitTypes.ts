@@ -36,19 +36,6 @@ export interface CommitParent {
     readonly oid: string;
 }
 
-/** The commit whose details are open. */
-export interface OpenedCommit extends CommitParent {
-    /** The ref it was opened from, its commit not loaded (D12). */
-    readonly chosenRef: CommitRef | null;
-}
-
-/** Where a repository's Commits section was left for a run's page, to come back to. */
-export interface CommitGraphPlace {
-    /** `null`: the cursor was on no row. */
-    readonly cursorOid: string | null;
-    readonly opened: OpenedCommit;
-}
-
 /** A repository's branches and tags as last read (git-client D9), compared with a fresh read to tell which moved. */
 export interface KeptCommitRefs {
     /** `owner/name`. */

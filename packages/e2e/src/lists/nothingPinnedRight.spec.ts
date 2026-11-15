@@ -114,7 +114,10 @@ test("Draft reviews keep the age right after the pull request's number", async (
     await expectFollows(age(row), number, row);
 });
 
-test("a commit row's author follows its headline and its age follows the author", async ({ page, github }) => {
+test("a commit row's second line starts under its headline, and its author, age and short sha each follow the one before", async ({
+    page,
+    github,
+}) => {
     const sample = createSampleTrackedWork();
     sample.world.history(SAMPLE_REPOSITORY, {
         commits: [
@@ -132,11 +135,17 @@ test("a commit row's author follows its headline and its age follows the author"
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
 
     const row = graph.row('docs: describe the setup');
-    // Until its pull request and checks are known the row holds a placeholder after the headline.
+    // Until its pull request and checks are known the row holds a placeholder after the headline; this commit has
+    // neither, so nothing follows the headline on its line.
     await expect(graph.mark(row, 'Pull request and checks not known yet')).toHaveCount(0);
+    const headline = row.getByText('docs: describe the setup', { exact: true });
+    // The second line: the branch, then the author's segment (avatar and name), the age and the short sha.
+    const branch = row.getByText('main', { exact: true });
     const author = row.getByText('monalisa', { exact: true }).locator('..');
-    await expectFollows(author, row.getByText('docs: describe the setup', { exact: true }), row);
+    await expect.poll(() => leftEdgeOffset(branch, headline)).toBeLessThanOrEqual(1);
+    await expectFollows(author, branch, row);
     await expectFollows(age(row), author, row);
+    await expectFollows(row.getByText('m2', { exact: true }), age(row), row);
 });
 
 test("a diff file header's thread count and size follow the file's name", async ({ page, github }) => {
@@ -203,6 +212,16 @@ async function measure(info: Locator, before: Locator, row: Locator) {
         follows: gap >= -1 && gap <= MAX_GAP,
         farFromEdge: rowBox.x + rowBox.width - (infoBox.x + infoBox.width) > MIN_FROM_RIGHT_EDGE,
     };
+}
+
+/** How far apart the left edges of two pieces are: 0 when one starts right under the other. */
+async function leftEdgeOffset(piece: Locator, other: Locator) {
+    const [pieceBox, otherBox] = await Promise.all([piece.boundingBox(), other.boundingBox()]);
+    if (!pieceBox || !otherBox) {
+        return null;
+    }
+
+    return Math.abs(pieceBox.x - otherBox.x);
 }
 
 function avatar(row: Locator, login: string) {

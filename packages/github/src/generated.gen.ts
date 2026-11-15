@@ -842,61 +842,79 @@ export type StatusState =
     | 'SUCCESS';
 
 export type CommitChecksQueryVariables = Exact<{
-    id: string;
+    owner: string;
+    name: string;
+    rev: string;
 }>;
 
 export type CommitChecksQuery = {
-    node:
-        | {
-              statusCheckRollup: {
-                  contextPage: {
-                      totalCount: number;
-                      nodes: Array<
-                          | {
-                                __typename: 'CheckRun';
-                                id: string;
-                                name: string;
-                                status: CheckStatusState;
-                                conclusion: CheckConclusionState | null;
-                                detailsUrl: string | null;
-                                startedAt: string | null;
-                                completedAt: string | null;
-                                checkSuite: { workflowRun: { workflow: { name: string } } | null };
-                            }
-                          | {
-                                __typename: 'StatusContext';
-                                id: string;
-                                context: string;
-                                state: StatusState;
-                                targetUrl: string | null;
-                                createdAt: string;
-                            }
-                          | null
-                      > | null;
-                  };
-              } | null;
-          }
-        | Record<PropertyKey, never>
-        | null;
+    repository: {
+        object:
+            | {
+                  statusCheckRollup: {
+                      contextPage: {
+                          totalCount: number;
+                          nodes: Array<
+                              | {
+                                    __typename: 'CheckRun';
+                                    id: string;
+                                    name: string;
+                                    status: CheckStatusState;
+                                    conclusion: CheckConclusionState | null;
+                                    detailsUrl: string | null;
+                                    startedAt: string | null;
+                                    completedAt: string | null;
+                                    checkSuite: { workflowRun: { workflow: { name: string } } | null };
+                                }
+                              | {
+                                    __typename: 'StatusContext';
+                                    id: string;
+                                    context: string;
+                                    state: StatusState;
+                                    targetUrl: string | null;
+                                    createdAt: string;
+                                }
+                              | null
+                          > | null;
+                      };
+                  } | null;
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
 };
 
 export type CommitDetailQueryVariables = Exact<{
-    id: string;
+    owner: string;
+    name: string;
+    rev: string;
 }>;
 
 export type CommitDetailQuery = {
-    node:
-        | {
-              message: string;
-              id: string;
-              oid: string;
-              messageHeadline: string;
-              committedDate: string;
-              author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
-              parents: { nodes: Array<{ id: string; oid: string } | null> | null };
-          }
-        | Record<PropertyKey, never>
-        | null;
+    repository: {
+        object:
+            | {
+                  message: string;
+                  id: string;
+                  oid: string;
+                  messageHeadline: string;
+                  committedDate: string;
+                  author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+                  parents: { nodes: Array<{ id: string; oid: string } | null> | null };
+                  associatedPullRequests: {
+                      nodes: Array<{
+                          number: number;
+                          state: PullRequestState;
+                          title: string;
+                          url: string;
+                          isDraft: boolean;
+                      } | null> | null;
+                  } | null;
+                  statusCheckRollup: { state: StatusState } | null;
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
 };
 
 export type CommitHistoriesQueryVariables = Exact<{
@@ -10884,6 +10902,19 @@ export type CommitRefFieldsFragment = {
 
 export type CommitRefTargetFieldsFragment = { id: string; oid: string; committedDate: string };
 
+export type CommitStateFieldsFragment = {
+    associatedPullRequests: {
+        nodes: Array<{
+            number: number;
+            state: PullRequestState;
+            title: string;
+            url: string;
+            isDraft: boolean;
+        } | null> | null;
+    } | null;
+    statusCheckRollup: { state: StatusState } | null;
+};
+
 export type DraftIssueFieldsFragment = {
     __typename: 'DraftIssue';
     id: string;
@@ -17552,6 +17583,25 @@ export const CommitRefFieldsFragmentDoc = new TypedDocumentString(
 }`,
     { fragmentName: 'CommitRefFields' },
 );
+export const CommitStateFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment CommitStateFields on Commit {
+  associatedPullRequests(first: 1) {
+    nodes {
+      number
+      state
+      title
+      url
+      isDraft
+    }
+  }
+  statusCheckRollup {
+    state
+  }
+}
+    `,
+    { fragmentName: 'CommitStateFields' },
+);
 export const ItemRepositoryFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment ItemRepositoryFields on Repository {
@@ -21643,14 +21693,16 @@ export const ViewerProjectFieldsFragmentDoc = new TypedDocumentString(
     { fragmentName: 'ViewerProjectFields' },
 );
 export const CommitChecksDocument = new TypedDocumentString(`
-    query CommitChecks($id: ID!) {
-  node(id: $id) {
-    ... on Commit {
-      statusCheckRollup {
-        contextPage: contexts(first: 100) {
-          totalCount
-          nodes {
-            ...PullRequestCheckFields
+    query CommitChecks($owner: String!, $name: String!, $rev: String!) {
+  repository(owner: $owner, name: $name) {
+    object(expression: $rev) {
+      ... on Commit {
+        statusCheckRollup {
+          contextPage: contexts(first: 100) {
+            totalCount
+            nodes {
+              ...PullRequestCheckFields
+            }
           }
         }
       }
@@ -21685,11 +21737,14 @@ export const CommitChecksDocument = new TypedDocumentString(`
   }
 }`);
 export const CommitDetailDocument = new TypedDocumentString(`
-    query CommitDetail($id: ID!) {
-  node(id: $id) {
-    ... on Commit {
-      ...CommitFields
-      message
+    query CommitDetail($owner: String!, $name: String!, $rev: String!) {
+  repository(owner: $owner, name: $name) {
+    object(expression: $rev) {
+      ... on Commit {
+        ...CommitFields
+        ...CommitStateFields
+        message
+      }
     }
   }
 }
@@ -21710,6 +21765,20 @@ export const CommitDetailDocument = new TypedDocumentString(`
       id
       oid
     }
+  }
+}
+fragment CommitStateFields on Commit {
+  associatedPullRequests(first: 1) {
+    nodes {
+      number
+      state
+      title
+      url
+      isDraft
+    }
+  }
+  statusCheckRollup {
+    state
   }
 }`);
 export const CommitHistoriesDocument = new TypedDocumentString(`
@@ -21767,22 +21836,24 @@ export const CommitStatesDocument = new TypedDocumentString(`
   nodes(ids: $ids) {
     ... on Commit {
       id
-      associatedPullRequests(first: 1) {
-        nodes {
-          number
-          state
-          title
-          url
-          isDraft
-        }
-      }
-      statusCheckRollup {
-        state
-      }
+      ...CommitStateFields
     }
   }
 }
-    `);
+    fragment CommitStateFields on Commit {
+  associatedPullRequests(first: 1) {
+    nodes {
+      number
+      state
+      title
+      url
+      isDraft
+    }
+  }
+  statusCheckRollup {
+    state
+  }
+}`);
 export const CommitSubjectsDocument = new TypedDocumentString(`
     query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
   repository(owner: $owner, name: $name) {

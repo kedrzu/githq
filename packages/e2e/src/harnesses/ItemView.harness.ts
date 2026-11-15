@@ -90,6 +90,14 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name: 'Add to project' });
     }
 
+    /**
+     * "Request" over a pull request's reviews. It shows once the repository's users are read: only then does `⇧R` open
+     * its picker rather than the command menu's "Request review…".
+     */
+    get requestReviewButton(): Locator {
+        return this.root.getByRole('button', { name: /^Request(\s|$)/ });
+    }
+
     /** The rows of the map of the stack an opened pull request is in (`StackMap`), first to last. */
     get stackMapRows(): Locator {
         return this.root

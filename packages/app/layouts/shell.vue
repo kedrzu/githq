@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import AppCommands from '@/commands/AppCommands.vue';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { CommitGraphStore } from '@/commits/CommitGraphStore.js';
+import OpenedCommit from '@/commits/OpenedCommit.vue';
 import Toaster from '@/components/Toaster.vue';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import { EditQueue } from '@/edits/EditQueue.js';
@@ -440,6 +441,11 @@ function openCommandLineMenu() {
         arrangement="panel"
       />
       <OpenedWorkflow
+        v-else-if="overScreen.kind === 'workflow'"
+        :reference="overScreen.reference"
+        arrangement="panel"
+      />
+      <OpenedCommit
         v-else
         :reference="overScreen.reference"
         arrangement="panel"

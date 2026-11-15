@@ -67,6 +67,19 @@ change, then conditional requests per workflow on `actions/workflows/{id}/runs` 
 count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope. Polled every 3 minutes while a tab is shown, and at once when the Workflows section or the
 cross-repository screen opens.** (2026-11-01, owner for the 3 minutes, design agent for the rest, accepted when closing the design)
 
+**A poll reads four repositories at once, and three of a repository's workflows at once; a repository on screen is
+read next, ahead of every one not started yet.** (2026-11-15, owner) At most 12 of the loop's requests are in flight.
+Departs from GitHub's advice to "make requests serially instead of concurrently", as
+[githq D27](../githq/DECISIONS.md#d27) does for the first download: a 304 is free against the allowance but not in
+time, and one request after another a dozen repositories took over a minute.
+
+> **Checked 2026-11-15 (live, the owner's 14 tracked repositories, dev build, a fresh browser):** serial, the first
+> read was 125 requests over 75 s (`healedcare/healed` alone 32 s, paging back 3 pages of 30 runs per workflow), about
+> 0.5 s each, a 304 too; a poll with nothing changed took about 25 s, and the repository on screen waited for those
+> ahead of it in tracking order. With this decision: the first read 127 requests in 13 s, at most 11 in flight; a poll
+> after it, 52 requests in 6.3 s; a repository opened while last in tracking order was the first one read. No
+> refusal from GitHub.
+
 **Why.** There is no cross-repository listing, and a 304 costs nothing against the primary allowance. REST is the
 only API that can see which ref a run was on, and [D1](#d1) needs that. It departs from the project's "GraphQL
 for fetching" principle because GraphQL cannot answer the question here.

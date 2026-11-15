@@ -15,7 +15,7 @@ import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TabChannel } from '@/sync/TabChannel.js';
 import type { TrackingSyncContext } from '@/sync/TrackingSync.js';
 import type { ActionsWorldRun } from '@/testing/createActionsWorld.js';
-import type { TestGraphQLRequest } from '@/testing/createTestSession.js';
+import type { TestGraphQLRequest, TestSessionGitHub } from '@/testing/createTestSession.js';
 import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
@@ -37,6 +37,18 @@ const TRACK_BOTH: TrackingChoice = {
     projects: [],
 };
 
+/** More repositories than a poll reads at once. */
+const TRACK_SIX: TrackingChoice = {
+    repositories: [
+        ...TRACK_BOTH.repositories,
+        { nameWithOwner: 'acme/r3', id: 'R_r3' },
+        { nameWithOwner: 'acme/r4', id: 'R_r4' },
+        { nameWithOwner: 'acme/r5', id: 'R_r5' },
+        { nameWithOwner: 'acme/r6', id: 'R_r6' },
+    ],
+    projects: [],
+};
+
 /** The workflows' loop's interval while the tab is shown (actions D2). */
 const WORKFLOWS_INTERVAL = 180_000;
 
@@ -51,18 +63,22 @@ test('the first read: the latest runs, the default branch, the workflows, the ta
     tracking.choose(TRACK_BOTH);
     await session.clock.advance(0);
 
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10',
-        'GET /repos/acme/web',
-        'GET /repos/acme/web/actions/workflows per_page=100',
-        'GET /repos/acme/web/git/matching-refs/tags',
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10`,
-        'GET /repos/acme/api/actions/runs per_page=10',
-        'GET /repos/acme/api',
-        'GET /repos/acme/api/actions/workflows per_page=100',
-        'GET /repos/acme/api/git/matching-refs/tags',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10',
+            'GET /repos/acme/web',
+            'GET /repos/acme/web/actions/workflows per_page=100',
+            'GET /repos/acme/web/git/matching-refs/tags',
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10`,
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10',
+            'GET /repos/acme/api',
+            'GET /repos/acme/api/actions/workflows per_page=100',
+            'GET /repos/acme/api/git/matching-refs/tags',
+        ],
+    });
 
     // Deploy failed on main; CI passed there (its failure on a pull request's branch does not count); the retired
     // one is turned off and is not read.
@@ -92,14 +108,18 @@ test('while nothing moves a poll costs three free requests per repository and wr
 
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
     expect(storedOf(workflows, 'acme/web')).toBe(before);
     expect(saved).not.toHaveBeenCalled();
     expect(published.mock.calls.filter(([message]) => message.kind === 'workflows')).toEqual([]);
@@ -110,17 +130,21 @@ test('while nothing moves a poll costs three free requests per repository and wr
     world.actions.repository('acme/web').runs.push(run(20, DEPLOY, 'success', '2026-10-30T13:01:00Z'));
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/web/git/matching-refs/tags conditional',
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+            'GET /repos/acme/web/git/matching-refs/tags conditional',
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
     expect(workflows.getState('acme/web').workflows[0]).toMatchObject({ state: 'passing' });
     expect(workflows.totals.brokenCount).toBe(0);
 });
@@ -323,19 +347,24 @@ test('a changed setting applies at once to what is stored, and a pattern added i
     expect(workflows.totals.brokenCount).toBe(1);
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/web/git/matching-refs/tags conditional',
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+            'GET /repos/acme/web/git/matching-refs/tags conditional',
+            // A few workflows at once, each its branch's runs then its runs on any ref.
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
 
     // Read once: the next poll with nothing moved is free again.
     session.github.requests.length = 0;
@@ -352,19 +381,24 @@ test('a screen with a repository’s runs on any ref has them read at once and a
     session.github.requests.length = 0;
     const release = sync.watchAnyRef('acme/web');
     await session.clock.advance(0);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/web/git/matching-refs/tags conditional',
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
-        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
-        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+            'GET /repos/acme/web/git/matching-refs/tags conditional',
+            // A few workflows at once, each its branch's runs then its runs on any ref.
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+            `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+            `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
     // CI's failure on a pull request's branch is kept for the tab, and counts nowhere.
     const ci = workflows.get('acme/web')?.workflows.find(entry => entry.workflow.id === CI);
     expect(ci?.runs.map(entry => entry.id)).toEqual([4, 3]);
@@ -455,7 +489,7 @@ test('a failed poll loses nothing: the repository on screen has its runs on any 
     expect(items.getSyncState('workflows').lastError).toBeNull();
 });
 
-test('a repository coming on screen while a poll runs past it is read at the end of that poll', async () => {
+test('a repository coming on screen once a running poll has read it is read again by that poll, with its runs on any ref', async () => {
     const world = sampleWorld();
     const { session, tracking, sync } = await setup(world);
     tracking.choose(TRACK_BOTH);
@@ -473,6 +507,142 @@ test('a repository coming on screen while a poll runs past it is read at the end
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
         `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
     ]);
+});
+
+test('a few repositories are read at once, never more than four, in tracking order', async () => {
+    const world = sampleWorld();
+    const { session, tracking, workflows } = await setup(world);
+    const latest = holdLatestRuns(session.github);
+    tracking.choose(TRACK_SIX);
+    await session.clock.advance(0);
+    expect([...latest.held.keys()]).toEqual(['acme/web', 'acme/api', 'acme/r3', 'acme/r4']);
+
+    // Each read ending starts the next one.
+    let most = latest.held.size;
+    for (let answer = latest.next(); answer; answer = latest.next()) {
+        answer();
+        await session.clock.advance(0);
+        most = Math.max(most, latest.held.size);
+    }
+
+    expect(most).toBe(4);
+    expect(latest.started).toEqual(TRACK_SIX.repositories.map(repo => repo.nameWithOwner));
+    for (const { nameWithOwner } of TRACK_SIX.repositories) {
+        expect(workflows.getState(nameWithOwner).status).toBe('read');
+    }
+});
+
+test('a revoked token stops the poll: no repository is started after it, and the poll fails once the others’ answers are in', async () => {
+    const world = sampleWorld();
+    world.actions.repository('acme/web').refusal = 401;
+    const { session, tracking, workflows, items } = await setup(world);
+    const latest = holdLatestRuns(session.github);
+    tracking.choose(TRACK_SIX);
+    await session.clock.advance(0);
+    latest.next()?.();
+    await session.clock.advance(0);
+    expect(items.getSyncState('workflows').lastError).toBeNull();
+
+    for (let answer = latest.next(); answer; answer = latest.next()) {
+        answer();
+        await session.clock.advance(0);
+    }
+
+    expect(latest.started).toEqual(['acme/web', 'acme/api', 'acme/r3', 'acme/r4']);
+    expect(actionsRequests(session.github.requests)).toHaveLength(4);
+    expect(workflows.get('acme/api')).toBeUndefined();
+    expect(items.getSyncState('workflows').lastError).toEqual(expect.stringContaining('401'));
+});
+
+test('a repository coming on screen while a poll reads others is the next one started, with its runs on any ref', async () => {
+    const world = sampleWorld();
+    world.actions.repository('acme/r6').workflows.push({ id: DEPLOY, name: 'Deploy', state: 'active' });
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_SIX);
+    await session.clock.advance(10_000);
+
+    const latest = holdLatestRuns(session.github);
+    session.github.requests.length = 0;
+    void sync.pollNow('workflows');
+    await session.clock.advance(0);
+    sync.watchAnyRef('acme/r6');
+    await session.clock.advance(0);
+    expect(latest.started).toEqual(['acme/web', 'acme/api', 'acme/r3', 'acme/r4']);
+
+    latest.next()?.();
+    await session.clock.advance(0);
+    expect(latest.started).toEqual(['acme/web', 'acme/api', 'acme/r3', 'acme/r4', 'acme/r6']);
+
+    for (let answer = latest.next(); answer; answer = latest.next()) {
+        answer();
+        await session.clock.advance(0);
+    }
+
+    expect(latest.started).toEqual(['acme/web', 'acme/api', 'acme/r3', 'acme/r4', 'acme/r6', 'acme/r5']);
+    expect(requestsByRepository(session.github.requests)['acme/r6']).toContain(
+        `GET /repos/acme/r6/actions/workflows/${DEPLOY}/runs per_page=30`,
+    );
+});
+
+test('a repository coming on screen with no poll running is the first one read', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_SIX);
+    await session.clock.advance(10_000);
+
+    const latest = holdLatestRuns(session.github);
+    sync.watchAnyRef('acme/r6');
+    await session.clock.advance(0);
+    expect(latest.started).toEqual(['acme/r6', 'acme/web', 'acme/api', 'acme/r3']);
+});
+
+test('a repository coming on screen while its read is on its way is read again once that read ends, never twice at once', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(10_000);
+
+    // acme/api's read goes on meanwhile.
+    const webRuns = createPromise();
+    const apiRuns = createPromise();
+    session.github.holdIf = request => {
+        switch (request.operation) {
+            case 'GET /repos/acme/web/actions/runs':
+                return webRuns.promise;
+            case 'GET /repos/acme/api/actions/runs':
+                return apiRuns.promise;
+            default:
+                return null;
+        }
+    };
+    session.github.requests.length = 0;
+    void sync.pollNow('workflows');
+    await session.clock.advance(0);
+    sync.watchAnyRef('acme/web');
+    await session.clock.advance(0);
+    expect(requestsByRepository(session.github.requests)['acme/web']).toEqual([
+        'GET /repos/acme/web/actions/runs per_page=10 conditional',
+    ]);
+
+    webRuns.resolve();
+    await session.clock.advance(0);
+    expect(requestsByRepository(session.github.requests)['acme/web']).toEqual([
+        // Nothing moved: the read ends here.
+        'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        // Then again, with its runs on any ref.
+        'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        'GET /repos/acme/web/git/matching-refs/tags conditional',
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+    ]);
+    apiRuns.resolve();
+    await session.clock.advance(0);
 });
 
 test('a tab that does not sync, with a repository on screen, has the syncing tab read its runs on any ref at once, until it closes', async () => {
@@ -549,12 +719,188 @@ test('the first read shows as it goes: the list and the default branch at once, 
     expect(workflows.totals).toEqual({ brokenCount: 1, hasNewBreak: true, hasUnread: false });
 });
 
+test('a repository’s workflows are read a few at once, never more than three', async () => {
+    const world = sampleWorld();
+    world.actions
+        .repository('acme/web')
+        .workflows.push(
+            { id: 4, name: 'Lint', state: 'active' },
+            { id: 5, name: 'Docs', state: 'active' },
+            { id: 6, name: 'E2E', state: 'active' },
+        );
+    const { session, tracking, workflows } = await setup(world);
+    const answers: (() => void)[] = [];
+    let inFlight = 0;
+    let most = 0;
+    session.github.holdIf = request => {
+        if (!isWorkflowRunsRequest(request)) {
+            return null;
+        }
+
+        inFlight++;
+        most = Math.max(most, inFlight);
+        const answer = createPromise();
+        answers.push(() => {
+            inFlight--;
+            answer.resolve();
+        });
+        return answer.promise;
+    };
+    tracking.choose({ ...TRACK_BOTH, repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    await session.clock.advance(0);
+    expect(inFlight).toBe(3);
+
+    for (let answer = answers.shift(); answer; answer = answers.shift()) {
+        answer();
+        await session.clock.advance(0);
+    }
+
+    expect(most).toBe(3);
+    expect(workflows.getReadProgress('acme/web')).toBeNull();
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+        ['Lint', 'unknown'],
+        ['Docs', 'unknown'],
+        ['E2E', 'unknown'],
+    ]);
+});
+
+test('workflows answered in reverse show in GitHub’s order as they come, never lowering the broken total, and store what answers in order store', async () => {
+    const reversed = workflowsWithLint();
+    const { session, tracking, workflows } = await setup(reversed);
+    const answers = new Map<string, () => void>();
+    session.github.holdIf = request => {
+        if (!isWorkflowRunsRequest(request)) {
+            return null;
+        }
+
+        const answer = createPromise();
+        answers.set(request.operation, answer.resolve);
+        return answer.promise;
+    };
+    tracking.choose({ ...TRACK_BOTH, repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    await session.clock.advance(0);
+
+    const shown = [[stateOf(workflows, 'acme/web'), workflows.totals.brokenCount]];
+    for (const id of [4, CI, DEPLOY]) {
+        answers.get(`GET /repos/acme/web/actions/workflows/${id}/runs`)?.();
+        await session.clock.advance(0);
+        shown.push([stateOf(workflows, 'acme/web'), workflows.totals.brokenCount]);
+    }
+
+    expect(shown).toEqual([
+        [
+            [
+                ['Deploy', 'unknown'],
+                ['CI', 'unknown'],
+                ['Retired', 'disabled'],
+                ['Lint', 'unknown'],
+            ],
+            0,
+        ],
+        [
+            [
+                ['Deploy', 'unknown'],
+                ['CI', 'unknown'],
+                ['Retired', 'disabled'],
+                ['Lint', 'broken'],
+            ],
+            1,
+        ],
+        [
+            [
+                ['Deploy', 'unknown'],
+                ['CI', 'passing'],
+                ['Retired', 'disabled'],
+                ['Lint', 'broken'],
+            ],
+            1,
+        ],
+        [
+            [
+                ['Deploy', 'broken'],
+                ['CI', 'passing'],
+                ['Retired', 'disabled'],
+                ['Lint', 'broken'],
+            ],
+            2,
+        ],
+    ]);
+
+    // The same answers, in order.
+    const inOrder = await setup(workflowsWithLint());
+    inOrder.tracking.choose({ ...TRACK_BOTH, repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    await inOrder.session.clock.advance(0);
+    expect(storedOf(workflows, 'acme/web')).toEqual(storedOf(inOrder.workflows, 'acme/web'));
+});
+
+test('one workflow’s read failing ends the repository’s: the others’ answers still on their way are dropped, nothing is written, and the next poll goes on', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    const { session, tracking, workflows, items } = await setup(world);
+    const deployRuns = `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs`;
+    const ciRuns = `GET /repos/acme/web/actions/workflows/${CI}/runs`;
+
+    // The first read: CI fails while Deploy's runs are on their way.
+    world.failing.add(ciRuns);
+    const deploy = createPromise();
+    session.github.holdIf = request => (request.operation === deployRuns ? deploy.promise : null);
+    tracking.choose({ ...TRACK_BOTH, repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    await session.clock.advance(0);
+    deploy.resolve();
+    await session.clock.advance(0);
+    expect(workflows.getReadProgress('acme/web')).toEqual({ read: 0, total: 2 });
+    expect(workflows.get('acme/web')).toMatchObject({ runsEtag: null, workflowsEtag: null, tagsEtag: null });
+    expect(items.getSyncState('workflows').lastError).toEqual(expect.any(String));
+
+    world.failing.clear();
+    session.github.holdIf = null;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(workflows.getReadProgress('acme/web')).toBeNull();
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+    ]);
+
+    // Both run again; CI's read fails once Deploy's is in: nothing is written, the old ETags stay.
+    const before = storedOf(workflows, 'acme/web');
+    actions.runs.push(run(20, DEPLOY, 'success', '2026-10-30T13:01:00Z'));
+    actions.runs.push(run(21, CI, 'failure', '2026-10-30T13:02:00Z'));
+    world.failing.add(ciRuns);
+    const deployIn = createPromise();
+    session.github.holdIf = request => (request.operation === ciRuns ? deployIn.promise : null);
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    deployIn.resolve();
+    await session.clock.advance(0);
+    expect(storedOf(workflows, 'acme/web')).toBe(before);
+
+    world.failing.clear();
+    session.github.holdIf = null;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'passing'],
+        ['CI', 'broken'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(storedOf(workflows, 'acme/web').runsEtag).not.toBe(before.runsEtag);
+});
+
 test('a first read cut short goes on from what it stored at the next poll, though nothing changed on GitHub', async () => {
     const world = sampleWorld();
     world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
     const { session, tracking, workflows } = await setup(world);
+    // CI's failure comes once Deploy's runs are in.
+    const deployIn = createPromise();
+    session.github.holdIf = request =>
+        request.operation === `GET /repos/acme/web/actions/workflows/${CI}/runs` ? deployIn.promise : null;
     tracking.choose(TRACK_BOTH);
     await session.clock.advance(0);
+    deployIn.resolve();
+    await session.clock.advance(0);
+    session.github.holdIf = null;
     expect(workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
 
     world.failing.clear();
@@ -615,14 +961,30 @@ test('GitHub failing for one repository fails the loop once the others are read;
     expect(workflows.totals.hasUnread).toBe(true);
     expect(items.getSyncState('workflows').lastError).toEqual(expect.any(String));
 
-    // The token is no longer good: the poll stops at the first repository.
+    // The token is no longer good while acme/api's latest runs, which moved, are on their way: its read asks nothing
+    // more, and what arrives is dropped.
     world.failing.clear();
     world.actions.repository('acme/web').refusal = 401;
+    world.actions.repository('acme/api').runs.push(run(30, DEPLOY, 'success', '2026-10-30T13:01:00Z'));
+    const api = storedOf(workflows, 'acme/api');
+    const apiRuns = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'GET /repos/acme/api/actions/runs' ? apiRuns.promise : null;
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(actionsRequests(session.github.requests)).toEqual(['GET /repos/acme/web/actions/runs per_page=10']);
+    // The poll waits for acme/api's answer: the last poll's failure is still the one told.
+    expect(items.getSyncState('workflows').lastError).toBe(
+        'The workflows of 1 tracked repositories could not be polled',
+    );
+    apiRuns.resolve();
+    await session.clock.advance(0);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': ['GET /repos/acme/web/actions/runs per_page=10'],
+        'acme/api': ['GET /repos/acme/api/actions/runs per_page=10 conditional'],
+    });
+    expect(storedOf(workflows, 'acme/api')).toBe(api);
     expect(workflows.getState('acme/web').status).toBe('unread');
-    expect(items.getSyncState('workflows').lastError).toEqual(expect.any(String));
+    expect(items.getSyncState('workflows').lastError).toEqual(expect.stringContaining('401'));
 });
 
 test('after a break in polling, a failure on a pattern’s ref behind 30 pull request runs is found, as a rebuilt cache would find it; regular polls ask one page', async () => {
@@ -784,7 +1146,8 @@ test('Broken workflows counts a repository whose runs are still being read as no
     await session.clock.advance(0);
 
     expect(workflows.getState('acme/web')).toMatchObject({ status: 'read', reading: true });
-    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'partial', readingWorkflows: { read: 0, total: 2 } });
+    // acme/api, read alongside, is in.
+    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'partial', readingWorkflows: { read: 1, total: 2 } });
 
     heldCi.resolve();
     await session.clock.advance(0);
@@ -840,14 +1203,13 @@ test('the Workflows section’s freshness: Actions refused with rows last read i
     const refusedMidway = sampleWorld();
     const second = await setup(refusedMidway);
     const ci = `GET /repos/acme/web/actions/workflows/${CI}/runs`;
-    second.session.github.holdIf = request => {
-        if (request.operation === ci) {
-            refusedMidway.actions.repository('acme/web').refusal = 403;
-        }
-
-        return null;
-    };
+    // CI's answer, a refusal, comes once Deploy's runs are in.
+    const deployIn = createPromise();
+    second.session.github.holdIf = request => (request.operation === ci ? deployIn.promise : null);
     second.tracking.choose(TRACK_BOTH);
+    await second.session.clock.advance(0);
+    refusedMidway.actions.repository('acme/web').refusal = 403;
+    deployIn.resolve();
     await second.session.clock.advance(0);
     expect(second.workflows.get('acme/web')?.unavailable).toEqual({ reason: 'refused', status: 403 });
     expect(second.workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
@@ -901,14 +1263,18 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     session.github.requests.length = 0;
     void sync.pollNow('workflows');
     await session.clock.advance(0);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
 
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
@@ -920,14 +1286,18 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(0);
     held.resolve();
     await session.clock.advance(0);
-    expect(actionsRequests(session.github.requests)).toEqual([
-        'GET /repos/acme/web/actions/runs per_page=10 conditional',
-        'GET /repos/acme/web conditional',
-        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
-        'GET /repos/acme/api/actions/runs per_page=10 conditional',
-        'GET /repos/acme/api conditional',
-        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
-    ]);
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': [
+            'GET /repos/acme/web/actions/runs per_page=10 conditional',
+            'GET /repos/acme/web conditional',
+            'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        ],
+        'acme/api': [
+            'GET /repos/acme/api/actions/runs per_page=10 conditional',
+            'GET /repos/acme/api conditional',
+            'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+        ],
+    });
 });
 
 test('the workflows wait for the open items of the first download, not for the closed ones', async () => {
@@ -1026,9 +1396,10 @@ test('an answer on its way when the session ends, or its repository is untracked
     const { session, tracking, workflows, workflowSync, context } = await setupWithoutEngine(world);
     tracking.choose(TRACK_BOTH);
 
-    // The session ends while the first repository's runs are on their way.
+    // The session ends while both repositories' runs are on their way.
     const held = createPromise();
-    session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
+    session.github.holdIf = request =>
+        /^GET \/repos\/acme\/(web|api)\/actions\/runs$/.test(request.operation) ? held.promise : null;
     const ended = workflowSync.poll(context.ending(), () => new Set());
     await session.clock.advance(0);
     context.end();
@@ -1036,7 +1407,11 @@ test('an answer on its way when the session ends, or its repository is untracked
     await ended;
     await session.clock.advance(0);
     expect(workflows.get('acme/web')).toBeUndefined();
-    expect(actionsRequests(session.github.requests)).toEqual(['GET /repos/acme/web/actions/runs per_page=10']);
+    expect(workflows.get('acme/api')).toBeUndefined();
+    expect(requestsByRepository(session.github.requests)).toEqual({
+        'acme/web': ['GET /repos/acme/web/actions/runs per_page=10'],
+        'acme/api': ['GET /repos/acme/api/actions/runs per_page=10'],
+    });
 
     // The session ends while GitHub's refusal is on its way: it says nothing of the repository, for whoever is next.
     world.actions.repository('acme/web').refusal = 403;
@@ -1091,6 +1466,20 @@ test('an answer on its way when the session ends, or its repository is untracked
 /** A page of the closed items of the first download. */
 function isClosedPage(request: TestGraphQLRequest) {
     return Array.isArray(request.variables.states) && request.variables.states.includes('CLOSED');
+}
+
+/** {@link sampleWorld} with a fourth workflow, Lint, broken on the default branch. */
+function workflowsWithLint(): TrackingWorld {
+    const world = sampleWorld();
+    const web = world.actions.repository('acme/web');
+    web.workflows.push({ id: 4, name: 'Lint', state: 'active' });
+    web.runs.push(run(10, 4, 'failure', '2026-10-30T09:30:00Z'));
+    return world;
+}
+
+/** Whether the request asks for one workflow's runs. */
+function isWorkflowRunsRequest(request: TestGraphQLRequest) {
+    return /^GET \/repos\/[^/]+\/[^/]+\/actions\/workflows\/\d+\/runs$/.test(request.operation);
 }
 
 function sampleWorld(): TrackingWorld {
@@ -1234,6 +1623,55 @@ function storedOf(workflows: WorkflowStore, nameWithOwner: string) {
 
 function stateOf(workflows: WorkflowStore, nameWithOwner: string) {
     return workflows.getState(nameWithOwner).workflows.map(entry => [entry.workflow.name, entry.state]);
+}
+
+/** What {@link holdLatestRuns} gives a test. */
+interface HeldLatestRuns {
+    /** Each repository whose read started, by its first request, in the order started. */
+    readonly started: string[];
+    /** The answers held back, by repository. */
+    readonly held: Map<string, () => void>;
+    /** Takes the answer held the longest out of {@link held}, to give it. */
+    next(): (() => void) | undefined;
+}
+
+/** Holds back each repository's latest runs, its read's first request, until the test gives the answer. */
+function holdLatestRuns(github: TestSessionGitHub): HeldLatestRuns {
+    const latest: HeldLatestRuns = {
+        started: [],
+        held: new Map(),
+        next() {
+            const [nameWithOwner, answer] = [...latest.held][0] ?? [];
+            if (nameWithOwner !== undefined) {
+                latest.held.delete(nameWithOwner);
+            }
+
+            return answer;
+        },
+    };
+    github.holdIf = request => {
+        const nameWithOwner = /^GET \/repos\/([^/]+\/[^/]+)\/actions\/runs$/.exec(request.operation)?.[1];
+        if (nameWithOwner === undefined) {
+            return null;
+        }
+
+        latest.started.push(nameWithOwner);
+        const answer = createPromise();
+        latest.held.set(nameWithOwner, answer.resolve);
+        return answer.promise;
+    };
+    return latest;
+}
+
+/** {@link actionsRequests} by repository, each in the order asked: a few repositories are read at once. */
+function requestsByRepository(requests: readonly TestGraphQLRequest[]) {
+    const byRepository: Record<string, string[]> = {};
+    for (const request of actionsRequests(requests)) {
+        const nameWithOwner = /^GET \/repos\/([^/]+\/[^/ ]+)/.exec(request)?.[1] ?? request;
+        (byRepository[nameWithOwner] ??= []).push(request);
+    }
+
+    return byRepository;
 }
 
 /** The requests of Actions, of repositories and of their tags, as `<operation> [branch=…] [per_page=…] [page=…] [conditional]`. */

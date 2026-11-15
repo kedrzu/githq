@@ -242,6 +242,7 @@ test('⇧R asks for reviews of a pull request', async ({ page, github }) => {
     const item = new ItemViewHarness(page);
     await myWork.row('Redirect once after sign-in').click();
     await expect(item.root).toContainText('No reviews yet.');
+    await expect(item.requestReviewButton).toBeVisible();
 
     await page.keyboard.press('Shift+R');
     const reviewers = new PickerHarness(page, 'Request a review');

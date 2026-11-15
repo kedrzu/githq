@@ -388,20 +388,6 @@ export const ColumnNotTracked: Story = {
     },
 };
 
-/** CH42: a commit's details in the column layout, on the pane's right, with the list staying in the column. */
-export const ColumnCommitDetails: Story = {
-    args: ColumnCommits.args,
-    loaders: Commits.loaders,
-    render: Commits.render,
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await findGraphRow(canvasElement);
-        await userEvent.keyboard('{Enter}');
-        await expect(await canvas.findByRole('region', { name: 'Commit details' })).toBeVisible();
-        await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
-    },
-};
-
 function browsedStatus(status: Partial<BrowsedStatus>): BrowsedStatus {
     return { reading: false, total: null, hasMore: false, cursor: null, notShown: false, settledName: null, ...status };
 }

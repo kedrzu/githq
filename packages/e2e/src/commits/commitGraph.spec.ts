@@ -1,5 +1,3 @@
-import type { Page } from '@playwright/test';
-
 import { expect, test } from '../fixtures.js';
 import { GitHubHttpError } from '../github/GitHubMock.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
@@ -7,6 +5,7 @@ import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
+import { WorkflowItemHarness } from '../harnesses/WorkflowItem.harness.js';
 import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
@@ -30,11 +29,11 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     await page.keyboard.press('3');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    // The default branch first, then the branch `feat/login` joined to it.
+    // The default branch first, then the branch `feat/login` joined to it; a row's refs read after its headline.
     await expect(graph.rows).toHaveText([
-        /feat\/login\s*feat: sign in with GitHub/,
-        /main\s*Merge branch 'release\/1\.0'/,
-        /release\/1\.0\s*v1\.0\.0\s*fix: export the CSV header/,
+        /feat: sign in with GitHub.*feat\/login/s,
+        /Merge branch 'release\/1\.0'.*main/s,
+        /fix: export the CSV header.*release\/1\.0\s*v1\.0\.0/s,
         /docs: describe the setup/,
         /chore: set up the build/,
         /Initial commit/,
@@ -70,7 +69,7 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
     await graph.row('chore: set up the build').click();
     await expect(graph.cursorRow).toContainText('chore: set up the build');
-    // CH54: the dot is the row's too, its details following.
+    // A click opens the commit in the panel; CH54: the dot is the row's too.
     await graph.dot(graph.row('docs: describe the setup')).click();
     await expect(graph.cursorRow).toContainText('docs: describe the setup');
     await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
@@ -195,7 +194,6 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
     await expect(graph.rows).toHaveCount(6);
-    await closeDetails(page, graph);
     const every = await graph.divider.getAttribute('aria-valuemax');
     await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
 
@@ -206,7 +204,6 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await expect(graph.divider).not.toContainText('lanes');
     await page.reload();
     await expect(graph.rows).toHaveCount(6);
-    await closeDetails(page, graph);
     await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
 
     // Past every lane it goes no further.
@@ -217,7 +214,7 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     expect((after?.x ?? 0) - (before?.x ?? 0)).toBe((Number(every) - 2) * 12);
 });
 
-test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens a commit's details right of it with the list staying; B goes to the filter and they stay; J and P move through the graph with them, Shift+Enter opens its pull request over them, O opens GitHub and Esc closes in order", async ({
+test('git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens the commit in the panel with the list staying; B goes to the filter and it stays; P and J move the cursor with it, Shift+Enter opens its pull request in its place, Back returns to it, O opens GitHub and Esc closes in order', async ({
     page,
     github,
 }) => {
@@ -233,8 +230,10 @@ test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
     await expect(graph.refRows).toHaveText([/main\s*default/, /feat\/login\s*#5/, /release\/1\.0\s*#4/, /v1\.0\.0/]);
     await expect(graph.mark(graph.refRow('feat/login'), 'Checks failing')).toBeVisible();
 
+    await expect(graph.details).toHaveCount(0);
     await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
+    await expect(page).toHaveURL(commitPanel('commits', 'm4'));
     await expect(graph.details.getByRole('heading', { name: 'Parents' })).toBeVisible();
     await expect(graph.details).toContainText('Brings the release back.');
 
@@ -273,32 +272,34 @@ test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
     await expect(graph.details.getByText('Passing')).toBeVisible();
 
     // O: GitHub in a new tab, on this commit.
-    github.web(`/${SAMPLE_REPOSITORY}/commit/r1`, () => ({ status: 200, body: '<title>Commit</title>' }));
+    github.web(`/${SAMPLE_REPOSITORY}/commit/${sha('r1')}`, () => ({ status: 200, body: '<title>Commit</title>' }));
     const popup = page.waitForEvent('popup');
     await page.keyboard.press('o');
     const gitHubTab = await popup;
-    expect(gitHubTab.url()).toBe(`https://github.com/${SAMPLE_REPOSITORY}/commit/r1`);
+    expect(gitHubTab.url()).toBe(`https://github.com/${SAMPLE_REPOSITORY}/commit/${sha('r1')}`);
     await gitHubTab.close();
 
-    // The pull request in the details' place; Esc is the item's first and comes back to the commit.
+    // The pull request in the commit's place, added to the history: Back comes back to the commit.
     const item = new ItemViewHarness(page);
     await page.keyboard.press('Shift+Enter');
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(graph.details).toHaveCount(0);
-    await page.keyboard.press('Escape');
+    await page.goBack();
     await expect(item.root).toHaveCount(0);
     await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
 
     await page.keyboard.press('j');
     await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
+    await expect(page).toHaveURL(commitPanel('commits', 'm3'));
     await page.keyboard.press('p');
     await expect(graph.detailsHeadline).toHaveText('chore: set up the build');
     await expect(graph.cursorRow).toContainText('chore: set up the build');
 
     await page.keyboard.press('Escape');
     await expect(graph.details).toHaveCount(0);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
     await expect(graph.refList).toBeVisible();
-    await expect(graph.root).toBeFocused();
+    await expect(graph.cursorRow).toContainText('chore: set up the build');
 });
 
 test('git-client D15, CH46: the left column is one width: dragged in tabs it is kept across a reload, and the column layout has it on every section; dragged there it is back in tabs, within 200 to 480 px', async ({
@@ -356,7 +357,7 @@ test('git-client D15, CH46: the left column is one width: dragged in tabs it is 
     await expect.poll(() => graph.leftColumnEdgeX()).toBe(byKey);
 });
 
-test('a failing check opens its run in the app, and Esc comes back to the commit that was open with the cursor on it; another way into the section starts at its start', async ({
+test('a failing check opens its run in the app, and Esc comes back to the commit open in the panel with the cursor on it (D24); another way into the section opens nothing, its cursor on the commit opened last', async ({
     page,
     github,
 }) => {
@@ -371,27 +372,61 @@ test('a failing check opens its run in the app, and Esc comes back to the commit
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
 
     await page.keyboard.press('k');
+    await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText('feat: sign in with GitHub');
     await graph.details.getByRole('link', { name: `Log · ci / ci / run ${runId}` }).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/${runId}`);
     await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
 
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    await expect(page).toHaveURL(commitPanel('commits', 'f1'));
     await expect(graph.cursorRow).toContainText('feat: sign in with GitHub');
     await expect(graph.detailsHeadline).toHaveText('feat: sign in with GitHub');
     await page.keyboard.press('j');
     await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
 
-    await page.keyboard.press('k');
+    await page.keyboard.press('Escape');
+    await expect(graph.details).toHaveCount(0);
     await page.keyboard.press('1');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
     await page.keyboard.press('3');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
-    await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
+    await expect(graph.details).toHaveCount(0);
 });
 
-test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column at once; 2 and 3 change section in it, B, typing and Enter choose a ref from its list, Enter opens the details beside the graph with the list staying, and Esc closes them', async ({
+test('with a workflow open in the panel, a click on a commit in Commits opens the commit in its place', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Probe',
+        runs: [{ conclusion: 'success', minutesAgo: 20 }],
+    });
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+    const repository = new RepositoryScreenHarness(page);
+    const probe = new WorkflowItemHarness(page, 'Probe');
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('Enter');
+    await expect(probe.runRows).toHaveCount(1);
+
+    await page.goto(
+        `/${SAMPLE_REPOSITORY}/commits?pane=workflow&workflow=${encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|probe.yml`)}`,
+    );
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(probe.runRows).toHaveCount(1);
+    await graph.row('docs: describe the setup').click();
+    await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
+    await expect(probe.root).toHaveCount(0);
+    await expect(page).toHaveURL(commitPanel('commits', 'm3'));
+    await expect(graph.cursorRow).toContainText('docs: describe the setup');
+});
+
+test("git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column at once; 2 and 3 change section in it, B, typing and Enter choose a ref from its list, the chosen ref's commit opens in the panel beside the graph with the list staying, and Esc closes it", async ({
     page,
     github,
 }) => {
@@ -431,8 +466,6 @@ test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column 
     await expect(graph.cursorRow).toContainText('fix: export the CSV header');
     await expect(graph.refFilter).toHaveValue('');
     await expect(graph.root).toBeFocused();
-
-    await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
     await expect(graph.refList).toBeVisible();
     // Beside the graph, not over it.
@@ -471,44 +504,64 @@ function giveHistory(world: GitHubWorld, repository: string, failedRuns: readonl
     world.history(repository, {
         commits: [
             {
-                oid: 'f1',
+                oid: sha('f1'),
                 headline: 'feat: sign in with GitHub',
                 author: 'hubot',
                 minutesAgo: 60,
-                parents: ['m4'],
+                parents: [sha('m4')],
                 pullRequest: { number: 5, state: 'OPEN', title: 'Sign in with GitHub' },
                 ci: 'FAILURE',
                 failedRuns,
             },
             {
-                oid: 'm4',
+                oid: sha('m4'),
                 headline: "Merge branch 'release/1.0'",
                 body: 'Brings the release back.',
                 author: 'monalisa',
                 minutesAgo: 120,
-                parents: ['m3', 'r1'],
+                parents: [sha('m3'), sha('r1')],
             },
             {
-                oid: 'r1',
+                oid: sha('r1'),
                 headline: 'fix: export the CSV header',
                 author: 'monalisa',
                 minutesAgo: 180,
-                parents: ['m2'],
+                parents: [sha('m2')],
                 pullRequest: { number: 4, state: 'MERGED', title: 'Fix the crash on start' },
                 ci: 'SUCCESS',
             },
-            { oid: 'm3', headline: 'docs: describe the setup', author: 'monalisa', minutesAgo: 240, parents: ['m2'] },
-            { oid: 'm2', headline: 'chore: set up the build', author: 'monalisa', minutesAgo: 300, parents: ['m1'] },
-            { oid: 'm1', headline: 'Initial commit', author: 'monalisa', minutesAgo: 360 },
+            {
+                oid: sha('m3'),
+                headline: 'docs: describe the setup',
+                author: 'monalisa',
+                minutesAgo: 240,
+                parents: [sha('m2')],
+            },
+            {
+                oid: sha('m2'),
+                headline: 'chore: set up the build',
+                author: 'monalisa',
+                minutesAgo: 300,
+                parents: [sha('m1')],
+            },
+            { oid: sha('m1'), headline: 'Initial commit', author: 'monalisa', minutesAgo: 360 },
         ],
-        branches: { main: 'm4', 'release/1.0': 'r1', 'feat/login': 'f1' },
-        tags: { 'v1.0.0': 'r1' },
+        branches: { main: sha('m4'), 'release/1.0': sha('r1'), 'feat/login': sha('f1') },
+        tags: { 'v1.0.0': sha('r1') },
     });
 }
 
-/** The details open from the start take width beside the graph: Esc gives it back. */
-async function closeDetails(page: Page, graph: CommitGraphHarness) {
-    await expect(graph.details).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(graph.details).toHaveCount(0);
+/**
+ * A sample commit's name (`m4`) as a sha an address can carry: its bytes in hex, 40 digits long. The names stay
+ * readable in the tests.
+ */
+function sha(name: string) {
+    const hex = Array.from(new TextEncoder().encode(name), byte => byte.toString(16).padStart(2, '0'));
+    return hex.join('').padStart(40, '0');
+}
+
+/** The address of a repository's `section` with the sample commit `name` open in the panel beside it. */
+function commitPanel(section: string, name: string) {
+    const value = encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|${sha(name)}`);
+    return `/${SAMPLE_REPOSITORY}/${section}?pane=commit&commit=${value}`;
 }

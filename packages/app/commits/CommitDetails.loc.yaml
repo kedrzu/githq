@@ -9,9 +9,9 @@ openOnGitHub:
 close:
   en: Close the details
 notLoaded:
-  en: Not in the loaded history. The graph loads as you scroll, so it stayed where it was.
+  en: Not in the graph's loaded history, which reaches older commits as you scroll.
 notLoadedRef:
-  en: Not in the loaded history. {name} is from {age}; the graph loads as you scroll, so it stayed where it was.
+  en: Not in the graph's loaded history, which reaches older commits as you scroll. {name} is from {age}.
 gone:
   en: No branch or tag reaches this commit any more. It is no longer in the graph.
 reading:

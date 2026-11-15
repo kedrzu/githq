@@ -86,6 +86,26 @@ sidebar and the graph's left edge alone.
 
 ## D16
 
+Retired 2026-11-15: a commit opens as an item, in the shared panel or on its page, see [D16](../DECISIONS.md#d16).
+
+**A commit's details show in a panel, never as a modal or a page, and the selection shows them: the panel is open from the
+moment the section opens, on the selected commit, which starts as the newest commit of the default branch, or the top row
+when that one is not loaded. `J`, `K` and a click move through the graph and it follows; `P` goes to the first parent, `⇧P`
+to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub. `Esc` closes it and
+the next move shows it again, as does `↵`; a row disappearing is not a move. `B` goes to the list's filter and the panel
+stays. On a wide window the panel is on the right of the graph with the list staying on its left, in both layouts: 440 px by
+default, its left edge dragged or moved with `←`/`→` from 320 px to what leaves the graph 240 px, kept on the device under
+its own name, and giving up width where the graph would have under 240 px. Below about 1,200 px of window, one threshold in
+both layouts, it sits under the graph at the pane's full width and a fixed 45% of the height (CH48); the list over the graph
+covers the graph only.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29,
+CH42; on the right with the list staying by the owner 2026-11-03; following the selection, the default branch's start, `Esc`,
+the width and the place under the graph by the owner 2026-11-03, the numbers the agent's)
+
+**Why (then).** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
+it, which a modal or a page would hide.
+
+## D16
+
 Retired 2026-11-03 in part: the details open on the right of the graph with the list staying, see
 [D16](../DECISIONS.md#d16).
 

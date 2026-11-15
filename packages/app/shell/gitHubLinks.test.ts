@@ -50,6 +50,16 @@ describe('githq screens', () => {
         expect(target('https://github.com/other/repo')?.item).toBeNull();
     });
 
+    test('a commit, by its sha, tracked or not', () => {
+        const sha = '0123456789abcdef0123456789abcdef01234567';
+        expect(target(`https://github.com/other/repo/commit/${sha}`)).toEqual({
+            path: `/other/repo/commit/${sha}`,
+            item: null,
+        });
+        expect(path('https://github.com/acme/web/commit/0123abc#diff-1')).toBe('/acme/web/commit/0123abc#diff-1');
+        expect(path(`https://github.com/acme/web/commit/${sha}.patch`)).toBeNull();
+    });
+
     test('a list with an item opened over it is not an item page', () => {
         expect(target('https://github.com/acme/web/issues?pane=issue&issue=acme%7Cweb%7C3')?.item).toBeNull();
     });
@@ -100,7 +110,6 @@ describe('workflows are for a tracked repository only', () => {
 describe('GitHub keeps', () => {
     test.each([
         'https://github.com/kedrzu',
-        'https://github.com/acme/web/commit/0123abc',
         'https://github.com/acme/web/blob/main/x',
         'https://github.com/acme/web/compare/a...b',
         'https://github.com/acme/web/actions/runs/123/attempts/2',

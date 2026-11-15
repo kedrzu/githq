@@ -3,6 +3,7 @@ import type {
     CommitDetailQuery,
     CommitFieldsFragment,
     CommitRefFieldsFragment,
+    CommitStateFieldsFragment,
     CommitStatesQuery,
     RepositoryCommitRefsQuery,
     RepositoryCommitRefsQueryVariables,
@@ -32,7 +33,6 @@ import type { PersistedCommits } from './CommitPersistence.js';
 import type {
     CommitChecksRead,
     CommitDetailRead,
-    CommitGraphPlace,
     CommitParent,
     CommitPlace,
     CommitRef,
@@ -169,8 +169,6 @@ interface Session {
     readonly statesInFlight: Map<string, Set<string>>;
     /** The oids whose checks are being read, by `owner/name`. */
     readonly checksInFlight: Map<string, Set<string>>;
-    /** Where the section was left for a run's page, by `owner/name`; in memory alone, gone with the session. */
-    readonly places: Map<string, CommitGraphPlace>;
     /** How many views show each graph, by `owner/name` ({@link CommitGraphStore} `hold`); absent when none does. */
     readonly onScreen: Map<string, number>;
     cancelStatesBatch: (() => void) | null;
@@ -210,6 +208,8 @@ export const CommitGraphStore = defineService({
         const statesRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, ReadState>>>(new Map());
         const detailsRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitDetailRead>>>(new Map());
         const checksRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitChecksRead>>>(new Map());
+        const chosenRefsRef = shallowRef<ReadonlyMap<string, CommitRef>>(new Map());
+        const escapeTakers = new Set<() => boolean>();
 
         let session: Session | null = null;
 
@@ -223,6 +223,7 @@ export const CommitGraphStore = defineService({
             getCommit,
             getCommitPlace,
             getDetail,
+            resolveOid,
             getChecks,
             open,
             hold,
@@ -230,8 +231,10 @@ export const CommitGraphStore = defineService({
             ensureStates,
             ensureDetail,
             ensureChecks,
-            setPlace,
-            takePlace,
+            noteChosenRef,
+            getChosenRef,
+            addEscapeTaker,
+            takeEscape,
         };
 
         /** The graph of `owner/name`, or `undefined` until {@link open} brought its kept copy; reactive. */
@@ -267,9 +270,21 @@ export const CommitGraphStore = defineService({
             return findLoadedCommit(nameWithOwner, oid) ? 'gone' : 'notLoaded';
         }
 
-        /** What is known of the details of the commit `oid` of `owner/name`; `undefined` until asked for. Reactive. */
-        function getDetail(nameWithOwner: string, oid: string): CommitDetailRead | undefined {
-            return detailsRef.value.get(nameWithOwner)?.get(oid);
+        /**
+         * What is known of the details of the commit `rev` of `owner/name` — as {@link ensureDetail} was asked, or by
+         * the full oid once read; `undefined` until asked for. Reactive.
+         */
+        function getDetail(nameWithOwner: string, rev: string): CommitDetailRead | undefined {
+            return detailsRef.value.get(nameWithOwner)?.get(rev);
+        }
+
+        /**
+         * The full oid of the commit `rev` (a sha, short or full) of `owner/name`, once {@link ensureDetail} read it;
+         * `undefined` until then, and for a sha GitHub knows no commit by. Reactive.
+         */
+        function resolveOid(nameWithOwner: string, rev: string): string | undefined {
+            const read = getDetail(nameWithOwner, rev);
+            return read?.kind === 'read' ? read.commit.oid : undefined;
         }
 
         /** What is known of the checks of the commit `oid` of `owner/name`; `undefined` until asked for. Reactive. */
@@ -411,68 +426,93 @@ export const CommitGraphStore = defineService({
         }
 
         /**
-         * Asks for the details of `commit` of `owner/name` — once a session, for a commit never changes — and keeps them
-         * apart from the graph. Asked again only after a read that failed. With the allowance spent nothing is sent and
-         * it reads as failed, for the panel not to wait for good.
+         * Asks for the details of the commit `rev` of `owner/name` — a sha, short or full, as an address carries it —
+         * once a session, for a commit never changes, and keeps them apart from the graph, by `rev` and by the full oid
+         * ({@link resolveOid}). Its pull request and CI state come with them, kept as {@link ensureStates} keeps them,
+         * for a commit no row asks for them. Asked again only after a read that failed. With the allowance spent nothing
+         * is sent and it reads as failed, for the panel not to wait for good.
          */
-        function ensureDetail(nameWithOwner: string, commit: CommitParent) {
+        function ensureDetail(nameWithOwner: string, rev: string) {
             const current = session;
-            const known = getDetail(nameWithOwner, commit.oid);
+            const known = getDetail(nameWithOwner, rev);
             if (!current || known?.kind === 'read' || known?.kind === 'reading') {
                 return;
             }
 
             if (rateLimits.remaining('graphql') === 0) {
-                setDetail(nameWithOwner, commit.oid, { kind: 'failed' });
+                setDetail(nameWithOwner, rev, { kind: 'failed' });
                 return;
             }
 
-            setDetail(nameWithOwner, commit.oid, { kind: 'reading' });
-            void readDetail(current, nameWithOwner, commit);
+            setDetail(nameWithOwner, rev, { kind: 'reading' });
+            void readDetail(current, nameWithOwner, rev);
         }
 
         /**
-         * Asks for the checks of `commit` of `owner/name`, at most once a minute, a read that failed included. A commit
-         * known to have none is not asked; one whose state is not known yet is, for nothing would ask again once it is.
-         * With the allowance spent nothing is sent, and with no list to keep it reads as failed, for the panel not to
-         * wait for good.
+         * Asks for the checks of the commit `oid` of `owner/name`, at most once a minute, a read that failed included. A
+         * commit known to have none is not asked; one whose state is not known yet is, for nothing would ask again once
+         * it is. With the allowance spent nothing is sent, and with no list to keep it reads as failed, for the panel
+         * not to wait for good.
          */
-        function ensureChecks(nameWithOwner: string, commit: CommitParent) {
+        function ensureChecks(nameWithOwner: string, oid: string) {
             const current = session;
             if (
                 !current ||
-                getState(nameWithOwner, commit.oid)?.ci === null ||
-                current.checksInFlight.get(nameWithOwner)?.has(commit.oid)
+                getState(nameWithOwner, oid)?.ci === null ||
+                current.checksInFlight.get(nameWithOwner)?.has(oid)
             ) {
                 return;
             }
 
-            const known = getChecks(nameWithOwner, commit.oid);
+            const known = getChecks(nameWithOwner, oid);
             if (known && clock.now() - known.readAt < STATES_TTL_MS) {
                 return;
             }
 
             if (rateLimits.remaining('graphql') === 0) {
                 if (known?.kind !== 'read') {
-                    setChecks(nameWithOwner, commit.oid, { kind: 'failed', readAt: clock.now() });
+                    setChecks(nameWithOwner, oid, { kind: 'failed', readAt: clock.now() });
                 }
 
                 return;
             }
 
-            void readChecks(current, nameWithOwner, commit);
+            void readChecks(current, nameWithOwner, oid);
         }
 
-        /** Keeps where the Commits section of `owner/name` was left for a run's page, in place of any kept before. */
-        function setPlace(nameWithOwner: string, place: CommitGraphPlace) {
-            session?.places.set(nameWithOwner, place);
+        /**
+         * Notes the branch or tag of `owner/name` chosen last in its list (D12), in place of the one before: an opened
+         * commit says why the graph stayed when it is that ref's commit and not loaded (CH16).
+         */
+        function noteChosenRef(nameWithOwner: string, chosen: CommitRef) {
+            chosenRefsRef.value = new Map(chosenRefsRef.value).set(nameWithOwner, chosen);
         }
 
-        /** Where the Commits section of `owner/name` was left, if it was; used once, for it is forgotten here. */
-        function takePlace(nameWithOwner: string): CommitGraphPlace | undefined {
-            const place = session?.places.get(nameWithOwner);
-            session?.places.delete(nameWithOwner);
-            return place;
+        /** The branch or tag of `owner/name` chosen last ({@link noteChosenRef}), or `null`; reactive. */
+        function getChosenRef(nameWithOwner: string): CommitRef | null {
+            return chosenRefsRef.value.get(nameWithOwner) ?? null;
+        }
+
+        /**
+         * Adds a part of a graph's view that takes Escape before the commit opened beside it closes (its list of branches
+         * and tags lying over the graph): `taker` answers `true` when it took the key. Returns its removal.
+         */
+        function addEscapeTaker(taker: () => boolean) {
+            escapeTakers.add(taker);
+            return () => {
+                escapeTakers.delete(taker);
+            };
+        }
+
+        /** Escape pressed with a commit opened: `true` when a part of a graph's view took it ({@link addEscapeTaker}). */
+        function takeEscape() {
+            for (const taker of escapeTakers) {
+                if (taker()) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /** Another account signed in, or none: the graphs of whoever was before leave memory. */
@@ -487,6 +527,7 @@ export const CommitGraphStore = defineService({
             statesRef.value = new Map();
             detailsRef.value = new Map();
             checksRef.value = new Map();
+            chosenRefsRef.value = new Map();
             if (!account) {
                 return;
             }
@@ -497,7 +538,6 @@ export const CommitGraphStore = defineService({
                 pendingStates: new Map(),
                 statesInFlight: new Map(),
                 checksInFlight: new Map(),
-                places: new Map(),
                 onScreen: new Map(),
                 cancelStatesBatch: null,
             };
@@ -915,7 +955,8 @@ export const CommitGraphStore = defineService({
                 const readAt = clock.now();
                 const states = new Map(statesRef.value.get(nameWithOwner));
                 for (const [index, oid] of [...oids.values()].entries()) {
-                    states.set(oid, { state: toCommitState(answer.nodes[index] ?? null), readAt });
+                    const node = answer.nodes[index] ?? null;
+                    states.set(oid, { state: toCommitState(isCommitStateNode(node) ? node : null), readAt });
                 }
 
                 statesRef.value = new Map(statesRef.value).set(nameWithOwner, states);
@@ -930,14 +971,20 @@ export const CommitGraphStore = defineService({
             }
         }
 
-        /** Reads a commit's details; never rejects — a read that fails says so. An ended session's answer is dropped. */
-        async function readDetail(current: Session, nameWithOwner: string, { id, oid }: CommitParent) {
+        /**
+         * Reads a commit's details and its state; never rejects — a read that fails says so. A read keeps them by `rev`
+         * and by the full oid GitHub answered with. An ended session's answer is dropped.
+         */
+        async function readDetail(current: Session, nameWithOwner: string, rev: string) {
             let read: CommitDetailRead = { kind: 'failed' };
+            let state: CommitState | null = null;
             try {
-                const { node } = await current.account.sdk.CommitDetail({ id });
-                if (isCommitNode(node)) {
+                const answer = await current.account.sdk.CommitDetail({ ...parseRepositoryName(nameWithOwner), rev });
+                const node = answer.repository?.object;
+                if (isCommitObject(node)) {
                     const [commit] = toKeptCommits(nameWithOwner, [node]);
                     read = commit ? { kind: 'read', commit, ...splitMessage(node.message) } : read;
+                    state = toCommitState(node);
                 }
             } catch (error) {
                 if (isCurrent(current)) {
@@ -945,13 +992,30 @@ export const CommitGraphStore = defineService({
                 }
             }
 
-            if (isCurrent(current)) {
-                setDetail(nameWithOwner, oid, read);
+            if (!isCurrent(current)) {
+                return;
+            }
+
+            setDetail(nameWithOwner, rev, read);
+            if (read.kind !== 'read') {
+                return;
+            }
+
+            if (read.commit.oid !== rev) {
+                setDetail(nameWithOwner, read.commit.oid, read);
+            }
+
+            if (state) {
+                const states = new Map(statesRef.value.get(nameWithOwner)).set(read.commit.oid, {
+                    state,
+                    readAt: clock.now(),
+                });
+                statesRef.value = new Map(statesRef.value).set(nameWithOwner, states);
             }
         }
 
-        function setDetail(nameWithOwner: string, oid: string, read: CommitDetailRead) {
-            const details = new Map(detailsRef.value.get(nameWithOwner)).set(oid, read);
+        function setDetail(nameWithOwner: string, rev: string, read: CommitDetailRead) {
+            const details = new Map(detailsRef.value.get(nameWithOwner)).set(rev, read);
             detailsRef.value = new Map(detailsRef.value).set(nameWithOwner, details);
         }
 
@@ -959,15 +1023,18 @@ export const CommitGraphStore = defineService({
          * Reads a commit's checks; never rejects. A failure leaves a list read before in place and says so otherwise; either
          * way it counts as a read for the minute. An ended session's answer is dropped.
          */
-        async function readChecks(current: Session, nameWithOwner: string, { id, oid }: CommitParent) {
+        async function readChecks(current: Session, nameWithOwner: string, oid: string) {
             const inFlight = current.checksInFlight.get(nameWithOwner) ?? new Set<string>();
             current.checksInFlight.set(nameWithOwner, inFlight);
             inFlight.add(oid);
 
             let answer: ReturnType<typeof toCommitChecks> = null;
             try {
-                const { node } = await current.account.sdk.CommitChecks({ id });
-                answer = toCommitChecks(node);
+                const { repository } = await current.account.sdk.CommitChecks({
+                    ...parseRepositoryName(nameWithOwner),
+                    rev: oid,
+                });
+                answer = toCommitChecks(repository?.object);
             } catch (error) {
                 if (isCurrent(current)) {
                     logger.warn('The checks of a commit could not be read', { nameWithOwner, error });
@@ -1278,14 +1345,24 @@ function toKeptCommits(
     }));
 }
 
+/** The object `CommitDetail` answers with: a commit, another kind of object, or none. */
+type CommitDetailObject = NonNullable<CommitDetailQuery['repository']>['object'];
+
 /**
- * Whether `node(id:)` answered with the commit asked for. A guard, not `'message' in node` where it is used: the
- * generated type's `Record<PropertyKey, never>` for any other node survives that test, and isn't a commit's fields.
+ * Whether `object(expression:)` answered with a commit. A guard, not `'message' in node` where it is used: the
+ * generated type's `Record<PropertyKey, never>` for any other object survives that test, and isn't a commit's fields.
  */
-function isCommitNode(
-    node: CommitDetailQuery['node'],
-): node is Extract<NonNullable<CommitDetailQuery['node']>, { message: string }> {
+function isCommitObject(
+    node: CommitDetailObject | undefined,
+): node is Extract<NonNullable<CommitDetailObject>, { message: string }> {
     return node !== null && node !== undefined && 'message' in node;
+}
+
+/** Whether `nodes(ids:)` answered with a commit, for the same reason as {@link isCommitObject}. */
+function isCommitStateNode(
+    node: CommitStatesQuery['nodes'][number],
+): node is Extract<NonNullable<CommitStatesQuery['nodes'][number]>, { id: string }> {
+    return node !== null && 'id' in node;
 }
 
 /**
@@ -1300,7 +1377,7 @@ function splitMessage(message: string) {
 }
 
 /** A commit's checks as read; `null` when GitHub gave no commit. A commit with no rollup has no checks. */
-function toCommitChecks(node: CommitChecksQuery['node']) {
+function toCommitChecks(node: NonNullable<CommitChecksQuery['repository']>['object'] | undefined) {
     if (!node || !('statusCheckRollup' in node)) {
         return null;
     }
@@ -1312,9 +1389,12 @@ function toCommitChecks(node: CommitChecksQuery['node']) {
     };
 }
 
-/** A commit GitHub gave nothing for has neither a pull request nor checks. */
-function toCommitState(node: CommitStatesQuery['nodes'][number]): CommitState {
-    if (!node || !('id' in node)) {
+/**
+ * A commit GitHub gave nothing for has neither a pull request nor checks. The pull request's `url` is kept whole: a
+ * fork's commit came from its upstream's pull request, which only the address in it names.
+ */
+function toCommitState(node: CommitStateFieldsFragment | null): CommitState {
+    if (!node) {
         return { pullRequest: null, ci: null };
     }
 
