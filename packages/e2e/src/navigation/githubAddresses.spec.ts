@@ -115,6 +115,11 @@ test("an untracked repository's GitHub addresses open its lists, and its Actions
     await page.goto('/acme/web/actions/runs/1/job/2');
     expect((await job).href).toBe('https://github.com/acme/web/actions/runs/1/job/2');
     await expect(page).toHaveURL('https://github.com/acme/web/actions/runs/1/job/2');
+    // Nor a workflow's page.
+    const workflow = answerGitHubPage(github, '/acme/web/actions/workflows/deploy.yml');
+    await page.goto('/acme/web/actions/workflows/deploy.yml');
+    expect((await workflow).href).toBe('https://github.com/acme/web/actions/workflows/deploy.yml');
+    await expect(page).toHaveURL('https://github.com/acme/web/actions/workflows/deploy.yml');
 });
 
 test("a tracked repository and its lists, a project and its saved view, the account and tracking open at GitHub's addresses", async ({
@@ -246,6 +251,7 @@ test('an address githq does not show leaves for the same address on github.com, 
         '/acme/web/actions',
         '/acme/web/actions/runs/1',
         '/acme/web/actions/runs/1/job/2',
+        '/acme/web/actions/workflows/deploy.yml',
     ];
     for (const address of addresses) {
         const target = answerGitHubPage(github, address);

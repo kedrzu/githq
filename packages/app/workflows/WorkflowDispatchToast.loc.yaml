@@ -1,0 +1,46 @@
+started:
+  en: '{workflow} started on {ref} · #{number}'
+startedNoNumber:
+  en: '{workflow} started on {ref}'
+queued:
+  en: Queued on GitHub.
+inputValue:
+  en: '{name} {value}'
+on:
+  en: 'on'
+off:
+  en: 'off'
+open:
+  en: Open
+openCommand:
+  en: Open the run started
+titleNoPermission:
+  en: "{workflow} wasn't run: no permission"
+titleNotFound:
+  en: "{workflow} wasn't run: GitHub doesn't have it"
+titleOrganizationRestricted:
+  en: "{workflow} wasn't run: {organization} hasn't approved githq"
+titleRefused:
+  en: "{workflow} wasn't run on {ref}"
+titleUnreachable:
+  en: "{workflow} wasn't run: GitHub couldn't be reached"
+titleServerError:
+  en: "{workflow} wasn't run: GitHub failed"
+titleAllowance:
+  en: "{workflow} wasn't run: the allowance is used up"
+detailNoPermission:
+  en: "GitHub refused it: your role in {repository} can't run workflows. Nothing was started."
+detailNotFound:
+  en: 'GitHub answered 404: the workflow or {ref} is gone from {repository}, or you no longer see it. Nothing was started.'
+detailOrganizationRestricted:
+  en: "{organization} hasn't approved githq, so githq can read its public repositories but can't change anything there."
+detailRefused:
+  en: 'GitHub refused it: {message}. Nothing was started.'
+detailUnreachable:
+  en: "githq couldn't reach GitHub, so it can't tell whether the run started. Look at the workflow's runs before trying again."
+detailServerError:
+  en: "GitHub answered {status}, a failure on its side rather than a refusal. Look at the workflow's runs before trying again."
+detailAllowance:
+  en: "GitHub's API allowance is used up until {time}, so nothing was started."
+requestAccess:
+  en: Request access on GitHub

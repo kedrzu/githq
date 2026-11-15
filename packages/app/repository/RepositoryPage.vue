@@ -66,7 +66,6 @@ const sync = useService(SyncEngine);
 const route = useRoute();
 const router = useRouter();
 const t = useTranslate();
-const list = useItemList();
 const tabs = useService(LastRepositoryTab);
 const workflowPlaces = useService(WorkflowTabPlaces);
 const graphView = useTemplateRef<InstanceType<typeof CommitGraphView>>('graphView');
@@ -93,18 +92,14 @@ const section = computed({
 });
 /** The item section whose state and view options the page holds: the one shown; on Commits, which lists none, Issues. */
 const listSection = computed((): RepositoryItemSection => (isItemSection(section.value) ? section.value : 'issues'));
+// Back on an item opened from here names the section (mobile D20).
+const list = useItemList(() => t(l[listSection.value]));
 const itemsShown = computed(() => isItemSection(section.value));
 const state = computed({
   get: () => states.value[listSection.value],
   set: (value: RepositoryState) => {
     states.value = { ...states.value, [listSection.value]: value };
   },
-});
-
-/** The workflow unfolded in the Workflows section (actions W3b), which the toolbar's key hints follow; `null` with none. */
-const unfoldedWorkflow = computed({
-  get: () => workflowPlaces.get(repositoryName).unfolded,
-  set: (unfolded: string | null) => workflowPlaces.update(repositoryName, { unfolded }),
 });
 
 // The section shown is remembered, so the links to this repository open it next time (`LastRepositoryTab.getPath`).
@@ -249,6 +244,15 @@ const shownList = computed(() => {
       describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
     }),
   };
+});
+/**
+ * Whether the workflow selected in the Workflows section — the first row until the user moves — has a failed run F
+ * opens (actions W35): the toolbar's hint is dimmed while it hasn't.
+ */
+const selectedWorkflowFails = computed(() => {
+  const rows = workflowList.value.groups.flatMap(group => group.rows);
+  const key = workflowPlaces.get(nameWithOwner.value).selected;
+  return (rows.find(row => row.key === key) ?? rows[0])?.latestFailure != null;
 });
 /** Its Workflows section (actions W3a), and the tab's count. */
 const workflowList = computed(() =>
@@ -465,6 +469,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     @reset="view.reset()"
     @open="list.open"
     @expand="list.expand"
+    @full-screen="list.openFullScreen"
     @listed="list.setListed"
     @move="move"
     @read-more="readMore"
@@ -472,7 +477,6 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
   >
     <template #workflows>
       <RepositoryWorkflowsTab
-        v-model:unfolded="unfoldedWorkflow"
         :name-with-owner="nameWithOwner"
         :list="workflowList"
         :now="list.now"
@@ -481,7 +485,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     <template #workflowsHints>
       <RepositoryWorkflowsHints
         v-if="workflowList.groups.length > 0"
-        :unfolded="unfoldedWorkflow !== null"
+        :failure="selectedWorkflowFails"
       />
     </template>
     <template #menu>

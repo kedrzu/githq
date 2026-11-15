@@ -21,6 +21,7 @@ import {
     getWorkflowRunPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
+import { WorkflowRoutes } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
@@ -86,7 +87,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme', 'github'],
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
-    // A run and its job, at GitHub's addresses; everything else under `actions/` is GitHub's page.
+    // A run and its job, and a workflow, at GitHub's addresses; everything else under `actions/` is GitHub's page.
     ['/acme/web/actions/runs/123', 'workflow-run'],
     ['/my-org/web.js/actions/runs/123', 'workflow-run'],
     ['/acme/web/actions/runs/123/job/456', 'workflow-run-job'],
@@ -97,7 +98,9 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web/actions/runs/123/usage', 'github'],
     ['/acme/web/actions/runs/123/workflow', 'github'],
     ['/acme/web/actions/runs', 'github'],
-    ['/acme/web/actions/workflows/ci.yml', 'github'],
+    ['/acme/web/actions/workflows/ci.yml', 'workflow-page'],
+    ['/acme/web/actions/workflows/pages', 'workflow-page'],
+    ['/acme/web/actions/workflows', 'github'],
     ['/orgs/web/actions/runs/123', 'github-orgs'],
     // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
     ['/acme/web/commits/main', 'github'],
@@ -261,6 +264,7 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositoryPath('acme/web', 'commits'), 'repository'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 12 }), 'item-issue'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
+        [WorkflowRoutes.getPagePath({ owner: 'acme', name: 'web', file: 'deploy.yml' }), 'workflow-page'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
         [getRepositorySettingsPath('acme/web'), 'repository-settings'],

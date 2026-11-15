@@ -75,6 +75,7 @@ export const CommandRegistry = defineService({
             register,
             showKeySheet,
             isEnabled,
+            findByKey,
             run,
             openMenu,
             closeMenu,
@@ -111,8 +112,20 @@ export const CommandRegistry = defineService({
             return command.when?.() ?? true;
         }
 
+        /**
+         * The action a key runs now — what pressing it outside a field would run, the one whose section comes first —
+         * for a button that does the same (the phone's New issue: a project's own in a project, else the app's).
+         */
+        function findByKey(key: string) {
+            return findCommand(command => command.key === key);
+        }
+
         /** Runs the action by its key — or, where it does not run itself, opens the menu at its submenu. */
         function run(command: Command) {
+            if (command.unavailable !== undefined) {
+                return;
+            }
+
             const ran = command.run ? command.run() !== false : false;
             if (!ran && command.options) {
                 openMenu(command.id);
@@ -150,7 +163,12 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            const command = findCommand(event);
+            const command = findCommand(
+                candidate =>
+                    candidate.key !== undefined &&
+                    matchesCommandKey(event, candidate.key) &&
+                    isFreeTarget(event.target, candidate),
+            );
             if (command) {
                 event.preventDefault();
                 // ⌘K held down opens or closes the menu once, rather than flickering it.
@@ -160,16 +178,15 @@ export const CommandRegistry = defineService({
             }
         }
 
-        function findCommand(event: KeyboardEvent) {
+        /** The first action, by section, that can run and `matches`. */
+        function findCommand(matches: (command: Command) => boolean) {
             for (const section of COMMAND_SECTIONS) {
                 for (const command of commands.value) {
-                    const { key } = command;
                     if (
                         command.section === section &&
-                        key !== undefined &&
+                        command.unavailable === undefined &&
                         (command.run !== undefined || command.options !== undefined) &&
-                        matchesCommandKey(event, key) &&
-                        isFreeTarget(event.target, command) &&
+                        matches(command) &&
                         isEnabled(command)
                     ) {
                         return command;

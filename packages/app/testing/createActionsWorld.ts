@@ -18,6 +18,8 @@ export interface ActionsWorldRun {
     readonly conclusion: string | null;
     /** ISO. */
     readonly createdAt: string;
+    /** The login the run is credited to; none when absent. */
+    readonly actor?: string;
 }
 
 /** A job of a run in the fake GitHub, as GitHub answers it: `steps[]` with `started_at`, `completed_at`, …. */
@@ -41,14 +43,16 @@ export interface ActionsWorldRepository {
     jobs: Map<number, readonly ActionsWorldJob[]>;
     /** A job's log, or the error status its log answers with, by the job's id; one missing here answers 404. */
     logs: Map<number, string | number>;
+    /** A file's text at any ref, by its path (`.github/workflows/deploy.yml`); one missing here answers 404. */
+    files: Map<string, string>;
     /** GitHub answers the repository's Actions with this error status instead (403, 404, 401, …); `null` for none. */
     refusal: number | null;
 }
 
 /**
  * GitHub Actions in the fake GitHub, answering what `WorkflowSync` asks: a repository's latest runs, the repository
- * itself (its default branch), its tags, its workflows and a workflow's runs (by `branch` or on any ref, a page at a
- * time with a `Link` to the next), and what `WorkflowRunStore` asks: a run, its jobs and a job's log. Each answer's ETag is a hash of its body, answered `304` while it is the one sent. A repository the test
+ * itself (its default branch), its tags, its workflows, a workflow's runs (by `branch`, `event`, `status` and `actor`
+ * or none, a page at a time with a `Link` to the next) and a file's content, and what `WorkflowRunStore` asks: a run, its jobs and a job's log. Each answer's ETag is a hash of its body, answered `304` while it is the one sent. A repository the test
  * never set up has no workflows, on `main`.
  */
 export interface ActionsWorld {
@@ -76,6 +80,7 @@ export function createActionsWorld(): ActionsWorld {
                 tags: [],
                 jobs: new Map(),
                 logs: new Map(),
+                files: new Map(),
                 refusal: null,
             };
             world.repositories.set(nameWithOwner, found);
@@ -90,6 +95,11 @@ export function createActionsWorld(): ActionsWorld {
         }
 
         const path = request.operation.slice('GET '.length);
+        const filePath = /^\/repos\/([^/]+\/[^/]+)\/contents\/(.+)$/.exec(path);
+        if (filePath?.[1] !== undefined && filePath[2] !== undefined) {
+            return answerFile(request, repository(filePath[1]), decodeURIComponent(filePath[2]));
+        }
+
         const runPath = /^\/repos\/([^/]+\/[^/]+)\/actions\/(?:runs\/(\d+)(\/jobs)?|jobs\/(\d+)\/logs)$/.exec(path);
         if (runPath?.[1] !== undefined) {
             return answerRun(request, repository(runPath[1]), runPath);
@@ -142,9 +152,25 @@ export function createActionsWorld(): ActionsWorld {
         }
 
         const workflowId = Number(match[3]);
-        const branch = typeof variables.branch === 'string' ? variables.branch : null;
+        const filters = ['branch', 'event', 'status', 'actor'].flatMap(name => {
+            const value = variables[name];
+            return typeof value === 'string' ? [[name, value] as const] : [];
+        });
         const matching = newestFirst(found.runs).filter(
-            run => run.workflowId === workflowId && (branch === null || run.headBranch === branch),
+            run =>
+                run.workflowId === workflowId &&
+                filters.every(([name, value]) => {
+                    switch (name) {
+                        case 'branch':
+                            return run.headBranch === value;
+                        case 'event':
+                            return run.event === value;
+                        case 'status':
+                            return run.status === value || run.conclusion === value;
+                        default:
+                            return run.actor === value;
+                    }
+                }),
         );
         const page = Number(variables.page ?? 1);
         const runs = matching.slice((page - 1) * perPage, page * perPage);
@@ -154,14 +180,33 @@ export function createActionsWorld(): ActionsWorld {
         }
 
         const next = new URL(`${API}${path}`);
-        if (branch !== null) {
-            next.searchParams.set('branch', branch);
+        for (const [name, value] of filters) {
+            next.searchParams.set(name, value);
         }
 
         next.searchParams.set('per_page', String(perPage));
         next.searchParams.set('page', String(page + 1));
         return { ...answer, link: `<${next.href}>; rel="next"` };
     }
+}
+
+/** A file's content, base64 as GitHub sends it, or 404 when the repository has none at that path. */
+function answerFile(request: TestGraphQLRequest, found: ActionsWorldRepository, path: string): TestRestAnswer {
+    if (found.refusal !== null) {
+        return { status: found.refusal, body: { message: 'Refused' } };
+    }
+
+    const text = found.files.get(path);
+    if (text === undefined) {
+        return { status: 404, body: { message: 'Not Found' } };
+    }
+
+    return conditional(request, {
+        type: 'file',
+        path,
+        encoding: 'base64',
+        content: btoa(String.fromCodePoint(...new TextEncoder().encode(text))),
+    });
 }
 
 /** A run, its jobs or a job's log, from what {@link answerRest}'s pattern matched of the path. */
@@ -226,6 +271,9 @@ function toRestRun(run: ActionsWorldRun) {
         updated_at: run.createdAt,
         display_title: `Run ${run.id}`,
         html_url: `https://github.com/acme/web/actions/runs/${run.id}`,
+        ...(run.actor !== undefined && {
+            actor: { login: run.actor, avatar_url: `https://avatars.githubusercontent.com/${run.actor}` },
+        }),
     };
 }
 

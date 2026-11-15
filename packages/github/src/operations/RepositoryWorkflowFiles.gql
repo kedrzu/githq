@@ -1,0 +1,19 @@
+# The workflow files of a repository at a ref, in one request (not conditional): what each starts on, and whether it
+# can be run by hand — to offer only the dispatchable workflows. `$expression` is `<ref>:.github/workflows`.
+query RepositoryWorkflowFiles($owner: String!, $name: String!, $expression: String!) {
+    repository(owner: $owner, name: $name) {
+        object(expression: $expression) {
+            ... on Tree {
+                entries {
+                    path
+                    object {
+                        ... on Blob {
+                            text
+                            isTruncated
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

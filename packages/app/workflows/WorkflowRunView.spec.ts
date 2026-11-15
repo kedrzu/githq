@@ -22,6 +22,7 @@ const {
     NoJobYet,
     NothingKnown,
     OtherJob,
+    Overview,
     Passed,
     RunFailed,
     RunGone,
@@ -82,6 +83,35 @@ test('⌥J/⌥K move between the jobs, stopping at the ends; a click selects', a
 
     await userEvent.click(page.getByRole('button', { name: /typecheck/u }));
     expect(selectJob.mock.lastCall?.[0]).toMatchObject({ name: 'typecheck' });
+});
+
+test('W34: at the overview ⌥J/⌥K move the cursor on the jobs, no log; Enter and a click open a job’s log', async () => {
+    const selectJob = vi.fn();
+    await Overview.run({ args: { ...Overview.args, onSelectJob: selectJob } });
+
+    await expect.element(page.getByRole('heading', { name: 'Succeeded in 3m 54s', level: 2 })).toBeVisible();
+    await expect.element(page.getByText('All 7 jobs passed.')).toBeVisible();
+    expect(page.getByTestId('workflow-job-log').elements()).toHaveLength(0);
+    expect(selectedJob()?.textContent).toContain('build');
+    expect(steps()).toHaveLength(0);
+
+    await userEvent.keyboard('{Alt>}j{/Alt}');
+    expect(selectJob).not.toHaveBeenCalled();
+    await expect.poll(() => selectedJob()?.textContent).toContain('deploy');
+    await userEvent.keyboard('{Enter}');
+    expect(selectJob.mock.lastCall?.[0]).toMatchObject({ name: 'deploy' });
+
+    await userEvent.click(page.getByRole('button', { name: /typecheck/u }));
+    expect(selectJob.mock.lastCall?.[0]).toMatchObject({ name: 'typecheck' });
+});
+
+test('W34: the toolbar links to the workflow, still named as the run is', async () => {
+    await Overview.run();
+
+    await expect.element(page.getByRole('heading', { name: 'Deploy #4825', level: 1 })).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Deploy' }))
+        .toHaveAttribute('href', '/fitloop/webapp/actions/workflows/deploy.yml');
 });
 
 test('the job the address names shows its steps, the others none', async () => {
@@ -206,11 +236,11 @@ test('W4j: a running job says so with the way to GitHub, steps showing their sta
     await expect.element(page.getByText(matchPart('1 running · 1 waiting · 1 passed'))).toBeVisible();
 });
 
-test('a passed run works too: its first job selected, its log there, no error', async () => {
+test('a passed run’s job works too: selected, its log there, no error', async () => {
     await Passed.run();
 
     expect(selectedJob()?.textContent).toContain('lint');
-    await expect.element(page.getByTestId('workflow-run-summary')).toHaveTextContent('Passed');
+    await expect.element(page.getByTestId('workflow-run-summary')).toHaveTextContent('Succeeded');
     await expect.element(page.getByText('All good')).toBeVisible();
 });
 

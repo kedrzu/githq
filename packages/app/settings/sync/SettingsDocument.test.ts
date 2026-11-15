@@ -10,11 +10,15 @@ import {
     readRepositoryLayout,
     readRefSort,
     readReviewCommentChoice,
+    readWorkflowRunsGroupBy,
     readWorkflowSettings,
     serializeSettings,
     writeRefSort,
+    writeWorkflowRunsGroupBy,
     writeWorkflowSettings,
 } from './SettingsDocument.js';
+import type { WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
+
 import type {
     MaxWidth,
     RefSort,
@@ -330,4 +334,30 @@ test.each<[unknown, MaxWidth | null]>([
         itemPageWidth: written,
         reviewDiffWidth: written,
     });
+});
+
+test.each<[unknown, WorkflowRunsGroupBy]>([
+    [{ groupBy: 'ref' }, 'ref'],
+    [undefined, 'none'],
+    [{ groupBy: 'week' }, 'none'],
+    [{}, 'none'],
+    ['ref', 'none'],
+])('a file with the runs grouping %j is readable, reads as %s and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, workflowRuns: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readWorkflowRunsGroupBy(parsed.document)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, workflowRuns: written });
+});
+
+test('writing the runs grouping keeps the keys a newer build put beside it, and writes nothing when it reads as that already', () => {
+    const document: SettingsDocument = { ...DOCUMENT, workflowRuns: { groupBy: 'week', collapsed: true } };
+
+    expect(writeWorkflowRunsGroupBy(document, 'none')).toBeNull();
+    const written = writeWorkflowRunsGroupBy(document, 'status');
+    expect(written?.workflowRuns).toEqual({ groupBy: 'status', collapsed: true });
+    expect(written?.version).toBe(1);
+    expect(written && writeWorkflowRunsGroupBy(written, 'status')).toBeNull();
 });

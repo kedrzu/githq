@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. On a phone the toolbar is the phone's top bar, the saved views left to the command menu (`ListToolbar`), and the command line names the view shown with its count (mobile D17). -->
 <script lang="ts" setup>
 import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -51,6 +51,7 @@ import type {
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
+import { usePhonePart } from '@/shell/usePhonePart.js';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
 import { formatList } from '@/utils/formatList.js';
 
@@ -138,6 +139,8 @@ const emit = defineEmits<{
   open: [id: string];
   /** Enter on the opened item's row: it expands to its page. */
   expand: [id: string];
+  /** `⇧Enter` on a row not open: it opens straight on its page. */
+  fullScreen: [id: string];
   listed: [listed: ListedItems];
   /** An item dropped into another column or group: set its field. */
   move: [move: ListMove];
@@ -295,6 +298,12 @@ const sortSummary = computed(() => {
     ? t(l.manual)
     : (props.sorts.find(choice => choice.value === options.value.sort)?.label ?? '');
 });
+
+// On a phone the command line names the tab shown with how many the view lists, left out while they arrive (mobile D17).
+usePhonePart(() => ({
+  label: props.tabs.find(tab => tab.current)?.name ?? props.project.title,
+  count: props.arriving || props.groups === null || unreadable.value ? null : shownCount.value,
+}));
 
 function addDraft(title: string, group: string | null) {
   emit('addDraft', title, group);
@@ -575,6 +584,7 @@ function hasItemView(entry: ProjectEntry) {
         :can-open-over="hasItemView"
         @open="emit('open', $event)"
         @expand="emit('expand', $event)"
+        @full-screen="emit('fullScreen', $event)"
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >

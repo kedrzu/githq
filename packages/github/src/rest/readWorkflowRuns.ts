@@ -26,11 +26,21 @@ export interface GitHubWorkflowRun {
     readonly runStartedAt?: string;
     /** ISO; when the run last changed — once completed, when it finished. */
     readonly updatedAt: string;
+    /** Whose push, dispatch or pull request started the run (`actor`, not the re-run's `triggering_actor`). */
+    readonly actor: GitHubWorkflowRunActor | null;
+    /** Which attempt this is, from 1; a re-run keeps the run's id and moves it on. */
+    readonly runAttempt: number;
     /**
      * Not GitHub's: what the run concluded before it was re-run, while it goes again. A re-run keeps the run's id and
      * blanks its conclusion, and only a copy read before it knows what that was (`mergeWorkflowRuns`).
      */
     readonly conclusionBeforeRerun?: string;
+}
+
+/** The user a run is credited to. */
+export interface GitHubWorkflowRunActor {
+    readonly login: string;
+    readonly avatarUrl: string;
 }
 
 /**
@@ -90,8 +100,19 @@ export function readWorkflowRun(status: number, entry: unknown): GitHubWorkflowR
         headSha: entry.head_sha,
         displayTitle: entry.display_title,
         updatedAt: entry.updated_at,
+        actor: readActor(entry.actor),
+        // GitHub always sends it; a run without one has had only its first attempt.
+        runAttempt: typeof entry.run_attempt === 'number' ? entry.run_attempt : 1,
         ...(typeof entry.run_started_at === 'string' && { runStartedAt: entry.run_started_at }),
     };
+}
+
+function readActor(actor: unknown): GitHubWorkflowRunActor | null {
+    if (!isPlainObject(actor) || typeof actor.login !== 'string' || typeof actor.avatar_url !== 'string') {
+        return null;
+    }
+
+    return { login: actor.login, avatarUrl: actor.avatar_url };
 }
 
 function malformed(status: number) {

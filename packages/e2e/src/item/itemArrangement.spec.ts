@@ -3,13 +3,15 @@ import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
+import { selectRow } from '../myWork/selectRow.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 import { getScrollTop } from '../utils/getScrollTop.js';
 import { scrollDown } from '../utils/scrollDown.js';
 
 // An item opens in the panel; Enter on its row again, "Open full screen" or ⇧Enter expand it to its page, and Escape,
-// "Back to the panel" or ⇧Enter step back to the panel (`OpenedItem.vue`).
+// "Back to the panel" or ⇧Enter step back to the panel (`OpenedItem.vue`). ⇧Enter on a row with nothing open opens
+// its item straight on its page, Escape closing it to the list.
 
 const ISSUE = 'Sign-in loops after the token expires';
 const PANEL = '/?pane=issue&issue=acme%7Cweb%7C12';
@@ -77,6 +79,25 @@ test('Shift+Enter toggles the panel and the page', async ({ page, github }) => {
     await expect(item.fullScreenButton).toBeVisible();
 });
 
+test('Shift+Enter on a row with nothing open opens it straight full screen; Escape goes back to the list, the row selected', async ({
+    page,
+    github,
+}) => {
+    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
+    const item = new ItemViewHarness(page);
+
+    await selectRow(myWork, ISSUE);
+    await page.keyboard.press('Shift+Enter');
+    await expect(page).toHaveURL(PAGE);
+    await expect(item.title).toHaveText(ISSUE);
+
+    // Never expanded from the panel: Escape closes it to the list, with no panel.
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL('/');
+    await expect(item.root).toBeHidden();
+    await expect(myWork.selectedRow).toContainText(ISSUE);
+});
+
 test('a reload of an expanded page keeps "Back to the panel" returning to the panel', async ({ page, github }) => {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
@@ -109,8 +130,9 @@ test('a page opened by its address: "Back to the panel" puts the item in the pan
 
     await page.goto(PAGE);
     await expect(item.title).toHaveText(ISSUE);
+    // With no list behind it, closing goes up to the item's repository (mobile D20, the computer too).
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/acme/web/issues');
     await expect(item.root).toBeHidden();
 });
 

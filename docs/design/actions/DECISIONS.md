@@ -325,3 +325,61 @@ decides where, not this design ([D5](#d5)). How the file takes a new field, and 
 - Writing the default into every entry: entries nobody configured would keep an old default forever.
 - Merging two devices' pattern lists: no case for it, and a pattern deleted on one side would come back.
 - Raising the file's `version` for this field: the owner wants new settings to be optional fields instead.
+
+## D15
+
+**A workflow is an item, like an issue or a pull request. Enter on a workflow in the Workflows tab opens the workflow
+in the item panel (or full screen): what it is and a flat list of its runs with filters. Enter on a run opens the run.
+Starting runs (dispatch with inputs, re-runs, cancel) is in the command menu only, as re-running already is
+([D10](#d10)).** (2026-11-14, owner for the direction and against a cross-repository feed, agent for extending D10 to
+dispatch and cancel, which the owner left as proposed)
+
+**Why.** The tab was built only around broken workflows: Enter jumped to the latest failure, a passing workflow had
+nowhere to go, and other runs unfolded as a list inside the list. An item reuses Direction D's panel and full-screen
+switch, keeps the health overview of the list, and gives a workflow a place for its triggers and for starting it.
+
+**How it looks** (2026-11-14, owner after round 1 of the variants): the item has two columns, runs on the left and the
+workflow's details on the right (triggers, the refs that count, last success, typical duration, dispatch inputs).
+Narrower than Direction D's two-column width, the same content splits into the tabs Runs and Details; full screen is
+always two columns and fills the page's width, unlike the centred box of an issue or a pull request ([githq
+D9](../githq/DECISIONS.md#d9)): it is a list and a details column, not text to read. Grouping the runs is an option of their toolbar (None, Status, Ref, Event, Day, Actor), not a
+layout. "Run workflow" works from the command menu in context: on the selected or open workflow directly, inside a
+repository among its workflows, elsewhere after picking the repository first, since names like Deploy repeat across
+repositories. The form for the inputs opens inside the command menu. The Run workflow button has no key. Moving in and out follows
+[the app's navigation](../githq/navigation.md): `↵` on the open workflow goes full screen, `Esc` from a run returns to
+the workflow, `Esc` again to the list.
+
+**Rejected.**
+
+- Runs grouped by ref as the only layout: grouping is an option instead.
+- Dispatch in a dialog: the command menu already holds the steps before the form.
+- Picking a workflow across all repositories by name: the same name repeats in many repositories.
+- GitHub's layout, workflows in a column beside one feed of runs: a second sidebar inside the tab, and it loses the
+  health overview of all workflows at once.
+- Runs as the list, grouped by workflow: a workflow then has no place of its own for its triggers and dispatch.
+- A feed of runs across repositories: the owner expects it to be noisy; the Broken workflows page (D6) stays the
+  cross-repository view.
+
+## D16
+
+**How a workflow's item remembers what the user chose.** (2026-11-14, owner on the agent's recommendations)
+
+- **The tab, Runs or Details, carries over to the next workflow opened in the narrow item, until the app reloads.** Then
+  it starts on Runs again, as the arrangement is not remembered either ([githq D9](../githq/DECISIONS.md#d9)).
+- **Grouping the runs is one setting for every workflow, kept in the settings file, so it follows the user between
+  computers when saving settings to GitHub is on** ([settings-sync D13](../settings-sync/DECISIONS.md#d13)): an
+  optional root field, `"workflowRuns": { "groupBy": "day" }`, absent meaning None.
+- **The runs' filters (Ref, Event, Status, Actor) are cleared when another workflow opens.** A filter is a question about
+  one workflow; carried over unseen, it reads as "no runs".
+- **`F` opens the latest failed run of the workflow under the cursor** (list, panel, full screen; also "Open latest
+  failure" in the command menu), whatever ref it failed on; without a failure it does nothing and its hint is dimmed.
+  On the Broken workflows page `↵` still opens the latest failure directly, since that page asks what is broken, and
+  `Esc` from the run returns there.
+- **A passing run's summary shows no artifacts and no environment in the first version:** each needs reads githq does
+  not make today, and downloading an artifact from the browser is untested.
+
+**Rejected.**
+
+- Grouping per workflow, as lists keep their options per list: every workflow would start at None.
+- Keeping the grouping only in this browser (`ListViewOptionsStore`): the owner wants it synced.
+- `⇧F` to keep `F` for a filter: the app's filters are in toolbars, not on letters.

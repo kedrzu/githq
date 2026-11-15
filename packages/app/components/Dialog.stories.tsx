@@ -124,3 +124,31 @@ export const Centered: Story = {
             },
         }),
 };
+
+/** A sheet along the window's left edge, all its height, with its own content and no close button (the phone's places panel). */
+export const LeftEdge: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const open = ref(true);
+
+                return () => (
+                    <StoryPage>
+                        <Dialog
+                            open={open.value}
+                            onUpdate:open={(value: boolean) => (open.value = value)}
+                            title="Places"
+                            width={320}
+                            edge="left"
+                            bare
+                        >
+                            {{
+                                trigger: () => <Button>Places</Button>,
+                                default: () => <p>My work · Projects · Repositories</p>,
+                            }}
+                        </Dialog>
+                    </StoryPage>
+                );
+            },
+        }),
+};

@@ -11,6 +11,8 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListEntry, ListViewOptions } from '@/lists/ListTypes.js';
 import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
@@ -756,6 +758,8 @@ function mount({
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The desktop's layout, whatever the frame's width.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     const host = document.createElement('div');
     host.style.height = hostHeight;
     host.style.display = 'flex';

@@ -1,4 +1,4 @@
-<!-- The Jobs column of a run's page (actions W4a, `Workflow / Jobs`): how many jobs stand how, then the jobs — failed first — each with its state and how long it took, or its status. The selected job shows its steps, each with its state and time; a failed step and a running one stand out. While a search of the selected job's log finds anything, its matches show on the job and, in place of the time, on the steps that have them; other jobs' logs aren't read for it (actions D12). Placeholder rows while the jobs are on their way (W4e). A click selects a job; the keys are the page's (⌥J/⌥K). -->
+<!-- The Jobs column of a run's page (actions W4a, `Workflow / Jobs`): how many jobs stand how, then the jobs — failed first — each with its state and how long it took, or its status. The selected job shows its steps, each with its state and time; a failed step and a running one stand out. While a search of the selected job's log finds anything, its matches show on the job and, in place of the time, on the steps that have them; other jobs' logs aren't read for it (actions D12). Placeholder rows while the jobs are on their way (W4e). At the run's overview the selected job is the keys' cursor, its steps not shown (W34). A click selects a job; the keys are the page's (⌥J/⌥K). The column's width is the page's. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -29,6 +29,8 @@ const props = defineProps<{
   now: number;
   /** What a search found in the selected job's log; `null` with no search. */
   matches: LogMatches | null;
+  /** No steps under the selected job: at the run's overview, which shows no job's log (W34). */
+  hideSteps?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -167,7 +169,7 @@ function describeStepTime(step: GitHubWorkflowStep) {
           <span :class="css.workflowRunJobs_jobTime">{{ describeJobTime(job) }}</span>
         </button>
         <ul
-          v-if="job.id === selectedId && job.steps.length > 0"
+          v-if="!hideSteps && job.id === selectedId && job.steps.length > 0"
           :class="css.workflowRunJobs_list"
         >
           <li
@@ -222,15 +224,12 @@ function describeStepTime(step: GitHubWorkflowStep) {
 </template>
 
 <style lang="scss" module="css">
-// The design's column.
-$jobs-width: 268px;
-
+// Fills its column, whose width and edge are the page's (`ColumnSplit`).
 .workflowRunJobs {
-  flex: none;
-  width: $jobs-width;
+  flex: 1;
+  min-height: 0;
   padding: $spacing-10 $spacing-8;
   overflow-y: auto;
-  border-right: 1px solid $color-border;
 }
 
 .workflowRunJobs_head {

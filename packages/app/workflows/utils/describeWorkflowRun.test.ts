@@ -54,6 +54,8 @@ function run(fields: Partial<GitHubWorkflowRun>): GitHubWorkflowRun {
         headSha: 'abc',
         displayTitle: 'Run',
         updatedAt: '2026-11-02T11:00:00Z',
+        actor: null,
+        runAttempt: 1,
         ...fields,
     };
 }

@@ -246,6 +246,26 @@ $settings-column-width: 680px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
 
+// The phone layout (mobile D5, below `PHONE_MAX_WIDTH`): what a finger taps is at least this big (Apple's 44pt).
+$touch-target-size: 44px;
+// An icon in a phone's top bar or command line, larger than the desktop's for a finger's target.
+$phone-icon-size: 22px;
+// The bar along a phone screen's top: the places button or back, the title, the screen's actions (mobile D14).
+$phone-top-bar-height: 48px;
+// The strip under it while something holds the whole app back (mobile D12).
+$phone-strip-height: 36px;
+$phone-places-room: 56px;
+// The command line floating over a phone screen's bottom (mobile D17), its gap to the screen's edges, and the room it
+// takes there — what the screens' scroll leaves at its end and the toasts sit above. The home indicator's inset where
+// the browser gives one.
+$phone-command-line-height: 48px;
+$phone-command-line-gap: $spacing-12;
+$phone-command-line-room: calc(
+    #{$phone-command-line-height + $phone-command-line-gap * 2} + env(safe-area-inset-bottom, 0px)
+);
+// The command line's shadow, lifting it off the list scrolling under it.
+$shadow-phone-command-line: 0 8px 24px rgb(0 0 0 / 50%);
+
 // ---------------------------------------------------------------------------------------------------
 // Skeletons: what stands in for data on its way (first run and loading D9; `components/Skeleton.vue`)
 // ---------------------------------------------------------------------------------------------------
@@ -284,12 +304,6 @@ $workflow-repository-width: 130px;
 $workflow-ref-width: 130px;
 // A row's height: its 34px line and the 2px its surface is inset by above and below.
 $workflow-row-height: 38px;
-// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`): 30px and the 2px its
-// surface is inset by above and below.
-$workflow-run-line-height: 34px;
-// What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
-// icon and the gap after it.
-$workflow-run-indent: 41px;
 // A workflow row's state icon, square (`WorkflowRow`, its ghost `GhostWorkflowRow`).
 $workflow-icon-size: 15px;
 // A tick of the strip of runs (`RunStrip`, its ghost in `GhostWorkflowRow`): 7 wide, 3 apart, bottom-aligned in 14.
@@ -498,7 +512,7 @@ $row-surface-inset: $spacing-2 $spacing-8;
     box-shadow: inset 0 0 0 1px rgba($color-accent, 0.3);
 }
 
-// A line of an unfolded workflow that is its own button: the whole line is the hit area, its surface lights up, and
+// A line of runs that is its own button: the whole line is the hit area, its surface lights up, and
 // the keyboard's ring goes round the surface.
 @mixin workflow-line-button {
     @include row-surface($color-bg-3);

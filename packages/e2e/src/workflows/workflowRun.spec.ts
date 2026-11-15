@@ -68,7 +68,7 @@ test('a failed run at its address: what is known, failed jobs first with the fai
     await expect(screen.logTexts).toHaveText(['all fine']);
 });
 
-test('with no history Esc goes to the repository’s Workflows section; O and ⌘K open the selected job on GitHub in a new tab, the page staying', async ({
+test('with no history Esc goes to the run’s workflow’s page; O and ⌘K open the selected job on GitHub in a new tab, the page staying', async ({
     page,
     github,
 }) => {
@@ -95,8 +95,8 @@ test('with no history Esc goes to the repository’s Workflows section; O and �
     await expect(page).toHaveURL(path);
 
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
-    await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toBeVisible();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
+    await expect(page.getByRole('article', { name: 'Deploy' })).toBeVisible();
 });
 
 test('the way to GitHub in what stands in for the log goes to the job', async ({ page, github }) => {
@@ -104,7 +104,7 @@ test('the way to GitHub in what stands in for the log goes to the job', async ({
     const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
     const jobPath = `${path}/job/${buildId}`;
     await openTrackedWork(page, github, world);
-    await page.goto(path);
+    await page.goto(jobPath);
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.message('build is still running')).toBeVisible();
 
@@ -131,7 +131,7 @@ test('with no job to select, O opens the run on GitHub', async ({ page, github }
     await seen.close();
 });
 
-test('a click on a broken workflow’s strip is a click on its row: the failed run in githq, and Esc comes back', async ({
+test('F on a broken workflow’s row opens the failed run in githq; a job selected leaves no history, and Esc comes back', async ({
     page,
     github,
 }) => {
@@ -140,7 +140,8 @@ test('a click on a broken workflow’s strip is a click on its row: the failed r
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
-    await page.getByRole('main').getByTestId('run-strip').first().click();
+    await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('f');
     await expect(page).toHaveURL(path);
 
     await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
@@ -162,7 +163,7 @@ test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ p
     const repository = new RepositoryScreenHarness(page);
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
     github.holdAnswers();
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('f');
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(page).toHaveURL(path);
@@ -212,7 +213,8 @@ test('W4j: a running job reads no log; its log opens by itself once it finishes,
     const logPath = `/repos/${SAMPLE_REPOSITORY}/actions/jobs/${buildId}/logs`;
     world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, RUN_LOG);
     await openTrackedWork(page, github, world);
-    await page.goto(path);
+    // At the job: with nothing failed, the run itself opens at its overview.
+    await page.goto(`${path}/job/${buildId}`);
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.message('build is still running')).toBeVisible();
@@ -240,31 +242,44 @@ test('W4j: a running job reads no log; its log opens by itself once it finishes,
     await expect.poll(runCalls).toBe(after);
 });
 
-test('W4j: with no job in the address the job shown stays when it passes, its log opening, not the next one’s wait', async ({
+test('W34: a run with nothing failed opens at its overview, reading no log; Enter opens the cursor’s job’s log, Esc comes back to the overview, then to the workflow it was opened from', async ({
     page,
     github,
 }) => {
-    await page.clock.install();
-    const { world, runId, path } = createFailedRun(null);
-    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [
-        { name: 'build', conclusion: null },
-        { name: 'deploy', conclusion: null, status: 'queued' },
+    const { world } = createSampleTrackedWork();
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Deploy', runs: [] });
+    const runId = world.workflowRun(SAMPLE_REPOSITORY, 'Deploy', { conclusion: 'success', minutesAgo: 30 });
+    const path = `/${SAMPLE_REPOSITORY}/actions/runs/${runId}`;
+    const workflowPath = `/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`;
+    const [, testId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [
+        LINT,
+        { name: 'test', conclusion: 'success', steps: [{ name: 'Run tests', conclusion: 'success' }] },
     ]);
+    world.jobLog(SAMPLE_REPOSITORY, testId, '2026-11-02T11:46:01.0000000Z all tests pass');
     await openTrackedWork(page, github, world);
-    await page.goto(path);
+    await page.goto(workflowPath);
+    await expect(page.getByRole('article', { name: 'Deploy' })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(path);
 
     const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.message('build is still running')).toBeVisible();
-    await expect(screen.job('deploy')).toContainText('waiting');
+    await expect(screen.overview).toContainText('All 2 jobs passed.');
+    await expect(screen.job('lint')).toHaveAttribute('aria-current', 'true');
+    await expect(screen.log).toHaveCount(0);
+    expect(github.restCalls.filter(call => call.url.pathname.endsWith('/logs'))).toEqual([]);
 
-    world.finishJob(SAMPLE_REPOSITORY, runId, buildId, 'success');
-    world.jobLog(SAMPLE_REPOSITORY, buildId, '2026-11-02T11:46:01.0000000Z all built');
-    await page.clock.fastForward('00:31');
-
-    await expect(screen.logTexts).toHaveText(['all built']);
-    await expect(screen.jobs).toHaveText([/deploy/u, /build/u]);
-    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('Alt+j');
+    await expect(screen.job('test')).toHaveAttribute('aria-current', 'true');
     await expect(page).toHaveURL(path);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(`${path}/job/${testId}`);
+    await expect(screen.logTexts).toHaveText(['all tests pass']);
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(path);
+    await expect(screen.overview).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(workflowPath);
 });
 
 test('a job failing later stands first, marked, and takes nothing over: the cursor stays, the keys reach it', async ({
@@ -476,7 +491,7 @@ test('a log GitHub had no answer for just after its job ended is asked for again
     await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
 });
 
-test('under `actions/` of a tracked repository everything but a run and its job is GitHub’s page', async ({
+test('under `actions/` of a tracked repository everything but a run, its job and a workflow is GitHub’s page', async ({
     page,
     github,
 }) => {
@@ -486,7 +501,6 @@ test('under `actions/` of a tracked repository everything but a run and its job 
     for (const address of [
         `/${SAMPLE_REPOSITORY}/actions/runs/${runId}/usage`,
         `/${SAMPLE_REPOSITORY}/actions/runs/${runId}/attempts/1`,
-        `/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`,
     ]) {
         github.web(address, () => ({ status: 200, body: address }));
         await page.goto(address);
@@ -556,10 +570,10 @@ test('searching a job’s log: from memory, folded steps included, next and only
     await expect(screen.search).toHaveCount(0);
     await expect(screen.cursorLine).toHaveText(before ?? '');
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
 
     // The query didn't stay for the next time the page opens.
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('f');
     await expect(page).toHaveURL(path);
     await expect(screen.cursorLine).toContainText('Process completed');
     await expect(screen.search).toHaveCount(0);
@@ -650,16 +664,21 @@ test('W4k, W4j: first in ⌘K, no key, no question: the page goes running at onc
     await expect(repository.workflow('Deploy')).toBeVisible();
     await expect(repository.root.locator('[data-kind="running"]')).toBeVisible();
     await expect(shell.brokenWorkflowsCount).toHaveText('1');
+    // Opened again while it goes with nothing failed, at its overview (W34); failing then takes nothing over.
     await page.goto(path);
     await expect(screen.summary).toContainText('Running');
+    await expect(screen.overview).toBeVisible();
 
     world.finishRun(SAMPLE_REPOSITORY, runId, 'failure');
     world.finishJob(SAMPLE_REPOSITORY, runId, buildId, 'failure');
     world.jobLog(SAMPLE_REPOSITORY, buildId, '2026-11-02T11:46:02.0000000Z the second log');
     await page.clock.fastForward('00:31');
 
-    await expect(screen.logTexts.filter({ hasText: 'the second log' })).toBeVisible();
     await expect(screen.summary).toContainText('Failed');
+    await expect(screen.overview).toBeVisible();
+    await expect(screen.job('build')).toHaveAttribute('data-mark', 'failed');
+    await page.keyboard.press('Enter');
+    await expect(screen.logTexts.filter({ hasText: 'the second log' })).toBeVisible();
 });
 
 test('W4k: without permission to re-run the command is not there', async ({ page, github }) => {
@@ -674,6 +693,99 @@ test('W4k: without permission to re-run the command is not there', async ({ page
     await menu.open();
     await expect(menu.option(/Open on GitHub/u).first()).toBeVisible();
     await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
+    await expect(menu.option(/Re-run all jobs/u)).toHaveCount(0);
+    await expect(menu.option(/Re-run job/u)).toHaveCount(0);
+    await expect(menu.option(/Cancel run/u)).toHaveCount(0);
+});
+
+test('W40: ⌘K re-runs all the jobs or the one under the cursor, cancel dimmed once it finished, its link and its workflow; none on a key', async ({
+    page,
+    github,
+}) => {
+    const { world, path } = createRerunnableRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    const commands = [
+        /Re-run all jobs/u,
+        /Re-run job “build”/u,
+        /Cancel run/u,
+        /Copy link to the run/u,
+        /Open workflow/u,
+    ];
+    for (const name of commands) {
+        await expect(menu.option(name)).toHaveCount(1);
+        await expect(menu.option(name).locator('kbd')).toHaveCount(0);
+    }
+    await expect(menu.option(/Re-run all jobs/u)).toContainText('2 jobs');
+    await expect(menu.option(/Cancel run/u)).toContainText('it has finished');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).not.toContainText(/Re-run|Cancel run/u);
+    await page.keyboard.press('Escape');
+
+    await menu.run('Open workflow');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
+});
+
+test('W40: ⌘K re-runs the job under the cursor alone, and the run goes again', async ({ page, github }) => {
+    const { world, buildId, path } = createRerunnableRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+
+    await new CommandMenuHarness(page).run('Re-run job');
+
+    await expect(screen.summary).toContainText('Running');
+    await expect(screen.summary).toContainText('attempt 2');
+    const reruns = github.restCalls
+        .filter(call => call.method === 'POST' && /\/rerun(-failed-jobs)?$/u.test(call.url.pathname))
+        .map(call => call.url.pathname);
+    expect(reruns).toEqual([`/repos/${SAMPLE_REPOSITORY}/actions/jobs/${buildId}/rerun`]);
+});
+
+test('W40: a running run is cancelled from ⌘K', async ({ page, github }) => {
+    const { world, runId, path } = createFailedRun(null);
+    world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.summary).toContainText('Running');
+
+    await new CommandMenuHarness(page).run('Cancel run');
+
+    await expect(screen.summary).toContainText(/cancelled/iu);
+    await expect(shell.toasts).toHaveCount(0);
+    expect(github.restCalls.filter(call => call.url.pathname.endsWith(`/runs/${runId}/cancel`))).toHaveLength(1);
+});
+
+test('W40, W4l: a cancel GitHub refuses as the run already finished is one toast saying so, the segment red', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun(null);
+    world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.summary).toContainText('Running');
+    // It ends on GitHub before the page asks again.
+    world.finishRun(SAMPLE_REPOSITORY, runId, 'success');
+
+    await new CommandMenuHarness(page).run('Cancel run');
+
+    await expect(shell.toasts).toHaveCount(1);
+    await expect(shell.toasts).toContainText(/wasn['’]t\scancelled:\sit\shas\salready\sfinished/u);
+    await expect(shell.toasts.getByRole('link', { name: /Open on GitHub/u })).toHaveCount(0);
+    await expect(shell.failedRerun).toHaveText(/Cancel\srefused\sby\sGitHub/u);
+    await expect(screen.summary).toContainText('Succeeded');
 });
 
 test('W4l: “Must have admin rights to Repository.” is one toast in its own words, the segment red until dismissed, the run as it was', async ({
@@ -752,7 +864,7 @@ test('W4l: an answer after leaving the page still shows, wherever the user went'
     await expect(screen.summary).toContainText('Running');
 
     await page.keyboard.press('Escape');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
     held.resolve();
 
     await expect(shell.toasts).toContainText(/already\srunning/u);

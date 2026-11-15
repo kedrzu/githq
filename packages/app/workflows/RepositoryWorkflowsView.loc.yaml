@@ -4,10 +4,10 @@ previous:
   en: Previous workflow
 open:
   en: Open workflow
-otherRuns:
-  en: Other runs
-fold:
-  en: Fold
+openFullScreen:
+  en: Open workflow full screen
+openLatestFailure:
+  en: Open latest failure
 alertSettings:
   en: Alert settings
 openOnGitHub:

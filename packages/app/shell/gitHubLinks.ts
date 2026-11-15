@@ -1,6 +1,6 @@
 import type { RouteLocation } from 'vue-router';
 
-import { getOpenedItemRoute } from '@/item/itemRoutes.js';
+import { IssueRoutes } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { getRouteNameWithOwner, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 
@@ -66,7 +66,7 @@ export function getGitHubLinkTarget(url: string, params: GetGitHubLinkTargetPara
         return null;
     }
 
-    const opened = getOpenedItemRoute(route);
+    const opened = IssueRoutes.getOpened(route);
     return { path, item: opened?.onPage ? opened.reference : null };
 }
 

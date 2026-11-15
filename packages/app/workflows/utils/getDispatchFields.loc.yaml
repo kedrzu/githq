@@ -1,0 +1,8 @@
+defaultValue:
+  en: 'default: {value}'
+optional:
+  en: optional
+on:
+  en: 'true'
+off:
+  en: 'false'

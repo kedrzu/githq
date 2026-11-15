@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -39,9 +39,12 @@ export interface SidebarTracked {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import type { LucideIcon } from 'lucide-vue-next';
 import {
   AtSign,
   BookMarked,
+  Eye,
+  GitPullRequest,
   Inbox,
   Lock,
   PanelLeftClose,
@@ -50,6 +53,7 @@ import {
   Search,
   Settings,
   SquareKanban,
+  User,
   Workflow,
 } from 'lucide-vue-next';
 import { computed, useTemplateRef } from 'vue';
@@ -94,10 +98,16 @@ const props = defineProps<{
   brokenWorkflows?: SidebarBrokenWorkflows | null;
   /** How many pull requests have the user's draft review (code review D28): the entry shows only with any. */
   draftReviews?: number;
+  /**
+   * The phone's places panel (mobile D19): never the rail, no search (the command line is the phone's), no "Draft
+   * reviews" nor "Broken workflows" (code review and Actions are github.com's on a phone, mobile D4), each group of "my
+   * work" with its icon, rows a finger's height, and the `status` slot above the user.
+   */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
-  /** The collapse or expand button. */
+  /** The collapse or expand button; on a phone the button closing the panel. */
   toggle: [];
   /** "Search or jump to…": the command menu. */
   search: [];
@@ -107,7 +117,17 @@ const emit = defineEmits<{
 defineSlots<{
   /** The entries of a tracked project's or repository's context menu. */
   trackedMenu?(props: { target: TrackedTarget }): unknown;
+  /** On a phone, above the user: how fresh the app is (mobile D12, D31). */
+  status?(): unknown;
 }>();
+
+/** Each "my work" group's icon on a phone (mobile MB26). */
+const GROUP_ICONS: Readonly<Record<MyWorkGroup, LucideIcon>> = {
+  reviewRequested: Eye,
+  authored: GitPullRequest,
+  assigned: User,
+  mentioned: AtSign,
+};
 
 const t = useTranslate();
 const route = useRoute();
@@ -115,6 +135,7 @@ const navRef = useTemplateRef<HTMLElement>('nav');
 
 const projects = computed(() => props.tracked?.projects ?? []);
 const repositories = computed(() => props.tracked?.repositories ?? []);
+const rail = computed(() => props.collapsed && !props.phone);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
 
 /** A repository's row is the current page on its view whichever section of it the address names (`/owner/name/issues`). */
@@ -174,7 +195,12 @@ function getProjectMark(title: string) {
 <template>
   <nav
     ref="nav"
-    :class="[css.sidebar, collapsed && css.sidebar_collapsed, windowControls && css.sidebar_underWindowControls]"
+    :class="[
+      css.sidebar,
+      rail && css.sidebar_collapsed,
+      windowControls && css.sidebar_underWindowControls,
+      phone && css.sidebar_phone,
+    ]"
     :aria-label="t(l.navigation)"
     @keydown="moveBetweenLinks"
   >
@@ -183,10 +209,18 @@ function getProjectMark(title: string) {
       :class="css.sidebar_windowControls"
       data-tauri-drag-region
     />
-    <template v-if="!collapsed">
+    <template v-if="!rail">
       <div :class="css.sidebar_logo">
         <Wordmark :class="css.sidebar_wordmark" />
         <IconButton
+          v-if="phone"
+          :class="css.sidebar_close"
+          :icon="PanelLeftClose"
+          :label="t(l.closePlaces)"
+          @click="emit('toggle')"
+        />
+        <IconButton
+          v-else
           :icon="PanelLeftClose"
           :label="t(l.collapse)"
           :kbd="APP_KEYS.sidebar"
@@ -196,6 +230,7 @@ function getProjectMark(title: string) {
       </div>
 
       <Button
+        v-if="!phone"
         :class="css.sidebar_search"
         variant="field"
         block
@@ -209,7 +244,7 @@ function getProjectMark(title: string) {
 
       <div :class="css.sidebar_scroll">
         <ul :class="css.sidebar_list">
-          <li v-if="draftReviews">
+          <li v-if="draftReviews && !phone">
             <RouterLink
               :to="DRAFT_REVIEWS_PATH"
               :class="[css.sidebar_item, css.sidebar_item_draft]"
@@ -243,11 +278,12 @@ function getProjectMark(title: string) {
           >
             <RouterLink
               :to="getMyWorkGroupPath(group)"
-              :class="[css.sidebar_item, group !== 'mentioned' && css.sidebar_item_sub]"
+              :class="[css.sidebar_item, (phone || group !== 'mentioned') && css.sidebar_item_sub]"
               :active-class="css.sidebar_item_active"
             >
-              <AtSign
-                v-if="group === 'mentioned'"
+              <component
+                :is="GROUP_ICONS[group]"
+                v-if="phone || group === 'mentioned'"
                 :class="css.sidebar_itemIcon"
                 aria-hidden="true"
               />
@@ -255,7 +291,7 @@ function getProjectMark(title: string) {
               <span :class="css.sidebar_count">{{ countText(group) }}</span>
             </RouterLink>
           </li>
-          <li v-if="brokenWorkflows">
+          <li v-if="brokenWorkflows && !phone">
             <RouterLink
               :to="BROKEN_WORKFLOWS_PATH"
               :class="css.sidebar_item"
@@ -329,7 +365,7 @@ function getProjectMark(title: string) {
                       aria-hidden="true"
                     />
                     <span
-                      v-if="repository.workflowMarker"
+                      v-if="repository.workflowMarker && !phone"
                       :class="[css.sidebar_marker, css[`sidebar_marker_${repository.workflowMarker}`]]"
                       tid="workflow-marker"
                       :data-marker="repository.workflowMarker"
@@ -339,7 +375,7 @@ function getProjectMark(title: string) {
                   <span :class="css.sidebar_itemLabel"
                     >{{ repository.label
                     }}<span
-                      v-if="repository.workflowMarker === 'new' || repository.workflowMarker === 'settled'"
+                      v-if="!phone && (repository.workflowMarker === 'new' || repository.workflowMarker === 'settled')"
                       :class="css.sidebar_hidden"
                     >
                       · {{ t(l.workflowsBroken) }}</span
@@ -375,6 +411,13 @@ function getProjectMark(title: string) {
             <span :class="css.sidebar_itemLabel">{{ t(l.settings) }}</span>
           </RouterLink>
         </div>
+      </div>
+
+      <div
+        v-if="phone && $slots.status"
+        :class="css.sidebar_status"
+      >
+        <slot name="status" />
       </div>
 
       <AccountMenu
@@ -515,6 +558,63 @@ function getProjectMark(title: string) {
   overflow: hidden;
   background: $color-bg-2;
   border-right: 1px solid $color-border;
+}
+
+// Rows a finger's height, the text a phone's (mobile MB26); the panel's own edge is the dialog's.
+.sidebar_phone {
+  padding: $spacing-12 $spacing-10 0;
+  border-right: none;
+
+  .sidebar_logo {
+    padding: $spacing-4 0 $spacing-4 $spacing-8;
+    margin-bottom: $spacing-6;
+  }
+
+  .sidebar_wordmark {
+    --wordmark-size: 24px;
+  }
+
+  .sidebar_item {
+    min-height: $touch-target-size;
+    font-size: $font-size-xl;
+  }
+
+  .sidebar_item_sub {
+    padding-left: $spacing-24;
+  }
+
+  .sidebar_itemIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sidebar_count {
+    font-size: $font-size-sm;
+  }
+
+  .sidebar_section {
+    font-size: $font-size-xs;
+  }
+}
+
+.sidebar_close {
+  --icon-button-width: #{$touch-target-size};
+  --icon-button-height: #{$touch-target-size};
+  --icon-button-glyph-size: 20px;
+}
+
+// The status bar's left end on a phone, out to the panel's edges, above the user.
+.sidebar_status {
+  display: flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
+  min-height: $touch-target-size;
+  padding: 0 $spacing-10;
+  margin: 0 (-$spacing-10);
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+  border-top: 1px solid $color-border;
 }
 
 .sidebar_collapsed {

@@ -9,7 +9,10 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { TOAST_LASTS } from '@/components/Toast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -186,12 +189,47 @@ test('with nothing known broken the sidebar has no "Broken workflows", but shows
     await expect.element(page.getByRole('link', { name: /^Broken workflows/u })).not.toBeInTheDocument();
 });
 
+test('on a phone, the command line opens the command menu, and a toast sits above it', async () => {
+    const { pending } = await open('phone');
+    const line = page.getByRole('button', { name: /Do or find/u });
+    await expect.element(line).toBeVisible();
+
+    pending.untrack(WEB_TARGET, WEB);
+    await expect.element(toast()).toBeVisible();
+    expect(toast().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        line.element().getBoundingClientRect().top,
+    );
+
+    await userEvent.click(line);
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeVisible();
+});
+
+test("on a phone, an item's page has the comment pill, which asks for that item's comment box, and ⌘", async () => {
+    const { router, container } = await open('phone');
+    const items = container.resolve(ItemStore);
+    await items.ready();
+    items.upsertMany([{ ...sampleIssue('I_7'), number: 7 }]);
+
+    await router.push('/acme/web/issues/7');
+    await expect.element(page.getByRole('button', { name: /Do or find/u })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Leave a comment…' }));
+    expect(container.resolve(ItemNavigation).commentRequest).toBe('I_7');
+
+    await userEvent.click(page.getByRole('button', { name: 'Command menu' }));
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeVisible();
+});
+
 function sidebarLink(name: string) {
     return page.getByRole('link', { name });
 }
 
-/** The shell around a blank screen, tracking two repositories and a project, with GitHub answering nothing. */
-async function open() {
+/**
+ * The shell around a blank screen, tracking two repositories and a project, with GitHub answering nothing; in a
+ * computer's window, or a phone's (the phone layout, mobile D5).
+ */
+async function open(device: 'computer' | 'phone' = 'computer') {
+    await (device === 'phone' ? page.viewport(390, 844) : page.viewport(1280, 800));
+    onTestFinished(() => page.viewport(414, 896));
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     container.set(Browser, createSignedInBrowser());
@@ -210,6 +248,11 @@ async function open() {
         history: createMemoryHistory(),
         routes: [
             { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
+            {
+                path: '/:owner/:name/issues/:number',
+                meta: { itemPage: 'issue' },
+                component: defineComponent({ render: () => null }),
+            },
             { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
         ],
     });
@@ -224,5 +267,5 @@ async function open() {
         host.remove();
     });
 
-    return { pending: container.resolve(PendingUntracks), tracking, router };
+    return { pending: container.resolve(PendingUntracks), tracking, router, container };
 }

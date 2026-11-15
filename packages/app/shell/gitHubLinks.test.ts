@@ -83,6 +83,14 @@ describe('workflows are for a tracked repository only', () => {
         expect(path('https://github.com/other/repo/actions/runs/123/job/4')).toBeNull();
     });
 
+    test('a workflow', () => {
+        expect(target('https://github.com/acme/web/actions/workflows/ci.yml')).toEqual({
+            path: '/acme/web/actions/workflows/ci.yml',
+            item: null,
+        });
+        expect(path('https://github.com/other/repo/actions/workflows/ci.yml')).toBeNull();
+    });
+
     test("a repository's actions", () => {
         expect(path('https://github.com/acme/web/actions')).toBe('/acme/web/actions');
         expect(path('https://github.com/other/repo/actions')).toBeNull();
@@ -96,7 +104,6 @@ describe('GitHub keeps', () => {
         'https://github.com/acme/web/blob/main/x',
         'https://github.com/acme/web/compare/a...b',
         'https://github.com/acme/web/actions/runs/123/attempts/2',
-        'https://github.com/acme/web/actions/workflows/ci.yml',
         'https://github.com/orgs/acme',
         'https://github.com/notifications',
     ])('%s', url => {

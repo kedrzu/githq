@@ -4,7 +4,7 @@ import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import type { RepositoryPermission } from '@githq/github/generated.gen.js';
 import { expect, mock, test } from 'bun:test';
 
-import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane } from './buildWorkflowRun.js';
+import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane, opensAtOverview } from './buildWorkflowRun.js';
 import type { BuildWorkflowRunParams } from './buildWorkflowRun.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobsState, WorkflowRunState } from './WorkflowRunStore.js';
@@ -24,7 +24,8 @@ const RUN: GitHubWorkflowRunDetail = {
     displayTitle: 'Fix',
     workflowName: 'Deploy',
     headCommitMessage: null,
-    runAttempt: null,
+    runAttempt: 1,
+    actor: null,
 };
 const NOW = Date.parse('2026-11-02T12:00:00Z');
 
@@ -86,6 +87,34 @@ test('with no job in the address the job shown stays, whatever a poll does to th
     expect(build({ jobs, jobId: 2, shownJobId: 1 }).selectedJob?.name).toBe('deploy');
     // A re-run numbers its jobs anew.
     expect(build({ jobs, shownJobId: 99 }).selectedJob?.name).toBe('test');
+});
+
+test('W34: a run opens at its overview only with nothing failed: passed, still going or cancelled; a failure opens at it', () => {
+    expect(opensAtOverview([job(1, 'build', 'success'), job(2, 'lint', 'skipped')])).toBe(true);
+    expect(opensAtOverview([job(1, 'build', 'success'), job(2, 'test', null)])).toBe(true);
+    expect(opensAtOverview([job(1, 'build', 'cancelled')])).toBe(true);
+    expect(opensAtOverview([job(1, 'build', 'success'), job(2, 'test', 'failure')])).toBe(false);
+});
+
+test('opened at the overview it shows no job’s log, until the address names one; a job failing later takes nothing over', () => {
+    const jobs = ready(job(1, 'build', 'success'), job(2, 'test', 'failure'));
+
+    const atOverview = build({ jobs, overview: true });
+    expect(atOverview.body).toEqual({ kind: 'overview' });
+    expect(atOverview.selectedJob).toBeNull();
+    // The rest stays the same: the jobs, failed first, and what a re-run would take.
+    expect(atOverview.jobs.map(entry => entry.name)).toEqual(['test', 'build']);
+    expect(atOverview.rerunnableJobs.map(entry => entry.name)).toEqual(['test']);
+
+    const atJob = build({ jobs, overview: true, jobId: 1 });
+    expect(atJob.body).toEqual({ kind: 'jobs' });
+    expect(atJob.selectedJob?.name).toBe('build');
+
+    // Nothing to show beside: what stands in for the columns says why, as without the overview.
+    expect(build({ jobs: ready(), overview: true, run: known({ conclusion: 'success' }) }).body).toEqual({
+        kind: 'noJobs',
+        going: false,
+    });
 });
 
 test('a failed run with no jobs is an invalid workflow file; one that did not fail just has none', () => {
@@ -247,6 +276,7 @@ function build(params: Partial<BuildWorkflowRunParams>) {
         jobs: ready(),
         jobId: null,
         shownJobId: null,
+        overview: false,
         ...params,
     });
 }

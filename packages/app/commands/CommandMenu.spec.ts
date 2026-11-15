@@ -20,6 +20,10 @@ const {
     Levels,
     LevelsOnOpenItem,
     FoundInRepository,
+    FormStep,
+    FormCantRun,
+    RunWorkflowInRepository,
+    RunWorkflowRepositories,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -545,3 +549,138 @@ async function runWithPointerAway(story: { run(): Promise<void> }) {
     await story.run();
     await userEvent.hover(page.getByRole('textbox'));
 }
+
+test("W37: a form's keys — ↵ and Tab move to the next field, ⇧Tab back, ⌘↵ runs with the defaults left and closes", async () => {
+    await FormStep.run();
+    const form = page.getByRole('group', { name: 'Deploy' });
+
+    await expect.element(form.getByRole('textbox', { name: 'ref' })).toHaveFocus();
+    await expect.element(form.getByRole('textbox', { name: 'ref' })).toHaveValue('main');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(form.getByRole('combobox', { name: 'environment' })).toHaveFocus();
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).toBeInTheDocument();
+    await userEvent.keyboard('{Tab}');
+    await expect.element(form.getByRole('textbox', { name: 'version' })).toHaveFocus();
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    await expect.element(form.getByRole('combobox', { name: 'environment' })).toHaveFocus();
+    await userEvent.keyboard('{Tab}2.14.0{Enter}');
+    await expect.element(form.getByRole('switch', { name: 'dry_run' })).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect.element(form.getByRole('switch', { name: 'dry_run' })).toHaveAttribute('aria-checked', 'false');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('asked'))
+        .toHaveTextContent('Deploy {"ref":"main","environment":"staging","version":"2.14.0","dry_run":false}');
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).not.toBeInTheDocument();
+});
+
+test('W37: Esc steps back to the picker, and coming back keeps what was entered', async () => {
+    await FormStep.run();
+
+    await userEvent.keyboard('{Tab}{Tab}2.14.0');
+    await userEvent.keyboard('{Escape}');
+    const picker = page.getByRole('listbox', { name: 'Run workflow' });
+    await expect.element(picker).toBeInTheDocument();
+    await expect.element(page.getByRole('group', { name: 'Deploy' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('textbox', { name: 'version' })).toHaveValue('2.14.0');
+});
+
+test('a field the form takes away and gives back keeps its value; only the fields shown are run with', async () => {
+    await FormStep.run();
+    const ref = page.getByRole('textbox', { name: 'ref' });
+    const version = page.getByRole('textbox', { name: 'version' });
+
+    await userEvent.fill(version, '2.14.0');
+    await userEvent.fill(ref, 'v1');
+    await expect.element(version).not.toBeInTheDocument();
+    await userEvent.click(ref);
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('asked'))
+        .toHaveTextContent('Deploy {"ref":"v1","environment":"staging","dry_run":true}');
+
+    await FormStep.run();
+    await userEvent.fill(version, '2.14.0');
+    await userEvent.fill(ref, 'v1');
+    await userEvent.fill(ref, 'main');
+    await expect.element(version).toHaveValue('2.14.0');
+});
+
+test("a required field left empty, or a form that can't run, makes Run unavailable and ⌘↵ does nothing", async () => {
+    await FormStep.run();
+    const run = page.getByRole('button', { name: 'Run' });
+
+    await expect.element(run).not.toHaveAttribute('aria-disabled');
+    await userEvent.fill(page.getByRole('textbox', { name: 'ref' }), '');
+    await expect.element(run).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+
+    await FormCantRun.run();
+    await expect.element(page.getByRole('status')).toHaveTextContent('This ref has no workflow_dispatch trigger');
+    await expect.element(page.getByRole('textbox', { name: 'ref' })).toHaveFocus();
+    await expect.element(run).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).toBeInTheDocument();
+});
+
+test("W48: an action that can't run says why, and picking it neither runs nor opens it", async () => {
+    await RunWorkflowInRepository.run();
+
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const cla = menu.getByRole('option', { name: /Run workflow · CLA CLA has no workflow_dispatch trigger/u });
+    await expect.element(cla).toHaveTextContent("can't run");
+    await expect.element(cla).toHaveAttribute('data-disabled');
+    await userEvent.click(cla, { force: true });
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+    await expect.element(menu).toBeInTheDocument();
+});
+
+test('W36: an action with a start goes straight into that level, saying what it waits for; ⌫ steps back to the rest', async () => {
+    await RunWorkflowInRepository.run();
+
+    await userEvent.keyboard('run workflow…');
+    await userEvent.keyboard('{Enter}');
+    const repository = page.getByRole('listbox', { name: 'fitloop/webapp' });
+    await expect.element(repository).toBeInTheDocument();
+    await expect.element(page.getByText('Reading the workflow files…')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}');
+    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    await expect.element(repositories.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
+    await userEvent.keyboard('api{Enter}{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('api Deploy ran');
+});
+
+test("W46, W36: a level's rows sit under their headings, wherever they were given, with the level's placeholder and hint", async () => {
+    await RunWorkflowRepositories.run();
+
+    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    const tracked = repositories.getByRole('group', { name: 'Tracked repositories' });
+    await expect.element(tracked.getByRole('option', { name: 'fitloop/webapp' })).toBeInTheDocument();
+    // Given after "Nothing to run"'s row, it is shown with the other row of its heading.
+    await expect.element(tracked.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
+    const nothing = repositories.getByRole('group', { name: 'Nothing to run' });
+    await expect.element(nothing.getByRole('option', { name: /fitloop\/docs/u })).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox', { name: 'Pick a repository…' })).toHaveFocus();
+    await expect.element(page.getByText('Run workflow · step 1 of 3')).toBeInTheDocument();
+    await expect.element(page.getByText('Enter picks another workflow')).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowDown}{ArrowRight}');
+    const workflows = page.getByRole('listbox', { name: 'fitloop/api' });
+    await expect
+        .element(workflows.getByRole('group', { name: 'Workflows in fitloop/api you can run' }).getByRole('option'))
+        .toHaveTextContent('Deploy');
+    await expect.element(page.getByRole('textbox', { name: 'Pick a workflow…' })).toHaveFocus();
+    await expect.element(page.getByText('Only workflows with workflow_dispatch · 1 of 2')).toBeInTheDocument();
+    await expect.element(page.getByText('Run workflow · step 1 of 3')).not.toBeInTheDocument();
+
+    // Back at the top, the generic placeholder; the hint of the listed line that can't run.
+    await userEvent.keyboard('{Escape}{Escape}');
+    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
+    await expect.element(page.getByText('Enter picks another workflow')).toBeInTheDocument();
+});

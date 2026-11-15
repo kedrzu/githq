@@ -3,8 +3,9 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { resolveRouteAccess } from '@/auth/routeAccess.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import { getRouteNameWithOwner, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
+import { getRouteNameWithOwner, isRouteShownOnPhone, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { isHydratingServerHtml } from '@/utils/isHydratingServerHtml.js';
 
@@ -26,6 +27,7 @@ export default defineNuxtRouteMiddleware(async to => {
     const auth = useService(AuthStore);
     const items = useService(ItemStore);
     const tracking = useService(TrackingStore);
+    const phone = useService(PhoneLayout);
     await auth.ready();
     // A list renders what was kept from the last session at once, before anything comes from GitHub.
     await items.ready();
@@ -33,9 +35,12 @@ export default defineNuxtRouteMiddleware(async to => {
 
     // Only a tracked repository has a Workflows section and runs' pages (actions D4): any other's address is GitHub's page,
     // signed out too.
+    // Below the phone's width, what the phone layout does not show is GitHub's page too (mobile D3, D5) — decided here,
+    // as the address is navigated to, so narrowing the window never throws a screen out.
     if (
-        isTrackedOnlyRoute(to) &&
-        !tracking.isTracked({ kind: 'repository', nameWithOwner: getRouteNameWithOwner(to) })
+        (isTrackedOnlyRoute(to) &&
+            !tracking.isTracked({ kind: 'repository', nameWithOwner: getRouteNameWithOwner(to) })) ||
+        (phone.active && !isRouteShownOnPhone(to))
     ) {
         return navigateTo(
             { name: 'github', params: { path: to.path.split('/').filter(Boolean) }, query: to.query, hash: to.hash },

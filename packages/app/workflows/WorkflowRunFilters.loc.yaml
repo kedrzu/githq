@@ -1,0 +1,28 @@
+label:
+  en: Filter runs
+ref:
+  en: Ref
+event:
+  en: Event
+status:
+  en: Status
+actor:
+  en: Actor
+anyRef:
+  en: Any ref
+anyEvent:
+  en: Any event
+anyStatus:
+  en: Any status
+anyActor:
+  en: Anyone
+filterRefs:
+  en: Filter refs…
+filterEvents:
+  en: Filter events…
+filterStatuses:
+  en: Filter statuses…
+filterActors:
+  en: Filter people…
+counted:
+  en: counts
