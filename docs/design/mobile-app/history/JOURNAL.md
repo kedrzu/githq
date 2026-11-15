@@ -40,3 +40,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   enabled, or when you sign in using a passkey"; recovery codes are single-use. So neither a plain account nor a TOTP
   account lets an Apple reviewer sign in through GitHub's page unaided. Put to the owner: a token sign-in for the
   reviewer vs a dedicated mailbox vs demo mode.
+- 2026-11-15 — Owner: token sign-in for reviewers, phone app only (D6). Next put to the owner: how the phone build
+  differs from the desktop build (a target of its own or the desktop target deciding at run time).

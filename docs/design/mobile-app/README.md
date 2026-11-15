@@ -49,6 +49,11 @@ For the same reason the desktop app gives up its code-copying sign-in and does t
 GitHub's consent page, you tap Authorize, and the browser hands you back to githq. One way to sign in, in every app
 ([why the desktop follows](DECISIONS.md#d4)).
 
+One more door exists only in the phone app: a small "Sign in with a token" link. It is for Apple's reviewers, who
+cannot get past GitHub's own sign-in page with a shared account — GitHub asks a new device for a code sent by email,
+or for a second factor — so they paste a token of a demo account githq keeps for them
+([the reviewer's way in](DECISIONS.md#d6)).
+
 ## Getting builds to phones
 
 The phone joins the desktop app's two streams of releases rather than getting its own
@@ -63,7 +68,5 @@ The versions are the desktop's: an iPhone only accepts three numbers as a versio
 
 ## What is still open
 
-- The account Apple's reviewers sign in with: App Review needs a working demo login, here a GitHub account with
-  something in it.
 - What the desktop-only parts become: the self-updater and the macOS window controls have no place on a phone.
 - Android, after iOS.

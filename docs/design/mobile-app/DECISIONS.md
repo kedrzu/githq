@@ -164,3 +164,33 @@ the fix ships in the next release.
   two steps days apart (owner).
 - A release process of the phone's own, separate from the desktop's — a second version line and a second word to
   release, for nothing the shared one cannot do.
+
+## D6
+
+**Apple's reviewers sign in with a token: the phone app, and only the phone app, offers a small "Sign in with a
+token" link under the main sign-in, reusing the token form that today exists only in the local test build; a
+dedicated GitHub demo account with a repository, issues, pull requests and a project supplies the token, given to
+Apple in the review notes.** (2026-11-15, design agent's proposal, accepted by the owner; phone only the owner's pick)
+
+**Why.** App Review needs a working demo login (2.1(a): "include demo account info … if your app includes a
+login"), and GitHub's own sign-in page stops a reviewer either way: an account without 2FA may be asked for a code
+sent to its email from an unrecognised device, and an account with 2FA needs a live code. A token skips GitHub's
+page entirely. The web and the desktop have no reviewer, so they get no second way to sign in.
+
+> **Checked 2026-11-15:** "GitHub will not ask you to perform device verification when you have 2FA enabled, or
+> when you sign in using a passkey"; without 2FA it may, "when you access your account from an unrecognized device
+> for the first time" — [docs.github.com](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/verifying-new-devices-when-signing-in)
+> (via a summarising fetch). Recovery codes: "it cannot be reused" —
+> [docs.github.com](https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa/configuring-two-factor-authentication-recovery-methods).
+> The token form: `packages/app/auth/DevTokenForm.vue`, built only for `GITHQ_TARGET=local`.
+
+Consequences accepted: a second way to sign in is visible in the published phone app; the demo token must be replaced
+before it expires, or the next review fails.
+
+**Rejected.**
+
+- A demo account without 2FA plus a mailbox whose password goes to Apple, so the reviewer reads the code themselves
+  — no app change, but two sign-ins for the reviewer, and a fiddly demo is a common reason for rejection.
+- A demo mode on the mocked GitHub the e2e tests use — the nicest for a reviewer, but needs Apple's prior approval
+  and ships test code in the published app.
+- The token link on every platform — nobody reviews the web or the desktop app (owner).
