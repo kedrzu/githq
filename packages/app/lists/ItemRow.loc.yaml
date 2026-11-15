@@ -10,3 +10,58 @@ backToMerge:
   en: Back to the merge
 draftAge:
   en: draft {age}
+labels:
+  en: 'Labels: {names}'
+checksCount:
+  en: '{passing}/{total}'
+checksPassedCount:
+  en: '{passing} of {total} checks passed'
+checksFailingCount:
+  plural: failing
+  en:
+    one: '{failing} of {total} checks failing'
+    many: '{failing} of {total} checks failing'
+checksRunningCount:
+  en: '{passing} of {total} checks passed, {pending} running'
+phoneFailing:
+  en: Failing
+phoneFailingLabel:
+  en: checks failing
+phoneRunning:
+  en: Running
+phoneChanges:
+  en: Changes
+phoneChangesLabel:
+  en: changes requested
+phoneConflicts:
+  en: Conflicts
+phoneConflictsLabel:
+  en: conflicts
+phoneReady:
+  en: Ready
+phoneApproved:
+  en: Approved
+phoneReview:
+  en: Review
+phoneWaiting:
+  en: Waiting
+phoneDraft:
+  en: Draft
+phoneDraftReview:
+  en: Draft review
+phoneMerged:
+  en: Merged
+phoneMerging:
+  en: Merging
+phoneInQueue:
+  en: In queue
+phoneWontMerge:
+  en: Won't merge
+phoneAutoMerge:
+  en: Auto-merge
+phoneRefused:
+  en: Refused
+phoneNewCommit:
+  en: New commit
+phoneSent:
+  en: Sent

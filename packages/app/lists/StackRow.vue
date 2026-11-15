@@ -1,6 +1,7 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed, each right after the one before; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented, without the repository the issue shares. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed, each right after the one before; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented, without the repository the issue shares. On a phone it takes an item's phone row (mobile D23): the name and count on up to two lines; under them the repository without its owner when tracked, the pips and state, a draft review, the row field, the shared labels as dots, a project's values, and at the end one face and the age; size, milestone and Merge wait in the stack's item. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Check, GitBranch, GitMerge, Layers, ListPlus, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -10,7 +11,9 @@ import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import { MergeContext } from '@/merge/MergeContext.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { formatList } from '@/utils/formatList.js';
 
 import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
@@ -21,6 +24,7 @@ import PullRequestSize from './PullRequestSize.vue';
 import StackState from './StackState.vue';
 import StackToggle from './StackToggle.vue';
 import { useStackFacts } from './useStackFacts.js';
+import { getPhoneRepositoryName } from './utils/getPhoneRepositoryName.js';
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +37,8 @@ const props = withDefaults(
     repository?: string | null;
     /** The issue the entry is nested under (D23); its repository is left out when they share it. */
     parent?: Item | null;
+    /** Its repository is tracked: on a phone it is named without its owner (mobile D23). */
+    repositoryTracked?: boolean;
     /** Who the entry shows, as `ItemRow`: who opened its pull requests (my work) or who they are assigned to. */
     people?: 'assignees' | 'author';
     /** The signed-in user: with `people: 'author'`, their own pull requests show no face. */
@@ -48,7 +54,15 @@ const props = withDefaults(
     /** Its pull requests are listed under it: its chevron points down. */
     expanded?: boolean;
   }>(),
-  { repository: null, parent: null, people: 'assignees', viewerLogin: null, openedId: null, expanded: false },
+  {
+    repository: null,
+    parent: null,
+    repositoryTracked: false,
+    people: 'assignees',
+    viewerLogin: null,
+    openedId: null,
+    expanded: false,
+  },
 );
 
 const emit = defineEmits<{
@@ -62,6 +76,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
 const merging = injectContext(MergeContext, { optional: true });
 const stackFacts = useStackFacts({
   stack: () => props.stack,
@@ -103,10 +118,115 @@ const nameWithOwner = computed(() => {
   const name = props.stack.pullRequests[0]?.repository.nameWithOwner ?? null;
   return name === props.repository || name === props.parent?.repository.nameWithOwner ? null : name;
 });
+/** Mobile D23, as an item's row: the repository without its owner when it is tracked. */
+const phoneRepository = computed(() =>
+  nameWithOwner.value === null ? null : getPhoneRepositoryName(nameWithOwner.value, props.repositoryTracked),
+);
+/** Mobile D23: the labels all its pull requests carry as dots, named together for a screen reader and on hover. */
+const phoneLabels = computed(() =>
+  shown.value.has('labels') && stackFacts.labels.shared.length > 0
+    ? t(l.labels, { names: formatList(stackFacts.labels.shared.map(label => label.name)) })
+    : null,
+);
 </script>
 
 <template>
-  <div :class="[css.stackRow, parent && css.stackRow_nested]">
+  <!-- Mobile D23, as an item's row: the name and count on up to two lines; under them the pips and the state, the row field and the shared labels as dots, one face and the age. -->
+  <div
+    v-if="phone.active"
+    :class="[css.stackRow, parent && css.stackRow_nested]"
+  >
+    <Check
+      v-if="checked"
+      :class="css.stackRow_check"
+      role="img"
+      :aria-label="t(l.inSelection)"
+    />
+    <Minus
+      v-else-if="halfChecked"
+      :class="css.stackRow_check"
+      role="img"
+      :aria-label="t(l.partlySelected)"
+    />
+    <Layers
+      v-else
+      :class="css.stackRow_icon"
+      role="img"
+      :aria-label="t(l.stack)"
+    />
+    <div :class="css.stackRow_content">
+      <div :class="[css.stackRow_line, css.stackRow_phoneTitleLine]">
+        <span :class="css.stackRow_phoneTitle"
+          >{{ description.name.title }} <span :class="css.stackRow_count">{{ stackFacts.count }}</span></span
+        >
+        <StackToggle
+          :expanded="expanded"
+          @toggle="emit('toggle')"
+        />
+      </div>
+      <div :class="css.stackRow_line">
+        <span :class="css.stackRow_facts">
+          <span
+            v-if="phoneRepository"
+            :class="css.stackRow_repository"
+            >{{ phoneRepository }}</span
+          >
+          <StackState
+            :pips="description.pips"
+            :filled="stackFacts.filled"
+            :current="openedId"
+            :state="stackFacts.state"
+          />
+          <ItemStatus
+            v-if="stackFacts.draft"
+            :class="css.stackRow_field"
+            :status="stackFacts.draft"
+          />
+          <ItemField
+            v-if="stackFacts.projectField && shown.has('projectField')"
+            :class="css.stackRow_phoneField"
+            :icon="SquareKanban"
+            :value="stackFacts.projectField.value"
+            :more="stackFacts.projectField.more"
+            :title="stackFacts.projectField.title"
+          />
+          <span
+            v-if="phoneLabels"
+            :class="css.stackRow_dots"
+            role="img"
+            :aria-label="phoneLabels"
+            :title="phoneLabels"
+          >
+            <span
+              v-for="label in stackFacts.labels.shared"
+              :key="label.name"
+              :class="css.stackRow_dot"
+              :style="{ background: `#${label.color}` }"
+            />
+          </span>
+          <span :class="css.stackRow_phoneValues"><slot name="fields" /></span>
+        </span>
+        <span :class="css.stackRow_aside">
+          <Avatar
+            v-if="shown.has('people') && stackFacts.people.faces[0]"
+            :name="stackFacts.people.faces[0].login"
+            :src="stackFacts.people.faces[0].avatarUrl"
+            size="sm"
+          />
+          <time
+            v-if="shown.has('updated')"
+            :class="css.stackRow_age"
+            :datetime="description.updatedAt"
+            >{{ stackFacts.age }}</time
+          >
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    v-else
+    :class="[css.stackRow, parent && css.stackRow_nested]"
+  >
     <Check
       v-if="checked"
       :class="css.stackRow_check"
@@ -310,5 +430,72 @@ const nameWithOwner = computed(() => {
 
 .stackRow_field {
   flex: none;
+}
+
+// Mobile D23, as `ItemRow`'s phone row.
+.stackRow_phoneTitleLine {
+  align-items: flex-start;
+  white-space: normal;
+}
+
+.stackRow_phoneTitle {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: $font-size-row-title;
+  font-weight: $font-weight-medium;
+  line-height: 18px;
+  color: $color-fg;
+  -webkit-box-orient: vertical;
+
+  .stackRow_count {
+    font-size: $font-size-2xs;
+    font-weight: $font-weight-normal;
+  }
+}
+
+.stackRow_facts {
+  display: flex;
+  flex: 1;
+  gap: $spacing-8;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.stackRow_phoneField {
+  flex: 0 1000 auto;
+  min-width: 40px;
+}
+
+.stackRow_dots {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-4;
+}
+
+.stackRow_dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+// A project's values come last and give way first, never squeezing what comes before them.
+.stackRow_phoneValues {
+  display: flex;
+  flex: 0 100000 auto;
+  gap: $spacing-8;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.stackRow_aside {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
+  margin-left: auto;
 }
 </style>

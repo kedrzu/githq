@@ -1,18 +1,48 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, a pull request's number, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed, each right after the one before — nothing pinned to the far edge, the title giving way first; under them an issue's repository and number, a pull request's repository unless the list or the issue it is nested under already names it, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented, its icon smaller, its title as any other; one of a stack with a header of its own under an issue one step further (D23). -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, a pull request's number, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed, each right after the one before — nothing pinned to the far edge, the title giving way first; under them an issue's repository and number, a pull request's repository unless the list or the issue it is nested under already names it, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — "Checks passed" first when its checks are green and no green status says as much ("Approved · checks passed" says it in one); ready to merge, approved or with no review needed or asked, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged · not merged yet" until GitHub confirms, the open icon kept (merging D3), then "Merged · 5m"; a merge that did not end merged says how — "Merge refused" or "Not merged · new commit from dkim", followed by "Back to the merge" (`⇧M`) where the viewer may merge it, or grey "Merge sent · outcome not known yet"; GitHub's own "In queue · 3rd · about 12 min" or "Auto-merge on · squash · waiting for checks" (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented, its icon smaller, its title as any other; one of a stack with a header of its own under an issue one step further (D23). On a phone (mobile D23) the title wraps to two lines and line two keeps what tells whether to open it: the reference (`webapp#1187` for a repository the list says is tracked, with its owner for another, the number alone where the list names it), the stack's marker or summary, a pull request's standing short as MB89 draws it — its checks as a count ("✓ 12/12", red "✕ 8/9", a spinner and "3/9" while some run), then a word or two ("Review", "Approved", "Ready", "Changes", "Draft", "Auto-merge"…), each said in full to a screen reader — the row field with its colour dot and "+N" for its other projects, the labels as dots (named together for a screen reader), a project's values, and at its end one avatar and the age; size, milestone and the Merge and Open buttons wait in the item, and the field and a project's values give way before the rest. A pull request nested under an issue is one indented line there (mobile D24): an arrow, its number, its title as far as it fits and its first short fact, its checks where it has them. -->
 <script lang="ts" setup>
+import type { Translation } from '@nzyme/i18n-core';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import { ArrowUpRight, Check, GitMerge, ListPlus, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
+import {
+  ArrowUpRight,
+  Check,
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  CornerDownRight,
+  GitMerge,
+  GitPullRequestDraft,
+  Hourglass,
+  ListOrdered,
+  ListPlus,
+  Loader,
+  Milestone,
+  PencilLine,
+  SquareKanban,
+  Timer,
+  Undo2,
+  X,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { MergeContext } from '@/merge/MergeContext.js';
-import type { Item } from '@/store/ItemTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { getPullRequestPhase } from '@/store/getPullRequestPhase.js';
+import type { PullRequestPhase } from '@/store/getPullRequestPhase.js';
+import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import ItemField from './ItemField.vue';
@@ -24,6 +54,8 @@ import StackMarker from './StackMarker.vue';
 import StackSummary from './StackSummary.vue';
 import StackToggle from './StackToggle.vue';
 import { useItemFacts } from './useItemFacts.js';
+import type { ItemStatusFact } from './useItemFacts.js';
+import { getPhoneRepositoryName } from './utils/getPhoneRepositoryName.js';
 
 const props = withDefaults(
   defineProps<{
@@ -42,6 +74,8 @@ const props = withDefaults(
     repository?: string | null;
     /** The issue this pull request is nested under; its number alone names it when they share a repository. */
     parent?: Item | null;
+    /** Its repository is tracked: a phone's row names it without its owner (mobile D23). */
+    repositoryTracked?: boolean;
     /** Nested two steps in: a pull request of a stack with a header of its own under an issue (D23). */
     deep?: boolean;
     /** The stack this issue serves as the header of (`ListRow.stacks`, D12): its pips and state, and its chevron. */
@@ -64,6 +98,7 @@ const props = withDefaults(
     reviewRequested: false,
     repository: null,
     parent: null,
+    repositoryTracked: false,
     deep: false,
     header: null,
     expanded: false,
@@ -72,6 +107,12 @@ const props = withDefaults(
     stack: null,
   },
 );
+
+/** One short fact of a phone's row: an icon and a word or a count, with the full sentence for a screen reader. */
+interface PhoneFact {
+  readonly status: ItemStatusFact;
+  readonly label: string;
+}
 
 const emit = defineEmits<{
   /** The chevron of the stack it is the header of was clicked: the list expands or collapses it, opening nothing. */
@@ -84,6 +125,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
 const merging = injectContext(MergeContext, { optional: true });
 const facts = useItemFacts({
   item: () => props.item,
@@ -104,10 +146,330 @@ const hasDraft = computed(() => props.item.kind === 'pullRequest' && props.item.
 const waitingDraft = computed(() =>
   props.draftAge && props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
 );
+const age = computed(() =>
+  waitingDraft.value
+    ? t(l.draftAge, { age: formatAge(Date.parse(waitingDraft.value.createdAt), props.now) })
+    : facts.age,
+);
+/** Mobile D23: `webapp#1187` for a tracked repository, `owner/name#1187` for another, `#1187` where the list names it. */
+const phoneReference = computed(() => {
+  const { repository } = facts;
+  if (repository === null) {
+    return facts.number;
+  }
+
+  return `${getPhoneRepositoryName(repository, props.repositoryTracked)}${facts.number}`;
+});
+/**
+ * Mobile D23, MB89: where a pull request stands, short — its checks as a count ("✓ 12/12", "✕ 8/9"), then its review or
+ * merge in a word or two ("Review", "Approved", "Draft") — each said in full to a screen reader. A list showing no
+ * status still marks a draft review (D21).
+ */
+const phoneFacts = computed((): PhoneFact[] => {
+  const pr = props.item;
+  if (pr.kind !== 'pullRequest') {
+    return [];
+  }
+
+  if (pr.pendingReview && !pr.merging) {
+    const draft = getShortFact(PencilLine, 'warning', l.phoneDraftReview);
+    return shown.value.has('status') ? [...getChecksFacts(pr), draft] : [draft];
+  }
+
+  return shown.value.has('status') ? getPhaseFacts(pr) : [];
+});
+/** Mobile D24: a nested line's one fact, its checks first. */
+const nestedFact = computed(() => phoneFacts.value[0] ?? null);
+/** Mobile D23: its labels as dots, named together for a screen reader and on hover. */
+const phoneLabels = computed(() =>
+  shown.value.has('labels') && props.item.labels.length > 0
+    ? t(l.labels, { names: formatList(props.item.labels.map(label => label.name)) })
+    : null,
+);
+
+function getPhaseFacts(pr: PullRequestItem): PhoneFact[] {
+  const phase = getPullRequestPhase(pr, { reviewRequested: props.reviewRequested });
+  switch (phase) {
+    case 'merged':
+      return [getShortFact(GitMerge, 'done', l.phoneMerged)];
+    case 'closed':
+      return [];
+    case 'beingMerged':
+      return [getShortFact(Loader, 'warning', l.phoneMerging)];
+    case 'inQueue':
+      return [
+        pr.mergeQueueEntry?.state === 'UNMERGEABLE'
+          ? getShortFact(ListOrdered, 'danger', l.phoneWontMerge)
+          : getShortFact(ListOrdered, 'accent', l.phoneInQueue),
+      ];
+    case 'autoMerge':
+      return [getShortFact(Timer, 'accent', l.phoneAutoMerge)];
+    case 'needsAuthor':
+    case 'checksRunning':
+    case 'approvedReady':
+    case 'readyWithoutReview':
+    case 'approved':
+    case 'reviewRequested':
+    case 'draft':
+    case 'waitingForReview':
+    case 'none':
+      return getOpenFacts(pr, phase);
+    default:
+      return assertNever(phase);
+  }
+}
+
+/** How its last merge ended when it did not merge, else its checks and its review. */
+function getOpenFacts(pr: PullRequestItem, phase: PullRequestPhase): PhoneFact[] {
+  const end = getMergeEnd(merging?.getRecord(pr.id) ?? null, pr, null);
+  if (end) {
+    const { icon, tone } = getMergeEndLook(end.kind);
+    switch (end.kind) {
+      case 'refused':
+      case 'methodNotAllowed':
+        return [getShortFact(icon, tone, l.phoneRefused)];
+      case 'headMoved':
+        return [getShortFact(icon, tone, l.phoneNewCommit)];
+      case 'unknown':
+        return [getShortFact(icon, tone, l.phoneSent)];
+      default:
+        return assertNever(end);
+    }
+  }
+
+  const checks = getChecksFacts(pr);
+  const standing = getPullRequestStanding(pr);
+  switch (phase) {
+    case 'needsAuthor': {
+      const said: PhoneFact[] = [];
+      if (standing.checksFailing && checks.length === 0) {
+        said.push(getShortFact(X, 'danger', l.phoneFailing, t(l.phoneFailingLabel)));
+      }
+
+      if (standing.changesRequested) {
+        said.push(getShortFact(CircleX, 'danger', l.phoneChanges, t(l.phoneChangesLabel)));
+      }
+
+      if (standing.conflicts) {
+        said.push(getShortFact(CircleX, 'danger', l.phoneConflicts, t(l.phoneConflictsLabel)));
+      }
+
+      return [...checks, ...said];
+    }
+    case 'checksRunning':
+      return checks.length > 0 ? checks : [getShortFact(Loader, 'warning', l.phoneRunning)];
+    case 'approvedReady':
+    case 'readyWithoutReview':
+      return [...checks, getShortFact(CircleCheck, 'success', l.phoneReady)];
+    case 'approved':
+      return [...checks, getShortFact(CircleCheck, 'success', l.phoneApproved)];
+    case 'reviewRequested':
+      return [...checks, getShortFact(CircleHelp, 'muted', l.phoneReview)];
+    case 'waitingForReview':
+      return [...checks, getShortFact(Hourglass, 'muted', l.phoneWaiting)];
+    case 'draft':
+      return [...checks, getShortFact(GitPullRequestDraft, 'dim', l.phoneDraft)];
+    default:
+      return checks;
+  }
+}
+
+/** "✓ 12/12" all passed, "✕ 8/9" any failed, a spinner and "3/9" while some run; nothing without checks. */
+function getChecksFacts(pr: PullRequestItem): PhoneFact[] {
+  if (!pr.checks) {
+    return [];
+  }
+
+  const { passing, failing, pending } = pr.checks;
+  const total = passing + failing + pending;
+  if (total === 0) {
+    return [];
+  }
+
+  const text = t(l.checksCount, { passing, total });
+  if (failing > 0) {
+    return [{ status: fact(X, 'danger', text), label: t(l.checksFailingCount, { failing, total }) }];
+  }
+
+  if (pending > 0) {
+    return [{ status: fact(Loader, 'warning', text), label: t(l.checksRunningCount, { passing, pending, total }) }];
+  }
+
+  return [{ status: fact(Check, 'success', text), label: t(l.checksPassedCount, { passing, total }) }];
+}
+
+/** A short word, said in full as the desktop's sentence for it — or `label` where the sentence says more. */
+function getShortFact(
+  icon: LucideIcon,
+  tone: ItemStatusFact['tone'],
+  key: Translation,
+  label = facts.status?.text,
+): PhoneFact {
+  const text = t(key);
+  return { status: fact(icon, tone, text), label: label ?? text };
+}
+
+function fact(icon: LucideIcon, tone: ItemStatusFact['tone'], text: string): ItemStatusFact {
+  return { icon, tone, text, readyToMerge: false };
+}
 </script>
 
 <template>
-  <div :class="[css.itemRow, parent && css.itemRow_nested, deep && css.itemRow_deep]">
+  <!-- Mobile D24: under the issue it closes, one line — an arrow, its number, as much of its title as fits, its checks. -->
+  <div
+    v-if="phone.active && parent"
+    :class="[css.itemRow, css.itemRow_phoneNested, deep && css.itemRow_phoneDeep]"
+  >
+    <CornerDownRight
+      :class="css.itemRow_arrow"
+      aria-hidden="true"
+    />
+    <Check
+      v-if="checked"
+      :class="[css.itemRow_check, css.itemRow_check_small]"
+      role="img"
+      :aria-label="t(l.inSelection)"
+    />
+    <component
+      :is="facts.kind.icon"
+      v-else
+      :class="[css.itemRow_kind, css.itemRow_kind_small, css[`itemRow_kind_${facts.kind.tone}`]]"
+      role="img"
+      :aria-label="facts.kind.label"
+    />
+    <span :class="css.itemRow_phoneNumber">{{ phoneReference }}</span>
+    <span :class="css.itemRow_phoneNestedTitle">{{ item.title }}</span>
+    <span
+      v-if="nestedFact"
+      :class="css.itemRow_shared"
+      role="img"
+      :aria-label="nestedFact.label"
+      :title="nestedFact.label"
+    >
+      <ItemStatus :status="nestedFact.status" />
+    </span>
+    <span
+      v-if="undone"
+      :class="css.itemRow_undone"
+      role="status"
+    >
+      <Undo2
+        :class="css.itemRow_statusIcon"
+        aria-hidden="true"
+      />
+      {{ undone }}
+    </span>
+  </div>
+  <!-- Mobile D23: the title on up to two lines; under it what tells whether to open it, one avatar and the age. -->
+  <div
+    v-else-if="phone.active"
+    :class="[css.itemRow, css.itemRow_phone]"
+  >
+    <Check
+      v-if="checked"
+      :class="css.itemRow_check"
+      role="img"
+      :aria-label="t(l.inSelection)"
+    />
+    <component
+      :is="facts.kind.icon"
+      v-else
+      :class="[css.itemRow_kind, css[`itemRow_kind_${facts.kind.tone}`]]"
+      role="img"
+      :aria-label="facts.kind.label"
+    />
+    <div :class="css.itemRow_content">
+      <div :class="[css.itemRow_line, css.itemRow_phoneTitleLine]">
+        <span :class="css.itemRow_phoneTitle">{{ item.title }}</span>
+        <StackToggle
+          v-if="header"
+          :expanded="expanded"
+          @toggle="emit('toggle')"
+        />
+      </div>
+      <div :class="css.itemRow_line">
+        <!-- The key facts first; the field, the dots and a project's values give way at the end. -->
+        <span :class="css.itemRow_facts">
+          <span :class="css.itemRow_reference">{{ phoneReference }}</span>
+          <StackMarker
+            :class="css.itemRow_stack"
+            :item="item"
+            :stack="stack"
+          />
+          <StackSummary
+            v-if="header"
+            :stack="header"
+            :now="now"
+            :viewer-login="viewerLogin"
+            :opened-id="openedId"
+          />
+          <span
+            v-for="phoneFact in phoneFacts"
+            :key="phoneFact.status.text"
+            :class="css.itemRow_shared"
+            role="img"
+            :aria-label="phoneFact.label"
+            :title="phoneFact.label"
+          >
+            <ItemStatus :status="phoneFact.status" />
+          </span>
+          <span
+            v-if="undone"
+            :class="css.itemRow_undone"
+            role="status"
+          >
+            <Undo2
+              :class="css.itemRow_statusIcon"
+              aria-hidden="true"
+            />
+            {{ undone }}
+          </span>
+          <ItemField
+            v-if="facts.projectField && shown.has('projectField')"
+            :class="css.itemRow_phoneField"
+            :icon="SquareKanban"
+            :color="facts.projectField.color"
+            :value="facts.projectField.value"
+            :more="facts.projectField.more"
+            :title="facts.projectField.title"
+          />
+          <span
+            v-if="phoneLabels"
+            :class="css.itemRow_dots"
+            role="img"
+            :aria-label="phoneLabels"
+            :title="phoneLabels"
+          >
+            <span
+              v-for="label in item.labels"
+              :key="label.name"
+              :class="css.itemRow_dot"
+              :style="{ background: `#${label.color}` }"
+            />
+          </span>
+          <span :class="css.itemRow_phoneValues"><slot name="fields" /></span>
+        </span>
+        <span :class="css.itemRow_aside">
+          <Avatar
+            v-if="shown.has('people') && facts.people[0]"
+            :name="facts.people[0].login"
+            :src="facts.people[0].avatarUrl"
+            size="sm"
+          />
+          <time
+            v-if="shown.has('updated')"
+            :class="css.itemRow_age"
+            :datetime="waitingDraft?.createdAt ?? item.updatedAt"
+            >{{ age }}</time
+          >
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    v-else
+    :class="[css.itemRow, parent && css.itemRow_nested, deep && css.itemRow_deep]"
+  >
     <Check
       v-if="checked"
       :class="css.itemRow_check"
@@ -149,9 +511,7 @@ const waitingDraft = computed(() =>
           v-if="shown.has('updated')"
           :class="css.itemRow_age"
           :datetime="waitingDraft?.createdAt ?? item.updatedAt"
-          >{{
-            waitingDraft ? t(l.draftAge, { age: formatAge(Date.parse(waitingDraft.createdAt), now) }) : facts.age
-          }}</time
+          >{{ age }}</time
         >
       </div>
       <div :class="css.itemRow_line">
@@ -285,6 +645,13 @@ const waitingDraft = computed(() =>
   flex: none;
   width: 15px;
   height: 15px;
+
+  &.itemRow_check_small {
+    width: 13px;
+    height: 13px;
+    margin-top: 0;
+  }
+
   padding: $spacing-2;
   margin-top: $spacing-2;
   color: $color-on-light;
@@ -307,7 +674,8 @@ const waitingDraft = computed(() =>
   height: 15px;
   margin-top: $spacing-2;
 
-  .itemRow_nested & {
+  .itemRow_nested &,
+  &.itemRow_kind_small {
     width: 13px;
     height: 13px;
   }
@@ -386,5 +754,106 @@ const waitingDraft = computed(() =>
 .itemRow_statusIcon {
   width: 12.5px;
   height: 12.5px;
+}
+
+// Mobile D23, D24: the phone's row.
+.itemRow_phone {
+  padding: $spacing-10 $spacing-16;
+}
+
+.itemRow_phoneTitleLine {
+  align-items: flex-start;
+  white-space: normal;
+}
+
+.itemRow_phoneTitle {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: $font-size-row-title;
+  font-weight: $font-weight-medium;
+  line-height: 18px;
+  color: $color-fg;
+  -webkit-box-orient: vertical;
+}
+
+.itemRow_facts {
+  display: flex;
+  flex: 1;
+  gap: $spacing-8;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+// Gives way before the status, keeping its dot and "+N" the longest.
+.itemRow_phoneField {
+  flex: 0 1000 auto;
+  min-width: 40px;
+}
+
+.itemRow_dots {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-4;
+}
+
+.itemRow_dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+// A project's values come last and give way first, never squeezing what comes before them.
+.itemRow_phoneValues {
+  display: flex;
+  flex: 0 100000 auto;
+  gap: $spacing-8;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.itemRow_aside {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
+  margin-left: auto;
+}
+
+.itemRow_phoneNested {
+  gap: $spacing-8;
+  align-items: center;
+  padding: $spacing-4 $spacing-16 $spacing-8 26px;
+  font-size: $font-size-2xs;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.itemRow_phoneDeep {
+  padding-left: 50px;
+}
+
+.itemRow_arrow {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: $color-fg-dim;
+}
+
+.itemRow_phoneNumber {
+  flex: none;
+  font-family: $font-family-mono;
+  color: $color-fg-dim;
+}
+
+.itemRow_phoneNestedTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $color-fg-2;
 }
 </style>

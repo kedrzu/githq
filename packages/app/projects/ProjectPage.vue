@@ -119,6 +119,7 @@ const showAll = computed(() => route.query.all !== undefined);
 const tracked = computed(() =>
   tracking.projects.find(candidate => candidate.owner === owner.value && candidate.number === number.value),
 );
+const trackedRepositories = computed(() => tracking.repositories.map(repository => repository.nameWithOwner));
 const project = computed((): Project | null => (tracked.value ? (projects.get(tracked.value.id) ?? null) : null));
 /** Its first download has not read all its items yet, and GitHub shows it: what is missing is still on its way (D5). */
 const arriving = computed(() => {
@@ -594,6 +595,7 @@ function setRowField(fieldId: string | null) {
     :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
+    :tracked-repositories="trackedRepositories"
     @update:options="options.set($event)"
     @update:row-field-id="setRowField"
     @reset="options.reset()"

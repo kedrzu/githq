@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). On a phone the toolbar is the phone's top bar, without the filters (`ListToolbar`), and the command line names the list — "My work" or the group — with its count once in (mobile D17). -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). On a phone the toolbar is the phone's top bar, without the filters (`ListToolbar`), and the command line names the list — "My work" or the group — with its count once in (mobile D17); the rows are the phone's (`ItemRow`, `StackRow`: mobile D23, D24), a tracked repository named without its owner. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -76,7 +76,10 @@ const props = withDefaults(
     waitingCount: number;
     /** Why what hasn't arrived can't arrive now, as the sync tells it; `null` when nothing stands in its way. */
     cantBeRead?: CantBeReadCause | null;
-    /** The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, and the empty "my work" (K4). */
+    /**
+     * The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, the empty "my work" (K4),
+     * and a phone's rows naming them without their owner (mobile D23).
+     */
     trackedRepositories?: readonly string[];
     /** The item opened over the list, in the panel: moving the selection opens the next one in its place. */
     openedId?: string | null;
@@ -182,6 +185,7 @@ const reviewRequestedIds = computed(
       ),
     ),
 );
+const trackedSet = computed(() => new Set(props.trackedRepositories));
 /** The reason groups shown: the narrowed one alone, or all four. */
 const reasons = computed(() => props.work.groups.filter(entry => !props.group || entry.group === props.group));
 /** The reason groups as the engine lists them. */
@@ -314,6 +318,11 @@ function repositoryOf(group: ListGroup<Item>) {
   return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
 }
 
+/** A phone's row names a tracked repository without its owner (mobile D23). */
+function isTracked(nameWithOwner: string | undefined) {
+  return nameWithOwner !== undefined && trackedSet.value.has(nameWithOwner);
+}
+
 /** A row as the engine lists it: a stack's entry or a plain row, with the stacks nested under an issue (D12). */
 function toListRow(row: MyWorkRow): ListRow<Item> {
   if (!row.stack) {
@@ -413,6 +422,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :stack="stack"
           :properties="properties"
           :repository="repositoryOf(listGroup)"
+          :repository-tracked="isTracked(stack.pullRequests[0]?.repository.nameWithOwner)"
           :parent="parent?.value"
           people="author"
           :viewer-login="viewerLogin"
@@ -428,6 +438,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           v-else
           :item="entry.value"
           :parent="parent?.value"
+          :repository-tracked="isTracked(entry.value.repository.nameWithOwner)"
           :deep="depth > 1"
           :header="header"
           :expanded="expanded"

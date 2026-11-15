@@ -38,6 +38,7 @@ import type {
 } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
+import { getGitHubColor } from '@/utils/getGitHubColor.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
@@ -92,6 +93,8 @@ export interface ItemStatusFact {
 export interface ItemProjectFieldFact {
     /** `null` when the first project's row field is empty: the marker and "+N" alone. */
     readonly value: string | null;
+    /** The value's colour, hex without `#`, which a phone's row draws as a dot in place of the icon (mobile D23). */
+    readonly color: string | null;
     readonly title: string;
     readonly more: string | null;
 }
@@ -206,6 +209,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
         return {
             value: first.status?.name ?? null,
+            color: first.status ? getGitHubColor(first.status.color) : null,
             title: first.status
                 ? t(l.projectField, { project: first.title, value: first.status.name })
                 : formatList(projects.map(project => project.title)),
