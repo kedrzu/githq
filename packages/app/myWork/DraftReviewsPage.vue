@@ -23,9 +23,9 @@ import { getDraftReviews } from './getDraftReviews.js';
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
 const router = useRouter();
-const list = useItemList();
-const navigation = useService(ItemNavigation);
 const t = useTranslate();
+const list = useItemList(() => t(l.title));
+const navigation = useService(ItemNavigation);
 
 const drafts = computed(() => getDraftReviews(items.all));
 
@@ -69,6 +69,7 @@ function open(id: string) {
     :now="list.now"
     :undone="list.undone"
     @open="open"
+    @full-screen="open"
     @listed="list.setListed"
   >
     <template #selection="{ ids, span }">

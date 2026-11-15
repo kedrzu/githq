@@ -856,6 +856,43 @@ test('a max width chosen here is written, one chosen elsewhere comes in, and one
     });
 });
 
+test('a file without the runs grouping reads as none; one chosen here is written beside what a newer build put there, and merges with another device’s change', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    await sync.sync();
+    expect(tracking.workflowRunsGroupBy).toBe('none');
+    tracking.setWorkflowRunsGroupBy('none');
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+
+    github.writeFile({
+        ...documentOf([{ ...WEB, tracking: true }]),
+        workflowRuns: { groupBy: 'week', collapsed: true },
+    });
+    await sync.sync();
+    expect(tracking.workflowRunsGroupBy).toBe('none');
+
+    // Chosen here while another device turned animations off: both reach the file, the newer build's key stays.
+    tracking.setWorkflowRunsGroupBy('day');
+    github.writeFile({
+        ...documentOf([{ ...WEB, tracking: true }]),
+        workflowRuns: { groupBy: 'week', collapsed: true },
+        animations: false,
+    });
+    await sync.sync();
+    const expected: Partial<SettingsDocument> = {
+        version: 1,
+        workflowRuns: { groupBy: 'day', collapsed: true },
+        animations: false,
+    };
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({ kind: 'ok', document: expected });
+    expect(tracking.workflowRunsGroupBy).toBe('day');
+    expect(tracking.animations).toBe(false);
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), workflowRuns: { groupBy: 'actor' } });
+    await sync.sync();
+    expect(tracking.workflowRunsGroupBy).toBe('actor');
+});
+
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
 async function open(login = uniqueLogin(), localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);

@@ -13,7 +13,7 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import ListToolbar from './ListToolbar.vue';
 import * as stories from './ListToolbar.stories.js';
 
-const { PlainTitle, TitleMenu } = composeStories(stories);
+const { Phone, PlainTitle, TitleMenu } = composeStories(stories);
 
 test('with a menu, the title is a button that opens it', async () => {
     await TitleMenu.run();
@@ -31,6 +31,26 @@ test('without a menu, the title is plain text', async () => {
 
     await expect.element(page.getByRole('heading', { name: 'Platform Q4' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /Platform Q4/ })).not.toBeInTheDocument();
+});
+
+test('on a phone it is the top bar: the title alone, every option in Display, and New issue runs what C runs', async () => {
+    await Phone.run();
+
+    await expect.element(page.getByRole('heading', { name: 'Platform Q4' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Actions of Platform Q4' })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Beside the title')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Open places' })).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: 'Display' }));
+    const display = page.getByRole('dialog', { name: 'Display' });
+    for (const option of ['Group', 'Properties', 'Layout']) {
+        await expect.element(display.getByRole('group', { name: option })).toBeVisible();
+    }
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(page.getByTestId('new-issue')).toHaveTextContent('Not started');
+    await userEvent.click(page.getByRole('button', { name: 'New issue' }));
+    await expect.element(page.getByTestId('new-issue')).toHaveTextContent(/^Started$/);
 });
 
 test('a menu option with a command title is a command of its own: its choices are the submenu and picking one chooses it, "none" too', () => {

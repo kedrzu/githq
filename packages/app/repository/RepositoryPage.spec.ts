@@ -9,6 +9,8 @@ import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-rou
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { Browser } from '@/services/Browser.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
@@ -181,6 +183,8 @@ async function open({ path, tracked = false, actualName = WEB, hidden = false }:
     const github = createFakeGitHub(actualName);
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The desktop's layout, whatever the frame's width.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     let visible = !hidden;
     const visibilityListeners: (() => void)[] = [];
     container.set(Browser, {

@@ -1,4 +1,33 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — the item's actions are the command menu's — and the reference heads the title instead. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<script lang="ts">
+/**
+ * From this width of an opened item below its header on a page, it stands in two columns: an issue's summary and
+ * timeline, a workflow's runs and details.
+ */
+export const TWO_COLUMNS_WIDTH = 1000;
+/** The same in the panel: later, so a panel dragged a little wider does not already split. */
+export const PANEL_TWO_COLUMNS_WIDTH = 1300;
+
+/**
+ * The summary's column: 440 px by default, dragged from 360 to 560 px. The timeline keeps 560 px beside it, so at the
+ * narrowest two columns the summary has its default width.
+ */
+const SUMMARY_WIDTH = { key: 'itemSummary', default: 440, min: 360, max: 560 };
+const TIMELINE_MIN_WIDTH = 560;
+/** The thread's width at most in the panel, and the timeline's by default on a page: `$item-reading-width`. */
+const READING_WIDTH = 920;
+/** On a page in two columns, each column's content this far from its edges: `$item-column-inset` there. */
+const PAGE_COLUMN_INSET = 32;
+/**
+ * On a page in two columns, the box the two stand in (and a workflow run's page, which shares its width setting), centred, its edges dragged symmetrically: as wide as the summary
+ * beside a timeline at the reading width by default, at least as wide as the two columns at their narrowest.
+ */
+export const PAGE_WIDTH = {
+  default: SUMMARY_WIDTH.default + READING_WIDTH + 2 * PAGE_COLUMN_INSET,
+  min: SUMMARY_WIDTH.min + TIMELINE_MIN_WIDTH,
+};
+</script>
+
 <script lang="ts" setup>
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -15,14 +44,10 @@ import {
   FileDiff,
   GitBranch,
   Hash,
-  Github,
   Link,
   MessageSquare,
   SquareKanban,
   RotateCcw,
-  Maximize2,
-  Minimize2,
-  X,
 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
@@ -35,7 +60,6 @@ import type { StateOption } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
-import IconButton from '@/components/IconButton.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -57,27 +81,23 @@ import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
 import type { ItemEditing } from './ItemEditing.js';
-import { ItemNavigation } from './ItemNavigation.js';
+import ItemHeader from './ItemHeader.vue';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
 import { formatShortReference } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import * as l from './ItemView.loc.js';
-import ItemWalkStepper from './ItemWalkStepper.vue';
 import LinkedItems from './LinkedItems.vue';
 import PullRequestChecks from './PullRequestChecks.vue';
 import PullRequestMerge from './PullRequestMerge.vue';
@@ -87,29 +107,7 @@ import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
-
-/** From this width of the item below its header on a page, the summary and the timeline stand side by side. */
-const TWO_COLUMNS_WIDTH = 1000;
-/** The same in the panel: later, so a panel dragged a little wider does not already split. */
-const PANEL_TWO_COLUMNS_WIDTH = 1300;
-/**
- * The summary's column: 440 px by default, dragged from 360 to 560 px. The timeline keeps 560 px beside it, so at the
- * narrowest two columns the summary has its default width.
- */
-const SUMMARY_WIDTH = { key: 'itemSummary', default: 440, min: 360, max: 560 };
-const TIMELINE_MIN_WIDTH = 560;
-/** The thread's width at most in the panel, and the timeline's by default on a page: `$item-reading-width`. */
-const READING_WIDTH = 920;
-/** On a page in two columns, each column's content this far from its edges: `$item-column-inset` there. */
-const PAGE_COLUMN_INSET = 32;
-/**
- * On a page in two columns, the box the two stand in, centred, its edges dragged symmetrically: as wide as the summary
- * beside a timeline at the reading width by default, at least as wide as the two columns at their narrowest.
- */
-const PAGE_WIDTH = {
-  default: SUMMARY_WIDTH.default + READING_WIDTH + 2 * PAGE_COLUMN_INSET,
-  min: SUMMARY_WIDTH.min + TIMELINE_MIN_WIDTH,
-};
+import { useItemKeys } from './useItemArrangement.js';
 
 const props = withDefaults(
   defineProps<{
@@ -161,12 +159,18 @@ const props = withDefaults(
     lookedAt?: number | null;
     /** When the user opened the item: what they post after it does not move the thread's line. */
     openedAt?: number | null;
+    /**
+     * On a phone, what back returns to (mobile D20): the list's name ("Issues"), or with no list the repository's;
+     * left out, back says only "Back".
+     */
+    backTitle?: string;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
 );
 
 const emit = defineEmits<{
+  /** Escape and the close button; on a phone back in the top bar (mobile D20). */
   close: [];
   previous: [];
   next: [];
@@ -196,7 +200,7 @@ const emit = defineEmits<{
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
 const browser = useService(Browser);
-const navigation = useService(ItemNavigation);
+const phone = useService(PhoneLayout);
 const tracking = useService(TrackingStore);
 /** Merging, where the screen offers it: how the session's last merge of a pull request ended (PM38). */
 const merging = injectContext(MergeContext, { optional: true });
@@ -286,18 +290,6 @@ useIntersectionObserver({
   onHidden: () => {
     stackRowsInView.value = false;
   },
-});
-
-/**
- * The other arrangement, offered by the header's button and `⇧Enter`: full screen from the panel, back to the panel from
- * the page — but not where the window has no room for the panel.
- */
-const otherArrangement = computed((): OtherArrangement | null => {
-  if (props.arrangement === 'panel') {
-    return { arrangement: 'page', title: t(l.openFullScreen), icon: Maximize2 };
-  }
-
-  return navigation.panelFits ? { arrangement: 'panel', title: t(l.backToPanel), icon: Minimize2 } : null;
 });
 
 const pr = computed(() => (props.item.kind === 'pullRequest' ? props.item : null));
@@ -406,11 +398,9 @@ const opened = computed(() => {
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
 const ITEM_KEYS = {
-  openOnGitHub: 'O',
   openFiles: 'Shift+O',
   review: 'D',
   itemMenu: 'Mod+.',
-  arrange: 'Shift+Enter',
 } as const;
 
 /**
@@ -438,6 +428,26 @@ defineExpose({
   hasOpenEditor: computed(() => threadRef.value?.hasOpenEditor ?? false),
 });
 
+// Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from.
+const keys = useItemKeys({
+  arrangement: () => props.arrangement,
+  // Here rather than in a listener of the copy's own, which would run after the item's. Not a `data-layer` either: that
+  // would cover the screen and switch `J`/`K` off while the rows are dropped.
+  onEscape: () => {
+    if (!stackDropped.value) {
+      return false;
+    }
+
+    stackDropped.value = false;
+    return true;
+  },
+  close: () => emit('close'),
+  arrange: arrangement => emit('arrange', arrangement),
+  openOnGitHub: () => browser.openInNewTab(props.item.url),
+  previous: () => emit('previous'),
+  next: () => emit('next'),
+});
+
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
 // the rest — comment, reviews, GitHub, the link, the arrangement.
 useCommands(
@@ -448,46 +458,6 @@ useCommands(
     title: props.item.title,
   }),
 );
-
-// Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from (in a panel the list's own `j`/`k`, run first,
-// move its selection instead, which the opened item follows).
-onWindowEvent('keydown', event => {
-  // An open picker or menu takes Escape for itself.
-  if (event.key === 'Escape' && !event.defaultPrevented && !isLayerOpen()) {
-    // Here rather than in a listener of the copy's own, which would run after this one. Not a `data-layer` either:
-    // that would cover the screen and switch `J`/`K` off while the rows are dropped.
-    if (stackDropped.value) {
-      event.preventDefault();
-      stackDropped.value = false;
-      return;
-    }
-
-    // A field gives the key up first: Escape in the comment box leaves it.
-    const { target } = event;
-    if (target instanceof HTMLElement && isEditableTarget(target)) {
-      target.blur();
-      return;
-    }
-
-    event.preventDefault();
-    emit('close');
-    return;
-  }
-
-  if (!isScreenKey(event)) {
-    return;
-  }
-
-  switch (event.key) {
-    case 'j':
-      event.preventDefault();
-      emit('next');
-      return;
-    case 'k':
-      event.preventDefault();
-      emit('previous');
-  }
-});
 
 // D27: a click outside the dropped rows and the bar takes them away; the bar's own click toggles them.
 onWindowEvent('pointerdown', event => {
@@ -604,32 +574,20 @@ function getItemCommands(): Command[] {
     });
   }
 
-  // Its own keys (`onWindowEvent` above), listed in the help sheet.
-  commands.push(
-    { id: 'item.next', title: t(l.next), section: 'item', key: 'J', menu: false },
-    { id: 'item.previous', title: t(l.previous), section: 'item', key: 'K', menu: false },
-    { id: 'item.close', title: t(l.close), section: 'item', key: 'Escape', menu: false },
-    {
-      id: 'item.menu',
-      title: t(l.itemMenu),
-      section: 'item',
-      key: ITEM_KEYS.itemMenu,
-      menu: false,
-      run: () => {
-        itemMenuOpen.value = true;
-      },
+  // Its own keys (`useItemKeys` above), listed in the help sheet.
+  commands.push(keys.commands.next, keys.commands.previous, keys.commands.close, {
+    id: 'item.menu',
+    title: t(l.itemMenu),
+    section: 'item',
+    key: ITEM_KEYS.itemMenu,
+    menu: false,
+    run: () => {
+      itemMenuOpen.value = true;
     },
-  );
+  });
 
   commands.push(
-    {
-      id: 'item.openOnGitHub',
-      title: t(l.openOnGitHub),
-      section: 'item',
-      key: ITEM_KEYS.openOnGitHub,
-      icon: Github,
-      run: () => browser.openInNewTab(item.url),
-    },
+    keys.commands.openOnGitHub,
     {
       id: 'item.review',
       title: t(l.review),
@@ -674,16 +632,8 @@ function getItemCommands(): Command[] {
     },
   );
 
-  const other = otherArrangement.value;
-  if (other) {
-    commands.push({
-      id: `item.arrange.${other.arrangement}`,
-      title: other.title,
-      section: 'item',
-      key: ITEM_KEYS.arrange,
-      icon: other.icon,
-      run: () => emit('arrange', other.arrangement),
-    });
+  if (keys.commands.arrange) {
+    commands.push(keys.commands.arrange);
   }
 
   return commands;
@@ -709,13 +659,6 @@ function getProjectOptions(): CommandOption[] {
       pick: () => emit('edit', { kind: 'addToProject', project }),
     }));
 }
-
-/** The arrangement the header's button and `⇧Enter` move the item to. */
-interface OtherArrangement {
-  readonly arrangement: ItemArrangement;
-  readonly title: string;
-  readonly icon: LucideIcon;
-}
 </script>
 
 <template>
@@ -723,77 +666,53 @@ interface OtherArrangement {
     :class="[css.itemView, css[`itemView_${arrangement}`]]"
     :aria-label="item.title"
   >
-    <header
-      :class="css.itemView_toolbar"
-      v-bind="WINDOW_DRAG_REGION"
+    <ItemHeader
+      :position="position ?? null"
+      :other-arrangement="keys.otherArrangement"
+      :url="item.url"
+      :step-keys="keys.stepKeys"
+      :back-title="backTitle"
+      @previous="emit('previous')"
+      @next="emit('next')"
+      @arrange="emit('arrange', $event)"
+      @close="emit('close')"
     >
-      <Menu
-        v-model:open="itemMenuOpen"
-        align="start"
-      >
-        <template #trigger>
-          <button
-            type="button"
-            :class="css.itemView_reference"
-            :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
-            :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
-          >
-            <component
-              :is="state.icon"
-              :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
-              aria-hidden="true"
-            />
-            <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
-            <span :class="css.itemView_number">#{{ item.number }}</span>
-            <ChevronDown
-              :class="css.itemView_chevron"
-              aria-hidden="true"
-            />
-          </button>
-        </template>
-        <CommandMenuSections :sections="itemMenuSections" />
-        <MenuSeparator />
-        <MenuLabel>
-          <span :class="css.itemView_menuFooter">
-            {{ t(l.itemMenu) }}
-            <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
-          </span>
-        </MenuLabel>
-      </Menu>
-      <span :class="css.itemView_spacer" />
-      <ItemWalkStepper
-        v-if="position"
-        :position="position"
-        :previous-label="t(l.previous)"
-        :next-label="t(l.next)"
-        @previous="emit('previous')"
-        @next="emit('next')"
-      />
-      <IconButton
-        v-if="otherArrangement"
-        :icon="otherArrangement.icon"
-        :label="otherArrangement.title"
-        :kbd="ITEM_KEYS.arrange"
-        :keyshortcuts="ITEM_KEYS.arrange"
-        @click="emit('arrange', otherArrangement.arrangement)"
-      />
-      <IconButton
-        :icon="Github"
-        :label="t(l.openOnGitHub)"
-        :kbd="ITEM_KEYS.openOnGitHub"
-        :link="item.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        :keyshortcuts="ITEM_KEYS.openOnGitHub"
-      />
-      <IconButton
-        :icon="X"
-        :label="t(l.close)"
-        kbd="Escape"
-        keyshortcuts="Escape"
-        @click="emit('close')"
-      />
-    </header>
+      <template #identity>
+        <Menu
+          v-model:open="itemMenuOpen"
+          align="start"
+        >
+          <template #trigger>
+            <button
+              type="button"
+              :class="css.itemView_reference"
+              :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
+            >
+              <component
+                :is="state.icon"
+                :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
+                aria-hidden="true"
+              />
+              <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
+              <span :class="css.itemView_number">#{{ item.number }}</span>
+              <ChevronDown
+                :class="css.itemView_chevron"
+                aria-hidden="true"
+              />
+            </button>
+          </template>
+          <CommandMenuSections :sections="itemMenuSections" />
+          <MenuSeparator />
+          <MenuLabel>
+            <span :class="css.itemView_menuFooter">
+              {{ t(l.itemMenu) }}
+              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+            </span>
+          </MenuLabel>
+        </Menu>
+      </template>
+    </ItemHeader>
 
     <div
       ref="body"
@@ -911,6 +830,13 @@ interface OtherArrangement {
                       />
                     </div>
                     <div :class="css.itemView_heading">
+                      <!-- On a phone the top bar has no reference: it heads the title (mobile MB33). -->
+                      <p
+                        v-if="phone.active"
+                        :class="css.itemView_phoneReference"
+                      >
+                        {{ item.repository.nameWithOwner }}#{{ item.number }}
+                      </p>
                       <h1 :class="css.itemView_title">{{ item.title }}</h1>
                       <p :class="css.itemView_state">
                         <StatePill
@@ -1068,13 +994,6 @@ $item-column-inset: var(--item-column-inset);
   --item-column-inset: #{$spacing-32};
 }
 
-.itemView_toolbar {
-  @include list-header;
-
-  padding: 0 14px 0 $spacing-16;
-  font-size: $font-size-sm;
-}
-
 .itemView_reference {
   display: flex;
   gap: $spacing-10;
@@ -1132,8 +1051,10 @@ $item-column-inset: var(--item-column-inset);
   color: $color-fg-dim;
 }
 
-.itemView_spacer {
-  flex: 1;
+.itemView_phoneReference {
+  font-family: $font-family-mono;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
 }
 
 // Its width decides the layout (`twoColumns`): the stack bar and the content in one column, the summary's column and

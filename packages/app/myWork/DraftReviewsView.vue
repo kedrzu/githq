@@ -33,6 +33,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** Enter or a click on a row. */
   open: [id: string];
+  /** `⇧Enter` on a row: its review opens, as Enter opens it, already full screen. */
+  fullScreen: [id: string];
   /** The items the list shows, top to bottom. */
   listed: [listed: ListedItems];
 }>();
@@ -99,6 +101,7 @@ const groups = computed((): ListGroup<Item>[] =>
       layout="list"
       :get-url="item => item.url"
       @open="emit('open', $event)"
+      @full-screen="emit('fullScreen', $event)"
       @listed="emit('listed', $event)"
     >
       <template #row="{ entry, checked }">

@@ -248,6 +248,7 @@ const merging = injectContext(MergeContext, { optional: true });
 const opened = useOpenedItem({ reference: () => props.reference });
 // D2: walking stays in the review, and an issue has none: the list's issues are stepped over.
 const walk = useItemWalk({
+  kind: 'issue',
   id: () => opened.id,
   stopsAt: id => details.getItem(id)?.kind === 'pullRequest',
 });

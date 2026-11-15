@@ -27,7 +27,9 @@ import {
     readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
+    readWorkflowRunsGroupBy,
     writeRefSort,
+    writeWorkflowRunsGroupBy,
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
 import type {
@@ -45,7 +47,7 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
-import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
+import type { WorkflowRefSettings, WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
 
 import { TrackingPersistence } from './TrackingPersistence.js';
 import { REPOSITORY_DOWNLOAD_PHASES } from './TrackingTypes.js';
@@ -208,6 +210,10 @@ export const TrackingStore = defineService({
             get reviewDiffWidth() {
                 return readMaxWidth(keptRef.value.document.reviewDiffWidth);
             },
+            /** How a workflow's runs are grouped, one choice for every workflow; reactive. */
+            get workflowRunsGroupBy() {
+                return readWorkflowRunsGroupBy(keptRef.value.document);
+            },
             /**
              * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
              * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
@@ -233,6 +239,7 @@ export const TrackingStore = defineService({
             setReviewCommentChoice,
             setRefSort,
             setMaxWidth,
+            setWorkflowRunsGroupBy,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -422,6 +429,20 @@ export const TrackingStore = defineService({
                     ? null
                     : { ...kept, document: { ...kept.document, [setting]: width } },
             );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's choice of how a workflow's runs are grouped, in the settings as the slot holds them now — the keys a
+         * newer build added beside it stay. Nothing when it reads as that already.
+         */
+        function setWorkflowRunsGroupBy(groupBy: WorkflowRunsGroupBy) {
+            const written = write(kept => {
+                const document = writeWorkflowRunsGroupBy(kept.document, groupBy);
+                return document && { ...kept, document };
+            });
             if (written) {
                 changedHere();
             }

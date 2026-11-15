@@ -25,6 +25,9 @@ const RUN = {
     display_title: 'Release v0.1.0-rc.3',
     run_started_at: '2026-11-01T03:00:05Z',
     updated_at: '2026-11-01T03:04:12Z',
+    actor: { login: 'kedrzu', id: 1, avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4' },
+    triggering_actor: { login: 'octocat', id: 2, avatar_url: 'https://avatars.githubusercontent.com/u/2?v=4' },
+    run_attempt: 2,
 };
 
 test('asks one exact branch with the held ETag and reports 304 while its runs did not move', async () => {
@@ -73,6 +76,8 @@ test('returns one page of runs with the next page URL from the Link header', asy
                 displayTitle: 'Release v0.1.0-rc.3',
                 runStartedAt: '2026-11-01T03:00:05Z',
                 updatedAt: '2026-11-01T03:04:12Z',
+                actor: { login: 'kedrzu', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4' },
+                runAttempt: 2,
             },
         ],
         nextPageUrl: NEXT_URL,
@@ -102,6 +107,34 @@ test('asks the page URL it is given as it is, and every ref when no branch is na
         NEXT_URL,
         'https://api.github.com/repos/kedrzu/githq/actions/workflows/402954726/runs',
     ]);
+});
+
+test('asks only the runs matching the actor, event and status filters, beside the branch', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const rest = restAnswering([Response.json({ total_count: 0, workflow_runs: [] })], requests);
+
+    await listWorkflowRuns(rest, {
+        nameWithOwner: 'kedrzu/githq',
+        workflowId: 402_954_726,
+        branch: 'main',
+        actor: 'kedrzu',
+        event: 'workflow_dispatch',
+        status: 'failure',
+    });
+
+    expect(requests.map(([input]) => input)).toEqual([
+        'https://api.github.com/repos/kedrzu/githq/actions/workflows/402954726/runs?branch=main&actor=kedrzu&event=workflow_dispatch&status=failure',
+    ]);
+});
+
+test('a run without its actor or attempt reads as nobody named, on its first attempt', async () => {
+    const rest = restAnswering([
+        Response.json({ total_count: 1, workflow_runs: [{ ...RUN, actor: null, run_attempt: undefined }] }),
+    ]);
+
+    expect(await listWorkflowRuns(rest, { nameWithOwner: 'kedrzu/githq', workflowId: 402_954_726 })).toMatchObject({
+        runs: [{ actor: null, runAttempt: 1 }],
+    });
 });
 
 test.each([

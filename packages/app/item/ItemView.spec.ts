@@ -27,6 +27,8 @@ const {
     IssueOnPage,
     IssueOnPageNoRoomForPanel,
     LoadingComments,
+    PhoneFromLink,
+    PhoneFromList,
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
@@ -154,6 +156,29 @@ test("a control Tab reached outside the list holds an opened panel's J/K; one Es
     expect(onNext).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('{Escape}');
     expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test('mobile MB33: on a phone the top bar is back, naming the list, and previous and next; nothing else of the header', async () => {
+    await PhoneFromList.run();
+    const { onClose, onNext, onPrevious } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: 'Back to Issues' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await userEvent.click(page.getByRole('button', { name: 'Next item' }));
+    await userEvent.click(page.getByRole('button', { name: 'Previous item' }));
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(onPrevious).toHaveBeenCalledTimes(1);
+    for (const name of ['Close', 'Open on GitHub', 'Back to the panel', 'Open full screen']) {
+        await expect.element(page.getByRole('button', { name, exact: true })).not.toBeInTheDocument();
+    }
+});
+
+test('mobile MB62: on a phone, opened from a link, back names the repository and there is nothing to step through', async () => {
+    await PhoneFromLink.run();
+
+    const repository = PhoneFromLink.args.item!.repository.nameWithOwner;
+    await expect.element(page.getByRole('button', { name: `Back to ${repository}` })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Next item' })).not.toBeInTheDocument();
 });
 
 test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {

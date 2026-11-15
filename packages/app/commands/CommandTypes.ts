@@ -48,6 +48,16 @@ export interface Command {
     /** `false`: run by its key and listed in the help, never offered in the menu. */
     readonly menu?: boolean;
     /**
+     * Why it can't run here ("CLA has no workflow_dispatch trigger", W48): the menu shows it dimmed with this reason and
+     * "can't run", and nothing runs or opens from it — its key neither.
+     */
+    readonly unavailable?: string;
+    /**
+     * The id of one of its `children` to go straight into (the repository a screen is in, W36): Enter, Tab or → open that
+     * child's level, and a step back from there shows the others.
+     */
+    readonly start?: string;
+    /**
      * It acts on what a list's keys are on (its selected row, the commit opened from it) though its section says `view`:
      * as the `selection` and `item` sections' actions, it doesn't run from what Tab focused outside the list.
      */
@@ -66,7 +76,7 @@ export interface Command {
     readonly run?: () => boolean | void;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */
     readonly options?: () => CommandOptions;
-    /** Called as its submenu opens: what it offers may still have to be read. */
+    /** Called as its submenu or level is shown, coming back to it too: what it offers may still have to be read. */
     readonly prepare?: () => void;
     /**
      * Receives what is typed in its submenu, `''` as the submenu opens and once it is left, and maybe the same text
@@ -79,9 +89,104 @@ export interface Command {
      * sheet. `options` is the other kind of submenu, a picker, which ends the path.
      */
     readonly children?: () => readonly Command[];
+    /** What its level says while it lists nothing, in place of "Nothing matches" ("Reading the workflow files…"). */
+    readonly message?: string;
+    /** The field's text while its level is open, in place of "Type a command or search…" ("Pick a repository…"). */
+    readonly placeholder?: string;
+    /** Quiet text at the footer's end while its level is open ("Run workflow · step 1 of 3"). */
+    readonly levelHint?: string;
+    /**
+     * Quiet text at the footer's end while it is highlighted, over its level's ("Enter opens Deploy's form", W47). One that
+     * can't run is never highlighted: its hint shows while it is listed and the highlighted line has none ("Enter picks
+     * another workflow", W48).
+     */
+    readonly hint?: string;
+    /**
+     * The heading it sits under in a level (W46's "Tracked repositories"); rows of one heading are shown together. The
+     * menu's top level heads its rows by `section` and ignores it, as it does for a row found deeper than the level shown.
+     */
+    readonly group?: string;
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
+    /**
+     * Its last step, a form in place of the list (W37): Enter, Tab or → open it. Asked again with what has been entered as
+     * that changes, so the fields may follow it (a ref decides a workflow's inputs). What was entered stays with the
+     * menu's step while it is open — a field taken away and given back, or the form left and opened again, keeps it.
+     */
+    readonly form?: (values: CommandFormValues) => CommandForm;
 }
+
+/** A value of a {@link CommandFormField}: `null` is a number field left empty. */
+export type CommandFormValue = string | number | boolean | null;
+
+/** What was entered in a form, by field name; a field not touched yet is not there (its default stands). */
+export type CommandFormValues = Readonly<Record<string, CommandFormValue>>;
+
+/** A form an action asks to be filled before it runs ("Run workflow", W37). */
+export interface CommandForm {
+    /** The heading over the fields ("Ref and inputs"). */
+    readonly heading?: string;
+    readonly fields: readonly CommandFormField[];
+    /**
+     * Why it can't run as it is ("This ref has no workflow_dispatch trigger"), under the fields — in place of those it
+     * can't offer, the ones left to change it (the ref). It can't be submitted.
+     */
+    readonly message?: string;
+    /** Dim text after the action's title in its crumb (the repository it runs in). */
+    readonly context?: string;
+    /** What submitting does, the key's label ("Run"). */
+    readonly submitLabel: string;
+    /** Quiet text at the footer's end ("Runs on GitHub as mlaine"). */
+    readonly hint?: string;
+    /** Every field shown, with its value or its default; the menu closes. */
+    submit(values: CommandFormValues): void;
+}
+
+/** What every {@link CommandFormField} has. */
+interface CommandFormFieldBase {
+    /** Its key in the values, and its label unless it has one. */
+    readonly name: string;
+    /** Its label in place of its name (drawn monospaced: a workflow input's name), where the name is a key it can't clash on. */
+    readonly label?: string;
+    /** Under the name: its type, or what it takes ("branch or tag"). */
+    readonly detail?: string;
+    /** Quiet text after the control ("the default branch", "default: staging", "optional"). */
+    readonly hint?: string;
+    /** The form can't be submitted while it is empty. */
+    readonly required?: boolean;
+}
+
+/** A one-line text field. */
+export interface CommandFormTextField extends CommandFormFieldBase {
+    readonly kind: 'text';
+    readonly default?: string;
+}
+
+/** A number field; empty is `null`. */
+export interface CommandFormNumberField extends CommandFormFieldBase {
+    readonly kind: 'number';
+    readonly default?: number;
+}
+
+/** One of a list of values, picked in a select; without a default, the first. */
+export interface CommandFormChoiceField extends CommandFormFieldBase {
+    readonly kind: 'choice';
+    readonly options: readonly string[];
+    readonly default?: string;
+}
+
+/** A switch; without a default, off. */
+export interface CommandFormBooleanField extends CommandFormFieldBase {
+    readonly kind: 'boolean';
+    readonly default?: boolean;
+}
+
+/** A field of a {@link CommandForm}. */
+export type CommandFormField =
+    | CommandFormTextField
+    | CommandFormNumberField
+    | CommandFormChoiceField
+    | CommandFormBooleanField;
 
 /** A row of a {@link CommandKeySheet}. */
 export interface CommandKeyRow {

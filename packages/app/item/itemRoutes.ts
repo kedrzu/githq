@@ -1,9 +1,14 @@
-import type { HistoryState, LocationQuery, RouteLocation, RouteLocationRaw } from 'vue-router';
+import type { HistoryState, RouteLocation } from 'vue-router';
 
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import type { RepositoryName } from '@/utils/parseRepositoryName.js';
+import { WorkflowRoutes } from '@/workflows/workflowRoutes.js';
+import type { WorkflowReference } from '@/workflows/workflowRoutes.js';
+
+import { defineOpenedItemKind } from './defineOpenedItemKind.js';
+import type { OpenedItemKind, OpenedItemRouteSource, OpenedKindRoute } from './defineOpenedItemKind.js';
 
 /**
  * How an opened item is shown (D9): in the panel beside the screen it was opened over, or on a page of its own. The
@@ -16,14 +21,10 @@ export interface ItemReference extends RepositoryName {
     readonly number: number;
 }
 
-/** What a route opens: an item, on its own page or over a list. */
-export interface OpenedItemRoute {
-    readonly reference: ItemReference;
-    /**
-     * The item's own page (`/owner/name/issues/12`); else it is opened over a screen, in the panel beside it.
-     */
-    readonly onPage: boolean;
-}
+/** What a route opens: an item of a kind, on its own page or over a list. */
+export type OpenedItemRoute =
+    | (OpenedKindRoute<ItemReference> & { readonly kind: 'issue' })
+    | (OpenedKindRoute<WorkflowReference> & { readonly kind: 'workflow' });
 
 /**
  * The route paths of an item's own page, shaped like GitHub's: a github.com path pasted after the app's host
@@ -39,61 +40,48 @@ export const ITEM_PAGE_PATHS = ['/:owner/:name/issues/:number(\\d+)', '/:owner/:
 export const REVIEW_PAGE_PATH = '/:owner/:name/pull/:number(\\d+)/files';
 export const REVIEW_PAGE_ALIAS = '/:owner/:name/pull/:number(\\d+)/changes';
 
-/** The query parameter of GitHub's project pane: `issue` when the pane shows an issue or a pull request. */
-const PANE_PARAM = 'pane';
-/** What {@link PANE_PARAM} says for an item. */
-const PANE_ISSUE = 'issue';
-/** The query parameter naming the item in GitHub's project pane: `owner|name|number`. */
-const ISSUE_PARAM = 'issue';
-/**
- * GitHub's own parameter naming the pane's item by its project item id, which githq does not have: a link that
- * carries only it opens the list, and opening an item drops it.
- */
-const ITEM_ID_PARAM = 'itemId';
-/** What separates the owner, the name and the number in {@link ISSUE_PARAM}. */
+/** What separates the owner, the name and the number in the pane's `issue` parameter. */
 const ISSUE_SEPARATOR = '|';
-/**
- * The mark an item's page carries in the history when it was expanded from the panel: the expanded item's reference, as
- * `formatItemReference` writes it. Kept through a replace of the address and a reload.
- */
-const EXPANDED_FROM_STATE = 'expandedFrom';
 
 /**
- * The item a route opens, or `null`: the item's own page (`/owner/name/issues/12`), or a list with one opened over
- * it in GitHub's project-pane format (`?pane=issue&issue=owner%7Cname%7C12`).
+ * An issue or a pull request opened as an item: on its page (`/owner/name/issues/12`), or over a list in GitHub's
+ * project-pane format (`?pane=issue&issue=owner%7Cname%7C12`).
+ */
+export const IssueRoutes = defineOpenedItemKind<ItemReference>({
+    kind: 'issue',
+    formatPaneValue(reference) {
+        return [reference.owner, reference.name, reference.number].join(ISSUE_SEPARATOR);
+    },
+    parsePaneValue(value) {
+        const [owner, name, number, ...rest] = value.split(ISSUE_SEPARATOR);
+        return owner && name && rest.length === 0 ? toReference(owner, name, number) : null;
+    },
+    parsePageParams(params) {
+        const { owner, name, number } = params;
+        return typeof owner === 'string' && typeof name === 'string' ? toReference(owner, name, number) : null;
+    },
+    getPagePath(reference) {
+        return getItemPagePath(reference);
+    },
+    formatKey(reference) {
+        return formatItemReference(reference);
+    },
+});
+
+/**
+ * The item a route opens, of whichever kind, or `null`: an item's own page, or a list with one opened over it in
+ * GitHub's project-pane format.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getOpenedItemRoute(route: Pick<RouteLocation, 'meta' | 'params' | 'query'>): OpenedItemRoute | null {
-    if (route.meta.itemPage) {
-        const { owner, name, number } = route.params;
-        const reference =
-            typeof owner === 'string' && typeof name === 'string' ? toReference(owner, name, number) : null;
-        return reference ? { reference, onPage: true } : null;
+export function getOpenedItemRoute(route: OpenedItemRouteSource): OpenedItemRoute | null {
+    const issue = IssueRoutes.getOpened(route);
+    if (issue) {
+        return { kind: 'issue', ...issue };
     }
 
-    const issue = route.query[ISSUE_PARAM];
-    const reference =
-        route.query[PANE_PARAM] === PANE_ISSUE && typeof issue === 'string' ? parsePaneReference(issue) : null;
-    return reference ? { reference, onPage: false } : null;
-}
-
-/**
- * The query of a list with `item` opened over it — or with nothing opened, for `null` — keeping the rest of
- * `query`. Written as GitHub's project pane: `pane=issue&issue=owner|name|number`.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getOpenedItemQuery(query: LocationQuery, item: ItemReference | null): LocationQuery {
-    const rest: LocationQuery = { ...query };
-    delete rest[PANE_PARAM];
-    delete rest[ISSUE_PARAM];
-    delete rest[ITEM_ID_PARAM];
-    if (!item) {
-        return rest;
-    }
-
-    return { ...rest, [PANE_PARAM]: PANE_ISSUE, [ISSUE_PARAM]: formatPaneReference(item) };
+    const workflow = WorkflowRoutes.getOpened(route);
+    return workflow ? { kind: 'workflow', ...workflow } : null;
 }
 
 /**
@@ -107,23 +95,14 @@ export function getItemPagePath(reference: ItemReference, kind: Item['kind'] = '
 }
 
 /**
- * An item's page expanded from the panel: pushed, with the mark ({@link getExpandedFrom}) that Back to the panel reads.
+ * The address of the entry behind the current one in the history, as vue-router keeps it in the entry's state (`back`,
+ * kept through a replace); `null` at the first entry, or where the history keeps no such state (a memory history).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getExpandedLocation(reference: ItemReference, kind?: Item['kind']): RouteLocationRaw {
-    return { path: getItemPagePath(reference, kind), state: { [EXPANDED_FROM_STATE]: formatItemReference(reference) } };
-}
-
-/**
- * The reference, as `formatItemReference` writes it, of the item a page in the history was expanded from the panel
- * for ({@link getExpandedLocation}); `null` for a page opened any other way.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getExpandedFrom(state: HistoryState): string | null {
-    const mark = state[EXPANDED_FROM_STATE];
-    return typeof mark === 'string' ? mark : null;
+export function getHistoryBack(state: HistoryState): string | null {
+    const { back } = state;
+    return typeof back === 'string' ? back : null;
 }
 
 /**
@@ -199,16 +178,6 @@ export function formatItemReference(reference: ItemReference) {
     return `${reference.owner}/${reference.name}/${reference.number}`;
 }
 
-function formatPaneReference(reference: ItemReference) {
-    return [reference.owner, reference.name, reference.number].join(ISSUE_SEPARATOR);
-}
-
-/** The reference an `issue` parameter carries, or `null` when it is not `owner|name|number`. */
-function parsePaneReference(value: string): ItemReference | null {
-    const [owner, name, number, ...rest] = value.split(ISSUE_SEPARATOR);
-    return owner && name && rest.length === 0 ? toReference(owner, name, number) : null;
-}
-
 function toReference(owner: string, name: string, number: unknown): ItemReference | null {
     if (typeof number !== 'string' || !/^[1-9]\d*$/u.test(number) || !owner || !name) {
         return null;
@@ -219,8 +188,8 @@ function toReference(owner: string, name: string, number: unknown): ItemReferenc
 
 declare module 'vue-router' {
     interface RouteMeta {
-        /** The route is an item's own page (`ITEM_PAGE_PATHS`). */
-        itemPage?: boolean;
+        /** The route is the own page of an item of this kind (`ITEM_PAGE_PATHS`, `WORKFLOW_PAGE_PATH`). */
+        itemPage?: OpenedItemKind;
         /**
          * The screen is a list an item opens over, in the panel beside it (D9): opening one from anywhere else — a
          * review, Settings, a run — goes to its own page (`useOpenItemReference`).

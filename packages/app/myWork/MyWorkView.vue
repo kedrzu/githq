@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). On a phone the toolbar is the phone's top bar, without the filters (`ListToolbar`), and the command line names the list — "My work" or the group — with its count once in (mobile D17). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -43,6 +43,7 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { usePhonePart } from '@/shell/usePhonePart.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -103,6 +104,8 @@ const emit = defineEmits<{
   open: [id: string];
   /** Enter on the opened item's row: it expands to its page. */
   expand: [id: string];
+  /** `⇧Enter` on a row not open: it opens straight on its page. */
+  fullScreen: [id: string];
   /** The items the list shows, top to bottom — what an opened item steps through. */
   listed: [listed: ListedItems];
   /** The view options back to their defaults. */
@@ -230,6 +233,16 @@ const groups = computed((): ListGroup<Item>[] => {
       return assertNever(grouping);
   }
 });
+
+// On a phone the command line names the list with its count, once every group shown is in (mobile D17).
+usePhonePart(() => ({
+  label: title.value,
+  count: reasons.value.every(entry => entry.arrived)
+    ? props.group
+      ? props.work.counts[props.group]
+      : props.work.counts.total
+    : null,
+}));
 
 // `1`–`3` switch the filters; the command menu offers them too.
 useCommands(() =>
@@ -376,6 +389,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       :get-url="item => item.url"
       @open="emit('open', $event)"
       @expand="emit('expand', $event)"
+      @full-screen="emit('fullScreen', $event)"
       @listed="emit('listed', $event)"
     >
       <template

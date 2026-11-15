@@ -1,0 +1,57 @@
+workflow:
+  en: Workflow
+runs:
+  en: Runs
+details:
+  en: Details
+sections:
+  en: Runs and details
+resizeDetails:
+  en: Resize the details
+brokenOn:
+  en: Broken on {ref}
+passingOn:
+  en: Passing on {ref}
+noVerdict:
+  en: No verdict yet
+pullRequestsOnly:
+  en: Pull requests only
+neverCounts:
+  en: never counts
+disabled:
+  en: Disabled on GitHub
+brokenFor:
+  en: for {age}
+brokenForOrMore:
+  en: for {age}+
+lastPassed:
+  en: 'last passed {when} in #{number}'
+lastRunsPassed:
+  plural: count
+  en:
+    one: the last run on {ref} passed
+    many: the last {count} runs on {ref} passed
+nothingCounts:
+  en: no ref counts here
+runWorkflow:
+  en: Run workflow…
+hintRun:
+  en: Run
+hintWorkflow:
+  en: Workflow
+hintOpenRun:
+  en: Open run
+hintLatestFailure:
+  en: Latest failure
+backToPanel:
+  en: Back to the panel
+backToList:
+  en: Back to the list
+nextRun:
+  en: Next run
+previousRun:
+  en: Previous run
+openRun:
+  en: Open run
+openLatestFailure:
+  en: Open latest failure

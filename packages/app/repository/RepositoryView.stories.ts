@@ -11,12 +11,15 @@ import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { sampleWebappHistory } from '@/testing/sampleCommits.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SPREAD_STACK_ITEMS } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import type { RepositoryListTexts } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
@@ -47,6 +50,8 @@ const TEXTS: RepositoryListTexts = {
 
 const meta = {
     component: RepositoryView,
+    // The desktop's, whatever the width; the phone's stories say so.
+    decorators: [withPhoneLayout(false)],
     args: {
         nameWithOwner: SAMPLE_REPOSITORY,
         isPrivate: true,
@@ -426,6 +431,8 @@ function options(layout: ListLayout, grouping: RepositoryGrouping): ListViewOpti
 /** The commit graph's container, once its kept copy is written. */
 async function loadCommitGraph() {
     const { container, ready } = createCommitGraphTest(sampleWebappHistory());
+    // A container of its own, which the meta's decorator does not reach: the desktop's layout here too.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     await ready;
     return { container };
 }
@@ -435,3 +442,6 @@ async function findGraphRow(canvasElement: HTMLElement) {
     const graph = await within(canvasElement).findByRole('region', { name: /^Commits of/ });
     return within(graph).findByText('chore: bump vite to 6.2');
 }
+
+/** On a phone (mobile MB32): the phone's top bar with the repository's name and its display options; no sections. */
+export const Phone: Story = { decorators: [withPhoneLayout(true)] };

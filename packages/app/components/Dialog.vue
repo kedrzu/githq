@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge. Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
@@ -35,6 +35,8 @@ withDefaults(
     fitContent?: boolean;
     /** Centred on the window both ways (the merge panel), instead of hanging from near its top. */
     centered?: boolean;
+    /** A sheet along the window's left edge, all its height (the phone's places panel), instead of hanging from near its top. */
+    edge?: 'left';
   }>(),
   { description: undefined },
 );
@@ -71,7 +73,12 @@ const t = useTranslate();
     <DialogPortal v-if="open">
       <DialogOverlay :class="css.dialog_overlay" />
       <DialogContent
-        :class="[css.dialog, bare && (fitContent ? css.dialog_fit : css.dialog_bare), centered && css.dialog_centered]"
+        :class="[
+          css.dialog,
+          bare && (fitContent ? css.dialog_fit : css.dialog_bare),
+          centered && css.dialog_centered,
+          edge === 'left' && css.dialog_left,
+        ]"
         :style="{ width: `${width}px` }"
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
@@ -186,6 +193,23 @@ const t = useTranslate();
 .dialog_centered {
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+.dialog_left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: auto;
+  max-width: calc(100vw - #{$phone-places-room});
+  max-height: none;
+  border-width: 0 1px 0 0;
+  border-radius: 0;
+  transform: none;
+
+  &[data-state='open'] {
+    --motion-slide-x: #{-$motion-slide-distance};
+    --motion-slide-y: 0;
+  }
 }
 
 .dialog_title {

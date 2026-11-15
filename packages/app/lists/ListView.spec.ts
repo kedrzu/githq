@@ -110,16 +110,19 @@ test('board: Enter or a click opens the card; while one is open, moving the sele
     await expect.poll(selectedCard).toBe('c2');
 });
 
-test("Enter on the opened item's row expands it, on another row opens that one; Shift+Enter is never the list's Enter", async () => {
+test("Enter on the opened item's row expands it, on another row opens that one; Shift+Enter opens a row not open full screen, never on the opened one's row", async () => {
     const view = mount(BOARD, 'board');
 
     await userEvent.keyboard('j{Shift>}{Enter}{/Shift}');
     expect(view.opened).toEqual([]);
+    expect(view.fullScreen).toEqual(['a1']);
     await userEvent.keyboard('{Enter}');
     expect(view.opened).toEqual(['a1']);
 
+    // On the opened item's row, Shift+Enter is the opened item's own (its arrangement).
     view.openedId.value = 'a1';
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(view.fullScreen).toEqual(['a1']);
     expect(view.expanded).toEqual([]);
     await userEvent.keyboard('{Enter}');
     expect(view.expanded).toEqual(['a1']);
@@ -1831,6 +1834,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     const openedId = ref<string | null>(null);
     const opened: string[] = [];
     const expandedIds: string[] = [];
+    const fullScreen: string[] = [];
     const moves: ListMove[] = [];
     const listed: ListedItems[] = [];
 
@@ -1861,6 +1865,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
         openedId,
         opened,
         expanded: expandedIds,
+        fullScreen,
         moves,
         listed,
         unmount,
@@ -1892,6 +1897,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                     }
                 },
                 onExpand: (id: string) => expandedIds.push(id),
+                onFullScreen: (id: string) => fullScreen.push(id),
                 onMove: (move: ListMove) => moves.push(move),
                 onListed: (items: ListedItems) => listed.push(items),
             },
