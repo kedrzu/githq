@@ -1,4 +1,4 @@
-<!-- A message about something that happened in the background (reka-ui's `Toast`, inside a `Toaster`) — went wrong, went through in part, or a merge GitHub confirmed (`done`) — or a neutral one about what the user just did (T20): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc), or with `dismissOnEscape` off a Dismiss with no key, where Escape is the screen's (code review's discarded comment: Esc there leaves the review). A `brief` or `long` one closes by itself (not while hovered or focused), counting down in a ring around its ×; a `pinned` one stays until dismissed. Only the newest toast of the `Toaster` takes keys: its `commands` run and its key hints show, and Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
+<!-- A message about something that happened in the background (reka-ui's `Toast`, inside a `Toaster`) — went wrong, went through in part, or a merge GitHub confirmed (`done`) — or a neutral one about what the user just did (T20), or something the user made that went through (`success`: an issue created, mobile D44): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — "Dismiss" (Esc), or with `dismissOnEscape` off a Dismiss with no key, where Escape is the screen's (code review's discarded comment: Esc there leaves the review); with `dismissButton` off only the × dismisses it, beside actions of its own. A `brief` or `long` one closes by itself (not while hovered or focused), counting down in a ring around its ×; a `pinned` one stays until dismissed. Only the newest toast of the `Toaster` takes keys: its `commands` run and its key hints show, and Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
 <script lang="ts">
 /**
  * How long a toast stays, in ms, by what it says:
@@ -20,7 +20,7 @@ export type ToastLasts = keyof typeof TOAST_LASTS;
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleX, GitMerge, Info, TriangleAlert, X } from 'lucide-vue-next';
+import { CircleCheck, CircleX, GitMerge, Info, TriangleAlert, X } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { ToastDescription, ToastRoot, ToastTitle } from 'reka-ui';
 import { computed, onUnmounted, ref, watch } from 'vue';
@@ -46,8 +46,9 @@ const props = withDefaults(
      * |`done`|a merge GitHub confirmed|`GitMerge`, purple|
      * |`neutral`|nothing is wrong: what the user just did|the one given, else `Info`, dim|
      * |`accent`|news, nothing is wrong either|the one given, else `Info`, accent|
+     * |`success`|something the user made went through (an issue created)|`CircleCheck`, green|
      */
-    tone?: 'danger' | 'done' | 'warning' | 'neutral' | 'accent';
+    tone?: 'danger' | 'done' | 'warning' | 'neutral' | 'accent' | 'success';
     /** Instead of the tone's own. */
     icon?: LucideIcon;
     /** How long it stays (`TOAST_LASTS`). */
@@ -62,8 +63,10 @@ const props = withDefaults(
      * the toast up: Dismiss then has no key, and Escape never closes it.
      */
     dismissOnEscape?: boolean;
+    /** Whether "Dismiss" shows among the actions; off, the × beside the countdown still dismisses it. */
+    dismissButton?: boolean;
   }>(),
-  { tone: 'danger', lasts: 'long', icon: undefined, commands: () => [], dismissOnEscape: true },
+  { tone: 'danger', lasts: 'long', icon: undefined, commands: () => [], dismissOnEscape: true, dismissButton: true },
 );
 
 const emit = defineEmits<{
@@ -87,6 +90,7 @@ const icons = {
   warning: TriangleAlert,
   neutral: Info,
   accent: Info,
+  success: CircleCheck,
 };
 
 /** Its place in the order the `Toaster`'s toasts opened, while it is open. */
@@ -221,6 +225,7 @@ function getElapsed(remaining: number, total: number) {
           :active="active"
         />
         <Button
+          v-if="dismissButton"
           variant="secondary"
           size="sm"
           :kbd="takesEscape ? 'Escape' : undefined"
@@ -308,6 +313,10 @@ function getElapsed(remaining: number, total: number) {
 
   .toast_accent & {
     color: $color-accent;
+  }
+
+  .toast_success & {
+    color: $color-green;
   }
 }
 

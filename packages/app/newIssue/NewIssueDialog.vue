@@ -1,4 +1,4 @@
-<!-- Creating an issue (H1, D20): a quick capture over the screen — the repository chip, the title, optional chips — that expands into the full form (H3: the body beside every field). Enter creates and closes; ⌘Enter creates and keeps it open with the title cleared ("create another"); Tab or "Details" expands, where ⌘Enter creates, ⌥⌘Enter creates another and Escape collapses; Escape closes the capture and keeps what was written. The repository chip opens the repository chooser (H2); a repository with templates offers them (H7) — before anything else where it turned blank issues off — and an issue form becomes the body with its required fields checked (H8). A repository that won't take an issue says so before anything is typed; a creation GitHub refused shows why above the text it kept (H9). -->
+<!-- Creating an issue (H1, D20): a quick capture over the screen — the repository chip, the title, optional chips — that expands into the full form (H3: the body beside every field). Enter creates and closes, and the issue's toast follows with Create another and Open (`IssueCreatedToast`, mobile D44); ⌘Enter creates and keeps it open with the title cleared ("create another"), the toast showing too, to open what was created; Tab or "Details" expands, where ⌘Enter creates, ⌥⌘Enter creates another and Escape collapses; Escape closes the capture and keeps what was written. The repository chip opens the repository chooser (H2), which comes first while none is chosen — started outside a repository, nothing is chosen in advance (mobile D43); a repository with templates offers them (H7) — before anything else where it turned blank issues off — and an issue form becomes the body with its required fields checked (H8). A repository that won't take an issue says so before anything is typed; a creation GitHub refused shows why above the text it kept (H9). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { AlertTriangle, BookMarked, ChevronDown, ExternalLink, FileText, Lock, X } from 'lucide-vue-next';
@@ -49,7 +49,7 @@ export interface NewIssueWaitingEntry {
 const props = defineProps<{
   draft: NewIssueDraft;
   repository: NewIssueRepositoryState;
-  /** What the defaults came from, at the footer's end ("last used repository", "from portal#1187"). */
+  /** What the defaults came from, at the footer's end ("in Platform Q4", "from portal#1187"). */
   contextHint: string | null;
   /** The repository's templates; `null` while read or for none. */
   templates: RepositoryTemplates | null;

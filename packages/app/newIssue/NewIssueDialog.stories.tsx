@@ -88,7 +88,7 @@ const CHOICES: readonly RepositoryChoiceSection[] = [
     {
         key: 'tracked',
         heading: 'Tracked',
-        choices: [{ nameWithOwner: 'skyline-labs/api', isPrivate: true, detail: '96 open' }],
+        choices: [{ nameWithOwner: 'skyline-labs/api', isPrivate: true, detail: '96 open', lastUsed: true }],
     },
     {
         key: 'others',
@@ -135,7 +135,7 @@ const Harness = defineComponent({
         templates: { type: Object as PropType<RepositoryTemplates | null>, default: null },
         form: { type: Object as PropType<IssueForm | null>, default: null },
         rejection: { type: String as PropType<string | null>, default: null },
-        contextHint: { type: String as PropType<string | null>, default: 'last used repository' },
+        contextHint: { type: String as PropType<string | null>, default: null },
         waiting: { type: Array as PropType<readonly NewIssueWaitingEntry[]>, default: () => [] },
     },
     setup(props) {
@@ -225,10 +225,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** H1: the quick capture in the repository used last — the title, then Enter. */
+/** H1: the quick capture in the repository it was started in — the title, then Enter. */
 export const QuickCapture: Story = {};
 
-/** H2: no repository chosen yet — the chooser first: tracked, others, and those that won't take an issue. */
+/**
+ * H2, mobile D43: started outside a repository, none chosen in advance — the chooser first, the repository used last at
+ * the top marked "last used", then others and those that won't take an issue.
+ */
 export const ChoosingRepository: Story = {
     args: { draft: { ...EMPTY, repository: null }, repository: { kind: 'none' } },
 };

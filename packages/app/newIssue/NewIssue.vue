@@ -136,11 +136,7 @@ const contextHint = computed(() => {
       : t(l.inProject, { project: project.title });
   }
 
-  if (context?.parent && draft.value.parent) {
-    return t(l.fromIssue, { reference: context.parent.reference });
-  }
-
-  return context?.repository === null && repositoryName.value !== null ? t(l.lastUsed) : null;
+  return context?.parent && draft.value.parent ? t(l.fromIssue, { reference: context.parent.reference }) : null;
 });
 const parentOptions = computed((): PickerOption[] => {
   const name = repositoryName.value;
@@ -172,6 +168,7 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
   const query = getTypedRepository(typed) ?? typed;
   const ours: { readonly best: number; readonly section: RepositoryChoiceSection }[] = [];
   const listed = new Set<string>();
+  const last = composer.lastRepository;
   const project = composer.context?.project;
   if (project) {
     addSection('project', t(l.inProjectSection, { project: project.title }), getProjectRepositories(project.projectId));
@@ -179,8 +176,11 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
 
   addSection('tracked', t(l.tracked), tracking.repositoryNames);
   addSection('yourWork', t(l.yourWork), getWorkRepositories());
-  // The section holding the best match first, so Enter picks it; nothing typed scores all alike and keeps their order.
-  const sections = ours.toSorted((a, b) => b.best - a.best).map(({ section }) => section);
+  // The section holding the best match first, so Enter picks it; nothing typed scores all alike and keeps their order —
+  // but for the section of the repository used last, which then comes first, the repository at its top (mobile D43).
+  const sections = ours
+    .toSorted((a, b) => b.best - a.best || (query ? 0 : Number(holdsLast(b.section)) - Number(holdsLast(a.section))))
+    .map(({ section }) => section);
   const others = found.value.filter(choice => !listed.has(choice.nameWithOwner));
   const available = others.filter(choice => !choice.unavailable);
   const unavailable = others.filter(choice => choice.unavailable);
@@ -196,6 +196,10 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
 
   function addSection(key: string, heading: string, names: readonly string[]) {
     const unlisted = names.filter(name => !listed.has(name));
+    if (!query && last !== null && unlisted.includes(last)) {
+      unlisted.sort((a, b) => Number(b === last) - Number(a === last));
+    }
+
     const matches = findMatches(
       query,
       prepareMatchTexts(unlisted, name => [name]),
@@ -203,12 +207,21 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
     );
     const choices = matches.map(({ row: name }): RepositoryChoice => {
       listed.add(name);
-      return { nameWithOwner: name, isPrivate: isPrivateRepository(name), detail: getChoiceDetail(name) };
+      return {
+        nameWithOwner: name,
+        isPrivate: isPrivateRepository(name),
+        detail: getChoiceDetail(name),
+        lastUsed: name === last,
+      };
     });
     const [best] = matches;
     if (best) {
       ours.push({ best: best.score, section: { key, heading, choices } });
     }
+  }
+
+  function holdsLast(section: RepositoryChoiceSection) {
+    return section.choices.some(choice => choice.lastUsed);
   }
 });
 /** The issue form the body came from, while it is there (H8). */

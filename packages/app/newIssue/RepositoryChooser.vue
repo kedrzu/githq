@@ -1,4 +1,4 @@
-<!-- Choosing the repository of a new issue (H2), in place of the quick capture's chips: type part of its name, ↑/↓, Enter. The repositories come in sections — those of the project it was started in, the tracked ones, then any other the user can create issues in (GitHub searched as they type) — and those that won't take an issue (archived, issues turned off) are listed with why, not chosen. Escape goes back to the title. -->
+<!-- Choosing the repository of a new issue (H2), in place of the quick capture's chips: type part of its name, ↑/↓, Enter. The repositories come in sections — those of the project it was started in, the tracked ones, then any other the user can create issues in (GitHub searched as they type) — and those that won't take an issue (archived, issues turned off) are listed with why, not chosen. The repository used last is marked "last used" — at the top while nothing is typed, never chosen in advance (mobile D43). Escape goes back to the title. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock, Search } from 'lucide-vue-next';
@@ -23,8 +23,10 @@ export interface RepositoryChoice {
   /** `owner/name`. */
   readonly nameWithOwner: string;
   readonly isPrivate: boolean;
-  /** Dim text after the name ("private · 96 open", "last used"). */
+  /** Dim text after the name ("private · 96 open"). */
   readonly detail?: string;
+  /** The repository the last issue was created in: marked "last used". */
+  readonly lastUsed?: boolean;
   /** Why it won't take an issue; it can't be chosen. */
   readonly unavailable?: string;
 }
@@ -108,6 +110,11 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
       />
       <span :class="css.repositoryChooser_name">{{ row.choice.nameWithOwner }}</span>
       <span
+        v-if="row.choice.lastUsed"
+        :class="css.repositoryChooser_lastUsed"
+        >{{ t(l.lastUsed) }}</span
+      >
+      <span
         v-if="row.choice.detail"
         :class="css.repositoryChooser_detail"
         >{{ row.choice.detail }}</span
@@ -152,6 +159,16 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
   flex: none;
   font-size: $font-size-sm;
   color: $color-fg-dim;
+}
+
+.repositoryChooser_lastUsed {
+  flex: none;
+  padding: 0 $spacing-6;
+  font-size: $font-size-xs;
+  line-height: 18px;
+  color: $color-fg-2;
+  border: 1px solid $color-border-2;
+  border-radius: $radius-md;
 }
 
 .repositoryChooser_spacer {

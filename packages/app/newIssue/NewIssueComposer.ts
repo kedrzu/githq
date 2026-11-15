@@ -21,7 +21,10 @@ const KEY_PREFIX = 'githq.newIssue.';
 
 /** Where creating an issue was started from: it sets the defaults (`ui/new-issue.md`, step 1). */
 export interface NewIssueContext {
-    /** The repository of the screen (a repository's list, an opened item); else the one used last. */
+    /**
+     * The repository of the screen (a repository's list, an opened item). Elsewhere (`null`) none is chosen in advance:
+     * the capture opens on choosing it, the one used last at the top (mobile D43) — unless a draft comes back with its own.
+     */
     readonly repository: string | null;
     /** A project's screen: the issue is added to it, with the value of the column it was started in (H5). */
     readonly project: NewIssueProjectChoice | null;
@@ -86,6 +89,24 @@ export type NewIssueWaitingReason =
     /** Put aside to bring another one back. */
     | { readonly kind: 'setAside' };
 
+/**
+ * An issue created from the capture, for its toast (mobile D44) until the toast closes: Create another starts the next
+ * one with its repository, projects and labels; Open opens it once GitHub gave its number.
+ */
+export interface NewIssueCreated {
+    /** Unique among those created. */
+    readonly id: number;
+    /** `owner/name`. */
+    readonly repository: string;
+    readonly title: string;
+    /** The id GitHub gave it, once it answered; `null` before. */
+    readonly issueId: string | null;
+    readonly labels: readonly string[];
+    readonly projects: readonly NewIssueProjectChoice[];
+    /** Where the capture was started from. */
+    readonly context: NewIssueContext | null;
+}
+
 /** An issue's text as kept in the browser. */
 interface KeptDraft {
     readonly repository: string | null;
@@ -140,6 +161,7 @@ export const NewIssueComposer = defineService({
         const lastRepositoryRef = shallowRef<string | null>(null);
         const handoffRef = shallowRef<NewIssueHandoff | null>(null);
         const waitingRef = shallowRef<readonly NewIssueWaiting[]>([]);
+        const createdRef = shallowRef<readonly NewIssueCreated[]>([]);
         /** The issues sent and not answered yet, by id: their text is kept until GitHub created them. */
         const sending = new Map<number, NewIssueDraft>();
         /**
@@ -180,7 +202,13 @@ export const NewIssueComposer = defineService({
             get handoff() {
                 return handoffRef.value;
             },
+            /** The issues created whose toasts show, oldest first; reactive. */
+            get created() {
+                return createdRef.value;
+            },
             start,
+            startAnother,
+            forgetCreated,
             update,
             useTemplate,
             close,
@@ -192,8 +220,8 @@ export const NewIssueComposer = defineService({
         /**
          * Opens the capture with the defaults of where it was started (`ui/new-issue.md`, step 1): in a repository,
          * that repository with the draft written there, if any — the one shown before is kept for its own;
-         * elsewhere, the draft shown last, else one left in another repository, else the repository used last.
-         * Nothing when it is open already.
+         * elsewhere, the draft shown last, else one left in another repository, else no repository: the user chooses
+         * it, never a forgotten default (mobile D43). Nothing when it is open already.
          */
         function start(context: NewIssueContext) {
             if (openRef.value) {
@@ -210,10 +238,7 @@ export const NewIssueComposer = defineService({
                 next = current;
             } else {
                 const left = [...others.keys()].at(-1);
-                next = (left === undefined ? null : take(left)) ?? {
-                    ...EMPTY_DRAFT,
-                    repository: lastRepositoryRef.value,
-                };
+                next = (left === undefined ? null : take(left)) ?? EMPTY_DRAFT;
             }
 
             const written = isWritten(next);
@@ -317,6 +342,32 @@ export const NewIssueComposer = defineService({
             });
         }
 
+        /**
+         * Create another from a created issue's toast (mobile D44): the capture opens in its repository — with the draft
+         * written there, if any — and, when nothing is written, with the projects and labels it went with. Nothing when
+         * the capture is open already.
+         */
+        function startAnother(id: number) {
+            const entry = createdRef.value.find(created => created.id === id);
+            if (!entry || openRef.value) {
+                return;
+            }
+
+            start({
+                repository: entry.repository,
+                project: entry.context?.project ?? null,
+                parent: entry.context?.parent ?? null,
+            });
+            if (!isWritten(draftRef.value)) {
+                draftRef.value = { ...draftRef.value, labels: entry.labels, projects: entry.projects };
+            }
+        }
+
+        /** A created issue's toast closed. */
+        function forgetCreated(id: number) {
+            createdRef.value = createdRef.value.filter(entry => entry.id !== id);
+        }
+
         /** Closes it; what is written stays for the next time. */
         function close() {
             openRef.value = false;
@@ -324,7 +375,8 @@ export const NewIssueComposer = defineService({
 
         /**
          * Creates the issue written: the capture closes — or, `another`, stays open with the title and body cleared
-         * for the next one (its repository, fields and projects kept). Its text is kept, in the browser too, until
+         * for the next one (its repository, fields and projects kept) — and its toast shows either way ({@link created},
+         * mobile D44), until GitHub refuses it. Its text is kept, in the browser too, until
          * GitHub created it. Resolves once GitHub answered; when it did not create the issue, the capture opens again
          * with the issue as written and the reason — or, over something written meanwhile, with it waiting to be
          * brought back ({@link restore}).
@@ -338,6 +390,18 @@ export const NewIssueComposer = defineService({
 
             const id = nextId++;
             sending.set(id, sent);
+            createdRef.value = [
+                ...createdRef.value,
+                {
+                    id,
+                    repository,
+                    title: sent.title.trim(),
+                    issueId: null,
+                    labels: sent.labels,
+                    projects: sent.projects,
+                    context: contextRef.value,
+                },
+            ];
             lastRepositoryRef.value = repository;
             rejectionRef.value = null;
             handoffRef.value = null;
@@ -362,6 +426,9 @@ export const NewIssueComposer = defineService({
                 return;
             }
 
+            createdRef.value = outcome.created
+                ? createdRef.value.map(entry => (entry.id === id ? { ...entry, issueId: outcome.issueId } : entry))
+                : createdRef.value.filter(entry => entry.id !== id);
             const failed = outcome.failed.find(entry => entry.edit.subject.kind === 'issueCreated');
             if (!outcome.created && failed) {
                 // H9: the issue as written comes back — never over what the user is writing now, which it waits beside.
@@ -451,6 +518,7 @@ export const NewIssueComposer = defineService({
             contextRef.value = null;
             rejectionRef.value = null;
             handoffRef.value = null;
+            createdRef.value = [];
             sending.clear();
             others.clear();
             for (const draft of kept?.others ?? []) {

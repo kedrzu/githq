@@ -105,10 +105,11 @@ test('⌘Enter pressed before the repository’s details are in creates another 
     await expect.element(page.getByRole('textbox', { name: 'Title' })).toHaveValue('');
 });
 
-test('H2: with no repository the chooser comes first; Enter takes the first that takes an issue', async () => {
+test('H2: with no repository the chooser comes first, the last used marked; Enter takes the first that takes an issue', async () => {
     await ChoosingRepository.run();
 
     await expect.element(page.getByRole('textbox', { name: 'Repository' })).toHaveFocus();
+    await expect.element(page.getByRole('option', { name: /^skyline-labs\/api\s*last used/u })).toBeInTheDocument();
     await expect.element(page.getByRole('option', { name: /skyline-labs\/api-v1/u })).toHaveAttribute('data-disabled');
     await userEvent.keyboard('{Enter}');
 

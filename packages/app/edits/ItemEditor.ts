@@ -435,7 +435,7 @@ export const ItemEditor = defineService({
             const viewer = auth.viewer;
             const account = getAccount();
             if (!viewer || !account) {
-                return { created: false, failed: [] };
+                return { created: false, issueId: null, failed: [] };
             }
 
             const { issue } = request;
@@ -448,7 +448,7 @@ export const ItemEditor = defineService({
                     .catch(() => kept));
 
             if (!isSignedIn(account)) {
-                return { created: false, failed: [] };
+                return { created: false, issueId: null, failed: [] };
             }
 
             const temporaryId = `pending:issue:${nextIssue++}`;
@@ -473,7 +473,12 @@ export const ItemEditor = defineService({
                       failure: { kind: 'missing' },
                   };
             const outcome = await queue.submit({ edits: [creating], account, itemCount: 1 });
-            return { created: !outcome.failed.some(failed => failed.edit === creating), failed: outcome.failed };
+            const created = !outcome.failed.some(failed => failed.edit === creating);
+            return {
+                created,
+                issueId: created ? overlay.getConfirmedId(temporaryId) : null,
+                failed: outcome.failed,
+            };
         }
 
         /** A project the issue is added to, with its fields as githq knows them; nothing for one it does not know. */
@@ -581,6 +586,8 @@ export interface CreateIssueProject {
 export interface CreateIssueOutcome {
     /** GitHub created it (some of its values may still have failed). */
     readonly created: boolean;
+    /** The id GitHub gave the issue it created (the item store holds it); `null` when it did not. */
+    readonly issueId: string | null;
     readonly failed: readonly FailedEdit[];
 }
 
