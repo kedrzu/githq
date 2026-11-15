@@ -49,10 +49,21 @@ For the same reason the desktop app gives up its code-copying sign-in and does t
 GitHub's consent page, you tap Authorize, and the browser hands you back to githq. One way to sign in, in every app
 ([why the desktop follows](DECISIONS.md#d4)).
 
+## Getting builds to phones
+
+The phone joins the desktop app's two streams of releases rather than getting its own
+([how builds reach phones](DECISIONS.md#d5)). Every merge to `main` that changes code builds the desktop's
+Development stream, and now also an iPhone build that goes to TestFlight: the owner, as a tester, has what they
+just merged on their phone minutes later. When the owner says to release, the same release that publishes the
+desktop app is submitted to the App Store and goes out as soon as Apple approves it. If Apple turns it down, the
+phone skips that version and gets the fix with the next one.
+
+The versions are the desktop's: an iPhone only accepts three numbers as a version, so the desktop's
+`0.3.0-dev.214` becomes version `0.3.0`, build `214`.
+
 ## What is still open
 
 - The account Apple's reviewers sign in with: App Review needs a working demo login, here a GitHub account with
   something in it.
 - What the desktop-only parts become: the self-updater and the macOS window controls have no place on a phone.
-- How a build reaches TestFlight and the App Store, and how its version relates to the desktop app's.
 - Android, after iOS.

@@ -126,3 +126,41 @@ build, test and explain.
 - A loopback redirect on the desktop (a local port catching the callback) — rejected for the desktop originally
   because it needed the client secret in the app; with the Worker doing the exchange that is gone, but it would
   still be a second mechanism beside the phone's.
+
+## D5
+
+**The iPhone app follows the desktop's two streams: every Development build also goes to TestFlight, and every
+Stable release is submitted to the App Store and released automatically once Apple approves it. Its version is the
+desktop's version split in two: `0.3.0` as the version, the count of commits on `main` as the build number.**
+(2026-11-15, streams and versions the design agent's proposal, accepted by the owner; release on approval the
+owner's pick)
+
+**Why.** The desktop already has the streams, the version arithmetic and the owner's word to release
+([desktop releases](../desktop-releases/README.md)); the phone joins them instead of getting a process of its own,
+so "wydajemy" stays one word for every platform. TestFlight's internal testers are what the Development stream is on
+the desktop: the owner gets every merge on their iPhone. iOS refuses the desktop's `0.3.0-dev.214` as a version, so
+the `-dev.N` part moves into the build number, which every upload needs anyway and which only grows.
+
+> **Checked 2026-11-15:** `CFBundleShortVersionString`: "The required format is three period-separated integers,
+> such as 10.14.1" — [Apple](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleshortversionstring).
+> TestFlight: "up to 100 internal testers"; "Your build becomes unavailable for testers after 90 days" —
+> [TestFlight overview](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview).
+> Beta App Review is described only for external testers
+> ([external testers](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers));
+> no page states verbatim that internal builds skip it.
+
+> **Checked 2026-11-15:** Tauri builds for the store with `tauri ios build --export-method app-store-connect` and
+> uploads with `xcrun altool --upload-app --type ios … --apiKey … --apiIssuer …` —
+> [Tauri](https://v2.tauri.app/distribute/app-store/); Apple lists altool among the current upload tools —
+> [upload builds](https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds). No CI recipe in
+> either.
+
+Consequence accepted: when Apple rejects a release, the desktop already has that version and the phone does not;
+the fix ships in the next release.
+
+**Rejected.**
+
+- Holding an approved release for a second word from the owner — control over the moment, but every release becomes
+  two steps days apart (owner).
+- A release process of the phone's own, separate from the desktop's — a second version line and a second word to
+  release, for nothing the shared one cannot do.

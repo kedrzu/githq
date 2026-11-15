@@ -32,3 +32,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   found stated); altool upload is current; Tauri documents `tauri ios build --export-method app-store-connect` and
   `xcrun altool --upload-app … --apiKey … --apiIssuer` (v2.tauri.app/distribute/app-store/), no CI recipe.
   Proposed to the owner: Development stream → TestFlight, Stable → App Store, version `0.3.0` + build number N.
+- 2026-11-15 — Owner: release to the App Store automatically after approval. Recorded D5 (Development → TestFlight,
+  Stable → App Store, version split into `x.y.z` + build number). README folded up to here.
