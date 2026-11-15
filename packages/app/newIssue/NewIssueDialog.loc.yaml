@@ -61,3 +61,15 @@ restoreLabel:
   en: Restore “{title}”
 discardLabel:
   en: Drop “{title}”
+close:
+  en: Close, keeping what you wrote
+repository:
+  en: Repository
+template:
+  en: Template
+templateContext:
+  en: New issue · {repository}
+chooseTemplate:
+  en: Choose a template
+phoneBodyPlaceholder:
+  en: Add a description…

@@ -1,6 +1,7 @@
 import { expect, test } from '../fixtures.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { NewIssueHarness } from '../harnesses/NewIssue.harness.js';
+import { PickerHarness } from '../harnesses/Picker.harness.js';
 import { ProjectScreenHarness } from '../harnesses/ProjectScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
@@ -25,7 +26,7 @@ const BUG_FORM = [
     '      required: true',
 ].join('\n');
 
-test('C from my work, the repository chosen, ⌥A and Enter: the issue shows at once in my work as #…, then with GitHub’s number', async ({
+test('C from my work, the repository chosen, ⌥A and Enter: the issue shows at once in my work as #…, then with GitHub’s number; its toast opens it', async ({
     page,
     github,
 }) => {
@@ -46,17 +47,54 @@ test('C from my work, the repository chosen, ⌥A and Enter: the issue shows at 
     const row = myWork.row('Remember the last tab');
     await expect(row).toContainText('acme/web#…');
     await expect(shell.statusBar).toContainText('Sending 1 change');
+    // Mobile D44: the toast follows, the number on its way.
+    const toast = shell.issueCreatedToast;
+    await expect(toast).toContainText('Created in acme/web');
+    await expect(toast).toContainText('Remember the last tab · number on its way');
 
     release();
     await expect(row).toContainText('acme/web#22');
+    await expect(toast).toContainText('#22 · Remember the last tab');
     await expect(shell.failedEdits).toHaveCount(0);
     expect(sample.world.findIssue('acme/web', 'Remember the last tab')).toMatchObject({
         number: 22,
         assignees: [sample.world.viewer],
     });
+
+    await toast.getByRole('button', { name: 'Open', exact: true }).click();
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C22');
+    await expect(new ItemViewHarness(page).title).toHaveText('Remember the last tab');
+    await expect(toast).toHaveCount(0);
 });
 
-test('⌘Enter creates another in the same repository; the next C starts in the repository used last', async ({
+test('Create another from the toast opens the form again in the same repository with the same labels (mobile D44)', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { shell } = await openMyWork(page, github, sample.world);
+    const capture = new NewIssueHarness(page);
+
+    await capture.open();
+    await capture.chooseRepository('web', 'acme/web');
+    await capture.title.fill('First with a label');
+    await capture.root.getByRole('button', { name: 'Labels', exact: true }).click();
+    const labels = new PickerHarness(page, 'Labels');
+    await labels.choose('bug');
+    await labels.close();
+    await expect(capture.root.getByRole('button', { name: 'bug', exact: true })).toBeVisible();
+    await capture.title.press('Enter');
+    await expect(capture.root).toBeHidden();
+    await expect.poll(() => sample.world.findIssue('acme/web', 'First with a label')?.labels).toEqual(['bug']);
+
+    await shell.issueCreatedToast.getByRole('button', { name: 'Create another' }).click();
+    await expect(capture.root).toBeVisible();
+    await expect(capture.repository).toHaveAccessibleName('Repository: acme/web. Choose another');
+    await expect(capture.title).toHaveValue('');
+    await expect(capture.root.getByRole('button', { name: 'bug', exact: true })).toBeVisible();
+});
+
+test('⌘Enter creates another in the same repository; the next C from my work chooses the repository, the last used on top (mobile D43)', async ({
     page,
     github,
 }) => {
@@ -78,8 +116,8 @@ test('⌘Enter creates another in the same repository; the next C starts in the 
     expect(sample.world.findIssue('acme/web', 'First of two')?.number).toBe(22);
 
     await capture.open();
-    await expect(capture.repository).toHaveAccessibleName('Repository: acme/web. Choose another');
-    await expect(capture.title).toBeFocused();
+    await expect(capture.repositoryField).toBeFocused();
+    await expect(capture.root.getByRole('option').first()).toHaveAccessibleName(/^acme\/web\s*last used/u);
 });
 
 test('a creation GitHub refuses opens the capture again with the title and body kept, and the reason (H9)', async ({

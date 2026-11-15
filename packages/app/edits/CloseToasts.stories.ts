@@ -39,7 +39,7 @@ function withCloses(closes: readonly UndoableClose[]): Decorator {
                     },
                     addDraftIssue: NOTHING,
                     setDraftField: NOTHING,
-                    createIssue: () => Promise.resolve({ created: false, failed: [] }),
+                    createIssue: () => Promise.resolve({ created: false, issueId: null, failed: [] }),
                 });
                 provideContainer(container);
                 return () => h(story());
