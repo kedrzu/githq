@@ -492,6 +492,17 @@ $motion-slide-distance: 4px;
     }
 }
 
+// A project's card of fields under the item's properties — on an item (`ItemProjects`) and in the new issue form on a phone
+// (`NewIssueFields`, mobile D42) — its border given.
+@mixin property-card($border: $color-border) {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: $spacing-10 $spacing-12;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+}
+
 // Every `IconButton` inside a finger's size (the phone layout), its glyph `$glyph-size`, its corners `$radius` when given.
 @mixin touch-icon-buttons($glyph-size, $radius: null) {
     --icon-button-width: #{$touch-target-size};

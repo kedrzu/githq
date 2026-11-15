@@ -701,13 +701,9 @@ function applyChange(values: readonly string[], change: PickerChange) {
 }
 
 .newIssueFields_card {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: $spacing-10 $spacing-12;
+  @include property-card($color-border-2);
+
   font-size: $font-size-sm;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-lg;
 }
 
 .newIssueFields_cardName {
