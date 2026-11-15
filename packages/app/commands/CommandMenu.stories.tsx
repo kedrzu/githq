@@ -431,8 +431,19 @@ export const FormCantRun: Story = {
     },
 };
 
-/** W48 → W36: on CLA, which has no workflow_dispatch: its own line disabled, and "Run workflow…" at the repository. */
+/**
+ * W48 → W36: on CLA, which has no workflow_dispatch: its own line disabled, and "Run workflow…" at the repository, its hint
+ * at the footer's end.
+ */
 export const RunWorkflowInRepository: Story = { args: { subject: 'none', repositoryWorkflows: true } };
+
+/**
+ * W46: "Run workflow…"'s level — the repositories under "Tracked repositories" and "Nothing to run", its own placeholder
+ * and its step at the footer's end.
+ */
+export const RunWorkflowRepositories: Story = {
+    args: { subject: 'none', repositoryWorkflows: true, startCommandId: 'app.runWorkflow' },
+};
 
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
@@ -624,6 +635,7 @@ function createRepositoryWorkflowCommands(say: (text: string) => void): Command[
             section: 'view',
             icon: Play,
             unavailable: 'CLA has no workflow_dispatch trigger',
+            hint: 'Enter picks another workflow',
             run: () => say('CLA ran'),
         },
         {
@@ -632,20 +644,39 @@ function createRepositoryWorkflowCommands(say: (text: string) => void): Command[
             section: 'app',
             icon: Play,
             start: 'webapp',
+            placeholder: 'Pick a repository…',
+            levelHint: 'Run workflow · step 1 of 3',
             children: () => [
                 {
                     id: 'webapp',
                     title: 'fitloop/webapp',
                     section: 'app',
+                    group: 'Tracked repositories',
                     message: 'Reading the workflow files…',
                     children: () => [],
+                },
+                {
+                    id: 'docs',
+                    title: 'fitloop/docs',
+                    section: 'app',
+                    group: 'Nothing to run',
+                    unavailable: 'no workflow with workflow_dispatch',
                 },
                 {
                     id: 'api',
                     title: 'fitloop/api',
                     section: 'app',
+                    group: 'Tracked repositories',
+                    placeholder: 'Pick a workflow…',
+                    levelHint: 'Only workflows with workflow_dispatch · 1 of 2',
                     children: () => [
-                        { id: 'deploy', title: 'Deploy', section: 'app', run: () => say('api Deploy ran') },
+                        {
+                            id: 'deploy',
+                            title: 'Deploy',
+                            section: 'app',
+                            group: 'Workflows in fitloop/api you can run',
+                            run: () => say('api Deploy ran'),
+                        },
                     ],
                 },
             ],
