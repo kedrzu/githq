@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { holdToastLifetimes } from '@/testing/holdToastLifetimes.js';
+
 import * as stories from './IssueCreatedToast.stories.jsx';
 
 const { NumberOnItsWay, Numbered, OnPhone } = composeStories(stories);
@@ -9,15 +11,15 @@ const { NumberOnItsWay, Numbered, OnPhone } = composeStories(stories);
 const toast = () => page.getByRole('listitem');
 
 test('the number is on its way until GitHub gives it', async () => {
-    await NumberOnItsWay.run();
+    await holdToastLifetimes(() => NumberOnItsWay.run());
     await expect.element(toast()).toHaveTextContent('Waitlist ignores paused memberships · number on its way');
 
-    await Numbered.run();
+    await holdToastLifetimes(() => Numbered.run());
     await expect.element(toast()).toHaveTextContent('#1211 · Waitlist ignores paused memberships');
 });
 
 test('Create another and Open are buttons with no keys, and Escape stays the screen’s', async () => {
-    await Numbered.run();
+    await holdToastLifetimes(() => Numbered.run());
 
     const another = toast().getByRole('button', { name: 'Create another' });
     await expect.element(another).not.toHaveAttribute('aria-keyshortcuts');
@@ -33,7 +35,7 @@ test('Create another and Open are buttons with no keys, and Escape stays the scr
 });
 
 test('on a phone its buttons are a finger’s height', async () => {
-    await OnPhone.run();
+    await holdToastLifetimes(() => OnPhone.run());
 
     for (const name of ['Create another', 'Open']) {
         const button = toast().getByRole('button', { name, exact: true }).element();
