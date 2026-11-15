@@ -30,11 +30,11 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     await page.keyboard.press('3');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    // The default branch first, then the branch `feat/login` joined to it.
+    // The default branch first, then the branch `feat/login` joined to it; a row's refs read after its headline.
     await expect(graph.rows).toHaveText([
-        /feat\/login\s*feat: sign in with GitHub/,
-        /main\s*Merge branch 'release\/1\.0'/,
-        /release\/1\.0\s*v1\.0\.0\s*fix: export the CSV header/,
+        /feat: sign in with GitHub.*feat\/login/s,
+        /Merge branch 'release\/1\.0'.*main/s,
+        /fix: export the CSV header.*release\/1\.0\s*v1\.0\.0/s,
         /docs: describe the setup/,
         /chore: set up the build/,
         /Initial commit/,
