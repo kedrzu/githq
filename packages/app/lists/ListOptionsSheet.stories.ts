@@ -113,9 +113,13 @@ export const Repository: Story = {
     },
 };
 
-/** MB175: my work — githq's own list, "on this device"; its filters are the strip under the top bar, so no row here. */
+/**
+ * MB175: my work — githq's own list, "on this device"; its filters are the strip under the top bar, so no row here.
+ * Its items can be selected together: "Select items" under Sort by (mobile D28).
+ */
 export const MyWork: Story = {
     args: {
+        selectable: true,
         title: 'My work',
         place: undefined,
         groupings: [
@@ -129,6 +133,9 @@ export const MyWork: Story = {
         gitHubView: null,
     },
 };
+
+/** Selecting several (mobile D28): its button the checklist, the row "Stop selecting". */
+export const MyWorkSelecting: Story = { args: { ...MyWork.args, selecting: true } };
 
 /** My work changed on this device: the same line, with Reset. */
 export const ChangedMyWork: Story = {

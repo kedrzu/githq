@@ -32,12 +32,25 @@ const LAYOUT: Readonly<Record<Item['kind'], readonly (readonly string[])[]>> = {
  * @__NO_SIDE_EFFECTS__
  */
 export function getItemMenuSections(commands: readonly Command[], kind: Item['kind']): Command[][] {
+    const actions = getItemMenuActions(commands, kind);
+    return LAYOUT[kind].map(names => names.flatMap(name => actions.get(name) ?? []));
+}
+
+/**
+ * The actions the item menus offer for `kind` and able to run now, by their name after the section (`item.status` →
+ * `status`), for a caller that reaches for one action by name rather than laying the menu out.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getItemMenuActions(commands: readonly Command[], kind: Item['kind']): Map<string, Command> {
+    const offered = new Set(LAYOUT[kind].flat());
     const byName = new Map<string, Command>();
     for (const command of commands) {
-        if (command.menu !== false && (command.when?.() ?? true)) {
-            byName.set(command.id.slice(command.id.indexOf('.') + 1), command);
+        const name = command.id.slice(command.id.indexOf('.') + 1);
+        if (offered.has(name) && command.menu !== false && (command.when?.() ?? true)) {
+            byName.set(name, command);
         }
     }
 
-    return LAYOUT[kind].map(names => names.flatMap(name => byName.get(name) ?? []));
+    return byName;
 }

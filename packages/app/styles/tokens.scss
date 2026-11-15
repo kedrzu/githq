@@ -114,6 +114,10 @@ $color-red-emphasis: #da3633;
 $color-on-emphasis: #ffffff;
 // Primer's fgColor-done.
 $color-purple: #ab7df8;
+// The fills of a list row's swipe actions on a phone under a white label (mobile D27, MB114): Assign and Close. Primer's
+// bgColor-accent-emphasis and bgColor-done-emphasis, `$color-on-emphasis` reading 4.6:1 on each.
+$color-blue-emphasis: #1f6feb;
+$color-purple-emphasis: #8957e5;
 
 // Something that failed or destroys, as a band or a box: a comment GitHub refused, requesting changes. `$color-fg`
 // reads 15.8:1 on it, `$color-red` 5.1:1. Primer's bgColor-danger-muted (`$color-red` at 10%).
@@ -262,6 +266,8 @@ $phone-strip-height: 36px;
 // and above WCAG's 24 px target.
 $phone-pill-height: 32px;
 $phone-places-room: 56px;
+// A list row's swipe action on a phone (mobile D27, MB114): an icon over its label, the tiles side by side under the row.
+$phone-swipe-tile-width: 76px;
 // What the home indicator takes at a phone screen's bottom, where the browser gives its inset: a sheet rising from below
 // keeps its content above it.
 $phone-home-indicator-room: env(safe-area-inset-bottom, 0px);

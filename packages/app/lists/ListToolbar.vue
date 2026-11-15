@@ -1,8 +1,8 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowDownUp, Columns3, LayoutGrid, List, ListChecks, Plus, RotateCcw, Rows3 } from 'lucide-vue-next';
+import { ArrowDownUp, Columns3, LayoutGrid, List, ListChecks, Plus, RotateCcw, Rows3, X } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
@@ -66,12 +66,17 @@ const emit = defineEmits<{
   clearFilter: [];
 }>();
 
-defineSlots<{
+const slots = defineSlots<{
   /** The entries of the menu the title opens (a repository's or a project's); without it the title is plain text. */
   titleMenu?(): unknown;
   /** Beside the title: what it is, how many ("private · 142 open"). */
   title?(): unknown;
-  /** After the title: tabs, the actions of a selection. */
+  /**
+   * The actions of the items selected together, after the title — on a phone drawing nothing, their commands the
+   * command menu's (`SelectionActions`). Given, the list can be selected from on a phone (mobile D28).
+   */
+  selection?(): unknown;
+  /** After the title and the selection's actions: tabs. */
   default?(): unknown;
   /** At the toolbar's end, on a `bare` one only — its room is not measured: a tab's key hints. */
   end?(): unknown;
@@ -97,6 +102,8 @@ const menuFilters = computed(() =>
 );
 /** Whether the phone's options sheet is up. */
 const sheetOpen = ref(false);
+/** On a phone, the list selecting several items (mobile D28): the top bar counts them, × leaves. */
+const selecting = computed(() => phone.selecting && slots.selection !== undefined);
 
 /** Every option, the filters then the view options, in the toolbar's order; none when `bare`. */
 const viewOptions = computed((): ListToolbarOption[] => (props.bare ? [] : getViewOptions()));
@@ -343,11 +350,21 @@ function change(changes: Partial<ListViewOptions>) {
 </script>
 
 <template>
-  <!-- On a phone (mobile MB32): the places button, the title, the display options and New issue; the rest stays in the command menu. -->
+  <!-- On a phone (mobile MB32): the places button, the title, the display options and New issue; the rest stays in the command menu. Selecting several (D28, MB117): × and how many are selected, and the options. -->
   <PhoneTopBar
     v-if="phone.active"
-    :title="title"
+    :title="selecting ? t(l.selected, { count: phone.selectedCount }) : title"
   >
+    <template
+      v-if="selecting"
+      #start
+    >
+      <IconButton
+        :icon="X"
+        :label="t(l.stopSelecting)"
+        @click="phone.setSelecting(false)"
+      />
+    </template>
     <template #actions>
       <ListOptionsSheet
         v-if="!bare"
@@ -360,15 +377,20 @@ function change(changes: Partial<ListViewOptions>) {
         :filters="menuFilters"
         :modified="modified"
         :git-hub-view="gitHubView"
+        :selectable="$slots.selection !== undefined"
+        :selecting="selecting"
         @reset="emit('reset')"
         @clear-filter="emit('clearFilter')"
+        @update:selecting="phone.setSelecting"
       />
       <IconButton
-        v-if="newIssue"
+        v-if="newIssue && !selecting"
         :icon="Plus"
         :label="newIssue.title"
         @click="newIssue && registry.run(newIssue)"
       />
+      <!-- The selection's commands, for the command menu; nothing drawn here. -->
+      <slot name="selection" />
     </template>
   </PhoneTopBar>
   <header
@@ -385,6 +407,7 @@ function change(changes: Partial<ListViewOptions>) {
       </template>
     </ListTitle>
     <slot name="title" />
+    <slot name="selection" />
     <slot />
     <div
       ref="controls"

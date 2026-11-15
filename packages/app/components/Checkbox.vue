@@ -1,11 +1,11 @@
-<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. `readonly` holds it still yet keeps the focus it has, where `disabled` drops it. -->
+<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. `readonly` holds it still yet keeps the focus it has, where `disabled` drops it. Without a label of its own it is named by what `labelledby` points at (a list's row it checks). -->
 <script lang="ts" setup>
 import { useCheckbox } from '@nzyme/vue-forms/components/useCheckbox.jsx';
 import { Check, Minus } from 'lucide-vue-next';
 
 // nzyme's checkbox props: `modelValue`/`field`, `errors`, `required`, `disabled`, `readonly`, `name`,
-// `tabindex`, `indeterminate`; and the label.
-defineProps({ ...useCheckbox.props, label: String });
+// `tabindex`, `indeterminate`; the label, or the id of what names it.
+defineProps({ ...useCheckbox.props, label: String, labelledby: String });
 defineEmits(useCheckbox.emits);
 defineSlots<{
   /** A label richer than `label` ("kedrzu/**githq**"). */
@@ -21,6 +21,7 @@ const { Checkbox, field } = useCheckbox();
     <Checkbox
       :class="[css.checkbox_box, (field.value || indeterminate) && css.checkbox_box_on]"
       :aria-readonly="readonly || undefined"
+      :aria-labelledby="labelledby"
     >
       <Check
         v-if="field.value"

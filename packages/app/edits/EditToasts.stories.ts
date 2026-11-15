@@ -6,6 +6,7 @@ import { defineComponent, h, shallowRef } from 'vue';
 
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
 import type { EditFailure } from './EditQueue.js';
@@ -36,8 +37,32 @@ const REFUSED_COMMENT: EditFailure = {
 };
 
 /**
- * The toasts over a screen whose edit queue lists `failures`, the item's comment box holding `draft` — shown beside
- * them, as the user would read it. The comment drafts are the app's own.
+ * MB119: the label "docs" added to three issues from a phone's selection, refused for one of them: the toast names it
+ * and why.
+ */
+const LABEL_PARTLY_REFUSED: EditFailure = {
+    id: 2,
+    itemCount: 3,
+    editCount: 3,
+    failed: [
+        {
+            edit: {
+                itemId: 'I_1204',
+                reference: 'fitloop/webapp#1204',
+                subject: { kind: 'labelAdded', label: 'docs' },
+                optimistic: { item: item => item },
+            },
+            reason: { kind: 'notAllowed' },
+        },
+    ],
+    toast: true,
+    at: 0,
+};
+
+/**
+ * The toasts over a screen whose edit queue lists `failures`, the item's comment box holding `draft` and the items a
+ * toast asked the list to select — shown beside them, as the user would read them. The comment drafts and the
+ * navigation are the app's own.
  */
 function withFailures(failures: readonly EditFailure[], draft: string): Decorator {
     return story =>
@@ -62,12 +87,14 @@ function withFailures(failures: readonly EditFailure[], draft: string): Decorato
                 });
                 const drafts = container.resolve(CommentDrafts);
                 drafts.set(ITEM_ID, draft);
+                const navigation = container.resolve(ItemNavigation);
                 provideContainer(container);
                 // Once: a new story component on every render of the box would render again without end.
                 const Story = story();
                 return () =>
                     h('div', [
                         h('textarea', { 'aria-label': 'Comment box', readonly: true, value: drafts.get(ITEM_ID) }),
+                        h('output', { 'aria-label': 'Asked to select' }, navigation.selectionRequest?.ids.join(' ')),
                         h(Story),
                     ]);
             },
@@ -104,4 +131,16 @@ export const CommentRefusedBoxInUse: Story = {
 /** A comment from code review refused, its box empty then: it went back there, so nothing is offered. */
 export const CommentRefusedRestored: Story = {
     decorators: [withFailures([REFUSED_COMMENT], REFUSED_BODY)],
+};
+
+/**
+ * Mobile D28, D48, MB119: a label added to three items selected on a phone, refused for one — on the phone's toaster,
+ * above the command line: "Label docs added to 2 of 3", which failed and why, and "Select the failed item".
+ */
+export const PhoneLabelPartlyFailed: Story = {
+    decorators: [withFailures([LABEL_PARTLY_REFUSED], '')],
+    render: () => ({
+        components: { EditToasts, Toaster },
+        template: '<Toaster above-command-line><EditToasts /></Toaster>',
+    }),
 };
