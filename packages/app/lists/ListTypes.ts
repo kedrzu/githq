@@ -170,6 +170,20 @@ export interface ListChoice<T extends string = string> {
     readonly detail?: string;
     /** The heading it sits under in the grouping menu ("From GitHub"); choices of one heading follow each other. */
     readonly section?: string;
+    /** An order by one key one way (a project's): a phone's list options show it and the other way as one chip. */
+    readonly sortDirection?: ListSortDirection;
+}
+
+/**
+ * Which way an order by one key goes (a project's `field:<id>:desc`): in a phone's list options (mobile D36) the key is
+ * one chip, the label of the way chosen on it, and tapping it again picks the other way.
+ */
+export interface ListSortDirection {
+    /** What is ordered by, the same both ways. */
+    readonly key: string;
+    /** The key's name alone ("Priority"), on its chip while neither way is chosen. */
+    readonly keyLabel: string;
+    readonly direction: 'asc' | 'desc';
 }
 
 /** How the rows above the list's end stand: with a group collapsed, what is added to it does not push the end away. */

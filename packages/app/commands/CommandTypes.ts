@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { NavigationPlace } from './searchNavigation.js';
+
 /**
  * Where an action belongs: its heading in the command menu and the help sheet, and — when two actions take the
  * same key — which one runs: `selection` before `item` before `view` before `repository` before `app` (the items
@@ -24,10 +26,42 @@ export interface CommandSubject {
 }
 
 /**
+ * What a part of a place (mobile D17) shows on its line in the command menu, beyond its title: what the screen showing
+ * the place knows of it. Set only on the rows of {@link CommandParts}; ⌘K's own rows have none of it.
+ */
+export interface CommandMarks {
+    /** How many it holds ("142"), at the line's end; `null` while that is still arriving. */
+    readonly count?: number | null;
+    /** Changed on this device (a project view's grouping, sort or shown properties, mobile D49): a dot after the title. */
+    readonly changed?: boolean;
+    /** It is the part shown: a check at the line's end. */
+    readonly current?: boolean;
+    /** Running it leaves for github.com (a repository's Commits and Actions on a phone, mobile D21): ↗ at the line's end. */
+    readonly external?: boolean;
+}
+
+/**
+ * The parts of the place a list screen shows (mobile D17) — a repository's sections, a project's saved views, My work and
+ * its groups —, first in the command menu the phone's command line opens, under their own heading. Each is a row the menu
+ * has anyway (the same action or place, so there is one way to switch), with its {@link CommandMarks}; the menu then
+ * leaves it out of its usual group.
+ */
+export interface CommandParts {
+    /** The place, as the heading names it ("Platform Q4 · views", "fitloop/webapp", "My work"). */
+    readonly heading: string;
+    readonly rows: readonly CommandPart[];
+}
+
+/** One of {@link CommandParts}: an action (`repository.section.issues`, a saved view's `view:<id>`) or a place (`myWork:assigned`). */
+export type CommandPart =
+    | { readonly kind: 'command'; readonly command: Command }
+    | { readonly kind: 'place'; readonly place: NavigationPlace };
+
+/**
  * An action of the app (D9's command menu): offered in ⌘K, run by its key, listed in the help sheet — one
  * definition for all three, so the key the menu shows is the key that runs it.
  */
-export interface Command {
+export interface Command extends CommandMarks {
     /** Unique among the actions registered at a time (`item.assign`). */
     readonly id: string;
     readonly title: string;
@@ -91,6 +125,21 @@ export interface Command {
     readonly children?: () => readonly Command[];
     /** What its level says while it lists nothing, in place of "Nothing matches" ("Reading the workflow files…"). */
     readonly message?: string;
+    /** The field's text while its level is open, in place of "Type a command or search…" ("Pick a repository…"). */
+    readonly placeholder?: string;
+    /** Quiet text at the footer's end while its level is open ("Run workflow · step 1 of 3"). */
+    readonly levelHint?: string;
+    /**
+     * Quiet text at the footer's end while it is highlighted, over its level's ("Enter opens Deploy's form", W47). One that
+     * can't run is never highlighted: its hint shows while it is listed and the highlighted line has none ("Enter picks
+     * another workflow", W48).
+     */
+    readonly hint?: string;
+    /**
+     * The heading it sits under in a level (W46's "Tracked repositories"); rows of one heading are shown together. The
+     * menu's top level heads its rows by `section` and ignores it, as it does for a row found deeper than the level shown.
+     */
+    readonly group?: string;
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
     /**

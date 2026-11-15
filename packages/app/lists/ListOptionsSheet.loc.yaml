@@ -1,0 +1,24 @@
+display:
+  en: Display
+howItShows:
+  en: '{place} · how this list shows'
+howItShowsHere:
+  en: how this list shows, on this device
+done:
+  en: Done
+changed:
+  en: Changed on this device
+backToGitHub:
+  en: Back to GitHub's view
+reset:
+  en: Reset
+filter:
+  en: Filter
+clearFilter:
+  en: Clear the filter on this device
+groupBy:
+  en: Group by
+sortBy:
+  en: Sort by
+onGitHub:
+  en: This view on GitHub

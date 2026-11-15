@@ -26,7 +26,7 @@ export interface DispatchableWorkflows {
     readonly status: 'unread' | 'reading' | 'read' | 'failed';
     /** Its enabled workflows whose file at the default branch has `workflow_dispatch`, in GitHub's order. */
     readonly workflows: readonly DispatchableWorkflow[];
-    /** All its workflows GitHub lists: "3 of 8". */
+    /** Its enabled workflows, whether or not they can be run by hand: "3 of 8". */
     readonly total: number;
 }
 
@@ -85,7 +85,8 @@ export function useDispatchableWorkflows(): DispatchableWorkflowsReader {
             }
         }
 
-        return { status: entry?.status ?? 'unread', workflows: found, total: stored.length };
+        const total = stored.filter(({ workflow }) => workflow.state === 'active').length;
+        return { status: entry?.status ?? 'unread', workflows: found, total };
     }
 
     function read(nameWithOwner: string) {

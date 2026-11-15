@@ -262,7 +262,7 @@ function onKeydown(event: KeyboardEvent) {
     <slot name="afterList" />
     <footer
       v-if="hints"
-      :class="css.filterList_footer"
+      :class="[css.filterList_footer, $slots.footerEnd && css.filterList_footer_withEnd]"
       aria-hidden="true"
     >
       <span :class="css.filterList_hint"><Kbd keys="ArrowUp ArrowDown" />{{ t(l.move) }}</span>
@@ -273,7 +273,11 @@ function onKeydown(event: KeyboardEvent) {
         ><Kbd :keys="hint.keys" />{{ hint.label }}</span
       >
       <span :class="css.filterList_spacer" />
-      <slot name="footerEnd" />
+      <span
+        v-if="$slots.footerEnd"
+        :class="css.filterList_footerEnd"
+        ><slot name="footerEnd"
+      /></span>
     </footer>
   </ListboxRoot>
 </template>
@@ -366,6 +370,21 @@ function onKeydown(event: KeyboardEvent) {
 
 .filterList_spacer {
   flex: 1;
+}
+
+// A note at the end that doesn't fit beside the hints takes a line of its own, at the end, rather than breaking them.
+.filterList_footer_withEnd {
+  flex-wrap: wrap;
+  row-gap: $spacing-4;
+
+  .filterList_hint {
+    white-space: nowrap;
+  }
+}
+
+.filterList_footerEnd {
+  margin-inline-start: auto;
+  white-space: nowrap;
 }
 
 // In a popover: the picker's.

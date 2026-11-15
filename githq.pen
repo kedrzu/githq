@@ -182295,10 +182295,7 @@
                     {
                       "type": "icon",
                       "id": "FXqwp",
-                      "x": 7,
-                      "y": 3.5,
                       "name": "Icon",
-                      "enabled": false,
                       "width": 12,
                       "height": 12,
                       "icon": "play",
@@ -221621,7 +221618,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Deploy selected in the Workflows list, “Run workflow” typed in the command menu. The first result, under This view, is the selected workflow itself, and Enter goes straight to its form (W37), breadcrumb “Run workflow › Deploy · fitloop/webapp”. The same holds with a workflow open as an item. Picking another workflow of the repository is the app-wide command under App (W36).",
+                      "content": "Deploy selected in the Workflows list, “Run workflow” typed in the command menu. The first result, under This view, is the selected workflow itself, and Enter goes straight to its form (W37), breadcrumb “Run workflow › Deploy · fitloop/webapp”; while it is highlighted, a quiet note at the footer's end says where Enter goes: Enter opens Deploy's form. The same holds with a workflow open as an item. Picking another workflow of the repository is the app-wide command under App (W36), whose levels have their own headings and placeholders, and whose crumb carries ▷.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -222680,10 +222677,7 @@
                             {
                               "type": "text",
                               "id": "E2i67",
-                              "x": 395,
-                              "y": 9,
                               "name": "Note",
-                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Enter opens Deploy's form",
                               "fontFamily": "$font",
@@ -222738,7 +222732,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "“Run workflow” outside any repository (here over My work). A name like Deploy exists in many repositories, so the repository comes first: the tracked ones, each with how many workflows it can run (with workflow_dispatch) and their names, without section headings. A repository with none sinks to the bottom, dimmed, says can't run and can't be chosen. Enter or → goes to the repository's workflows (W36, with the repository as a plain chip); ← steps back.",
+                      "content": "“Run workflow” outside any repository (here over My work). A name like Deploy exists in many repositories, so the repository comes first, and the field asks for it: “Pick a repository…”. Under the heading Tracked repositories, each tracked one with how many workflows it can run (with workflow_dispatch) and their names. A repository with none sinks to the bottom under Nothing to run, dimmed, says can't run and can't be chosen. The crumb Run workflow carries ▷, and a quiet note at the footer's end says the step: Run workflow · step 1 of 3. Enter or → goes to the repository's workflows (W36, with the repository as a plain chip); ← steps back.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -222870,7 +222864,7 @@
                               "id": "rcVzr",
                               "name": "Placeholder",
                               "fill": "$fg-dim",
-                              "content": "Type a command or search…",
+                              "content": "Pick a repository…",
                               "fontFamily": "$font",
                               "fontSize": 14,
                               "fontWeight": "normal"
@@ -222895,8 +222889,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Tracked repositories",
-                              "width": "fill_container(668)",
-                              "enabled": false,
+                              "width": "fill_container",
+                              "enabled": true,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Tracked repositories"
@@ -222992,8 +222986,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Nothing to run",
-                              "width": "fill_container(668)",
-                              "enabled": false,
+                              "width": "fill_container",
+                              "enabled": true,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Nothing to run"
@@ -223150,10 +223144,7 @@
                             {
                               "type": "text",
                               "id": "wAZs8",
-                              "x": 445,
-                              "y": 9,
                               "name": "Note",
-                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Run workflow · step 1 of 3",
                               "fontFamily": "$font",
@@ -223200,7 +223191,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "“Run workflow” inside a repository (any of its tabs, or an item of it): the repository is already chosen and shows as a chip after the step, with › between them. Only its workflows with workflow_dispatch are listed, each with the ref it runs on and how many inputs it takes; like every level of the command, no section headings. ← or Backspace on an empty query removes the chip and goes back to picking the repository (W46). Enter or → opens the form (W37).",
+                      "content": "“Run workflow” inside a repository (any of its tabs, or an item of it): the repository is already chosen and shows as a chip after the ▷ Run workflow crumb, with › between them, and the field asks “Pick a workflow…”. Under the heading Workflows in fitloop/webapp you can run, only its workflows with workflow_dispatch, each with the ref it runs on and how many inputs it takes; a quiet note at the footer's end says how many of the active workflows can run (3 of 8); a note that doesn't fit beside the hints takes its own line under them, at the right end. ← or Backspace on an empty query removes the chip and goes back to picking the repository (W46). Enter or → opens the form (W37).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -224121,7 +224112,7 @@
                               "id": "gP7Nm",
                               "name": "Placeholder",
                               "fill": "$fg-dim",
-                              "content": "Type a command or search…",
+                              "content": "Pick a workflow…",
                               "fontFamily": "$font",
                               "fontSize": 14,
                               "fontWeight": "normal"
@@ -224146,8 +224137,8 @@
                               "type": "ref",
                               "ref": "n8kYNM",
                               "name": "Section Workflows you can run",
-                              "width": "fill_container(668)",
-                              "enabled": false,
+                              "width": "fill_container",
+                              "enabled": true,
                               "descendants": {
                                 "CcUdj": {
                                   "content": "Workflows in fitloop/webapp you can run"
@@ -224247,121 +224238,132 @@
                           "strokeWidth": {
                             "top": 1
                           },
-                          "gap": 14,
+                          "layout": "vertical",
+                          "gap": 4,
                           "padding": [
                             8,
                             14
                           ],
-                          "alignItems": "center",
+                          "alignItems": "end",
                           "children": [
                             {
-                              "id": "OYl5y",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Move",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↑↓"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↑↓"
-                                },
-                                "IOvfA": {
-                                  "name": "Move",
-                                  "content": "Move"
-                                }
-                              }
-                            },
-                            {
-                              "id": "ACVL5",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Run",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↵"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↵"
-                                },
-                                "IOvfA": {
-                                  "name": "Run",
-                                  "content": "Run"
-                                }
-                              }
-                            },
-                            {
-                              "id": "YwomG",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Open submenu",
-                              "descendants": {
-                                "nIxfQ": {
-                                  "name": "Kbd →"
-                                },
-                                "nIxfQ/YRrEc": {
-                                  "name": "Key arrow-right",
-                                  "icon": "arrow-right"
-                                },
-                                "IJcUr": {
-                                  "name": "Open submenu",
-                                  "content": "Open submenu"
-                                }
-                              }
-                            },
-                            {
-                              "id": "U4U90d",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Back",
-                              "descendants": {
-                                "nIxfQ": {
-                                  "name": "Kbd ←"
-                                },
-                                "nIxfQ/YRrEc": {
-                                  "icon": "arrow-left",
-                                  "name": "Key arrow-left"
-                                },
-                                "IJcUr": {
-                                  "content": "Back",
-                                  "name": "Back"
-                                }
-                              }
-                            },
-                            {
-                              "id": "mRlsO",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Close",
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd Esc"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "Esc"
-                                },
-                                "IOvfA": {
-                                  "name": "Close",
-                                  "content": "Close"
-                                }
-                              }
-                            },
-                            {
                               "type": "frame",
-                              "id": "G8kkxh",
-                              "name": "spacer",
+                              "id": "cshiA",
+                              "name": "Hints",
                               "width": "fill_container",
-                              "height": 1
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "OYl5y",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Move",
+                                  "gap": 5,
+                                  "descendants": {
+                                    "m5wIG9": {
+                                      "name": "Kbd ↑↓"
+                                    },
+                                    "m5wIG9/luKkY": {
+                                      "content": "↑↓"
+                                    },
+                                    "IOvfA": {
+                                      "name": "Move",
+                                      "content": "Move"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ACVL5",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Run",
+                                  "gap": 5,
+                                  "descendants": {
+                                    "m5wIG9": {
+                                      "name": "Kbd ↵"
+                                    },
+                                    "m5wIG9/luKkY": {
+                                      "content": "↵"
+                                    },
+                                    "IOvfA": {
+                                      "name": "Run",
+                                      "content": "Run"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "YwomG",
+                                  "type": "ref",
+                                  "ref": "dxCfd",
+                                  "name": "Hint Open submenu",
+                                  "descendants": {
+                                    "nIxfQ": {
+                                      "name": "Kbd →"
+                                    },
+                                    "nIxfQ/YRrEc": {
+                                      "name": "Key arrow-right",
+                                      "icon": "arrow-right"
+                                    },
+                                    "IJcUr": {
+                                      "name": "Open submenu",
+                                      "content": "Open submenu"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "U4U90d",
+                                  "type": "ref",
+                                  "ref": "dxCfd",
+                                  "name": "Hint Back",
+                                  "descendants": {
+                                    "nIxfQ": {
+                                      "name": "Kbd ←"
+                                    },
+                                    "nIxfQ/YRrEc": {
+                                      "icon": "arrow-left",
+                                      "name": "Key arrow-left"
+                                    },
+                                    "IJcUr": {
+                                      "content": "Back",
+                                      "name": "Back"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "mRlsO",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Close",
+                                  "descendants": {
+                                    "m5wIG9": {
+                                      "name": "Kbd Esc"
+                                    },
+                                    "m5wIG9/luKkY": {
+                                      "content": "Esc"
+                                    },
+                                    "IOvfA": {
+                                      "name": "Close",
+                                      "content": "Close"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G8kkxh",
+                                  "x": 417,
+                                  "y": 15.5,
+                                  "name": "spacer",
+                                  "enabled": false,
+                                  "width": "fill_container(1)",
+                                  "height": 1
+                                }
+                              ]
                             },
                             {
                               "type": "text",
                               "id": "hAU0l",
-                              "x": 352,
-                              "y": 9,
                               "name": "Note",
-                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Only workflows with workflow_dispatch · 3 of 8",
                               "fontFamily": "$font",
@@ -224408,7 +224410,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "After picking Deploy the menu keeps its place and becomes a short form: the ref first, the default branch already chosen, then the inputs from the workflow file in its order, each with its type and default. Tab and ⇧Tab move between rows; a choice opens its options on Enter or ↑↓; a boolean flips on Space. ⌘Enter or the Run button in the footer runs, Esc steps back to the list of workflows. When the workflow can't run at the ref typed, a line under the fields says why and the ref stays editable. Here environment and version were changed and dry_run switched off.",
+                      "content": "After picking Deploy the menu keeps its place and becomes a short form, under the crumbs ▷ Run workflow › Deploy (reached straight from Run workflow · Deploy, the crumb is the workflow alone, without ▷): the ref first, the default branch already chosen, then the inputs from the workflow file in its order, each with its type and default. Tab and ⇧Tab move between rows; a choice opens its options on Enter or ↑↓; a boolean flips on Space. ⌘Enter or the Run button in the footer runs, Esc steps back to the list of workflows. When the workflow can't run at the ref typed, a line under the fields says why and the ref stays editable. Here environment and version were changed and dry_run switched off.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -224818,7 +224820,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same command with CLA selected (or open). CLA has no workflow_dispatch trigger, so “Run workflow · CLA” is listed under This view but disabled, with the reason in place of its details and can't run beside it, and the cursor skips it to the App command below. The workflow's own panel says the same in its triggers (W33).",
+                      "content": "The same command with CLA selected (or open). CLA has no workflow_dispatch trigger, so “Run workflow · CLA” is listed under This view but disabled, with the reason in place of its details and can't run beside it, and the cursor skips it to the App command below. The footer's end says Enter picks another workflow. The workflow's own panel says the same in its triggers (W33).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -225880,10 +225882,7 @@
                             {
                               "type": "text",
                               "id": "jkREd",
-                              "x": 381,
-                              "y": 9,
                               "name": "Note",
-                              "enabled": false,
                               "fill": "$fg-dim",
                               "content": "Enter picks another workflow",
                               "fontFamily": "$font",

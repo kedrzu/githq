@@ -23,6 +23,7 @@ const {
     FormStep,
     FormCantRun,
     RunWorkflowInRepository,
+    RunWorkflowRepositories,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -653,4 +654,33 @@ test('W36: an action with a start goes straight into that level, saying what it 
     await expect.element(repositories.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
     await userEvent.keyboard('api{Enter}{Enter}');
     await expect.element(page.getByTestId('asked')).toHaveTextContent('api Deploy ran');
+});
+
+test("W46, W36: a level's rows sit under their headings, wherever they were given, with the level's placeholder and hint", async () => {
+    await RunWorkflowRepositories.run();
+
+    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    const tracked = repositories.getByRole('group', { name: 'Tracked repositories' });
+    await expect.element(tracked.getByRole('option', { name: 'fitloop/webapp' })).toBeInTheDocument();
+    // Given after "Nothing to run"'s row, it is shown with the other row of its heading.
+    await expect.element(tracked.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
+    const nothing = repositories.getByRole('group', { name: 'Nothing to run' });
+    await expect.element(nothing.getByRole('option', { name: /fitloop\/docs/u })).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox', { name: 'Pick a repository…' })).toHaveFocus();
+    await expect.element(page.getByText('Run workflow · step 1 of 3')).toBeInTheDocument();
+    await expect.element(page.getByText('Enter picks another workflow')).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowDown}{ArrowRight}');
+    const workflows = page.getByRole('listbox', { name: 'fitloop/api' });
+    await expect
+        .element(workflows.getByRole('group', { name: 'Workflows in fitloop/api you can run' }).getByRole('option'))
+        .toHaveTextContent('Deploy');
+    await expect.element(page.getByRole('textbox', { name: 'Pick a workflow…' })).toHaveFocus();
+    await expect.element(page.getByText('Only workflows with workflow_dispatch · 1 of 2')).toBeInTheDocument();
+    await expect.element(page.getByText('Run workflow · step 1 of 3')).not.toBeInTheDocument();
+
+    // Back at the top, the generic placeholder; the hint of the listed line that can't run.
+    await userEvent.keyboard('{Escape}{Escape}');
+    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
+    await expect.element(page.getByText('Enter picks another workflow')).toBeInTheDocument();
 });

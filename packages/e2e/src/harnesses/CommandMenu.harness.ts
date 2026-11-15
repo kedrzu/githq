@@ -24,9 +24,9 @@ export class CommandMenuHarness {
         return this.root.getByRole('option', { name });
     }
 
-    /** The group of lines headed `name`: a repository's actions sit under its name. */
+    /** The group of lines headed `name`, at the top or in a level: a repository's actions sit under its name. */
     group(name: string): Locator {
-        return this.root.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name, exact: true });
+        return this.root.getByRole('listbox').getByRole('group', { name, exact: true });
     }
 
     /** The chip in the field's line naming what the actions act on, by its text; not a line of the list. */

@@ -1,7 +1,7 @@
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
-import { defineComponent, h, shallowRef } from 'vue';
+import { defineComponent, h } from 'vue';
 
 import CommitGraphView from '@/commits/CommitGraphView.vue';
 import { foldStacks } from '@/lists/foldStacks.js';
@@ -296,32 +296,19 @@ export const NotTrackedNotShown: Story = {
  */
 export const Commits: Story = {
     args: { nameWithOwner: 'acme/web', section: 'commits', list: null, projects: [], withoutProject: 0 },
-    render: args =>
+    // The kept copy is written before the story renders, so the play function's waits start with the view mounted.
+    loaders: [loadCommitGraph],
+    render: (args, { loaded }) =>
         defineComponent({
             setup() {
-                const { container, ready } = createCommitGraphTest(sampleWebappHistory());
-                // A container of its own, which the meta's decorator does not reach: the desktop's layout here too.
-                container.set(PhoneLayout, createFixedPhoneLayout(false));
-                provideContainer(container);
-                const kept = shallowRef(false);
-                const showOnceKept = async () => {
-                    await ready;
-                    kept.value = true;
-                };
-                void showOnceKept();
+                provideContainer(loaded.container);
                 return () =>
-                    h(
-                        'div',
-                        { style: 'display: flex; height: 100vh' },
-                        kept.value
-                            ? [
-                                  h(RepositoryView, args, {
-                                      commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) =>
-                                          h(CommitGraphView, { nameWithOwner: 'acme/web', refListInColumn }),
-                                  }),
-                              ]
-                            : [],
-                    );
+                    h('div', { style: 'display: flex; height: 100vh' }, [
+                        h(RepositoryView, args, {
+                            commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) =>
+                                h(CommitGraphView, { nameWithOwner: 'acme/web', refListInColumn }),
+                        }),
+                    ]);
             },
         }),
     play: async ({ canvasElement }) => {
@@ -332,6 +319,7 @@ export const Commits: Story = {
 /** D11: not tracked, the Commits section shows in full; only the chip says so. */
 export const CommitsNotTracked: Story = {
     args: { ...Commits.args, tracked: false },
+    loaders: Commits.loaders,
     render: Commits.render,
     play: async ({ canvasElement }) => {
         await expect(await findGraphRow(canvasElement)).toBeVisible();
@@ -367,6 +355,7 @@ export const ColumnPullRequests: Story = {
 /** CH6: the column layout on Commits: the list of branches and tags in the column, the graph the whole pane. */
 export const ColumnCommits: Story = {
     args: { ...Commits.args, layout: 'column' },
+    loaders: Commits.loaders,
     render: Commits.render,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
@@ -379,6 +368,7 @@ export const ColumnCommits: Story = {
 /** D11, D20: the column layout not tracked: the chip in the column's head, Commits in full. */
 export const ColumnCommitsNotTracked: Story = {
     args: { ...ColumnCommits.args, tracked: false },
+    loaders: Commits.loaders,
     render: Commits.render,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
@@ -422,6 +412,15 @@ function sampleStackedList(items: readonly Item[], grouping: RepositoryGrouping)
 
 function options(layout: ListLayout, grouping: RepositoryGrouping): ListViewOptions<RepositoryGrouping, ItemSort> {
     return { ...REPOSITORY_VIEW_DEFAULTS, layout, grouping };
+}
+
+/** The commit graph's container, once its kept copy is written. */
+async function loadCommitGraph() {
+    const { container, ready } = createCommitGraphTest(sampleWebappHistory());
+    // A container of its own, which the meta's decorator does not reach: the desktop's layout here too.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
+    await ready;
+    return { container };
 }
 
 /** A commit's headline in the graph: the open details name it too, when it is a parent of the selected commit. */
