@@ -7,7 +7,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 const PHONE = { width: 390, height: 844 };
 const ISSUE = 'Sign-in loops after the token expires';
 
-test("mobile D45, D51: on a phone a property's menu sits at the bottom, and the composer from the command line comments and closes", async ({
+test("mobile D45, D51: on a phone a property's menu sits at the bottom — assignees, a project's Status —, and the composer from the command line comments and closes", async ({
     page,
     github,
 }) => {
@@ -17,6 +17,13 @@ test("mobile D45, D51: on a phone a property's menu sits at the bottom, and the 
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
     await expect(item.root).toContainText('No description provided.');
+
+    // Assignees: the picker at the bottom; several can change, applied as it closes.
+    await item.property('Assignees').click();
+    const assignees = page.getByRole('dialog', { name: /Assignees/u });
+    await assignees.getByRole('option', { name: /octocat/u }).click();
+    await assignees.getByRole('button', { name: 'Close' }).click();
+    await expect.poll(() => sample.world.stateOf(sample.issue).assignees).toEqual([]);
 
     // The project's Status: its menu at the bottom of the screen, the command line stepping aside meanwhile.
     await item.projectField('Status').click();
@@ -38,5 +45,9 @@ test("mobile D45, D51: on a phone a property's menu sits at the bottom, and the 
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
         .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED', comments: ['Not something we will do.'] });
-    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['SetProjectFieldValue', 'AddComment', 'CloseIssue']);
+    expect(sample.world.edits.map(edit => edit.mutation).slice(-3)).toEqual([
+        'SetProjectFieldValue',
+        'AddComment',
+        'CloseIssue',
+    ]);
 });

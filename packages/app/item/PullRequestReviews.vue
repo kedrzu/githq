@@ -122,6 +122,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
         v-if="reviewerOptions"
         v-model:open="picking"
         :label="t(l.requestReview)"
+        :context="`${detail.item.repository.nameWithOwner}#${detail.item.number}`"
         :options="askable"
         :placeholder="t(l.filterReviewers)"
         multiple

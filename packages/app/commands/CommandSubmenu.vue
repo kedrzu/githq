@@ -334,12 +334,9 @@ function getEntryProps(option: CommandOption) {
 // height and to its edges.
 .commandSubmenu_sheet {
   .commandSubmenu_filter {
-    min-height: $touch-target-size;
-    padding: 0 $spacing-12;
-    margin: $spacing-4 $spacing-16 $spacing-8;
-    background: $color-bg;
-    border: 1px solid $color-border-2;
-    border-radius: $radius-lg;
+    @include sheet-filter-field;
+
+    margin-top: $spacing-4;
   }
 
   .commandSubmenu_filterIcon {
@@ -360,8 +357,7 @@ function getEntryProps(option: CommandOption) {
   }
 
   .commandSubmenu_detail {
-    margin-left: auto;
-    font-size: $font-size-md;
+    @include sheet-row-detail;
   }
 
   .commandSubmenu_box {

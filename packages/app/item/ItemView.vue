@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — the item's actions are the command menu's — and the reference heads the title instead. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — and the reference heads the title instead, opening the item menu at the bottom (D45, `Menu`'s sheet). Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts">
 /**
  * From this width of an opened item below its header on a page, it stands in two columns: an issue's summary and
@@ -314,6 +314,8 @@ const requiredCheckIds = computed(() =>
 const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
 const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.editing?.metadata, props.viewerCanEnableAutoMerge));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
+/** `owner/name#123`: what the item menu and the pickers name it by, and what "Copy reference" copies. */
+const referenceText = computed(() => `${props.item.repository.nameWithOwner}#${props.item.number}`);
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
   const { item } = props;
@@ -680,7 +682,7 @@ function getItemCommands(): Command[] {
       section: 'item',
       icon: Hash,
       detail: formatShortReference(item),
-      run: () => void navigator.clipboard.writeText(`${item.repository.nameWithOwner}#${item.number}`),
+      run: () => void navigator.clipboard.writeText(referenceText.value),
     },
     {
       id: 'item.copyBranch',
@@ -743,13 +745,13 @@ function getProjectOptions(): CommandOption[] {
           v-model:open="itemMenuOpen"
           align="start"
           :label="t(l.itemMenu)"
-          :context="`${item.repository.nameWithOwner}#${item.number}`"
+          :context="referenceText"
         >
           <template #trigger>
             <button
               type="button"
               :class="css.itemView_reference"
-              :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
+              :aria-label="t(l.itemMenuLabel, { reference: referenceText })"
               :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
             >
               <component
@@ -766,16 +768,13 @@ function getProjectOptions(): CommandOption[] {
             </button>
           </template>
           <CommandMenuSections :sections="itemMenuSections" />
-          <!-- A phone shows no keys (mobile D52): nothing to teach. -->
-          <template v-if="!phone.active">
-            <MenuSeparator />
-            <MenuLabel>
-              <span :class="css.itemView_menuFooter">
-                {{ t(l.itemMenu) }}
-                <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
-              </span>
-            </MenuLabel>
-          </template>
+          <MenuSeparator />
+          <MenuLabel>
+            <span :class="css.itemView_menuFooter">
+              {{ t(l.itemMenu) }}
+              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+            </span>
+          </MenuLabel>
         </Menu>
       </template>
     </ItemHeader>
@@ -899,13 +898,28 @@ function getProjectOptions(): CommandOption[] {
                       />
                     </div>
                     <div :class="css.itemView_heading">
-                      <!-- On a phone the top bar has no reference: it heads the title (mobile MB33). -->
-                      <p
+                      <!-- On a phone the top bar has no reference: it heads the title (mobile MB33), and opens the item menu at the bottom (D45). -->
+                      <Menu
                         v-if="phone.active"
-                        :class="css.itemView_phoneReference"
+                        v-model:open="itemMenuOpen"
+                        :label="t(l.itemMenu)"
+                        :context="referenceText"
                       >
-                        {{ item.repository.nameWithOwner }}#{{ item.number }}
-                      </p>
+                        <template #trigger>
+                          <button
+                            type="button"
+                            :class="css.itemView_phoneReference"
+                            :aria-label="t(l.itemMenuLabel, { reference: referenceText })"
+                          >
+                            {{ item.repository.nameWithOwner }}#{{ item.number }}
+                            <ChevronDown
+                              :class="css.itemView_chevron"
+                              aria-hidden="true"
+                            />
+                          </button>
+                        </template>
+                        <CommandMenuSections :sections="itemMenuSections" />
+                      </Menu>
                       <h1 :class="css.itemView_title">{{ item.title }}</h1>
                       <p :class="css.itemView_state">
                         <StatePill
@@ -972,6 +986,7 @@ function getProjectOptions(): CommandOption[] {
                     />
                     <ItemProjects
                       ref="projects"
+                      :reference="referenceText"
                       :projects="item.projects"
                       :detail-projects="detail?.projects"
                       :now="now"
@@ -1143,10 +1158,23 @@ $item-column-inset: var(--item-column-inset);
   color: $color-fg-dim;
 }
 
+// A button as the line it is, with a finger's height reaching past it into the gap around it.
 .itemView_phoneReference {
+  display: flex;
+  gap: $spacing-10;
+  align-items: center;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: $spacing-10 0;
+  margin: (-$spacing-10) 0;
   font-family: $font-family-mono;
   font-size: $font-size-xs;
   color: $color-fg-dim;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  @include focus-ring;
 }
 
 // Its width decides the layout (`twoColumns`): the stack bar and the content in one column, the summary's column and

@@ -201,10 +201,7 @@ const heading = computed(() =>
 // Above the keyboard, the width of the composer: a menu at the bottom as `BottomMenu` draws one, its rows a finger's
 // height, as many as fit before it scrolls.
 .markdownSuggestions_docked {
-  --icon-button-width: #{$touch-target-size};
-  --icon-button-height: #{$touch-target-size};
-  --icon-button-radius: #{$radius-lg};
-  --icon-button-glyph-size: #{$phone-row-icon-size};
+  @include touch-icon-buttons($phone-row-icon-size, $radius-lg);
 
   max-height: 240px;
   padding: 0 0 $spacing-4;

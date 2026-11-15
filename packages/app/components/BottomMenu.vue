@@ -1,4 +1,4 @@
-<!-- What drops from a trigger on the computer, on a phone (mobile D45): a menu pinned to the bottom of the screen, a sheet rising from below over the dimmed screen (`Dialog edge="bottom"`, so the command line steps aside, D18). Its head names what it is for ("Assignees") with what it acts on under it in monospace ("fitloop/webapp#1187", MB74, MB108), ← before the name when it has a way back (a submenu, MB109), × to close; Escape and a tap above it close it too. As it opens the first entry takes the focus — or a picker's list — never a filter, so no keyboard comes up until the filter is tapped. `Picker` shows its list in it, `MenuSheet` a menu's entries. -->
+<!-- What drops from a trigger on the computer, on a phone (mobile D45): a menu pinned to the bottom of the screen, a sheet rising from below over the dimmed screen (`Dialog edge="bottom"`, so the command line steps aside, D18). Its head names what it is for ("Assignees") with what it acts on under it in monospace ("fitloop/webapp#1187", MB74, MB108), ← before the name when it has a way back (a submenu, MB109), × to close; Escape and a tap above it close it too. As it opens the first entry takes the focus — or a picker's list — never a filter, so no keyboard comes up until the filter is tapped; an editor for typing in it (`focusField`) gives it to its field instead. `Picker` shows its list in it, `MenuSheet` a menu's entries. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronLeft, X } from 'lucide-vue-next';
@@ -8,7 +8,7 @@ import * as l from './BottomMenu.loc.js';
 import Dialog from './Dialog.vue';
 import IconButton from './IconButton.vue';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** What it is for ("Assignees", "Item actions"): the head's name and the dialog's. */
     title: string;
@@ -18,6 +18,11 @@ withDefaults(
     back?: boolean;
     /** The id of the head's visible name, for the entries' list to be named by it (a submenu's name). */
     headingId?: string;
+    /**
+     * An editor for typing (a project's text field) rather than entries: as it opens its first field takes the focus,
+     * bringing the keyboard up.
+     */
+    focusField?: boolean;
   }>(),
   { context: undefined, headingId: undefined },
 );
@@ -45,11 +50,18 @@ const open = defineModel<boolean>('open', { default: false });
 const t = useTranslate();
 const bodyRef = useTemplateRef<HTMLElement>('body');
 
-/** The first entry, or a picker's list, rather than the first control (the ×, or a filter bringing the keyboard up). */
+/**
+ * The first entry, or a picker's list, rather than the first control (the ×, or a filter bringing the keyboard up); with
+ * `focusField` the first field.
+ */
 function focusFirstEntry(event: Event) {
   event.preventDefault();
   bodyRef.value
-    ?.querySelector<HTMLElement>('[role^="menuitem"]:not([aria-disabled="true"]), [role="listbox"]')
+    ?.querySelector<HTMLElement>(
+      props.focusField
+        ? 'input:not([type="submit"], [type="hidden"]), textarea'
+        : '[role^="menuitem"]:not([aria-disabled="true"]), [role="listbox"]',
+    )
     ?.focus();
 }
 </script>
@@ -121,10 +133,7 @@ function focusFirstEntry(event: Event) {
 }
 
 .bottomMenu_head {
-  --icon-button-width: #{$touch-target-size};
-  --icon-button-height: #{$touch-target-size};
-  --icon-button-radius: #{$radius-lg};
-  --icon-button-glyph-size: #{$phone-row-icon-size};
+  @include touch-icon-buttons($phone-row-icon-size, $radius-lg);
 
   display: flex;
   flex: none;

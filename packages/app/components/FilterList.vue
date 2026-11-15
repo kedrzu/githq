@@ -609,12 +609,7 @@ function onListKeydown(event: KeyboardEvent) {
 // thumb's height running to the sheet's edges.
 .filterList_touch {
   .filterList_input {
-    min-height: $touch-target-size;
-    padding: 0 $spacing-12;
-    margin: 0 $spacing-16 $spacing-8;
-    background: $color-bg;
-    border: 1px solid $color-border-2;
-    border-radius: $radius-lg;
+    @include sheet-filter-field;
   }
 
   .filterList_filter {

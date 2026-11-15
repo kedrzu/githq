@@ -131,8 +131,7 @@ const sheet = injectContext(MenuSheetContext, { optional: true });
 
 // On a phone the detail sits at the row's end (MB109).
 .menuItem_detail_end {
-  margin-left: auto;
-  font-size: $font-size-md;
+  @include sheet-row-detail;
 }
 
 .menuItem_detail_mono {

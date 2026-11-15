@@ -211,6 +211,19 @@ test('mobile MB260: on a phone "Merge…" and "Review files" leave for github.co
     expect(onMerge).not.toHaveBeenCalled();
 });
 
+test('mobile D45: on a phone the reference above the title opens "Item actions" at the bottom, and an action there runs', async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of skyline-labs\/portal#/ }));
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    await expect.element(sheet).toBeVisible();
+    await userEvent.click(sheet.getByRole('menuitem', { name: /^Add or remove labels/ }));
+    await userEvent.click(sheet.getByRole('menuitemcheckbox', { name: 'perf' }));
+
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'labels', add: ['perf'], remove: [] });
+});
+
 test('mobile D51: on a phone the thread ends with its last card; the composer docked at the bottom takes the cursor, and Comment sends as the thread would and closes it back', async () => {
     await PhoneFromList.run();
     const { onEdit } = PhoneFromList.args;
@@ -261,6 +274,20 @@ test('mobile MB241: docked, Close with comment takes its reason from a menu at t
     expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: 'A duplicate of #3', keptInThread: true });
     expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'NOT_PLANNED' });
     await expect.element(box).not.toBeInTheDocument();
+});
+
+test('mobile D18: a mouse press outside the "More tools" sheet the docked composer opened closes the sheet, not the composer', async () => {
+    await PhoneWriting.run();
+    const box = page.getByRole('textbox', { name: 'Comment' });
+
+    await userEvent.click(page.getByRole('button', { name: 'More formatting' }));
+    const sheet = page.getByRole('dialog', { name: 'More tools' });
+    await expect.element(sheet).toBeVisible();
+
+    // Under the dimmed screen: the press lands on the sheet's overlay, which reka closes the sheet on first.
+    await userEvent.click(page.getByText(PhoneWriting.args.item!.title), { force: true });
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(box).toBeVisible();
 });
 
 test('mobile D29: on a phone a stacked pull request has the strip under the top bar; ← and → open its neighbours in its place, a tap on it unfolds the stack', async () => {
@@ -369,6 +396,24 @@ test("a project's number field is edited in its field: Enter sets what was typed
     await userEvent.clear(page.getByRole('spinbutton', { name: 'Estimate' }));
     await userEvent.keyboard('{Enter}');
     expect(onEdit).toHaveBeenLastCalledWith({ ...target, value: null });
+});
+
+test("mobile D45: on a phone a project's text field is edited in a menu at the bottom, its field taking the cursor; Enter sets it", async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: 'Severity: Major' }));
+    const sheet = page.getByRole('dialog', { name: 'Severity' });
+    await expect.element(sheet).toHaveAccessibleDescription(/^skyline-labs\/portal#/u);
+    const field = sheet.getByRole('textbox', { name: 'Severity' });
+    await expect.element(field).toHaveFocus();
+    await userEvent.fill(field, 'Minor');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onEdit).toHaveBeenLastCalledWith(
+        expect.objectContaining({ kind: 'projectField', fieldId: 'severity', value: { kind: 'text', text: 'Minor' } }),
+    );
+    await expect.element(sheet).not.toBeInTheDocument();
 });
 
 test('M1: the reference opens the item menu — the actions grouped, each with its key; a submenu picks a value; Esc closes the menu, not the item', async () => {

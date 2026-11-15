@@ -49,19 +49,24 @@ onBeforeUnmount(() => {
 });
 
 // A menu or a sheet it opened stands over it in a layer of its own: a press there, or on the dimmed screen around it,
-// is theirs.
-onWindowEvent('pointerdown', event => {
-  const { target } = event;
-  if (!(target instanceof Node) || rootRef.value?.contains(target)) {
-    return;
-  }
+// is theirs. In the capture phase, before reka's layer (listening on the document) closes on a mouse press: by then the
+// layer reads closed and the press would close this too.
+onWindowEvent(
+  'pointerdown',
+  event => {
+    const { target } = event;
+    if (!(target instanceof Node) || rootRef.value?.contains(target)) {
+      return;
+    }
 
-  if (document.querySelector('[role="dialog"][data-state="open"], [role="menu"][data-state="open"]')) {
-    return;
-  }
+    if (document.querySelector('[role="dialog"][data-state="open"], [role="menu"][data-state="open"]')) {
+      return;
+    }
 
-  emit('close');
-});
+    emit('close');
+  },
+  { capture: true },
+);
 </script>
 
 <template>

@@ -166,9 +166,7 @@ function findHeld(index: number, direction: 1 | -1) {
 
 // A phone's strip (MB122): the toggle takes all but the arrows, each a finger's size.
 .stackBar_phone {
-  --icon-button-width: #{$touch-target-size};
-  --icon-button-height: #{$touch-target-size};
-  --icon-button-glyph-size: 18px;
+  @include touch-icon-buttons($phone-row-icon-size);
 
   gap: 0;
   height: $touch-target-size;

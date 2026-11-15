@@ -484,6 +484,34 @@ $motion-slide-distance: 4px;
     }
 }
 
+// Every `IconButton` inside a finger's size (the phone layout), its glyph `$glyph-size`, its corners `$radius` when given.
+@mixin touch-icon-buttons($glyph-size, $radius: null) {
+    --icon-button-width: #{$touch-target-size};
+    --icon-button-height: #{$touch-target-size};
+    --icon-button-glyph-size: #{$glyph-size};
+
+    @if $radius {
+        --icon-button-radius: #{$radius};
+    }
+}
+
+// A row's dim detail in a phone's menu at the bottom (`MenuSheet`, mobile D45): at the row's end, read at a phone's size.
+@mixin sheet-row-detail {
+    margin-left: auto;
+    font-size: $font-size-md;
+}
+
+// The filter of a phone's menu at the bottom (MB74, MB108): a field of its own under the sheet's head, a finger's
+// height; its text input takes `$font-size-phone-input`.
+@mixin sheet-filter-field {
+    min-height: $touch-target-size;
+    padding: 0 $spacing-12;
+    margin: 0 $spacing-16 $spacing-8;
+    background: $color-bg;
+    border: 1px solid $color-border-2;
+    border-radius: $radius-lg;
+}
+
 // A row of a list: the whole row is the hit area, rows touch with no gap between them, and what
 // the row's state lights up — hover, selection — is a rounded surface inset in it, under its content. A row indented
 // under another moves its surface's left edge with `--row-surface-inset`, 8px before its text. The surface is the

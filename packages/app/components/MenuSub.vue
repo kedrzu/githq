@@ -178,8 +178,7 @@ function drillIn(event: Event) {
 
 // On a phone the current value sits at the row's end, before the chevron.
 .menuSub_detail_end {
-  margin-left: auto;
-  font-size: $font-size-md;
+  @include sheet-row-detail;
 }
 
 .menuSub_content {

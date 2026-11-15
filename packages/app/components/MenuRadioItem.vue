@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { Check } from 'lucide-vue-next';
 import { DropdownMenuItemIndicator, DropdownMenuRadioItem } from 'reka-ui';
 
-import { MenuRadioContext } from './MenuRadioGroup.vue';
+import { MenuRadioContext } from './MenuRadioContext.js';
 import { MenuSheetContext } from './MenuSheetContext.js';
 import MenuSheetItem from './MenuSheetItem.vue';
 
