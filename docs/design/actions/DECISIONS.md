@@ -362,6 +362,13 @@ repositories. The form for the inputs opens inside the command menu. The Run wor
 [the app's navigation](../githq/navigation.md): `↵` on the open workflow goes full screen, `Esc` from a run returns to
 the workflow, `Esc` again to the list.
 
+**A run opened from its workflow in the panel opens in the panel, in the workflow's place, and so does `F` from the
+Workflows section while the panel fits.** (2026-11-15, owner) It moves full screen and back as an item does (`⇧↵`,
+"Open full screen", "Back to the panel"); `Esc` goes back to the workflow in the panel on that run, or for a run opened
+by its address up to it; its address is the list's with `?pane=run&run=owner|name|<run>[|<job>]`. Until then a run was
+always a full page ([navigation](../githq/navigation.md), level 4), and opening one threw the user out of the list and
+the panel. A workflow full screen, Broken workflows, checks and ⌘K still open the run's page.
+
 **Rejected.**
 
 - Runs grouped by ref as the only layout: grouping is an option instead.

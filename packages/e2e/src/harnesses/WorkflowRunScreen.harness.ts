@@ -22,6 +22,16 @@ export class WorkflowRunScreenHarness {
         return this.root.getByRole('heading', { name, level: 1 });
     }
 
+    /** "Open full screen" (`⇧Enter`), in the panel. */
+    get openFullScreen(): Locator {
+        return this.root.getByRole('button', { name: 'Open full screen', exact: true });
+    }
+
+    /** "Back to the panel" (`⇧Enter`), on the run's page while the panel fits. */
+    get backToPanel(): Locator {
+        return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
+    }
+
     /** What the run is: its state, ref, event, commit and when. */
     get summary(): Locator {
         return this.root.getByTestId('workflow-run-summary');
