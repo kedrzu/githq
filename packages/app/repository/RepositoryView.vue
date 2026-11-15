@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). On a phone (mobile MB32) there is no column, and every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), the sections left to the command menu — and the command line names the section with its open items while tracked ("Issues 142", mobile D17). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). On a phone (mobile MB32) there is no column, and every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the command menu —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
+import type { Command, CommandParts } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import Button from '@/components/Button.vue';
@@ -54,6 +55,7 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { useShownLayout } from '@/lists/useShownLayout.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { usePhonePart } from '@/shell/usePhonePart.js';
@@ -189,6 +191,8 @@ defineSlots<{
 const t = useTranslate();
 const choices = useItemListChoices();
 const phone = useService(PhoneLayout);
+/** What the section's items are drawn as: a list on a phone, whatever the options keep (mobile D9). */
+const listLayout = useShownLayout(() => options.value.layout);
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
 /** Each section's key. */
@@ -333,24 +337,19 @@ watch(
 
 // On a phone the command line names the section with its open items while tracked (mobile D17); Commits and Workflows,
 // which a phone hands off to GitHub, none.
+// Its menu lists the sections first (mobile D17): Issues and Pull requests with their open items, Commits and Workflows marked
+// as leaving for github.com, where the route guard hands a phone off (D21).
 usePhonePart(() =>
   itemSection.value
-    ? { label: t(l[itemSection.value]), count: props.tracked ? props.openCounts[itemSection.value] : null }
+    ? {
+        label: t(l[itemSection.value]),
+        count: props.tracked ? props.openCounts[itemSection.value] : null,
+        parts: getPhoneParts,
+      }
     : null,
 );
 
-useCommands(() =>
-  sections.value.map(candidate => ({
-    id: `repository.section.${candidate}`,
-    title: t(l[candidate]),
-    section: 'repository',
-    key: SECTION_KEYS[candidate],
-    icon: REPOSITORY_SECTION_ICONS[candidate],
-    run: () => {
-      section.value = candidate;
-    },
-  })),
-);
+useCommands(() => sections.value.map(getSectionCommand));
 
 /**
  * What moving looks the end of the list up again; the state and the section each read pages of their own. Each page read
@@ -360,6 +359,38 @@ useCommands(() =>
 function getReadPosition({ rowsShown }: ListEndProps) {
   const read = someCollapsed.value ? `shown:${rowsShown}` : `cursor:${props.status?.cursor ?? ''}`;
   return `${section.value}:${state.value}:${read}`;
+}
+
+function getSectionCommand(candidate: RepositorySection): Command {
+  return {
+    id: `repository.section.${candidate}`,
+    title: t(l[candidate]),
+    section: 'repository',
+    key: SECTION_KEYS[candidate],
+    icon: REPOSITORY_SECTION_ICONS[candidate],
+    run: () => {
+      section.value = candidate;
+    },
+  };
+}
+
+function getPhoneParts(): CommandParts {
+  return {
+    heading: props.nameWithOwner,
+    rows: sections.value.map(candidate => {
+      const command = getSectionCommand(candidate);
+      return {
+        kind: 'command',
+        command: isItemSection(candidate)
+          ? {
+              ...command,
+              count: props.tracked ? props.openCounts[candidate] : null,
+              current: candidate === section.value,
+            }
+          : { ...command, external: true },
+      };
+    }),
+  };
 }
 
 function getSectionCount(value: RepositorySection) {
@@ -528,6 +559,7 @@ function getSectionCount(value: RepositorySection) {
           <ListToolbar
             v-model:options="options"
             :title="inColumn ? t(l[itemSection]) : nameWithOwner"
+            :list-name="inColumn ? undefined : t(l[itemSection])"
             :groupings="groupings"
             :sorts="choices.sorts.value"
             :properties="choices.properties.value"
@@ -569,7 +601,7 @@ function getSectionCount(value: RepositorySection) {
             <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. So too
                  with a group collapsed: a page gone into it leaves the end where it was, and reading stops until expanded. -->
             <Button
-              v-if="status?.hasMore && (options.layout === 'board' || someCollapsed)"
+              v-if="status?.hasMore && (listLayout === 'board' || someCollapsed)"
               variant="outline"
               size="sm"
               @click="emit('readMore')"
@@ -610,7 +642,7 @@ function getSectionCount(value: RepositorySection) {
             :scroll-key="`repository:${nameWithOwner}:${section}`"
             :groups="list.groups"
             :groups-arriving="list.arriving && !unreadable"
-            :layout="options.layout"
+            :layout="listLayout"
             :opened-id="openedId"
             :is-edited="isEdited"
             :get-url="item => item.url"

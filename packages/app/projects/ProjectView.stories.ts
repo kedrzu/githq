@@ -164,3 +164,9 @@ export const BoardItemsArriving: Story = {
 
 /** On a phone (mobile MB32): the phone's top bar with the project's title and its display options; no saved views. */
 export const Phone: Story = { decorators: [withPhoneLayout(true)] };
+
+/**
+ * A board view on a phone (mobile D9): a list grouped by its columns' field, Status, in the columns' order — the
+ * grouping its page gives a board, the layout kept.
+ */
+export const PhoneBoardView: Story = { ...Board, decorators: [withPhoneLayout(true)] };

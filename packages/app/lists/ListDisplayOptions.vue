@@ -1,10 +1,9 @@
-<!-- A list's display options (D9): a button — "Display" on the toolbar, an icon alone in the phone's top bar (mobile MB32) — opening the view options the toolbar has no room for (every one on a phone), each a section with its icon and its choices right there, what the list adds, and a footer saying they are kept on this device only, with a reset while they differ from the defaults. -->
+<!-- A list's display options (D9): "Display" on the toolbar, opening the view options the toolbar has no room for (a phone has its own sheet, `ListOptionsSheet`), each a section with its icon and its choices right there, what the list adds, and a footer saying they are kept on this device only, with a reset while they differ from the defaults. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { RotateCcw, SlidersHorizontal } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
-import IconButton from '@/components/IconButton.vue';
 import Popover from '@/components/Popover.vue';
 
 import * as l from './ListDisplayOptions.loc.js';
@@ -17,10 +16,8 @@ withDefaults(
     options: readonly ListToolbarOption[];
     /** The options differ from the list's defaults: it offers to reset them. */
     modified?: boolean;
-    /** The trigger an icon alone, sized by the bar it sits in (the phone's top bar). */
-    iconOnly?: boolean;
   }>(),
-  { modified: false, iconOnly: false },
+  { modified: false },
 );
 
 const emit = defineEmits<{
@@ -45,13 +42,7 @@ const t = useTranslate();
     flush
   >
     <template #trigger>
-      <IconButton
-        v-if="iconOnly"
-        :icon="SlidersHorizontal"
-        :label="t(l.display)"
-      />
       <Button
-        v-else
         variant="ghost"
         size="sm"
         :icon="SlidersHorizontal"

@@ -76,3 +76,50 @@ autoMergeWaitingForChecks:
   en: auto-merge on · {method} · waiting for checks
 autoMergeWaitingForReview:
   en: auto-merge on · {method} · waiting for review
+checksCount:
+  en: '{passing}/{total}'
+checksPassedCount:
+  en: '{passing} of {total} checks passed'
+checksFailingCount:
+  plural: failing
+  en:
+    one: '{failing} of {total} checks failing'
+    many: '{failing} of {total} checks failing'
+checksRunningCount:
+  en: '{passing} of {total} checks passed, {pending} running'
+shortFailing:
+  en: Failing
+shortRunning:
+  en: Running
+shortChanges:
+  en: Changes
+shortConflicts:
+  en: Conflicts
+shortReady:
+  en: Ready
+shortApproved:
+  en: Approved
+shortReview:
+  en: Review
+shortWaiting:
+  en: Waiting
+shortDraft:
+  en: Draft
+shortDraftReview:
+  en: Draft review
+shortMerged:
+  en: Merged
+shortMerging:
+  en: Merging
+shortInQueue:
+  en: In queue
+shortWontMerge:
+  en: Won't merge
+shortAutoMerge:
+  en: Auto-merge
+shortRefused:
+  en: Refused
+shortNewCommit:
+  en: New commit
+shortSent:
+  en: Sent

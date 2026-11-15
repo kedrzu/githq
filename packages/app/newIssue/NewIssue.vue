@@ -177,11 +177,7 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
     addSection('project', t(l.inProjectSection, { project: project.title }), getProjectRepositories(project.projectId));
   }
 
-  addSection(
-    'tracked',
-    t(l.tracked),
-    tracking.repositories.map(tracked => tracked.nameWithOwner),
-  );
+  addSection('tracked', t(l.tracked), tracking.repositoryNames);
   addSection('yourWork', t(l.yourWork), getWorkRepositories());
   // The section holding the best match first, so Enter picks it; nothing typed scores all alike and keeps their order.
   const sections = ours.toSorted((a, b) => b.best - a.best).map(({ section }) => section);

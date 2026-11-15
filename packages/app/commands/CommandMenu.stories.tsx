@@ -1,8 +1,10 @@
 import type { RepositoryBrowseSearchQuery } from '@githq/github/generated.gen.js';
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { Play } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
+import { CircleDot, Eye, GitCommitHorizontal, GitPullRequest, Link, Play, Workflow } from 'lucide-vue-next';
 import { userEvent, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
@@ -28,8 +30,8 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import CommandMenu from './CommandMenu.vue';
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
-import type { Command, CommandFormField } from './CommandTypes.js';
-import type { NavigationData, NavigationResult } from './searchNavigation.js';
+import type { Command, CommandFormField, CommandParts } from './CommandTypes.js';
+import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
 import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
@@ -136,6 +138,8 @@ const Harness = defineComponent({
          * screen's repository (W36), whose workflows are still being read; fitloop/api beside it has Deploy.
          */
         repositoryWorkflows: { type: Boolean, default: false },
+        /** Opened from the phone's command line on a list (mobile D17): the place's parts first. */
+        parts: { type: String as PropType<PhonePlace | null>, default: null },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -237,7 +241,14 @@ const Harness = defineComponent({
             );
         }
 
-        if (props.startOpen) {
+        const { parts } = props;
+        if (parts !== null) {
+            const shown = createParts(parts, path => {
+                went.value = path;
+            });
+            useCommands(() => shown.registered);
+            registry.openParts(() => shown.parts);
+        } else if (props.startOpen) {
             registry.openMenu(props.startCommandId);
         }
 
@@ -268,6 +279,7 @@ const Harness = defineComponent({
                     repository={props.repository}
                     navigation={navigation}
                     startCommandId={registry.menu?.commandId ?? null}
+                    parts={registry.menu?.parts ?? null}
                     onNavigate={navigate}
                 />
             </div>
@@ -444,6 +456,129 @@ export const RunWorkflowInRepository: Story = { args: { subject: 'none', reposit
 export const RunWorkflowRepositories: Story = {
     args: { subject: 'none', repositoryWorkflows: true, startCommandId: 'app.runWorkflow' },
 };
+
+/**
+ * Mobile D17, D21: the phone's command line on a repository's Issues — its sections first under its name, Issues and Pull
+ * requests with their open items, Commits and Workflows marked ↗ as leaving for github.com; the rest as ⌘K has it.
+ */
+export const PartsOfRepository: Story = {
+    args: { subject: 'none', repository: 'fitloop/webapp', parts: 'repository' },
+};
+
+/** Mobile MB223, D49: on a project's view — its saved views each with its count, the one shown checked and dotted as changed here. */
+export const PartsOfProject: Story = { args: { subject: 'none', parts: 'project' } };
+
+/** Mobile D17: on My work — the whole of it and its groups, each with its count once in, the one shown checked. */
+export const PartsOfMyWork: Story = { args: { subject: 'none', parts: 'myWork' } };
+
+/** The list a phone's command line is on, for its parts. */
+type PhonePlace = 'repository' | 'project' | 'myWork';
+
+/** The parts of a place as its screen gives them, and what the screen registers of them (a repository's sections). */
+function createParts(place: PhonePlace, go: (path: string) => void): { parts: CommandParts; registered: Command[] } {
+    switch (place) {
+        case 'repository': {
+            const issues = sectionCommand('issues', 'Issues', CircleDot, go);
+            const pullRequests = sectionCommand('pullRequests', 'Pull requests', GitPullRequest, go);
+            const commits = sectionCommand('commits', 'Commits', GitCommitHorizontal, go);
+            const workflows = sectionCommand('workflows', 'Workflows', Workflow, go);
+            const copyLink: Command = {
+                id: 'repository.copyLink',
+                title: 'Copy link',
+                section: 'repository',
+                icon: Link,
+            };
+            return {
+                registered: [issues, pullRequests, commits, workflows, copyLink],
+                parts: {
+                    heading: 'fitloop/webapp',
+                    rows: [
+                        { kind: 'command', command: { ...issues, count: 142, current: true } },
+                        { kind: 'command', command: { ...pullRequests, count: 18 } },
+                        { kind: 'command', command: { ...commits, external: true } },
+                        { kind: 'command', command: { ...workflows, external: true } },
+                    ],
+                },
+            };
+        }
+        case 'project':
+            return {
+                registered: [],
+                parts: {
+                    heading: 'Platform Q4 · views',
+                    rows: [
+                        { kind: 'command', command: viewCommand('1', 'Backlog', 61, go) },
+                        { kind: 'command', command: viewCommand('2', 'Roadmap', 128, go) },
+                        // GitHub has not answered its filter yet.
+                        { kind: 'command', command: viewCommand('3', 'By assignee', null, go) },
+                        {
+                            kind: 'command',
+                            command: { ...viewCommand('4', 'Current sprint', 34, go), current: true, changed: true },
+                        },
+                    ],
+                },
+            };
+        case 'myWork':
+            return {
+                registered: [],
+                parts: {
+                    heading: 'My work',
+                    rows: [
+                        { kind: 'place', place: myWorkPlace('myWork', 'My work', '/', 13) },
+                        {
+                            kind: 'place',
+                            place: myWorkPlace(
+                                'myWork:reviewRequested',
+                                'Review requested',
+                                '/pulls/review-requested',
+                                2,
+                            ),
+                        },
+                        { kind: 'place', place: myWorkPlace('myWork:authored', 'My pull requests', '/pulls', 4) },
+                        {
+                            kind: 'place',
+                            place: {
+                                ...myWorkPlace('myWork:assigned', 'Assigned to me', '/issues/assigned', 7),
+                                current: true,
+                            },
+                        },
+                        // Still arriving.
+                        {
+                            kind: 'place',
+                            place: myWorkPlace('myWork:mentioned', 'Mentioned', '/issues/mentioned', null),
+                        },
+                    ],
+                },
+            };
+        default:
+            return assertNever(place);
+    }
+}
+
+function sectionCommand(id: string, title: string, icon: LucideIcon, go: (path: string) => void): Command {
+    return {
+        id: `repository.section.${id}`,
+        title,
+        section: 'repository',
+        icon,
+        run: () => go(`/fitloop/webapp/${id}`),
+    };
+}
+
+function viewCommand(id: string, title: string, count: number | null, go: (path: string) => void): Command {
+    return {
+        id: `view:${id}`,
+        title,
+        section: 'view',
+        icon: Eye,
+        count,
+        run: () => go(`/orgs/skyline-labs/projects/4/views/${id}`),
+    };
+}
+
+function myWorkPlace(id: string, title: string, path: string, count: number | null): NavigationPlace {
+    return { id, group: 'goTo', kind: 'myWork', title, path, count };
+}
 
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {

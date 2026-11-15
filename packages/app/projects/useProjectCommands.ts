@@ -1,6 +1,6 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, EyeOff, Github, LayoutList, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { ArrowRight, Eye, EyeOff, Github, LayoutList, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
@@ -18,6 +18,8 @@ import * as l from './useProjectCommands.loc.js';
 export interface ProjectCommands {
     readonly open: Command;
     readonly views: Command;
+    /** Going to each of its saved views (`view:<id>`), as the command menu's level under the project lists them. */
+    readonly savedViews: readonly Command[];
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
@@ -31,11 +33,12 @@ export interface ProjectCommandsTarget extends ProjectAddress {
 }
 
 /**
- * The actions of a project: going to its view or one of its saved views, a new issue in it (where the user may add
+ * The actions of a project: going to its view or one of its saved views — picked from one action, or one action each —, a new issue in it (where the user may add
  * one), its page on GitHub and the link to it, its settings (T17) and no longer tracking it (both only while it is tracked
  * and not on its way out; untracking offers Undo, `PendingUntracks`). The sidebar's
  * menu of a project offers them all; the project's view offers its page on GitHub in the command menu, and the menu's
- * level under a tracked project (D36) a new issue, the page, the link and the settings.
+ * level under a tracked project (D36) its saved views, a new issue, the page, the link and the settings; on a phone the
+ * project's view offers its saved views first from the command line (mobile D17).
  */
 export function useProjectCommands(): (target: ProjectCommandsTarget) => ProjectCommands {
     const t = useTranslate();
@@ -76,6 +79,14 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
                     })),
                 }),
             },
+            savedViews: (project()?.views ?? []).map(view => ({
+                id: `view:${view.id}`,
+                title: view.name,
+                detail: t(l.savedView),
+                icon: Eye,
+                section: 'view',
+                run: () => void router.push(getProjectPath(target, view.number)),
+            })),
             newIssue: {
                 id: 'project.newIssueHere',
                 title: t(l.newIssue),

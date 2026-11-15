@@ -2,6 +2,8 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { shallowRef } from 'vue';
 
+import type { CommandParts } from '@/commands/CommandTypes.js';
+
 /**
  * The window width below which the app takes its phone layout (mobile D5). The desktop's sidebar, list and item panel
  * stop fitting below about 650 px; phones in portrait are 375–430 px, tablets in portrait and phones in landscape from
@@ -14,6 +16,10 @@ export interface PhonePart {
     readonly label: string;
     /** `null` while still arriving, or for a part that has none. */
     readonly count: number | null;
+    /** A project view changed on this device (mobile D49): the chip carries a dot. */
+    readonly changed?: boolean;
+    /** The place's parts, which the command line's menu lists first; read only as the menu draws. */
+    readonly parts?: () => CommandParts;
 }
 
 /**
