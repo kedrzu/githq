@@ -51,7 +51,6 @@ GitHub's consent page, you tap Authorize, and the browser hands you back to gith
 
 ## What is still open
 
-- Where the token is kept on a phone (the iOS Keychain has no official Tauri plugin).
 - The account Apple's reviewers sign in with: App Review needs a working demo login, here a GitHub account with
   something in it.
 - What the desktop-only parts become: the self-updater and the macOS window controls have no place on a phone.

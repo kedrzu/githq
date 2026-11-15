@@ -23,3 +23,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   Marked the sign-in part of githq D23 superseded in place (that folder still uses inline supersession notes).
   `docs/decisions/usage-statistics-with-an-opt-out.md` and `docs/desktop/RELEASING.md` mention the Device Flow as
   built; they change with the implementation, not here. Next: Keychain / Tauri plugins on iOS.
+- 2026-11-15 — Checked: the desktop's `keyring` crate has iOS and Android stores, so the token keeps the desktop's
+  code path; recorded under D2. Only the iOS sign-in sheet needs our own Swift. D2 still awaits the owner.

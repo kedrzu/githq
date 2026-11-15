@@ -52,6 +52,15 @@ Tauri's mobile targets reuse both; Capacitor would start the native side from no
 > [deep linking](https://v2.tauri.app/plugin/deep-linking/). The updater's setup is guarded by `#[cfg(desktop)]` —
 > [updater](https://v2.tauri.app/plugin/updater/). No official Keychain plugin found.
 
+> **Checked 2026-11-15:** the desktop keeps the token with the `keyring` crate 4.2
+> (`packages/desktop/src-tauri/Cargo.toml:15`, `src/credentials.rs`). Its companion stores cover both phones:
+> `apple-native-keyring-store` ("On iOS there is just one secure store: the 'protected data' store") and
+> `android-native-keyring-store` (SharedPreferences and the Keystore; the app must first initialise `ndk-context`'s
+> application context, so some Kotlin glue) — [docs.rs](https://docs.rs/apple-native-keyring-store/latest/apple_native_keyring_store/),
+> [docs.rs](https://docs.rs/android-native-keyring-store/latest/android_native_keyring_store/). Read through a
+> summarising fetch, not verbatim; entitlements not checked. So the token store is not where Tauri falls short; the
+> one native piece with no maintained wrapper is iOS's sign-in sheet ([D3](#d3)), a small Swift plugin of our own.
+
 **Rejected.**
 
 - Capacitor — mature on mobile, but none of the desktop's native code carries over. Would win if Tauri's iOS target
