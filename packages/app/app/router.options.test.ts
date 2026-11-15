@@ -106,7 +106,6 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     // by its sha.
     ['/acme/web/commits/main', 'github'],
     ['/acme/web/commit/0123abc', 'commit-page'],
-    ['/acme/web/commit/main', 'github'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],

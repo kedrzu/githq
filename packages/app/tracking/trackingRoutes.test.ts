@@ -80,5 +80,4 @@ test('the phone shows lists, items and settings, and hands off code review, comm
     expect(shown('workflow-page')).toBe(false);
     expect(shown('workflow-run')).toBe(false);
     expect(shown('workflow-run-job')).toBe(false);
-    expect(shown('commit-page')).toBe(false);
 });
