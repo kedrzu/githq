@@ -34,6 +34,12 @@ const ANY_REF_PAGE_SIZE = 30;
  * and a whole poll stays under its 900 REST points a minute.
  */
 const WORKFLOW_READS = 3;
+/**
+ * How many tracked repositories a poll reads at once, as the first download does (githq D27, actions D2): read one after
+ * another, every request's round trip adds up — a minute and more for a dozen repositories. With
+ * {@link WORKFLOW_READS} workflows at once within each, at most 12 of the loop's requests are in flight.
+ */
+const REPOSITORY_READS = 4;
 /** How many pages of a workflow's runs are read, at most, looking for runs with a verdict (actions D1). */
 const MAX_RUN_PAGES = 3;
 
@@ -98,7 +104,8 @@ interface MarkUnavailableParams {
  * every poll, as a run off the latest runs' page may have moved, all of it conditional, and nothing is written while
  * nothing moved. A workflow gone from GitHub's list is dropped. While some workflow's runs were never read, what is
  * known is stored as it arrives — the default branch and the list first, then each workflow as its runs come in, a
- * few read at once ({@link WORKFLOW_READS}), in the list's order (W3c, W10).
+ * few read at once ({@link WORKFLOW_READS}), in the list's order (W3c, W10). A few repositories are read at once
+ * ({@link REPOSITORY_READS}), one on screen ahead of those not started yet.
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
  * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may
@@ -117,10 +124,12 @@ export const WorkflowSync = defineService({
         return { poll };
 
         /**
-         * Polls each tracked repository's workflows, one after another — with their runs on any ref for those
-         * `getAnyRefRepositories` names as the poll reaches them — then again those it came to name once the poll had
-         * passed them. One GitHub refuses is marked unavailable; one failing otherwise is logged, the others go on, and
-         * the poll fails at the end. What it names is read at every poll, so nothing is lost to a failure.
+         * Polls each tracked repository's workflows, {@link REPOSITORY_READS} at once — those `getAnyRefRepositories`
+         * names when one is started first, with their runs on any ref — then again those it came to name once their
+         * read had started without them. One GitHub refuses is marked unavailable; one failing otherwise is logged, the
+         * others go on, and the poll fails at the end. What concerns every repository (a revoked token, the allowance)
+         * stops every read at its next request, and the poll fails with it once none is on its way. What it names is
+         * read at every poll, so nothing is lost to a failure.
          */
         async function poll(context: TrackingSyncContext, getAnyRefRepositories: () => ReadonlySet<string>) {
             const readAnyRef = new Set<string>();
@@ -133,6 +142,7 @@ export const WorkflowSync = defineService({
                 }
 
                 failed += failedNow;
+                // A screen that came as the last reads ended.
                 names = [...getAnyRefRepositories()].filter(
                     nameWithOwner =>
                         !readAnyRef.has(nameWithOwner) && tracking.isTracked({ kind: 'repository', nameWithOwner }),
@@ -144,24 +154,79 @@ export const WorkflowSync = defineService({
             }
         }
 
-        /** Polls the repositories; how many failed, or `null` once the session ended. */
+        /**
+         * Polls the repositories, {@link REPOSITORY_READS} at once, the ones on screen first: one coming on screen is
+         * the next started, or read again once its read ends when that started without its runs on any ref — never
+         * two reads of one repository at once. How many failed, or `null` once the session ended.
+         */
         async function pollEach({ context, names, readAnyRef, getAnyRefRepositories }: PollEachParams) {
+            const waiting = [...names];
+            // Read without their runs on any ref: one coming on screen is read again.
+            const readWithoutAnyRef = new Set<string>();
             let failed = 0;
-            for (const nameWithOwner of names) {
+            // What concerns every repository: the other reads stop at their next request, and drop what arrives.
+            let failure: { readonly error: unknown } | undefined;
+            const pollContext: TrackingSyncContext = {
+                ...context,
+                isCurrent: () => !failure && context.isCurrent(),
+            };
+
+            await Promise.all(Array.from({ length: REPOSITORY_READS }, () => readNext()));
+            if (failure) {
+                throw failure.error;
+            }
+
+            return context.isCurrent() ? failed : null;
+
+            // Never throws: the poll would settle with the other reads still on their way.
+            async function readNext() {
+                for (let nameWithOwner = pick(); nameWithOwner !== undefined; nameWithOwner = pick()) {
+                    try {
+                        await readRepository(nameWithOwner);
+                    } catch (error) {
+                        failure ??= { error };
+                    }
+                }
+            }
+
+            /** The repository to read next: one on screen first, else the next in tracking order. */
+            function pick() {
+                if (failure || !context.isCurrent()) {
+                    return undefined;
+                }
+
+                const onScreen = getAnyRefRepositories();
+                const index = waiting.findIndex(nameWithOwner => onScreen.has(nameWithOwner));
+                if (index >= 0) {
+                    return waiting.splice(index, 1)[0];
+                }
+
+                for (const nameWithOwner of readWithoutAnyRef) {
+                    if (onScreen.has(nameWithOwner) && tracking.isTracked({ kind: 'repository', nameWithOwner })) {
+                        readWithoutAnyRef.delete(nameWithOwner);
+                        return nameWithOwner;
+                    }
+                }
+
+                return waiting.shift();
+            }
+
+            /** Reads the repository, saying what GitHub refuses or fails on of it; throws what concerns every one. */
+            async function readRepository(nameWithOwner: string) {
                 const anyRefWanted = getAnyRefRepositories().has(nameWithOwner);
                 if (anyRefWanted) {
                     readAnyRef.add(nameWithOwner);
                 }
 
                 try {
-                    await pollRepository({ context, nameWithOwner, anyRefWanted });
+                    await pollRepository({ context: pollContext, nameWithOwner, anyRefWanted });
                 } catch (error) {
                     if (!isTargetFailure(error)) {
                         throw error;
                     }
 
                     if (error.status >= 400 && error.status < 500) {
-                        markUnavailable({ context, nameWithOwner, status: error.status });
+                        markUnavailable({ context: pollContext, nameWithOwner, status: error.status });
                     } else {
                         failed++;
                         logger.warn('The workflows of a tracked repository could not be polled', {
@@ -171,12 +236,10 @@ export const WorkflowSync = defineService({
                     }
                 }
 
-                if (!context.isCurrent()) {
-                    return null;
+                if (!anyRefWanted) {
+                    readWithoutAnyRef.add(nameWithOwner);
                 }
             }
-
-            return failed;
         }
 
         async function pollRepository({ context, nameWithOwner, anyRefWanted }: PollRepositoryParams) {
@@ -416,6 +479,11 @@ export const WorkflowSync = defineService({
         async function readRuns(context: TrackingSyncContext, params: ReadRunsParams) {
             const { nameWithOwner, entry, key, branch, groups, pageFor, known } = params;
             const newestKnown = known.find(run => branch === undefined || run.headBranch === branch);
+            // Another read may have ended this one's since the last answer: nothing more is asked.
+            if (!isWanted(context, nameWithOwner)) {
+                return null;
+            }
+
             context.checkAllowance('core');
             const first = await listWorkflowRuns(context.rest, {
                 nameWithOwner,
