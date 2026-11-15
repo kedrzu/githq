@@ -39,6 +39,26 @@ noAccess:
   en: you can't run workflows here
 archived:
   en: archived, nothing runs
+trackedRepositories:
+  en: Tracked repositories
+nothingToRunHeading:
+  en: Nothing to run
+workflowsIn:
+  en: Workflows in {repository} you can run
+pickRepository:
+  en: Pick a repository…
+pickWorkflow:
+  en: Pick a workflow…
+firstStep:
+  en: Run workflow · step 1 of 3
+onlyDispatch:
+  en: Only workflows with {trigger}
+onlyDispatchCounted:
+  en: Only workflows with {trigger} · {count} of {total}
+opensForm:
+  en: Enter opens {workflow}'s form
+pickAnother:
+  en: Enter picks another workflow
 readingWorkflows:
   en: Reading the workflow files…
 noWorkflows:
