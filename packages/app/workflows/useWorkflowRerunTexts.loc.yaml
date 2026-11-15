@@ -2,46 +2,92 @@ run:
   en: '{workflow} #{number}'
 runOfNoName:
   en: 'Run #{number}'
-titleNoPermission:
-  en: "{run} wasn't re-run: no permission"
-titleTooOld:
-  en: "{run} wasn't re-run: the run is too old"
-titleAlreadyRunning:
-  en: "{run} wasn't re-run: it's already running"
-titleOrganizationRestricted:
-  en: "{run} wasn't re-run: {organization} hasn't approved githq"
-titleRefused:
-  en: "{run} wasn't re-run"
-titleUnreachable:
-  en: "{run} wasn't re-run: GitHub couldn't be reached"
-titleServerError:
-  en: "{run} wasn't re-run: GitHub failed"
-titleAllowance:
-  en: "{run} wasn't re-run: the allowance is used up"
+notRerun:
+  en: "{subject} wasn't re-run"
+notCancelled:
+  en: "{subject} wasn't cancelled"
+notDisabled:
+  en: "{subject} wasn't disabled"
+notEnabled:
+  en: "{subject} wasn't enabled"
+titleWithWhy:
+  en: '{title}: {why}'
+whyNoPermission:
+  en: no permission
+whyTooOld:
+  en: the run is too old
+whyAlreadyRunning:
+  en: "it's already running"
+whyAlreadyFinished:
+  en: it has already finished
+whyOrganizationRestricted:
+  en: "{organization} hasn't approved githq"
+whyUnreachable:
+  en: "GitHub couldn't be reached"
+whyServerError:
+  en: GitHub failed
+whyAllowance:
+  en: the allowance is used up
+canRun:
+  en: run workflows
+canCancel:
+  en: cancel runs
+canToggle:
+  en: turn workflows on or off
+outcomeRerunFailed:
+  en: Nothing was started, and the run is still failed.
+outcomeRerun:
+  en: Nothing was started.
+outcomeCancel:
+  en: The run goes on.
+outcomeDisable:
+  en: The workflow stays enabled.
+outcomeEnable:
+  en: The workflow stays disabled.
+theRun:
+  en: the run
+theWorkflow:
+  en: the workflow
+theRunStart:
+  en: The run
+theWorkflowStart:
+  en: The workflow
 detailNoPermission:
-  en: "GitHub refused it: your role in {repository} can't run workflows. Nothing was started, and the run is still failed."
+  en: "GitHub refused it: your role in {repository} can't {ability}. {outcome}"
 detailTooOld:
   en: 'GitHub refused it: a run can be re-run for about a month after it ran. Nothing was started. A new commit or a manual run on GitHub starts a new one.'
 detailAlreadyRunning:
   en: 'GitHub refused it: someone else re-ran it a moment ago. This page now follows that run.'
+detailAlreadyFinished:
+  en: 'GitHub refused it: the run finished before the cancel got there. githq now shows how it ended.'
 detailOrganizationRestricted:
   en: "{organization} hasn't approved githq, so githq can read its public repositories but can't change anything there."
 detailRefused:
-  en: 'GitHub refused it: {message}. Nothing was started, and the run is still failed.'
+  en: 'GitHub refused it: {message}. {outcome}'
 detailUnreachable:
-  en: "githq couldn't reach GitHub, so the run stays as GitHub last said it. Try again once you're online."
+  en: "githq couldn't reach GitHub, so {thing} stays as GitHub last said it. Try again once you're online."
 detailServerError:
-  en: 'GitHub answered {status}, a failure on its side rather than a refusal. The run stays as GitHub last said it; try again in a moment.'
+  en: 'GitHub answered {status}, a failure on its side rather than a refusal. {thing} stays as GitHub last said it; try again in a moment.'
 detailAllowance:
   en: "GitHub's API allowance is used up until {time}, so nothing was started."
+detailAllowanceNotSent:
+  en: "GitHub's API allowance is used up until {time}, so nothing was sent."
+actionRerun:
+  en: Re-run
+actionCancel:
+  en: Cancel
+actionDisable:
+  en: Disable
+actionEnable:
+  en: Enable
 segmentRefused:
-  en: Re-run refused by GitHub
+  en: '{action} refused by GitHub'
 segmentUnreachable:
-  en: Re-run failed · GitHub unreachable
+  en: '{action} failed · GitHub unreachable'
 segmentServerError:
-  en: Re-run failed · GitHub answered {status}
+  en: '{action} failed · GitHub answered {status}'
 segmentAllowance:
-  en: Re-run not sent · allowance used up
+  en: '{action} not sent · allowance used up'
 openOnGitHub:
   en: Open on GitHub
 requestAccess:

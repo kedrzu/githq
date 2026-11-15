@@ -129,7 +129,7 @@ export const WorkflowRunHistory = defineService({
             session = account ? { account, rest: createRest(account.getToken) } : null;
         });
 
-        return { open, getRuns, setFilters, readMoreRuns, addRun };
+        return { open, getRuns, setFilters, readMoreRuns, refreshRuns, addRun };
 
         /**
          * Opens the workflow as an item: its filters are cleared when another workflow was open, kept when it was this
@@ -153,6 +153,17 @@ export const WorkflowRunHistory = defineService({
         /** Reads the next page of the workflow's runs under its filters. */
         function readMoreRuns(target: WorkflowRunsTarget) {
             readMore({ ...target, ...getFilters(target) });
+        }
+
+        /**
+         * Reads the first page of the workflow's runs anew under its filters, when any was read: a run the user just
+         * re-ran or cancelled shows as it now is, rather than at the sync's next poll. Nothing for runs never read.
+         */
+        function refreshRuns(target: WorkflowRunsTarget) {
+            const query = { ...target, ...getFilters(target) };
+            if (entriesRef.value.has(getKey(query))) {
+                refresh(query);
+            }
         }
 
         /**

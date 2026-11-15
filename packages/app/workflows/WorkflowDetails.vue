@@ -1,4 +1,4 @@
-<!-- An opened workflow's Details (actions W30, W42): what starts it (Triggers, from its file at the default branch: each event with its branches or tags — a pull request's never counting —, a dispatch with how many inputs — and, where the user can run it, that "Run workflow…" in the command menu does —; or why the file says nothing: GitHub generates the workflow, the file is being read, could not be read, is missing, not YAML or names no trigger), how it stands on each ref that counts (Counts on: broken or passing since which run, how many in a row, or no runs there yet), its runs (the last success, the typical run — the median of the last 20 successful ones —, the run going now), what a dispatch asks for (Dispatch inputs: name, type, default, choices) and the workflow itself (File, State). Each value has its icon; a dim line under it says more. -->
+<!-- An opened workflow's Details (actions W30, W42): what starts it (Triggers, from its file at the default branch: each event with its branches or tags — a pull request's never counting —, a dispatch with how many inputs — and, where the user can run it, that "Run workflow…" in the command menu does —; or why the file says nothing: GitHub generates the workflow, the file is being read, could not be read, is missing, not YAML or names no trigger), how it stands on each ref that counts (Counts on: broken or passing since which run, how many in a row, or no runs there yet), its runs (the last success, the typical run — the median of the last 20 successful ones —, the run going now), what a dispatch asks for (Dispatch inputs: name, type, default, choices) and the workflow itself (File, State, with "Disable workflow" or "Enable workflow" in the command menu where the user may). Each value has its icon; a dim line under it says more. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowTrigger, WorkflowInput } from '@githq/github/workflows/parseWorkflowFile.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -38,8 +38,10 @@ const props = withDefaults(
     now: number;
     /** The user can run it by hand: its dispatch says where. */
     offerRun?: boolean;
+    /** "Disable workflow" or "Enable workflow" is in the command menu, which the State says. */
+    offerToggle?: boolean;
   }>(),
-  { offerRun: false },
+  { offerRun: false, offerToggle: false },
 );
 
 /** One row of a section: a name, a value with its icon, a dim line under it. */
@@ -274,6 +276,7 @@ function getWorkflow(): DetailSection {
         code: false,
         icon: active ? CircleCheck : CircleSlash,
         value: active ? t(l.enabled) : t(l.disabled),
+        hint: props.offerToggle ? t(active ? l.disableInCommandMenu : l.enableInCommandMenu) : undefined,
       },
     ],
   };

@@ -7,21 +7,31 @@ import { defineComponent, h, shallowRef } from 'vue';
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
-import type { WorkflowRerunReason } from './utils/getRerunReason.js';
+import type { WorkflowAction, WorkflowRerunReason } from './utils/getRerunReason.js';
 import WorkflowRerunToast from './WorkflowRerunToast.vue';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
-import type { WorkflowRerunFailure } from './WorkflowRunStore.js';
+import type { WorkflowActionTarget, WorkflowRerunFailure } from './WorkflowRunStore.js';
 
-/** The toast over a screen whose store holds a re-run that failed for `reason`. */
-function withReason(reason: WorkflowRerunReason): Decorator {
+const RUN: WorkflowActionTarget = { kind: 'run', runId: 4821, workflowName: 'Deploy', runNumber: 4821 };
+const WORKFLOW: WorkflowActionTarget = {
+    kind: 'workflow',
+    workflowName: 'Deploy',
+    url: 'https://github.com/fitloop/webapp/blob/main/.github/workflows/deploy.yml',
+};
+
+/** The toast over a screen whose store holds a re-run of the failed jobs, or `action`, that failed for `reason`. */
+function withReason(
+    reason: WorkflowRerunReason,
+    action: WorkflowAction = 'rerunFailed',
+    target: WorkflowActionTarget = RUN,
+): Decorator {
     return story =>
         defineComponent({
             setup() {
                 const failure = shallowRef<WorkflowRerunFailure | null>({
                     nameWithOwner: 'fitloop/webapp',
-                    runId: 4821,
-                    workflowName: 'Deploy',
-                    runNumber: 4821,
+                    action,
+                    target,
                     reason,
                     toast: true,
                     at: 1,
@@ -41,6 +51,10 @@ function withReason(reason: WorkflowRerunReason): Decorator {
                         failure.value = null;
                     },
                     rerun: () => undefined,
+                    rerunAll: () => undefined,
+                    rerunJob: () => undefined,
+                    cancel: () => undefined,
+                    setEnabled: () => undefined,
                     getRun: () => ({ run: null, status: 'loading', httpStatus: null }),
                     getJobs: () => ({ jobs: [], status: 'loading', httpStatus: null, checkedAt: null }),
                     refresh: () => undefined,
@@ -93,4 +107,12 @@ export const ServerError: Story = { decorators: [withReason({ kind: 'serverError
 /** G5: refused by an organisation that has not approved githq. */
 export const OrganizationRestricted: Story = {
     decorators: [withReason({ kind: 'organizationRestricted', organization: 'fitloop' })],
+};
+
+/** A cancel GitHub refused, the run having finished: nothing to see on GitHub, githq follows it. */
+export const CancelAlreadyFinished: Story = { decorators: [withReason({ kind: 'alreadyFinished' }, 'cancel')] };
+
+/** A workflow GitHub did not disable for the user's role: the way to the workflow on GitHub. */
+export const DisableNoPermission: Story = {
+    decorators: [withReason({ kind: 'noPermission' }, 'disable', WORKFLOW)],
 };

@@ -2,11 +2,11 @@ import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
-import { hasRole } from '@/edits/getEditPermissions.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 
 import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobMark } from './utils/getJobMark.js';
+import { getRepositoryDispatchBlock } from './utils/getRepositoryDispatchBlock.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import type { ParsedJobLog } from './utils/parseJobLog.js';
 import type { WorkflowJobsState, WorkflowLogState, WorkflowRunState } from './WorkflowRunStore.js';
@@ -176,7 +176,7 @@ export function canRerunFailedJobs(
     model: WorkflowRunModel,
     metadata: Pick<RepositoryMetadata, 'isArchived' | 'viewerPermission'> | undefined,
 ): boolean {
-    return model.rerunnableJobs.length > 0 && !metadata?.isArchived && hasRole(metadata?.viewerPermission, 'WRITE');
+    return model.rerunnableJobs.length > 0 && getRepositoryDispatchBlock(metadata) === null;
 }
 
 /**

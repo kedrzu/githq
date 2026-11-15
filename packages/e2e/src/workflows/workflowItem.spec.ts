@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
+import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { WorkflowItemHarness } from '../harnesses/WorkflowItem.harness.js';
 import type { SettingsRepository } from '../settings/answerSettingsRepository.js';
@@ -244,3 +245,72 @@ function lastRunsQuery(github: GitHubMock, workflowId: number) {
 function readSettings(repository: SettingsRepository): unknown {
     return repository.file && JSON.parse(repository.file.text);
 }
+
+test('W41: ⌘K disables the workflow, which shows disabled at once and offers to enable it again; none on a key', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Deploy',
+        runs: [{ conclusion: 'success', minutesAgo: 20 }],
+    });
+    await openTrackedWork(page, github, world);
+    await page.goto(DEPLOY_PAGE);
+    const deploy = new WorkflowItemHarness(page, 'Deploy');
+    await expect(deploy.details).toContainText('Disable workflow in the command menu');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    for (const name of [/Disable workflow/u, /Open workflow file/u, /Copy link to the workflow/u]) {
+        await expect(menu.option(name)).toHaveCount(1);
+        await expect(menu.option(name).locator('kbd')).toHaveCount(0);
+    }
+    await page.keyboard.press('Escape');
+
+    await menu.run('Disable workflow');
+
+    await expect(deploy.details).toContainText('Enable workflow in the command menu');
+    const toggles = () =>
+        github.restCalls.filter(call => /\/actions\/workflows\/\d+\/(enable|disable)$/u.test(call.url.pathname));
+    await expect.poll(() => toggles().map(call => call.url.pathname.split('/').at(-1))).toEqual(['disable']);
+    await menu.open();
+    await expect(menu.option(/Enable workflow/u)).toHaveCount(1);
+    await expect(menu.option(/Disable workflow/u)).toHaveCount(0);
+});
+
+test('W40: full screen, ⌘K cancels the run under the cursor while it goes, and re-runs all the jobs of one that finished', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'success', minutesAgo: 40 },
+            { conclusion: null, minutesAgo: 20 },
+        ],
+    });
+    await openTrackedWork(page, github, world);
+    await page.goto(DEPLOY_PAGE);
+    const deploy = new WorkflowItemHarness(page, 'Deploy');
+    await expect(deploy.run(2)).toHaveAttribute('aria-current', 'true');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await expect(menu.option(/Re-run all jobs/u)).toHaveCount(0);
+    await expect(menu.option(/Cancel run/u)).toContainText('#2');
+    await page.keyboard.press('Escape');
+    await menu.run('Cancel run');
+    await expect
+        .poll(() => github.restCalls.filter(call => call.url.pathname.endsWith('/actions/runs/2/cancel')).length)
+        .toBe(1);
+
+    await page.keyboard.press('j');
+    await expect(deploy.run(1)).toHaveAttribute('aria-current', 'true');
+    await menu.open();
+    await expect(menu.option(/Cancel run/u)).toHaveCount(0);
+    await expect(menu.option(/Re-run all jobs/u)).toContainText('#1');
+});

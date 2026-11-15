@@ -4,7 +4,13 @@ import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { toEditFailureReason } from '@/edits/toEditFailureReason.js';
 import { getRefusalPause } from '@/sync/getRefusalPause.js';
 
-/** Why a run's failed jobs were not re-run (actions W4l). */
+/**
+ * What githq asked GitHub to do to a run or a workflow (actions D10, W4j, W4l): re-run the run's failed jobs, all of
+ * them or one, cancel the run, or turn the workflow off or on.
+ */
+export type WorkflowAction = 'rerunFailed' | 'rerunAll' | 'rerunJob' | 'cancel' | 'disable' | 'enable';
+
+/** Why GitHub did not do a {@link WorkflowAction} (actions W4l). */
 export type WorkflowRerunReason =
     /** GitHub says the user's role may not. */
     | { readonly kind: 'noPermission' }
@@ -12,6 +18,8 @@ export type WorkflowRerunReason =
     | { readonly kind: 'tooOld' }
     /** Someone re-ran it since it was read. */
     | { readonly kind: 'alreadyRunning' }
+    /** The run to cancel ended since it was read. */
+    | { readonly kind: 'alreadyFinished' }
     /** The organisation has not approved githq (G5). */
     | { readonly kind: 'organizationRestricted'; readonly organization: string }
     /** Any other refusal, in GitHub's own words. */
@@ -27,6 +35,8 @@ export type WorkflowRerunReason =
 export interface GetRerunReasonParams {
     /** What the request failed with. */
     readonly error: unknown;
+    /** What was asked: GitHub's 409 means the run ended only for a cancel. */
+    readonly action: WorkflowAction;
     /** The core allowance as last reported. */
     readonly limit: GitHubRateLimit | null;
     /** Epoch ms. */
@@ -34,14 +44,14 @@ export interface GetRerunReasonParams {
 }
 
 /**
- * Why GitHub did not re-run a run's failed jobs. GitHub tells its refusals apart by their words only, all with a 403:
- * "This workflow is already running", "Unable to retry this workflow run because it was created over a month ago".
- * Words it does not use for these are quoted.
+ * Why GitHub did not do what was asked of a run or a workflow. GitHub tells a re-run's refusals apart by their words
+ * only, all with a 403: "This workflow is already running", "Unable to retry this workflow run because it was created
+ * over a month ago"; a cancel of a run that ended it answers with a 409. Words it does not use for these are quoted.
  *
  * @util
  * @__NO_SIDE_EFFECTS__
  */
-export function getRerunReason({ error, limit, now }: GetRerunReasonParams): WorkflowRerunReason {
+export function getRerunReason({ error, action, limit, now }: GetRerunReasonParams): WorkflowRerunReason {
     if (!(error instanceof GitHubApiError)) {
         return { kind: 'unreachable' };
     }
@@ -58,6 +68,10 @@ export function getRerunReason({ error, limit, now }: GetRerunReasonParams): Wor
     const reason = toEditFailureReason(error);
     if (reason.kind === 'organizationRestricted') {
         return reason;
+    }
+
+    if (action === 'cancel' && error.status === 409) {
+        return { kind: 'alreadyFinished' };
     }
 
     const message = error.githubMessage ?? error.message;

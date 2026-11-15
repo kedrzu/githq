@@ -78,6 +78,16 @@ export interface GitHubActionsRun {
     readonly actor?: string;
 }
 
+/** What a repository answers to the app's writes to its Actions; `404` for each one left out. */
+export interface GitHubActionsWrites {
+    /** `POST …/actions/runs/{id}/rerun-failed-jobs`. */
+    readonly rerun?: (runId: number) => GitHubRestAnswer;
+    /** `POST …/actions/runs/{id}/cancel`. */
+    readonly cancel?: (runId: number) => GitHubRestAnswer;
+    /** `PUT …/actions/workflows/{id}/enable` or `/disable`. */
+    readonly setEnabled?: (workflowId: number, enabled: boolean) => GitHubRestAnswer;
+}
+
 /** A repository with no workflows, on `main`: what every tracked repository answers unless a test gives it some. */
 export const NO_ACTIONS: GitHubActionsState = {
     defaultBranch: 'main',
@@ -94,7 +104,8 @@ export const NO_ACTIONS: GitHubActionsState = {
  * (`GET /repos/{o}/{r}`), its tags (`…/git/matching-refs/tags`), its workflows (`…/actions/workflows`) and a
  * workflow's runs on any ref or filtered by `branch`, `event`, `status` and `actor` (`…/actions/workflows/{id}/runs`,
  * paged by `per_page` and `page`, a `Link` to the next page while more remain), a workflow's file (`…/contents/.github/workflows/<name>.yml`: run on push, one job), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
- * job's log (`…/actions/jobs/{id}/logs`, plain text), each `404` for an id it does not know. Every JSON answer carries an ETag hashed from its body and is
+ * job's log (`…/actions/jobs/{id}/logs`, plain text), each `404` for an id it does not know; and the writes `writes` answers:
+ * re-running a run's failed jobs, cancelling a run, turning a workflow on or off. Every JSON answer carries an ETag hashed from its body and is
  * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs and file are answered once the list
  * named it.
  */
@@ -102,7 +113,7 @@ export function answerRepositoryActions(
     github: GitHubMock,
     nameWithOwner: string,
     read: () => GitHubActionsState,
-    rerun: (runId: number) => GitHubRestAnswer = () => NOT_FOUND,
+    writes: GitHubActionsWrites = {},
 ): void {
     const base = `/repos/${nameWithOwner}`;
     const answered = new Set<number>();
@@ -171,7 +182,15 @@ export function answerRepositoryActions(
     github.restMatching(
         'POST',
         new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/rerun-failed-jobs$`),
-        (_, match) => rerun(Number(match[1])),
+        (_, match) => writes.rerun?.(Number(match[1])) ?? NOT_FOUND,
+    );
+    github.restMatching('POST', new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/cancel$`), (_, match) =>
+        writes.cancel ? writes.cancel(Number(match[1])) : NOT_FOUND,
+    );
+    github.restMatching(
+        'PUT',
+        new RegExp(`^${escapeRegExp(base)}/actions/workflows/(\\d+)/(enable|disable)$`),
+        (_, match) => writes.setEnabled?.(Number(match[1]), match[2] === 'enable') ?? NOT_FOUND,
     );
     github.restMatching('GET', new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/jobs$`), (request, match) => {
         const run = findRun(match);

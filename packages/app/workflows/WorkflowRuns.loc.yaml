@@ -75,3 +75,9 @@ fold:
   en: Fold {group}
 unfold:
   en: Unfold {group}
+rerunAllJobs:
+  en: Re-run all jobs
+cancelRun:
+  en: Cancel run
+runNumber:
+  en: '#{number}'

@@ -102,3 +102,7 @@ disabled:
   en: Disabled
 runInCommandMenu:
   en: Run workflow… in the command menu
+disableInCommandMenu:
+  en: Disable workflow in the command menu
+enableInCommandMenu:
+  en: Enable workflow in the command menu

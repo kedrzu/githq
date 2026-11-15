@@ -1,4 +1,4 @@
-<!-- An opened workflow's runs (actions W43–W45): the toolbar — the filters Ref, Event, Status and Actor (`WorkflowRunFilters`), a divider, how many runs are loaded ("48 runs · newest first", "48+" while older ones remain) and the grouping ("Group: None", one setting for every workflow), each following the one before, nothing pinned to the end — then the runs, the newest first (`WorkflowRunRow`), in the grouping's groups, each folded or unfolded by its heading. They show at once from what is known; older ones are read as the end comes near ("Reading older runs…"), and a read GitHub fails is said under them, asked again by a click. With `keys`, `j`/`k` (and ↓/↑) select a run and `↵` opens it (`useRowSelection`); without, the keys are someone else's (the list beside the panel) and no run is drawn selected. -->
+<!-- An opened workflow's runs (actions W43–W45): the toolbar — the filters Ref, Event, Status and Actor (`WorkflowRunFilters`), a divider, how many runs are loaded ("48 runs · newest first", "48+" while older ones remain) and the grouping ("Group: None", one setting for every workflow), each following the one before, nothing pinned to the end — then the runs, the newest first (`WorkflowRunRow`), in the grouping's groups, each folded or unfolded by its heading. They show at once from what is known; older ones are read as the end comes near ("Reading older runs…"), and a read GitHub fails is said under them, asked again by a click. With `keys`, `j`/`k` (and ↓/↑) select a run and `↵` opens it (`useRowSelection`), and where the user may change the repository's runs ⌘K re-runs all the jobs of the run under the cursor, or cancels it while it goes, with no key (D10); without, the keys are someone else's (the list beside the panel) and no run is drawn selected. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -12,9 +12,11 @@ import {
   CircleCheck,
   CircleDashed,
   CircleSlash,
+  CircleStop,
   CircleX,
   GitBranch,
   LoaderCircle,
+  RefreshCw,
   Rows3,
   TriangleAlert,
   User,
@@ -22,6 +24,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef } from 'vue';
 
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -53,6 +56,11 @@ const props = defineProps<{
   callOnly: boolean;
   /** `j`/`k` and `↵` are the runs'. */
   keys: boolean;
+  /**
+   * The user may re-run and cancel the repository's runs (`getRepositoryDispatchBlock`, as for re-running the failed jobs):
+   * with `keys`, ⌘K offers "Re-run all jobs" or "Cancel run" for the run under the cursor.
+   */
+  canChangeRuns?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -62,6 +70,10 @@ const emit = defineEmits<{
   /** The end came near, or the failed read's line was clicked: the caller reads older runs. */
   readMore: [];
   openRun: [run: GitHubWorkflowRun];
+  /** "Re-run all jobs" in ⌘K, for the run under the cursor. */
+  rerunAll: [run: GitHubWorkflowRun];
+  /** "Cancel run" in ⌘K, for the run under the cursor. */
+  cancel: [run: GitHubWorkflowRun];
 }>();
 
 /** A row the keys move through: one run. */
@@ -154,6 +166,37 @@ const selection = useRowSelection({
   chosenKey: chosenRun,
   open: row => emit('openRun', row.run),
   enabled: () => props.keys,
+});
+
+// No key starts or stops a run (D10): ⌘K only.
+useCommands(() => {
+  const run = props.keys && props.canChangeRuns ? (selection.selectedRow?.run ?? null) : null;
+  if (!run) {
+    return [];
+  }
+
+  const detail = t(l.runNumber, { number: run.runNumber });
+  return [
+    run.status === 'completed'
+      ? {
+          id: 'workflow.rerunAllJobs',
+          title: t(l.rerunAllJobs),
+          section: 'view',
+          actsOnRow: true,
+          icon: RefreshCw,
+          detail,
+          run: () => emit('rerunAll', run),
+        }
+      : {
+          id: 'workflow.cancelRun',
+          title: t(l.cancelRun),
+          section: 'view',
+          actsOnRow: true,
+          icon: CircleStop,
+          detail,
+          run: () => emit('cancel', run),
+        },
+  ];
 });
 
 function getRunKey(run: GitHubWorkflowRun) {

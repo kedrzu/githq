@@ -19,6 +19,7 @@ import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { JobLogRefusal } from './utils/JobLogRefusal.js';
+import { WorkflowRunHistory } from './WorkflowRunHistory.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
 import { WorkflowStore } from './WorkflowStore.js';
 
@@ -423,7 +424,12 @@ test('W4l: a refusal takes it all back, shows once until dismissed, and offers t
 
     expect(store.getRun(REPO, RUN).run).toMatchObject({ status: 'completed', conclusion: 'failure' });
     expect(store.getJobs(REPO, RUN).jobs).toMatchObject([{ id: JOB, status: 'completed', conclusion: 'failure' }]);
-    expect(store.rerunFailure).toMatchObject({ runId: RUN, reason: { kind: 'tooOld' }, toast: true });
+    expect(store.rerunFailure).toMatchObject({
+        action: 'rerunFailed',
+        target: { kind: 'run', runId: RUN },
+        reason: { kind: 'tooOld' },
+        toast: true,
+    });
 
     store.setRerunToast(false);
     expect(store.rerunFailure).toMatchObject({ toast: false });
@@ -521,6 +527,121 @@ test('an answer for a session that ended changes nothing and throws nothing', as
     expect(store.rerunFailure).toBeNull();
 });
 
+test('re-running all jobs shows each running at once, the passed ones too, goes once, and its workflow’s runs list follows', async () => {
+    const world = worldWithRun();
+    const repository = world.repository(REPO);
+    repository.jobs.set(RUN, [job(JOB), { ...job(71), conclusion: 'success' }]);
+    const context = setup(world, () => {
+        repository.runs = repository.runs.map(run => ({ ...run, status: 'in_progress', conclusion: null }));
+        return { status: 201, body: {} };
+    });
+    const { session, store } = context;
+    const history = session.container.resolve(WorkflowRunHistory);
+    history.open({ nameWithOwner: REPO, workflowId: 1 });
+    await read(context);
+    const target = { nameWithOwner: REPO, run: readRun(store) };
+
+    store.rerunAll(target);
+    store.rerunAll(target);
+
+    expect(store.getRun(REPO, RUN).run).toMatchObject({ status: 'in_progress', runAttempt: 2 });
+    expect(store.getJobs(REPO, RUN).jobs).toMatchObject([
+        { id: JOB, status: 'in_progress' },
+        { id: 71, status: 'in_progress' },
+    ]);
+    await session.clock.advance(0);
+    expect(actionRequests(session.github.requests)).toEqual([`POST /repos/${REPO}/actions/runs/${RUN}/rerun`]);
+    expect(history.getRuns({ nameWithOwner: REPO, workflowId: 1 }).runs).toMatchObject([
+        { id: RUN, status: 'in_progress' },
+    ]);
+});
+
+test('re-running a job shows only that one running and asks for it by its id', async () => {
+    const world = worldWithRun();
+    world.repository(REPO).jobs.set(RUN, [job(JOB), { ...job(71), conclusion: 'success' }]);
+    const context = setup(world);
+    const { session, store } = context;
+    await read(context);
+
+    store.rerunJob({ nameWithOwner: REPO, run: readRun(store), jobId: 71 });
+
+    expect(store.getJobs(REPO, RUN).jobs).toMatchObject([
+        { id: JOB, status: 'completed' },
+        { id: 71, status: 'in_progress' },
+    ]);
+    await session.clock.advance(0);
+    expect(actionRequests(session.github.requests)).toEqual([`POST /repos/${REPO}/actions/jobs/71/rerun`]);
+});
+
+test('a run that finished is not cancelled; one that ended before the cancel got there says so', async () => {
+    const world = worldWithRun();
+    const context = setup(world, () => ({
+        status: 409,
+        body: { message: 'Cannot cancel a workflow run that is completed.' },
+    }));
+    const { session, store } = context;
+    await read(context);
+
+    store.cancel({ nameWithOwner: REPO, run: readRun(store) });
+    await session.clock.advance(0);
+    expect(actionRequests(session.github.requests)).toEqual([]);
+
+    store.cancel({ nameWithOwner: REPO, run: { ...readRun(store), status: 'in_progress', conclusion: null } });
+    await session.clock.advance(0);
+    expect(actionRequests(session.github.requests)).toEqual([`POST /repos/${REPO}/actions/runs/${RUN}/cancel`]);
+    expect(store.rerunFailure).toMatchObject({
+        action: 'cancel',
+        target: { kind: 'run', runId: RUN },
+        reason: { kind: 'alreadyFinished' },
+    });
+});
+
+test('a run cancelled shows cancelled in its workflow’s runs list once GitHub took it, without waiting for the sync', async () => {
+    const world = worldWithRun();
+    const repository = world.repository(REPO);
+    repository.runs = repository.runs.map(run => ({ ...run, status: 'in_progress', conclusion: null }));
+    const context = setup(world, () => {
+        repository.runs = repository.runs.map(run => ({ ...run, status: 'completed', conclusion: 'cancelled' }));
+        return { status: 202, body: {} };
+    });
+    const { session, store } = context;
+    const history = session.container.resolve(WorkflowRunHistory);
+    const target = { nameWithOwner: REPO, workflowId: 1 };
+    history.open(target);
+    await read(context);
+    expect(history.getRuns(target).runs).toMatchObject([{ id: RUN, status: 'in_progress' }]);
+
+    store.cancel({ nameWithOwner: REPO, run: readRun(store) });
+    await session.clock.advance(0);
+
+    expect(history.getRuns(target).runs).toMatchObject([{ id: RUN, status: 'completed', conclusion: 'cancelled' }]);
+});
+
+test('a workflow disabled shows disabled at once; GitHub refusing it brings it back and says so', async () => {
+    const { session, store } = setup(worldWithRun(), () => ({
+        status: 403,
+        body: { message: 'Resource not accessible by integration' },
+    }));
+    session.container.resolve(TrackingStore).track({ repository: { nameWithOwner: REPO, id: 'R_web' } });
+    const workflows = session.container.resolve(WorkflowStore);
+    workflows.set(storedRun());
+    const state = () => workflows.get(REPO)?.workflows[0]?.workflow.state;
+    const answer = createPromise();
+    session.github.hold = answer.promise;
+
+    store.setEnabled({ nameWithOwner: REPO, workflowId: 1, enabled: false });
+
+    expect(state()).toBe('disabled_manually');
+    answer.resolve();
+    await session.clock.advance(0);
+    expect(state()).toBe('active');
+    expect(store.rerunFailure).toMatchObject({
+        action: 'disable',
+        target: { kind: 'workflow', workflowName: 'Stored name' },
+        reason: { kind: 'noPermission' },
+    });
+});
+
 /** Reads run 7 and its jobs, so a re-run has something to re-run. */
 async function read({ session, store }: ReturnType<typeof setup>) {
     store.getRun(REPO, RUN);
@@ -528,16 +649,22 @@ async function read({ session, store }: ReturnType<typeof setup>) {
     await session.clock.advance(0);
 }
 
+function readRun(store: WorkflowRunStore) {
+    const { run } = store.getRun(REPO, RUN);
+    expect(run).not.toBeNull();
+    return run!;
+}
+
 function rerunRequests(requests: readonly TestGraphQLRequest[]) {
     return requests.filter(({ operation }) => operation.endsWith('/rerun-failed-jobs'));
 }
 
-function setup(world: ActionsWorld, rerunAnswer: () => TestRestAnswer = () => ({ status: 201, body: {} })) {
+/** `actionAnswer` answers every re-run, cancel and workflow turned off or on. */
+function setup(world: ActionsWorld, actionAnswer: () => TestRestAnswer = () => ({ status: 201, body: {} })) {
     const session = createTestSession({
         login: uniqueLogin(),
         answer: () => undefined,
-        answerRest: request =>
-            request.operation.endsWith('/rerun-failed-jobs') ? rerunAnswer() : world.answerRest(request),
+        answerRest: request => (isAction(request.operation) ? actionAnswer() : world.answerRest(request)),
     });
     setIndexedDbPersistence(session.container);
     return { session, store: session.container.resolve(WorkflowRunStore) };
@@ -608,6 +735,14 @@ function storedRun() {
             },
         ],
     };
+}
+
+function isAction(operation: string) {
+    return /\/(rerun-failed-jobs|rerun|cancel|enable|disable)$/u.test(operation);
+}
+
+function actionRequests(requests: readonly TestGraphQLRequest[]) {
+    return requests.map(({ operation }) => operation).filter(isAction);
 }
 
 function runRequests(requests: readonly TestGraphQLRequest[]) {

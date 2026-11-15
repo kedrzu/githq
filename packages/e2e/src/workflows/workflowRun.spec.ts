@@ -693,6 +693,85 @@ test('W4k: without permission to re-run the command is not there', async ({ page
     await menu.open();
     await expect(menu.option(/Open on GitHub/u).first()).toBeVisible();
     await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
+    await expect(menu.option(/Re-run all jobs/u)).toHaveCount(0);
+    await expect(menu.option(/Re-run job/u)).toHaveCount(0);
+    await expect(menu.option(/Cancel run/u)).toHaveCount(0);
+});
+
+test('W40: ⌘K re-runs all the jobs or the one under the cursor, cancel dimmed once it finished, its link and its workflow; none on a key', async ({
+    page,
+    github,
+}) => {
+    const { world, path } = createRerunnableRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    const commands = [
+        /Re-run all jobs/u,
+        /Re-run job “build”/u,
+        /Cancel run/u,
+        /Copy link to the run/u,
+        /Open workflow/u,
+    ];
+    for (const name of commands) {
+        await expect(menu.option(name)).toHaveCount(1);
+        await expect(menu.option(name).locator('kbd')).toHaveCount(0);
+    }
+    await expect(menu.option(/Re-run all jobs/u)).toContainText('2 jobs');
+    await expect(menu.option(/Cancel run/u)).toContainText('it has finished');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).not.toContainText(/Re-run|Cancel run/u);
+    await page.keyboard.press('Escape');
+
+    await menu.run('Open workflow');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
+});
+
+test('W40: a running run is cancelled from ⌘K', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun(null);
+    world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.summary).toContainText('Running');
+
+    await new CommandMenuHarness(page).run('Cancel run');
+
+    await expect(screen.summary).toContainText(/cancelled/iu);
+    await expect(shell.toasts).toHaveCount(0);
+    expect(github.restCalls.filter(call => call.url.pathname.endsWith(`/runs/${runId}/cancel`))).toHaveLength(1);
+});
+
+test('W40, W4l: a cancel GitHub refuses as the run already finished is one toast saying so, the segment red', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun(null);
+    world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.summary).toContainText('Running');
+    // It ends on GitHub before the page asks again.
+    world.finishRun(SAMPLE_REPOSITORY, runId, 'success');
+
+    await new CommandMenuHarness(page).run('Cancel run');
+
+    await expect(shell.toasts).toHaveCount(1);
+    await expect(shell.toasts).toContainText(/wasn['’]t\scancelled:\sit\shas\salready\sfinished/u);
+    await expect(shell.toasts.getByRole('link', { name: /Open on GitHub/u })).toHaveCount(0);
+    await expect(shell.failedRerun).toHaveText(/Cancel\srefused\sby\sGitHub/u);
+    await expect(screen.summary).toContainText('Succeeded');
 });
 
 test('W4l: “Must have admin rights to Repository.” is one toast in its own words, the segment red until dismissed, the run as it was', async ({

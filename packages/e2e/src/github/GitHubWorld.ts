@@ -2027,7 +2027,11 @@ export class GitHubWorld {
             github,
             repository.nameWithOwner,
             () => ({ ...repository, tags: repository.tagNames }),
-            runId => answerRerun(repository, runId),
+            {
+                rerun: runId => answerRerun(repository, runId),
+                cancel: runId => answerCancel(repository, runId),
+                setEnabled: (workflowId, enabled) => answerSetEnabled(repository, workflowId, enabled),
+            },
         );
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
@@ -3424,6 +3428,34 @@ function answerRerun(repository: WorldRepository, runId: number): GitHubRestAnsw
         ),
     );
     return { status: 201, json: {} };
+}
+
+/**
+ * Cancels a run as GitHub does (`POST …/actions/runs/{id}/cancel`): one still going is cancelled; one that ended answers
+ * 409, in GitHub's words.
+ */
+function answerCancel(repository: WorldRepository, runId: number): GitHubRestAnswer {
+    const run = repository.runs.find(candidate => candidate.id === runId);
+    if (!run) {
+        return { status: 404, json: { message: 'Not Found' } };
+    }
+
+    if (run.status === 'completed') {
+        return { status: 409, json: { message: 'Cannot cancel a workflow run that is completed.' } };
+    }
+
+    repository.runs = repository.runs.map(candidate =>
+        candidate.id === runId ? { ...candidate, status: 'completed', conclusion: 'cancelled' } : candidate,
+    );
+    return { status: 202, json: {} };
+}
+
+/** Turns a workflow on or off as GitHub does (`PUT …/actions/workflows/{id}/enable`, `/disable`). */
+function answerSetEnabled(repository: WorldRepository, workflowId: number, enabled: boolean): GitHubRestAnswer {
+    repository.workflows = repository.workflows.map(workflow =>
+        workflow.id === workflowId ? { ...workflow, state: enabled ? 'active' : 'disabled_manually' } : workflow,
+    );
+    return { status: 204 };
 }
 
 /** A ref's target as `CommitRefTargetFields` gives it. */

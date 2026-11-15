@@ -23,9 +23,11 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane, opensAtOverview } from './buildWorkflowRun.js';
 import { getRefKind } from './utils/getRefKind.js';
+import { getRepositoryDispatchBlock } from './utils/getRepositoryDispatchBlock.js';
 import { getWorkflowFile } from './utils/getWorkflowFile.js';
 import { parseLogLineHash } from './utils/logLineHash.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
+import type { WorkflowRunTarget } from './WorkflowRunStore.js';
 import WorkflowRunView from './WorkflowRunView.vue';
 import { WorkflowStore } from './WorkflowStore.js';
 import type { WorkflowRowRef } from './WorkflowTypes.js';
@@ -72,6 +74,8 @@ const model = computed(() =>
   }),
 );
 const canRerun = computed(() => canRerunFailedJobs(model.value, repositories.get(nameWithOwner)));
+/** Re-running and cancelling go by the same gate as re-running the failed jobs: write access, not archived. */
+const canChangeRuns = computed(() => getRepositoryDispatchBlock(repositories.get(nameWithOwner)) === null);
 // Only with the columns shown: a run GitHub no longer shows reads no log.
 const logPane = computed(() =>
   getWorkflowLogPane({
@@ -233,6 +237,23 @@ function retry() {
   }
 }
 
+function actOnRun(act: (target: WorkflowRunTarget) => void) {
+  const { run } = model.value;
+  if (run) {
+    act({ nameWithOwner, run });
+  }
+}
+
+function rerunJob(job: GitHubWorkflowJob) {
+  actOnRun(target => store.rerunJob({ ...target, jobId: job.id }));
+}
+
+function openWorkflow() {
+  if (workflowPage.value) {
+    void router.push(workflowPage.value);
+  }
+}
+
 function close() {
   goBack(router, workflowPage.value ?? getRepositoryPath(nameWithOwner, 'workflows'));
 }
@@ -251,10 +272,15 @@ function close() {
     :back-to-workflow="backToWorkflow"
     :still-broken="stillBroken"
     :can-rerun="canRerun"
+    :can-change-runs="canChangeRuns"
     :page-width="tracking.itemPageWidth"
     :now="now"
     @select-job="selectJob"
     @rerun="store.rerun(nameWithOwner, runId)"
+    @rerun-all="actOnRun(store.rerunAll)"
+    @rerun-job="rerunJob"
+    @cancel="actOnRun(store.cancel)"
+    @open-workflow="openWorkflow"
     @retry="retry"
     @open-on-git-hub="browser.openInNewTab($event)"
     @close="close"

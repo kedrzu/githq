@@ -65,10 +65,14 @@ const props = withDefaults(
     escapeTo?: 'panel' | 'list';
     /** "Run workflow…" is offered for a workflow whose file has `workflow_dispatch`. */
     offerRun?: boolean;
+    /** The command menu offers "Disable workflow" or "Enable workflow", which the details say. */
+    offerToggle?: boolean;
+    /** The user may re-run and cancel the repository's runs: the command menu offers it for the run under the cursor. */
+    canChangeRuns?: boolean;
     /** Epoch ms the ages are counted to. */
     now: number;
   }>(),
-  { escapeTo: 'list', offerRun: false },
+  { escapeTo: 'list', offerRun: false, offerToggle: false, canChangeRuns: false },
 );
 
 /** The run the user moved to or opened among the runs, by its row key: kept by the caller across visits. */
@@ -84,6 +88,8 @@ const emit = defineEmits<{
   readMore: [];
   groupBy: [groupBy: WorkflowRunsGroupBy];
   runWorkflow: [];
+  rerunAll: [run: GitHubWorkflowRun];
+  cancel: [run: GitHubWorkflowRun];
 }>();
 
 /** The details' column: 400 px by default, dragged from 320 to 640 px. */
@@ -309,6 +315,7 @@ interface Standing {
               :details="details"
               :now="now"
               :offer-run="canRun"
+              :offer-toggle="offerToggle"
             />
           </div>
         </template>
@@ -362,10 +369,13 @@ interface Standing {
             :now="now"
             :call-only="callOnly"
             :keys="page"
+            :can-change-runs="canChangeRuns"
             @filter="emit('filter', $event)"
             @group-by="emit('groupBy', $event)"
             @read-more="emit('readMore')"
             @open-run="emit('openRun', $event)"
+            @rerun-all="emit('rerunAll', $event)"
+            @cancel="emit('cancel', $event)"
           />
           <div
             v-else
@@ -375,6 +385,7 @@ interface Standing {
               :details="details"
               :now="now"
               :offer-run="canRun"
+              :offer-toggle="offerToggle"
             />
           </div>
         </div>

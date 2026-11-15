@@ -6,6 +6,11 @@ import { listRunJobs } from '@githq/github/rest/listRunJobs.js';
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import { readJobLog } from '@githq/github/rest/readJobLog.js';
 import { rerunFailedJobs } from '@githq/github/rest/rerunFailedJobs.js';
+import { rerunWorkflowJob } from '@githq/github/rest/rerunWorkflowJob.js';
+import { rerunWorkflowRun } from '@githq/github/rest/rerunWorkflowRun.js';
+import { cancelWorkflowRun } from '@githq/github/rest/cancelWorkflowRun.js';
+import { setWorkflowEnabled } from '@githq/github/rest/setWorkflowEnabled.js';
+import type { GitHubWorkflow } from '@githq/github/rest/listWorkflows.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -27,9 +32,10 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { getJobMark } from './utils/getJobMark.js';
 import { JobLogRefusal } from './utils/JobLogRefusal.js';
 import { getRerunReason } from './utils/getRerunReason.js';
-import type { WorkflowRerunReason } from './utils/getRerunReason.js';
+import type { WorkflowAction, WorkflowRerunReason } from './utils/getRerunReason.js';
 import { parseJobLog } from './utils/parseJobLog.js';
 import type { ParsedJobLog } from './utils/parseJobLog.js';
+import { WorkflowRunHistory } from './WorkflowRunHistory.js';
 import { WorkflowStore } from './WorkflowStore.js';
 import type { RepositoryWorkflows } from './WorkflowTypes.js';
 
@@ -81,14 +87,31 @@ export type WorkflowLogState =
     /** The app turned it down, GitHub having no part in it. */
     | { readonly status: 'refused' };
 
-/** A run's failed jobs that did not re-run, and why: its toast and the status bar's segment (W4l). */
+/** What a {@link WorkflowAction} was asked of: a run, or a workflow. */
+export type WorkflowActionTarget =
+    | {
+          readonly kind: 'run';
+          readonly runId: number;
+          /** The run's workflow as GitHub names it; `null` when it does not. */
+          readonly workflowName: string | null;
+          readonly runNumber: number;
+      }
+    | {
+          readonly kind: 'workflow';
+          readonly workflowName: string;
+          /** The workflow on GitHub. */
+          readonly url: string;
+      };
+
+/**
+ * What GitHub did not do to a run or a workflow (a re-run, a cancel, turning it off or on), and why: its toast and the
+ * status bar's segment (W4l).
+ */
 export interface WorkflowRerunFailure {
     /** `owner/name`. */
     readonly nameWithOwner: string;
-    readonly runId: number;
-    /** The run's workflow as GitHub names it; `null` when it does not. */
-    readonly workflowName: string | null;
-    readonly runNumber: number;
+    readonly action: WorkflowAction;
+    readonly target: WorkflowActionTarget;
     readonly reason: WorkflowRerunReason;
     /** Its toast is showing. */
     readonly toast: boolean;
@@ -96,12 +119,35 @@ export interface WorkflowRerunFailure {
     readonly at: number;
 }
 
+/** A run to act on, as the caller shows it: maybe one of a workflow's older runs, which the store never read. */
+export interface WorkflowRunTarget {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    readonly run: GitHubWorkflowRunDetail;
+}
+
+/** A job of a run to re-run. */
+export interface WorkflowJobTarget extends WorkflowRunTarget {
+    readonly jobId: number;
+}
+
+/** A workflow to turn off or on. */
+export interface WorkflowEnableTarget {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    readonly workflowId: number;
+    readonly enabled: boolean;
+}
+
 /** A re-run asked for, drawn over what GitHub's reads say until they show it (W4j). */
 interface RunRerun {
     /** The attempt the run was on when it was asked. */
     readonly attempt: number;
-    /** The failed jobs it re-runs. */
-    readonly jobIds: ReadonlySet<number>;
+    /**
+     * The jobs it re-runs, each with when it had finished as it was asked: one GitHub's read shows finished then is drawn
+     * running; once it shows it running again, or finished at another time, GitHub's word stands.
+     */
+    readonly jobs: ReadonlyMap<number, string | null>;
     /** ISO. */
     readonly startedAt: string;
 }
@@ -130,9 +176,9 @@ interface RunSession {
     readonly jobs: Map<string, ConditionalRead<readonly GitHubWorkflowJob[]>>;
     readonly logs: LruCache<string, ShallowRef<WorkflowLogState>>;
     readonly reruns: ShallowRef<ReadonlyMap<string, RunRerun>>;
-    /** How many re-runs GitHub has not answered yet. */
-    readonly rerunsOnTheirWay: ShallowRef<number>;
-    /** The latest re-run that failed, until dismissed: one at a time. */
+    /** How many re-runs, cancels and workflows turned off or on GitHub has not answered yet. */
+    readonly onTheirWay: ShallowRef<number>;
+    /** The latest of them that failed, until dismissed: one at a time. */
     readonly rerunFailure: ShallowRef<WorkflowRerunFailure | null>;
 }
 
@@ -165,20 +211,34 @@ interface OpenParams<T> {
     readonly load: ConditionalRead<T>['load'];
 }
 
-/** A re-run being sent, for whom and what shows meanwhile. */
-interface SendRerunParams {
-    readonly current: RunSession;
-    readonly run: GitHubWorkflowRunDetail;
-    readonly nameWithOwner: string;
-    readonly key: string;
-    readonly layer: RunRerun;
+/** A re-run to start: of which run, which jobs, and how GitHub is asked. */
+interface StartRerunParams extends WorkflowRunTarget {
+    readonly action: WorkflowAction;
+    readonly jobs: readonly GitHubWorkflowJob[];
+    readonly request: (rest: GitHubRestRequester) => Promise<void>;
 }
 
-/** A re-run's refusal to keep, for whom and of which run. */
-interface PutRerunFailureParams {
+/** An action asked of GitHub, and what to do with its answer. */
+interface SendParams extends BeginParams {
+    readonly request: () => Promise<void>;
+    /** GitHub took it. */
+    readonly sent?: () => void;
+    /** GitHub did not: takes back what showed it done. */
+    readonly undo?: () => void;
+    /** Whatever the answer, once it came. */
+    readonly settled?: () => void;
+}
+
+/** An action about to be asked of GitHub, for whom and of what. */
+interface BeginParams {
     readonly current: RunSession;
-    readonly run: GitHubWorkflowRunDetail;
     readonly nameWithOwner: string;
+    readonly action: WorkflowAction;
+    readonly target: WorkflowActionTarget;
+}
+
+/** An action's refusal to keep. */
+interface PutFailureParams extends BeginParams {
     readonly reason: WorkflowRerunReason;
 }
 
@@ -199,9 +259,10 @@ const LOADING: WorkflowLogState = { status: 'loading' };
  * Each `get…` starts the read the first time it is asked, so it may be called from a `computed`: what it writes is its
  * own new state, which nothing watches yet.
  *
- * Re-running a run's failed jobs (actions D10, W4j, W4l) starts here too, and shows at once: the run and its failed jobs
- * read as running, until GitHub's reads say so themselves. GitHub refusing it takes that back and is said by a toast and
- * the status bar's segment of its own: a re-run is no item's edit, so it stays out of the `EditQueue`.
+ * Re-running a run's failed jobs, all of them or one (actions D10, W4j, W4l) starts here too, and shows at once: the run
+ * and the jobs read as running, until GitHub's reads say so themselves. GitHub refusing it takes that back and is said
+ * by a toast and the status bar's segment of its own: a re-run is no item's edit, so it stays out of the `EditQueue`.
+ * Cancelling a run and turning a workflow off or on go the same way.
  */
 export type WorkflowRunStore = Resolved<typeof WorkflowRunStore>;
 export const WorkflowRunStore = defineService({
@@ -209,13 +270,14 @@ export const WorkflowRunStore = defineService({
     deps: {
         accounts: AccountSession,
         workflows: WorkflowStore,
+        history: WorkflowRunHistory,
         createRest: GitHubRestFactory,
         rateLimits: GitHubRateLimitStore,
         holds: ReloadHolds,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, workflows, createRest, rateLimits, holds, clock, logger }) {
+    setup({ accounts, workflows, history, createRest, rateLimits, holds, clock, logger }) {
         const sessionRef = shallowRef<RunSession | null>(null);
         const pageFreshnessRef = shallowRef<Freshness | null>(null);
 
@@ -228,7 +290,7 @@ export const WorkflowRunStore = defineService({
                       jobs: new Map(),
                       logs: createLruCache({ maxSize: KEPT_LOGS }),
                       reruns: shallowRef(new Map()),
-                      rerunsOnTheirWay: shallowRef(0),
+                      onTheirWay: shallowRef(0),
                       rerunFailure: shallowRef(null),
                   }
                 : null;
@@ -236,7 +298,7 @@ export const WorkflowRunStore = defineService({
         // A reload would lose the answer, or a failure not dismissed yet: only this tab's memory holds them.
         holds.holdWhile(() => {
             const current = sessionRef.value;
-            return current !== null && (current.rerunsOnTheirWay.value > 0 || current.rerunFailure.value !== null);
+            return current !== null && (current.onTheirWay.value > 0 || current.rerunFailure.value !== null);
         });
 
         return {
@@ -252,6 +314,10 @@ export const WorkflowRunStore = defineService({
             setRerunToast,
             dismissRerunFailure,
             rerun,
+            rerunAll,
+            rerunJob,
+            cancel,
+            setEnabled,
             getRun,
             getJobs,
             refresh,
@@ -285,73 +351,214 @@ export const WorkflowRunStore = defineService({
          * is asked for again: a refusal may say someone else re-ran it, and a failure says nothing of what got there.
          */
         function rerun(nameWithOwner: string, runId: number) {
-            const current = sessionRef.value;
             const { run } = getRun(nameWithOwner, runId);
-            const jobIds = getJobs(nameWithOwner, runId)
-                .jobs.filter(job => getJobMark(job) === 'failed')
-                .map(job => job.id);
-            if (!current || run?.status !== 'completed' || jobIds.length === 0) {
+            const jobs = getJobs(nameWithOwner, runId).jobs.filter(job => getJobMark(job) === 'failed');
+            if (run && jobs.length > 0) {
+                startRerun({
+                    nameWithOwner,
+                    run,
+                    action: 'rerunFailed',
+                    jobs,
+                    request: rest => rerunFailedJobs(rest, { ...parseRepositoryName(nameWithOwner), runId }),
+                });
+            }
+        }
+
+        /** Re-runs every job of a run that finished, as {@link rerun} does its failed ones. */
+        function rerunAll({ nameWithOwner, run }: WorkflowRunTarget) {
+            startRerun({
+                nameWithOwner,
+                run,
+                action: 'rerunAll',
+                jobs: getKnownJobs(nameWithOwner, run.id),
+                request: rest => rerunWorkflowRun(rest, { nameWithOwner, runId: run.id }),
+            });
+        }
+
+        /** Re-runs one finished job of a run that finished, as {@link rerun} does its failed ones. */
+        function rerunJob({ nameWithOwner, run, jobId }: WorkflowJobTarget) {
+            const job = getKnownJobs(nameWithOwner, run.id).find(candidate => candidate.id === jobId);
+            if (job?.status === 'completed') {
+                startRerun({
+                    nameWithOwner,
+                    run,
+                    action: 'rerunJob',
+                    jobs: [job],
+                    request: rest => rerunWorkflowJob(rest, { nameWithOwner, jobId }),
+                });
+            }
+        }
+
+        /**
+         * Asks GitHub to cancel a run still going. GitHub cancels on its own time, so the run shows as GitHub's reads say,
+         * asked again once it answers; a refusal is said as a re-run's is.
+         */
+        function cancel({ nameWithOwner, run }: WorkflowRunTarget) {
+            const current = sessionRef.value;
+            if (!current || getShownRun(current, nameWithOwner, run).status === 'completed') {
                 return;
             }
 
-            current.rerunFailure.value = null;
-            const pause = getAllowancePause(rateLimits.get('core'), clock.now());
-            if (pause) {
-                putRerunFailure({ current, run, nameWithOwner, reason: { kind: 'allowance', until: pause.until } });
+            const target = getRunTarget(run);
+            if (begin({ current, nameWithOwner, action: 'cancel', target })) {
+                void send({
+                    current,
+                    nameWithOwner,
+                    action: 'cancel',
+                    target,
+                    request: () => cancelWorkflowRun(current.rest, { nameWithOwner, runId: run.id }),
+                    sent: () => history.refreshRuns({ nameWithOwner, workflowId: run.workflowId }),
+                    settled: () => refresh(nameWithOwner, run.id),
+                });
+            }
+        }
+
+        /**
+         * Turns a workflow off or on, its state showing that at once in what the sync keeps, until the sync's next read
+         * of the repository's workflows says it itself. A refusal takes it back and is said as a re-run's is.
+         */
+        function setEnabled({ nameWithOwner, workflowId, enabled }: WorkflowEnableTarget) {
+            const current = sessionRef.value;
+            const before = workflows
+                .get(nameWithOwner)
+                ?.workflows.find(entry => entry.workflow.id === workflowId)?.workflow;
+            if (!current || !before || (before.state === 'active') === enabled) {
                 return;
             }
 
-            const key = getKey(nameWithOwner, runId);
+            const action = enabled ? 'enable' : 'disable';
+            const target: WorkflowActionTarget = { kind: 'workflow', workflowName: before.name, url: before.htmlUrl };
+            if (!begin({ current, nameWithOwner, action, target })) {
+                return;
+            }
+
+            const after: GitHubWorkflow = { ...before, state: enabled ? 'active' : 'disabled_manually' };
+            putWorkflow(nameWithOwner, after);
+            void send({
+                current,
+                nameWithOwner,
+                action,
+                target,
+                request: () => setWorkflowEnabled(current.rest, { nameWithOwner, workflowId, enabled }),
+                // Unless a read of GitHub's took its place meanwhile, which says how it stands.
+                undo: () => {
+                    const shown = workflows
+                        .get(nameWithOwner)
+                        ?.workflows.find(entry => entry.workflow.id === workflowId);
+                    if (shown?.workflow === after) {
+                        putWorkflow(nameWithOwner, before);
+                    }
+                },
+            });
+        }
+
+        /** Shows the run and its jobs running at once, and asks GitHub; nothing for a run that goes, re-run already. */
+        function startRerun({ nameWithOwner, run, action, jobs, request }: StartRerunParams) {
+            const current = sessionRef.value;
+            if (!current || getShownRun(current, nameWithOwner, run).status !== 'completed') {
+                return;
+            }
+
+            const target = getRunTarget(run);
+            if (!begin({ current, nameWithOwner, action, target })) {
+                return;
+            }
+
+            const key = getKey(nameWithOwner, run.id);
             const layer: RunRerun = {
                 attempt: run.runAttempt,
-                jobIds: new Set(jobIds),
+                jobs: new Map(jobs.map(job => [job.id, job.completedAt])),
                 startedAt: new Date(clock.now()).toISOString(),
             };
             current.reruns.value = new Map(current.reruns.value).set(key, layer);
-            current.rerunsOnTheirWay.value += 1;
-            void sendRerun({ current, run, nameWithOwner, key, layer });
+            void send({
+                current,
+                nameWithOwner,
+                action,
+                target,
+                request: () => request(current.rest),
+                sent: () => {
+                    // A job re-run under the same id has another log coming.
+                    for (const jobId of layer.jobs.keys()) {
+                        current.logs.delete(getKey(nameWithOwner, jobId));
+                    }
+
+                    clock.schedule(() => {
+                        dropRerun({ current, key, layer });
+                    }, RERUN_LANDING_MS);
+                    // The workflow's runs list, when read, shows the run going again.
+                    history.refreshRuns({ nameWithOwner, workflowId: run.workflowId });
+                },
+                undo: () => dropRerun({ current, key, layer }),
+                settled: () => refresh(nameWithOwner, run.id),
+            });
         }
 
-        async function sendRerun({ current, run, nameWithOwner, key, layer }: SendRerunParams) {
+        /**
+         * Clears the last failure and counts the action on its way; with the allowance used up it is not sent, and says
+         * so instead.
+         */
+        function begin(params: BeginParams) {
+            params.current.rerunFailure.value = null;
+            const pause = getAllowancePause(rateLimits.get('core'), clock.now());
+            if (pause) {
+                putFailure({ ...params, reason: { kind: 'allowance', until: pause.until } });
+                return false;
+            }
+
+            params.current.onTheirWay.value += 1;
+            return true;
+        }
+
+        async function send({ current, nameWithOwner, action, target, request, sent, undo, settled }: SendParams) {
             try {
-                await rerunFailedJobs(current.rest, { ...parseRepositoryName(nameWithOwner), runId: run.id });
+                await request();
                 if (!isCurrent(current)) {
                     return;
                 }
 
-                // A job re-run under the same id has another log coming.
-                for (const jobId of layer.jobIds) {
-                    current.logs.delete(getKey(nameWithOwner, jobId));
-                }
-
-                clock.schedule(() => {
-                    dropRerun({ current, key, layer });
-                }, RERUN_LANDING_MS);
+                sent?.();
             } catch (error) {
                 if (!isCurrent(current)) {
                     return;
                 }
 
-                logger.warn('GitHub did not re-run a run’s failed jobs', { error });
-                dropRerun({ current, key, layer });
-                const reason = getRerunReason({ error, limit: rateLimits.get('core'), now: clock.now() });
-                putRerunFailure({ current, run, nameWithOwner, reason });
+                logger.warn('GitHub did not do what was asked of a workflow or its run', { error, action });
+                undo?.();
+                const reason = getRerunReason({ error, action, limit: rateLimits.get('core'), now: clock.now() });
+                putFailure({ current, nameWithOwner, action, target, reason });
             }
 
-            current.rerunsOnTheirWay.value -= 1;
-            refresh(nameWithOwner, run.id);
+            current.onTheirWay.value -= 1;
+            settled?.();
         }
 
-        function putRerunFailure({ current, run, nameWithOwner, reason }: PutRerunFailureParams) {
-            current.rerunFailure.value = {
-                nameWithOwner,
-                runId: run.id,
-                workflowName: run.workflowName,
-                runNumber: run.runNumber,
-                reason,
-                toast: true,
-                at: clock.now(),
-            };
+        function putFailure({ current, nameWithOwner, action, target, reason }: PutFailureParams) {
+            current.rerunFailure.value = { nameWithOwner, action, target, reason, toast: true, at: clock.now() };
+        }
+
+        /** The run as shown: running from the moment it is re-run. */
+        function getShownRun(current: RunSession, nameWithOwner: string, run: GitHubWorkflowRunDetail) {
+            const layer = current.reruns.value.get(getKey(nameWithOwner, run.id));
+            return layer ? withRerun(run, layer) : run;
+        }
+
+        /** The run's jobs as last read, without asking GitHub for them: one of a workflow's older runs has none read. */
+        function getKnownJobs(nameWithOwner: string, runId: number): readonly GitHubWorkflowJob[] {
+            return sessionRef.value?.jobs.get(getKey(nameWithOwner, runId))?.state.value.value ?? [];
+        }
+
+        /** Puts the workflow in place of its namesake in what the sync keeps of its repository. */
+        function putWorkflow(nameWithOwner: string, workflow: GitHubWorkflow) {
+            const stored = workflows.get(nameWithOwner);
+            if (stored) {
+                workflows.set({
+                    ...stored,
+                    workflows: stored.workflows.map(entry =>
+                        entry.workflow.id === workflow.id ? { ...entry, workflow } : entry,
+                    ),
+                });
+            }
         }
 
         /** The run as the sync stored it, at once, then as read; running from the moment it is re-run. Reactive. */
@@ -589,10 +796,10 @@ function withRerun(run: GitHubWorkflowRunDetail, layer: RunRerun): GitHubWorkflo
     };
 }
 
-/** The failed jobs re-run as running from the start, those GitHub's read still has failed. */
+/** The jobs re-run as running from the start, those GitHub's read still has finished as they were. */
 function withRerunJobs(jobs: readonly GitHubWorkflowJob[], layer: RunRerun): readonly GitHubWorkflowJob[] {
     return jobs.map(job =>
-        layer.jobIds.has(job.id) && getJobMark(job) === 'failed'
+        layer.jobs.has(job.id) && job.status === 'completed' && job.completedAt === layer.jobs.get(job.id)
             ? {
                   ...job,
                   status: 'in_progress',
@@ -632,6 +839,10 @@ function findStoredRun(stored: RepositoryWorkflows | undefined, runId: number): 
     }
 
     return null;
+}
+
+function getRunTarget(run: GitHubWorkflowRunDetail): WorkflowActionTarget {
+    return { kind: 'run', runId: run.id, workflowName: run.workflowName, runNumber: run.runNumber };
 }
 
 function getKey(nameWithOwner: string, id: number) {

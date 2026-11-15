@@ -1,4 +1,4 @@
-<!-- A workflow's run on a page of its own (actions W4a, W34): the toolbar across the page — the repository, the workflow (a link to its page, when known) and the run's number, GitHub (`O`) and back (`Esc`) —, then in a centred box of the item page's width (D9, the same setting, its edges dragged), what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k). -->
+<!-- A workflow's run on a page of its own (actions W4a, W34): the toolbar across the page — the repository, the workflow (a link to its page, when known) and the run's number, GitHub (`O`) and back (`Esc`) —, then in a centred box of the item page's width (D9, the same setting, its edges dragged), what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
@@ -7,14 +7,17 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ChevronRight,
   CircleDot,
+  CircleStop,
   FileX,
   Ghost,
   Github,
   Hourglass,
+  Link,
   PackageOpen,
   RefreshCw,
   RotateCw,
   Unplug,
+  Workflow,
   X,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -68,6 +71,11 @@ const props = defineProps<{
   stillBroken: boolean;
   /** "Re-run failed jobs" is offered (`canRerunFailedJobs`). */
   canRerun?: boolean;
+  /**
+   * The user may re-run and cancel the repository's runs, as they may re-run the failed jobs (`canChangeRuns`): "Re-run
+   * all jobs", "Re-run job" and "Cancel run" are offered.
+   */
+  canChangeRuns?: boolean;
   /** Epoch ms the ages are counted to. */
   now: number;
 }>();
@@ -83,6 +91,14 @@ const emit = defineEmits<{
   close: [];
   /** "Re-run failed jobs" in ⌘K. */
   rerun: [];
+  /** "Re-run all jobs" in ⌘K. */
+  rerunAll: [];
+  /** "Re-run job" in ⌘K: the job under the cursor. */
+  rerunJob: [job: GitHubWorkflowJob];
+  /** "Cancel run" in ⌘K. */
+  cancel: [];
+  /** "Open workflow" in ⌘K: the caller goes to the run's workflow's page. */
+  openWorkflow: [];
   /** The user dragged the box's edges to this maximum: the caller keeps it. */
   resizePage: [width: MaxWidth];
 }>();
@@ -144,6 +160,10 @@ const gitHubUrl = computed(() =>
     }),
   ),
 );
+const runUrl = computed(() =>
+  getGitHubUrl(getWorkflowRunPath({ nameWithOwner: props.nameWithOwner, runId: props.runId })),
+);
+const finished = computed(() => props.model.run?.status === 'completed');
 const atOverview = computed(() => props.model.body.kind === 'overview');
 const showsColumns = computed(() => {
   const { kind } = props.model.body;
@@ -234,6 +254,38 @@ useCommands(() => [
     when: () => props.canRerun,
     run: () => emit('rerun'),
   },
+  // None of these have a key either (D10).
+  {
+    id: 'workflowRun.rerunAllJobs',
+    title: t(l.rerunAllJobs),
+    section: 'view',
+    icon: RefreshCw,
+    detail: props.model.jobs.length > 0 ? t(l.jobCount, { count: props.model.jobs.length }) : undefined,
+    when: () => props.canChangeRuns && finished.value,
+    run: () => emit('rerunAll'),
+  },
+  {
+    id: 'workflowRun.rerunJob',
+    title: t(l.rerunJob, { job: markedJob.value?.name ?? '' }),
+    section: 'view',
+    icon: RefreshCw,
+    detail: t(l.rerunJobDetail),
+    when: () => props.canChangeRuns && finished.value && markedJob.value?.status === 'completed',
+    run: () => {
+      if (markedJob.value) {
+        emit('rerunJob', markedJob.value);
+      }
+    },
+  },
+  {
+    id: 'workflowRun.cancel',
+    title: t(l.cancelRun),
+    section: 'view',
+    icon: CircleStop,
+    unavailable: finished.value ? t(l.cancelFinished) : undefined,
+    when: () => props.canChangeRuns && props.model.run !== null,
+    run: () => emit('cancel'),
+  },
   {
     id: 'workflowRun.nextJob',
     title: t(l.nextJob),
@@ -278,6 +330,22 @@ useCommands(() => [
     key: 'O',
     icon: Github,
     run: () => emit('openOnGitHub', gitHubUrl.value),
+  },
+  {
+    id: 'workflowRun.copyLink',
+    title: t(l.copyLink),
+    section: 'view',
+    icon: Link,
+    run: () => void navigator.clipboard.writeText(runUrl.value),
+  },
+  {
+    id: 'workflowRun.openWorkflow',
+    title: t(l.openWorkflow),
+    section: 'view',
+    icon: Workflow,
+    detail: props.model.run?.workflowName ?? undefined,
+    when: () => Boolean(props.workflowPage),
+    run: () => emit('openWorkflow'),
   },
   {
     id: 'workflowRun.back',
