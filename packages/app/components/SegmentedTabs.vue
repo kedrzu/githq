@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `variant="strip"`: pills a finger can tap, in a row that scrolls sideways when they don't fit (a phone's filters of my work, mobile D23). `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -31,8 +31,11 @@ const props = withDefaults(
     options: readonly SegmentedTabsOption<T>[];
     /** The group's accessible name ("Filters"). */
     label: string;
-    /** `plain`: text tabs, the chosen one raised (filters); `boxed`: icons in an outlined box (layout). */
-    variant?: 'boxed' | 'plain';
+    /**
+     * `plain`: text tabs, the chosen one raised (filters); `boxed`: icons in an outlined box (layout); `strip`: outlined
+     * pills, the chosen one in the accent, scrolling sideways when they don't fit (a phone's filters).
+     */
+    variant?: 'boxed' | 'plain' | 'strip';
     /** The options wrap onto more lines when they don't fit (a long choice inline in the display options). */
     wrap?: boolean;
     /** Each option's key shown dim after its label (the merge panel's methods, "Squash 1"). */
@@ -134,6 +137,15 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   gap: $spacing-4;
 }
 
+// Scrolls rather than squeezing or wrapping its pills; the padding keeps their focus ring inside what it clips.
+.segmentedTabs_strip {
+  gap: $spacing-8;
+  max-width: 100%;
+  padding: $spacing-4;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
 .segmentedTabs_boxed {
   gap: $spacing-2;
   padding: $spacing-2;
@@ -188,6 +200,21 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     border-radius: $radius-sm;
   }
 
+  .segmentedTabs_strip & {
+    flex: none;
+    gap: $spacing-6;
+    height: $phone-pill-height;
+    padding: 0 $spacing-12;
+    font-size: $font-size-lg;
+    border-color: $color-border-2;
+    border-radius: calc(#{$phone-pill-height} / 2);
+
+    &[data-state='on'] {
+      background: $color-sel;
+      border-color: $color-accent;
+    }
+  }
+
   .segmentedTabs_vertical & {
     @include nav-row;
 
@@ -232,6 +259,10 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   font-family: $font-family-mono;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+
+  .segmentedTabs_strip & {
+    font-size: $font-size-xs;
+  }
 
   .segmentedTabs_vertical & {
     @include nav-row-count;

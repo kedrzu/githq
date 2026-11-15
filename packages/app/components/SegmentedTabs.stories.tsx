@@ -13,7 +13,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** My work's filter, the merge panel's methods with their keys, and the list's layout, the board not built yet. */
+/** My work's filter, on a phone as a strip too, the merge panel's methods with their keys, and the list's layout, the board not built yet. */
 export const Gallery: Story = {
     render: () =>
         defineComponent({
@@ -37,6 +37,21 @@ export const Gallery: Story = {
                                 ]}
                             />
                             <span tid="filter">Filter: {filter.value}</span>
+                        </StorySection>
+                        <StorySection title="Strip — a phone's filters, scrolling sideways in a narrow room">
+                            <div style={{ width: '260px' }}>
+                                <SegmentedTabs
+                                    modelValue={filter.value}
+                                    onUpdate:modelValue={value => (filter.value = value)}
+                                    label="Strip"
+                                    variant="strip"
+                                    options={[
+                                        { value: 'all', label: 'All', count: 13 },
+                                        { value: 'needsMe', label: 'Needs me', count: 8 },
+                                        { value: 'waitingOnOthers', label: 'Waiting on others', count: 3 },
+                                    ]}
+                                />
+                            </div>
                         </StorySection>
                         <StorySection title="Plain — keys shown">
                             <SegmentedTabs

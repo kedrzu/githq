@@ -254,6 +254,9 @@ $phone-icon-size: 22px;
 $phone-top-bar-height: 48px;
 // The strip under it while something holds the whole app back (mobile D12).
 $phone-strip-height: 36px;
+// A pill of a phone's strip of filters (mobile D23): short of a finger's 44 px, which would make the strip a row's height,
+// and above WCAG's 24 px target.
+$phone-pill-height: 32px;
 $phone-places-room: 56px;
 // The command line floating over a phone screen's bottom (mobile D17), its gap to the screen's edges, and the room it
 // takes there — what the screens' scroll leaves at its end and the toasts sit above. The home indicator's inset where

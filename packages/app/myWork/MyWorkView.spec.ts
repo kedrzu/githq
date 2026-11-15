@@ -40,6 +40,43 @@ test('K4: nothing on the plate names what was checked: the tracked repositories,
     await expect.element(detail).toHaveTextContent(/across your 4 tracked repositories\.$/);
 });
 
+test('on a phone the filters sit in a strip, each with how many rows it shows; picking one filters the list', async () => {
+    const view = mount(D1_ITEMS);
+    // The desktop's filters keep their names alone.
+    await expect.element(page.getByRole('button', { name: 'Needs me', exact: true })).toBeVisible();
+
+    view.phone.value = true;
+    const needsMe = sampleMyWork(D1_ITEMS, D1_MEMBERSHIP, 'needsMe').counts.total;
+    const waiting = sampleMyWork(D1_ITEMS, D1_MEMBERSHIP, 'waitingOnOthers').counts.total;
+    const total = sampleMyWork(D1_ITEMS, D1_MEMBERSHIP, 'all').counts.total;
+    const all = page.getByRole('button', { name: `All ${total}`, exact: true });
+    await expect.element(all).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(page.getByRole('button', { name: `Waiting on others ${waiting}`, exact: true })).toBeVisible();
+    // A mention alone needs nothing of the user.
+    const mention = page.getByText('Offline queue for booking edits');
+    await expect.element(mention).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: `Needs me ${needsMe}`, exact: true }));
+    expect(view.filter.value).toBe('needsMe');
+    await expect.element(mention).not.toBeInTheDocument();
+});
+
+test('on a phone a board is drawn as a list, the layout kept as it is; the board comes back once the window widens', async () => {
+    const view = mount(D1_ITEMS, D1_MEMBERSHIP, { layout: 'board' });
+    // A list's group heads collapse it; a board's column heads don't.
+    const groupHead = page.getByRole('button', { name: /^Review\srequested\s\d+$/u });
+    await expect.element(page.getByRole('region', { name: 'Review requested' })).toBeVisible();
+    await expect.element(groupHead).not.toBeInTheDocument();
+
+    view.phone.value = true;
+    await expect.element(groupHead).toHaveAttribute('aria-expanded', 'true');
+
+    view.phone.value = false;
+    await expect.element(groupHead).not.toBeInTheDocument();
+    await expect.element(page.getByRole('region', { name: 'Review requested' })).toBeVisible();
+    expect(view.optionChanges).toEqual([]);
+});
+
 test('j/k move the selection; a sync that reorders the list keeps it on its item, one that removes the item moves it to the neighbour', async () => {
     const view = mount(D1_ITEMS);
 
@@ -509,12 +546,14 @@ function mount(
     const checkedIds = ref<readonly string[]>([]);
     const openedId = ref<string | null>(null);
     const trackedRepositories = shallowRef<readonly string[]>([]);
+    const phone = ref(false);
     const opened: string[] = [];
+    const optionChanges: ListViewOptions<MyWorkGrouping, ItemSort>[] = [];
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    // The desktop's layout, whatever the frame's width.
-    container.set(PhoneLayout, createFixedPhoneLayout(false));
+    // The desktop's layout, whatever the frame's width, until a test turns the phone's on.
+    container.set(PhoneLayout, createFixedPhoneLayout(phone));
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';
@@ -544,6 +583,7 @@ function mount(
                     },
                     openedId: openedId.value,
                     options: { ...MY_WORK_VIEW_DEFAULTS, ...display },
+                    'onUpdate:options': (value: ListViewOptions<MyWorkGrouping, ItemSort>) => optionChanges.push(value),
                     onOpen: (id: string) => opened.push(id),
                 },
                 {
@@ -570,6 +610,12 @@ function mount(
         trackedRepositories,
         /** The ids the view asked to open, in order. */
         opened,
+        /** The filter, as the page holds it. */
+        filter,
+        /** Whether the phone's layout is on: the window narrower than a phone's width. */
+        phone,
+        /** The view options the view asked to keep, in order. */
+        optionChanges,
         /** More groups' searches answer. */
         arrive(groups: MyWorkMembership) {
             membership.value = { ...membership.value, ...groups };

@@ -1,4 +1,4 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). On a phone every state has the phone's top bar with the project's name (mobile D14), the view's its options too (`ListToolbar`). -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). On a phone every state has the phone's top bar with the project's name (mobile D14), the view's its options too (`ListToolbar`), and a board view keeps its columns as its grouping while drawn as a list (mobile D9). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -28,6 +28,7 @@ import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
+import { useShownLayout } from '@/lists/useShownLayout.js';
 import { withStackMembers } from '@/lists/withStackMembers.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -202,7 +203,10 @@ const options = useListViewOptions({
       ? getProjectViewChoices(project.value, defaults.value.options)
       : { groupings: [], sorts: [], properties: [] },
 });
-/** On the board the grouping is the columns: a single select or iteration field. */
+/**
+ * On the board the grouping is the columns: a single select or iteration field — on a phone too, where the board kept
+ * is drawn as a list grouped by its columns (mobile D9).
+ */
 const grouping = computed((): ProjectGrouping => {
   const chosen = options.options.grouping;
   if (options.options.layout !== 'board' || !project.value || isColumnGrouping(project.value, chosen)) {
@@ -212,6 +216,7 @@ const grouping = computed((): ProjectGrouping => {
   return getColumnGrouping(project.value, view.value) ?? 'none';
 });
 const shownOptions = computed((): ProjectViewOptions => ({ ...options.options, grouping: grouping.value }));
+const layout = useShownLayout(() => options.options.layout);
 const today = computed(() => new Date(list.now).toISOString().slice(0, 10));
 /** The project's entries as shown: items with their issue's or pull request's row, and drafts. */
 const entries = computed((): ProjectEntry[] => {
@@ -586,7 +591,7 @@ function setRowField(fieldId: string | null) {
     :answered-term="answered?.term ?? null"
     :options="shownOptions"
     :modified="options.modified"
-    :roadmap="defaults.roadmap && options.options.layout === 'list'"
+    :roadmap="defaults.roadmap && layout === 'list'"
     :sorts="sorts"
     :row-field-id="rowFieldId"
     :viewer-login="auth.viewer.login"
