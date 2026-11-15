@@ -449,7 +449,7 @@ function openCommandLineMenu() {
         arrangement="panel"
       />
       <OpenedCommit
-        v-else
+        v-else-if="overScreen.kind === 'commit'"
         :reference="overScreen.reference"
         arrangement="panel"
       />

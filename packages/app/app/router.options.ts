@@ -158,7 +158,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name,
             component: () => import('@/workflows/WorkflowRunPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey, gitHubScreen: true },
+            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey, itemPage: 'run', gitHubScreen: true },
         };
     }
     // A workflow on a page of its own (actions D15), at GitHub's address of it; a static segment outranks the
