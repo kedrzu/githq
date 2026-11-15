@@ -344,8 +344,8 @@ export const NewIssueComposer = defineService({
 
         /**
          * Create another from a created issue's toast (mobile D44): the capture opens in its repository — with the draft
-         * written there, if any — and, when nothing is written, with the projects and labels it went with. Nothing when
-         * the capture is open already.
+         * written there, if any — and, when nothing is written, with the projects and labels it went with; not its parent,
+         * which belonged to the one issue it was started on. Nothing when the capture is open already.
          */
         function startAnother(id: number) {
             const entry = createdRef.value.find(created => created.id === id);
@@ -356,7 +356,7 @@ export const NewIssueComposer = defineService({
             start({
                 repository: entry.repository,
                 project: entry.context?.project ?? null,
-                parent: entry.context?.parent ?? null,
+                parent: null,
             });
             if (!isWritten(draftRef.value)) {
                 draftRef.value = { ...draftRef.value, labels: entry.labels, projects: entry.projects };

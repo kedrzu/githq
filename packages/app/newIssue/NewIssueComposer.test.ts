@@ -165,6 +165,20 @@ test('D44: Create another from the toast reopens the capture with the same repos
     });
 });
 
+test('D44: Create another from the toast of an issue started on an item leaves that item’s parent behind', async () => {
+    const { composer } = await setup();
+    const parent = { id: 'I_web_3', reference: 'web#3' };
+
+    composer.start({ repository: 'acme/web', project: null, parent });
+    expect(composer.draft.parent).toEqual(parent);
+    composer.update({ title: 'Child', labels: ['bug'] });
+    await composer.submit(false);
+
+    composer.startAnother(composer.created[0]?.id ?? 0);
+
+    expect(composer.draft).toMatchObject({ repository: 'acme/web', title: '', labels: ['bug'], parent: null });
+});
+
 test('D44: a creation GitHub refuses takes its toast away', async () => {
     const { composer, github } = await setup();
     github.refuse = 'Repository was archived so is read-only.';

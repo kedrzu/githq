@@ -12,7 +12,9 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -124,6 +126,8 @@ test('a typed owner/name is offered though GitHub’s search does not rank it, a
 async function openChooser(params: ChooserParams) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The frame is narrower than a phone's width: the computer's chooser in place.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     const browser = createSignedInBrowser(answerSearch(params.found ?? []));
     container.set(Browser, browser);
     setIndexedDbPersistence(container);

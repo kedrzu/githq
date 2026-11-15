@@ -1,5 +1,6 @@
-<!-- Choosing the repository of a new issue (H2), in place of the quick capture's chips: type part of its name, ↑/↓, Enter. The repositories come in sections — those of the project it was started in, the tracked ones, then any other the user can create issues in (GitHub searched as they type) — and those that won't take an issue (archived, issues turned off) are listed with why, not chosen. The repository used last is marked "last used" — at the top while nothing is typed, never chosen in advance (mobile D43). Escape goes back to the title. -->
+<!-- Choosing the repository of a new issue (H2), in place of the quick capture's chips: type part of its name, ↑/↓, Enter. The repositories come in sections — those of the project it was started in, the tracked ones, then any other the user can create issues in (GitHub searched as they type) — and those that won't take an issue (archived, issues turned off) are listed with why, not chosen. The repository used last is marked "last used" — at the top while nothing is typed, never chosen in advance (mobile D43). Escape goes back to the title. On a phone (`PhoneLayout.active`) it is the inside of a menu at the bottom (MB193, the new issue form puts it there): rows a finger's height, no key hints. -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock, Search } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
@@ -8,6 +9,7 @@ import { computed } from 'vue';
 import FilterList from '@/components/FilterList.vue';
 import type { FilterListGroup, FilterListRow } from '@/components/FilterList.vue';
 import Kbd from '@/components/Kbd.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 
 import * as l from './RepositoryChooser.loc.js';
 
@@ -51,6 +53,7 @@ const emit = defineEmits<{
 const query = defineModel<string>('query', { required: true });
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
 
 const groups = computed(() =>
   props.sections.map((section): FilterListGroup<ChoiceRow> => ({
@@ -88,10 +91,15 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
     :placeholder="t(l.placeholder)"
     :filter-label="t(l.label)"
     :message="message"
-    :hints="[
-      { keys: 'Enter', label: t(l.choose) },
-      { keys: 'Escape', label: t(l.back) },
-    ]"
+    :size="phoneLayout.active ? 'touch' : 'md'"
+    :hints="
+      phoneLayout.active
+        ? undefined
+        : [
+            { keys: 'Enter', label: t(l.choose) },
+            { keys: 'Escape', label: t(l.back) },
+          ]
+    "
     back-on-escape
     @update:model-value="choose"
     @back="emit('back')"
@@ -126,7 +134,7 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
         >{{ row.choice.unavailable }}</span
       >
       <Kbd
-        v-else-if="highlighted"
+        v-else-if="highlighted && !phoneLayout.active"
         keys="Enter"
       />
     </template>
