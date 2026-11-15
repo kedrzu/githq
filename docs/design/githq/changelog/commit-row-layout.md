@@ -111,3 +111,16 @@ Line 2 still fits in its 18 px (checked in CH12 and the ghost row).
 
 - [x] `Commit row` (`EMjBX`): `Author` (`K7XiMI`) 14 → 16 px, its initials (`zeZzP`) 6 → 7 px.
 - [x] `Empty / Ghost commit row` (`J0Vrj`): the avatar circle (`e2jpfQ`) 14 → 16 px.
+
+## Round 4 · implementation
+
+Forced by: the built row hides the short sha and its "·" when the row is narrower than 640 px (a container query)
+and keeps the author's name. Round 2 turned them off only in CH29 and CH42; every other commit list under 640 px
+still showed the sha, and CH65's c03 ran into the list's edge. Lists 640 px or wider keep it.
+
+- [x] Every row of the eight commit panes under 640 px: `Sha` (`FV92i`) and `Separator 2` (`taOi1`) off. CH16
+  (`m5T0NV`), CH18 (`CSIbx`), CH20 (`t5ylMf`), CH27 (`v0ZFU`), CH28 (`pmqyb`), CH41 (`UoiVM`), all 484 px; CH65
+  (`zGkwi`), 484 px; CH66's crop with details open (`aw2gL`), 484 px. CH29 (`KZksk`, 364 px) and CH42 (`YvExd`,
+  484 px) already had it.
+- [x] Group 2's note (`ShEcf`) and group 7's note (`xQ74v`): the short sha on line 2 → the same, left out of a list
+  narrower than 640 px. CH65's caption (`EznyR`) already said so.

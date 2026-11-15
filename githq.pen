@@ -312298,7 +312298,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Drawn in the tabs layout. One repository with a few branches (fitloop/webapp) and one with many (nuxt/nuxt, 67 branches, 339 tags). A row reads in two lines beside its place in the graph: on line 1 the headline, then right after it the pull request and its CI; on line 2 the branches and tags at it, the author (avatar and name), the age and the short sha (CH64). Rows alternate with a very faint stripe, so a dot far to the left is easy to follow to its row. Each branch's lane has its own colour, eight of them in turn (CH61), and its commits' dots take it; the default branch runs on the left in a neutral light grey; a merge is a hollow dot with a dimmed headline. A divider between the graph and the rows can be dragged; lanes that don't fit fold.",
+              "content": "Drawn in the tabs layout. One repository with a few branches (fitloop/webapp) and one with many (nuxt/nuxt, 67 branches, 339 tags). A row reads in two lines beside its place in the graph: on line 1 the headline, then right after it the pull request and its CI; on line 2 the branches and tags at it, the author (avatar and name), the age and the short sha (CH64), which a list narrower than 640 px leaves out (CH65). Rows alternate with a very faint stripe, so a dot far to the left is easy to follow to its row. Each branch's lane has its own colour, eight of them in turn (CH61), and its commits' dots take it; the default branch runs on the left in a neutral light grey; a merge is a hollow dot with a dimmed headline. A divider between the graph and the rows can be dragged; lanes that don't fit fold.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -318357,20 +318357,164 @@
                                         "e4iltS/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "e4iltS/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "e4iltS/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/FV92i": {
+                                          "enabled": false
+                                        },
                                         "IVktp/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
+                                        },
+                                        "IVktp/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/FV92i": {
+                                          "enabled": false
                                         },
                                         "r0YQD7/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
                                         },
+                                        "r0YQD7/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/FV92i": {
+                                          "enabled": false
+                                        },
                                         "b3WdrT/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
+                                        },
+                                        "b3WdrT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/FV92i": {
+                                          "enabled": false
                                         },
                                         "kLNw8/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "kLNw8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kpy5Q/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "kpy5Q/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -323187,6 +323331,12 @@
                                         "e4iltS/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "e4iltS/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "e4iltS/FV92i": {
+                                          "enabled": false
+                                        },
                                         "D8n9Va/kFDB3": {
                                           "fill": "$sel",
                                           "stroke": "#7B87F74D",
@@ -323196,20 +323346,158 @@
                                           "enabled": true,
                                           "x": 26
                                         },
+                                        "D8n9Va/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/FV92i": {
+                                          "enabled": false
+                                        },
                                         "IVktp/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
+                                        },
+                                        "IVktp/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/FV92i": {
+                                          "enabled": false
                                         },
                                         "r0YQD7/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
                                         },
+                                        "r0YQD7/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/FV92i": {
+                                          "enabled": false
+                                        },
                                         "b3WdrT/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
+                                        },
+                                        "b3WdrT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/FV92i": {
+                                          "enabled": false
                                         },
                                         "kLNw8/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "kLNw8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kpy5Q/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "kpy5Q/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -323565,6 +323853,18 @@
                                         "e4iltS/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "e4iltS/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "e4iltS/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/FV92i": {
+                                          "enabled": false
+                                        },
                                         "IVktp/kFDB3": {
                                           "fill": "$sel",
                                           "stroke": "#7B87F74D",
@@ -323577,17 +323877,149 @@
                                         "IVktp/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
                                         },
+                                        "IVktp/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/FV92i": {
+                                          "enabled": false
+                                        },
                                         "r0YQD7/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
+                                        },
+                                        "r0YQD7/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/FV92i": {
+                                          "enabled": false
                                         },
                                         "b3WdrT/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
                                         },
+                                        "b3WdrT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kLNw8/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "kLNw8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kpy5Q/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "kpy5Q/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -326847,6 +327279,12 @@
                                         "e4iltS/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "e4iltS/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "e4iltS/FV92i": {
+                                          "enabled": false
+                                        },
                                         "D8n9Va/kFDB3": {
                                           "fill": "$sel",
                                           "stroke": "#7B87F74D",
@@ -326856,20 +327294,158 @@
                                           "enabled": true,
                                           "x": 26
                                         },
+                                        "D8n9Va/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/FV92i": {
+                                          "enabled": false
+                                        },
                                         "IVktp/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
+                                        },
+                                        "IVktp/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/FV92i": {
+                                          "enabled": false
                                         },
                                         "r0YQD7/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
                                         },
+                                        "r0YQD7/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/FV92i": {
+                                          "enabled": false
+                                        },
                                         "b3WdrT/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
+                                        },
+                                        "b3WdrT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/FV92i": {
+                                          "enabled": false
                                         },
                                         "kLNw8/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "kLNw8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kpy5Q/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "kpy5Q/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -327258,8 +327834,26 @@
                                         "e4iltS/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "e4iltS/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "e4iltS/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/FV92i": {
+                                          "enabled": false
+                                        },
                                         "IVktp/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
+                                        },
+                                        "IVktp/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/FV92i": {
+                                          "enabled": false
                                         },
                                         "Lagt8/kFDB3": {
                                           "fill": "$sel",
@@ -327270,17 +327864,143 @@
                                           "enabled": true,
                                           "x": 26
                                         },
+                                        "Lagt8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Lagt8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/FV92i": {
+                                          "enabled": false
+                                        },
                                         "r0YQD7/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
+                                        },
+                                        "r0YQD7/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/FV92i": {
+                                          "enabled": false
                                         },
                                         "b3WdrT/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
                                         },
+                                        "b3WdrT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kLNw8/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "kLNw8/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "kpy5Q/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "kpy5Q/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -332884,20 +333604,164 @@
                                         "Xb62N/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "Xb62N/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Xb62N/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "FmRZx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "FmRZx/FV92i": {
+                                          "enabled": false
+                                        },
                                         "vVXsT/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/…"
+                                        },
+                                        "vVXsT/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "vVXsT/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "gt6eh/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "gt6eh/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "Udycq/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Udycq/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "L4uyY3/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "L4uyY3/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "lJsbY/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "lJsbY/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "dYJD3/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "dYJD3/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HjQ3E/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HjQ3E/FV92i": {
+                                          "enabled": false
                                         },
                                         "Bl6oy/RxUsy": {
                                           "content": "fix: member list loads twice on first open (#1…"
                                         },
+                                        "Bl6oy/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "Bl6oy/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "O4J9A/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "O4J9A/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "n49RfF/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "n49RfF/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "zYV8x/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "zYV8x/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "b4jNGF/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "b4jNGF/FV92i": {
+                                          "enabled": false
+                                        },
                                         "ysEGV/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking…"
+                                        },
+                                        "ysEGV/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "ysEGV/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "KwfLz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "KwfLz/FV92i": {
+                                          "enabled": false
                                         },
                                         "NNztA/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/se…"
                                         },
+                                        "NNztA/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "NNztA/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "U2ukx/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "U2ukx/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "N5o9ZW/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "N5o9ZW/FV92i": {
+                                          "enabled": false
+                                        },
                                         "cElZZ/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezon…"
+                                        },
+                                        "cElZZ/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "cElZZ/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "cGIQF/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "cGIQF/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "pAXID/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "pAXID/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "qtePz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "qtePz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "L9Y8L/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "L9Y8L/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -332994,7 +333858,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Every commit row is two lines: the headline with its pull request and CI mark on the first, the refs, the author, the age and the short sha on the second. CH64 and CH65 use commits with long names, several refs and a commit whose pull request and CI are not known yet; CH66 is CH54 at actual size on the taller row.",
+              "content": "Every commit row is two lines: the headline with its pull request and CI mark on the first, the refs, the author, the age and the short sha on the second, the sha left out of a list narrower than 640 px. CH64 and CH65 use commits with long names, several refs and a commit whose pull request and CI are not known yet; CH66 is CH54 at actual size on the taller row.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -333633,20 +334497,164 @@
                                         "c8cVQJ/RxUsy": {
                                           "content": "feat: preview a class while dragging it in the…"
                                         },
+                                        "c8cVQJ/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "c8cVQJ/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "tMxaH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "tMxaH/FV92i": {
+                                          "enabled": false
+                                        },
                                         "k4Kc3J/RxUsy": {
                                           "content": "Merge pull request #1226 from fitloop/feat/me…"
+                                        },
+                                        "k4Kc3J/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "k4Kc3J/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "IdScg/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "IdScg/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "HlDkL/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "HlDkL/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "ZrqPd/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "ZrqPd/FV92i": {
+                                          "enabled": false
                                         },
                                         "E0Ijhz/RxUsy": {
                                           "content": "feat: search members by email, phone number…"
                                         },
+                                        "E0Ijhz/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "E0Ijhz/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "PXH8m/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "PXH8m/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "c5hwEw/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "c5hwEw/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "U9NAH/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "U9NAH/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "JPQYa/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "JPQYa/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "eNKJ5/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "eNKJ5/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "qWbwn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "qWbwn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "DD46P/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "DD46P/FV92i": {
+                                          "enabled": false
+                                        },
                                         "vPHwn/RxUsy": {
                                           "content": "feat: let studios hide prices on the booking pa…"
+                                        },
+                                        "vPHwn/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "vPHwn/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "SqUWr/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "SqUWr/FV92i": {
+                                          "enabled": false
                                         },
                                         "V2mZR/RxUsy": {
                                           "content": "Merge pull request #1199 from fitloop/fix/searc…"
                                         },
+                                        "V2mZR/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "V2mZR/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "bGVON/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "bGVON/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "OM55z/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "OM55z/FV92i": {
+                                          "enabled": false
+                                        },
                                         "shhle/RxUsy": {
                                           "content": "feat: reminder emails in the studio's timezone (…"
+                                        },
+                                        "shhle/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "shhle/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "DlLwc/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "DlLwc/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "vHvqN/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "vHvqN/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "SVWPG/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "SVWPG/FV92i": {
+                                          "enabled": false
+                                        },
+                                        "B7bvj/taOi1": {
+                                          "enabled": false
+                                        },
+                                        "B7bvj/FV92i": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -333831,20 +334839,164 @@
                                 "c8cVQJ/RxUsy": {
                                   "content": "feat: preview a class while dragging it in the…"
                                 },
+                                "c8cVQJ/taOi1": {
+                                  "enabled": false
+                                },
+                                "c8cVQJ/FV92i": {
+                                  "enabled": false
+                                },
+                                "tMxaH/taOi1": {
+                                  "enabled": false
+                                },
+                                "tMxaH/FV92i": {
+                                  "enabled": false
+                                },
                                 "k4Kc3J/RxUsy": {
                                   "content": "Merge pull request #1226 from fitloop/feat/me…"
+                                },
+                                "k4Kc3J/taOi1": {
+                                  "enabled": false
+                                },
+                                "k4Kc3J/FV92i": {
+                                  "enabled": false
+                                },
+                                "IdScg/taOi1": {
+                                  "enabled": false
+                                },
+                                "IdScg/FV92i": {
+                                  "enabled": false
+                                },
+                                "HlDkL/taOi1": {
+                                  "enabled": false
+                                },
+                                "HlDkL/FV92i": {
+                                  "enabled": false
+                                },
+                                "ZrqPd/taOi1": {
+                                  "enabled": false
+                                },
+                                "ZrqPd/FV92i": {
+                                  "enabled": false
                                 },
                                 "E0Ijhz/RxUsy": {
                                   "content": "feat: search members by email, phone number…"
                                 },
+                                "E0Ijhz/taOi1": {
+                                  "enabled": false
+                                },
+                                "E0Ijhz/FV92i": {
+                                  "enabled": false
+                                },
+                                "PXH8m/taOi1": {
+                                  "enabled": false
+                                },
+                                "PXH8m/FV92i": {
+                                  "enabled": false
+                                },
+                                "c5hwEw/taOi1": {
+                                  "enabled": false
+                                },
+                                "c5hwEw/FV92i": {
+                                  "enabled": false
+                                },
+                                "U9NAH/taOi1": {
+                                  "enabled": false
+                                },
+                                "U9NAH/FV92i": {
+                                  "enabled": false
+                                },
+                                "JPQYa/taOi1": {
+                                  "enabled": false
+                                },
+                                "JPQYa/FV92i": {
+                                  "enabled": false
+                                },
+                                "eNKJ5/taOi1": {
+                                  "enabled": false
+                                },
+                                "eNKJ5/FV92i": {
+                                  "enabled": false
+                                },
+                                "qWbwn/taOi1": {
+                                  "enabled": false
+                                },
+                                "qWbwn/FV92i": {
+                                  "enabled": false
+                                },
+                                "DD46P/taOi1": {
+                                  "enabled": false
+                                },
+                                "DD46P/FV92i": {
+                                  "enabled": false
+                                },
                                 "vPHwn/RxUsy": {
                                   "content": "feat: let studios hide prices on the booking pa…"
+                                },
+                                "vPHwn/taOi1": {
+                                  "enabled": false
+                                },
+                                "vPHwn/FV92i": {
+                                  "enabled": false
+                                },
+                                "SqUWr/taOi1": {
+                                  "enabled": false
+                                },
+                                "SqUWr/FV92i": {
+                                  "enabled": false
                                 },
                                 "V2mZR/RxUsy": {
                                   "content": "Merge pull request #1199 from fitloop/fix/searc…"
                                 },
+                                "V2mZR/taOi1": {
+                                  "enabled": false
+                                },
+                                "V2mZR/FV92i": {
+                                  "enabled": false
+                                },
+                                "bGVON/taOi1": {
+                                  "enabled": false
+                                },
+                                "bGVON/FV92i": {
+                                  "enabled": false
+                                },
+                                "OM55z/taOi1": {
+                                  "enabled": false
+                                },
+                                "OM55z/FV92i": {
+                                  "enabled": false
+                                },
                                 "shhle/RxUsy": {
                                   "content": "feat: reminder emails in the studio's timezone (…"
+                                },
+                                "shhle/taOi1": {
+                                  "enabled": false
+                                },
+                                "shhle/FV92i": {
+                                  "enabled": false
+                                },
+                                "DlLwc/taOi1": {
+                                  "enabled": false
+                                },
+                                "DlLwc/FV92i": {
+                                  "enabled": false
+                                },
+                                "vHvqN/taOi1": {
+                                  "enabled": false
+                                },
+                                "vHvqN/FV92i": {
+                                  "enabled": false
+                                },
+                                "SVWPG/taOi1": {
+                                  "enabled": false
+                                },
+                                "SVWPG/FV92i": {
+                                  "enabled": false
+                                },
+                                "B7bvj/taOi1": {
+                                  "enabled": false
+                                },
+                                "B7bvj/FV92i": {
+                                  "enabled": false
                                 }
                               }
                             }
