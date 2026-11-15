@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `variant="strip"`: pills a finger can tap, in a row that scrolls sideways when they don't fit (a phone's filters of my work, mobile D23). `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed; pressing the chosen one again is told (`repeat`: a project's order on a phone flips its direction). `variant="strip"`: pills a finger can tap, in a row that scrolls sideways when they don't fit (a phone's filters of my work, mobile D23). `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -48,13 +48,20 @@ const props = withDefaults(
   { variant: 'plain', wrap: false, showKeys: false },
 );
 
+const emit = defineEmits<{
+  /** The chosen option was pressed again; the choice stays. */
+  repeat: [value: T];
+}>();
+
 const model = defineModel<T>({ required: true });
 
-// reka-ui clears a single toggle group when its chosen item is pressed again; that is ignored here.
+// reka-ui clears a single toggle group when its chosen item is pressed again: the choice stays, and that is told.
 function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   const option = props.options.find(candidate => candidate.value === value);
   if (option) {
     model.value = option.value;
+  } else if (value == null) {
+    emit('repeat', model.value);
   }
 }
 </script>

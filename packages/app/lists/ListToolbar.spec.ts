@@ -33,7 +33,7 @@ test('without a menu, the title is plain text', async () => {
     await expect.element(page.getByRole('button', { name: /Platform Q4/ })).not.toBeInTheDocument();
 });
 
-test('on a phone it is the top bar: the title alone, every option in Display, and New issue runs what C runs', async () => {
+test('on a phone it is the top bar: the title alone, the options in a sheet without properties or layout, and New issue runs what C runs', async () => {
     await Phone.run();
 
     await expect.element(page.getByRole('heading', { name: 'Platform Q4' })).toBeVisible();
@@ -42,9 +42,10 @@ test('on a phone it is the top bar: the title alone, every option in Display, an
     await expect.element(page.getByRole('button', { name: 'Open places' })).toBeVisible();
 
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
-    const display = page.getByRole('dialog', { name: 'Display' });
-    for (const option of ['Group', 'Properties', 'Layout']) {
-        await expect.element(display.getByRole('group', { name: option })).toBeVisible();
+    const sheet = page.getByRole('dialog', { name: 'Platform Q4' });
+    await expect.element(sheet.getByRole('group', { name: 'Group by' })).toBeVisible();
+    for (const option of ['Properties', 'Layout']) {
+        await expect.element(sheet.getByRole('group', { name: option })).not.toBeInTheDocument();
     }
     await userEvent.keyboard('{Escape}');
 

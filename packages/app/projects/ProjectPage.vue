@@ -356,10 +356,17 @@ const sorts = computed((): ListChoice[] => {
     return [];
   }
 
-  return getProjectViewChoices(current, defaults.value.options).sorts.map(sort => ({
-    value: sort,
-    label: describeSort(current, sort),
-  }));
+  return getProjectViewChoices(current, defaults.value.options).sorts.map((sort): ListChoice => {
+    const levels = parseProjectSort(current, sort);
+    const level = levels.length === 1 ? levels[0] : undefined;
+    return {
+      value: sort,
+      label: describeSort(current, sort),
+      ...(level && {
+        sortDirection: { key: level.key, keyLabel: describeSortKey(current, level.key), direction: level.direction },
+      }),
+    };
+  });
 });
 const rowFieldId = computed(() => (project.value ? (projects.getRowField(project.value.id)?.id ?? null) : null));
 const openedDraft = computed(() => {
