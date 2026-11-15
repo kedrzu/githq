@@ -98,7 +98,8 @@ test('rules of other attributes, however many, cost nothing of it', () => {
     expect(parseLinguistGenerated([...lfs, '*.gen.ts linguist-generated'].join('\n'))('a.gen.ts')).toBe(true);
 });
 
-test('a tree and rules made to cost too much stop being matched, in well under a second', () => {
+// The budget is counted in steps, not time, so it is asserted by the call it runs out on: a clock fails on a loaded machine.
+test('a tree and rules made to cost too much stop being matched within the first calls', () => {
     const onGaveUp = mock();
     const isGenerated = parseLinguistGenerated(
         Array.from({ length: 780 }, () => 'z/ linguist-generated').join('\n'),
@@ -106,32 +107,36 @@ test('a tree and rules made to cost too much stop being matched, in well under a
     );
     const deep = `${'a/'.repeat(2047)}z/file.ts`;
 
-    const start = performance.now();
     const answers = Array.from({ length: 3000 }, () => isGenerated(deep));
-    const elapsed = performance.now() - start;
+    const gaveUpAt = answers.indexOf(false);
 
     expect(answers[0]).toBe(true);
-    expect(answers.at(-1)).toBe(false);
-    expect(elapsed).toBeLessThan(3000);
+    expect(gaveUpAt).toBeGreaterThan(0);
+    expect(gaveUpAt).toBeLessThan(100);
+    expect(answers.slice(gaveUpAt)).not.toContain(true);
     expect(onGaveUp).toHaveBeenCalledTimes(1);
 });
 
 test.each([
     ['stars', Array.from({ length: 222 }, () => `*${'a'.repeat(50)}b`), 'a'.repeat(253)],
     ['a long class', Array.from({ length: 7 }, () => `*[${'b'.repeat(2000)}]c`), 'a'.repeat(253)],
-])('rules made to cost too much on shallow paths, by %s, give up quickly on what is left', (_, patterns, path) => {
-    const onGaveUp = mock();
+])('rules made to cost too much on shallow paths, by %s, give up within the first calls', (_, patterns, path) => {
+    let calls = 0;
+    let gaveUpAt = -1;
+    const onGaveUp = mock(() => {
+        gaveUpAt = calls;
+    });
     const isGenerated = parseLinguistGenerated(
         patterns.map(pattern => `${pattern} linguist-generated`).join('\n'),
         onGaveUp,
     );
 
-    const start = performance.now();
-    for (let index = 0; index < 3000; index++) {
+    for (; calls < 3000; calls++) {
         isGenerated(path);
     }
 
-    expect(performance.now() - start).toBeLessThan(3000);
+    expect(gaveUpAt).toBeGreaterThan(0);
+    expect(gaveUpAt).toBeLessThan(100);
     expect(onGaveUp).toHaveBeenCalledTimes(1);
 });
 
