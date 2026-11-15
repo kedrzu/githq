@@ -18,6 +18,7 @@ import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_PORTAL_METADATA } from '@/testing/sampleRepositories.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { swipeElement } from '@/testing/swipeElement.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import ItemContextMenu from './ItemContextMenu.vue';
@@ -152,21 +153,6 @@ async function swipeOpen(canvasElement: HTMLElement, id: string) {
 
         return found;
     });
-    const box = row.getBoundingClientRect();
-    const x = box.left + box.width / 2;
-    const init = {
-        bubbles: true,
-        pointerId: 1,
-        pointerType: 'touch',
-        isPrimary: true,
-        clientY: box.top + box.height / 2,
-    };
-    row.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
-    for (let step = 1; step <= 6; step++) {
-        row.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x - step * 40 }));
-        await new Promise(requestAnimationFrame);
-    }
-
-    row.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x - 240 }));
+    await swipeElement(row, -240);
     await waitFor(() => expect(row.style.translate).toMatch(/^-\d+px/u));
 }

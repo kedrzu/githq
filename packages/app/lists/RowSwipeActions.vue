@@ -1,17 +1,17 @@
-<!-- What a list row reveals at its right end when swiped left on a phone (mobile D27, MB114): Status, Assign and Close, as tiles the row's height (`RowSwipeTile`), each opening that property's menu at the bottom, as tapping it on the item does (D45). They are the row's context menu's own actions (`useItemCommands`, `getItemMenuSections`), offered where those are: Status a picker of the item's projects' status — only while it is in one the user may write to —, Assign the assignees picker, applied together as it closes, through the edit engine as on the item; Close, for an issue, the menu of its reasons, for a pull request closing it at once, and on a closed item Reopen. `done` once a menu closed or the action ran: the row slides back. -->
+<!-- What a list row reveals at its right end when swiped left on a phone (mobile D27, MB114): Status, Assign and Close, as tiles the row's height (`RowSwipeTile`), each opening that property's menu at the bottom, as tapping it on the item does (D45). They are the row's context menu's own actions (`useItemCommands`, `getItemMenuActions`), offered where those are: Status a picker of the item's projects' status — only while it is in one the user may write to —, Assign the assignees picker, applied together as it closes, through the edit engine as on the item; Close, for an issue, the menu of its reasons, for a pull request closing it at once, and on a closed item Reopen. `done` once a menu closed or the action ran: the row slides back. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleCheck, CircleDashed, RotateCcw, UserRound } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import type { Command, CommandOptions } from '@/commands/CommandTypes.js';
+import type { CommandOptions } from '@/commands/CommandTypes.js';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuSheet from '@/components/MenuSheet.vue';
 import type { PickerChange } from '@/components/Picker.vue';
 import Picker from '@/components/Picker.vue';
 import { ItemEditor } from '@/edits/ItemEditor.js';
-import { getItemMenuSections } from '@/item/getItemMenuSections.js';
+import { getItemMenuActions } from '@/item/getItemMenuSections.js';
 
 import * as l from './RowSwipeActions.loc.js';
 import RowSwipeTile from './RowSwipeTile.vue';
@@ -40,15 +40,8 @@ const { one, getEditCommands } = useItemCommands({
 });
 const opened = ref<RowSwipeMenu | null>(null);
 
-/** The context menu's actions, by their name after the section (`item.status` → `status`). */
-const actions = computed(() => {
-  const byName = new Map<string, Command>();
-  for (const command of getItemMenuSections(getEditCommands(), one.value?.kind ?? 'issue').flat()) {
-    byName.set(command.id.slice(command.id.indexOf('.') + 1), command);
-  }
-
-  return byName;
-});
+/** The context menu's actions, by name. */
+const actions = computed(() => getItemMenuActions(getEditCommands(), one.value?.kind ?? 'issue'));
 const status = computed(() => actions.value.get('status') ?? null);
 const assignees = computed(() => actions.value.get('assignees') ?? null);
 const state = computed(() => actions.value.get('state') ?? null);

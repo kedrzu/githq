@@ -31,6 +31,8 @@ import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
 import { SAMPLE_PORTAL_METADATA } from '@/testing/sampleRepositories.js';
 import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import type { SwipeElementOptions } from '@/testing/swipeElement.js';
+import { swipeElement } from '@/testing/swipeElement.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import { ExpandedStacks } from './ExpandedStacks.js';
@@ -1994,33 +1996,9 @@ async function mountSwipeable(columns: Columns, stored: readonly Item[], options
     return { view, edit };
 }
 
-/** How {@link swipeRow} swipes. */
-interface SwipeOptions {
-    /** Touch when not given. */
-    readonly pointerType?: 'mouse' | 'pen' | 'touch';
-    /** Where on the screen it starts; the row's middle when not given. */
-    readonly startX?: number;
-}
-
-/** Moves a pointer across the row of `id` by `dx`, a frame between its steps, as a finger does. */
-async function swipeRow(id: string, dx: number, options: SwipeOptions = {}) {
-    const row = rowElement(id);
-    const box = row.getBoundingClientRect();
-    const x = options.startX ?? box.left + box.width / 2;
-    const init = {
-        bubbles: true,
-        pointerId: 11,
-        pointerType: options.pointerType ?? 'touch',
-        isPrimary: true,
-        clientY: box.top + box.height / 2,
-    };
-    row.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x }));
-    for (let step = 1; step <= 5; step++) {
-        row.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x + (dx * step) / 5 }));
-        await new Promise(requestAnimationFrame);
-    }
-
-    row.dispatchEvent(new PointerEvent('pointerup', { ...init, clientX: x + dx }));
+/** Swipes the row of `id` by `dx` and lets the list re-render. */
+async function swipeRow(id: string, dx: number, options?: SwipeElementOptions) {
+    await swipeElement(rowElement(id), dx, options);
     await nextTick();
 }
 
