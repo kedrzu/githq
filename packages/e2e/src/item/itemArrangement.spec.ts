@@ -16,6 +16,8 @@ import { scrollDown } from '../utils/scrollDown.js';
 const ISSUE = 'Sign-in loops after the token expires';
 const PANEL = '/?pane=issue&issue=acme%7Cweb%7C12';
 const PAGE = '/acme/web/issues/12';
+/** The sample commit's sha, as an address carries it. */
+const OID = 'c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1';
 
 test('Enter on the open row expands the item to its page; Escape goes back to the panel, scrolled where it was', async ({
     page,
@@ -144,20 +146,21 @@ test("Shift+Enter over a screen with no list: a commit's pull request goes from 
     sample.world.history(SAMPLE_REPOSITORY, {
         commits: [
             {
-                oid: 'c1',
+                oid: OID,
                 headline: 'fix: export the CSV header',
                 author: 'monalisa',
                 minutesAgo: 60,
                 pullRequest: { number: 4, state: 'MERGED', title: 'Fix the crash on start' },
             },
         ],
-        branches: { main: 'c1' },
+        branches: { main: OID },
     });
     await openTrackedWork(page, github, sample.world);
     await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
     const item = new ItemViewHarness(page);
     await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+    await page.keyboard.press('Enter');
     // Shift+Enter opens the pull request the details show, read after the commit: until then it has nothing to open.
     await expect(graph.details.getByRole('button', { name: /Fix the crash on start/ })).toBeVisible();
 

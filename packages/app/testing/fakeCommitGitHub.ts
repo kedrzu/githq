@@ -4,6 +4,7 @@ import type {
     CommitFieldsFragment,
     CommitHistoriesQuery,
     CommitRefFieldsFragment,
+    CommitStateFieldsFragment,
     CommitStatesQuery,
     PullRequestCheckFieldsFragment,
     RepositoryCommitRefsQuery,
@@ -95,14 +96,18 @@ export function fakeCommitGitHub(): FakeCommitGitHub {
                     return { data };
                 }
                 case 'CommitDetail': {
-                    const found = findCommit(String(variables.id));
+                    const repository = findRepository(variables);
+                    const commit = repository && findByRev(repository, variables.rev);
                     const data: CommitDetailQuery = {
-                        node: found
-                            ? {
-                                  ...toNode(found.commit),
-                                  message: toMessage(found.repository, found.commit),
-                              }
-                            : null,
+                        repository: repository && {
+                            object: commit
+                                ? {
+                                      ...toNode(commit),
+                                      ...toStateFields(repository.states.get(commit.oid)),
+                                      message: toMessage(repository, commit),
+                                  }
+                                : null,
+                        },
                     };
                     return { data };
                 }
@@ -114,27 +119,28 @@ export function fakeCommitGitHub(): FakeCommitGitHub {
                                 return null;
                             }
 
-                            const state = found.repository.states.get(found.commit.oid);
                             return {
                                 id: found.commit.id,
-                                associatedPullRequests: { nodes: state?.pullRequest ? [state.pullRequest] : [] },
-                                statusCheckRollup: state?.ci ? { state: state.ci } : null,
+                                ...toStateFields(found.repository.states.get(found.commit.oid)),
                             };
                         }),
                     };
                     return { data };
                 }
                 case 'CommitChecks': {
-                    const found = findCommit(String(variables.id));
-                    const checks = found?.repository.checks.get(found.commit.oid);
+                    const repository = findRepository(variables);
+                    const commit = repository && findByRev(repository, variables.rev);
+                    const checks = commit && repository.checks.get(commit.oid);
                     const data: CommitChecksQuery = {
-                        node: found
-                            ? {
-                                  statusCheckRollup: checks
-                                      ? { contextPage: { totalCount: checks.length, nodes: checks.slice(0, 100) } }
-                                      : null,
-                              }
-                            : null,
+                        repository: repository && {
+                            object: commit
+                                ? {
+                                      statusCheckRollup: checks
+                                          ? { contextPage: { totalCount: checks.length, nodes: checks.slice(0, 100) } }
+                                          : null,
+                                  }
+                                : null,
+                        },
                     };
                     return { data };
                 }
@@ -143,6 +149,10 @@ export function fakeCommitGitHub(): FakeCommitGitHub {
             }
         },
     };
+
+    function findRepository(variables: TestGraphQLRequest['variables']) {
+        return repositories.get(`${String(variables.owner)}/${String(variables.name)}`) ?? null;
+    }
 
     function findCommit(id: string) {
         for (const repository of repositories.values()) {
@@ -250,6 +260,29 @@ function refPage(repository: FakeCommitRepository, refs: ReadonlyMap<string, str
     }
 
     return { pageInfo: { hasNextPage: end < names.length, endCursor: String(Math.min(end, names.length)) }, nodes };
+}
+
+/**
+ * The commit `rev` names, as `object(expression:)` finds it: by its full oid, or by a prefix only one commit has —
+ * `null` for a prefix two share, as git refuses an ambiguous short sha.
+ */
+function findByRev(repository: FakeCommitRepository, rev: unknown): KeptCommit | null {
+    const wanted = String(rev);
+    const exact = repository.commits.get(wanted);
+    if (exact) {
+        return exact;
+    }
+
+    const matches = [...repository.commits.values()].filter(commit => commit.oid.startsWith(wanted));
+    return matches.length === 1 ? (matches[0] ?? null) : null;
+}
+
+/** A commit's pull request and CI state as GitHub answers them. */
+function toStateFields(state: CommitState | undefined): CommitStateFieldsFragment {
+    return {
+        associatedPullRequests: { nodes: state?.pullRequest ? [state.pullRequest] : [] },
+        statusCheckRollup: state?.ci ? { state: state.ci } : null,
+    };
 }
 
 /** A commit's whole message, as git keeps it. */

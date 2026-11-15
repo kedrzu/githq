@@ -1,3 +1,5 @@
+title:
+  en: Commits
 commitsOf:
   en: Commits of {name}
 loading:
@@ -20,22 +22,10 @@ previous:
   en: Previous commit
 findRef:
   en: Find a branch or tag
-openDetails:
-  en: Open the commit's details
-firstParent:
-  en: First parent
-secondParent:
-  en: Second parent
-openPullRequest:
-  en: Open its pull request
-openOnGitHub:
-  en: Open on GitHub
-closeDetails:
-  en: Close the details
+openCommit:
+  en: Open the commit
 resizeGraph:
   en: Resize the commit graph
-resizeDetails:
-  en: Resize the commit details
 lanesFit:
   plural: total
   en:

@@ -44,6 +44,16 @@ export interface UseItemKeysOptions {
     /** Left out, `K`/`J`. */
     stepKeys?: ItemStepKeys;
     /**
+     * `false` leaves the step keys to the screen beside the item, which moves through its list itself (the commit graph's
+     * cursor, which the opened commit follows); left out, `true`.
+     */
+    steps?: MaybeRefOrGetter<boolean>;
+    /**
+     * `false`: the other arrangement is offered with no key, `⇧Enter` being the kind's own (a commit's pull request);
+     * left out, `true`.
+     */
+    arrangeByKey?: boolean;
+    /**
      * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already): `true`
      * when it took the key.
      */
@@ -425,13 +435,15 @@ type HistoryMove = 'push' | 'replace';
  * The keys of an opened item, every kind's: Escape closes it — after an open picker or menu (`isLayerOpen`), the view's
  * own layers (`onEscape`), and a focused field, which gives the key up first — and the step keys step through the list
  * it was opened from (in a panel the list's own `j`/`k`, run first, move its selection instead, which the opened item
- * follows). The commands — listed in the help sheet, `⇧Enter` and `O` run by their keys — are for the view to
- * register among its own; `⇧Enter` is not offered on a page where the window has no room for the panel.
+ * follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone). The commands — listed in the help
+ * sheet, `⇧Enter` and `O` run by their keys — are for the view to register among its own; `⇧Enter` is not offered on
+ * a page where the window has no room for the panel, and a kind may offer the other arrangement with no key.
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
     const navigation = useService(ItemNavigation);
     const arrangement = makeRef(options.arrangement);
+    const steps = makeRef(options.steps ?? true);
     const stepKeys = options.stepKeys ?? DEFAULT_STEP_KEYS;
 
     const otherArrangement = computed((): OtherArrangement | null => {
@@ -472,7 +484,7 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
                 id: `item.arrange.${other.arrangement}`,
                 title: other.title,
                 section: 'item',
-                key: ITEM_ARRANGEMENT_KEYS.arrange,
+                key: options.arrangeByKey === false ? undefined : ITEM_ARRANGEMENT_KEYS.arrange,
                 icon: other.icon,
                 run: () => options.arrange(other.arrangement),
             },
@@ -500,7 +512,7 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
             return;
         }
 
-        if (!isScreenKey(event)) {
+        if (!isScreenKey(event) || !steps.value) {
             return;
         }
 

@@ -3,6 +3,7 @@ import type {
     CommitDetailQuery,
     CommitFieldsFragment,
     CommitHistoriesQuery,
+    CommitStateFieldsFragment,
     CommitStatesQuery,
     DraftIssueFieldsFragment,
     IssueCommentFieldsFragment,
@@ -1534,16 +1535,22 @@ export class GitHubWorld {
             return { nodes };
         });
         github.graphql('CommitDetail', ({ variables }) => {
-            const found = this.findCommit(String(variables.id));
-            const node: CommitDetailQuery['node'] = found
-                ? {
-                      ...toCommitFields(found.commit),
-                      message: found.commit.body
-                          ? `${found.commit.headline}\n\n${found.commit.body}`
-                          : found.commit.headline,
-                  }
-                : null;
-            return { node };
+            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const commit = repository?.commits.get(String(variables.rev));
+            const answer: CommitDetailQuery = {
+                repository: repository
+                    ? {
+                          object: commit
+                              ? {
+                                    ...toCommitFields(commit),
+                                    ...toCommitStateFields(repository, commit),
+                                    message: commit.body ? `${commit.headline}\n\n${commit.body}` : commit.headline,
+                                }
+                              : null,
+                      }
+                    : null,
+            };
+            return answer;
         });
         github.graphql('CommitStates', ({ variables }) => {
             const nodes: CommitStatesQuery['nodes'] = readIds(variables).map(id => {
@@ -1552,46 +1559,34 @@ export class GitHubWorld {
                     return null;
                 }
 
-                const { repository, commit } = found;
-
-                const pullRequest = commit.pullRequest;
-                return {
-                    id,
-                    associatedPullRequests: {
-                        nodes: pullRequest
-                            ? [
-                                  {
-                                      ...pullRequest,
-                                      url: `https://github.com/${repository.nameWithOwner}/pull/${pullRequest.number}`,
-                                      isDraft: false,
-                                  },
-                              ]
-                            : [],
-                    },
-                    statusCheckRollup: commit.ci ? { state: commit.ci } : null,
-                };
+                return { id, ...toCommitStateFields(found.repository, found.commit) };
             });
             return { nodes };
         });
         github.graphql('CommitChecks', ({ variables }) => {
-            const found = this.findCommit(String(variables.id));
-            if (!found) {
-                return { node: null };
+            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const commit = repository?.commits.get(String(variables.rev));
+            if (!repository || !commit) {
+                const missing: CommitChecksQuery = { repository: repository ? { object: null } : null };
+                return missing;
             }
 
-            const { repository, commit } = found;
             const runs = commit.failedRuns ?? [];
-            const node: CommitChecksQuery['node'] = {
-                statusCheckRollup: commit.ci
-                    ? {
-                          contextPage: {
-                              totalCount: runs.length,
-                              nodes: runs.map(runId => toFailedCheckRun(repository.nameWithOwner, runId)),
-                          },
-                      }
-                    : null,
+            const answer: CommitChecksQuery = {
+                repository: {
+                    object: {
+                        statusCheckRollup: commit.ci
+                            ? {
+                                  contextPage: {
+                                      totalCount: runs.length,
+                                      nodes: runs.map(runId => toFailedCheckRun(repository.nameWithOwner, runId)),
+                                  },
+                              }
+                            : null,
+                    },
+                },
             };
-            return { node };
+            return answer;
         });
         github.graphql('RepositoryIssueTemplates', ({ variables }) => {
             const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
@@ -3590,6 +3585,25 @@ function toHistory(repository: WorldRepository, tip: WorldCommit, first: number)
 
     const ordered = [...reachable.values()].toSorted((a, b) => b.committedDate.localeCompare(a.committedDate));
     return { nodes: ordered.slice(0, first).map(commit => toCommitFields(commit)) };
+}
+
+/** A commit's pull request and CI state as GitHub answers them. */
+function toCommitStateFields(repository: WorldRepository, commit: WorldCommit): CommitStateFieldsFragment {
+    const { pullRequest } = commit;
+    return {
+        associatedPullRequests: {
+            nodes: pullRequest
+                ? [
+                      {
+                          ...pullRequest,
+                          url: `https://github.com/${repository.nameWithOwner}/pull/${pullRequest.number}`,
+                          isDraft: false,
+                      },
+                  ]
+                : [],
+        },
+        statusCheckRollup: commit.ci ? { state: commit.ci } : null,
+    };
 }
 
 function toCommitFields(commit: WorldCommit): CommitFieldsFragment {

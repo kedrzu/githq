@@ -1,0 +1,16 @@
+# What changes about a commit (git-client D8): the pull request it came from and its CI state. Shared by `CommitStates`,
+# for the rows on screen, and `CommitDetail`, for an opened commit no row asks it for, so both map it the same way.
+fragment CommitStateFields on Commit {
+    associatedPullRequests(first: 1) {
+        nodes {
+            number
+            state
+            title
+            url
+            isDraft
+        }
+    }
+    statusCheckRollup {
+        state
+    }
+}
