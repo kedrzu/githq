@@ -1,4 +1,4 @@
-<!-- Settings' Repositories and Projects (G8, T17, D25): the head (`TrackedListHead`, "15 tracked repositories" and "Track repositories A"), then only what is tracked, by owner (`groupTrackedByOwner`), each group under its header (`TrackedOwnerHeader`) with its rows in the `row` slot. A row opens its settings on click or Enter. Keys while it is shown and no layer is open, never from a field: J/K and ↑/↓ move the selection, Enter opens the selected row, ⌫ untracks it — the selection moving to the next row, the previous one after the last — and A adds more (the picker); `1` to `4` stay Settings'. Nothing tracked, the note in its place says what tracking does, its button adding the first (`NothingThere`, first run and loading D6, ES24), once what is tracked is known: nothing says "none" before. -->
+<!-- Settings' Repositories and Projects (G8, T17, D25): the head (`TrackedListHead`, "15 tracked repositories" and "Track repositories A"), then only what is tracked, by owner (`groupTrackedByOwner`), each group under its header (`TrackedOwnerHeader`) with its rows in the `row` slot. A row opens its settings on click or Enter. Keys while it is shown and no layer is open, never from a field: J/K and ↑/↓ move the selection, Enter opens the selected row, ⌫ untracks it — the selection moving to the next row, the previous one after the last — and A adds more (the picker); `1` to `4` stay Settings'. Nothing tracked, the note in its place says what tracking does, its button adding the first (`NothingThere`, first run and loading D6, ES24), once what is tracked is known: nothing says "none" before. On a phone (`phone`, mobile D35, MB151, MB154, MB162) no head — the screen's top bar has the title and "+" — but a line saying what githq does with them, then the groups (`TrackedOwnerHeader`), each row a button drilling into its settings; nothing tracked, the note's button is the screen's one action, the width of its column. The keys stay, with no hints drawn. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
@@ -30,6 +30,8 @@ const props = defineProps<{
   getKey: (row: T) => string;
   /** What is tracked is known: until then, no rows says nothing. */
   loaded: boolean;
+  /** On a phone: no head, rows a finger's height that drill in. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -85,6 +87,69 @@ function onRowClick(event: MouseEvent, row: T) {
 
 <template>
   <div
+    v-if="phone"
+    ref="root"
+    :class="css.trackedListView_phone"
+  >
+    <NothingThere
+      v-if="loaded && rows.length === 0"
+      place="screen"
+      :icon="projects ? SquareKanban : BookMarked"
+      :title="t(projects ? l.noProjectsTitle : l.noRepositoriesTitle)"
+      :detail="t(projects ? l.noProjectsDetailPhone : l.noRepositoriesDetailPhone)"
+    >
+      <template #action>
+        <Button
+          variant="primary"
+          size="lg"
+          :class="css.trackedListView_phoneAdd"
+          @click="emit('add')"
+        >
+          {{ addLabel }}
+        </Button>
+      </template>
+    </NothingThere>
+    <template v-else-if="rows.length > 0">
+      <p :class="css.trackedListView_phoneDescription">
+        {{ t(projects ? l.projectsDescriptionPhone : l.repositoriesDescriptionPhone) }}
+      </p>
+      <section
+        v-for="group in groups"
+        :key="group.login"
+      >
+        <TrackedOwnerHeader
+          :group="group"
+          :kind="kind"
+          phone
+          @track-more="emit('add', group.login)"
+        />
+        <ul
+          :class="css.trackedListView_rows"
+          :aria-label="group.login"
+        >
+          <li
+            v-for="row in group.rows"
+            :key="getKey(row)"
+            :data-tracked-key="getKey(row)"
+          >
+            <button
+              type="button"
+              :class="css.trackedListView_phoneRow"
+              @click="emit('open', row)"
+            >
+              <slot
+                name="row"
+                :row="row"
+                :selected="false"
+              />
+            </button>
+          </li>
+        </ul>
+      </section>
+    </template>
+  </div>
+  <div
+    v-else
     ref="root"
     :class="css.trackedListView"
     :data-route-scroll="`settings-tracked:${kind}`"
@@ -160,6 +225,42 @@ function onRowClick(event: MouseEvent, row: T) {
 </template>
 
 <style lang="scss" module="css">
+.trackedListView_phone {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.trackedListView_phoneDescription {
+  padding: $spacing-12 $spacing-16 $spacing-4;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-fg-dim;
+}
+
+.trackedListView_phoneRow {
+  display: block;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  &:active {
+    background: $color-bg-3;
+  }
+
+  @include focus-ring(-2px);
+}
+
+.trackedListView_phoneAdd {
+  width: 100%;
+  min-height: $touch-target-size;
+}
+
 .trackedListView {
   display: flex;
   flex: 1;

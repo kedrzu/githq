@@ -1,4 +1,4 @@
-<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock`: Tracking, and Workflow alerts (`WorkflowAlertsBlock`). -->
+<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock`: Tracking, and Workflow alerts (`WorkflowAlertsBlock`). On a phone (`phone`, mobile MB152) one column in the screen's scroll: its head (`PhoneTrackedHead`; back is the screen's top bar's), Tracking with Stop tracking, then Workflow alerts. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
@@ -8,6 +8,7 @@ import type { TrackedStatus } from '@/tracking/TrackingTypes.js';
 import WorkflowAlertsBlock from '@/workflows/WorkflowAlertsBlock.vue';
 import type { RepositoryWorkflows, WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
+import PhoneTrackedHead from './PhoneTrackedHead.vue';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import SettingsPageHead from './SettingsPageHead.vue';
 import TrackingBlock from './TrackingBlock.vue';
@@ -28,6 +29,8 @@ const props = defineProps<{
   workflowSettings: WorkflowRefSettings;
   /** The page was opened on Workflow alerts' add field by its address. */
   openedOnAddField?: boolean;
+  /** On a phone: one column in the screen's scroll, with no head of Settings. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -50,6 +53,38 @@ const meta = computed(() => {
 
 <template>
   <div
+    v-if="phone"
+    :class="css.repositorySettingsView_phone"
+  >
+    <PhoneTrackedHead
+      :icon="isPrivate ? Lock : BookMarked"
+      :title="nameWithOwner"
+      :meta="meta"
+      :status="status"
+      :now="now"
+    />
+    <TrackingBlock
+      kind="repository"
+      :name="nameWithOwner"
+      :status="status"
+      :now="now"
+      :open-count="openCount"
+      phone
+      @untrack="emit('untrack')"
+    />
+    <WorkflowAlertsBlock
+      :name-with-owner="nameWithOwner"
+      :stored="workflows"
+      :settings="workflowSettings"
+      :now="now"
+      :opened-on-add-field="openedOnAddField"
+      phone
+      @back="emit('back')"
+      @change="emit('workflowSettings', $event)"
+    />
+  </div>
+  <div
+    v-else
     :class="css.repositorySettingsView"
     :data-route-scroll="`repository-settings:${nameWithOwner}`"
   >
@@ -62,6 +97,7 @@ const meta = computed(() => {
     />
     <TrackingBlock
       kind="repository"
+      :name="nameWithOwner"
       :status="status"
       :now="now"
       :open-count="openCount"
@@ -80,6 +116,11 @@ const meta = computed(() => {
 </template>
 
 <style lang="scss" module="css">
+.repositorySettingsView_phone {
+  display: flex;
+  flex-direction: column;
+}
+
 .repositorySettingsView {
   flex: 1;
   min-height: 0;

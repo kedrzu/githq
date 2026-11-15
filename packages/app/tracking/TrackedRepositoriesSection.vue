@@ -1,4 +1,4 @@
-<!-- Settings' Repositories (G8, D25): what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`); each row says whether it is private (its kept items, else GitHub's lists), its open items and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings (T16); Untrack and ⌫ untrack at once, with Undo (T20); "Track repositories" (A) and a group's "Track more" open the picker (T18), the latter on that owner. `?q=` (from an untracked repository's screen) opens the picker at once with that search. -->
+<!-- Settings' Repositories (G8, D25): what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`); each row says whether it is private (its kept items, else GitHub's lists), its open items and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings (T16); Untrack and ⌫ untrack at once, with Undo (T20); "Track repositories" (A) and a group's "Track more" open the picker (T18), the latter on that owner. `?q=` (from an untracked repository's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
@@ -26,6 +26,8 @@ const TICK_MS = 15_000;
 const props = defineProps<{
   /** What the picker's filter holds when it opens at once (`?q=`, from an untracked repository's screen). */
   initialSearch?: string;
+  /** In a phone's Settings (mobile D35): rows that drill in, adding from the screen's "+" (`add`). */
+  phone?: boolean;
 }>();
 
 const tracking = useService(TrackingStore);
@@ -91,6 +93,9 @@ function untrack(repository: TrackedRepository) {
   pending.untrack({ kind: 'repository', nameWithOwner: repository.nameWithOwner }, repository.nameWithOwner);
 }
 
+// A phone's "+" in the screen's top bar opens the picker.
+defineExpose({ add: openPicker });
+
 function openPicker(owner?: string) {
   pickerOwner.value = owner;
   pickerSearch.value = undefined;
@@ -104,6 +109,7 @@ function openPicker(owner?: string) {
     :groups="groups"
     :get-key="getKey"
     :loaded="tracking.loaded"
+    :phone="phone"
     @open="openSettings"
     @untrack="untrack"
     @add="openPicker"
@@ -116,6 +122,7 @@ function openPicker(owner?: string) {
         :status="getStatus(row.nameWithOwner)"
         :now="now"
         :selected="selected"
+        :phone="phone"
         @untrack="untrack(row)"
       />
     </template>

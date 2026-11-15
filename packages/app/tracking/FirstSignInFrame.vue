@@ -1,11 +1,14 @@
-<!-- The frame of the first sign-in's screen — choosing what to track (G2), or loading the settings saved to GitHub instead (settings-sync G11) — outside the app's shell: along the top the window's strip, as tall as the sidebar's, with githq's name at the left (clear of macOS's window controls in the desktop app, where the strip moves the window) and who is signed in at the right; the screen below. -->
+<!-- The frame of the first sign-in's screen — choosing what to track (G2), or loading the settings saved to GitHub instead (settings-sync G11) — outside the app's shell: along the top the window's strip, as tall as the sidebar's, with githq's name at the left (clear of macOS's window controls in the desktop app, where the strip moves the window) and who is signed in at the right; the screen below. On a phone (mobile D7, MB134–MB138, `Phone / Setup bar`) the strip is the phone's setup bar — the wordmark, and the user's login before their avatar — and the frame covers what the on-screen keyboard leaves of the window (`usePhoneScreenOverKeyboard`), so what the screen pins to its bottom rides above the keyboard while typing (MB163); no key hints are drawn in it (`KeyHintsContext`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
-
+import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
+import { KeyHintsContext } from '@/components/KeyHintsContext.js';
 import Wordmark from '@/components/Wordmark.vue';
 import { WindowControls } from '@/services/WindowControls.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { usePhoneScreenOverKeyboard } from '@/shell/usePhoneScreenOverKeyboard.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 defineProps<{
@@ -18,10 +21,21 @@ defineSlots<{
 }>();
 
 const windowControls = useService(WindowControls);
+const phone = useService(PhoneLayout);
+const phoneStyle = usePhoneScreenOverKeyboard();
+// A phone's setup has no keys to hint at (mobile D52): its buttons' and its fields'.
+provideContext(KeyHintsContext, {
+  get hidden() {
+    return phone.active;
+  },
+});
 </script>
 
 <template>
-  <div :class="css.firstSignInFrame">
+  <div
+    :class="[css.firstSignInFrame, phone.active && css.firstSignInFrame_phone]"
+    :style="phoneStyle"
+  >
     <header
       :class="css.firstSignInFrame_top"
       v-bind="WINDOW_DRAG_REGION"
@@ -77,5 +91,21 @@ const windowControls = useService(WindowControls);
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+}
+
+// Pinned over the part of the window the user sees by its inline style (`usePhoneScreenOverKeyboard`).
+.firstSignInFrame_phone {
+  padding-top: env(safe-area-inset-top, 0px);
+
+  .firstSignInFrame_top {
+    height: $phone-top-bar-height;
+    padding: 0 $spacing-16;
+    border-bottom: 1px solid $color-border;
+  }
+
+  .firstSignInFrame_account {
+    flex-direction: row-reverse;
+    font-size: $font-size-md;
+  }
 }
 </style>

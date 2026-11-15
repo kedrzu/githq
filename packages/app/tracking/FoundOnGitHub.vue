@@ -13,6 +13,8 @@ defineProps<{
   text: string;
   /** How many rows the slot shows. */
   count: number;
+  /** On a phone, beside rows a finger's height. */
+  touch?: boolean;
 }>();
 
 defineSlots<{
@@ -24,28 +26,28 @@ const t = useTranslate();
 </script>
 
 <template>
-  <div :class="css.foundOnGitHub_head">
+  <div :class="[css.foundOnGitHub_head, touch && css.foundOnGitHub_head_touch]">
     <h2 :class="css.foundOnGitHub_name">{{ t(l.heading) }}</h2>
     <span :class="css.foundOnGitHub_detail">{{ state === 'asking' ? t(l.searching) : t(l.detail) }}</span>
   </div>
   <slot />
   <p
     v-if="state === 'asking'"
-    :class="css.foundOnGitHub_line"
+    :class="[css.foundOnGitHub_line, touch && css.foundOnGitHub_line_touch]"
     role="status"
   >
     {{ t(l.asking, { text }) }}
   </p>
   <p
     v-else-if="state === 'failed'"
-    :class="css.foundOnGitHub_line"
+    :class="[css.foundOnGitHub_line, touch && css.foundOnGitHub_line_touch]"
     role="alert"
   >
     {{ t(l.failed) }}
   </p>
   <p
     v-else-if="state === 'answered' && count === 0"
-    :class="css.foundOnGitHub_line"
+    :class="[css.foundOnGitHub_line, touch && css.foundOnGitHub_line_touch]"
   >
     {{ t(l.nothing, { text }) }}
   </p>
@@ -76,5 +78,16 @@ const t = useTranslate();
   padding: $spacing-8 $spacing-12 $spacing-8 37px;
   font-size: $font-size-sm;
   color: $color-fg-dim;
+}
+
+.foundOnGitHub_head_touch {
+  min-height: $touch-target-size;
+  align-items: center;
+  padding: $spacing-8 $spacing-16 0;
+}
+
+// Under the rows' names: the gutter, the phone's box and its gap.
+.foundOnGitHub_line_touch {
+  padding-left: $spacing-16 + 20px + $spacing-12;
 }
 </style>

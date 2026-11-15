@@ -1,4 +1,4 @@
-<!-- The Sync settings section of Settings (settings-sync T3–T8). Off (T3): the choice; ticking it asks GitHub first — with no repository it is created and saving goes on, with one already there what combining would change is shown (T6) and nothing happens until "Combine and turn on" (`⌘↵`), Cancel (`Esc`) leaving both sides as they were; a repository that can't be used says why under the choice, which stays off. On (T4): the repository, when this device last synced, what is saved, turning off with no question, and where the repository is removed. Just turned off (T5): the choice again, and that the repository is still there. Stopped (T7): why, trying again (`R`), and turning off. -->
+<!-- The Sync settings section of Settings (settings-sync T3–T8). Off (T3): the choice; ticking it asks GitHub first — with no repository it is created and saving goes on, with one already there what combining would change is shown (T6) and nothing happens until "Combine and turn on" (`⌘↵`), Cancel (`Esc`) leaving both sides as they were; a repository that can't be used says why under the choice, which stays off. On (T4): the repository, when this device last synced, what is saved, turning off with no question, and where the repository is removed. Just turned off (T5): the choice again, and that the repository is still there. Stopped (T7): why, trying again (`R`), and turning off. On a phone (`phone`, mobile MB160, MB161) one column of rows under "Saving to GitHub": the choice as a switch — ticking it asks GitHub first as the box does, unticking it turns saving off with no question — with what it does under it; while on, the repository (↗), when this phone last synced and what is saved, that views stay on each device, and under "Removing it" the repository's settings on GitHub (↗). What combining would change, a repository that can't be used and why syncing stopped show under the switch as on the computer. -->
 <script lang="ts">
 import type { StoppedReason } from './sync/SettingsSaving.js';
 
@@ -31,7 +31,17 @@ export type SavingConnect =
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUp, ArrowUpRight, CircleCheck, Plus, TriangleAlert } from 'lucide-vue-next';
+import {
+  ArrowUp,
+  ArrowUpRight,
+  Check,
+  CircleCheck,
+  Lock,
+  Plus,
+  RefreshCw,
+  Settings,
+  TriangleAlert,
+} from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -42,6 +52,10 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
+import PhoneSettingsGroup from './PhoneSettingsGroup.vue';
+import PhoneSettingsRow from './PhoneSettingsRow.vue';
+import PhoneSettingsSwitchRow from './PhoneSettingsSwitchRow.vue';
+import * as choiceLabels from './SavingChoice.loc.js';
 import SavingChoice from './SavingChoice.vue';
 import SavingStopped from './SavingStopped.vue';
 import type { SettingsSaving } from './sync/SettingsSaving.js';
@@ -75,6 +89,8 @@ const props = defineProps<{
   combine: () => Promise<unknown>;
   /** "Try again" after syncing stopped. */
   retry: () => Promise<unknown>;
+  /** In a phone's Settings: one column of rows, the choice a switch. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -103,12 +119,35 @@ const ticked = computed({
   },
 });
 
+/**
+ * A phone's switch: on while saving is on or stopped, or while turning on is asked or waits for the user's word. Held
+ * still while GitHub is asked or combining goes on; turned off, saving stops with no question, as Turn off does.
+ */
+const switchedOn = computed({
+  get: () => props.saving.state !== 'off' || ticked.value,
+  set: value => {
+    if (props.connect.kind === 'busy' || combining.value) {
+      return;
+    }
+
+    if (props.saving.state === 'off') {
+      ticked.value = value;
+    } else if (!value) {
+      turnOff();
+    }
+  },
+});
+
 const syncedAt = computed(() => {
   const { saving } = props;
   return saving.state === 'off' ? null : (saving.syncedAt ?? null);
 });
 
 const syncedText = computed(() => (syncedAt.value === null ? t(l.notYet) : formatTimeAgo(syncedAt.value, props.now)));
+
+const savedCounts = computed(
+  () => `${t(l.repositories, { count: props.repositories })}, ${t(l.projects, { count: props.projects })}`,
+);
 
 const savedText = computed(() =>
   t(l.savedValue, {
@@ -207,11 +246,136 @@ function turnOff() {
 
 <template>
   <div
-    :class="css.savingView"
-    data-route-scroll="settings-saving"
+    :class="phone ? css.savingView_phone : css.savingView"
+    :data-route-scroll="phone ? undefined : 'settings-saving'"
   >
-    <div :class="css.savingView_column">
-      <template v-if="saving.state === 'off'">
+    <div :class="phone ? css.savingView_phoneColumn : css.savingView_column">
+      <PhoneSettingsGroup
+        v-if="phone"
+        :title="t(l.savingToGitHub)"
+      >
+        <PhoneSettingsSwitchRow
+          v-model="switchedOn"
+          :label="t(choiceLabels.label)"
+          :description="t(saving.state === 'off' ? l.explanationPhone : l.onDetailPhone)"
+          :aria-busy="connect.kind === 'busy' || undefined"
+        />
+        <template v-if="saving.state !== 'off'">
+          <PhoneSettingsRow
+            v-if="saving.state === 'on'"
+            :icon="Lock"
+            :label="repository"
+            :href="repositoryUrl"
+          />
+          <PhoneSettingsRow
+            v-else
+            :icon="Lock"
+            :label="repository"
+          />
+          <PhoneSettingsRow
+            :icon="RefreshCw"
+            :label="t(l.lastSynced)"
+            :value="syncedText"
+            tid="saving-synced"
+          />
+          <PhoneSettingsRow
+            v-if="saving.state === 'on'"
+            :icon="Check"
+            :label="t(l.saved)"
+            :value="savedCounts"
+          />
+          <p :class="css.savingView_phoneNote">{{ t(l.viewsPhone) }}</p>
+        </template>
+      </PhoneSettingsGroup>
+
+      <template v-if="phone && saving.state === 'stopped'">
+        <SavingStopped
+          :class="css.savingView_phoneInset"
+          :reason="saving.reason"
+          :login="login"
+          :retry="retry"
+          @reload="emit('reload')"
+        />
+      </template>
+
+      <template v-if="phone && saving.state === 'off'">
+        <section
+          v-if="connect.kind === 'found'"
+          :class="[css.savingView_box, css.savingView_combining, css.savingView_phoneInset]"
+          aria-labelledby="saving-combine"
+        >
+          <h2
+            id="saving-combine"
+            :class="css.savingView_title"
+          >
+            {{ t(l.combineTitle, { repository }) }}
+          </h2>
+          <div
+            v-for="group in combiningGroups"
+            :key="group.key"
+            :class="css.savingView_change"
+            :tid="`saving-${group.key}`"
+          >
+            <component
+              :is="group.icon"
+              :class="[css.savingView_changeIcon, group.warning && css.savingView_changeIcon_warning]"
+              aria-hidden="true"
+            />
+            <div :class="css.savingView_changeText">
+              <p>{{ group.head }}</p>
+              <p :class="css.savingView_changeItems">{{ group.items }}</p>
+            </div>
+          </div>
+          <div :class="css.savingView_actions">
+            <Button
+              variant="primary"
+              :busy="combining"
+              @click="combineAndTurnOn"
+            >
+              {{ t(l.combine) }}
+            </Button>
+            <Button
+              :disabled="combining"
+              @click="cancel"
+            >
+              {{ t(l.cancel) }}
+            </Button>
+          </div>
+        </section>
+        <SavingStopped
+          v-else-if="connect.kind === 'unusable'"
+          :class="css.savingView_phoneInset"
+          :reason="connect.reason"
+          :login="login"
+          :retry="turnOn"
+          @reload="emit('reload')"
+        />
+        <p
+          v-else-if="connect.kind === 'unreachable'"
+          :class="css.savingView_phoneNote"
+        >
+          {{ t(l.unreachable) }}
+        </p>
+        <p
+          v-else-if="saving.repositoryLeft"
+          :class="css.savingView_phoneNote"
+        >
+          {{ t(l.turnedOff, { repository }) }}
+        </p>
+      </template>
+
+      <PhoneSettingsGroup
+        v-if="phone && (saving.state === 'on' || (saving.state === 'off' && saving.repositoryLeft))"
+        :title="t(l.removingPhone)"
+      >
+        <PhoneSettingsRow
+          :icon="Settings"
+          :label="t(l.repositorySettings)"
+          :href="`${repositoryUrl}/settings`"
+        />
+      </PhoneSettingsGroup>
+
+      <template v-if="!phone && saving.state === 'off'">
         <div :class="css.savingView_box">
           <SavingChoice
             v-model="ticked"
@@ -305,7 +469,7 @@ function turnOff() {
         </div>
       </template>
 
-      <template v-else>
+      <template v-else-if="!phone && saving.state !== 'off'">
         <p
           v-if="saving.state === 'on'"
           :class="css.savingView_on"
@@ -399,6 +563,28 @@ function turnOff() {
 <style lang="scss" module="css">
 .savingView {
   @include settings-screen;
+}
+
+// A phone: rows the width of the screen's scroll, what is not a row at its margins.
+.savingView_phone,
+.savingView_phoneColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.savingView_phoneColumn {
+  gap: $spacing-4;
+}
+
+.savingView_phoneInset {
+  margin: $spacing-8 $spacing-16;
+}
+
+.savingView_phoneNote {
+  padding: $spacing-4 $spacing-16 0;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-fg-dim;
 }
 
 .savingView_column {

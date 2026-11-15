@@ -44,6 +44,40 @@ export const Rows: Story = {
         }),
 };
 
+/** `touch`: plain rows a finger's height, as a phone's Code review (mobile MB159). */
+export const Touch: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const choice = ref<'single' | 'draft'>('single');
+
+                return () => (
+                    <div style={{ width: '390px' }}>
+                        <h3 id="choice-touch-title">Comments</h3>
+                        <ChoiceCards
+                            modelValue={choice.value}
+                            onUpdate:modelValue={value => (choice.value = value)}
+                            touch
+                            labelledby="choice-touch-title"
+                            options={[
+                                {
+                                    value: 'single',
+                                    label: 'Send it at once',
+                                    detail: 'Each comment goes out on its own.',
+                                },
+                                {
+                                    value: 'draft',
+                                    label: 'Add it to a draft review',
+                                    detail: 'Comments collect in a draft.',
+                                },
+                            ]}
+                        />
+                    </div>
+                );
+            },
+        }),
+};
+
 /** Three cards, the caller drawing a part of each; the button changes the choice as another tab or device would. */
 export const Gallery: Story = {
     render: () =>

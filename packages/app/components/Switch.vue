@@ -1,8 +1,10 @@
-<!-- An on/off switch (`Switch`, `Switch / on`): a `role="switch"` button bound by `v-model`, named by `label` for screen readers — the visible words sit beside it, in the caller's layout. A click or Space flips it. -->
+<!-- An on/off switch (`Switch`, `Switch / on`): a `role="switch"` button bound by `v-model`, named by `label` for screen readers — the visible words sit beside it, in the caller's layout. A click or Space flips it. `size="touch"` draws it larger, for a finger on a phone's settings (mobile MB158). -->
 <script lang="ts" setup>
 defineProps<{
   /** Its accessible name ("Default branch"). */
   label: string;
+  /** Larger, for a finger (a phone's settings). */
+  size?: 'touch';
 }>();
 
 const on = defineModel<boolean>({ required: true });
@@ -12,7 +14,7 @@ const on = defineModel<boolean>({ required: true });
   <button
     type="button"
     role="switch"
-    :class="[css.switch, on && css.switch_on]"
+    :class="[css.switch, on && css.switch_on, size === 'touch' && css.switch_touch]"
     :aria-checked="on"
     :aria-label="label"
     @click="on = !on"
@@ -54,6 +56,22 @@ const on = defineModel<boolean>({ required: true });
   .switch_knob {
     background: $color-button-light;
     transform: translateX(12px);
+  }
+}
+
+.switch.switch_touch {
+  width: 44px;
+  height: 26px;
+  padding: 3px;
+  border-radius: 13px;
+
+  .switch_knob {
+    width: 20px;
+    height: 20px;
+  }
+
+  &.switch_on .switch_knob {
+    transform: translateX(18px);
   }
 }
 </style>

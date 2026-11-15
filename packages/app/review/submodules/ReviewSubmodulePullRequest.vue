@@ -77,8 +77,7 @@ const link = computed(() => {
 
   // The title's link is the card's: its focus ring is the card's.
   &:has(:focus-visible) {
-    outline: 2px solid $color-focus;
-    outline-offset: 1px;
+    @include focus-outline;
   }
 }
 

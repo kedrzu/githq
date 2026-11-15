@@ -72,10 +72,7 @@ function pick() {
     background: $color-bg-3;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include focus-ring(-2px);
 
   &[aria-disabled='true'] {
     color: $color-fg-dim;

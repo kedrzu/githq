@@ -1,4 +1,4 @@
-<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and under it whether things animate (D36, a `SettingsToggleCard`). Both apply at once; where it is saved shows in the status bar. -->
+<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and under it whether things animate (D36, a `SettingsToggleCard`). Both apply at once; where it is saved shows in the status bar. On a phone (`phone`, mobile D30, MB158) only whether things animate, a switch row under Motion: the repository layout chooses between two arrangements a phone does not have. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, useId } from 'vue';
@@ -7,6 +7,8 @@ import ChoiceCards from '@/components/ChoiceCards.vue';
 import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
 
 import * as l from './DisplayView.loc.js';
+import PhoneSettingsGroup from './PhoneSettingsGroup.vue';
+import PhoneSettingsSwitchRow from './PhoneSettingsSwitchRow.vue';
 import SettingsToggleCard from './SettingsToggleCard.vue';
 import type { RepositoryLayout } from './sync/SettingsDocument.js';
 
@@ -18,6 +20,11 @@ const SKETCH_SECTIONS = 4;
 
 /** The tabs of a sketch's top line, after the one selected. */
 const SKETCH_TABS = 2;
+
+defineProps<{
+  /** In a phone's Settings: whether things animate alone, in one column. */
+  phone?: boolean;
+}>();
 
 const model = defineModel<RepositoryLayout>({ required: true });
 const animations = defineModel<boolean>('animations', { required: true });
@@ -32,7 +39,18 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
 </script>
 
 <template>
+  <PhoneSettingsGroup
+    v-if="phone"
+    :title="t(l.motion)"
+  >
+    <PhoneSettingsSwitchRow
+      v-model="animations"
+      :label="t(l.animationsTitle)"
+      :description="t(l.animationsDescriptionPhone)"
+    />
+  </PhoneSettingsGroup>
   <div
+    v-else
     :class="css.displayView"
     data-route-scroll="settings-display"
   >

@@ -64,3 +64,16 @@ combine:
   en: Combine and turn on
 cancel:
   en: Cancel
+savingToGitHub:
+  en: Saving to GitHub
+explanationPhone:
+  en: >-
+    githq creates a private repository named githq-settings in your account, with one file: your settings. Your
+    computer or another phone can then load them. githq has no server and keeps nothing about you. Off, nothing leaves
+    this phone.
+onDetailPhone:
+  en: Off stops syncing on this phone. What you track here stays, and so does the repository.
+viewsPhone:
+  en: How your views look stays separate on each device.
+removingPhone:
+  en: Removing it

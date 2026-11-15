@@ -82,3 +82,15 @@ export const Stopped: Story = {
         },
     },
 };
+
+/** MB160: on a phone, off: the choice a switch under "Saving to GitHub", what it does under it. */
+export const PhoneOff: Story = { args: { phone: true } };
+
+/** MB161: on a phone, on: the repository (↗), when this phone last synced, what is saved; Removing it. */
+export const PhoneOn: Story = { args: { ...On.args, phone: true } };
+
+/** On a phone, a repository found: what combining changes under the switch. */
+export const PhoneCombining: Story = { args: { ...Combining.args, phone: true } };
+
+/** On a phone, syncing stopped: why, under the rows. */
+export const PhoneStopped: Story = { args: { ...Stopped.args, phone: true } };

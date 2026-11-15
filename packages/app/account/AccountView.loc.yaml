@@ -74,3 +74,17 @@ signOutDetail:
   en: Deletes the copy kept in this browser and signs you out. Nothing changes on GitHub. Signing in again downloads everything anew.
 signOutAndClear:
   en: Sign out and clear
+hiddenPhone:
+  en: Private data hidden
+hiddenDetailPhone:
+  en: Hides its private data from githq.
+requestApprovalOnGitHub:
+  en: Request approval on GitHub
+thisPhone:
+  en: This phone
+signOutQuestion:
+  en: Sign out and clear this phone?
+signOutQuestionDetail:
+  en: 'githq deletes its copy on this phone: {copy}. Nothing changes on GitHub.'
+cancel:
+  en: Cancel
