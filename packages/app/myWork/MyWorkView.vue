@@ -408,12 +408,17 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       :modified="modified"
       @reset="emit('reset')"
     >
-      <slot
-        v-if="checkedIds.length > 0"
-        name="selection"
-        :ids="checkedIds"
-        :span="getSelectionSpan(groups, checkedIds)"
-      />
+      <template
+        v-if="$slots.selection"
+        #selection
+      >
+        <slot
+          v-if="checkedIds.length > 0"
+          name="selection"
+          :ids="checkedIds"
+          :span="getSelectionSpan(groups, checkedIds)"
+        />
+      </template>
       <SegmentedTabs
         v-model="filter"
         :class="css.myWorkView_filters"

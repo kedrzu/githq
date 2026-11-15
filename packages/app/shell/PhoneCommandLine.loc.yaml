@@ -6,3 +6,8 @@ commandMenu:
   en: Command menu
 continueComment:
   en: 'Continue your comment: {draft}'
+selected:
+  plural: count
+  en:
+    one: 1 selected
+    many: '{count} selected'

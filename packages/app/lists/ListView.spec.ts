@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { assert } from '@nzyme/utils/assert.js';
 import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
@@ -14,6 +15,7 @@ import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -22,10 +24,15 @@ import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { matchText } from '@/testing/matchText.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
+import { SAMPLE_PORTAL_METADATA } from '@/testing/sampleRepositories.js';
 import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import type { SwipeElementOptions } from '@/testing/swipeElement.js';
+import { swipeElement } from '@/testing/swipeElement.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import { ExpandedStacks } from './ExpandedStacks.js';
@@ -1826,6 +1833,181 @@ test('detached, a merge sent from the opened item takes the next step', async ()
     await expect.poll(selectedCard).toBe('a3');
     expect(view.opened).toEqual(['a3']);
 });
+
+test('mobile D27: on a phone a row swiped left by touch slides to Assign and Close, Status too while it is in a project; short of a third it springs back, swiped right it closes, and a tap while one is open closes it, opening nothing', async () => {
+    const { view } = await mountSwipeable([['todo', ['i1', 'i2']]], [sampleIssue('i1'), sampleIssue('i2')], {
+        places: { i2: D1_ISSUE_DETAIL.projects },
+    });
+
+    await swipeRow('i1', -40);
+    await expect.poll(() => rowElement('i1').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+
+    await swipeRow('i1', -150);
+    await expect.element(page.getByRole('button', { name: 'Assign' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Close' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Status' })).not.toBeInTheDocument();
+    expect(rowElement('i1').style.translate).toMatch(/^-\d+px/u);
+
+    // Another row's swipe closes the open one; this one is in a project.
+    await swipeRow('i2', -150);
+    await expect.poll(() => rowElement('i1').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Status' })).toBeVisible();
+    await swipeRow('i2', 150);
+    await expect.poll(() => rowElement('i2').style.translate).toBe('');
+
+    await swipeRow('i2', -150);
+    await userEvent.click(page.getByText('i1'));
+    await expect.poll(() => rowElement('i2').style.translate).toBe('');
+    expect(view.opened).toEqual([]);
+    await userEvent.click(page.getByText('i1'));
+    expect(view.opened).toEqual(['i1']);
+});
+
+test('mobile D27, D45: Assign opens the assignees picker at the bottom, and who is picked is sent as one edit once it closes; the row slides back', async () => {
+    const { edit } = await mountSwipeable([['todo', ['i1']]], [sampleIssue('i1')]);
+
+    await swipeRow('i1', -150);
+    await userEvent.click(page.getByRole('button', { name: 'Assign' }));
+    const sheet = page.getByRole('dialog', { name: 'Assignees' });
+    await expect.element(sheet).toBeVisible();
+    await userEvent.click(sheet.getByRole('option', { name: 'olam' }));
+    expect(edit).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.poll(() => edit.mock.calls).toEqual([[['i1'], { kind: 'assignees', add: ['olam'], remove: [] }]]);
+    await expect.poll(() => rowElement('i1').style.translate).toBe('');
+});
+
+test("mobile D27: Close on an issue opens its menu of reasons at the bottom; on a pull request it closes it at once, and a pull request's row has no Status", async () => {
+    const { edit } = await mountSwipeable([['todo', ['i1', 'p1']]], [sampleIssue('i1'), samplePullRequest('p1')]);
+
+    await swipeRow('i1', -150);
+    await userEvent.click(page.getByRole('button', { name: 'Close' }));
+    const sheet = page.getByRole('dialog', { name: 'Close issue' });
+    await expect.element(sheet).toBeVisible();
+    await userEvent.click(sheet.getByRole('menuitem', { name: 'Close as not planned' }));
+    await expect.poll(() => edit.mock.calls).toEqual([[['i1'], { kind: 'close', reason: 'NOT_PLANNED' }]]);
+    await expect.element(sheet).not.toBeInTheDocument();
+
+    edit.mockClear();
+    await swipeRow('p1', -150);
+    await expect.element(page.getByRole('button', { name: 'Assign' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Status' })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Close' }));
+    expect(edit.mock.calls).toEqual([[['p1'], { kind: 'close', reason: 'COMPLETED' }]]);
+});
+
+test("mobile D27: a mouse drag never moves a row — on the computer, nor on a phone — and a touch from the screen's left edge is the browser's (D2)", async () => {
+    const desktop = await mountSwipeable([['todo', ['i1']]], [sampleIssue('i1')], { phone: false });
+    await swipeRow('i1', -150, { pointerType: 'mouse' });
+    await swipeRow('i1', -150);
+    expect(rowElement('i1').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+    desktop.view.unmount();
+
+    await mountSwipeable([['todo', ['i1']]], [sampleIssue('i1')]);
+    await swipeRow('i1', -150, { pointerType: 'mouse' });
+    await swipeRow('i1', 150, { startX: 10 });
+    await swipeRow('i1', -150, { startX: 10 });
+    expect(rowElement('i1').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+});
+
+test('mobile D28: selecting on a phone, each row has a checkbox named by it; a tap toggles the row, opening nothing, no row swipes, and Escape leaves, emptying the selection', async () => {
+    const { view } = await mountSwipeable(
+        [['todo', ['i1', 'i2', 'i3']]],
+        [sampleIssue('i1'), sampleIssue('i2'), sampleIssue('i3')],
+    );
+    const phone = view.container.resolve(PhoneLayout);
+    await expect.element(page.getByRole('checkbox')).not.toBeInTheDocument();
+
+    phone.setSelecting(true);
+    const checkbox = (id: string) => page.getByRole('checkbox', { name: id });
+    await expect.element(checkbox('i1')).not.toBeChecked();
+    await userEvent.click(page.getByText('i1'));
+    await userEvent.click(checkbox('i3'));
+    await expect.element(checkbox('i1')).toBeChecked();
+    expect(view.checkedIds.value).toEqual(['i1', 'i3']);
+    expect(phone.selectedCount).toBe(2);
+    await userEvent.click(page.getByText('i1'));
+    expect(view.checkedIds.value).toEqual(['i3']);
+    expect(view.opened).toEqual([]);
+
+    await swipeRow('i2', -150);
+    expect(rowElement('i2').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    expect(phone.selecting).toBe(false);
+    expect(view.checkedIds.value).toEqual([]);
+    await expect.element(page.getByRole('checkbox')).not.toBeInTheDocument();
+    await userEvent.click(page.getByText('i1'));
+    expect(view.opened).toEqual(['i1']);
+});
+
+test('mobile D28, K2: items checked on a phone another way (a toast asking for the failed ones) select there; narrowed, it keeps selecting those alone; the list going leaves it', async () => {
+    const { view } = await mountSwipeable(
+        [['todo', ['i1', 'i2', 'i3']]],
+        [sampleIssue('i1'), sampleIssue('i2'), sampleIssue('i3')],
+    );
+    const phone = view.container.resolve(PhoneLayout);
+
+    view.checkedIds.value = ['i1', 'i2', 'i3'];
+    await expect.poll(() => phone.selecting).toBe(true);
+    expect(phone.selectedCount).toBe(3);
+
+    view.checkedIds.value = ['i2'];
+    await expect.element(page.getByRole('checkbox', { name: 'i2' })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: 'i1' })).not.toBeChecked();
+    expect(phone.selecting).toBe(true);
+    expect(phone.selectedCount).toBe(1);
+
+    view.unmount();
+    expect(phone.selecting).toBe(false);
+});
+
+/** What {@link mountSwipeable} mounts besides the items. */
+interface SwipeableOptions {
+    /** On a phone, unless `false`. */
+    readonly phone?: boolean;
+    /** The projects of an item, by its id: none when not given. */
+    readonly places?: Readonly<Record<string, readonly ItemDetailProject[]>>;
+}
+
+/** A list of items in the local copy with a context menu, their repositories' people known, every edit recorded. */
+async function mountSwipeable(columns: Columns, stored: readonly Item[], options: SwipeableOptions = {}) {
+    const container = createListContainer();
+    container.set(PhoneLayout, createFixedPhoneLayout(options.phone ?? true));
+    container.set(RepositoryStore, {
+        get: name => ({ ...SAMPLE_PORTAL_METADATA, nameWithOwner: name }),
+        viewerProjects: null,
+        ensure: name => Promise.resolve({ ...SAMPLE_PORTAL_METADATA, nameWithOwner: name }),
+        ensureViewerProjects: () => Promise.resolve(null),
+        complete: metadata => Promise.resolve(metadata),
+    });
+    const store = container.resolve(ItemStore);
+    await store.ready();
+    store.upsertMany([...stored]);
+    const editor = container.resolve(ItemEditor);
+    const edit = vi.spyOn(editor, 'edit').mockResolvedValue({ failed: [] });
+    vi.spyOn(editor, 'getPlaces').mockImplementation(item => [...(options.places?.[item.id] ?? [])]);
+    const view = mount(columns, 'list', { contextMenu: true, container });
+    return { view, edit };
+}
+
+/** Swipes the row of `id` by `dx` and lets the list re-render. */
+async function swipeRow(id: string, dx: number, options?: SwipeElementOptions) {
+    await swipeElement(rowElement(id), dx, options);
+    await nextTick();
+}
+
+/** The row of `id` in the group "todo". */
+function rowElement(id: string) {
+    const row = document.querySelector(`[data-entry-key="todo:${id}"]`);
+    assert(row instanceof HTMLElement);
+    return row;
+}
 
 /** Mounts the list over `initial`, holding its selection like a page does; every group takes moves. */
 function mount(initial: Columns, layout: ListLayout, options: MountOptions = {}) {

@@ -1,4 +1,4 @@
-<!-- What can be done to the items selected together in a list (E2, `x`) — with stacks' entries among them, it says how many pull requests and how many entries and rows they span (D20, SP28): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. -->
+<!-- What can be done to the items selected together in a list (E2, `x`) — with stacks' entries among them, it says how many pull requests and how many entries and rows they span (D20, SP28): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. On a phone (mobile D28, MB118) it draws nothing: the command menu is where they are done — opened from the command line, whose chip counts the selection — headed "Only what applies to all 3", each action opening its menu there, and its rows say the value the items share or "mixed". -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -22,6 +22,7 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Clock } from '@/services/Clock.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
@@ -54,6 +55,7 @@ const merging = injectContext(MergeContext, { optional: true });
 const options = usePickerOptions();
 const editCommands = useEditCommands();
 const clock = useService(Clock);
+const phone = useService(PhoneLayout);
 const opened = ref<SelectionPicker | null>(null);
 const closeMenuOpen = ref(false);
 
@@ -63,6 +65,8 @@ const allPullRequests = computed(
   () => selected.value.length === props.ids.length && selected.value.every(item => item.kind === 'pullRequest'),
 );
 const chip = computed(() => t(allPullRequests.value ? l.pullRequests : l.items, { count: props.ids.length }));
+/** What heads the command menu's actions of the selection: the chip, on a phone what they are (MB118). */
+const menuTitle = computed(() => (phone.active ? t(l.onlyWhatApplies, { count: props.ids.length }) : chip.value));
 /** "9 pull requests selected, in 3 entries and 1 row" (SP28), or "3 selected" with no stack's entry among them. */
 const countText = computed(() => {
   const span = props.span;
@@ -137,20 +141,25 @@ useCommands(
       edit: apply,
       setField: (place, field, value) =>
         apply({ kind: 'projectFieldInProject', projectId: place.projectId, fieldId: field.id, value }),
-      inline: {
-        assignees: () => open('assignees'),
-        labels: () => open('labels'),
-        milestone: () => open('milestone'),
-        state: () => {
-          closeMenuOpen.value = true;
-          return true;
-        },
-      },
+      summarize: phone.active,
+      getPlaces: item => editor.getPlaces(item),
+      // A phone draws no toolbar: an action opens its menu in the command menu.
+      inline: phone.active
+        ? undefined
+        : {
+            assignees: () => open('assignees'),
+            labels: () => open('labels'),
+            milestone: () => open('milestone'),
+            state: () => {
+              closeMenuOpen.value = true;
+              return true;
+            },
+          },
     }),
   () => ({
     kind: 'selection',
     label: chip.value,
-    title: chip.value,
+    title: menuTitle.value,
   }),
 );
 
@@ -217,6 +226,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
 
 <template>
   <div
+    v-if="!phone.active"
     :class="css.selectionActions"
     role="toolbar"
     :aria-label="t(l.actions)"

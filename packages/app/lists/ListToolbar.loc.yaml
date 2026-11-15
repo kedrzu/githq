@@ -26,3 +26,10 @@ showPropertiesCommand:
   en: Show properties…
 resetCommand:
   en: Reset view options
+selected:
+  plural: count
+  en:
+    one: 1 selected
+    many: '{count} selected'
+stopSelecting:
+  en: Stop selecting

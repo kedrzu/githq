@@ -28,6 +28,9 @@ export const List: Story = { args: { part: { label: 'Issues', count: 142 } } };
 /** On a project view changed on this device (mobile MB222, D49): a dot on the chip. */
 export const ListChanged: Story = { args: { part: { label: 'Current sprint', count: 34, changed: true } } };
 
+/** On a list selecting several items (mobile D28, MB117): the chip counts them in place of the part. */
+export const ListSelecting: Story = { args: { part: { label: 'Issues', count: 142 }, selected: 3 } };
+
 /** On a list whose part has no count yet. */
 export const ListCounting: Story = { args: { part: { label: 'Pull requests', count: null } } };
 
