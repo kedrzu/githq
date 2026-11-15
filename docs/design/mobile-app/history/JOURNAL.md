@@ -25,3 +25,10 @@ Append-only. One line per decision, rejection or answer from the owner.
   built; they change with the implementation, not here. Next: Keychain / Tauri plugins on iOS.
 - 2026-11-15 — Checked: the desktop's `keyring` crate has iOS and Android stores, so the token keeps the desktop's
   code path; recorded under D2. Only the iOS sign-in sheet needs our own Swift. D2 still awaits the owner.
+- 2026-11-15 — Owner confirmed Tauri (D2) and took builds as the next topic. Checked (2026-11-15): TestFlight allows
+  "up to 100 internal testers" and a build "becomes unavailable for testers after 90 days"; review language appears
+  only for external testing (no-review for internal not stated verbatim); `CFBundleShortVersionString` is "three
+  period-separated integers", so no `-dev.N`; `CFBundleVersion` is one to three integers (uniqueness per upload not
+  found stated); altool upload is current; Tauri documents `tauri ios build --export-method app-store-connect` and
+  `xcrun altool --upload-app … --apiKey … --apiIssuer` (v2.tauri.app/distribute/app-store/), no CI recipe.
+  Proposed to the owner: Development stream → TestFlight, Stable → App Store, version `0.3.0` + build number N.

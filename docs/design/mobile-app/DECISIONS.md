@@ -40,7 +40,7 @@ review, so the app trails githq.dev.
 ## D2
 
 **The phone app is built with Tauri v2, as further targets of the existing desktop project, not with Capacitor or a
-native app.** (2026-11-15, design agent's proposal, not yet confirmed by the owner)
+native app.** (2026-11-15, design agent's proposal, confirmed by the owner the same day)
 
 **Why.** The desktop app's native side — the Device Flow, opening links, deep links — is Rust in
 `packages/desktop/src-tauri`, and the SPA talks to it through one bridge (`packages/app/desktop/NativeBridge.ts`).
