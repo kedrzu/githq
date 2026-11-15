@@ -321,10 +321,10 @@ $run-tick-height: 14px;
 // The commit graph (`commits/`)
 // ---------------------------------------------------------------------------------------------------
 
-// A commit's row (`CommitRow`, its ghost `GhostCommitRow`): the author's column and the age's, right-aligned, and the
-// row's width under which the author's name gives way to the avatar.
-$commit-row-author-width: 110px;
-$commit-row-age-width: 30px;
+// A commit's row (`CommitRow`, its ghost `GhostCommitRow`, CH64): its two lines, each as tall as a chip, and the gap
+// between them; the row's width under which its short sha gives way.
+$commit-row-line-height: 18px;
+$commit-row-line-gap: 3px;
 $commit-row-narrow-width: 640px;
 
 // ---------------------------------------------------------------------------------------------------
@@ -600,13 +600,33 @@ $row-surface-inset: $spacing-2 $spacing-8;
     padding: $spacing-4 $spacing-6 $spacing-6;
 }
 
-// A commit's row (`CommitRow`, `GhostCommitRow`): its gap and the room at its right; its width is what narrows it.
+// A commit's row (`CommitRow`, `GhostCommitRow`): the graph's slice, then its two lines; its gap and the room at its
+// right; its width is what narrows it.
 @mixin commit-row {
     display: flex;
     gap: $spacing-8;
-    align-items: center;
+    align-items: flex-start;
     padding-right: $spacing-20;
     container-type: inline-size;
+}
+
+// A commit row's two lines, the first centred on the graph's dot, 16 px from the row's top (`COMMIT_ROW_DOT_Y`).
+@mixin commit-row-lines {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: $commit-row-line-gap;
+    min-width: 0;
+    padding-top: $spacing-7;
+}
+
+// One of a commit row's lines: what it holds follows the one before it, centred on the line.
+@mixin commit-row-line {
+    display: flex;
+    gap: $spacing-6;
+    align-items: center;
+    min-width: 0;
+    height: $commit-row-line-height;
 }
 
 // A card of the item's thread with its avatar in the thread's gutter (`CommentCard`, `ItemThreadComposer`,
