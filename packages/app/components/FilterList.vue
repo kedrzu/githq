@@ -231,6 +231,7 @@ function onKeydown(event: KeyboardEvent) {
             :key="`${group.key}:${row.value}`"
             :value="row.value"
             :disabled="row.disabled"
+            :aria-disabled="row.disabled || undefined"
             :class="[css.filterList_row, row.disabled && css.filterList_row_disabled]"
             :aria-checked="multiple ? row.checked : undefined"
           >

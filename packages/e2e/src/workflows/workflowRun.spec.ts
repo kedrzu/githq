@@ -732,6 +732,23 @@ test('W40: ⌘K re-runs all the jobs or the one under the cursor, cancel dimmed 
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`);
 });
 
+test('W40: ⌘K re-runs the job under the cursor alone, and the run goes again', async ({ page, github }) => {
+    const { world, buildId, path } = createRerunnableRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+
+    await new CommandMenuHarness(page).run('Re-run job');
+
+    await expect(screen.summary).toContainText('Running');
+    await expect(screen.summary).toContainText('attempt 2');
+    const reruns = github.restCalls
+        .filter(call => call.method === 'POST' && /\/rerun(-failed-jobs)?$/u.test(call.url.pathname))
+        .map(call => call.url.pathname);
+    expect(reruns).toEqual([`/repos/${SAMPLE_REPOSITORY}/actions/jobs/${buildId}/rerun`]);
+});
+
 test('W40: a running run is cancelled from ⌘K', async ({ page, github }) => {
     const { world, runId, path } = createFailedRun(null);
     world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);

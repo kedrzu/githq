@@ -58,6 +58,9 @@ export interface RunWorkflowCommands {
 /** A ref typed in the form is read once typing pauses this long. */
 const REF_DEBOUNCE_MS = 400;
 
+/** The trigger running a workflow by hand, named in the texts: a parameter, as a `_` in a translation is a no-break space. */
+const DISPATCH_TRIGGER = 'workflow_dispatch';
+
 /** How many workflows' names a repository's line lists. */
 const NAMES_SHOWN = 3;
 
@@ -163,15 +166,21 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             start: inRepository ? getRepositoryRowId(repository) : undefined,
             prepare: () => {
                 for (const name of tracked) {
-                    if (getRepositoryBlock(name) === null) {
-                        dispatchable.read(name);
-                    }
+                    void readRunnable(name);
                 }
             },
             children: () => getRepositoryRows(tracked),
             // Its repositories and workflows are found only through its own level: each one costs a read of GitHub.
             foundAlone: () => [],
         };
+    }
+
+    /** Reads what the user can run in the repository: its files once its metadata says they may run workflows there. */
+    async function readRunnable(nameWithOwner: string) {
+        await repositories.ensure(nameWithOwner);
+        if (getRepositoryBlock(nameWithOwner) === null) {
+            dispatchable.read(nameWithOwner);
+        }
     }
 
     /** The tracked repositories, those with a workflow to run first, then those with nothing to run. */
@@ -190,21 +199,25 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             section: 'app',
             icon: BookMarked,
         };
-        const block = getRepositoryBlock(nameWithOwner);
+        // Until its metadata is read, whether the user may run anything there is not known: it reads as being read.
+        const block = repositories.get(nameWithOwner) ? getRepositoryBlock(nameWithOwner) : null;
         if (block !== null) {
             return { ...row, unavailable: block === 'archived' ? t(l.archived) : t(l.noAccess) };
         }
 
         const found = dispatchable.get(nameWithOwner);
         if (found.status === 'read' && found.workflows.length === 0) {
-            return { ...row, unavailable: t(l.nothingToRun) };
+            return { ...row, unavailable: t(l.nothingToRun, { trigger: DISPATCH_TRIGGER }) };
         }
 
         return {
             ...row,
             detail: describeRepository(found),
-            message: found.status === 'reading' || found.status === 'unread' ? t(l.readingWorkflows) : t(l.noWorkflows),
-            prepare: () => dispatchable.read(nameWithOwner),
+            message:
+                found.status === 'reading' || found.status === 'unread'
+                    ? t(l.readingWorkflows)
+                    : t(l.noWorkflows, { trigger: DISPATCH_TRIGGER }),
+            prepare: () => void readRunnable(nameWithOwner),
             children: () =>
                 dispatchable.get(nameWithOwner).workflows.map(entry => getWorkflowRow(nameWithOwner, entry)),
         };
@@ -295,9 +308,9 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
             case undefined:
                 return read.status === 'failed' ? t(l.failedAt, { file, ref }) : t(l.readingAt, { file, ref });
             case 'parsed':
-                return parse.file.dispatch ? undefined : t(l.noDispatchAt);
+                return parse.file.dispatch ? undefined : t(l.noDispatchAt, { trigger: DISPATCH_TRIGGER });
             case 'noTriggers':
-                return t(l.noDispatchAt);
+                return t(l.noDispatchAt, { trigger: DISPATCH_TRIGGER });
             case 'missing':
                 return t(l.missingAt, { file, ref });
             case 'notYaml':
@@ -376,7 +389,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
     }
 
     function describeBlock(block: Exclude<WorkflowDispatchBlock, 'noAccess' | 'archived'>, workflow: GitHubWorkflow) {
-        const params = { workflow: workflow.name };
+        const params = { workflow: workflow.name, trigger: DISPATCH_TRIGGER };
         switch (block) {
             case 'generated':
                 return t(l.blockGenerated, params);

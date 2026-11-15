@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
 import { getRepositorySettingsPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -34,6 +35,7 @@ const t = useTranslate();
 const browser = useService(Browser);
 const navigation = useService(ItemNavigation);
 const places = useService(WorkflowTabPlaces);
+const repositories = useService(RepositoryStore);
 const route = useRoute();
 const router = useRouter();
 const openRun = useOpenWorkflowRun();
@@ -93,6 +95,14 @@ useCommands(() => {
       : null;
   return command ? [command] : [];
 });
+
+// Whether the user may run a workflow here (write access, archived) decides "Run workflow": read when it isn't known or
+// is old.
+watch(
+  () => props.nameWithOwner,
+  nameWithOwner => void repositories.ensure(nameWithOwner),
+  { immediate: true },
+);
 
 // Back from a workflow — or with one stepped to in the panel —, the workflow opened last is the selected row; once.
 watch([() => navigation.lastOpenedId, references], ([key, found]) => followOpened(key, found), { immediate: true });

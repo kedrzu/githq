@@ -56,6 +56,10 @@ export interface GitHubActionsWorkflow {
     readonly name: string;
     /** `active`, `disabled_manually`, … */
     readonly state: string;
+    /** Its file's text at every ref `fileByRef` leaves out; run on push, one job, without it. */
+    readonly file?: string;
+    /** Its file's text at the refs where it differs, by branch or tag name. */
+    readonly fileByRef?: Readonly<Record<string, string>>;
 }
 
 /** A run of a repository's workflow; its number and URLs are made from its id. */
@@ -80,8 +84,12 @@ export interface GitHubActionsRun {
 
 /** What a repository answers to the app's writes to its Actions; `404` for each one left out. */
 export interface GitHubActionsWrites {
+    /** `POST …/actions/workflows/{id}/dispatches`, with the body the app sent. */
+    readonly dispatch?: (workflowId: number, body: unknown) => GitHubRestAnswer;
     /** `POST …/actions/runs/{id}/rerun-failed-jobs`. */
     readonly rerun?: (runId: number) => GitHubRestAnswer;
+    /** `POST …/actions/jobs/{id}/rerun`. */
+    readonly rerunJob?: (jobId: number) => GitHubRestAnswer;
     /** `POST …/actions/runs/{id}/cancel`. */
     readonly cancel?: (runId: number) => GitHubRestAnswer;
     /** `PUT …/actions/workflows/{id}/enable` or `/disable`. */
@@ -103,9 +111,10 @@ export const NO_ACTIONS: GitHubActionsState = {
  * repository's latest runs (`GET /repos/{o}/{r}/actions/runs`), the repository itself for its default branch
  * (`GET /repos/{o}/{r}`), its tags (`…/git/matching-refs/tags`), its workflows (`…/actions/workflows`) and a
  * workflow's runs on any ref or filtered by `branch`, `event`, `status` and `actor` (`…/actions/workflows/{id}/runs`,
- * paged by `per_page` and `page`, a `Link` to the next page while more remain), a workflow's file (`…/contents/.github/workflows/<name>.yml`: run on push, one job), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
+ * paged by `per_page` and `page`, a `Link` to the next page while more remain), a workflow's file at the `ref` asked or
+ * the default branch (`…/contents/.github/workflows/<name>.yml`, {@link getWorkflowText}), a run (`…/actions/runs/{id}`), its jobs (`…/runs/{id}/jobs`) and a
  * job's log (`…/actions/jobs/{id}/logs`, plain text), each `404` for an id it does not know; and the writes `writes` answers:
- * re-running a run's failed jobs, cancelling a run, turning a workflow on or off. Every JSON answer carries an ETag hashed from its body and is
+ * running a workflow, re-running a run's failed jobs or one job, cancelling a run, turning a workflow on or off. Every JSON answer carries an ETag hashed from its body and is
  * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs and file are answered once the list
  * named it.
  */
@@ -143,14 +152,19 @@ export function answerRepositoryActions(
                 github.rest('GET', `${base}/actions/workflows/${id}/runs`, runsRequest =>
                     answerWorkflowRuns(runsRequest, id),
                 );
-                github.rest('GET', `${base}/contents/${getWorkflowPath(name)}`, fileRequest =>
-                    conditional(fileRequest, {
-                        type: 'file',
-                        path: getWorkflowPath(name),
-                        encoding: 'base64',
-                        content: Buffer.from(getWorkflowFile(name)).toString('base64'),
-                    }),
-                );
+                github.rest('GET', `${base}/contents/${getWorkflowPath(name)}`, fileRequest => {
+                    const workflow = read().workflows.find(candidate => candidate.id === id);
+                    return workflow
+                        ? conditional(fileRequest, {
+                              type: 'file',
+                              path: getWorkflowPath(name),
+                              encoding: 'base64',
+                              content: Buffer.from(
+                                  getWorkflowText(workflow, fileRequest.url.searchParams.get('ref')),
+                              ).toString('base64'),
+                          })
+                        : NOT_FOUND;
+                });
             }
         }
 
@@ -179,6 +193,16 @@ export function answerRepositoryActions(
               })
             : NOT_FOUND;
     });
+    github.restMatching(
+        'POST',
+        new RegExp(`^${escapeRegExp(base)}/actions/workflows/(\\d+)/dispatches$`),
+        (request, match) => writes.dispatch?.(Number(match[1]), request.body) ?? NOT_FOUND,
+    );
+    github.restMatching(
+        'POST',
+        new RegExp(`^${escapeRegExp(base)}/actions/jobs/(\\d+)/rerun$`),
+        (_, match) => writes.rerunJob?.(Number(match[1])) ?? NOT_FOUND,
+    );
     github.restMatching(
         'POST',
         new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/rerun-failed-jobs$`),
@@ -251,14 +275,19 @@ const NOT_FOUND: GitHubRestAnswer = { status: 404, json: { message: 'Not Found' 
 const ACTOR = 'monalisa';
 
 /** Where the workflow `name`'s file is in its repository. */
-function getWorkflowPath(name: string) {
+export function getWorkflowPath(name: string): string {
     return `.github/workflows/${name.toLowerCase()}.yml`;
 }
 
-/** The workflow `name`'s file: run on every push, one job. */
-function getWorkflowFile(name: string) {
+/** The workflow's file at `ref`, or at the default branch for `null`: what the test gave it, else run on push, one job. */
+export function getWorkflowText(workflow: GitHubActionsWorkflow, ref: string | null): string {
+    const given = (ref === null ? undefined : workflow.fileByRef?.[ref]) ?? workflow.file;
+    if (given !== undefined) {
+        return given;
+    }
+
     return [
-        `name: ${name}`,
+        `name: ${workflow.name}`,
         'on: push',
         'jobs:',
         '  build:',
