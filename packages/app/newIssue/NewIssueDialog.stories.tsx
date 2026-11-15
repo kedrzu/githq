@@ -88,7 +88,7 @@ const CHOICES: readonly RepositoryChoiceSection[] = [
     {
         key: 'tracked',
         heading: 'Tracked',
-        choices: [{ nameWithOwner: 'skyline-labs/api', isPrivate: true, detail: '96 open' }],
+        choices: [{ nameWithOwner: 'skyline-labs/api', isPrivate: true, detail: '96 open', lastUsed: true }],
     },
     {
         key: 'others',
@@ -135,7 +135,7 @@ const Harness = defineComponent({
         templates: { type: Object as PropType<RepositoryTemplates | null>, default: null },
         form: { type: Object as PropType<IssueForm | null>, default: null },
         rejection: { type: String as PropType<string | null>, default: null },
-        contextHint: { type: String as PropType<string | null>, default: 'last used repository' },
+        contextHint: { type: String as PropType<string | null>, default: null },
         waiting: { type: Array as PropType<readonly NewIssueWaitingEntry[]>, default: () => [] },
     },
     setup(props) {
@@ -225,10 +225,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** H1: the quick capture in the repository used last — the title, then Enter. */
+/** H1: the quick capture in the repository it was started in — the title, then Enter. */
 export const QuickCapture: Story = {};
 
-/** H2: no repository chosen yet — the chooser first: tracked, others, and those that won't take an issue. */
+/**
+ * H2, mobile D43: started outside a repository, none chosen in advance — the chooser first, the repository used last at
+ * the top marked "last used", then others and those that won't take an issue.
+ */
 export const ChoosingRepository: Story = {
     args: { draft: { ...EMPTY, repository: null }, repository: { kind: 'none' } },
 };
@@ -358,5 +361,77 @@ export const Archived: Story = {
     args: {
         draft: { ...EMPTY, repository: 'skyline-labs/api-v1' },
         repository: { kind: 'unavailable', nameWithOwner: 'skyline-labs/api-v1', isPrivate: true, why: 'archived' },
+    },
+};
+
+/** Mobile D42, MB194: on a phone, a screen of its own — the repository row, the title, the item's rows, the body. */
+export const PhoneEmpty: Story = {
+    decorators: [withPhoneLayout(true)],
+};
+
+/**
+ * Mobile D42, MB195: details set — assigned to me, a label, a milestone, a type, in Platform Q4 with its status — each
+ * row showing its value, the body under them.
+ */
+export const PhoneDetailsSet: Story = {
+    decorators: [withPhoneLayout(true)],
+    args: {
+        draft: {
+            ...EMPTY,
+            title: 'Waitlist ignores paused memberships',
+            body: 'A member with a paused membership still gets promoted from the waitlist and charged when they come back.',
+            assignees: [SAMPLE_VIEWER.login],
+            labels: ['bug'],
+            milestone: 'v4.2 — November',
+            issueType: 'Bug',
+            parent: { id: 'I_1187', reference: 'portal#1187' },
+            projects: [
+                {
+                    projectId: 'PVT_q4',
+                    title: 'Platform Q4',
+                    values: [
+                        {
+                            fieldId: 'status',
+                            fieldName: 'Status',
+                            value: { kind: 'singleSelect', optionId: 'status-todo' },
+                            label: 'Todo',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+};
+
+/** Mobile D43, MB193: on a phone, started outside a repository — the chooser rises over the form, none chosen. */
+export const PhoneChoosingRepository: Story = {
+    decorators: [withPhoneLayout(true)],
+    args: { draft: { ...EMPTY, repository: null }, repository: { kind: 'none' } },
+};
+
+/**
+ * Mobile D39, MB200: on a phone, a repository's templates rise as a menu at the bottom once it is chosen — forms continue
+ * on GitHub where the user can't push, the turned-off blank issue dimmed.
+ */
+export const PhoneTemplates: Story = {
+    decorators: [withPhoneLayout(true)],
+    args: {
+        draft: { ...EMPTY, repository: 'vitejs/vite' },
+        repository: { kind: 'ready', metadata: VITE_METADATA, isPrivate: false },
+        templates: VITE_TEMPLATES,
+    },
+};
+
+/** MB214: on a phone, a creation GitHub refused — why, above the text it kept. */
+export const PhoneRejected: Story = {
+    decorators: [withPhoneLayout(true)],
+    args: {
+        draft: {
+            ...EMPTY,
+            title: 'Retry webhook delivery after a 429',
+            body: 'Stripe answers 429 when we replay more than 25 events a second.',
+            labels: ['bug'],
+        },
+        rejection: 'GitHub said: Repository was archived so is read-only.',
     },
 };
