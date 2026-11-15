@@ -37,3 +37,12 @@ test('↑ on the first row lands on the last, ↓ on the last on the first, skip
     await userEvent.keyboard('{ArrowUp}{Enter}');
     await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: cherry');
 });
+
+test('rows shrinking out from under a resting pointer keep the best match highlighted', async () => {
+    await Filtered.run();
+
+    // The pointer rests on the last row; typing narrows the list so that it no longer reaches the pointer.
+    await userEvent.hover(page.getByRole('option', { name: /Date/u }));
+    await userEvent.keyboard('ap');
+    await expect.element(page.getByRole('option', { name: /Apple/u })).toHaveAttribute('data-highlighted');
+});
