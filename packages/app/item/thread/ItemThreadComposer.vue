@@ -1,4 +1,4 @@
-<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the item view posts the comment first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. -->
+<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the item view posts the comment first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. Docked (`docked`, a phone's composer above the keyboard, mobile D51, MB236–MB243) it is the same composer without the avatar, the screen's width, upside down for the thumb (`MarkdownEditor`'s docked arrangement): the closing and Comment on top, the text, then Write / Preview and the tools; the reasons to close are a menu at the bottom named by what the button says ("Close with comment"), with the item's reference under it, and Escape in it is reported (`cancel`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -36,11 +36,15 @@ const props = defineProps<{
   readOnly: 'archived' | 'locked' | null;
   /** The thread's people, whom `@` suggests first. */
   people?: readonly ItemUser[];
+  /** Above a phone's keyboard, the screen's width, not a card at the thread's end. */
+  docked?: boolean;
 }>();
 
 const emit = defineEmits<{
   /** A comment, a close or a reopen; the item view posts what is typed before a close. */
   edit: [request: EditRequest];
+  /** `Escape` in the editor; the caller taking it prevents its default. */
+  cancel: [event: KeyboardEvent];
 }>();
 
 /** What is typed and not posted yet. */
@@ -67,7 +71,10 @@ defineExpose({
   focus: async () => {
     await editorRef.value?.focus('end');
     // The editor's end in view, the rest of it follows as far as it fits: the space the scroll leaves under it too.
-    rootRef.value?.scrollIntoView({ block: 'nearest' });
+    // Docked, it is in view where it stands.
+    if (!props.docked) {
+      rootRef.value?.scrollIntoView({ block: 'nearest' });
+    }
   },
 });
 
@@ -87,9 +94,16 @@ function close(reason: CloseReason) {
 <template>
   <div
     ref="root"
-    :class="[css.itemThreadComposer, readOnly && css.itemThreadComposer_readOnly]"
+    :class="[
+      css.itemThreadComposer,
+      readOnly && css.itemThreadComposer_readOnly,
+      docked && css.itemThreadComposer_docked,
+    ]"
   >
-    <div :class="css.itemThreadComposer_gutter">
+    <div
+      v-if="!docked"
+      :class="css.itemThreadComposer_gutter"
+    >
       <Avatar
         v-if="viewer"
         :name="viewer.login"
@@ -120,7 +134,9 @@ function close(reason: CloseReason) {
       :label="t(l.comment)"
       :placeholder="t(l.placeholder)"
       :readonly="!canComment"
+      :docked="docked"
       @submit="submit"
+      @cancel="emit('cancel', $event)"
     >
       <template
         v-if="canComment"
@@ -133,6 +149,8 @@ function close(reason: CloseReason) {
           :kbd="EDIT_KEYS.state"
           :keyshortcuts="EDIT_KEYS.state"
           :menu-label="t(l.moreWaysToClose)"
+          :menu-title="typed ? t(l.closeWithComment) : t(l.closeIssue)"
+          :menu-context="`${item.repository.nameWithOwner}#${item.number}`"
           @click="close('COMPLETED')"
         >
           {{ typed ? t(l.closeWithComment) : t(l.closeIssue) }}
@@ -146,6 +164,7 @@ function close(reason: CloseReason) {
             >
             <MenuItem
               :icon="CircleSlash"
+              :detail="docked ? t(l.notPlannedDetail) : undefined"
               @select="close('NOT_PLANNED')"
               >{{ t(l.closeNotPlanned) }}</MenuItem
             >
@@ -210,6 +229,24 @@ function close(reason: CloseReason) {
 .itemThreadComposer_editor {
   flex: 1;
   min-width: 0;
+}
+
+// The screen's width, as tall as its holder lets it be: the editor's own scroll takes a long text.
+.itemThreadComposer_docked {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+
+  .itemThreadComposer_editor {
+    min-height: 0;
+  }
+
+  .itemThreadComposer_note {
+    padding: $spacing-14 $spacing-16;
+    border-width: 1px 0 0;
+    border-radius: 0;
+  }
 }
 
 // Its fill hides the rail running behind it.

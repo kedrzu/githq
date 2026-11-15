@@ -104,6 +104,18 @@ export const PhoneFromLink: Story = {
     decorators: [withPhoneLayout(true)],
 };
 
+/**
+ * Mobile MB236 (D51): writing on an issue on a phone — the composer docked at the bottom (above the keyboard on a
+ * device), the thread ending with its last card above it; `R` opens it here, as the command line's pill does.
+ */
+export const PhoneWriting: Story = {
+    ...PhoneFromList,
+    play: async () => {
+        await userEvent.keyboard('r');
+        await within(document.body).findByRole('textbox', { name: 'Comment' });
+    },
+};
+
 /** F1: a pull request that can't merge yet — two checks failing, changes requested; the issue it closes. */
 export const PullRequestFailing: Story = {
     args: {

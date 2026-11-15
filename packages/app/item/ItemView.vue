@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — the item's actions are the command menu's — and the reference heads the title instead. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — the item's actions are the command menu's — and the reference heads the title instead. Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts">
 /**
  * From this width of an opened item below its header on a page, it stands in two columns: an issue's summary and
@@ -49,7 +49,7 @@ import {
   SquareKanban,
   RotateCcw,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -83,6 +83,7 @@ import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhoneKeyboardDock from '@/shell/PhoneKeyboardDock.vue';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
@@ -214,6 +215,11 @@ const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
+const dockedComposerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('dockedComposer');
+/** On a phone, the composer docked above the keyboard (mobile D51): grown from the command line's pill. */
+const composing = ref(false);
+/** How much of the window's bottom the docked composer covers, the keyboard included: the scroll ends above it. */
+const dockCover = ref(0);
 const threadRef = useTemplateRef<InstanceType<typeof ItemThread>>('thread');
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
@@ -424,8 +430,8 @@ const itemMenuSections = computed(() =>
 );
 
 defineExpose({
-  /** Puts the cursor in the comment box. */
-  focusComposer: () => composerRef.value?.focus(),
+  /** Puts the cursor in the comment box; on a phone, the composer docked above the keyboard opens first. */
+  focusComposer,
   /**
    * Before the item is left: an edit with changes in its thread asks first (`true`), and the item stays; its Discard
    * calls `go`, to leave as the user was.
@@ -480,6 +486,41 @@ onWindowEvent('pointerdown', event => {
 
   stackDropped.value = false;
 });
+
+// Off the phone's layout the composer is the thread's again, with what is typed.
+watch(
+  () => phone.active,
+  active => {
+    if (!active) {
+      composing.value = false;
+    }
+  },
+);
+
+/**
+ * The comment box takes the cursor, its end in view; on a phone the docked composer opens first. Kept in the gesture
+ * that asked (no timer between): iOS raises the keyboard only for a focus a tap runs.
+ */
+async function focusComposer() {
+  if (phone.active && !composing.value) {
+    composing.value = true;
+    await nextTick();
+  }
+
+  await (dockedComposerRef.value ?? composerRef.value)?.focus();
+}
+
+/** What the docked composer does — a comment, a close or a reopen — goes as the thread's would; the pill is back. */
+function editFromDock(request: EditRequest) {
+  edit(request);
+  composing.value = false;
+}
+
+/** Escape in the docked composer: back to the pill, the item stays. */
+function leaveDock(event: KeyboardEvent) {
+  event.preventDefault();
+  composing.value = false;
+}
 
 /** Scrolling the content, either way, takes the dropped rows away: they belong to where the reader was. */
 function onContentScroll() {
@@ -567,7 +608,7 @@ function quoteReply(body: string) {
   }
 
   commentDraft.value = quoteIntoDraft(body, commentDraft.value);
-  void composerRef.value?.focus();
+  void focusComposer();
 }
 
 function getItemCommands(): Command[] {
@@ -580,7 +621,7 @@ function getItemCommands(): Command[] {
       key: EDIT_KEYS.comment,
       icon: MessageSquare,
       when: () => canComment.value,
-      run: () => void composerRef.value?.focus(),
+      run: () => void focusComposer(),
     },
   ];
   if (permissions.value?.addToProject) {
@@ -814,6 +855,9 @@ function getProjectOptions(): CommandOption[] {
                 :class="[css.itemView_scroll, twoColumns && css.itemView_scroll_twoColumns]"
                 :data-route-scroll="twoColumns ? undefined : `item-main:${arrangement}:${item.id}`"
                 :data-suggestions-boundary="twoColumns ? undefined : ''"
+                :style="
+                  dockCover > 0 ? { paddingBottom: `${dockCover}px`, scrollPaddingBottom: `${dockCover}px` } : undefined
+                "
                 @scroll.passive="onContentScroll"
               >
                 <!-- In one column the summary is the content's first block; in two it moves to its column as it is, nothing remounted (an open picker stays open). Not before the column is there to take it. -->
@@ -973,7 +1017,11 @@ function getProjectOptions(): CommandOption[] {
                     @quote-reply="quoteReply"
                     @open="emit('open', $event)"
                   >
-                    <template #composer>
+                    <!-- On a phone the composer is docked above the keyboard instead (mobile D51): the thread ends with its last card. -->
+                    <template
+                      v-if="!phone.active"
+                      #composer
+                    >
                       <ItemThreadComposer
                         ref="composer"
                         v-model:text="commentDraft"
@@ -994,6 +1042,25 @@ function getProjectOptions(): CommandOption[] {
         </div>
       </div>
     </div>
+    <PhoneKeyboardDock
+      v-if="phone.active && composing"
+      v-model:cover="dockCover"
+      @close="composing = false"
+    >
+      <ItemThreadComposer
+        ref="dockedComposer"
+        v-model:text="commentDraft"
+        :item="item"
+        :viewer="viewer"
+        :can-comment="canComment"
+        :can-close="permissions?.state === true"
+        :read-only="readOnly"
+        :people="threadPeople"
+        docked
+        @edit="editFromDock"
+        @cancel="leaveDock"
+      />
+    </PhoneKeyboardDock>
   </article>
 </template>
 

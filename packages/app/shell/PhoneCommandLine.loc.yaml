@@ -4,3 +4,5 @@ leaveComment:
   en: Leave a comment…
 commandMenu:
   en: Command menu
+continueComment:
+  en: 'Continue your comment: {draft}'

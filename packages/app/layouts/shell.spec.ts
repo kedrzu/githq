@@ -9,7 +9,9 @@ import { createMemoryHistory, createRouter, RouterView, useRoute, useRouter } fr
 import { TOAST_LASTS } from '@/components/Toast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
-import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { CommentDrafts } from '@/edits/CommentDrafts.js';
+import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
+import ItemPage from '@/item/ItemPage.vue';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
@@ -232,7 +234,7 @@ test('on a phone, the command line opens the command menu, and a toast sits abov
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeVisible();
 });
 
-test("on a phone, an item's page has the comment pill, which asks for that item's comment box, and ⌘", async () => {
+test("on a phone, an item's comment pill grows into its composer docked at the bottom — the cursor in it, ⌘ aside — and shows what is typed once left", async () => {
     const { router, container } = await open('phone');
     const items = container.resolve(ItemStore);
     await items.ready();
@@ -241,7 +243,20 @@ test("on a phone, an item's page has the comment pill, which asks for that item'
     await router.push('/acme/web/issues/7');
     await expect.element(page.getByRole('button', { name: /Do or find/u })).not.toBeInTheDocument();
     await userEvent.click(page.getByRole('button', { name: 'Leave a comment…' }));
-    expect(container.resolve(ItemNavigation).commentRequest).toBe('I_7');
+
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await expect.element(box).toHaveFocus();
+    // Hidden, as the command line steps aside (mobile D18).
+    await expect.element(page.getByRole('button', { name: 'Command menu' })).not.toBeInTheDocument();
+    await userEvent.keyboard('Same here on mobile.');
+
+    // A tap on the screen around it: back to the pill, which keeps the draft.
+    await userEvent.click(page.getByRole('heading', { name: 'Issue I_7' }));
+    await expect.element(box).not.toBeInTheDocument();
+    await expect
+        .element(page.getByRole('button', { name: 'Continue your comment: Same here on mobile.' }))
+        .toBeVisible();
+    expect(container.resolve(CommentDrafts).get('I_7')).toBe('Same here on mobile.');
 
     await userEvent.click(page.getByRole('button', { name: 'Command menu' }));
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeVisible();
@@ -328,11 +343,7 @@ async function open(device: 'computer' | 'phone' = 'computer') {
         routes: [
             { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
             { path: '/acme/web/:segment(issues|pulls)', component: WebList },
-            {
-                path: '/:owner/:name/issues/:number',
-                meta: { itemPage: 'issue' },
-                component: defineComponent({ render: () => null }),
-            },
+            { path: ITEM_PAGE_PATHS[0], meta: { itemPage: 'issue' }, component: ItemPage },
             { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
         ],
     });

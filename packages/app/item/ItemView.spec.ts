@@ -32,6 +32,7 @@ const {
     PhoneFromList,
     PhonePullRequestFailing,
     PhoneStackOfTen,
+    PhoneWriting,
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
@@ -208,6 +209,58 @@ test('mobile MB260: on a phone "Merge…" and "Review files" leave for github.co
     // ⇧M has no panel to open on a phone either.
     await userEvent.keyboard('{Shift>}M{/Shift}');
     expect(onMerge).not.toHaveBeenCalled();
+});
+
+test('mobile D51: on a phone the thread ends with its last card; the composer docked at the bottom takes the cursor, and Comment sends as the thread would and closes it back', async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    // One composer on screen, and none until it is asked for.
+    await expect.element(page.getByText(PhoneFromList.args.item!.title)).toBeVisible();
+    expect(box.query()).toBeNull();
+
+    // What the command line's pill asks for (`focusComposer`), as `R` does.
+    await userEvent.keyboard('r');
+    await expect.element(box).toHaveFocus();
+    await userEvent.keyboard('Same here on mobile.');
+    await userEvent.click(page.getByRole('button', { name: 'Comment', exact: true }));
+
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Same here on mobile.', keptInThread: true });
+    await expect.element(box).not.toBeInTheDocument();
+});
+
+test('mobile D18: leaving the docked composer — a tap on the screen around it, or Escape — keeps what is typed for the next time, the item staying', async () => {
+    await PhoneWriting.run();
+    const { onClose, onEdit } = PhoneWriting.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await userEvent.fill(box, 'Same here on mobile.');
+
+    await userEvent.click(page.getByText(PhoneWriting.args.item!.title));
+    await expect.element(box).not.toBeInTheDocument();
+
+    await userEvent.keyboard('r');
+    await expect.element(box).toHaveValue('Same here on mobile.');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(box).not.toBeInTheDocument();
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onEdit).not.toHaveBeenCalled();
+});
+
+test('mobile MB241: docked, Close with comment takes its reason from a menu at the bottom, and closes the issue with the comment', async () => {
+    await PhoneWriting.run();
+    const { onEdit } = PhoneWriting.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await userEvent.fill(box, '  A duplicate of #3  ');
+
+    await userEvent.click(page.getByRole('button', { name: 'More ways to close' }));
+    const menu = page.getByRole('dialog', { name: 'Close with comment' });
+    await userEvent.click(menu.getByRole('menuitem', { name: /^Close as not planned/u }));
+
+    expect(onEdit).toHaveBeenCalledTimes(2);
+    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: 'A duplicate of #3', keptInThread: true });
+    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'NOT_PLANNED' });
+    await expect.element(box).not.toBeInTheDocument();
 });
 
 test('mobile D29: on a phone a stacked pull request has the strip under the top bar; ← and → open its neighbours in its place, a tap on it unfolds the stack', async () => {

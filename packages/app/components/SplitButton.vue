@@ -1,4 +1,4 @@
-<!-- A compact `Button` with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s). Attributes go to the button. -->
+<!-- A compact `Button` with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s) — on a phone a menu at the bottom, named by `menuTitle`, what it acts on under the name (`menuContext`). Attributes go to the button. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronDown } from 'lucide-vue-next';
@@ -18,6 +18,10 @@ defineProps<{
   keyshortcuts?: string;
   /** The chevron's accessible name and tooltip ("More ways to close"). */
   menuLabel: string;
+  /** On a phone, the name of the menu at the bottom ("Close with comment"); `menuLabel` when not given. */
+  menuTitle?: string;
+  /** On a phone, what the menu acts on, under its name (an item's reference). */
+  menuContext?: string;
   /** The usual action; a promise keeps the button busy until it settles. */
   onClick?: (event: Event) => unknown;
 }>();
@@ -43,7 +47,11 @@ defineSlots<{
     >
       <slot />
     </Button>
-    <Menu align="end">
+    <Menu
+      align="end"
+      :label="menuTitle ?? menuLabel"
+      :context="menuContext"
+    >
       <template #trigger>
         <IconButton
           :class="css.splitButton_menu"
