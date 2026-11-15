@@ -34,11 +34,11 @@ import { CommitGraphStore } from './CommitGraphStore.js';
 import * as l from './CommitGraphView.loc.js';
 import CommitRefList from './CommitRefList.vue';
 import CommitRow, { COMMIT_ROW_HEIGHT } from './CommitRow.vue';
-import type { CommitRowRef } from './CommitRow.vue';
 import CommitsArriving from './CommitsArriving.vue';
 import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
 import type { CommitParent, CommitRef, KeptCommit, OpenedCommit } from './CommitTypes.js';
 import { COMMIT_GRAPH_DEFAULT_SHARE, fitCommitGraph, getCommitGraphWidth, getMinLanes } from './fitCommitGraph.js';
+import { groupCommitRefs } from './groupCommitRefs.js';
 
 const props = defineProps<{
   /** `owner/name`. */
@@ -210,33 +210,7 @@ const drawn = computed(() => {
 /** The commits on screen: they ask for their pull request and CI state. */
 const onScreen = computed(() => commits.value.slice(firstOnScreen.value, endOnScreen.value));
 /** The branches and tags pointing at each commit: the default branch first, then branches, then tags. */
-const refsByOid = computed(() => {
-  const byOid = new Map<string, CommitRowRef[]>();
-  const known = refs.value;
-  if (!known) {
-    return byOid;
-  }
-
-  const all: (CommitRowRef & { readonly oid: string })[] = [
-    ...known.branches
-      .filter(branch => branch.name === known.defaultBranch)
-      .map(branch => ({ oid: branch.oid, name: branch.name, kind: 'default' as const })),
-    ...known.branches
-      .filter(branch => branch.name !== known.defaultBranch)
-      .map(branch => ({ oid: branch.oid, name: branch.name, kind: 'branch' as const })),
-    ...known.tags.map(tag => ({ oid: tag.oid, name: tag.name, kind: 'tag' as const })),
-  ];
-  for (const { oid, name, kind } of all) {
-    const atCommit = byOid.get(oid);
-    if (atCommit) {
-      atCommit.push({ name, kind });
-    } else {
-      byOid.set(oid, [{ name, kind }]);
-    }
-  }
-
-  return byOid;
-});
+const refsByOid = computed(() => groupCommitRefs(refs.value));
 
 // The graph is asked of GitHub only through the store, which answers from its kept copy first, and held while shown.
 // Another account signed in has emptied the store: the graph is held and opened again for them.
@@ -418,6 +392,17 @@ onWindowResize(() => {
   windowWidth.value = window.innerWidth;
 });
 
+// With a commit opened beside the graph the keys are the commit's (`OpenedCommit`), but the list over the graph leaves
+// first.
+const removeEscapeTaker = store.addEscapeTaker(() => {
+  if (!refListOpened.value) {
+    return false;
+  }
+
+  refList.value?.leave();
+  return true;
+});
+
 onWindowEvent('keydown', event => {
   // An item opened over the section has the keys, Esc first of all.
   if (!isScreenKey(event) || itemOpened.value) {
@@ -468,6 +453,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  removeEscapeTaker();
   observer?.disconnect();
   releaseGraph?.();
   // The route is already the one left for. A prop on another repository closed this one's details, and any open now are
@@ -571,6 +557,7 @@ async function openRefList() {
  * Either way back to the graph, the list's filter cleared.
  */
 function onRefChosen(chosen: CommitRef) {
+  store.noteChosenRef(props.nameWithOwner, chosen);
   const index = commits.value.findIndex(commit => commit.oid === chosen.oid);
   if (index === -1) {
     showDetails({ oid: chosen.oid, id: chosen.commitId }, chosen);

@@ -1,4 +1,4 @@
-<!-- A commit's details, right of the graph, filling the column the graph's view gives it, or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20, CH55): one scroll, the facts before the message. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), each shown on the row it presses. -->
+<!-- A commit's details (git-client D13, D16, CH18, CH20, CH55): in the shell's panel or on the commit's page (`OpenedCommit`), or still right of the graph, filling the column the graph's view gives it, or under it below about 1,200 px of window. A toolbar the full width — the repository and short sha; previous and next (`K`, `J`), the other arrangement when it is given ("Open full screen", "Back to the panel": a button, its key being the pull request's), GitHub (`O`) and close (`Esc`) — over one scroll, the facts before the message, its content kept to the item's reading width at the left. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). It shows and reports: its keys are its host's (`OpenedCommit`, or `CommitGraphView` for the details beside the graph), each shown on the row it presses. -->
 <script lang="ts">
 /** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
 export const COMMIT_DETAILS_KEYS = {
@@ -21,6 +21,8 @@ import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import CheckList from '@/item/CheckList.vue';
+import type { ItemArrangement } from '@/item/itemRoutes.js';
+import type { OtherArrangement } from '@/item/useItemArrangement.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -48,8 +50,13 @@ const props = defineProps<{
   url: string;
   /** Epoch ms its age is counted to. */
   now: number;
-  /** Right of the graph, filling its column, or under it at a fixed share of the height when the window is narrow (D16). */
+  /**
+   * Filling the column or panel it is in, or under the graph at a fixed share of the height when the window is narrow
+   * (D16).
+   */
   docked: 'side' | 'bottom';
+  /** The arrangement its button moves it to; left out, no button (the details beside the graph). */
+  otherArrangement?: OtherArrangement | null;
 }>();
 
 const emit = defineEmits<{
@@ -60,6 +67,8 @@ const emit = defineEmits<{
   openParent: [parent: CommitParent];
   /** The pull request's row. */
   openPullRequest: [];
+  /** "Open full screen", "Back to the panel". */
+  arrange: [arrangement: ItemArrangement];
 }>();
 
 const store = useService(CommitGraphStore);
@@ -204,6 +213,12 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
         <Kbd keys="J" />
       </IconButton>
       <IconButton
+        v-if="otherArrangement"
+        :icon="otherArrangement.icon"
+        :label="otherArrangement.title"
+        @click="emit('arrange', otherArrangement.arrangement)"
+      />
+      <IconButton
         :icon="Github"
         :label="t(l.openOnGitHub)"
         :kbd="COMMIT_DETAILS_KEYS.openOnGitHub"
@@ -222,227 +237,229 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
     </header>
 
     <div :class="css.commitDetails_scroll">
-      <p
-        v-if="notice"
-        :class="css.commitDetails_notice"
-      >
-        <Info
-          :class="css.commitDetails_noticeIcon"
-          aria-hidden="true"
-        />
-        {{ notice }}
-      </p>
-
-      <template v-if="commit">
-        <h2 :class="css.commitDetails_headline">{{ headline }}</h2>
-        <div :class="css.commitDetails_author">
-          <Avatar
-            :name="commit.author.login ?? authorName"
-            :src="commit.author.avatarUrl"
-            size="xs"
-            decorative
-          />
-          <span :class="css.commitDetails_authorName">{{ authorName }}</span>
-          <span
-            v-if="commit.author.login && commit.author.login !== authorName"
-            :class="css.commitDetails_dim"
-            >{{ commit.author.login }}</span
-          >
-          <span :class="css.commitDetails_dim">{{ committed }}</span>
-          <span :class="css.commitDetails_spacer" />
-          <span
-            :class="css.commitDetails_sha"
-            :title="oid"
-            >{{ oid.slice(0, 7) }}</span
-          >
-          <IconButton
-            :class="css.commitDetails_copy"
-            :icon="Copy"
-            :label="t(l.copySha)"
-            @click="copySha"
-          />
-        </div>
-      </template>
-      <p
-        v-else-if="failed"
-        :class="css.commitDetails_quiet"
-      >
-        {{ t(l.readFailed) }}
-      </p>
-      <p
-        v-else
-        :class="css.commitDetails_quiet"
-      >
-        {{ t(l.reading) }}
-      </p>
-
-      <div :class="css.commitDetails_card">
-        <section :class="css.commitDetails_group">
-          <div :class="css.commitDetails_groupHead">
-            <h3 :class="css.commitDetails_title">{{ t(l.pullRequest) }}</h3>
-            <Kbd
-              v-if="state?.pullRequest"
-              :keys="COMMIT_DETAILS_KEYS.pullRequest"
-            />
-          </div>
-          <span
-            v-if="state === undefined"
-            :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_pullRequest]"
-            role="img"
-            :aria-label="t(l.pullRequestNotKnown)"
-          />
-          <button
-            v-else-if="state.pullRequest"
-            type="button"
-            :class="css.commitDetails_row"
-            :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
-            @click="emit('openPullRequest')"
-          >
-            <span :class="css.commitDetails_number"
-              ><CommitPullRequestIcon :pull-request="state.pullRequest" />#{{ state.pullRequest.number }}</span
-            >
-            <span :class="css.commitDetails_rowText">{{ state.pullRequest.title }}</span>
-            <span :class="css.commitDetails_dim">{{ getPullRequestWord(state.pullRequest) }}</span>
-          </button>
-          <p
-            v-else
-            :class="[css.commitDetails_quiet, css.commitDetails_none]"
-          >
-            <GitPullRequest
-              :class="css.commitDetails_commitIcon"
-              aria-hidden="true"
-            />
-            {{ t(l.noPullRequest) }}
-          </p>
-        </section>
-
-        <section :class="css.commitDetails_group">
-          <div :class="css.commitDetails_groupHead">
-            <h3 :class="css.commitDetails_title">{{ t(l.checks) }}</h3>
-            <span
-              v-if="checksSummary?.kind === 'failing'"
-              :class="css.commitDetails_summary"
-            >
-              <span :class="css.commitDetails_ci_danger">{{
-                t(l.failingCount, { count: checksSummary.failing })
-              }}</span>
-              <span :class="css.commitDetails_dim">{{ t(l.ofCount, { count: checksSummary.of }) }}</span>
-            </span>
-            <span
-              v-else-if="checksSummary?.kind === 'running'"
-              :class="[css.commitDetails_summary, css.commitDetails_ci_warning]"
-              >{{ t(l.ciRunning) }}</span
-            >
-          </div>
-          <!-- Keyed: the next commit's list starts folded, read before or not. -->
-          <CheckList
-            v-if="checkList"
-            :key="oid"
-            :checks="checkList.checks"
-            :check-count="checkList.checkCount"
-            :more-url="`${url}/checks`"
-            :now="now"
-            :runs-in-app="runsInApp"
-          />
-          <span
-            v-else-if="state === undefined"
-            :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_checks]"
-            role="img"
-            :aria-label="t(l.checksNotKnown)"
-          />
-          <p
-            v-else-if="ci"
-            :class="css.commitDetails_ci"
-          >
-            <CommitStateMarks
-              :state="state"
-              :with-pull-request="false"
-            />
-            <span :class="css[`commitDetails_ci_${ci.tone}`]">{{ ci.word }}</span>
-          </p>
-          <p
-            v-else
-            :class="css.commitDetails_quiet"
-          >
-            {{ t(l.noChecks) }}
-          </p>
-          <Button
-            v-if="checks?.kind === 'failed' && (state === undefined || ci)"
-            :class="css.commitDetails_ciLink"
-            variant="link"
-            size="sm"
-            :icon="ArrowUpRight"
-            :link="`${url}/checks`"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t(l.checksOnGitHub) }}
-          </Button>
-        </section>
-
-        <section
-          v-if="parents.length > 0"
-          :class="css.commitDetails_group"
+      <div :class="css.commitDetails_content">
+        <p
+          v-if="notice"
+          :class="css.commitDetails_notice"
         >
-          <h3 :class="css.commitDetails_title">{{ t(parents.length === 1 ? l.parent : l.parents) }}</h3>
-          <div :class="css.commitDetails_rows">
-            <button
-              v-for="{ parent, key, headline: parentHeadline } in parents"
-              :key="parent.oid"
-              type="button"
-              :class="css.commitDetails_row"
-              :aria-keyshortcuts="key ?? undefined"
-              @click="emit('openParent', parent)"
-            >
-              <Kbd
-                v-if="key"
-                :keys="key"
-              />
-              <span :class="css.commitDetails_number">{{ parent.oid.slice(0, 7) }}</span>
-              <span
-                v-if="parentHeadline"
-                :class="css.commitDetails_rowText"
-                >{{ parentHeadline }}</span
-              >
-            </button>
-          </div>
-        </section>
+          <Info
+            :class="css.commitDetails_noticeIcon"
+            aria-hidden="true"
+          />
+          {{ notice }}
+        </p>
 
-        <section :class="[css.commitDetails_group, css.commitDetails_group_inline]">
-          <h3 :class="css.commitDetails_title">{{ t(l.refs) }}</h3>
-          <div
-            v-if="refs.length > 0"
-            :class="css.commitDetails_refs"
-          >
-            <CommitRefChip
-              v-for="commitRef in refs"
-              :key="`${commitRef.kind}:${commitRef.name}`"
-              :kind="commitRef.kind"
-              :label="commitRef.name"
+        <template v-if="commit">
+          <h2 :class="css.commitDetails_headline">{{ headline }}</h2>
+          <div :class="css.commitDetails_author">
+            <Avatar
+              :name="commit.author.login ?? authorName"
+              :src="commit.author.avatarUrl"
+              size="xs"
+              decorative
+            />
+            <span :class="css.commitDetails_authorName">{{ authorName }}</span>
+            <span
+              v-if="commit.author.login && commit.author.login !== authorName"
+              :class="css.commitDetails_dim"
+              >{{ commit.author.login }}</span
+            >
+            <span :class="css.commitDetails_dim">{{ committed }}</span>
+            <span :class="css.commitDetails_spacer" />
+            <span
+              :class="css.commitDetails_sha"
+              :title="oid"
+              >{{ oid.slice(0, 7) }}</span
+            >
+            <IconButton
+              :class="css.commitDetails_copy"
+              :icon="Copy"
+              :label="t(l.copySha)"
+              @click="copySha"
             />
           </div>
-          <p
-            v-else
-            :class="css.commitDetails_quiet"
-          >
-            {{ t(place === 'gone' ? l.noRefsAnyMore : l.noRefs) }}
-          </p>
-        </section>
-      </div>
-
-      <template v-if="commit">
-        <CommitMessage
-          v-if="body"
-          :class="css.commitDetails_message"
-          :body="body"
-        />
+        </template>
         <p
           v-else-if="failed"
-          :class="[css.commitDetails_quiet, css.commitDetails_message]"
+          :class="css.commitDetails_quiet"
         >
-          {{ t(l.bodyFailed) }}
+          {{ t(l.readFailed) }}
         </p>
-      </template>
+        <p
+          v-else
+          :class="css.commitDetails_quiet"
+        >
+          {{ t(l.reading) }}
+        </p>
+
+        <div :class="css.commitDetails_card">
+          <section :class="css.commitDetails_group">
+            <div :class="css.commitDetails_groupHead">
+              <h3 :class="css.commitDetails_title">{{ t(l.pullRequest) }}</h3>
+              <Kbd
+                v-if="state?.pullRequest"
+                :keys="COMMIT_DETAILS_KEYS.pullRequest"
+              />
+            </div>
+            <span
+              v-if="state === undefined"
+              :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_pullRequest]"
+              role="img"
+              :aria-label="t(l.pullRequestNotKnown)"
+            />
+            <button
+              v-else-if="state.pullRequest"
+              type="button"
+              :class="css.commitDetails_row"
+              :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
+              @click="emit('openPullRequest')"
+            >
+              <span :class="css.commitDetails_number"
+                ><CommitPullRequestIcon :pull-request="state.pullRequest" />#{{ state.pullRequest.number }}</span
+              >
+              <span :class="css.commitDetails_rowText">{{ state.pullRequest.title }}</span>
+              <span :class="css.commitDetails_dim">{{ getPullRequestWord(state.pullRequest) }}</span>
+            </button>
+            <p
+              v-else
+              :class="[css.commitDetails_quiet, css.commitDetails_none]"
+            >
+              <GitPullRequest
+                :class="css.commitDetails_commitIcon"
+                aria-hidden="true"
+              />
+              {{ t(l.noPullRequest) }}
+            </p>
+          </section>
+
+          <section :class="css.commitDetails_group">
+            <div :class="css.commitDetails_groupHead">
+              <h3 :class="css.commitDetails_title">{{ t(l.checks) }}</h3>
+              <span
+                v-if="checksSummary?.kind === 'failing'"
+                :class="css.commitDetails_summary"
+              >
+                <span :class="css.commitDetails_ci_danger">{{
+                  t(l.failingCount, { count: checksSummary.failing })
+                }}</span>
+                <span :class="css.commitDetails_dim">{{ t(l.ofCount, { count: checksSummary.of }) }}</span>
+              </span>
+              <span
+                v-else-if="checksSummary?.kind === 'running'"
+                :class="[css.commitDetails_summary, css.commitDetails_ci_warning]"
+                >{{ t(l.ciRunning) }}</span
+              >
+            </div>
+            <!-- Keyed: the next commit's list starts folded, read before or not. -->
+            <CheckList
+              v-if="checkList"
+              :key="oid"
+              :checks="checkList.checks"
+              :check-count="checkList.checkCount"
+              :more-url="`${url}/checks`"
+              :now="now"
+              :runs-in-app="runsInApp"
+            />
+            <span
+              v-else-if="state === undefined"
+              :class="[css.commitDetails_unknownBar, css.commitDetails_unknownBar_checks]"
+              role="img"
+              :aria-label="t(l.checksNotKnown)"
+            />
+            <p
+              v-else-if="ci"
+              :class="css.commitDetails_ci"
+            >
+              <CommitStateMarks
+                :state="state"
+                :with-pull-request="false"
+              />
+              <span :class="css[`commitDetails_ci_${ci.tone}`]">{{ ci.word }}</span>
+            </p>
+            <p
+              v-else
+              :class="css.commitDetails_quiet"
+            >
+              {{ t(l.noChecks) }}
+            </p>
+            <Button
+              v-if="checks?.kind === 'failed' && (state === undefined || ci)"
+              :class="css.commitDetails_ciLink"
+              variant="link"
+              size="sm"
+              :icon="ArrowUpRight"
+              :link="`${url}/checks`"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ t(l.checksOnGitHub) }}
+            </Button>
+          </section>
+
+          <section
+            v-if="parents.length > 0"
+            :class="css.commitDetails_group"
+          >
+            <h3 :class="css.commitDetails_title">{{ t(parents.length === 1 ? l.parent : l.parents) }}</h3>
+            <div :class="css.commitDetails_rows">
+              <button
+                v-for="{ parent, key, headline: parentHeadline } in parents"
+                :key="parent.oid"
+                type="button"
+                :class="css.commitDetails_row"
+                :aria-keyshortcuts="key ?? undefined"
+                @click="emit('openParent', parent)"
+              >
+                <Kbd
+                  v-if="key"
+                  :keys="key"
+                />
+                <span :class="css.commitDetails_number">{{ parent.oid.slice(0, 7) }}</span>
+                <span
+                  v-if="parentHeadline"
+                  :class="css.commitDetails_rowText"
+                  >{{ parentHeadline }}</span
+                >
+              </button>
+            </div>
+          </section>
+
+          <section :class="[css.commitDetails_group, css.commitDetails_group_inline]">
+            <h3 :class="css.commitDetails_title">{{ t(l.refs) }}</h3>
+            <div
+              v-if="refs.length > 0"
+              :class="css.commitDetails_refs"
+            >
+              <CommitRefChip
+                v-for="commitRef in refs"
+                :key="`${commitRef.kind}:${commitRef.name}`"
+                :kind="commitRef.kind"
+                :label="commitRef.name"
+              />
+            </div>
+            <p
+              v-else
+              :class="css.commitDetails_quiet"
+            >
+              {{ t(place === 'gone' ? l.noRefsAnyMore : l.noRefs) }}
+            </p>
+          </section>
+        </div>
+
+        <template v-if="commit">
+          <CommitMessage
+            v-if="body"
+            :class="css.commitDetails_message"
+            :body="body"
+          />
+          <p
+            v-else-if="failed"
+            :class="[css.commitDetails_quiet, css.commitDetails_message]"
+          >
+            {{ t(l.bodyFailed) }}
+          </p>
+        </template>
+      </div>
     </div>
   </section>
 </template>
@@ -511,6 +528,14 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
   min-height: 0;
   padding: $spacing-20;
   overflow-y: auto;
+}
+
+// The item's reading width at the left, however wide the panel or the page.
+.commitDetails_content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: $item-reading-width;
 }
 
 .commitDetails_notice {

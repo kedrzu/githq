@@ -1,10 +1,13 @@
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { Maximize2 } from 'lucide-vue-next';
 import { defineComponent, h, shallowRef } from 'vue';
 
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { SAMPLE_COMMITS_NOW, sampleCheckRun, sampleCommit, sampleLongCommitBody } from '@/testing/sampleCommits.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+
+import type { OtherArrangement } from '@/item/useItemArrangement.js';
 
 import CommitDetails from './CommitDetails.vue';
 import type { CommitRowRef } from './CommitRow.vue';
@@ -62,6 +65,8 @@ interface PanelOptions {
     readonly refs?: readonly CommitRowRef[];
     /** GitHub never answers for the pull request and the checks. */
     readonly notKnown?: boolean;
+    /** Opened as an item, its button moving it there. */
+    readonly otherArrangement?: OtherArrangement;
 }
 
 const meta = {
@@ -110,6 +115,18 @@ export const ChecksNotRead: Story = {
     render: () => renderPanel({ width: 440, failed: true }),
 };
 
+/** Opened as an item, on a wide page: its button opens it full screen, its content kept to the reading width at the left. */
+export const OpenedWide: Story = {
+    render: () =>
+        renderPanel({
+            width: 1400,
+            state: MERGED,
+            body: sampleLongCommitBody(),
+            refs: REFS,
+            otherArrangement: { arrangement: 'page', title: 'Open full screen', icon: Maximize2 },
+        }),
+};
+
 /** The panel over the real store, its details, state and checks asked for as the view does. */
 function renderPanel(options: PanelOptions) {
     return defineComponent({
@@ -133,7 +150,15 @@ function renderPanel(options: PanelOptions) {
                 h(
                     'div',
                     { style: `display: flex; width: ${options.width}px; height: 100vh` },
-                    shown.value ? [h(CommitDetails, { ...PANEL, refs: options.refs ?? [] })] : [],
+                    shown.value
+                        ? [
+                              h(CommitDetails, {
+                                  ...PANEL,
+                                  refs: options.refs ?? [],
+                                  otherArrangement: options.otherArrangement ?? null,
+                              }),
+                          ]
+                        : [],
                 );
 
             async function show() {

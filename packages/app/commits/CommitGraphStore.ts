@@ -211,6 +211,8 @@ export const CommitGraphStore = defineService({
         const statesRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, ReadState>>>(new Map());
         const detailsRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitDetailRead>>>(new Map());
         const checksRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitChecksRead>>>(new Map());
+        const chosenRefsRef = shallowRef<ReadonlyMap<string, CommitRef>>(new Map());
+        const escapeTakers = new Set<() => boolean>();
 
         let session: Session | null = null;
 
@@ -234,6 +236,10 @@ export const CommitGraphStore = defineService({
             ensureChecks,
             setPlace,
             takePlace,
+            noteChosenRef,
+            getChosenRef,
+            addEscapeTaker,
+            takeEscape,
         };
 
         /** The graph of `owner/name`, or `undefined` until {@link open} brought its kept copy; reactive. */
@@ -491,6 +497,41 @@ export const CommitGraphStore = defineService({
             return place;
         }
 
+        /**
+         * Notes the branch or tag of `owner/name` chosen last in its list (D12), in place of the one before: an opened
+         * commit says why the graph stayed when it is that ref's commit and not loaded (CH16).
+         */
+        function noteChosenRef(nameWithOwner: string, chosen: CommitRef) {
+            chosenRefsRef.value = new Map(chosenRefsRef.value).set(nameWithOwner, chosen);
+        }
+
+        /** The branch or tag of `owner/name` chosen last ({@link noteChosenRef}), or `null`; reactive. */
+        function getChosenRef(nameWithOwner: string): CommitRef | null {
+            return chosenRefsRef.value.get(nameWithOwner) ?? null;
+        }
+
+        /**
+         * Adds a part of a graph's view that takes Escape before the commit opened beside it closes (its list of branches
+         * and tags lying over the graph): `taker` answers `true` when it took the key. Returns its removal.
+         */
+        function addEscapeTaker(taker: () => boolean) {
+            escapeTakers.add(taker);
+            return () => {
+                escapeTakers.delete(taker);
+            };
+        }
+
+        /** Escape pressed with a commit opened: `true` when a part of a graph's view took it ({@link addEscapeTaker}). */
+        function takeEscape() {
+            for (const taker of escapeTakers) {
+                if (taker()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /** Another account signed in, or none: the graphs of whoever was before leave memory. */
         function follow(account: Account | null) {
             session?.cancelStatesBatch?.();
@@ -503,6 +544,7 @@ export const CommitGraphStore = defineService({
             statesRef.value = new Map();
             detailsRef.value = new Map();
             checksRef.value = new Map();
+            chosenRefsRef.value = new Map();
             if (!account) {
                 return;
             }

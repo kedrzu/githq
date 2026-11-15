@@ -2,14 +2,14 @@ import type { HistoryState, LocationQuery, RouteLocation, RouteLocationRaw, Rout
 
 /**
  * The kinds of item that open in the panel beside a list or on a page of their own (D9): an issue or a pull request
- * (`issue`, as GitHub's project pane names both), and a workflow (actions D15).
+ * (`issue`, as GitHub's project pane names both), a workflow (actions D15) and a commit.
  */
-export type OpenedItemKind = 'issue' | 'workflow';
+export type OpenedItemKind = 'commit' | 'issue' | 'workflow';
 
 /** Every {@link OpenedItemKind}: each is also the query parameter naming its item in the pane. */
-const OPENED_ITEM_KINDS = ['issue', 'workflow'] as const satisfies readonly OpenedItemKind[];
+const OPENED_ITEM_KINDS = ['issue', 'workflow', 'commit'] as const satisfies readonly OpenedItemKind[];
 
-/** The query parameter of GitHub's project pane: the kind of item it shows (`issue`, `workflow`). */
+/** The query parameter of GitHub's project pane: the kind of item it shows (`issue`, `workflow`, `commit`). */
 const PANE_PARAM = 'pane';
 /**
  * GitHub's own parameter naming the pane's item by its project item id, which githq does not have: a link that

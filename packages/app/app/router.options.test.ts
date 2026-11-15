@@ -102,9 +102,11 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web/actions/workflows/pages', 'workflow-page'],
     ['/acme/web/actions/workflows', 'github'],
     ['/orgs/web/actions/runs/123', 'github-orgs'],
-    // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
+    // A branch's own history is GitHub's: only the repository's whole history is a section here. A commit has a page,
+    // by its sha.
     ['/acme/web/commits/main', 'github'],
-    ['/acme/web/commit/0123abc', 'github'],
+    ['/acme/web/commit/0123abc', 'commit-page'],
+    ['/acme/web/commit/main', 'github'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],

@@ -5,6 +5,7 @@ import { stringifyQuery } from 'vue-router';
 import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
 import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
+import { COMMIT_PAGE_PATH } from '@/commits/commitRoutes.js';
 import HomePage from '@/home/HomePage.vue';
 import { DOWNLOAD_PATH } from '@/landing/desktopBuilds.js';
 import { ITEM_PAGE_PATHS, REVIEW_PAGE_ALIAS, REVIEW_PAGE_PATH } from '@/item/itemRoutes.js';
@@ -167,6 +168,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         name: 'workflow-page',
         component: () => import('@/item/ItemPage.vue'),
         meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: 'workflow', gitHubScreen: true },
+    };
+    // A commit on a page of its own, at GitHub's address of it; a static segment outranks the repository's other pages'
+    // hand-off to github.com. In any repository, tracked or not, as its Commits section (git-client D11).
+    yield {
+        path: COMMIT_PAGE_PATH,
+        name: 'commit-page',
+        component: () => import('@/item/ItemPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: 'commit', gitHubScreen: true },
     };
     // A repository's and a project's views, at GitHub's addresses of them; on a phone each list draws its own top bar
     // (`ownTopBar`), with its options and New issue. One repository page instance for the repository and its lists of
