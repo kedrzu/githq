@@ -39,7 +39,7 @@ onMounted(() => sync.pollNow('workflows'));
 function open(entry: BrokenWorkflowEntry) {
   const run = entry.workflow.latestFailedRun;
   if (run) {
-    openRun(entry.nameWithOwner, run);
+    openRun({ nameWithOwner: entry.nameWithOwner, run, where: 'page' });
   }
 }
 </script>

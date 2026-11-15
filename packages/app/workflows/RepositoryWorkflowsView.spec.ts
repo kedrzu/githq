@@ -6,8 +6,18 @@ import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import * as stories from './RepositoryWorkflowsView.stories.js';
 
-const { ActionsOff, AlertsOff, Default, NoWorkflows, NotKnownYet, NotReadYet, Opened, Refused, WithPatterns } =
-    composeStories(stories);
+const {
+    ActionsOff,
+    AlertsOff,
+    Default,
+    NoWorkflows,
+    NotKnownYet,
+    NotReadYet,
+    Opened,
+    Refused,
+    RunOpened,
+    WithPatterns,
+} = composeStories(stories);
 
 const group = (name: string) => page.getByRole('region', { name, exact: true });
 const bar = () => page.getByTestId('workflow-alerts-bar');
@@ -138,6 +148,34 @@ test('D15: with a workflow open in the panel its row is selected: Enter or a cli
     await vi.waitFor(() => expect(open).toHaveBeenLastCalledWith('1'));
     expect(open).toHaveBeenCalledTimes(2);
     expect(expand).toHaveBeenCalledTimes(1);
+});
+
+test('with a run open in the panel its workflow’s row is selected and stays: J/K, Enter, ⇧Enter and F are the run’s; a click on a row opens that workflow in the run’s place', async () => {
+    const open = vi.fn();
+    const expand = vi.fn();
+    const fullScreen = vi.fn();
+    const openRun = vi.fn();
+    await RunOpened.run({
+        args: { ...RunOpened.args, onOpen: open, onExpand: expand, onFullScreen: fullScreen, onOpenRun: openRun },
+    });
+
+    expect(selected()).toBe('Deploy');
+    await userEvent.keyboard('jj{ArrowDown}k');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('f');
+    expect(selected()).toBe('Deploy');
+    expect(open).not.toHaveBeenCalled();
+    expect(expand).not.toHaveBeenCalled();
+    expect(fullScreen).not.toHaveBeenCalled();
+    expect(openRun).not.toHaveBeenCalled();
+
+    await userEvent.click(page.getByRole('button', { name: 'Deploy', exact: true }));
+    expect(open).toHaveBeenLastCalledWith('1');
+    await userEvent.click(page.getByRole('button', { name: 'Probe', exact: true }));
+    expect(open).toHaveBeenLastCalledWith('5');
+    expect(open).toHaveBeenCalledTimes(2);
+    expect(expand).not.toHaveBeenCalled();
 });
 
 test('after a click, J/K take the keys back: Enter acts on the selected row, not on the button clicked', async () => {

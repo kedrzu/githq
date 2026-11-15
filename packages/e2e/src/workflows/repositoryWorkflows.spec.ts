@@ -66,11 +66,14 @@ test("a repository's Workflows section lists every workflow — runs on any ref 
     await repository.section('Workflows').click();
     // The tab takes the keys as it opens, on its first row.
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+    // In the panel beside the section, which fits.
     await page.keyboard.press('f');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/2`);
+    await expect(page).toHaveURL(
+        `/${SAMPLE_REPOSITORY}/actions?pane=run&run=${encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|2`)}`,
+    );
     await expect(new WorkflowRunScreenHarness(page).root).toBeVisible();
 
-    // Back in the tab, on the same row.
+    // Back to the tab alone, on the same row.
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');

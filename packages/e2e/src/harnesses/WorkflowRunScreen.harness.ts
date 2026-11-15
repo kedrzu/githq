@@ -1,8 +1,9 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a workflow's run on its own page (`WorkflowRunView.vue`, actions W4a), at
- * `/owner/name/actions/runs/123`: its title, what the run is, its jobs and steps, and the log's pane.
+ * Playwright harness for a workflow's run (`WorkflowRunView.vue`, actions W4a) on its own page, at
+ * `/owner/name/actions/runs/123`, or in the panel beside the Workflows section (`?pane=run&run=…`): its title, what the
+ * run is, its jobs and steps, and the log's pane.
  */
 export class WorkflowRunScreenHarness {
     readonly page: Page;
@@ -10,7 +11,10 @@ export class WorkflowRunScreenHarness {
 
     constructor(page: Page) {
         this.page = page;
-        this.root = page.getByRole('main').getByRole('article');
+        this.root = page
+            .getByRole('main')
+            .getByRole('article')
+            .or(page.getByRole('complementary', { name: 'Opened item' }).getByRole('article'));
     }
 
     /** The page's title: "Deploy #12". */
