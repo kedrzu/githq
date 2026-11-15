@@ -74,6 +74,8 @@ test('W37, W39: "Run workflow · Deploy" on the selected workflow: its form at m
     await menu.field.pressSequentially('Run workflow');
     await expect(menu.option(/Run workflow · Deploy/u)).toContainText('main · 3 inputs');
     await expect(menu.option(/Run workflow · Deploy/u).locator('kbd')).toHaveCount(0);
+    // W47: the footer says where Enter goes from the highlighted line.
+    await expect(menu.root.getByText(/Enter\sopens\sDeploy['’]s\sform/u)).toBeVisible();
     await menu.option(/Run workflow · Deploy/u).click();
 
     const form = menu.root.getByRole('group', { name: 'Run workflow · Deploy' });
@@ -121,12 +123,21 @@ test('W46, W48: "Run workflow…" from My work: the repositories with what each 
     await expect(menu.option(SAMPLE_REPOSITORY)).toContainText('1 workflow you can run · Deploy');
     await expect(menu.option(DOCS_REPOSITORY)).toContainText('no workflow with workflow_dispatch');
     await expect(menu.option(DOCS_REPOSITORY)).toContainText(/can['’]t\srun/u);
+    await expect(menu.group('Tracked repositories').getByRole('option')).toHaveText([new RegExp(SAMPLE_REPOSITORY)]);
+    await expect(menu.group('Nothing to run').getByRole('option')).toHaveText([new RegExp(DOCS_REPOSITORY)]);
+    await expect(menu.root.getByRole('textbox', { name: 'Pick a repository…' })).toBeFocused();
+    await expect(menu.root.getByText('Run workflow · step 1 of 3')).toBeVisible();
     expect(workflowFilesReads(github).toSorted()).toEqual(
         [SAMPLE_REPOSITORY, DOCS_REPOSITORY].map(name => `${name} HEAD:.github/workflows`).toSorted(),
     );
 
     await page.keyboard.press('Enter');
     await expect(menu.option(/Deploy/u)).toContainText('main · 3 inputs');
+    await expect(menu.group(`Workflows in ${SAMPLE_REPOSITORY} you can run`).getByRole('option')).toHaveText([
+        /Deploy/u,
+    ]);
+    await expect(menu.root.getByRole('textbox', { name: 'Pick a workflow…' })).toBeFocused();
+    await expect(menu.root.getByText('Only workflows with workflow_dispatch · 1 of 1')).toBeVisible();
     await page.keyboard.press('Enter');
 
     const form = menu.root.getByRole('group', { name: 'Deploy' });
@@ -178,6 +189,8 @@ test('W36: a workflow without workflow_dispatch shows "Run workflow" it can\'t r
     const command = menu.option(/Run workflow · CLA/u);
     await expect(command).toContainText('CLA has no workflow_dispatch trigger');
     await expect(command).toContainText(/can['’]t\srun/u);
+    // W48: the cursor skips it to "Run workflow…", and the footer says Enter picks another workflow there.
+    await expect(menu.root.getByText('Enter picks another workflow')).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(menu.root.getByRole('group', { name: 'Run workflow · CLA' })).toHaveCount(0);
     expect(dispatchBodies(github)).toEqual([]);

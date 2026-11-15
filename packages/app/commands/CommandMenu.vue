@@ -75,6 +75,8 @@ interface Row extends FilterListRow {
   readonly aside?: string;
   /** Monospaced dim text: an item's reference. */
   readonly reference?: string;
+  /** Quiet text at the footer's end while it is highlighted. */
+  readonly hint?: string;
   readonly color?: string;
   readonly avatarUrl?: string;
   readonly keys?: readonly string[];
@@ -149,10 +151,12 @@ const crumbs = computed((): CommandCrumb[] => {
 
   for (const [index, crumb] of steps.value.entries()) {
     const search = crumb.command?.search ? crumb.command : null;
+    // A search, and an action whose levels are walked into (W36's "▷ Run workflow"), show their icon.
+    const iconShown = search ?? (index === 0 && crumb.command?.children ? crumb.command : null);
     shown.push({
       key: crumb.path.at(-1) ?? '',
       label: withoutEllipsis(crumb.title),
-      icon: search?.icon,
+      icon: iconShown?.icon,
       detail: index === steps.value.length - 1 ? form.value?.context : undefined,
       arrow: index > 0 || (chip.value !== null && (subject.value !== null || !search)),
     });
@@ -179,17 +183,28 @@ const groups = computed((): FilterListGroup<Row>[] => {
     repository: repository.value,
     navigation: props.navigation,
     level: step.value,
-  }).map(group => ({
-    key: group.key,
-    heading: getHeading(group.key),
-    rows: group.entries.map(toRow),
-  }));
+  }).flatMap(group =>
+    group.key === 'level'
+      ? groupLevel(group.entries)
+      : [{ key: group.key, heading: getHeading(group.key), rows: group.entries.map(toRow) }],
+  );
 });
 const rows = computed(() => groups.value.flatMap(group => group.rows));
 const highlightedRow = computed(() => rows.value.find(row => row.value === highlighted.value) ?? null);
 const placeholder = computed(() =>
-  submenu.value ? (submenuOptions.value?.placeholder ?? t(l.filterOptions)) : t(l.placeholder),
+  submenu.value
+    ? (submenuOptions.value?.placeholder ?? t(l.filterOptions))
+    : (step.value?.command?.placeholder ?? t(l.placeholder)),
 );
+/** Quiet text at the footer's end: where a picker's options come from, the highlighted line's, a listed line's that can't run, its level's. */
+const footerHint = computed(() => {
+  if (submenu.value) {
+    return submenuOptions.value?.hint;
+  }
+
+  const unavailable = rows.value.find(row => row.disabled && row.hint !== undefined);
+  return highlightedRow.value?.hint ?? unavailable?.hint ?? step.value?.command?.levelHint;
+});
 const message = computed(() => {
   if (rows.value.length > 0) {
     return null;
@@ -301,6 +316,7 @@ function toRow(entry: CommandMenuEntry): Row {
           title: command.title,
           detail: command.unavailable,
           aside: t(l.cantRun),
+          hint: command.hint,
           ancestors: entry.ancestors,
           match: entry.match,
           disabled: true,
@@ -316,6 +332,7 @@ function toRow(entry: CommandMenuEntry): Row {
         title: command.title,
         detail: command.detail,
         keys: command.key?.split('+'),
+        hint: command.hint,
         ancestors: entry.ancestors,
         match: entry.match,
         activate: enter && (command.options || command.form || !command.run) ? enter : () => runCommand(command),
@@ -382,6 +399,23 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
     default:
       return assertNever(result);
   }
+}
+
+/** A level's rows under their headings, each heading where its first row is; a row found deeper has none. */
+function groupLevel(entries: readonly CommandMenuEntry[]): FilterListGroup<Row>[] {
+  const grouped = new Map<string | null, Row[]>();
+  for (const entry of entries) {
+    const heading = entry.kind === 'command' && entry.ancestors.length === 0 ? (entry.command.group ?? null) : null;
+    const headed = grouped.get(heading) ?? [];
+    headed.push(toRow(entry));
+    grouped.set(heading, headed);
+  }
+
+  return [...grouped].map(([heading, headed]) => ({
+    key: heading === null ? 'level' : `level:${heading}`,
+    heading,
+    rows: headed,
+  }));
 }
 
 function groupOptions(
@@ -669,10 +703,10 @@ function onEscape(event: KeyboardEvent) {
         </p>
       </template>
       <template
-        v-if="submenu && submenuOptions?.hint"
+        v-if="footerHint"
         #footerEnd
       >
-        {{ submenuOptions.hint }}
+        {{ footerHint }}
       </template>
     </FilterList>
   </Dialog>
