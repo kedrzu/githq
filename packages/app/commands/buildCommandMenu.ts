@@ -307,7 +307,7 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
             match,
             score: score * trail.factor * getContextFactor(trail.group),
             ancestors: trail.ancestors,
-            path: command.options || command.children ? [...trail.path, id] : trail.path,
+            path: command.options || command.children || command.form ? [...trail.path, id] : trail.path,
         });
     }
 
@@ -385,7 +385,7 @@ function findChildStep(parent: MenuPathStep, id: string) {
 }
 
 function toCommandStep(command: Command, path: readonly string[]): MenuPathStep | null {
-    if (!command.options && !command.children) {
+    if (!command.options && !command.children && !command.form) {
         return null;
     }
 

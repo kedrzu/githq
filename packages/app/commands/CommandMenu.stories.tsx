@@ -2,6 +2,7 @@ import type { RepositoryBrowseSearchQuery } from '@githq/github/generated.gen.js
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { Play } from 'lucide-vue-next';
 import { userEvent, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
@@ -27,7 +28,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import CommandMenu from './CommandMenu.vue';
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
-import type { Command } from './CommandTypes.js';
+import type { Command, CommandFormField } from './CommandTypes.js';
 import type { NavigationData, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
@@ -128,6 +129,8 @@ const Harness = defineComponent({
         repository: { type: String as PropType<string | null>, default: null },
         /** Levels to walk into, under places, repositories and actions; what their rows do is written in `asked`. */
         levels: { type: Boolean, default: false },
+        /** "Run workflow" with two workflows to run through a form: Deploy, and Release that can't run. */
+        workflows: { type: Boolean, default: false },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -145,6 +148,10 @@ const Harness = defineComponent({
 
         if (props.levels) {
             useCommands(() => createLevelCommands(say));
+        }
+
+        if (props.workflows) {
+            useCommands(() => [createRunWorkflowCommand(say)]);
         }
 
         useCommands(() => [
@@ -387,6 +394,34 @@ export const FoundInRepository: Story = {
     },
 };
 
+/** W36 → W37: "Run workflow", then Deploy — its form, every field at its default. */
+export const FormStep: Story = {
+    args: { subject: 'none', workflows: true, startCommandId: 'app.runWorkflow' },
+    play: async () => {
+        await userEvent.keyboard('{Enter}');
+    },
+};
+
+/** W37: the form filled — production, a version, no dry run — the version field focused. */
+export const FormFilled: Story = {
+    args: { subject: 'none', workflows: true, startCommandId: 'app.runWorkflow' },
+    play: async ({ canvasElement }) => {
+        await userEvent.keyboard('{Enter}');
+        const body = within(canvasElement.ownerDocument.body);
+        await userEvent.selectOptions(await body.findByRole('combobox', { name: 'environment' }), 'production');
+        await userEvent.click(body.getByRole('switch', { name: 'dry_run' }));
+        await userEvent.type(body.getByRole('textbox', { name: 'version' }), '2.14.0');
+    },
+};
+
+/** A form that can't run: why, under the ref left to change, and Run unavailable. */
+export const FormCantRun: Story = {
+    args: { subject: 'none', workflows: true, startCommandId: 'app.runWorkflow' },
+    play: async () => {
+        await userEvent.keyboard('{ArrowDown}{Enter}');
+    },
+};
+
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
     useContainer().set(
@@ -502,4 +537,68 @@ function createLevelCommands(say: (text: string) => void): Command[] {
 
 function levelRow(id: string, title: string, say: (text: string) => void): Command {
     return { id, title, section: 'app', run: () => say(title) };
+}
+
+/**
+ * "Run workflow" (W36, W37) with Deploy — whose `version` input a `v1` ref doesn't have — and Release, which has no
+ * `workflow_dispatch` trigger. Running says what it was given.
+ */
+function createRunWorkflowCommand(say: (text: string) => void): Command {
+    const hint = `Runs on GitHub as ${SAMPLE_VIEWER.login}`;
+    const refField: CommandFormField = {
+        kind: 'text',
+        name: 'ref',
+        detail: 'branch or tag',
+        hint: 'the default branch',
+        default: 'main',
+        required: true,
+    };
+    const version: CommandFormField = { kind: 'text', name: 'version', detail: 'string', hint: 'optional' };
+    return {
+        id: 'app.runWorkflow',
+        title: 'Run workflow',
+        section: 'app',
+        icon: Play,
+        children: () => [
+            {
+                id: 'deploy',
+                title: 'Deploy',
+                section: 'app',
+                form: values => ({
+                    heading: 'Ref and inputs',
+                    context: 'fitloop/webapp',
+                    submitLabel: 'Run',
+                    hint,
+                    fields: [
+                        refField,
+                        {
+                            kind: 'choice',
+                            name: 'environment',
+                            detail: 'choice',
+                            hint: 'default: staging',
+                            options: ['staging', 'production'],
+                            default: 'staging',
+                        },
+                        ...(values.ref === 'v1' ? [] : [version]),
+                        { kind: 'boolean', name: 'dry_run', detail: 'boolean', hint: 'default: true', default: true },
+                    ],
+                    submit: entered => say(`Deploy ${JSON.stringify(entered)}`),
+                }),
+            },
+            {
+                id: 'release',
+                title: 'Release',
+                section: 'app',
+                form: () => ({
+                    heading: 'Ref and inputs',
+                    context: 'fitloop/webapp',
+                    submitLabel: 'Run',
+                    hint,
+                    fields: [refField],
+                    message: 'This ref has no workflow_dispatch trigger',
+                    submit: entered => say(`Release ${JSON.stringify(entered)}`),
+                }),
+            },
+        ],
+    };
 }

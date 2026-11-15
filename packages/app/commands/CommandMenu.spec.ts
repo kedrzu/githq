@@ -20,6 +20,8 @@ const {
     Levels,
     LevelsOnOpenItem,
     FoundInRepository,
+    FormStep,
+    FormCantRun,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -545,3 +547,81 @@ async function runWithPointerAway(story: { run(): Promise<void> }) {
     await story.run();
     await userEvent.hover(page.getByRole('textbox'));
 }
+
+test("W37: a form's keys — ↵ and Tab move to the next field, ⇧Tab back, ⌘↵ runs with the defaults left and closes", async () => {
+    await FormStep.run();
+    const form = page.getByRole('group', { name: 'Deploy' });
+
+    await expect.element(form.getByRole('textbox', { name: 'ref' })).toHaveFocus();
+    await expect.element(form.getByRole('textbox', { name: 'ref' })).toHaveValue('main');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(form.getByRole('combobox', { name: 'environment' })).toHaveFocus();
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).toBeInTheDocument();
+    await userEvent.keyboard('{Tab}');
+    await expect.element(form.getByRole('textbox', { name: 'version' })).toHaveFocus();
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    await expect.element(form.getByRole('combobox', { name: 'environment' })).toHaveFocus();
+    await userEvent.keyboard('{Tab}2.14.0{Enter}');
+    await expect.element(form.getByRole('switch', { name: 'dry_run' })).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect.element(form.getByRole('switch', { name: 'dry_run' })).toHaveAttribute('aria-checked', 'false');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('asked'))
+        .toHaveTextContent('Deploy {"ref":"main","environment":"staging","version":"2.14.0","dry_run":false}');
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).not.toBeInTheDocument();
+});
+
+test('W37: Esc steps back to the picker, and coming back keeps what was entered', async () => {
+    await FormStep.run();
+
+    await userEvent.keyboard('{Tab}{Tab}2.14.0');
+    await userEvent.keyboard('{Escape}');
+    const picker = page.getByRole('listbox', { name: 'Run workflow' });
+    await expect.element(picker).toBeInTheDocument();
+    await expect.element(page.getByRole('group', { name: 'Deploy' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('textbox', { name: 'version' })).toHaveValue('2.14.0');
+});
+
+test('a field the form takes away and gives back keeps its value; only the fields shown are run with', async () => {
+    await FormStep.run();
+    const ref = page.getByRole('textbox', { name: 'ref' });
+    const version = page.getByRole('textbox', { name: 'version' });
+
+    await userEvent.fill(version, '2.14.0');
+    await userEvent.fill(ref, 'v1');
+    await expect.element(version).not.toBeInTheDocument();
+    await userEvent.click(ref);
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('asked'))
+        .toHaveTextContent('Deploy {"ref":"v1","environment":"staging","dry_run":true}');
+
+    await FormStep.run();
+    await userEvent.fill(version, '2.14.0');
+    await userEvent.fill(ref, 'v1');
+    await userEvent.fill(ref, 'main');
+    await expect.element(version).toHaveValue('2.14.0');
+});
+
+test("a required field left empty, or a form that can't run, makes Run unavailable and ⌘↵ does nothing", async () => {
+    await FormStep.run();
+    const run = page.getByRole('button', { name: 'Run' });
+
+    await expect.element(run).not.toHaveAttribute('aria-disabled');
+    await userEvent.fill(page.getByRole('textbox', { name: 'ref' }), '');
+    await expect.element(run).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+
+    await FormCantRun.run();
+    await expect.element(page.getByRole('status')).toHaveTextContent('This ref has no workflow_dispatch trigger');
+    await expect.element(page.getByRole('textbox', { name: 'ref' })).toHaveFocus();
+    await expect.element(run).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Nothing asked');
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).toBeInTheDocument();
+});

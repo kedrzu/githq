@@ -33,8 +33,11 @@ import { formatShortReference } from '@/item/itemRoutes.js';
 
 import { buildCommandMenu, resolveMenuPath } from './buildCommandMenu.js';
 import type { CommandMenuAncestor, CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
+import CommandCrumbs from './CommandCrumbs.vue';
+import type { CommandCrumb } from './CommandCrumbs.vue';
+import CommandForm from './CommandForm.vue';
 import * as l from './CommandMenu.loc.js';
-import type { Command, CommandOption, CommandSubject } from './CommandTypes.js';
+import type { Command, CommandFormValues, CommandOption, CommandSubject } from './CommandTypes.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 
@@ -103,6 +106,8 @@ const repositoryRemoved = ref(false);
 /** The ids of the levels entered, from the top. */
 const path = shallowRef<readonly string[]>([]);
 const highlighted = shallowRef<string | null>(null);
+/** What was entered in each form, by its level's path: it stays while the form is left and while its fields change. */
+const formValues = shallowRef<Readonly<Record<string, CommandFormValues>>>({});
 
 /** What the actions act on: `null` once the user took it out (⌫). */
 const subject = computed(() => (subjectRemoved.value ? null : props.subject));
@@ -131,6 +136,30 @@ const submenu = computed(() => {
   return command?.options ? command : null;
 });
 const submenuOptions = computed(() => submenu.value?.options?.() ?? null);
+/** The key of the form shown in {@link formValues}. */
+const formKey = computed(() => step.value?.path.join('/') ?? '');
+/** The form shown in place of the list; `null` when a list is shown. */
+const form = computed(() => step.value?.command?.form?.(formValues.value[formKey.value] ?? {}) ?? null);
+/** The chip, then a crumb per level entered. */
+const crumbs = computed((): CommandCrumb[] => {
+  const shown: CommandCrumb[] = [];
+  if (chip.value) {
+    shown.push({ key: 'chip', label: chip.value.label, icon: chip.value.icon, subject: true });
+  }
+
+  for (const [index, crumb] of steps.value.entries()) {
+    const search = crumb.command?.search ? crumb.command : null;
+    shown.push({
+      key: crumb.path.at(-1) ?? '',
+      label: withoutEllipsis(crumb.title),
+      icon: search?.icon,
+      detail: index === steps.value.length - 1 ? form.value?.context : undefined,
+      arrow: index > 0 || (chip.value !== null && (subject.value !== null || !search)),
+    });
+  }
+
+  return shown;
+});
 /** The action being searched in, while the menu is open: only it is told what is typed. */
 const searching = computed(() => (open.value && submenu.value?.search ? submenu.value : null));
 
@@ -208,6 +237,7 @@ watch(
       subjectRemoved.value = false;
       repositoryRemoved.value = false;
       path.value = [];
+      formValues.value = {};
       if (props.startCommandId) {
         enterLevel([props.startCommandId]);
       }
@@ -252,7 +282,7 @@ function toRow(entry: CommandMenuEntry): Row {
   switch (entry.kind) {
     case 'command': {
       const { command } = entry;
-      const enter = command.options || command.children ? () => enterLevel(entry.path) : undefined;
+      const enter = command.options || command.children || command.form ? () => enterLevel(entry.path) : undefined;
       return {
         value: entry.id,
         icon: command.icon ?? Zap,
@@ -261,7 +291,7 @@ function toRow(entry: CommandMenuEntry): Row {
         keys: command.key?.split('+'),
         ancestors: entry.ancestors,
         match: entry.match,
-        activate: enter && (command.options || !command.run) ? enter : () => runCommand(command),
+        activate: enter && (command.options || command.form || !command.run) ? enter : () => runCommand(command),
         enter,
       };
     }
@@ -395,6 +425,16 @@ function pick(option: CommandOption) {
   option.pick();
 }
 
+function setFormValues(values: CommandFormValues) {
+  formValues.value = { ...formValues.value, [formKey.value]: values };
+}
+
+function submitForm(values: CommandFormValues) {
+  const shown = form.value;
+  open.value = false;
+  shown?.submit(values);
+}
+
 function enterLevel(target: readonly string[]) {
   path.value = target;
   query.value = '';
@@ -472,7 +512,21 @@ function onEscape(event: KeyboardEvent) {
     fit-content
     @escape-key-down="onEscape"
   >
+    <CommandForm
+      v-if="form && step"
+      :key="formKey"
+      :form="form"
+      :label="step.title"
+      :values="formValues[formKey] ?? {}"
+      @update:values="setFormValues"
+      @submit="submitForm"
+    >
+      <template #crumbs>
+        <CommandCrumbs :crumbs="crumbs" />
+      </template>
+    </CommandForm>
     <FilterList
+      v-else
       v-model:query="query"
       v-model:highlighted="highlighted"
       :model-value="null"
@@ -488,36 +542,7 @@ function onEscape(event: KeyboardEvent) {
       @filter-keydown="onFilterKeydown"
     >
       <template #beforeFilter>
-        <span
-          v-if="chip"
-          :class="css.commandMenu_chip"
-        >
-          <component
-            :is="chip.icon"
-            :class="css.commandMenu_chipIcon"
-            aria-hidden="true"
-          />
-          {{ chip.label }}
-        </span>
-        <template
-          v-for="(crumb, index) in steps"
-          :key="crumb.path.at(-1)"
-        >
-          <ChevronRight
-            v-if="index > 0 || (chip && (subject || !crumb.command?.search))"
-            :class="css.commandMenu_crumb"
-            aria-hidden="true"
-          />
-          <span :class="css.commandMenu_chip">
-            <component
-              :is="crumb.command.icon"
-              v-if="crumb.command?.search && crumb.command.icon"
-              :class="css.commandMenu_chipSearchIcon"
-              aria-hidden="true"
-            />
-            {{ withoutEllipsis(crumb.title) }}
-          </span>
-        </template>
+        <CommandCrumbs :crumbs="crumbs" />
       </template>
       <template #row="{ row }">
         <component
@@ -621,39 +646,6 @@ function onEscape(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
-.commandMenu_chip {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-6;
-  align-items: center;
-  padding: 3px $spacing-8;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  color: $color-fg;
-  background: $color-bg-3;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-md;
-}
-
-.commandMenu_chipIcon {
-  width: 12px;
-  height: 12px;
-  color: $color-green;
-}
-
-.commandMenu_chipSearchIcon {
-  width: 13px;
-  height: 13px;
-  color: $color-fg-2;
-}
-
-.commandMenu_crumb {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-dim;
-}
-
 .commandMenu_icon {
   flex: none;
   width: 14px;
