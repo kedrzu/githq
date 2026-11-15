@@ -15,8 +15,13 @@ test('mobile D27: on a phone a row swiped to the left offers Assign, whose menu 
     const { myWork } = await openMyWork(page, github, sample.world);
     await page.setViewportSize(PHONE);
 
+    // The list is laid out anew at the phone's width: swiped once it settled, again if a re-render took the swipe.
+    await expect(page.getByRole('button', { name: 'Open places' })).toBeVisible();
     const row = myWork.row('Flaky login test');
-    await swipeLeft(row);
+    await expect(async () => {
+        await swipeLeft(row);
+        await expect(row.getByRole('button', { name: 'Assign' })).toBeVisible({ timeout: 1000 });
+    }).toPass();
     await row.getByRole('button', { name: 'Assign' }).click();
     const assignees = page.getByRole('dialog', { name: /Assignees/u });
     await assignees.getByRole('option', { name: /monalisa/u }).click();
