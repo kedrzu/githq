@@ -10,6 +10,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import type { AppUpdateShape, UpdateNotice, UpdateOffer, UpdateState } from '@/services/AppUpdate.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
@@ -412,6 +413,48 @@ test("on a repository's view the group has only its page, link and settings: its
     for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows']) {
         await expect.element(group.getByRole('option', { name: title })).not.toBeInTheDocument();
     }
+});
+
+test('W36: "Run workflow…" starts in the screen\'s repository, named once over its level', async () => {
+    await mountWithAnotherRepository('/acme/web/actions/runs/7');
+
+    await openMenu();
+    await userEvent.keyboard('run workflow{Enter}');
+    await expect.element(page.getByRole('listbox', { name: 'acme/web' })).toBeInTheDocument();
+    expect(page.getByText('acme/web', { exact: true }).elements()).toHaveLength(1);
+});
+
+test('W36: with the repository taken out of the menu, "Run workflow…" starts at the tracked repositories', async () => {
+    await mountWithAnotherRepository('/acme/web/actions/runs/7');
+
+    await openMenu();
+    await userEvent.keyboard('{Backspace}');
+    await userEvent.keyboard('run workflow{Enter}');
+    const repositories = page.getByRole('listbox', { name: 'Run workflow' });
+    await expect.element(repositories.getByRole('option', { name: /^acme\/api/u })).toBeInTheDocument();
+    await expect.element(repositories.getByRole('option', { name: /^acme\/web/u })).toBeInTheDocument();
+
+    // The next menu has the repository back.
+    await userEvent.keyboard('{Escape}{Escape}');
+    await openMenu();
+    await userEvent.keyboard('run workflow{Enter}');
+    await expect.element(page.getByRole('listbox', { name: 'acme/web' })).toBeInTheDocument();
+});
+
+test("New issue from a menu the repository was taken out of starts in none; `C` then starts in the screen's", async () => {
+    const container = createAppContainer();
+    const start = vi.spyOn(container.resolve(NewIssueComposer), 'start').mockImplementation(() => undefined);
+    const router = render(container);
+    await router.push('/acme/web/issues');
+
+    await openMenu();
+    await userEvent.keyboard('{Backspace}');
+    await expect.element(page.getByText('acme/web', { exact: true })).not.toBeInTheDocument();
+    await userEvent.keyboard('new issue{Enter}');
+    expect(start).toHaveBeenLastCalledWith({ repository: null, project: null, parent: null });
+
+    await userEvent.keyboard('c');
+    expect(start).toHaveBeenLastCalledWith({ repository: 'acme/web', project: null, parent: null });
 });
 
 test('a repository that is not tracked is offered Commits but neither Workflows nor its settings', async () => {
