@@ -292970,11 +292970,11 @@
                                   "type": "ref",
                                   "ref": "of5Pp",
                                   "name": "Author",
-                                  "width": 14,
-                                  "height": 14,
+                                  "width": 16,
+                                  "height": 16,
                                   "descendants": {
                                     "zeZzP": {
-                                      "fontSize": 6
+                                      "fontSize": 7
                                     }
                                   }
                                 },
@@ -435685,8 +435685,8 @@
                               "id": "e2jpfQ",
                               "name": "Author",
                               "fill": "#222831",
-                              "width": 14,
-                              "height": 14
+                              "width": 16,
+                              "height": 16
                             },
                             {
                               "type": "rectangle",
