@@ -182,6 +182,8 @@ useCommands(() => [
     detail: tracked.value?.title ?? `${owner.value}#${number.value}`,
   },
 ]);
+/** Going to each saved view, as the command menu's level under the project: the phone's menu of the views (mobile D17). */
+const viewCommands = computed(() => projectCommands({ ...address.value, id: tracked.value?.id ?? null }).savedViews);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;
@@ -401,6 +403,29 @@ function buildGroups(current: Project, shown: readonly ProjectEntry[]) {
   });
 }
 
+/**
+ * How many items another saved view lists, for the phone's menu of the views (mobile D17): its filter as saved on GitHub
+ * evaluated here, or as GitHub last answered it; `null` until it has.
+ */
+function countView(viewId: string) {
+  const current = project.value;
+  const other = current?.views.find(candidate => candidate.id === viewId);
+  if (!current || !other) {
+    return null;
+  }
+
+  const compiledView = compileProjectFilter({
+    filter: other.filter || null,
+    fields: current.fields,
+    viewerLogin: auth.viewer?.login ?? '',
+    today: today.value,
+    hasDrafts: hasDrafts(),
+    hasDraftPullRequests: hasDraftPullRequests(),
+  });
+  const answeredIds = compiledView.kind === 'github' ? answers.get(current.id, other.filter ?? '').ids : null;
+  return selectProjectEntries({ entries: entries.value, filter: compiledView, answered: answeredIds })?.length ?? null;
+}
+
 function getPullRequest(entry: ProjectEntry) {
   return entry.content?.kind === 'pullRequest' ? entry.content : null;
 }
@@ -582,6 +607,8 @@ function setRowField(fieldId: string | null) {
     v-model:checked-ids="list.checkedIds"
     :project="project"
     :tabs="tabs"
+    :view-commands="viewCommands"
+    :count-view="countView"
     :view="showAll ? null : view"
     :groups="groups"
     :item-count="itemCount"

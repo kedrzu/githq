@@ -4,7 +4,7 @@ import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, nextTick } from 'vue';
-import { createMemoryHistory, createRouter } from 'vue-router';
+import { createMemoryHistory, createRouter, RouterView, useRoute, useRouter } from 'vue-router';
 
 import { TOAST_LASTS } from '@/components/Toast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -14,7 +14,13 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import type { RepositorySection } from '@/repository/RepositorySection.js';
+import RepositoryView from '@/repository/RepositoryView.vue';
+import { REPOSITORY_VIEW_DEFAULTS } from '@/repository/repositoryViewOptions.js';
+import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
+import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -24,6 +30,28 @@ const WEB = 'acme/web';
 const API = 'acme/api';
 const ROADMAP = 'Roadmap';
 const WEB_TARGET: TrackedTarget = { kind: 'repository', nameWithOwner: WEB };
+
+/** acme/web's Issues or Pull requests, its section switched by its address as the repository's page does. */
+const WebList = defineComponent({
+    setup() {
+        const route = useRoute();
+        const router = useRouter();
+        return () =>
+            h(RepositoryView, {
+                nameWithOwner: WEB,
+                isPrivate: false,
+                tracked: true,
+                openCounts: { issues: 12, pullRequests: 3 },
+                viewerLogin: SAMPLE_VIEWER.login,
+                now: SAMPLE_NOW,
+                options: REPOSITORY_VIEW_DEFAULTS,
+                state: 'open',
+                section: route.params.segment === 'pulls' ? 'pullRequests' : 'issues',
+                'onUpdate:section': (section: RepositorySection) =>
+                    void router.replace(getRepositoryPath(WEB, section)),
+            });
+    },
+});
 
 const toast = () => page.getByRole('region', { name: 'Notifications' }).getByRole('listitem');
 
@@ -219,6 +247,26 @@ test("on a phone, an item's page has the comment pill, which asks for that item'
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeVisible();
 });
 
+test("on a phone, the command line on a list opens the menu with the place's parts first; Pull requests switches the section", async () => {
+    const { router } = await open('phone');
+    await router.push('/acme/web/issues');
+    await expect.element(page.getByRole('button', { name: /Issues\s*12/u })).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: /Do or find/u }));
+    const parts = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group').first();
+    await expect.element(parts).toHaveTextContent(new RegExp(`^${WEB}`, 'u'));
+    const rows = parts.getByRole('option');
+    await expect.element(rows.nth(0)).toHaveAccessibleName('Issues 12 current');
+    await expect.element(rows.nth(1)).toHaveAccessibleName('Pull requests 3');
+    await expect.element(rows.nth(2)).toHaveAccessibleName(/^Commits opens on\sgithub\.com$/u);
+    await expect.element(rows.nth(3)).toHaveAccessibleName(/^Workflows opens on\sgithub\.com$/u);
+    expect(rows.elements()).toHaveLength(4);
+
+    await userEvent.click(rows.nth(1));
+    await expect.poll(() => router.currentRoute.value.path).toBe('/acme/web/pulls');
+    await expect.element(page.getByRole('button', { name: /Pull requests\s*3/u })).toBeVisible();
+});
+
 function sidebarLink(name: string) {
     return page.getByRole('link', { name });
 }
@@ -248,6 +296,7 @@ async function open(device: 'computer' | 'phone' = 'computer') {
         history: createMemoryHistory(),
         routes: [
             { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
+            { path: '/acme/web/:segment(issues|pulls)', component: WebList },
             {
                 path: '/:owner/:name/issues/:number',
                 meta: { itemPage: 'issue' },
@@ -258,7 +307,7 @@ async function open(device: 'computer' | 'phone' = 'computer') {
     });
     const host = document.createElement('div');
     document.body.append(host);
-    const app = createApp({ setup: () => () => h(Shell) });
+    const app = createApp({ setup: () => () => h(Shell, null, { default: () => h(RouterView) }) });
     app.use(IocPlugin, { container });
     app.use(router);
     app.mount(host);

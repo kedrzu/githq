@@ -32,10 +32,6 @@ updateVersion:
   en: githq {version}
 updateLater:
   en: Update later
-myWork:
-  en: My work
-savedView:
-  en: saved view
 brokenWorkflows:
   en: Broken workflows
 draftReviews:

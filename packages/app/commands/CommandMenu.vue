@@ -1,10 +1,11 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. -->
 <script lang="ts" setup>
 import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
+  ArrowUpRight,
   BookMarked,
   Check,
   ChevronRight,
@@ -29,6 +30,7 @@ import { filterOptions } from '@/components/filterOptions.js';
 import type { FoundOption } from '@/components/filterOptions.js';
 import Kbd from '@/components/Kbd.vue';
 import MatchedText from '@/components/MatchedText.vue';
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
 
 import { buildCommandMenu, resolveMenuPath } from './buildCommandMenu.js';
@@ -37,7 +39,14 @@ import CommandCrumbs from './CommandCrumbs.vue';
 import type { CommandCrumb } from './CommandCrumbs.vue';
 import CommandForm from './CommandForm.vue';
 import * as l from './CommandMenu.loc.js';
-import type { Command, CommandFormValues, CommandOption, CommandSubject } from './CommandTypes.js';
+import type {
+  Command,
+  CommandFormValues,
+  CommandMarks,
+  CommandOption,
+  CommandParts,
+  CommandSubject,
+} from './CommandTypes.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 
@@ -53,8 +62,10 @@ const props = withDefaults(
     navigation: NavigationData;
     /** Opens in this action's submenu (its key was pressed, and it has no other way to run). */
     startCommandId?: string | null;
+    /** The place's parts, listed first under their own heading (the phone's command line, mobile D17). */
+    parts?: (() => CommandParts) | null;
   }>(),
-  { subject: null, repository: null, startCommandId: null },
+  { subject: null, repository: null, startCommandId: null, parts: null },
 );
 
 const emit = defineEmits<{
@@ -79,6 +90,8 @@ interface Row extends FilterListRow {
   readonly avatarUrl?: string;
   readonly keys?: readonly string[];
   readonly chosen?: boolean;
+  /** A part's (mobile D17): its count, a dot when changed on this device, ↗ when it leaves, a check when shown. */
+  readonly marks?: CommandMarks;
   /** What typed text matched on the line: drawn marked, a `hidden` word only because of it. */
   readonly match?: CommandMenuMatch | null;
   /** Enter. */
@@ -100,6 +113,7 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
 const SUBMENU_LIMIT = 100;
 
 const t = useTranslate();
+const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const query = ref('');
 const subjectRemoved = ref(false);
 const repositoryRemoved = ref(false);
@@ -109,6 +123,8 @@ const highlighted = shallowRef<string | null>(null);
 /** What was entered in each form, by its level's path: it stays while the form is left and while its fields change. */
 const formValues = shallowRef<Readonly<Record<string, CommandFormValues>>>({});
 
+/** The place's parts while the menu is open: read as it draws, a count is worked out only then. */
+const parts = computed(() => (open.value ? (props.parts?.() ?? null) : null));
 /** What the actions act on: `null` once the user took it out (⌫). */
 const subject = computed(() => (subjectRemoved.value ? null : props.subject));
 /** The repository the actions belong to: `null` once the user took it out (⌫). */
@@ -179,6 +195,7 @@ const groups = computed((): FilterListGroup<Row>[] => {
     repository: repository.value,
     navigation: props.navigation,
     level: step.value,
+    parts: parts.value,
   }).map(group => ({
     key: group.key,
     heading: getHeading(group.key),
@@ -269,6 +286,8 @@ watch([searching, query], ([command, text], [before]) => {
 
 function getHeading(key: CommandMenuGroupKey): string | null {
   switch (key) {
+    case 'parts':
+      return parts.value?.heading ?? null;
     case 'subject':
       return subject.value?.title ?? null;
     case 'view':
@@ -316,6 +335,7 @@ function toRow(entry: CommandMenuEntry): Row {
         title: command.title,
         detail: command.detail,
         keys: command.key?.split('+'),
+        marks: command,
         ancestors: entry.ancestors,
         match: entry.match,
         activate: enter && (command.options || command.form || !command.run) ? enter : () => runCommand(command),
@@ -362,6 +382,7 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
         title: place.title,
         detail: place.detail,
         keys: place.key?.split('+'),
+        marks: place,
         match: result.match,
         activate: go,
       };
@@ -612,6 +633,12 @@ function onEscape(event: KeyboardEvent) {
           />
         </span>
         <span
+          v-if="row.marks?.changed"
+          :class="css.commandMenu_changed"
+          role="img"
+          :aria-label="t(l.changed)"
+        />
+        <span
           v-if="row.match?.field === 'hidden'"
           :class="css.commandMenu_detail"
         >
@@ -649,6 +676,21 @@ function onEscape(event: KeyboardEvent) {
           :class="css.commandMenu_aside"
           >{{ row.aside }}</span
         >
+        <span
+          v-if="row.marks?.count != null"
+          :class="css.commandMenu_aside"
+          >{{ numbers.format(row.marks.count) }}</span
+        >
+        <ArrowUpRight
+          v-if="row.marks?.external"
+          :class="css.commandMenu_external"
+          :aria-label="t(l.external)"
+        />
+        <Check
+          v-if="row.marks?.current"
+          :class="css.commandMenu_current"
+          :aria-label="t(l.chosen)"
+        />
         <Kbd
           v-for="(key, index) in row.keys ?? []"
           :key="index"
@@ -727,6 +769,28 @@ function onEscape(event: KeyboardEvent) {
   width: 13px;
   height: 13px;
   color: $color-fg-2;
+}
+
+.commandMenu_changed {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: $color-accent;
+  border-radius: 50%;
+}
+
+.commandMenu_external {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-fg-dim;
+}
+
+.commandMenu_current {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-accent;
 }
 
 .commandMenu_spacer {

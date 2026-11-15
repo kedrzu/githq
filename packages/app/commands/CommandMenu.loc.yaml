@@ -42,3 +42,7 @@ commandsOnly:
   en: Commands only
 cantRun:
   en: can't run
+changed:
+  en: changed on this device
+external:
+  en: opens on github.com

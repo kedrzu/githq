@@ -25,6 +25,9 @@ type Story = StoryObj<typeof meta>;
 /** On a list (mobile MB32): ⌘, the part shown with its count, "Do or find…". */
 export const List: Story = { args: { part: { label: 'Issues', count: 142 } } };
 
+/** On a project view changed on this device (mobile MB222, D49): a dot on the chip. */
+export const ListChanged: Story = { args: { part: { label: 'Current sprint', count: 34, changed: true } } };
+
 /** On a list whose part has no count yet. */
 export const ListCounting: Story = { args: { part: { label: 'Pull requests', count: null } } };
 

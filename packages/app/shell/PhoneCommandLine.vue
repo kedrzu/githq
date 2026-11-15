@@ -1,4 +1,4 @@
-<!-- The command line floating over a phone screen's bottom (mobile D17), the phone's ⌘K: on a list one wide pill — ⌘ in the accent, a chip naming the part of the place shown with its count when the screen says one (`PhoneLayout.part`), "Do or find…" — opening the command menu (`menu`); on an item's page "Leave a comment…", which brings the item's comment box into view with the cursor in it (`comment`), and beside it a round ⌘ button opening the command menu. -->
+<!-- The command line floating over a phone screen's bottom (mobile D17), the phone's ⌘K: on a list one wide pill — ⌘ in the accent, a chip naming the part of the place shown with its count when the screen says one and a dot when it is a project view changed on this device (`PhoneLayout.part`, mobile D49), "Do or find…" — opening the command menu (`menu`), which lists the place's parts first; on an item's page "Leave a comment…", which brings the item's comment box into view with the cursor in it (`comment`), and beside it a round ⌘ button opening the command menu. -->
 <script lang="ts">
 /** `list` on any screen but an item's page; `item` there. */
 export type PhoneCommandLineVariant = 'item' | 'list';
@@ -51,6 +51,12 @@ const keyshortcuts = formatAriaKeyShortcuts(APP_KEYS.commandMenu);
         :class="css.phoneCommandLine_chip"
       >
         <span :class="css.phoneCommandLine_chipLabel">{{ part.label }}</span>
+        <span
+          v-if="part.changed"
+          :class="css.phoneCommandLine_changed"
+          role="img"
+          :aria-label="t(l.changed)"
+        />
         <span
           v-if="part.count != null"
           :class="css.phoneCommandLine_chipCount"
@@ -105,6 +111,15 @@ const keyshortcuts = formatAriaKeyShortcuts(APP_KEYS.commandMenu);
   text-overflow: ellipsis;
   color: $color-fg;
   white-space: nowrap;
+}
+
+.phoneCommandLine_changed {
+  flex: none;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  background: $color-accent;
+  border-radius: 50%;
 }
 
 .phoneCommandLine_chipCount {
