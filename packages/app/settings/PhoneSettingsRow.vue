@@ -1,4 +1,4 @@
-<!-- A row of Settings on a phone (`Phone / Settings / Row`, mobile MB146–MB161): a finger's height, an optional icon, the label with a line of detail under it, its value at the right in grey (amber or green when it says so) and what the row does at its very end — a chevron where it goes into a screen (`to`, or `action` for a button), ↗ where it opens a page outside the app (`href`), nothing where it only tells. -->
+<!-- A row of Settings on a phone (`Phone / Settings / Row`, mobile MB146–MB161): a finger's height, an optional icon, the label, its value at the right in grey (amber or green when it says so) and what the row does at its very end — a chevron where it goes into a screen (`to`), ↗ where it opens a page outside the app (`href`), nothing where it only tells. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import { ArrowUpRight, ChevronRight } from 'lucide-vue-next';
@@ -9,8 +9,6 @@ import { RouterLink } from 'vue-router';
 const props = defineProps<{
   label: string;
   icon?: LucideIcon;
-  /** A line under the label. */
-  detail?: string;
   /** What the row says at its right ("15", "Animations on"). */
   value?: string;
   /** The value's colour: amber where something wants attention, green where it is good news. */
@@ -19,12 +17,6 @@ const props = defineProps<{
   to?: RouteLocationRaw;
   /** A page outside the app, opened in a new tab: ↗ at its end. */
   href?: string;
-  /** A button doing what the caller says (`click`), a chevron at its end. */
-  action?: boolean;
-}>();
-
-const emit = defineEmits<{
-  click: [];
 }>();
 
 const tag = computed(() => {
@@ -36,7 +28,7 @@ const tag = computed(() => {
     return 'a';
   }
 
-  return props.action ? 'button' : 'div';
+  return 'div';
 });
 const attrs = computed(() => {
   if (props.to !== undefined) {
@@ -47,9 +39,9 @@ const attrs = computed(() => {
     return { href: props.href, target: '_blank', rel: 'noopener noreferrer' };
   }
 
-  return props.action ? { type: 'button' } : {};
+  return {};
 });
-const interactive = computed(() => props.to !== undefined || props.href !== undefined || props.action);
+const interactive = computed(() => props.to !== undefined || props.href !== undefined);
 </script>
 
 <template>
@@ -57,7 +49,6 @@ const interactive = computed(() => props.to !== undefined || props.href !== unde
     :is="tag"
     v-bind="attrs"
     :class="[css.phoneSettingsRow, interactive && css.phoneSettingsRow_interactive]"
-    @click="emit('click')"
   >
     <component
       :is="icon"
@@ -65,16 +56,7 @@ const interactive = computed(() => props.to !== undefined || props.href !== unde
       :class="css.phoneSettingsRow_icon"
       aria-hidden="true"
     />
-    <span :class="css.phoneSettingsRow_text">
-      <span :class="css.phoneSettingsRow_label">
-        <slot name="label">{{ label }}</slot>
-      </span>
-      <span
-        v-if="detail"
-        :class="css.phoneSettingsRow_detail"
-        >{{ detail }}</span
-      >
-    </span>
+    <span :class="css.phoneSettingsRow_label">{{ label }}</span>
     <span
       v-if="value"
       :class="[css.phoneSettingsRow_value, tone && css[`phoneSettingsRow_value_${tone}`]]"
@@ -101,13 +83,10 @@ const interactive = computed(() => props.to !== undefined || props.href !== unde
   width: 100%;
   min-height: $touch-target-size;
   padding: $spacing-6 $spacing-16;
-  font: inherit;
   font-size: $font-size-xl;
   color: $color-fg;
   text-align: start;
   text-decoration: none;
-  background: none;
-  border: none;
 }
 
 .phoneSettingsRow_interactive {
@@ -130,24 +109,12 @@ const interactive = computed(() => props.to !== undefined || props.href !== unde
   color: $color-fg-2;
 }
 
-.phoneSettingsRow_text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: $spacing-2;
-  min-width: 0;
-}
-
 .phoneSettingsRow_label {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.phoneSettingsRow_detail {
-  font-size: $font-size-md;
-  line-height: $line-height-normal;
-  color: $color-fg-dim;
 }
 
 .phoneSettingsRow_value {

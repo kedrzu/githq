@@ -1,10 +1,10 @@
-<!-- The modal the pickers share (T18 `TrackRepositoriesDialog`, T22 `TrackProjectsDialog`, D25): its head with the title, the description and the Esc hint, the chooser in the default slot, and the footer naming what is picked with Cancel (Esc) and the track button (⌘↵, which the chooser emits), disabled with nothing picked. Esc clears a filter holding text first, then closes without asking. It opens focused on itself, not on its first control, so J, K and `/` are keys rather than text in the filter; the keys belong to it while it is open: nothing of the screen beneath runs (`data-no-commands`, `data-layer`). On a phone (`PhoneLayout.active`, mobile D35, MB168, MB172) it is a screen of its own — the first sign-in's choosing screen — its top bar with back naming the screen it was opened from (`parent`, closing it as Cancel does) and the title, the footer pinned at the bottom with what is picked over the track button the width of the screen — the screen covering what the on-screen keyboard leaves of the window (`useVisualViewport`), so the footer rides above the keyboard while the search is typed into, as on the first sign-in (`FirstSignInFrame`). -->
+<!-- The modal the pickers share (T18 `TrackRepositoriesDialog`, T22 `TrackProjectsDialog`, D25): its head with the title, the description and the Esc hint, the chooser in the default slot, and the footer naming what is picked with Cancel (Esc) and the track button (⌘↵, which the chooser emits), disabled with nothing picked. Esc clears a filter holding text first, then closes without asking. It opens focused on itself, not on its first control, so J, K and `/` are keys rather than text in the filter; the keys belong to it while it is open: nothing of the screen beneath runs (`data-no-commands`, `data-layer`). On a phone (`PhoneLayout.active`, mobile D35, MB168, MB172) it is a screen of its own — the first sign-in's choosing screen — its top bar with back naming the screen it was opened from (`parent`, closing it as Cancel does) and the title, the footer pinned at the bottom with what is picked over the track button the width of the screen — the screen covering what the on-screen keyboard leaves of the window (`usePhoneScreenOverKeyboard`), so the footer rides above the keyboard while the search is typed into, as on the first sign-in (`FirstSignInFrame`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { Plus } from 'lucide-vue-next';
-import { computed, useTemplateRef } from 'vue';
+import { useTemplateRef } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
@@ -14,7 +14,7 @@ import { KeyHintsContext } from '@/components/KeyHintsContext.js';
 import PhoneBackButton from '@/shell/PhoneBackButton.vue';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
-import { useVisualViewport } from '@/shell/useVisualViewport.js';
+import { usePhoneScreenOverKeyboard } from '@/shell/usePhoneScreenOverKeyboard.js';
 
 import * as l from './TrackPickerDialog.loc.js';
 
@@ -56,11 +56,7 @@ provideContext(KeyHintsContext, {
   },
 });
 const layer = useTemplateRef<HTMLElement>('layer');
-const viewport = useVisualViewport();
-/** On a phone, the screen over what the keyboard leaves of the window: its bottom on the keyboard's top. */
-const phoneStyle = computed(() =>
-  phone.active ? { bottom: `${viewport.bottomInset}px`, height: `${viewport.height}px` } : undefined,
-);
+const phoneStyle = usePhoneScreenOverKeyboard();
 
 function onOpenFocus(event: Event) {
   event.preventDefault();
@@ -157,12 +153,9 @@ function onEscape(event: KeyboardEvent) {
   outline: none;
 }
 
-// A screen of its own on a phone, pinned over the part of the window the user sees, which the keyboard shrinks while
-// the window stays: the chooser scrolls between the top bar and the footer.
+// A screen of its own on a phone, pinned over the part of the window the user sees by its inline style
+// (`usePhoneScreenOverKeyboard`): the chooser scrolls between the top bar and the footer.
 .trackPickerDialog.trackPickerDialog_phone {
-  position: fixed;
-  right: 0;
-  left: 0;
   max-height: none;
   background: $color-bg;
 }

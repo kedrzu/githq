@@ -24,12 +24,12 @@ export const Gallery: Story = {
               <PhoneSettingsRow :icon="PanelsTopLeft" label="Display" value="Animations on" to="/settings?tab=display" />
               <PhoneSettingsRow :icon="BookOpen" label="What githq counts" href="https://githq.dev/docs" />
             </PhoneSettingsGroup>
-            <PhoneSettingsGroup title="Organisations" note="Hides its private data from githq.">
+            <PhoneSettingsGroup title="Organisations">
               <PhoneSettingsRow :icon="Lock" label="acme-health" value="Private data hidden" tone="amber" />
               <PhoneSettingsRow label="fitloop" value="Approved" tone="good" />
             </PhoneSettingsGroup>
             <PhoneSettingsGroup title="This phone" description="What githq keeps here.">
-              <PhoneSettingsRow :icon="HardDrive" label="Copy kept here" detail="15 repositories and 3 projects" value="48 MB" action />
+              <PhoneSettingsRow :icon="HardDrive" label="Copy kept here" value="48 MB" />
             </PhoneSettingsGroup>
           </div>
         `,
