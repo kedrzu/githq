@@ -33,7 +33,7 @@ const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
     ['diff-added', SURFACES, TEXT],
     ['diff-removed', SURFACES, TEXT],
     ['on-light', ['accent', 'button-light', 'button-light-hover'], TEXT],
-    ['on-emphasis', ['red-emphasis'], TEXT],
+    ['on-emphasis', ['red-emphasis', 'blue-emphasis', 'purple-emphasis'], TEXT],
     ['fg-3', SURFACES, GRAPHICS],
     ['control-border', SURFACES, GRAPHICS],
     ['focus', SURFACES, GRAPHICS],
@@ -62,6 +62,8 @@ const TAKEN_FROM: Readonly<Record<string, string>> = {
     red: '#f85149', // fgColor-danger
     amber: '#d29922', // fgColor-attention
     'red-emphasis': '#da3633', // bgColor-danger-emphasis
+    'blue-emphasis': '#1f6feb', // bgColor-accent-emphasis
+    'purple-emphasis': '#8957e5', // bgColor-done-emphasis
     'on-emphasis': '#ffffff', // fgColor-onEmphasis
     purple: '#ab7df8', // fgColor-done
     'diff-added': '#7ee787',

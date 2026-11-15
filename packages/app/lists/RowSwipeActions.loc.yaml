@@ -1,0 +1,14 @@
+status:
+  en: Status
+assign:
+  en: Assign
+assignees:
+  en: Assignees
+filterAssignees:
+  en: Assign to…
+loading:
+  en: Reading the repository's options…
+close:
+  en: Close
+reopen:
+  en: Reopen
