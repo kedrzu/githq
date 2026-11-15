@@ -162,7 +162,7 @@ watch(
 
 // What it shows is read once it rests on a commit. Nothing to rest from on opening: it reads at once.
 watch(
-  [nameWithOwner, rev],
+  () => `${nameWithOwner.value}/${rev.value}`,
   (_current, previous, onCleanup) => {
     if (previous === undefined) {
       read();
@@ -225,7 +225,6 @@ function locate(reference: CommitReference) {
 
 <template>
   <CommitDetails
-    docked="side"
     :name-with-owner="nameWithOwner"
     :oid="oid"
     :refs="refs"

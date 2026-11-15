@@ -20,7 +20,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
-import type { CommitChecksRead, CommitGraphPlace, CommitState } from './CommitTypes.js';
+import type { CommitChecksRead, CommitState } from './CommitTypes.js';
 
 test('a first open shows the default branch at once, then joins a branch a few commits ahead', async () => {
     const world = fakeCommitGitHub();
@@ -1344,24 +1344,6 @@ test('with the allowance spent no checks are asked for: an earlier list stays, a
     expect(graphs.getChecks('acme/web', 'c1')).toEqual(read);
     const failed: CommitChecksRead = { kind: 'failed', readAt: session.clock.now() };
     expect(graphs.getChecks('acme/web', 'c2')).toEqual(failed);
-});
-
-test("a place left for a run's page comes back once, in its own repository, and to no other account", () => {
-    const place: CommitGraphPlace = { cursorOid: 'c2', opened: { oid: 'c1', id: 'C_c1', chosenRef: null } };
-
-    const { graphs, session } = setup(uniqueLogin(), fakeCommitGitHub());
-    graphs.setPlace('acme/web', place);
-    expect(graphs.takePlace('acme/other')).toBeUndefined();
-    expect(graphs.takePlace('acme/web')).toEqual(place);
-    expect(graphs.takePlace('acme/web')).toBeUndefined();
-
-    graphs.setPlace('acme/web', place);
-    session.signInFromAnotherTab(uniqueLogin());
-    expect(graphs.takePlace('acme/web')).toBeUndefined();
-
-    graphs.setPlace('acme/web', place);
-    session.signOutFromAnotherTab();
-    expect(graphs.takePlace('acme/web')).toBeUndefined();
 });
 
 test("a force-pushed branch's old commit stays known, and stands as gone from the graph", async () => {

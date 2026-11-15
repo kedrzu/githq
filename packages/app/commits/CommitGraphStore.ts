@@ -33,7 +33,6 @@ import type { PersistedCommits } from './CommitPersistence.js';
 import type {
     CommitChecksRead,
     CommitDetailRead,
-    CommitGraphPlace,
     CommitParent,
     CommitPlace,
     CommitRef,
@@ -170,8 +169,6 @@ interface Session {
     readonly statesInFlight: Map<string, Set<string>>;
     /** The oids whose checks are being read, by `owner/name`. */
     readonly checksInFlight: Map<string, Set<string>>;
-    /** Where the section was left for a run's page, by `owner/name`; in memory alone, gone with the session. */
-    readonly places: Map<string, CommitGraphPlace>;
     /** How many views show each graph, by `owner/name` ({@link CommitGraphStore} `hold`); absent when none does. */
     readonly onScreen: Map<string, number>;
     cancelStatesBatch: (() => void) | null;
@@ -234,8 +231,6 @@ export const CommitGraphStore = defineService({
             ensureStates,
             ensureDetail,
             ensureChecks,
-            setPlace,
-            takePlace,
             noteChosenRef,
             getChosenRef,
             addEscapeTaker,
@@ -485,18 +480,6 @@ export const CommitGraphStore = defineService({
             void readChecks(current, nameWithOwner, oid);
         }
 
-        /** Keeps where the Commits section of `owner/name` was left for a run's page, in place of any kept before. */
-        function setPlace(nameWithOwner: string, place: CommitGraphPlace) {
-            session?.places.set(nameWithOwner, place);
-        }
-
-        /** Where the Commits section of `owner/name` was left, if it was; used once, for it is forgotten here. */
-        function takePlace(nameWithOwner: string): CommitGraphPlace | undefined {
-            const place = session?.places.get(nameWithOwner);
-            session?.places.delete(nameWithOwner);
-            return place;
-        }
-
         /**
          * Notes the branch or tag of `owner/name` chosen last in its list (D12), in place of the one before: an opened
          * commit says why the graph stayed when it is that ref's commit and not loaded (CH16).
@@ -555,7 +538,6 @@ export const CommitGraphStore = defineService({
                 pendingStates: new Map(),
                 statesInFlight: new Map(),
                 checksInFlight: new Map(),
-                places: new Map(),
                 onScreen: new Map(),
                 cancelStatesBatch: null,
             };

@@ -395,7 +395,7 @@ test('D12: a commit not loaded is quiet until it is read, and then drawn from th
         holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
     };
     const { panel, store } = await mount(options, 'old');
-    await expect.element(panel).toHaveTextContent('Not in the loaded history.');
+    await expect.element(panel).toHaveTextContent("Not in the graph's loaded history");
     await expect.element(panel.getByRole('heading', { name: 'Commit old' })).toBeVisible();
     expect(store.get(REPOSITORY)?.commits.map(commit => commit.oid)).toEqual(['c1']);
 });
@@ -469,7 +469,6 @@ async function mount(options: CommitGraphTestOptions, oid: string, panel: MountO
                 chosenRef: null,
                 url: `https://github.com/${REPOSITORY}/commit/${oid}`,
                 now: SAMPLE_COMMITS_NOW,
-                docked: 'side',
             }),
     });
     app.use(IocPlugin, { container });

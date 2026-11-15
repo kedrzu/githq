@@ -1,6 +1,6 @@
-<!-- A commit's details (git-client D13, D16, CH18, CH20, CH55): in the shell's panel or on the commit's page (`OpenedCommit`), or still right of the graph, filling the column the graph's view gives it, or under it below about 1,200 px of window. A toolbar the full width — the repository and short sha; previous and next (`K`, `J`), the other arrangement when it is given ("Open full screen", "Back to the panel": a button, its key being the pull request's), GitHub (`O`) and close (`Esc`) — over one scroll, the facts before the message, its content kept to the item's reading width at the left. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). It shows and reports: its keys are its host's (`OpenedCommit`, or `CommitGraphView` for the details beside the graph), each shown on the row it presses. -->
+<!-- A commit's details (git-client D13, D16, CH18, CH20, CH55): the commit opened as an item (`OpenedCommit`), filling the shell's panel beside the repository's Commits section or the commit's page. A toolbar the full width — the repository and short sha; previous and next (`K`, `J`), the other arrangement when it is given ("Open full screen", "Back to the panel": a button, its key being the pull request's), GitHub (`O`) and close (`Esc`) — over one scroll, the facts before the message, its content kept to the item's reading width at the left. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says it is not in the graph's loaded history — with the age of the branch or tag chosen for it — and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). It shows and reports: its keys are its host's (`OpenedCommit`; in the panel `K`/`J` are the graph's, moving its cursor), each shown on the row it presses. -->
 <script lang="ts">
-/** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
+/** The keys of the open details, in the app's notation; `J`/`K` step and `Esc` closes, as every opened item's. */
 export const COMMIT_DETAILS_KEYS = {
   firstParent: 'P',
   secondParent: 'Shift+P',
@@ -44,18 +44,13 @@ const props = defineProps<{
   oid: string;
   /** The branches and tags pointing at it: the default branch first, then branches, then tags. */
   refs: readonly CommitRowRef[];
-  /** The ref it was opened from, when that is why the graph stayed (CH16). */
+  /** The ref it was chosen by in the graph's list, its commit not loaded (CH16). */
   chosenRef: CommitRef | null;
   /** The commit on GitHub. */
   url: string;
   /** Epoch ms its age is counted to. */
   now: number;
-  /**
-   * Filling the column or panel it is in, or under the graph at a fixed share of the height when the window is narrow
-   * (D16).
-   */
-  docked: 'side' | 'bottom';
-  /** The arrangement its button moves it to; left out, no button (the details beside the graph). */
+  /** The arrangement its button moves it to; left out, no button. */
   otherArrangement?: OtherArrangement | null;
 }>();
 
@@ -185,7 +180,7 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
 
 <template>
   <section
-    :class="[css.commitDetails, css[`commitDetails_${docked}`]]"
+    :class="css.commitDetails"
     :aria-label="t(l.title)"
   >
     <header :class="css.commitDetails_toolbar">
@@ -465,23 +460,13 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
 </template>
 
 <style lang="scss" module="css">
-// D16: right of the graph, in its column, or under it.
+// Fills the panel or page it is in.
 .commitDetails {
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-}
-
-.commitDetails_side {
-  flex: 1;
-}
-
-// Under the graph: the full width, a fixed 45% of the height.
-.commitDetails_bottom {
-  flex: none;
-  height: 45%;
-  border-top: 1px solid $color-border;
 }
 
 .commitDetails_toolbar {
