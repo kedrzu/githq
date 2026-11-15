@@ -141,6 +141,27 @@ test('W46, W48: "Run workflow…" from My work: the repositories with what each 
     expect(dispatchBodies(github)).toEqual([{ ref: 'main', return_run_details: true }]);
 });
 
+test('W46: "Run workflow…" from My work marks a repository with read access and an archived one as unable to run, reading none of their files', async ({
+    page,
+    github,
+}) => {
+    const world = createDeployWorld();
+    world.repository(SAMPLE_REPOSITORY, { viewerPermission: 'READ' });
+    world.repository(DOCS_REPOSITORY, { isArchived: true });
+    world.workflow({ repository: DOCS_REPOSITORY, name: 'Deploy', file: DEPLOY_FILE, runs: [] });
+    await openTrackedWork(page, github, world);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.run('Run workflow');
+
+    await expect(menu.option(SAMPLE_REPOSITORY)).toContainText(/you\scan['’]t\srun\sworkflows\shere/u);
+    await expect(menu.option(DOCS_REPOSITORY)).toContainText('archived, nothing runs');
+    await expect(menu.option(DOCS_REPOSITORY)).toContainText(/can['’]t\srun/u);
+    await page.keyboard.press('Enter');
+    await expect(menu.option(/Deploy/u)).toHaveCount(0);
+    expect(workflowFilesReads(github)).toEqual([]);
+});
+
 test('W36: a workflow without workflow_dispatch shows "Run workflow" it can\'t run, saying why', async ({
     page,
     github,

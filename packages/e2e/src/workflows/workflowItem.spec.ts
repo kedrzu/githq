@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
+import type { GitHubWorldRepositoryParams } from '../github/GitHubWorld.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { WorkflowItemHarness } from '../harnesses/WorkflowItem.harness.js';
@@ -16,6 +17,23 @@ const PROBE_PAGE = `/${SAMPLE_REPOSITORY}/actions/workflows/probe.yml`;
 const DEPLOY_PAGE = `/${SAMPLE_REPOSITORY}/actions/workflows/deploy.yml`;
 /** Probe of the sample repository, as the panel's address names it (`owner|name|probe.yml`, encoded). */
 const PROBE_PANEL = `${LIST}?pane=workflow&workflow=${encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|probe.yml`)}`;
+/** A workflow GitHub runs by hand, without inputs. */
+const DISPATCHABLE_FILE = [
+    'name: Deploy',
+    'on:',
+    '  workflow_dispatch:',
+    'jobs:',
+    '  deploy:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - run: echo deploy',
+    '',
+].join('\n');
+/** Repositories where the viewer may read a workflow but change nothing of it: GitHub would refuse every write. */
+const READ_ONLY_REPOSITORIES: readonly (readonly [string, GitHubWorldRepositoryParams])[] = [
+    ['with read access', { viewerPermission: 'READ' }],
+    ['archived, with write access', { isArchived: true }],
+];
 
 test('Enter opens a workflow in the panel, Enter again on its page: runs and details side by side there, tabs in the panel; Esc goes back to the panel', async ({
     page,
@@ -39,6 +57,19 @@ test('Enter opens a workflow in the panel, Enter again on its page: runs and det
     await expect(probe.runRows).toHaveCount(1);
     await expect(probe.details).toContainText('Triggers');
     await expect(probe.tab('Details')).toHaveCount(0);
+
+    // The page fills the width: runs and details span the main area, edge to edge, no centred box.
+    const [main, runs, details] = await Promise.all([
+        page.getByRole('main').boundingBox(),
+        probe.runs.boundingBox(),
+        probe.details.boundingBox(),
+    ]);
+    if (!main || !runs || !details) {
+        throw new Error('The main area, the runs and the details are not all on screen');
+    }
+
+    expect(Math.abs(runs.x - main.x)).toBeLessThanOrEqual(2);
+    expect(Math.abs(details.x + details.width - (main.x + main.width))).toBeLessThanOrEqual(2);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(PROBE_PANEL);
@@ -279,6 +310,46 @@ test('W41: ⌘K disables the workflow, which shows disabled at once and offers t
     await expect(menu.option(/Enable workflow/u)).toHaveCount(1);
     await expect(menu.option(/Disable workflow/u)).toHaveCount(0);
 });
+
+for (const [label, params] of READ_ONLY_REPOSITORIES) {
+    test(`W37, W40, W41: in a repository ${label}, ⌘K offers neither running, disabling nor re-running or cancelling a run`, async ({
+        page,
+        github,
+    }) => {
+        const { world } = createSampleTrackedWork();
+        world.repository(SAMPLE_REPOSITORY, params);
+        world.workflow({
+            repository: SAMPLE_REPOSITORY,
+            name: 'Deploy',
+            file: DISPATCHABLE_FILE,
+            runs: [
+                { conclusion: 'success', minutesAgo: 40 },
+                { conclusion: null, minutesAgo: 20 },
+            ],
+        });
+        await openTrackedWork(page, github, world);
+        await page.goto(DEPLOY_PAGE);
+        const deploy = new WorkflowItemHarness(page, 'Deploy');
+        await expect(deploy.run(2)).toHaveAttribute('aria-current', 'true');
+        await expect(deploy.root.getByRole('button', { name: 'Run workflow…' })).toHaveCount(0);
+
+        // The running run under the cursor: cancelling it is what would be offered.
+        const menu = new CommandMenuHarness(page);
+        await menu.open();
+        await expect(menu.option(/Copy link to the workflow/u)).toHaveCount(1);
+        for (const name of [/Run workflow · Deploy/u, /Disable workflow/u, /Enable workflow/u, /Cancel run/u]) {
+            await expect(menu.option(name)).toHaveCount(0);
+        }
+        await page.keyboard.press('Escape');
+
+        // The finished one: re-running all its jobs is what would be offered.
+        await page.keyboard.press('j');
+        await expect(deploy.run(1)).toHaveAttribute('aria-current', 'true');
+        await menu.open();
+        await expect(menu.option(/Copy link to the workflow/u)).toHaveCount(1);
+        await expect(menu.option(/Re-run all jobs/u)).toHaveCount(0);
+    });
+}
 
 test('W40: full screen, ⌘K cancels the run under the cursor while it goes, and re-runs all the jobs of one that finished', async ({
     page,
