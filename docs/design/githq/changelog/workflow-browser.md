@@ -241,7 +241,8 @@ A, B and the Variants frame deleted.
   follows.
 - [x] W31 (`zsvUd`): the cursor row #4821 (`e1lQB`) replaced by a `· selected` instance (`Fgyz1`) instead of fill and
   stroke overrides on the old surface.
-- [ ] W39 (`aaIw8`): the just-started #4826's amber tint moved from `ruZPm/vUvjs` to `ruZPm/yvmhP`. Built in PR 2 (W39).
+- [x] W39 (`aaIw8`): the just-started #4826's amber tint (`ruZPm/vUvjs`) not carried over to the new row: the row is
+  the plain run row, as built (corrected in round 12, which dropped the tint).
 - [x] W43 (`r1TmY`) and W44 (`hpGvF`): the rows in their replaced run lists (6 and 7) remapped; the rebuild had dropped
   their overrides and they were restored from the base revision's data.
 - [x] W32 (`amsQR`): the one row replaced by a `· narrow` instance (`ROmKH`). W45 (`jUfLY`): its 11 rows replaced by
@@ -426,11 +427,20 @@ of the ones beside them. W39 (`JlrIz`) already matched the build (toast "Deploy 
 
 Left as drawn, for the owner:
 
-- W39's amber tint on the just-started #4826 (round 7's `aaIw8` entry, still unticked): the build puts the run at the
-  top of the list (`WorkflowRunHistory.addRun`) with no tint. Build the tint, or drop it from W39.
 - W37's "can't run at this ref" state (the line under the fields) is described in the caption, not drawn: it would be a
   new screen.
 - The top-level menu's subject or repository chip and "⌫ Remove context" in W47/W48, and the generic footer of W40/W41
   ("Type > for commands only" against the build's `> Commands only` hint): the menu as a whole, not this feature.
 - The command menu's levels show the generic placeholder "Type a command or search…" (drawn so); "Pick a repository…" /
   "Pick a workflow…" were clearer, a candidate change to the build rather than the drawing.
+
+## Round 12 · implementation, the just-started run without a tint
+
+Asked (`.context/workflow-browser-brief-12.md`): the owner's answer to round 11's open W39 point: drop the tint. The
+build puts the just-started run at the top of the runs (`WorkflowRunHistory.addRun`) as a plain queued row, "Queued" in
+the run row's result. Made through the Pen MCP. Forced by: the build of PR 2. Ticked because it records what the code
+does. Round 7's unticked `aaIw8` entry is corrected above.
+
+- [x] W39 (`JlrIz`): the workflow item `aaIw8` replaced by `ApQ6Z`, the same `Workflow / Item · Deploy · two columns`
+  instance showing `Run #4826` (`ruZPm`) with no fill override on its surface (`ruZPm/yvmhP` `#D299220F` → none): it
+  reads as the other run rows. Caption `M92RyW` unchanged: it never mentioned the highlight.

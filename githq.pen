@@ -226143,7 +226143,7 @@
                               }
                             },
                             {
-                              "id": "aaIw8",
+                              "id": "ApQ6Z",
                               "type": "ref",
                               "ref": "v95xB",
                               "name": "Workflow item",
@@ -226152,9 +226152,6 @@
                               "descendants": {
                                 "ruZPm": {
                                   "enabled": true
-                                },
-                                "ruZPm/yvmhP": {
-                                  "fill": "#D299220F"
                                 }
                               }
                             }
