@@ -1,5 +1,6 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { composeStories } from '@storybook/vue3';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
@@ -29,6 +30,8 @@ const {
     LoadingComments,
     PhoneFromLink,
     PhoneFromList,
+    PhonePullRequestFailing,
+    PhoneStackOfTen,
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
@@ -179,6 +182,50 @@ test('mobile MB62: on a phone, opened from a link, back names the repository and
     const repository = PhoneFromLink.args.item!.repository.nameWithOwner;
     await expect.element(page.getByRole('button', { name: `Back to ${repository}` })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Next item' })).not.toBeInTheDocument();
+});
+
+test('mobile MB260: on a phone "Merge…" and "Review files" leave for github.com, marked ↗, and no key hint is drawn anywhere in the item', async () => {
+    await PhonePullRequestFailing.run();
+    const { item, onMerge } = PhonePullRequestFailing.args;
+    const url = assertValue(item).url;
+
+    // The pull request on github.com, not the merge panel.
+    const merge = page.getByRole('link', { name: /^Merge…/ });
+    await expect.element(merge).toHaveAccessibleName(/^Merge…\sopens on\sgithub\.com$/u);
+    await expect.element(merge).toHaveAttribute('href', url);
+    await expect.element(page.getByRole('button', { name: /^Merge…/ })).not.toBeInTheDocument();
+    // Its review's address, which the phone hands off to github.com's changed files (mobile D3).
+    const review = page.getByRole('link', { name: /^Review files/ });
+    await expect.element(review).toHaveAccessibleName(/^Review files\sopens on\sgithub\.com$/u);
+    await expect.element(review).toHaveAttribute('href', '/kedrzu/githq/pull/15/files');
+    // Open on GitHub stays as it is: it says where it goes.
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub', exact: true })).toHaveAttribute('href', url);
+
+    // Keys still work for a hardware keyboard, and are still named; none is drawn.
+    await expect.element(page.getByRole('link', { name: /^Review files/ })).toHaveAttribute('aria-keyshortcuts', 'D');
+    expect(document.querySelectorAll('kbd')).toHaveLength(0);
+
+    // ⇧M has no panel to open on a phone either.
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).not.toHaveBeenCalled();
+});
+
+test('mobile D29: on a phone a stacked pull request has the strip under the top bar; ← and → open its neighbours in its place, a tap on it unfolds the stack', async () => {
+    await PhoneStackOfTen.run();
+    const { onOpenInPlace } = PhoneStackOfTen.args;
+
+    await expect.element(page.getByText('Stack · 6 of 10')).toBeVisible();
+    // No rows in the content: the strip drops them.
+    await expect.element(page.getByRole('region', { name: 'The stack' })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Previous in the stack' }));
+    await userEvent.click(page.getByRole('button', { name: 'Next in the stack' }));
+    expect(vi.mocked(assertValue(onOpenInPlace)).mock.calls).toEqual([
+        [SYNC_ENGINE_STACK[4]!.id],
+        [SYNC_ENGINE_STACK[6]!.id],
+    ]);
+
+    await userEvent.click(page.getByRole('button', { name: /^Stack · 6 of 10, Pull requests of\sthe stack: /u }));
+    await expect.element(page.getByRole('region', { name: 'The stack' })).toBeVisible();
 });
 
 test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {

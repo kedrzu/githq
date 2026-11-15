@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './GitHubHtml.stories.js';
 
-const { Body, BodyInItem } = composeStories(stories);
+const { Body, BodyInItem, BodyOnPhone } = composeStories(stories);
 
 test('a link githq shows points at the app’s path; the rest stay GitHub’s, opening in a new tab', async () => {
     await Body.run();
@@ -41,4 +41,20 @@ test('a click on a link githq shows opens it in the app; in an opened item, an i
     await BodyInItem.run();
     await userEvent.click(page.getByRole('link', { name: 'a comment on #12' }));
     await expect.element(page.getByTestId('opened')).toHaveTextContent('Opened: acme/web#12#issuecomment-5');
+});
+
+test('mobile D11: on a phone only a link leaving for github.com ends in ↗ and says so; on the computer none does', async () => {
+    await BodyOnPhone.run();
+
+    for (const name of ['@octocat', 'a1b2c3d']) {
+        const link = page.getByRole('link', { name });
+        await expect.element(link).toHaveAttribute('data-leaves');
+        await expect.element(link).toHaveAccessibleDescription(/^opens on\sgithub\.com$/u);
+    }
+    for (const name of ['a comment on #12', 'the open issues', 'GitLab']) {
+        await expect.element(page.getByRole('link', { name })).not.toHaveAttribute('data-leaves');
+    }
+
+    await Body.run();
+    await expect.element(page.getByRole('link', { name: 'a1b2c3d' })).not.toHaveAttribute('data-leaves');
 });

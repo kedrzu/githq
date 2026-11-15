@@ -121,6 +121,16 @@ export const PullRequestFailing: Story = {
     },
 };
 
+/**
+ * Mobile MB260 (D52): the same pull request on a phone — the standing card with "Merge… ↗", "Open on GitHub" and
+ * "Review files ↗", which leave for github.com; Reviews with Request, Checks, what it closes; no key hints anywhere.
+ */
+export const PhonePullRequestFailing: Story = {
+    args: { ...PullRequestFailing.args, arrangement: 'page', backTitle: 'My work' },
+    render: renderAt(390),
+    decorators: [withPhoneLayout(true)],
+};
+
 /** F18: the same pull request on a page of its own: its summary, merge to projects, beside the timeline. */
 export const PullRequestFailingPage: Story = {
     args: { ...PullRequestFailing.args, arrangement: 'page' },
@@ -463,6 +473,16 @@ export const StackOfTwoOnPage: Story = { args: { ...StackOfTwoInPanel.args, arra
 export const StackOfTenOnPage: Story = {
     args: { ...StackOfTenInPanel.args, arrangement: 'page' },
     render: renderAt(1920),
+};
+
+/**
+ * Mobile D29 (MB122): the sixth of a stack of ten on a phone — the strip under the top bar, "Stack · 6 of 10", the pips,
+ * ← and →; no rows in the content, a tap on the strip drops them (D48).
+ */
+export const PhoneStackOfTen: Story = {
+    args: { ...StackOfTenInPanel.args, arrangement: 'page', backTitle: 'My work' },
+    render: renderAt(390),
+    decorators: [withPhoneLayout(true)],
 };
 
 /** The issue on a page with a thread longer than the window: its summary fits, sticking to the top as the thread scrolls. */

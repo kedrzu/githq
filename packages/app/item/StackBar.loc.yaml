@@ -1,2 +1,8 @@
 toggle:
   en: 'Pull requests of the stack: {name}'
+place:
+  en: 'Stack · {position} of {size}'
+previous:
+  en: Previous in the stack
+next:
+  en: Next in the stack

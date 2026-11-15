@@ -11,6 +11,7 @@ import {
     REVIEW_VIEWER,
     SCHEMA_NAME_THREAD,
 } from '@/testing/sampleReviews.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ItemThreadReview from './ItemThreadReview.vue';
 
@@ -36,6 +37,8 @@ const meta = {
             <div style="position: relative; padding-left: 28px"><ItemThreadReview v-bind="args" /></div>
           </div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadReview>;
 
 export default meta;

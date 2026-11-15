@@ -1,5 +1,6 @@
-<!-- A keyboard hint chip for a key in the app's notation (`Mod+K`, `Enter`, `A`), as this platform writes it (`formatCommandKey`: "⌘K" on a Mac, "Ctrl+K" elsewhere). Key glyphs (⌘ ⇧ ⌥ ⌃ ↵ ⌫ ⇥ and arrows) are drawn as Lucide icons, since the mono font draws them poorly; letters and words ("Esc", "O") stay text. Hidden from screen readers: the control it sits on names its shortcut in `aria-keyshortcuts` instead. -->
+<!-- A keyboard hint chip for a key in the app's notation (`Mod+K`, `Enter`, `A`), as this platform writes it (`formatCommandKey`: "⌘K" on a Mac, "Ctrl+K" elsewhere). Key glyphs (⌘ ⇧ ⌥ ⌃ ↵ ⌫ ⇥ and arrows) are drawn as Lucide icons, since the mono font draws them poorly; letters and words ("Esc", "O") stay text. Hidden from screen readers: the control it sits on names its shortcut in `aria-keyshortcuts` instead. Nothing at all inside a part that shows no key hints (`KeyHintsContext`: an opened item on a phone, mobile D52). -->
 <script lang="ts" setup>
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowBigUp,
@@ -18,6 +19,8 @@ import { computed } from 'vue';
 
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
 
+import { KeyHintsContext } from './KeyHintsContext.js';
+
 const props = withDefaults(
   defineProps<{
     /** The key in the app's notation (`Mod+Enter`, `Shift+O`, `Escape`); keys apart by spaces share the chip. */
@@ -33,6 +36,8 @@ const props = withDefaults(
   }>(),
   { tone: 'default', size: 'md' },
 );
+
+const hints = injectContext(KeyHintsContext, { optional: true });
 
 const KEY_ICONS: Record<string, LucideIcon> = {
   '⌘': Command,
@@ -73,6 +78,7 @@ const parts = computed(() => {
 
 <template>
   <kbd
+    v-if="!hints?.hidden"
     :class="[css.kbd, css[`kbd_${tone}`], css[`kbd_${size}`]]"
     aria-hidden="true"
   >

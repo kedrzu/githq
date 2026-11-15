@@ -1,12 +1,20 @@
-<!-- A body or a comment as GitHub rendered it (`bodyHTML`): GitHub turns the markdown into HTML and sanitizes it, and it is shown as given — never the markdown (`body`) rendered here, which nothing would sanitize. Only its links change: one to an address githq shows opens in githq (`GitHubLinks`), its `href` the app's path — re-pointed when what is tracked changes, for a repository's workflows are githq's only while it is tracked; the rest leave for a new tab without handing the app over (`noopener noreferrer`), and a footnote's stays on the page. Its images stay GitHub's. -->
+<!-- A body or a comment as GitHub rendered it (`bodyHTML`): GitHub turns the markdown into HTML and sanitizes it, and it is shown as given — never the markdown (`body`) rendered here, which nothing would sanitize. Only its links change: one to an address githq shows opens in githq (`GitHubLinks`), its `href` the app's path — re-pointed when what is tracked changes, for a repository's workflows are githq's only while it is tracked; the rest leave for a new tab without handing the app over (`noopener noreferrer`), and a footnote's stays on the page. On a phone a link that leaves for github.com — to what githq has no screen for, or the phone doesn't show and hands off (a commit, a pull request's changed files, a run) — ends in ↗ and says so to a screen reader (mobile D3, D11). Its images stay GitHub's. -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onMounted, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { getGitHubLinkTarget, GITHQ_LINK_ATTRIBUTE } from '@/shell/gitHubLinks.js';
+import { getGitHubLinkTarget, GITHQ_LINK_ATTRIBUTE, isGitHubLinkLeavingOnPhone } from '@/shell/gitHubLinks.js';
 import GitHubLinks from '@/shell/GitHubLinks.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+
+import * as l from './GitHubHtml.loc.js';
+
+/** Marks a link that leaves for github.com on a phone: it ends in ↗ (mobile D11). */
+const LEAVES_ATTRIBUTE = 'data-leaves';
 
 defineOptions({
   // On the HTML's own element, under its styles: a caller's class (the changelog's) sits where it always did.
@@ -18,7 +26,9 @@ const props = defineProps<{
   html: string;
 }>();
 
+const t = useTranslate();
 const router = useRouter();
+const phone = useService(PhoneLayout);
 const container = useContainer();
 /** Read once a link needs it — a workflow's, githq's only while its repository is tracked; reactive. */
 const trackingRef = shallowRef<TrackingStore | null>(null);
@@ -26,7 +36,7 @@ const rootRef = useTemplateRef<HTMLElement>('root');
 
 onMounted(pointLinks);
 // After the render: the HTML is drawn inside `GitHubLinks`, whose update this component's own hooks do not see.
-watch([() => props.html, () => trackingRef.value?.repositories], pointLinks, { flush: 'post' });
+watch([() => props.html, () => trackingRef.value?.repositories, () => phone.active], pointLinks, { flush: 'post' });
 
 /**
  * Points each link where it opens: githq's path, marked with GitHub's address it came from, or GitHub's address in a
@@ -52,6 +62,14 @@ function pointLinks() {
       link.setAttribute('href', url);
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
+    }
+
+    if (phone.active && isGitHubLinkLeavingOnPhone(url, params)) {
+      link.setAttribute(LEAVES_ATTRIBUTE, '');
+      link.setAttribute('aria-description', t(l.leaves));
+    } else {
+      link.removeAttribute(LEAVES_ATTRIBUTE);
+      link.removeAttribute('aria-description');
     }
   }
 }
@@ -131,6 +149,19 @@ function isTracked(nameWithOwner: string) {
       &:hover {
         text-decoration-color: currentcolor;
       }
+    }
+
+    // Lucide's arrow-up-right, in the link's colour; the link's description says it to a screen reader.
+    a[data-leaves]::after {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      margin-left: 0.15em;
+      vertical-align: -0.125em;
+      content: '';
+      background: currentcolor;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E")
+        center / contain no-repeat;
     }
 
     strong {

@@ -1,9 +1,10 @@
-<!-- A menu entry's key at its end: one chip (`O`), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one, and nothing in a phone's menu at the bottom (`MenuSheet`, mobile D52). -->
+<!-- A menu entry's key at its end: one chip (`O`), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one, and nothing in a phone's menu at the bottom (`MenuSheet`, mobile D52) or where key hints are hidden (`KeyHintsContext`). -->
 <script lang="ts" setup>
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { computed } from 'vue';
 
 import Kbd from './Kbd.vue';
+import { KeyHintsContext } from './KeyHintsContext.js';
 import { MenuSheetContext } from './MenuSheetContext.js';
 
 const props = defineProps<{
@@ -14,9 +15,10 @@ const props = defineProps<{
 }>();
 
 const sheet = injectContext(MenuSheetContext, { optional: true });
+const hints = injectContext(KeyHintsContext, { optional: true });
 
 const keys = computed(() => {
-  if (sheet) {
+  if (sheet || hints?.hidden) {
     return [];
   }
 

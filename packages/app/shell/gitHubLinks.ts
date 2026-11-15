@@ -2,7 +2,7 @@ import type { RouteLocation } from 'vue-router';
 
 import { IssueRoutes } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
-import { getRouteNameWithOwner, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
+import { getRouteNameWithOwner, isRouteShownOnPhone, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 
 /**
  * Marks a link that opens in githq (`shell/GitHubLinks.vue`): its `href` is the app's path. Its value is the link's
@@ -46,6 +46,43 @@ export interface GitHubLinkTarget {
  */
 export function getGitHubLinkTarget(url: string, params: GetGitHubLinkTargetParams): GitHubLinkTarget | null {
     const { router, isTracked } = params;
+    const parsed = parseGitHubUrl(url);
+    if (parsed === null) {
+        return null;
+    }
+
+    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    const route = router.resolve(path);
+    if (!route.meta.gitHubScreen || (isTrackedOnlyRoute(route) && !isTracked(getRouteNameWithOwner(route)))) {
+        return null;
+    }
+
+    const opened = IssueRoutes.getOpened(route);
+    return { path, item: opened?.onPage ? opened.reference : null };
+}
+
+/**
+ * Whether a link to `url` leaves githq for github.com on a phone, where it says so with a ↗ (mobile D3, D11): an address
+ * on github.com githq has no screen for (a commit), or one whose screen the phone layout doesn't show (a pull request's
+ * changed files, an Actions run), which is handed off when navigated to. Another site's link leaves for that site, not
+ * GitHub's; it isn't marked.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isGitHubLinkLeavingOnPhone(url: string, params: GetGitHubLinkTargetParams) {
+    if (parseGitHubUrl(url) === null) {
+        return false;
+    }
+
+    const target = getGitHubLinkTarget(url, params);
+    return target === null || !isRouteShownOnPhone(params.router.resolve(target.path));
+}
+
+/**
+ * The address, when it can be githq's: `http(s)` on `github.com` (`www.` too) without a port or credentials; `null` for
+ * the rest and for anything that does not parse.
+ */
+function parseGitHubUrl(url: string) {
     const parsed = parseUrl(url);
     if (
         parsed === null ||
@@ -60,14 +97,7 @@ export function getGitHubLinkTarget(url: string, params: GetGitHubLinkTargetPara
         return null;
     }
 
-    const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-    const route = router.resolve(path);
-    if (!route.meta.gitHubScreen || (isTrackedOnlyRoute(route) && !isTracked(getRouteNameWithOwner(route)))) {
-        return null;
-    }
-
-    const opened = IssueRoutes.getOpened(route);
-    return { path, item: opened?.onPage ? opened.reference : null };
+    return parsed;
 }
 
 function parseUrl(url: string) {

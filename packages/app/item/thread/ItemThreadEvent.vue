@@ -1,4 +1,4 @@
-<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest right after them. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab. A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). -->
+<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest right after them. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab, marked ↗ on a phone (mobile D11). A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). -->
 <script lang="ts" setup>
 import type { TranslationResult, TranslationSimple, TranslationWithParams } from '@nzyme/i18n-core';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -40,6 +40,7 @@ import { computed, Fragment, h, isVNode, useCssModule } from 'vue';
 import type { VNodeChild } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import ExternalMark from '@/components/ExternalMark.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import { getReviewRequestName } from '@/store/getReviewRequestName.js';
 import type { ThreadCommitRef, ThreadReferencedCommit, ThreadRef } from '@/store/ItemDetailTypes.js';
@@ -349,7 +350,8 @@ function renderCommit(commit: ThreadCommitRef) {
   return h(
     'a',
     { class: css.itemThreadEvent_ref, href: commit.url, target: '_blank', rel: 'noopener noreferrer' },
-    commit.abbreviatedOid,
+    // The phone doesn't show commits: ↗ says the link leaves (mobile D11).
+    [commit.abbreviatedOid, h(ExternalMark)],
   );
 }
 

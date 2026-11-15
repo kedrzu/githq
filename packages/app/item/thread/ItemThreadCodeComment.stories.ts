@@ -3,6 +3,7 @@ import { fn } from 'storybook/test';
 
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { DB_THREAD, RESOLVED_CODE_COMMENT, REVIEW_VIEWER } from '@/testing/sampleReviews.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ItemThreadCodeComment from './ItemThreadCodeComment.vue';
 
@@ -24,6 +25,8 @@ const meta = {
             <div style="position: relative; padding-left: 28px"><ItemThreadCodeComment v-bind="args" /></div>
           </div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadCodeComment>;
 
 export default meta;

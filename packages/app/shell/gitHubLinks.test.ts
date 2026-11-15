@@ -4,7 +4,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import routerOptions from '@/app/router.options.js';
 
-import { getGitHubLinkTarget } from './gitHubLinks.js';
+import { getGitHubLinkTarget, isGitHubLinkLeavingOnPhone } from './gitHubLinks.js';
 
 const router = createRouter({ history: createMemoryHistory(), routes: routerOptions.routes() });
 
@@ -149,5 +149,36 @@ describe('only github.com is githq', () => {
         'not a url',
     ])('%p', url => {
         expect(target(url)).toBeNull();
+    });
+});
+
+describe('on a phone, a link leaves for github.com', () => {
+    function leaves(url: string) {
+        return isGitHubLinkLeavingOnPhone(url, { router, isTracked: name => name === 'acme/web' });
+    }
+
+    test('to what githq has no screen for, or the phone does not show', () => {
+        for (const url of [
+            'https://github.com/acme/web/commit/0123abc',
+            'https://github.com/acme/web/pull/1/files',
+            'https://github.com/acme/web/actions/runs/123',
+            'https://github.com/acme/web/commits',
+            'https://github.com/other/repo/actions/runs/123',
+        ]) {
+            expect(leaves(url), url).toBe(true);
+        }
+    });
+
+    test('not to what the phone shows, nor to another site', () => {
+        for (const url of [
+            'https://github.com/acme/web/issues/12',
+            'https://github.com/acme/web/pull/1',
+            'https://github.com/acme/web/pulls',
+            'https://github.com/orgs/acme/projects/3',
+            'https://example.com/acme/web/commit/0123abc',
+            'not a url',
+        ]) {
+            expect(leaves(url), url).toBe(false);
+        }
     });
 });

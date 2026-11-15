@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { DB_THREAD } from '@/testing/sampleReviews.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ItemThreadExcerpt from './ItemThreadExcerpt.vue';
 
@@ -15,6 +16,8 @@ const meta = {
             <ItemThreadExcerpt v-bind="args" />
           </div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadExcerpt>;
 
 export default meta;
