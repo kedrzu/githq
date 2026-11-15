@@ -298,8 +298,13 @@ export const Offline: Story = {
             online: false,
         }),
     play: async ({ canvasElement }) => {
+        const graph = await within(canvasElement).findByRole('region', { name: /^Commits of\s+acme\/web$/ });
+        const canvas = within(graph);
+        // Reading the kept copy, drawing it and only then failing for want of the connection outlasts the default
+        // second on a loaded CI runner: each step gets a budget of its own.
+        await expect(await canvas.findByText('Commit c1', {}, { timeout: LOADED_RUNNER_TIMEOUT })).toBeVisible();
         const notice = "Older commits load when you're back online";
-        await expect(await within(canvasElement).findByText(notice)).toBeVisible();
+        await expect(await canvas.findByText(notice, {}, { timeout: LOADED_RUNNER_TIMEOUT })).toBeVisible();
     },
 };
 
