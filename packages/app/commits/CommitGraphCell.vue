@@ -1,4 +1,4 @@
-<!-- A commit row's slice of the graph (git-client D18, CH61): the lines of the branches passing through it, straight on their lane or curving into and out of its dot, and its dot. Each line takes its lane's colour — the default branch's lane its light grey, every other lane a colour of the palette by its index, cycling (`$graph-lanes`), the first lane past the default branch's taking the first colour, so without a default branch's lane the first lane does — and a curve is the line of the lane farther from the trunk, so it takes that lane's colour. The dot (r = 3) is filled in its lane's colour, a merge hollow in it; a commit whose CI fails keeps a ring of its lane's colour (r = 5) round a red disc, 1 px of the row's own surface between them, amber while it runs — a shape of its own, so it doesn't lean on red alone. Inside a hollow dot and the ring the lines are cut, so the surface — stripe, hover or selection — shows through. Lanes from `lanes - 1` on are drawn on the last one (D17's folding), so a curve between two of them becomes a straight line there; while lanes are folded that line is thicker and the darker graph grey, being many branches, its dots the light grey. Under the lines, a ring 16 px across round the dot, shown as the row asks through `--commit-graph-ring-color` and `--commit-graph-ring-opacity` (CH54): softly while hovered, in the accent on the cursor's row. Its width is `--commit-graph-width`, set once on the rows, so dragging the graph's divider draws no row again until a lane folds or unfolds. -->
+<!-- A commit row's slice of the graph (git-client D18, CH61): the lines of the branches passing through it, straight on their lane or curving into and out of its dot, and its dot. Each line takes its lane's colour — the default branch's lane its light grey, every other lane a colour of the palette by its index, cycling (`$graph-lanes`), the first lane past the default branch's taking the first colour, so without a default branch's lane the first lane does — and a curve is the line of the lane farther from the trunk, so it takes that lane's colour. The dot (r = 3) is filled in its lane's colour, a merge hollow in it; a commit whose CI fails keeps a ring of its lane's colour (r = 5) round a red disc, 1 px of the row's own surface between them, amber while it runs — a shape of its own, so it doesn't lean on red alone. Inside a hollow dot and the ring the lines are cut, so the surface — stripe, hover or selection — shows through. Lanes from `lanes - 1` on are drawn on the last one (D17's folding), so a curve between two of them becomes a straight line there; while lanes are folded that line is thicker and the darker graph grey, being many branches, its dots the light grey. The dot sits at `dotY`, on the row's first line, the lines running from the row's top to it and from it to the row's bottom. Under the lines, a ring 16 px across round the dot, shown as the row asks through `--commit-graph-ring-color` and `--commit-graph-ring-opacity` (CH54): softly while hovered, in the accent on the cursor's row. Its width is `--commit-graph-width`, set once on the rows, so dragging the graph's divider draws no row again until a lane folds or unfolds. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { computed, useId } from 'vue';
@@ -16,6 +16,9 @@ const props = defineProps<{
   mainLane: boolean;
   /** The row's height, which the lines span. */
   height: number;
+  /** How far down the row the dot's centre sits (on its first line): a curve's top half spans the row above the dot,
+   * its bottom half the rest. */
+  dotY: number;
   /** Its CI state as the dot shows it: a red centre while failing, an amber one while running. */
   tone: 'failing' | 'plain' | 'running';
 }>();
@@ -33,7 +36,6 @@ const RING_RADIUS = 8;
 
 const maskId = useId();
 
-const middle = computed(() => props.height / 2);
 const dotX = computed(() => getX(props.row.column));
 /** Each line once, however many lanes fold onto it: its colour, and whether it runs along the fold. */
 const lines = computed(() => {
@@ -75,7 +77,7 @@ function getColor(lane: number) {
 
 function getPath(half: CommitGraphLineHalf, x: number) {
   const h = props.height;
-  const m = middle.value;
+  const m = props.dotY;
   const dot = dotX.value;
   switch (half) {
     case 'full':
@@ -104,7 +106,7 @@ function getX(lane: number) {
     <circle
       :class="css.commitGraphCell_ring"
       :cx="dotX"
-      :cy="middle"
+      :cy="dotY"
       :r="RING_RADIUS - STROKE / 2"
     />
     <!-- Cuts the lines inside a hollow dot or the marker's ring. -->
@@ -120,7 +122,7 @@ function getX(lane: number) {
       />
       <circle
         :cx="dotX"
-        :cy="middle"
+        :cy="dotY"
         :r="hole"
         fill="black"
       />
@@ -145,20 +147,20 @@ function getX(lane: number) {
         row.isMerge && css.commitGraphCell_dot_hollow,
       ]"
       :cx="dotX"
-      :cy="middle"
+      :cy="dotY"
       :r="row.isMerge ? DOT_RADIUS - STROKE / 2 : DOT_RADIUS"
     />
     <template v-else>
       <circle
         :class="[css.commitGraphCell_dot, css.commitGraphCell_dot_hollow, css[`commitGraphCell_color_${dotColor}`]]"
         :cx="dotX"
-        :cy="middle"
+        :cy="dotY"
         :r="MARKER_RADIUS - STROKE / 2"
       />
       <circle
         :class="css[`commitGraphCell_disc_${tone}`]"
         :cx="dotX"
-        :cy="middle"
+        :cy="dotY"
         :r="MARKER_DISC_RADIUS"
       />
     </template>
