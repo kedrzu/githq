@@ -70,12 +70,15 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     await expect.element(rows.first()).toBeVisible();
     expect(view.github.requests.filter(request => request === 'RepositoryCommitRefs')).toHaveLength(1);
     expect(rows.elements().length).toBeLessThan(60);
-    // What the rows on screen ask is the longer call.
-    const asksOfScreen = () => view.ensureStates.mock.calls.findLast(([, asked]) => asked.length > 1)?.[1];
+    // The rows ask with their commits, the list beside the graph with its branches' tips (no headline): what the rows
+    // on screen ask is the longer call.
+    const graphAsks = () =>
+        view.ensureStates.mock.calls.flatMap(([, asked]) => (asked[0] && 'headline' in asked[0] ? [asked] : []));
+    const asksOfScreen = () => graphAsks().findLast(asked => asked.length > 1);
     // About 600 px of rows on screen, from the newest.
     const mostOnScreen = Math.ceil(600 / COMMIT_ROW_HEIGHT) + 1;
     await expect.poll(() => asksOfScreen()?.length).toBeGreaterThan(Math.floor(500 / COMMIT_ROW_HEIGHT));
-    for (const [, asked] of view.ensureStates.mock.calls) {
+    for (const asked of graphAsks()) {
         expect(asked.length).toBeLessThanOrEqual(mostOnScreen);
     }
     const newest = view.store.get(REPOSITORY)?.commits;
@@ -169,7 +172,7 @@ test('CH59, CH64: every row is two lines in 52 px: the headline and its pull req
         row.getByText('v1.0.0', { exact: true }).element(),
         row.getByText('Octo Cat', { exact: true }).element(),
         assertValue(row.element().querySelector('time')),
-        row.getByText('beef123', { exact: true }).element(),
+        row.getByText(sha('beef12345').slice(0, 7), { exact: true }).element(),
     ];
     const secondMiddle = middle(assertValue(secondLine[0]));
     expect(secondMiddle).toBeGreaterThan(COMMIT_ROW_DOT_Y + 10);
@@ -1709,7 +1712,6 @@ test("a row reads on: its pull request after the headline; under it, from the he
         },
         { width: 1500 },
     );
-    await closeDetails();
     const row = (headline: string) => page.getByRole('listitem').filter({ hasText: headline });
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 
@@ -1721,13 +1723,13 @@ test("a row reads on: its pull request after the headline; under it, from the he
     // The author's segment: the avatar and the name.
     const author = assertValue(short.getByText('Octo Cat', { exact: true }).element().parentElement);
     const age = assertValue(short.element().querySelector('time'));
-    const sha = short.getByText('c1', { exact: true }).element();
+    const shortSha = short.getByText(sha('c1').slice(0, 7), { exact: true }).element();
     expectFollows(chip, headline);
     expect(box(tag).left).toBeCloseTo(box(headline).left, 0);
     expectFollows(author, tag);
     expectFollows(age, author);
-    expectFollows(sha, age);
-    expect(box(sha).right).toBeLessThan(box(short.element()).right - 100);
+    expectFollows(shortSha, age);
+    expect(box(shortSha).right).toBeLessThan(box(short.element()).right - 100);
 
     // No refs: the author starts the line.
     const bare = row('Commit c0');
@@ -1758,8 +1760,8 @@ test('CH64: on a wide list a long headline and a long author name are shown whol
         { commits: [{ ...commit, headline, author: { ...commit.author, name: 'Ola Wiśniewska-Kowalczyk' } }] },
         { width: 1500 },
     );
-    await closeDetails();
     const row = page.getByRole('listitem').filter({ hasText: headline });
+    await expect.element(row).toBeVisible();
 
     for (const text of [headline, 'Ola Wiśniewska-Kowalczyk']) {
         const element = row.getByText(text, { exact: true }).element();
@@ -1774,7 +1776,7 @@ test('CH65: on a list narrower than 640 px the short sha goes first, the author 
     await expect.element(row).toBeVisible();
     expect(row.element().getBoundingClientRect().width).toBeLessThan(640);
 
-    await expect.element(row.getByText('beef123', { exact: true })).not.toBeVisible();
+    await expect.element(row.getByText(sha('beef12345').slice(0, 7), { exact: true })).not.toBeVisible();
     await expect.element(row.getByText('Octo Cat', { exact: true })).toBeVisible();
 });
 
