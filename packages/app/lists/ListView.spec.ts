@@ -1912,6 +1912,59 @@ test("mobile D27: a mouse drag never moves a row — on the computer, nor on a p
     await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
 });
 
+test('mobile D28: selecting on a phone, each row has a checkbox named by it; a tap toggles the row, opening nothing, no row swipes, and Escape leaves, emptying the selection', async () => {
+    const { view } = await mountSwipeable(
+        [['todo', ['i1', 'i2', 'i3']]],
+        [sampleIssue('i1'), sampleIssue('i2'), sampleIssue('i3')],
+    );
+    const phone = view.container.resolve(PhoneLayout);
+    await expect.element(page.getByRole('checkbox')).not.toBeInTheDocument();
+
+    phone.setSelecting(true);
+    const checkbox = (id: string) => page.getByRole('checkbox', { name: id });
+    await expect.element(checkbox('i1')).not.toBeChecked();
+    await userEvent.click(page.getByText('i1'));
+    await userEvent.click(checkbox('i3'));
+    await expect.element(checkbox('i1')).toBeChecked();
+    expect(view.checkedIds.value).toEqual(['i1', 'i3']);
+    expect(phone.selectedCount).toBe(2);
+    await userEvent.click(page.getByText('i1'));
+    expect(view.checkedIds.value).toEqual(['i3']);
+    expect(view.opened).toEqual([]);
+
+    await swipeRow('i2', -150);
+    expect(rowElement('i2').style.translate).toBe('');
+    await expect.element(page.getByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    expect(phone.selecting).toBe(false);
+    expect(view.checkedIds.value).toEqual([]);
+    await expect.element(page.getByRole('checkbox')).not.toBeInTheDocument();
+    await userEvent.click(page.getByText('i1'));
+    expect(view.opened).toEqual(['i1']);
+});
+
+test('mobile D28, K2: items checked on a phone another way (a toast asking for the failed ones) select there; narrowed, it keeps selecting those alone; the list going leaves it', async () => {
+    const { view } = await mountSwipeable(
+        [['todo', ['i1', 'i2', 'i3']]],
+        [sampleIssue('i1'), sampleIssue('i2'), sampleIssue('i3')],
+    );
+    const phone = view.container.resolve(PhoneLayout);
+
+    view.checkedIds.value = ['i1', 'i2', 'i3'];
+    await expect.poll(() => phone.selecting).toBe(true);
+    expect(phone.selectedCount).toBe(3);
+
+    view.checkedIds.value = ['i2'];
+    await expect.element(page.getByRole('checkbox', { name: 'i2' })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: 'i1' })).not.toBeChecked();
+    expect(phone.selecting).toBe(true);
+    expect(phone.selectedCount).toBe(1);
+
+    view.unmount();
+    expect(phone.selecting).toBe(false);
+});
+
 /** What {@link mountSwipeable} mounts besides the items. */
 interface SwipeableOptions {
     /** On a phone, unless `false`. */

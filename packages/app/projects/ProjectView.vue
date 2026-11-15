@@ -387,14 +387,20 @@ function hasItemView(entry: ProjectEntry) {
           {{ arriving || unreadable ? project.owner : t(l.meta, { owner: project.owner, count: itemCount }) }}
         </span>
       </template>
-      <slot
-        v-if="checkedIds.length > 0"
-        name="selection"
-        :ids="checkedIds"
-        :span="getSelectionSpan(groups ?? [], checkedIds)"
-      />
+      <template
+        v-if="$slots.selection"
+        #selection
+      >
+        <slot
+          v-if="checkedIds.length > 0"
+          name="selection"
+          :ids="checkedIds"
+          :span="getSelectionSpan(groups ?? [], checkedIds)"
+        />
+      </template>
+      <!-- The selection's actions take the saved views' place. -->
       <nav
-        v-else-if="tabs.length > 0"
+        v-if="tabs.length > 0 && checkedIds.length === 0"
         :class="css.projectView_tabs"
         :aria-label="t(l.savedViews)"
       >

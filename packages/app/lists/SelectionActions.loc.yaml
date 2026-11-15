@@ -72,3 +72,8 @@ closeCommand:
   en:
     one: Close 1 item…
     many: 'Close {count} items…'
+onlyWhatApplies:
+  plural: count
+  en:
+    one: 1 item
+    many: 'Only what applies to all {count}'

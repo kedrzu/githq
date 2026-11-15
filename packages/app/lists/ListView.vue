@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way shows its header with "…" and three ghost rows where its rows will land, and with no group arrived at all a full screen of ghosts stands instead (`StillArriving`, first run and loading D8, G16, G17). Board: each group a column with its head and count, cards top to bottom; a column still on its way has its head without a count over ghost cards (D17, ES30). With nothing listed and not even the groups known (`groupsArriving`), a full screen of ghost rows, or on the board ghost columns (D17, ES29). Rows arriving fade in over their ghosts (D9). Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`), what stands in place of a group's ghosts when it can't arrive now (`arriving`, D6) and, in the list, all of them (`end`, told how many rows are on screen); the list draws them, their selection and the keys, and says whether a group is collapsed (`someCollapsed`). The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), Enter again on the opened one's row expands it (`expand`), `⇧Enter` on any other opens it straight full screen (`fullScreen`) — on the opened one's row it is the opened item's own —, `o` opens it on GitHub, `⇧M` the merge panel for a pull request the viewer may merge, the selected one while nothing is checked or the one checked alone, never several (merging D9) — as its row's "Merge" and its context menu do — and once the merge is sent it is unchecked and the selection moves on to the next row (PM32a). `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On a phone, a row of a list with a context menu swipes left — by touch or a pen, never from the screen's left edge — to reveal its Status, Assign and Close at its right end (`RowSwipeActions`, `useRowSwipe`, mobile D27), one row at a time, a stack's entry not; a tap elsewhere closes it, opening nothing. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and `j`/`k` walk the same steps with an item open or not (D26): a collapsed entry is one step, an expanded one a step and each of its rows another; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), each a step after the card. The list hands over what it shows as `listed` — all its items, a stack's pull requests one by one, collapsed or not, and the steps an opened item takes — and an item opened inside a collapsed entry keeps the entry selected. An opened item leaving the list through the user's own edit moves the selection on, and the next one opens in its place; leaving any other way (a sync, a filter) it stays open with no row selected, and the next step goes to where it stood. With nothing checked and no item open, the command menu and the keys act on the selected row, with the actions of its context menu. While an item is open over the list, an entry that can't open there (`canOpenOver`, a project's draft) is passed over by the keys and by every move of the list's own, as if it weren't there, and a click still opens it. An Undo of a close brings the cursor, and an open panel, back to the undone item (`useItemList`, D29). -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way shows its header with "…" and three ghost rows where its rows will land, and with no group arrived at all a full screen of ghosts stands instead (`StillArriving`, first run and loading D8, G16, G17). Board: each group a column with its head and count, cards top to bottom; a column still on its way has its head without a count over ghost cards (D17, ES30). With nothing listed and not even the groups known (`groupsArriving`), a full screen of ghost rows, or on the board ghost columns (D17, ES29). Rows arriving fade in over their ghosts (D9). Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`), what stands in place of a group's ghosts when it can't arrive now (`arriving`, D6) and, in the list, all of them (`end`, told how many rows are on screen); the list draws them, their selection and the keys, and says whether a group is collapsed (`someCollapsed`). The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), Enter again on the opened one's row expands it (`expand`), `⇧Enter` on any other opens it straight full screen (`fullScreen`) — on the opened one's row it is the opened item's own —, `o` opens it on GitHub, `⇧M` the merge panel for a pull request the viewer may merge, the selected one while nothing is checked or the one checked alone, never several (merging D9) — as its row's "Merge" and its context menu do — and once the merge is sent it is unchecked and the selection moves on to the next row (PM32a). `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On a phone, a row of a list with a context menu swipes left — by touch or a pen, never from the screen's left edge — to reveal its Status, Assign and Close at its right end (`RowSwipeActions`, `useRowSwipe`, mobile D27), one row at a time, a stack's entry not; a tap elsewhere closes it, opening nothing. Selecting several there (`PhoneLayout.selecting`, mobile D28, MB117) each row has a checkbox at its left, named by the row, and a checked row is a rounded surface in the accent's outline; a tap toggles a row — a stack's entry all its pull requests — opening nothing, and no row swipes. Items checked there any other way (a hardware keyboard's `x`, a toast's request for the failed ones) start it; it publishes how many are checked, Escape leaves it, leaving empties them, and the list going leaves it. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and `j`/`k` walk the same steps with an item open or not (D26): a collapsed entry is one step, an expanded one a step and each of its rows another; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), each a step after the card. The list hands over what it shows as `listed` — all its items, a stack's pull requests one by one, collapsed or not, and the steps an opened item takes — and an item opened inside a collapsed entry keeps the entry selected. An opened item leaving the list through the user's own edit moves the selection on, and the next one opens in its place; leaving any other way (a sync, a filter) it stays open with no row selected, and the next step goes to where it stood. With nothing checked and no item open, the command menu and the keys act on the selected row, with the actions of its context menu. While an item is open over the list, an entry that can't open there (`canOpenOver`, a project's draft) is passed over by the keys and by every move of the list's own, as if it weren't there, and a click still opens it. An Undo of a close brings the cursor, and an open panel, back to the undone item (`useItemList`, D29). -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -6,13 +6,14 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ChevronDown, ChevronRight, GitMerge } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
 import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
+import Checkbox from '@/components/Checkbox.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import NothingThere from '@/components/NothingThere.vue';
 import StillArriving from '@/components/StillArriving.vue';
@@ -148,7 +149,10 @@ interface ListSlotProps<TValue> {
   group: ListGroup<TValue>;
   /** The list's selection is on it. */
   selected: boolean;
-  /** Among the items edited together; a stack's entry when all its pull requests are. */
+  /**
+   * Among the items edited together; a stack's entry when all its pull requests are. Never while selecting on a phone,
+   * where the list draws the row's checkbox itself (mobile D28).
+   */
   checked: boolean;
   /** A stack's entry some of whose pull requests are among the items edited together, not all (D20, SP28): a half mark. */
   halfChecked: boolean;
@@ -291,11 +295,18 @@ const items = merging ? useService(ItemStore) : null;
 const getVerdict = usePullRequestVerdicts();
 const repositories = merging ? useService(RepositoryStore) : null;
 const phoneLayout = useService(PhoneLayout);
-/** On a phone a row of a list with a context menu swipes left to its actions (mobile D27). */
+/**
+ * On a phone the rows of a list with a context menu have their actions there: a row swipes left to them (mobile D27),
+ * and several are selected to act on together (D28).
+ */
 const swipeable = computed(() => props.layout === 'list' && phoneLayout.active && slots.contextMenu !== undefined);
+/** On a phone, selecting several (mobile D28): each row a checkbox, a tap toggling it, no swipe. */
+const selecting = computed(() => swipeable.value && phoneLayout.selecting);
+/** What names each row's checkbox while selecting: its content, under this prefix and its key. */
+const rowIdPrefix = useId();
 // A stack's entry stands for several pull requests: no swipe of its own, its rows swipe one by one.
 const swipe = useRowSwipe({
-  enabled: swipeable,
+  enabled: () => swipeable.value && !selecting.value,
   canSwipe: key => {
     const current = placed.value.get(key);
     return current !== undefined && !current.stack;
@@ -521,6 +532,43 @@ watch(
 );
 // Gone from a screen that stays (a repository's Commits), it has no cursor to step from.
 onBeforeUnmount(() => emit('listed', { ...listed.value, around: null }));
+
+// Mobile D28: items selected on a phone — by a hardware keyboard's `x`, a toast's request for the failed ones — select
+// several there too; the top bar and the command line count them.
+watch(
+  () => swipeable.value && checkedIds.value.length > 0,
+  checked => {
+    if (checked) {
+      phoneLayout.setSelecting(true);
+    }
+  },
+  { immediate: true },
+);
+watch(
+  () => (selecting.value ? checkedIds.value.length : null),
+  count => {
+    if (count !== null) {
+      phoneLayout.setSelectedCount(count);
+    }
+  },
+  { immediate: true },
+);
+// Leaving it (×, Escape) empties the selection — not the window widening past a phone's, which keeps it as the desktop's.
+watch(
+  () => phoneLayout.selecting,
+  on => {
+    if (!on && phoneLayout.active) {
+      checkedIds.value = [];
+    }
+  },
+);
+// Navigating away leaves it.
+onBeforeUnmount(() => {
+  if (selecting.value) {
+    phoneLayout.setSelecting(false);
+    phoneLayout.setSelectedCount(0);
+  }
+});
 watch(
   () => props.groups.some(group => collapsed.value.has(group.key)),
   value => emit('someCollapsed', value),
@@ -605,8 +653,12 @@ onWindowEvent('keydown', event => {
 
       return;
     case 'Escape':
-      // Before anything else Escape does: an opened item stays open. An open picker or menu takes it first.
-      if (checkedIds.value.length > 0 && !isLayerOpen()) {
+      // Before anything else Escape does: an opened item stays open. An open picker or menu takes it first. On a phone
+      // it leaves selecting, which empties the selection.
+      if (selecting.value && !isLayerOpen()) {
+        event.preventDefault();
+        phoneLayout.setSelecting(false);
+      } else if (checkedIds.value.length > 0 && !isLayerOpen()) {
         event.preventDefault();
         checkedIds.value = [];
       }
@@ -1108,9 +1160,22 @@ function toggleChecked() {
     return false;
   }
 
+  toggleIds(ids);
+  return true;
+}
+
+/** A row tapped, or its checkbox, while selecting on a phone (mobile D28): its items in or out, as `x` on it. */
+function toggleEntry(key: string) {
+  const ids = placed.value.get(key)?.ids ?? [];
+  if (ids.length > 0) {
+    toggleIds(ids);
+  }
+}
+
+/** The items in, or out when all of them are in already. */
+function toggleIds(ids: readonly string[]) {
   const checked = checkedIds.value;
   setChecked(ids.every(id => checked.includes(id)) ? checked.filter(id => !ids.includes(id)) : [...checked, ...ids]);
-  return true;
 }
 
 /**
@@ -1261,8 +1326,9 @@ function getSlotProps({ current, row, group }: GetSlotPropsParams): ListSlotProp
     parent: current.parent,
     group,
     selected: selectedCard.value?.entry.key === key,
-    checked: isChecked(key),
-    halfChecked: isHalfChecked(key),
+    // Selecting on a phone the row's checkbox says it; the row keeps its icon (MB117).
+    checked: !selecting.value && isChecked(key),
+    halfChecked: !selecting.value && isHalfChecked(key),
     stack: current.stack,
     header: current.header,
     depth: current.depth,
@@ -1638,21 +1704,34 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                     css.listView_row,
                     current.rail && css[`listView_row_rail${current.depth}`],
                     current.depth > 0 && css[`listView_row_depth${current.depth}`],
-                    selectedKey === current.entry.key && css.listView_row_selected,
-                    isChecked(current.entry.key) && css.listView_row_checked,
+                    selecting && css.listView_row_selecting,
+                    selectedKey === current.entry.key && !selecting && css.listView_row_selected,
+                    isChecked(current.entry.key) && (selecting ? css.listView_row_ticked : css.listView_row_checked),
                     isUnmatched(current) && css.listView_row_unmatched,
                     swipe.key === current.entry.key && !swipe.dragging && css.listView_row_settling,
                   ]"
                   :style="swipe.key === current.entry.key ? { translate: `${swipe.offset}px 0` } : undefined"
                   :aria-current="selectedKey === current.entry.key ? 'true' : undefined"
                   :data-entry-key="current.entry.key"
-                  @click="openEntry(current.entry.key)"
+                  @click="selecting ? toggleEntry(current.entry.key) : openEntry(current.entry.key)"
                   @pointerdown="swipe.start($event, current.entry.key)"
                 >
-                  <slot
-                    name="row"
-                    v-bind="getSlotProps({ current, row, group })"
+                  <!-- Selecting on a phone (mobile D28): the row's checkbox, named by the row. -->
+                  <Checkbox
+                    v-if="selecting"
+                    :class="css.listView_rowCheck"
+                    :model-value="isChecked(current.entry.key)"
+                    :indeterminate="isHalfChecked(current.entry.key)"
+                    :labelledby="`${rowIdPrefix}-${current.entry.key}`"
+                    @update:model-value="toggleEntry(current.entry.key)"
+                    @click.stop
                   />
+                  <div :id="`${rowIdPrefix}-${current.entry.key}`">
+                    <slot
+                      name="row"
+                      v-bind="getSlotProps({ current, row, group })"
+                    />
+                  </div>
                   <RowSwipeActions
                     v-if="swipe.key === current.entry.key"
                     :class="css.listView_swipeActions"
@@ -1854,17 +1933,20 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 .listView_row {
   @include row-surface;
 
+  // The row surface's inset, its left edge past the room a phone's checkbox takes while selecting (none otherwise).
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} calc(var(--row-check-room, 0px) + #{$spacing-8});
+
   cursor: default;
 }
 
 // A row indented under another (`ItemRow`, `StackRow`: its text 42px in, a pull request of a nested stack's 66px): its
 // surface starts 8px before its text, clear of the rail.
 .listView_row_depth1 {
-  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 34px;
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} calc(var(--row-check-room, 0px) + 34px);
 }
 
 .listView_row_depth2 {
-  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 58px;
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} calc(var(--row-check-room, 0px) + 58px);
 }
 
 // A stack's pull requests under an issue (D12, D23): a rail below the icon of what expands them — the issue's, or a
@@ -1880,11 +1962,11 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 }
 
 .listView_row_rail1::before {
-  left: $spacing-16 + 7px;
+  left: calc(var(--row-check-room, 0px) + #{$spacing-16 + 7px});
 }
 
 .listView_row_rail2::before {
-  left: 42px + 7px;
+  left: calc(var(--row-check-room, 0px) + #{42px + 7px});
 }
 
 .listView_row_selected {
@@ -1894,6 +1976,25 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 .listView_row_checked::after,
 .listView_row_checked:hover::after {
   background: rgba($color-accent, 0.1);
+}
+
+// Selecting on a phone (mobile D28, MB117): a checkbox in the room left of the row, beside its first line; its surface
+// starts past it.
+.listView_row_selecting {
+  --row-check-room: #{$spacing-32};
+
+  padding-left: var(--row-check-room);
+}
+
+.listView_rowCheck {
+  position: absolute;
+  top: $spacing-12;
+  left: $spacing-12;
+}
+
+// A row checked there looks as the desktop's selected row: its surface filled, in the accent's outline.
+.listView_row_ticked {
+  @include row-selected;
 }
 
 .listView_row.listView_row_unmatched {

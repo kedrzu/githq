@@ -6,8 +6,11 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, ref, shallowRef } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
@@ -75,6 +78,29 @@ test('on a phone a board is drawn as a list, the layout kept as it is; the board
     await expect.element(groupHead).not.toBeInTheDocument();
     await expect.element(page.getByRole('region', { name: 'Review requested' })).toBeVisible();
     expect(view.optionChanges).toEqual([]);
+});
+
+test('mobile D28: on a phone "Select items" in the options turns the rows into checkboxes; the top bar counts the rows tapped, and × leaves, emptying the selection', async () => {
+    const view = mount(D1_ITEMS, D1_MEMBERSHIP, {}, { contextMenu: true });
+    view.phone.value = true;
+
+    await userEvent.click(page.getByRole('button', { name: 'Display' }));
+    await userEvent.click(page.getByRole('button', { name: 'Select items' }));
+    await expect.element(page.getByRole('heading', { name: '0 selected' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Open places' })).not.toBeInTheDocument();
+
+    for (const id of ['I_1187', 'PR_1203', 'PR_15']) {
+        await userEvent.click(page.getByText(findItem(id).title));
+    }
+
+    await expect.element(page.getByRole('heading', { name: '3 selected' })).toBeVisible();
+    expect(view.checkedIds.value.toSorted()).toEqual(['I_1187', 'PR_1203', 'PR_15']);
+    expect(view.opened).toEqual([]);
+
+    await userEvent.click(page.getByRole('button', { name: 'Stop selecting' }));
+    await expect.element(page.getByRole('heading', { name: 'My work' })).toBeVisible();
+    expect(view.checkedIds.value).toEqual([]);
+    await expect.element(page.getByRole('checkbox')).not.toBeInTheDocument();
 });
 
 test('j/k move the selection; a sync that reorders the list keeps it on its item, one that removes the item moves it to the neighbour', async () => {
@@ -534,10 +560,17 @@ test('stacked PRs D16, SP13: on the board the last open pull request of a stack 
     await expect.element(card).toHaveTextContent('3 of 3');
 });
 
+/** What {@link mount} gives the view besides its data. */
+interface MountOptions {
+    /** Its rows have actions, as the page gives them a context menu: on a phone they swipe and are selected. */
+    readonly contextMenu?: boolean;
+}
+
 function mount(
     initial: readonly Item[],
     arrived: MyWorkMembership = D1_MEMBERSHIP,
     display: Partial<ListViewOptions<MyWorkGrouping, ItemSort>> = {},
+    options: MountOptions = {},
 ) {
     const items = shallowRef<readonly Item[]>(initial);
     const membership = shallowRef(arrived);
@@ -554,6 +587,12 @@ function mount(
     container.set(LanguageContext, () => APP_LANGUAGE);
     // The desktop's layout, whatever the frame's width, until a test turns the phone's on.
     container.set(PhoneLayout, createFixedPhoneLayout(phone));
+    if (options.contextMenu) {
+        // The rows' actions read the signed-in user and the local copy.
+        container.set(Browser, createSignedInBrowser());
+        setIndexedDbPersistence(container);
+    }
+
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';
@@ -588,6 +627,7 @@ function mount(
                 },
                 {
                     selection: ({ ids }: { ids: readonly string[] }) => h('p', { tid: 'selection' }, ids.join(' ')),
+                    ...(options.contextMenu && { contextMenu: () => null }),
                 },
             ),
     });

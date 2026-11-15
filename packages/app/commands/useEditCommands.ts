@@ -92,6 +92,11 @@ export interface EditCommandsParams {
     /** The close / reopen entries the user may use; the action is there when there are any. */
     readonly stateOptions: readonly StateOption[];
     readonly stateTitle: string;
+    /**
+     * The selection's assignees, labels and milestone say on their rows the value every item has, or "mixed" when they
+     * differ: a phone's command menu, which has no toolbar of pickers showing them (mobile MB118).
+     */
+    readonly summarize?: boolean;
     /** Makes the change of every item (through the edit engine). */
     edit(request: EditRequest): void;
     /** Sets a project field's value of every item: of one place for one item, of the project for a selection. */
@@ -176,8 +181,17 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             }
         }
 
+        const command = base(params, kind, spec.title, spec.icon);
         return {
-            ...base(params, kind, spec.title, spec.icon),
+            ...command,
+            detail:
+                command.detail ??
+                summarize(params, item =>
+                    spec
+                        .current(item)
+                        .toSorted((a, b) => a.localeCompare(b))
+                        .join(', '),
+                ),
             keywords: spec.keywords,
             options: () => ({
                 loading: params.loading,
@@ -208,7 +222,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         const command = base(params, 'milestone', t(l.setMilestone), Milestone);
         return {
             ...command,
-            detail: current ?? command.detail,
+            detail: current ?? command.detail ?? summarize(params, item => item.milestone?.title ?? ''),
             options: () => ({
                 loading: params.loading,
                 note: note(params, 'milestone'),
@@ -434,6 +448,21 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             // Not run in place: the submenu opens — unless nothing may take it (the inline picker said why).
             run: () => params.inline?.[kind]?.() === true || editable === 0,
         };
+    }
+
+    /** With `summarize`, of several items: the value all of them have (none when it is empty), else "mixed". */
+    function summarize(params: EditCommandsParams, valueOf: (item: Item) => string) {
+        if (!params.summarize || params.items.length < 2) {
+            return undefined;
+        }
+
+        const values = new Set(params.items.map(valueOf));
+        const [value] = values;
+        if (values.size > 1) {
+            return t(l.mixed);
+        }
+
+        return value === '' ? undefined : value;
     }
 
     function note(params: EditCommandsParams, kind: ItemPermission) {
