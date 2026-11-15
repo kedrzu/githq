@@ -209,6 +209,16 @@ test('mobile MB260: on a phone "Merge…" and "Review files" leave for github.co
     // ⇧M has no panel to open on a phone either.
     await userEvent.keyboard('{Shift>}M{/Shift}');
     expect(onMerge).not.toHaveBeenCalled();
+
+    // The item menu says the same of both before they are picked.
+    await userEvent.click(page.getByRole('button', { name: /^Actions of / }));
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    await expect
+        .element(sheet.getByRole('menuitem', { name: /^Merge…/ }))
+        .toHaveAccessibleName(/^Merge…\sopens on\sgithub\.com$/u);
+    await expect
+        .element(sheet.getByRole('menuitem', { name: /^Review files/ }))
+        .toHaveAccessibleName(/^Review files\sopens on\sgithub\.com$/u);
 });
 
 test('mobile D45: on a phone the reference above the title opens "Item actions" at the bottom, and an action there runs', async () => {

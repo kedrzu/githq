@@ -548,6 +548,7 @@ function getEditCommands(): Command[] {
     stateTitle: getStateTitle(),
     edit,
     merge,
+    mergeExternal: phone.active,
     mergeChecks: checkCounts.value,
     viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
     pullRequestCommands: merging,
@@ -657,6 +658,8 @@ function getItemCommands(): Command[] {
       section: 'item',
       key: ITEM_KEYS.review,
       icon: FileDiff,
+      // A phone has no code review yet: the review's address is handed off to github.com (mobile D3, D11).
+      external: phone.active,
       when: () => pr.value !== null,
       run: () => emit('review'),
     },

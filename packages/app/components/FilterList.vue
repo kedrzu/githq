@@ -239,13 +239,17 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-/** A key pressed while the list, not the filter, holds the focus: a character goes into the filter, focusing it; the rest is the filter's to handle (⌫ and ← stepping back). */
+/**
+ * A key pressed while the list, not the filter, holds the focus: a character goes into the filter, focusing it; the
+ * rest is the filter's to handle (⌫ and ← stepping back, Space with nothing typed toggling the highlighted row).
+ */
 function onListKeydown(event: KeyboardEvent) {
   if (event.isComposing || event.defaultPrevented) {
     return;
   }
 
-  if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+  const spaceWithNothingTyped = event.key === ' ' && query.value === '';
+  if (event.key.length === 1 && !spaceWithNothingTyped && !event.ctrlKey && !event.metaKey && !event.altKey) {
     event.preventDefault();
     query.value += event.key;
     filterRef.value?.querySelector('input')?.focus();

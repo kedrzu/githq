@@ -27,7 +27,8 @@ export interface CommandSubject {
 
 /**
  * What a part of a place (mobile D17) shows on its line in the command menu, beyond its title: what the screen showing
- * the place knows of it. Set only on the rows of {@link CommandParts}; ⌘K's own rows have none of it.
+ * the place knows of it. Set on the rows of {@link CommandParts}; of the rest, only `external`, on an action that
+ * leaves for github.com on a phone (an item's "Merge…" and "Review files", mobile D11), also marked in the item menu.
  */
 export interface CommandMarks {
     /** How many it holds ("142"), at the line's end; `null` while that is still arriving. */
@@ -36,7 +37,10 @@ export interface CommandMarks {
     readonly changed?: boolean;
     /** It is the part shown: a check at the line's end. */
     readonly current?: boolean;
-    /** Running it leaves for github.com (a repository's Commits and Actions on a phone, mobile D21): ↗ at the line's end. */
+    /**
+     * Running it leaves for github.com (on a phone: a repository's Commits and Actions, mobile D21; an item's "Merge…"
+     * and "Review files", D11): ↗ at the line's end.
+     */
     readonly external?: boolean;
 }
 

@@ -60,3 +60,23 @@ test('on a phone a submenu drills in place: what is set is checked, typing filte
     await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: bwrona');
     await expect.element(sheet).not.toBeInTheDocument();
 });
+
+test("on a phone Home and End in a submenu's filter move its caret, not to the entries; ↓ goes to the entries", async () => {
+    await PhoneSelection.run();
+
+    const sheet = page.getByRole('dialog', { name: '3 issues' });
+    await userEvent.click(sheet.getByRole('menuitem', { name: 'Assign to' }));
+    const people = sheet.getByRole('menu', { name: 'Assign to' });
+    const filter = people.getByRole('textbox', { name: 'Filter: Assign to…' });
+    await userEvent.type(filter, 'wro');
+
+    await userEvent.keyboard('{Home}');
+    await expect.element(filter).toHaveFocus();
+    expect(filter.element()).toHaveProperty('selectionStart', 0);
+    await userEvent.keyboard('{End}');
+    await expect.element(filter).toHaveFocus();
+    expect(filter.element()).toHaveProperty('selectionStart', 3);
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(people.getByRole('menuitemcheckbox', { name: 'bwrona' })).toHaveFocus();
+});

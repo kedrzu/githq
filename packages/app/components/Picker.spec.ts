@@ -158,6 +158,20 @@ test('on a phone it opens at the bottom with no keyboard; typed text narrows, a 
     await expect.element(page.getByTestId('applied')).toHaveTextContent('Added: –; removed: calendar');
 });
 
+test('on a phone with a keyboard, Space on the list toggles the highlighted option and a letter types into the filter', async () => {
+    await PhoneLabels.run();
+
+    const sheet = page.getByRole('dialog', { name: 'Labels' });
+    await expect.element(sheet.getByRole('listbox')).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect.element(sheet.getByRole('option', { name: 'bug' })).toHaveAttribute('aria-checked', 'false');
+
+    await userEvent.keyboard('c');
+    const filter = sheet.getByRole('textbox', { name: 'Filter labels…' });
+    await expect.element(filter).toHaveFocus();
+    await expect.element(filter).toHaveValue('c');
+});
+
 test('on a phone one value is picked with a tap, which closes it; Escape closes it picking nothing', async () => {
     await PhoneMilestone.run();
 

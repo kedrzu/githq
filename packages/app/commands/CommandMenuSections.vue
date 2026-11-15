@@ -1,5 +1,6 @@
-<!-- Actions as the entries of an item menu — the context menu of a list's rows (L1–L4) or the opened item's menu (M1–M2): one group after another with a line between them, each action with its icon, current value and key, so the menu teaches the keyboard. An action with a second step opens it beside the menu (`CommandSubmenu`); the others run when picked. -->
+<!-- Actions as the entries of an item menu — the context menu of a list's rows (L1–L4) or the opened item's menu (M1–M2): one group after another with a line between them, each action with its icon, current value and key, so the menu teaches the keyboard. An action with a second step opens it beside the menu (`CommandSubmenu`); the others run when picked. One that leaves for github.com on a phone is marked ↗ (mobile D11). -->
 <script lang="ts" setup>
+import ExternalMark from '@/components/ExternalMark.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
 
@@ -33,7 +34,7 @@ defineProps<{
         :shortcut="command.key"
         @select="command.run?.()"
       >
-        {{ command.title }}
+        {{ command.title }}<ExternalMark v-if="command.external" />
       </MenuItem>
     </template>
   </template>

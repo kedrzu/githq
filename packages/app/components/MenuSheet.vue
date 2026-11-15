@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { nextTick, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
+import { isEditableTarget } from '@/utils/isEditableTarget.js';
+
 import BottomMenu from './BottomMenu.vue';
 import * as l from './MenuSheet.loc.js';
 import { MenuSheetContext } from './MenuSheetContext.js';
@@ -88,7 +90,12 @@ function getEntries() {
   return [...(shown?.querySelectorAll<HTMLElement>('[role^="menuitem"]:not([aria-disabled="true"])') ?? [])];
 }
 
+/** ↑/↓ move between the entries, from a submenu's filter too, as reka-ui's menu does; Home and End leave a field's text to it. */
 function onKeydown(event: KeyboardEvent) {
+  if ((event.key === 'Home' || event.key === 'End') && isEditableTarget(event.target)) {
+    return;
+  }
+
   const entries = getEntries();
   const index = entries.findIndex(entry => entry === document.activeElement);
   let next: HTMLElement | undefined;
