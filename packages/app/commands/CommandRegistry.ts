@@ -25,6 +25,9 @@ export interface CommandMenuRequest {
     readonly parts: (() => CommandParts) | null;
 }
 
+/** What the command menu names in its chips and the user may take out of it (⌫). */
+export type CommandContextPart = 'subject' | 'repository';
+
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
 export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: '[' } as const;
 
@@ -49,6 +52,7 @@ export const CommandRegistry = defineService({
         const menuRef = shallowRef<CommandMenuRequest | null>(null);
         const helpRef = shallowRef(false);
         const keySheetRef = shallowRef<(() => CommandKeySheet) | null>(null);
+        const removedRef = shallowRef<ReadonlySet<CommandContextPart>>(new Set());
 
         const commands = computed(() => sourcesRef.value.flatMap(source => source.commands));
         const subject = computed(() => {
@@ -64,6 +68,17 @@ export const CommandRegistry = defineService({
             /** What the actions act on: the selection, else the opened item; reactive. */
             get subject(): CommandSubject | null {
                 return subject.value;
+            },
+            /**
+             * The subject taken out of the command menu (⌫): the actions the menu runs then act on no subject. Back with
+             * the next menu, and for a key or a button, which act on the screen; reactive.
+             */
+            get subjectRemoved() {
+                return removedRef.value.has('subject');
+            },
+            /** The repository taken out of the command menu (⌫), as {@link subjectRemoved}; reactive. */
+            get repositoryRemoved() {
+                return removedRef.value.has('repository');
             },
             /** The command menu while it is open; reactive. */
             get menu() {
@@ -85,6 +100,7 @@ export const CommandRegistry = defineService({
             openMenu,
             openParts,
             closeMenu,
+            setRemoved,
             setHelpOpen,
         };
 
@@ -132,6 +148,8 @@ export const CommandRegistry = defineService({
                 return;
             }
 
+            // A key or a button acts on the screen, whatever the last menu took out.
+            removedRef.value = new Set();
             const ran = command.run ? command.run() !== false : false;
             if (!ran && command.options) {
                 openMenu(command.id);
@@ -151,6 +169,18 @@ export const CommandRegistry = defineService({
 
         function closeMenu() {
             menuRef.value = null;
+        }
+
+        /** Takes a part of the menu's context out (⌫), or puts it back (the menu opening again). */
+        function setRemoved(part: CommandContextPart, removed: boolean) {
+            const parts = new Set(removedRef.value);
+            if (removed) {
+                parts.add(part);
+            } else {
+                parts.delete(part);
+            }
+
+            removedRef.value = parts;
         }
 
         function setHelpOpen(open: boolean) {
