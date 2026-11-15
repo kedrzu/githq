@@ -1,12 +1,14 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column — it drops its buttons' key hints and the conditions' asides. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column — it drops its buttons' key hints and the conditions' asides. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge…" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
+import ExternalMark from '@/components/ExternalMark.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import PullRequestSize from '@/lists/PullRequestSize.vue';
@@ -16,6 +18,7 @@ import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { getReasonTitle } from '@/merge/getReasonTitle.js';
 import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
@@ -56,6 +59,7 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const phone = useService(PhoneLayout);
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 const mergeVerdict = usePullRequestVerdict({
@@ -130,6 +134,11 @@ const updateCommand = computed(() =>
 /** What deleting or restoring its branch offers, once its pull request closed (PM26, PM26b). */
 const branchCommand = computed(() =>
   props.commands?.find(command => command.kind === 'deleteBranch' || command.kind === 'restoreBranch'),
+);
+
+/** "Merge…" is offered: the viewer may merge it, it isn't being merged, and updating isn't the way forward, which its button above says all "Merge…" would. */
+const mergeOffered = computed(
+  () => props.canMerge === true && !merging.value && !(updateCommand.value && mergeVerdict.forward === 'updateBranch'),
 );
 
 const conditions = computed(() => [
@@ -218,7 +227,7 @@ function refusedAside(reason: EditFailureReason) {
       />
       <span :class="css.pullRequestMerge_files">{{ t(l.files, { count: pr.changedFiles }) }}</span>
     </p>
-    <div :class="css.pullRequestMerge_actions">
+    <div :class="[css.pullRequestMerge_actions, phone.active && css.pullRequestMerge_actions_phone]">
       <Button
         v-if="branchCommand"
         variant="secondary"
@@ -241,9 +250,19 @@ function refusedAside(reason: EditFailureReason) {
       >
         {{ t(l.updateBranch) }}
       </Button>
-      <!-- Updating being the way forward, its button above says all "Merge…" would. -->
+      <!-- A phone has no merge panel yet: the same pull request on github.com. -->
       <Button
-        v-if="canMerge && !merging && !(updateCommand && mergeVerdict.forward === 'updateBranch')"
+        v-if="mergeOffered && phone.active"
+        :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
+        size="sm"
+        :link="pr.url"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ mergeLabel }}<ExternalMark />
+      </Button>
+      <Button
+        v-else-if="mergeOffered"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"
@@ -256,7 +275,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         variant="secondary"
         size="sm"
-        :icon="Github"
+        :icon="phone.active ? undefined : Github"
         :link="pr.url"
         kbd="O"
         target="_blank"
@@ -265,15 +284,16 @@ function refusedAside(reason: EditFailureReason) {
       >
         {{ t(l.openOnGitHub) }}
       </Button>
+      <!-- On a phone the address of the review is handed off to github.com's changed files (mobile D3). -->
       <Button
         variant="ghost"
         size="sm"
-        :icon="FileDiff"
+        :icon="phone.active ? undefined : FileDiff"
         :link="reviewPath"
         kbd="D"
         keyshortcuts="D"
       >
-        {{ t(l.reviewFiles) }}
+        {{ t(l.reviewFiles) }}<ExternalMark />
       </Button>
       <span
         v-if="note"
@@ -405,6 +425,11 @@ $narrow: 480px;
   padding: $spacing-10 $spacing-12;
   background: $color-bg;
   border-top: 1px solid $color-border;
+}
+
+// A phone's narrowest leave the three buttons no room on one line: the last goes under, never cut off.
+.pullRequestMerge_actions_phone {
+  flex-wrap: wrap;
 }
 
 .pullRequestMerge_note {

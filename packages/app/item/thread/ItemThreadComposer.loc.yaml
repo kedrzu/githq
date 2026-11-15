@@ -22,3 +22,5 @@ locked:
   en: This conversation is locked to collaborators, so you can read it but not comment.
 archived:
   en: '{repository} is archived, so it takes no new comments.'
+notPlannedDetail:
+  en: won't do, duplicate

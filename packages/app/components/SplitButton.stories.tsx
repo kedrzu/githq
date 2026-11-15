@@ -3,6 +3,7 @@ import { CircleCheck, CircleSlash } from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow } from '@/.storybook/StoryLayout.jsx';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import MenuItem from './MenuItem.vue';
 import SplitButton from './SplitButton.vue';
@@ -10,6 +11,8 @@ import SplitButton from './SplitButton.vue';
 const meta = {
     component: SplitButton,
     args: { menuLabel: 'More ways to close' },
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof SplitButton>;
 
 export default meta;

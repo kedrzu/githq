@@ -1,4 +1,4 @@
-<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, right after the message) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. -->
+<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, right after the message, marked ↗ on a phone, mobile D11) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { GitCommitHorizontal } from 'lucide-vue-next';
@@ -6,6 +6,7 @@ import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
+import ExternalMark from '@/components/ExternalMark.vue';
 import CommitStateMarks from '@/commits/CommitStateMarks.vue';
 import { formatAge } from '@/utils/formatAge.js';
 
@@ -86,8 +87,8 @@ async function showMore() {
             :href="commit.url"
             target="_blank"
             rel="noopener noreferrer"
-            >{{ commit.abbreviatedOid }}</a
-          >
+            >{{ commit.abbreviatedOid }}<ExternalMark
+          /></a>
         </li>
       </ul>
       <Button

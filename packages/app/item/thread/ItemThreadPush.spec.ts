@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ItemThreadPush.stories.js';
 
-const { SixCommits, NoAccount, Wide } = composeStories(stories);
+const { NoAccount, OnPhone, SixCommits, Wide } = composeStories(stories);
 
 test('"Show 3 more commits" shows the rest in place and gives the focus to the first of them', async () => {
     await SixCommits.run();
@@ -51,4 +51,14 @@ test('at the thread\'s widest the time follows "pushed 3 commits" and each commi
         expect(hash.getBoundingClientRect().left - last.right).toBeCloseTo(8, 0);
         expect(hash.getBoundingClientRect().right).toBeLessThan(frame.right - 300);
     }
+});
+
+test('mobile D11: on a phone a commit says it opens on github.com before it is tapped; on the computer it does not', async () => {
+    await OnPhone.run();
+    const link = page.getByRole('link', { name: 'e81f0a3' });
+    await expect.element(link).toHaveAccessibleName(/^e81f0a3\sopens on\sgithub\.com$/u);
+    await expect.element(link).toHaveAttribute('href', 'https://github.com/kedrzu/githq/pull/15/commits/e81f0a3');
+
+    await Wide.run();
+    await expect.element(page.getByRole('link', { name: 'e81f0a3' })).toHaveAccessibleName('e81f0a3');
 });

@@ -24,6 +24,10 @@ const {
     FormCantRun,
     RunWorkflowInRepository,
     RunWorkflowRepositories,
+    PhonePartsOfRepository,
+    PhonePartsOfProject,
+    PhoneStatusInTwoProjects,
+    PhoneTyping,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -683,4 +687,58 @@ test("W46, W36: a level's rows sit under their headings, wherever they were give
     await userEvent.keyboard('{Escape}{Escape}');
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
     await expect.element(page.getByText('Enter picks another workflow')).toBeInTheDocument();
+});
+
+test('on a phone ↓ on the line nearest the field wraps to the top, and ↑ walks back down the screen to it', async () => {
+    await PhonePartsOfRepository.run();
+
+    const lines = page.getByRole('listbox', { name: 'Command menu' }).getByRole('option');
+    await expect.element(lines.last()).toHaveAttribute('data-highlighted');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(lines.first()).toHaveAttribute('data-highlighted');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(lines.last()).toHaveAttribute('data-highlighted');
+});
+
+test('on a phone keys typed reach the field, focusing it; the best match sits nearest it, the one the computer lists first, and Enter runs it', async () => {
+    await Typing.run();
+    await userEvent.keyboard('plat');
+    const best = page.getByRole('option').first().element().textContent;
+    await PhoneTyping.run();
+
+    const field = page.getByRole('textbox', { name: 'Do or find…' });
+    await expect.element(field).toHaveFocus();
+    await expect.element(field).toHaveValue('plat');
+    const nearest = page.getByRole('option').last();
+    await expect.element(nearest).toHaveTextContent(best ?? '');
+    await expect.element(nearest).toHaveAttribute('data-highlighted');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByTestId('went')).toHaveTextContent('/orgs/skyline-labs/projects/4');
+});
+
+test("on a phone opened from a list's command line, the field carries that line's chip: the part, its count, its dot", async () => {
+    await PhonePartsOfProject.run();
+
+    const line = page.getByRole('textbox', { name: 'Do or find…' }).element().parentElement;
+    expect(line?.textContent).toMatch(/^Current sprint\s*34/u);
+    const dot = line?.querySelector('[role="img"]');
+    expect(dot?.getAttribute('aria-label')).toMatch(/^changed on\sthis\sdevice$/u);
+});
+
+test("on a phone a picker's field finds only its values, under the way back and the level's title; back returns to the top", async () => {
+    await PhoneStatusInTwoProjects.run();
+
+    const statuses = page.getByRole('listbox', { name: 'Set status…' });
+    await expect.element(statuses).toBeInTheDocument();
+    // The first project's statuses nearest the field, read downwards.
+    const nearest = statuses.getByRole('group').last();
+    await expect.element(nearest).toHaveAccessibleName('Platform Q4');
+    await expect.element(nearest.getByRole('option').first()).toHaveAccessibleName(/^Todo/u);
+    await expect.element(page.getByText('Set status', { exact: true })).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('button', { name: 'Back' }));
+    await expect.element(page.getByRole('textbox', { name: 'Do or find…' })).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Back' })).not.toBeInTheDocument();
 });

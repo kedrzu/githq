@@ -16,7 +16,9 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { matchText } from '@/testing/matchText.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -1957,6 +1959,8 @@ function createListContainer(request?: BrowserShape['fetch']) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     container.set(Browser, createSignedInBrowser(request));
+    // The test frame is narrower than a phone's width: the computer's list and its menus.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     setIndexedDbPersistence(container);
     return container;
 }

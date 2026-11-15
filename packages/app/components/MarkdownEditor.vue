@@ -1,4 +1,4 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown (in a head too narrow for them, their last groups fold into a ⋯ menu listing them by name), a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The keys a caller acts on in the text (`keyshortcuts`) are announced on it. While the caller has it ask (`asking`, D40), its footer asks whether to discard what is written: the caller's question with an amber circle-alert, and Keep (`Escape`, the caller's label) and Discard (`Enter`) in place of the caller's buttons. The cursor goes to the text, where Enter discards rather than starting a line; Enter on a button, a tab or a tool does what that one does; Escape keeps writing, and typing anything takes the question away. -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown (in a head too narrow for them, their last groups fold into a ⋯ menu listing them by name), a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The keys a caller acts on in the text (`keyshortcuts`) are announced on it. While the caller has it ask (`asking`, D40), its footer asks whether to discard what is written: the caller's question with an amber circle-alert, and Keep (`Escape`, the caller's label) and Discard (`Enter`) in place of the caller's buttons. The cursor goes to the text, where Enter discards rather than starting a line; Enter on a button, a tab or a tool does what that one does; Escape keeps writing, and typing anything takes the question away. Docked (`docked`, a phone's composer above the keyboard, mobile D51, MB236) it stands upside down for the thumb: the footer's buttons on top, the text at 16px (iOS zooms into a smaller one), then Write / Preview and the tools just above the keyboard, each a finger's target — bold, italic, code and link, the rest always in the ⋯ menu ("More tools", what it is written on under the name, MB237), Mention and Reference under "Insert" — and the `@` and `#` suggestions docked under the text in the tools' place (MB239). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -50,6 +50,7 @@ import * as l from './MarkdownEditor.loc.js';
 import MarkdownSuggestions from './MarkdownSuggestions.vue';
 import Menu from './Menu.vue';
 import MenuItem from './MenuItem.vue';
+import MenuLabel from './MenuLabel.vue';
 import MenuSeparator from './MenuSeparator.vue';
 import type { PersonSuggestion } from './SuggestionTypes.js';
 import Tooltip from './Tooltip.vue';
@@ -61,7 +62,8 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
 // suggest; the caller's tool, first in the head; the keys the caller acts on in the text area, in `aria-keyshortcuts`'
 // notation, announced on it; whether its footer asks to discard what is written (the caller turns it on, Keep or typing
-// turns it off), the question and the label of the button keeping what is written.
+// turns it off), the question and the label of the button keeping what is written; whether it is docked above a phone's
+// keyboard.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
@@ -72,6 +74,7 @@ const props = defineProps({
   asking: { type: Boolean, default: false },
   question: { type: String, default: '' },
   keepLabel: { type: String, default: '' },
+  docked: { type: Boolean, default: false },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -94,6 +97,16 @@ defineSlots<{
 const TOOL_GROUPS: readonly (readonly MarkdownTool[])[] = [
   ['heading', 'bold', 'italic', 'code', 'link'],
   ['bulletList', 'numberedList', 'taskList', 'quote'],
+  ['mention', 'reference'],
+];
+
+/**
+ * Docked on a phone (MB236, MB237): bold to link beside the tabs, the rest always in the ⋯ menu — Heading too, which a
+ * phone has no room for beside them — the insertions last, under their label.
+ */
+const DOCKED_TOOL_GROUPS: readonly (readonly MarkdownTool[])[] = [
+  ['bold', 'italic', 'code', 'link'],
+  ['heading', 'bulletList', 'numberedList', 'taskList', 'quote'],
   ['mention', 'reference'],
 ];
 
@@ -128,8 +141,13 @@ const ownToolRef = useTemplateRef<HTMLElement>('ownTool');
 const moreRef = useTemplateRef<HTMLElement>('more');
 /** How many groups, from the last, are in the ⋯ menu; none until the head is measured, so every width is read once. */
 const folded = ref(0);
-const shownGroups = computed(() => TOOL_GROUPS.slice(0, TOOL_GROUPS.length - folded.value));
-const foldedGroups = computed(() => TOOL_GROUPS.slice(TOOL_GROUPS.length - folded.value));
+const toolGroups = computed(() => (props.docked ? DOCKED_TOOL_GROUPS : TOOL_GROUPS));
+const shownGroups = computed(() =>
+  props.docked ? toolGroups.value.slice(0, 1) : toolGroups.value.slice(0, toolGroups.value.length - folded.value),
+);
+const foldedGroups = computed(() =>
+  props.docked ? toolGroups.value.slice(1) : toolGroups.value.slice(toolGroups.value.length - folded.value),
+);
 /**
  * The width of each group (with its rule) and of the ⋯ (with its), read while they are drawn: fixed, so a folded one's
  * is the one it had.
@@ -257,6 +275,11 @@ async function onInput() {
 
 // A frame on, the text area has grown to its text (`useTextArea` sizes it a tick after the text changes).
 async function bringIntoView(part: HTMLElement | null) {
+  // Docked, it stays where it is above the keyboard; its own scroll keeps the caret in view.
+  if (props.docked) {
+    return;
+  }
+
   await new Promise(resolve => {
     requestAnimationFrame(resolve);
   });
@@ -295,7 +318,7 @@ function keepWriting() {
 /** Keeps in the head as many groups as its room holds, in order; the rest fold, from the last, into the ⋯ menu. */
 function fitTools() {
   const tools = toolsRef.value;
-  if (!tools || tab.value !== 'write') {
+  if (!tools || tab.value !== 'write' || props.docked) {
     return;
   }
 
@@ -381,7 +404,11 @@ interface RenderedPreview {
 <template>
   <TabsRoot
     :model-value="tab"
-    :class="css.markdownEditor"
+    :class="[
+      css.markdownEditor,
+      docked && css.markdownEditor_docked,
+      docked && suggestions.list && css.markdownEditor_suggesting,
+    ]"
     :unmount-on-hide="false"
     @update:model-value="onTab"
     @keydown="onKeydown"
@@ -479,6 +506,8 @@ interface RenderedPreview {
             <Menu
               align="end"
               :modal="false"
+              :label="docked ? t(l.moreTools) : undefined"
+              :context="docked && itemNumber !== undefined ? `${repository}#${itemNumber}` : undefined"
               @close-auto-focus="onMenuClosed"
             >
               <template #trigger>
@@ -497,7 +526,9 @@ interface RenderedPreview {
                 v-for="(group, index) in foldedGroups"
                 :key="index"
               >
-                <MenuSeparator v-if="index > 0" />
+                <!-- Docked, the insertions under their label (MB237); one list before them. -->
+                <MenuLabel v-if="docked && group.includes('mention')">{{ t(l.insert) }}</MenuLabel>
+                <MenuSeparator v-else-if="index > 0 && !docked" />
                 <MenuItem
                   v-for="formatting in group"
                   :key="formatting"
@@ -534,8 +565,11 @@ interface RenderedPreview {
         :active="suggestions.active"
         :anchor="suggestions.anchor"
         :repository="repository"
+        :docked="docked"
+        :typed="suggestions.typed"
         @pick="suggestions.pick"
         @highlight="suggestions.highlight"
+        @dismiss="suggestions.dismiss()"
       />
     </TabsContent>
     <TabsContent
@@ -622,6 +656,88 @@ interface RenderedPreview {
   &:focus-within {
     border-color: $color-accent;
   }
+}
+
+// Above a phone's keyboard, the screen's width: upside down for the thumb — the buttons on top, the text, then the tabs
+// and tools just above the keyboard. Its own scroll is the text's: the buttons and the tools stay in reach.
+.markdownEditor_docked {
+  border-width: 1px 0 0;
+  border-radius: 0;
+
+  &:focus-within {
+    border-color: $color-border-2;
+  }
+
+  .markdownEditor_footer {
+    order: -1;
+    padding: $spacing-8 $spacing-12;
+    border-top: none;
+    border-bottom: 1px solid $color-border;
+  }
+
+  .markdownEditor_body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .markdownEditor_head {
+    order: 1;
+    gap: 0;
+    align-items: stretch;
+    height: $touch-target-size;
+    padding: 0 $spacing-4 0 $spacing-8;
+    border-top: 1px solid $color-border;
+    border-bottom: none;
+  }
+
+  // Open at the top, into the text above them.
+  .markdownEditor_tab {
+    top: -1px;
+    padding: 0 $spacing-16;
+    font-size: $font-size-lg;
+    border-top: none;
+    border-bottom: 1px solid transparent;
+    border-radius: 0 0 $radius-md $radius-md;
+  }
+
+  .markdownEditor_toolbar {
+    flex: 1;
+    justify-content: space-around;
+    min-width: 0;
+  }
+
+  .markdownEditor_tool {
+    width: $touch-target-size;
+    height: $touch-target-size;
+  }
+
+  .markdownEditor_toolIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  // No rules between them: a bar of targets.
+  .markdownEditor_rule {
+    display: none;
+  }
+
+  .markdownEditor_text,
+  .markdownEditor_rendered,
+  .markdownEditor_note {
+    min-height: $touch-target-size;
+    padding: $spacing-12 $spacing-16;
+    font-size: $font-size-phone-input;
+  }
+
+  .markdownEditor_rendered {
+    --github-html-font-size: #{$font-size-phone-input};
+  }
+}
+
+// The suggestions take the tools' place under the text (MB239); they come back once it closes.
+.markdownEditor_suggesting .markdownEditor_head {
+  display: none;
 }
 
 .markdownEditor_head {

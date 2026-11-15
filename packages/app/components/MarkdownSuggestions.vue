@@ -1,13 +1,15 @@
-<!-- The Markdown editor's suggestions at the caret, floating over the page (inside the modal dialog the editor is in, so the pointer reaches them there): for `@` the people ("People": avatar, login, name), for `#` the repository's issues and pull requests ("Issues and pull requests in owner/name": state icon, number, title). It is the listbox of the text area's combobox: the keys and the focus stay in the text area, which moves the highlight (`active`); a click picks a row without taking the focus. -->
+<!-- The Markdown editor's suggestions at the caret, floating over the page (inside the modal dialog the editor is in, so the pointer reaches them there): for `@` the people ("People": avatar, login, name), for `#` the repository's issues and pull requests ("Issues and pull requests in owner/name": state icon, number, title). It is the listbox of the text area's combobox: the keys and the focus stay in the text area, which moves the highlight (`active`); a click picks a row without taking the focus. Docked (`docked`, the phone's composer above the keyboard, mobile D51, MB239) it is no floating menu but a menu at the bottom in the editor's flow, under the text: its head names it with what is typed under the name (`typed`, "@s") and a × closing it as Escape does (`dismiss`), its rows a finger's height — the keyboard stays up, the focus in the text. -->
 <script lang="ts" setup>
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue';
 import type { VirtualElement } from '@floating-ui/vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { computed, toRef, useTemplateRef } from 'vue';
+import { X } from 'lucide-vue-next';
+import { computed, useTemplateRef } from 'vue';
 
 import { getItemKind } from '@/lists/utils/getItemKind.js';
 
 import Avatar from './Avatar.vue';
+import IconButton from './IconButton.vue';
 import * as l from './MarkdownSuggestions.loc.js';
 import type { SuggestionList } from './SuggestionTypes.js';
 
@@ -21,6 +23,10 @@ const props = defineProps<{
   anchor: VirtualElement;
   /** `owner/name`, which the references are of. */
   repository: string;
+  /** In the editor's flow above the keyboard, a menu at the bottom (a phone's composer), not floating at the caret. */
+  docked?: boolean;
+  /** Docked, what is typed from the `@` or `#`, under the name. */
+  typed?: string;
 }>();
 
 const emit = defineEmits<{
@@ -28,6 +34,8 @@ const emit = defineEmits<{
   pick: [index: number];
   /** The pointer moved onto a row. */
   highlight: [index: number];
+  /** Docked, its × tapped: closed as Escape closes it. */
+  dismiss: [];
 }>();
 
 /** The space the menu keeps from the edges of the area it stays in. */
@@ -44,7 +52,9 @@ const portal = computed(() => props.anchor.contextElement?.closest<HTMLElement>(
 const boundary = computed(
   () => props.anchor.contextElement?.closest<HTMLElement>('[data-suggestions-boundary]') ?? 'clippingAncestors',
 );
-const { floatingStyles, placement } = useFloating(toRef(props, 'anchor'), menuRef, {
+// Docked, it stands in the editor's flow: nothing to float.
+const reference = computed(() => (props.docked ? null : props.anchor));
+const { floatingStyles, placement } = useFloating(reference, menuRef, {
   placement: 'bottom-start',
   strategy: 'fixed',
   middleware: computed(() => [
@@ -70,15 +80,46 @@ const heading = computed(() =>
 </script>
 
 <template>
-  <Teleport :to="portal">
+  <Teleport
+    :to="portal"
+    :disabled="docked"
+  >
     <div
       ref="menu"
-      :class="[css.markdownSuggestions, css[`markdownSuggestions_${suggestions.kind}`]]"
-      :style="floatingStyles"
-      :data-side="placement.split('-')[0]"
-      data-state="open"
+      :class="[
+        css.markdownSuggestions,
+        docked ? css.markdownSuggestions_docked : css[`markdownSuggestions_${suggestions.kind}`],
+      ]"
+      :style="docked ? undefined : floatingStyles"
+      :data-side="docked ? undefined : placement.split('-')[0]"
+      :data-state="docked ? undefined : 'open'"
     >
+      <!-- The × keeps the focus in the text: the keyboard stays up. -->
       <div
+        v-if="docked"
+        :class="css.markdownSuggestions_head"
+      >
+        <div :class="css.markdownSuggestions_name">
+          <span
+            :id="`${id}-heading`"
+            :class="css.markdownSuggestions_title"
+            >{{ heading }}</span
+          >
+          <span
+            v-if="typed"
+            :class="css.markdownSuggestions_typed"
+            >{{ typed }}</span
+          >
+        </div>
+        <IconButton
+          :icon="X"
+          :label="t(l.close)"
+          @pointerdown.prevent
+          @click="emit('dismiss')"
+        />
+      </div>
+      <div
+        v-else
         :id="`${id}-heading`"
         :class="css.markdownSuggestions_heading"
       >
@@ -155,6 +196,61 @@ const heading = computed(() =>
   box-shadow: $shadow-popover;
 
   @include motion-popper;
+}
+
+// Above the keyboard, the width of the composer: a menu at the bottom as `BottomMenu` draws one, its rows a finger's
+// height, as many as fit before it scrolls.
+.markdownSuggestions_docked {
+  @include touch-icon-buttons($phone-row-icon-size, $radius-lg);
+
+  max-height: 240px;
+  padding: 0 0 $spacing-4;
+  font-size: $font-size-xl;
+  border-width: 1px 0 0;
+  border-radius: $radius-xl $radius-xl 0 0;
+  box-shadow: none;
+
+  .markdownSuggestions_row {
+    gap: $spacing-14;
+    min-height: $touch-target-size;
+    padding: 0 $spacing-20;
+    border-radius: 0;
+  }
+
+  .markdownSuggestions_detail {
+    margin-left: auto;
+  }
+}
+
+.markdownSuggestions_head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: $spacing-4;
+  align-items: center;
+  padding: $spacing-8 $spacing-6 $spacing-8 $spacing-20;
+  margin-bottom: $spacing-4;
+  background: $color-bg-2;
+  border-bottom: 1px solid $color-border;
+}
+
+.markdownSuggestions_name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-2;
+  min-width: 0;
+}
+
+.markdownSuggestions_title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+}
+
+.markdownSuggestions_typed {
+  font-family: $font-family-mono;
+  font-size: $font-size-sm;
+  color: $color-fg-dim;
 }
 
 .markdownSuggestions_mention {

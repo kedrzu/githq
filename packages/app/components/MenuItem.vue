@@ -1,10 +1,13 @@
-<!-- One item of a `Menu` or a context menu: an optional icon, the text, a dim detail ("In progress", a branch name), a status at the end (`status` slot) and its key; `select` when clicked or picked with Enter, after which the menu closes. -->
+<!-- One item of a `Menu` or a context menu: an optional icon, the text, a dim detail ("In progress", a branch name), a status at the end (`status` slot) and its key; `select` when clicked or picked with Enter, after which the menu closes. On a phone, in a menu at the bottom (`MenuSheet`), a row a finger's height without its key. -->
 <script lang="ts" setup>
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import { DropdownMenuItem } from 'reka-ui';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 
+import { MenuSheetContext } from './MenuSheetContext.js';
+import MenuSheetItem from './MenuSheetItem.vue';
 import MenuShortcut from './MenuShortcut.vue';
 
 defineProps<{
@@ -30,11 +33,14 @@ defineSlots<{
   /** Said at the end, before the key: how the place it opens is ("Syncing stopped"). */
   status?(): unknown;
 }>();
+
+const sheet = injectContext(MenuSheetContext, { optional: true });
 </script>
 
 <template>
-  <DropdownMenuItem
-    :class="css.menuItem"
+  <component
+    :is="sheet ? MenuSheetItem : DropdownMenuItem"
+    :class="!sheet && css.menuItem"
     :disabled="disabled"
     :aria-keyshortcuts="shortcut && formatAriaKeyShortcuts(shortcut)"
     @select="emit('select', $event)"
@@ -49,7 +55,7 @@ defineSlots<{
       <span :class="css.menuItem_label"><slot /></span>
       <span
         v-if="detail"
-        :class="[css.menuItem_detail, detailMono && css.menuItem_detail_mono]"
+        :class="[css.menuItem_detail, detailMono && css.menuItem_detail_mono, sheet && css.menuItem_detail_end]"
         >{{ detail }}</span
       >
       <span
@@ -62,7 +68,7 @@ defineSlots<{
       :kbd="kbd"
       :shortcut="shortcut"
     />
-  </DropdownMenuItem>
+  </component>
 </template>
 
 <style lang="scss" module="css">
@@ -121,6 +127,11 @@ defineSlots<{
   margin-left: auto;
   font-size: $font-size-xs;
   white-space: nowrap;
+}
+
+// On a phone the detail sits at the row's end (MB109).
+.menuItem_detail_end {
+  @include sheet-row-detail;
 }
 
 .menuItem_detail_mono {

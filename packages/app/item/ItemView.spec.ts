@@ -1,5 +1,6 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { composeStories } from '@storybook/vue3';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
@@ -29,6 +30,9 @@ const {
     LoadingComments,
     PhoneFromLink,
     PhoneFromList,
+    PhonePullRequestFailing,
+    PhoneStackOfTen,
+    PhoneWriting,
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
@@ -181,6 +185,139 @@ test('mobile MB62: on a phone, opened from a link, back names the repository and
     await expect.element(page.getByRole('button', { name: 'Next item' })).not.toBeInTheDocument();
 });
 
+test('mobile MB260: on a phone "Merge…" and "Review files" leave for github.com, marked ↗, and no key hint is drawn anywhere in the item', async () => {
+    await PhonePullRequestFailing.run();
+    const { item, onMerge } = PhonePullRequestFailing.args;
+    const url = assertValue(item).url;
+
+    // The pull request on github.com, not the merge panel.
+    const merge = page.getByRole('link', { name: /^Merge…/ });
+    await expect.element(merge).toHaveAccessibleName(/^Merge…\sopens on\sgithub\.com$/u);
+    await expect.element(merge).toHaveAttribute('href', url);
+    await expect.element(page.getByRole('button', { name: /^Merge…/ })).not.toBeInTheDocument();
+    // Its review's address, which the phone hands off to github.com's changed files (mobile D3).
+    const review = page.getByRole('link', { name: /^Review files/ });
+    await expect.element(review).toHaveAccessibleName(/^Review files\sopens on\sgithub\.com$/u);
+    await expect.element(review).toHaveAttribute('href', '/kedrzu/githq/pull/15/files');
+    // Open on GitHub stays as it is: it says where it goes.
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub', exact: true })).toHaveAttribute('href', url);
+
+    // Keys still work for a hardware keyboard, and are still named; none is drawn.
+    await expect.element(page.getByRole('link', { name: /^Review files/ })).toHaveAttribute('aria-keyshortcuts', 'D');
+    expect(document.querySelectorAll('kbd')).toHaveLength(0);
+
+    // ⇧M has no panel to open on a phone either.
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).not.toHaveBeenCalled();
+
+    // The item menu says the same of both before they are picked.
+    await userEvent.click(page.getByRole('button', { name: /^Actions of / }));
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    await expect
+        .element(sheet.getByRole('menuitem', { name: /^Merge…/ }))
+        .toHaveAccessibleName(/^Merge…\sopens on\sgithub\.com$/u);
+    await expect
+        .element(sheet.getByRole('menuitem', { name: /^Review files/ }))
+        .toHaveAccessibleName(/^Review files\sopens on\sgithub\.com$/u);
+});
+
+test('mobile D45: on a phone the reference above the title opens "Item actions" at the bottom, and an action there runs', async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of skyline-labs\/portal#/ }));
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    await expect.element(sheet).toBeVisible();
+    await userEvent.click(sheet.getByRole('menuitem', { name: /^Add or remove labels/ }));
+    await userEvent.click(sheet.getByRole('menuitemcheckbox', { name: 'perf' }));
+
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'labels', add: ['perf'], remove: [] });
+});
+
+test('mobile D51: on a phone the thread ends with its last card; the composer docked at the bottom takes the cursor, and Comment sends as the thread would and closes it back', async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    // One composer on screen, and none until it is asked for.
+    await expect.element(page.getByText(PhoneFromList.args.item!.title)).toBeVisible();
+    expect(box.query()).toBeNull();
+
+    // What the command line's pill asks for (`focusComposer`), as `R` does.
+    await userEvent.keyboard('r');
+    await expect.element(box).toHaveFocus();
+    await userEvent.keyboard('Same here on mobile.');
+    await userEvent.click(page.getByRole('button', { name: 'Comment', exact: true }));
+
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Same here on mobile.', keptInThread: true });
+    await expect.element(box).not.toBeInTheDocument();
+});
+
+test('mobile D18: leaving the docked composer — a tap on the screen around it, or Escape — keeps what is typed for the next time, the item staying', async () => {
+    await PhoneWriting.run();
+    const { onClose, onEdit } = PhoneWriting.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await userEvent.fill(box, 'Same here on mobile.');
+
+    await userEvent.click(page.getByText(PhoneWriting.args.item!.title));
+    await expect.element(box).not.toBeInTheDocument();
+
+    await userEvent.keyboard('r');
+    await expect.element(box).toHaveValue('Same here on mobile.');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(box).not.toBeInTheDocument();
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onEdit).not.toHaveBeenCalled();
+});
+
+test('mobile MB241: docked, Close with comment takes its reason from a menu at the bottom, and closes the issue with the comment', async () => {
+    await PhoneWriting.run();
+    const { onEdit } = PhoneWriting.args;
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await userEvent.fill(box, '  A duplicate of #3  ');
+
+    await userEvent.click(page.getByRole('button', { name: 'More ways to close' }));
+    const menu = page.getByRole('dialog', { name: 'Close with comment' });
+    await userEvent.click(menu.getByRole('menuitem', { name: /^Close as not planned/u }));
+
+    expect(onEdit).toHaveBeenCalledTimes(2);
+    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: 'A duplicate of #3', keptInThread: true });
+    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'NOT_PLANNED' });
+    await expect.element(box).not.toBeInTheDocument();
+});
+
+test('mobile D18: a mouse press outside the "More tools" sheet the docked composer opened closes the sheet, not the composer', async () => {
+    await PhoneWriting.run();
+    const box = page.getByRole('textbox', { name: 'Comment' });
+
+    await userEvent.click(page.getByRole('button', { name: 'More formatting' }));
+    const sheet = page.getByRole('dialog', { name: 'More tools' });
+    await expect.element(sheet).toBeVisible();
+
+    // Under the dimmed screen: the press lands on the sheet's overlay, which reka closes the sheet on first.
+    await userEvent.click(page.getByText(PhoneWriting.args.item!.title), { force: true });
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(box).toBeVisible();
+});
+
+test('mobile D29: on a phone a stacked pull request has the strip under the top bar; ← and → open its neighbours in its place, a tap on it unfolds the stack', async () => {
+    await PhoneStackOfTen.run();
+    const { onOpenInPlace } = PhoneStackOfTen.args;
+
+    await expect.element(page.getByText('Stack · 6 of 10')).toBeVisible();
+    // No rows in the content: the strip drops them.
+    await expect.element(page.getByRole('region', { name: 'The stack' })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Previous in the stack' }));
+    await userEvent.click(page.getByRole('button', { name: 'Next in the stack' }));
+    expect(vi.mocked(assertValue(onOpenInPlace)).mock.calls).toEqual([
+        [SYNC_ENGINE_STACK[4]!.id],
+        [SYNC_ENGINE_STACK[6]!.id],
+    ]);
+
+    await userEvent.click(page.getByRole('button', { name: /^Stack · 6 of 10, Pull requests of\sthe stack: /u }));
+    await expect.element(page.getByRole('region', { name: 'The stack' })).toBeVisible();
+});
+
 test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {
     await IssueOnPage.run();
 
@@ -269,6 +406,24 @@ test("a project's number field is edited in its field: Enter sets what was typed
     await userEvent.clear(page.getByRole('spinbutton', { name: 'Estimate' }));
     await userEvent.keyboard('{Enter}');
     expect(onEdit).toHaveBeenLastCalledWith({ ...target, value: null });
+});
+
+test("mobile D45: on a phone a project's text field is edited in a menu at the bottom, its field taking the cursor; Enter sets it", async () => {
+    await PhoneFromList.run();
+    const { onEdit } = PhoneFromList.args;
+
+    await userEvent.click(page.getByRole('button', { name: 'Severity: Major' }));
+    const sheet = page.getByRole('dialog', { name: 'Severity' });
+    await expect.element(sheet).toHaveAccessibleDescription(/^skyline-labs\/portal#/u);
+    const field = sheet.getByRole('textbox', { name: 'Severity' });
+    await expect.element(field).toHaveFocus();
+    await userEvent.fill(field, 'Minor');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onEdit).toHaveBeenLastCalledWith(
+        expect.objectContaining({ kind: 'projectField', fieldId: 'severity', value: { kind: 'text', text: 'Minor' } }),
+    );
+    await expect.element(sheet).not.toBeInTheDocument();
 });
 
 test('M1: the reference opens the item menu — the actions grouped, each with its key; a submenu picks a value; Esc closes the menu, not the item', async () => {

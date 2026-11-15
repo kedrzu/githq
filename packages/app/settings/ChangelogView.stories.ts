@@ -3,6 +3,7 @@ import { fn } from 'storybook/test';
 
 import type { ChangelogDevelopment, ChangelogRelease } from './buildChangelog.js';
 import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ChangelogView from './ChangelogView.vue';
 
@@ -75,7 +76,8 @@ const meta = {
         onOpenOnGitHub: fn(),
     },
     parameters: { layout: 'fullscreen' },
-    decorators: [withGitHubLinks()],
+    // The story frame is narrower than a phone's width: the computer's menus, in the container `withGitHubLinks` sets up.
+    decorators: [withPhoneLayout(false), withGitHubLinks()],
 } satisfies Meta<typeof ChangelogView>;
 
 export default meta;

@@ -25,7 +25,8 @@ export interface PhonePart {
 /**
  * Whether the app is in its phone layout — the window narrower than {@link PHONE_MAX_WIDTH}, whatever the device
  * (mobile D5) — and what that layout carries between the screens and the shell: whether the places panel is open
- * (mobile D19) and the part the list screen shows, for the command line's chip (mobile D17). Resizing only changes
+ * (mobile D19), the part the list screen shows, for the command line's chip (mobile D17), and whether a task is open
+ * (mobile D18: the command menu, a sheet from below), while which the command line steps aside. Resizing only changes
  * `active`; whether an address is handed off to github.com is decided by the route guard when it is navigated to. The
  * desktop app never takes the phone layout (mobile D6; its window is wider anyway).
  */
@@ -37,6 +38,7 @@ export const PhoneLayout = defineService({
         const activeRef = shallowRef(query?.matches ?? false);
         const placesOpenRef = shallowRef(false);
         const partRef = shallowRef<PhonePart | null>(null);
+        const tasksRef = shallowRef(0);
 
         query?.addEventListener('change', event => {
             activeRef.value = event.matches;
@@ -58,8 +60,13 @@ export const PhoneLayout = defineService({
             get part() {
                 return partRef.value;
             },
+            /** A task is open — a sheet from below, the command menu among them (mobile D18); reactive. */
+            get taskOpen() {
+                return tasksRef.value > 0;
+            },
             setPlacesOpen,
             setPart,
+            openTask,
         };
 
         function setPlacesOpen(open: boolean) {
@@ -68,6 +75,18 @@ export const PhoneLayout = defineService({
 
         function setPart(part: PhonePart | null) {
             partRef.value = part;
+        }
+
+        /** A task opened (`Dialog edge="bottom"` does it for every sheet); the function it returns says it closed, once. */
+        function openTask() {
+            tasksRef.value++;
+            let open = true;
+            return () => {
+                if (open) {
+                    open = false;
+                    tasksRef.value--;
+                }
+            };
         }
     },
 });

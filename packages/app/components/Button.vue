@@ -1,4 +1,4 @@
-<!-- A text button on nzyme's `useButton`: a `click` listener that returns a promise keeps it busy — spinner, `aria-busy`, further clicks ignored — until the promise settles; `type="submit"` submits the surrounding `Form` and is busy while it does. With `link` it is an anchor. An optional leading icon and a trailing keyboard hint (`Kbd`). -->
+<!-- A text button on nzyme's `useButton`: a `click` listener that returns a promise keeps it busy — spinner, `aria-busy`, further clicks ignored — until the promise settles; `type="submit"` submits the surrounding `Form` and is busy while it does. With `link` it is an anchor. An optional leading icon and a trailing keyboard hint (`Kbd`), not drawn where key hints are hidden (`KeyHintsContext`). -->
 <script lang="ts">
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { defineProp } from '@nzyme/vue-utils/defineProp.js';
@@ -59,11 +59,13 @@ export const ButtonProps = {
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { LoaderCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import * as l from './Button.loc.js';
 import Kbd from './Kbd.vue';
+import { KeyHintsContext } from './KeyHintsContext.js';
 
 const props = defineProps(ButtonProps);
 defineEmits(useButton.emits);
@@ -71,7 +73,10 @@ defineSlots<{ default?(): unknown }>();
 
 const { Button, busy, disabled } = useButton();
 const t = useTranslate();
+const hints = injectContext(KeyHintsContext, { optional: true });
 
+/** The hint drawn after the label: none where key hints are hidden, the button's end then padded as without one. */
+const shownKbd = computed(() => (hints?.hidden ? null : props.kbd));
 const variant = computed(() => props.variant ?? 'secondary');
 const kbdTone = computed(() => {
   switch (variant.value) {
@@ -95,7 +100,7 @@ const kbdTone = computed(() => {
       css[`button_${size ?? 'md'}`],
       tone && css[`button_${tone}`],
       block && css.button_block,
-      kbd && css.button_keyed,
+      shownKbd && css.button_keyed,
       busy && css.button_busy,
       disabled && css.button_disabled,
     ]"
@@ -113,11 +118,11 @@ const kbdTone = computed(() => {
       />
       <slot />
       <Kbd
-        v-if="kbd"
+        v-if="shownKbd"
         :class="css.button_kbd"
         :tone="kbdTone"
         :size="size === 'sm' ? 'sm' : 'md'"
-        :keys="kbd"
+        :keys="shownKbd"
       />
     </span>
     <span

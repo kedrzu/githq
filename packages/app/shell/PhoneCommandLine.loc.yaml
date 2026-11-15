@@ -4,5 +4,5 @@ leaveComment:
   en: Leave a comment…
 commandMenu:
   en: Command menu
-changed:
-  en: changed on this device
+continueComment:
+  en: 'Continue your comment: {draft}'

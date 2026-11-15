@@ -14,6 +14,7 @@ import {
     I1_ISSUE_DETAIL,
     THEIR_OWN_REVIEW_REQUEST,
 } from '@/testing/sampleThreadEvents.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import { buildThread } from './buildThread.js';
 import type { ThreadChecksFailed, ThreadEventLine } from './buildThread.js';
@@ -40,6 +41,8 @@ const meta = {
             </div>
           </div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadEvent>;
 
 export default meta;

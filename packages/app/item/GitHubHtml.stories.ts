@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import GitHubHtml from './GitHubHtml.vue';
 
@@ -30,7 +31,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Its links to an item and a repository's list open in githq; the profile, the commit, another host and the footnote stay as given. */
-export const Body: Story = { decorators: [withGitHubLinks()] };
+export const Body: Story = { decorators: [withPhoneLayout(false), withGitHubLinks()] };
 
 /** The same in an opened item: the item linked opens there. */
-export const BodyInItem: Story = { decorators: [withGitHubLinks({ inItem: true })] };
+export const BodyInItem: Story = { decorators: [withPhoneLayout(false), withGitHubLinks({ inItem: true })] };
+
+/**
+ * Mobile D11: on a phone the links that leave for github.com — the profile and the commit, which githq has no screen
+ * for — end in ↗; the item and the list, which open in githq, and another host's link don't.
+ */
+export const BodyOnPhone: Story = { decorators: [withPhoneLayout(true), withGitHubLinks()] };

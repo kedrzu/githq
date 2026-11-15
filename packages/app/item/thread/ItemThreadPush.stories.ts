@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { F5_PULL_REQUEST_DETAIL } from '@/testing/sampleThreadEvents.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import { buildThread } from './buildThread.js';
 import type { ThreadPush } from './buildThread.js';
@@ -29,6 +30,8 @@ const meta = {
             <div style="position: relative"><ItemThreadPush v-bind="args" /></div>
           </div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadPush>;
 
 export default meta;
@@ -48,3 +51,6 @@ export const NoAccount: Story = {
 
 /** The thread at its widest: the time after "pushed 3 commits", the CI mark and hash after each message. */
 export const Wide: Story = { parameters: { width: WIDEST } };
+
+/** Mobile D11: on a phone, which doesn't show commits, each commit's hash ends in ↗ — it opens on github.com. */
+export const OnPhone: Story = { decorators: [withPhoneLayout(true)], parameters: { width: 390 } };

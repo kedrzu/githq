@@ -1,4 +1,4 @@
-<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover; the command menu and the new issue's choosers show it in place. -->
+<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover, or on a phone in a menu at the bottom (`touch`: rows a finger's height, and the list, not the filter, takes the focus, so no on-screen keyboard comes until the filter is tapped); the command menu and the new issue's choosers show it in place. Or rising from below (`fromBelow`, a phone's command menu, mobile D16): the filter under the rows, nothing focusing it until it is tapped — the list holds the focus, the highlighted row its active descendant — the row nearest the filter highlighted as the rows change; ↑/↓ follow the screen, and a key typed while the list holds the focus goes into the filter, focusing it. -->
 <script lang="ts" setup generic="TRow extends FilterListRow">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ListboxContent, ListboxFilter, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRoot } from 'reka-ui';
@@ -36,6 +36,7 @@ export interface FilterListHint {
 interface ListboxHandle {
   highlightFirstItem(): void;
   highlightItem(value: string): void;
+  readonly highlightedElement: HTMLElement | null;
 }
 
 const props = withDefaults(
@@ -58,8 +59,17 @@ const props = withDefaults(
     hints?: readonly FilterListHint[];
     /** Escape goes back (`back`) instead of closing what the list is in. */
     backOnEscape?: boolean;
-    /** `sm` in a popover, `md` in a dialog, `lg` as a dialog of its own (the command menu). */
-    size?: 'lg' | 'md' | 'sm';
+    /**
+     * `sm` in a popover, `md` in a dialog, `lg` as a dialog of its own (the command menu), `touch` in a phone's menu at
+     * the bottom (mobile D45): rows a finger's height, and the list holds the focus until the filter is tapped.
+     */
+    size?: 'lg' | 'md' | 'sm' | 'touch';
+    /**
+     * The filter under the rows, which the caller orders nearest-first from the bottom (a phone's command menu): the
+     * last row is highlighted as the rows change, and the list, not the filter, takes the focus, so no on-screen
+     * keyboard comes until the filter is tapped.
+     */
+    fromBelow?: boolean;
   }>(),
   {
     filterable: true,
@@ -86,6 +96,8 @@ defineSlots<{
   header?(): unknown;
   /** In the filter's line, before the field (a search icon, the command menu's chips). */
   beforeFilter?(): unknown;
+  /** In the filter's line, after the field (a phone's close button). */
+  afterFilter?(): unknown;
   /** Between the list and the footer (a quiet note). */
   afterList?(): unknown;
   /** At the footer's end, after the hints. */
@@ -102,29 +114,67 @@ const t = useTranslate();
 const listId = useId();
 const rootRef = useTemplateRef<ListboxHandle>('root');
 const listRef = useTemplateRef<HTMLElement>('list');
+const filterRef = useTemplateRef<HTMLElement>('filter');
 /** The highlight moved since the rows last changed: it is on one of them by the user's or the list's choice. */
 let highlightCurrent = false;
 
 const rows = computed(() => props.groups.flatMap(group => group.rows));
+/** The list, not the filter, takes the focus as it shows, so that no on-screen keyboard comes before a tap. */
+const listHoldsFocus = computed(() => props.fromBelow || props.size === 'touch');
+/** Read out as the highlighted row while the list, not the filter, holds the focus. */
+const activeDescendant = computed(() => (listHoldsFocus.value ? rootRef.value?.highlightedElement?.id : undefined));
 
-// The best match is the one Enter picks.
+// The best match is the one Enter picks: the first row, or from below the last, nearest the filter.
 watch(
   () => (props.filterable ? rows.value.map(row => row.value).join('\n') : null),
   values => {
     highlightCurrent = false;
     if (values !== null) {
-      void nextTick(() => rootRef.value?.highlightFirstItem());
+      void nextTick(highlightBest);
     }
   },
   { immediate: true },
 );
 
 onMounted(() => {
-  // Without a filter the list takes the keys at once: ↓ highlights the first row.
-  if (!props.filterable) {
+  // Without a filter the list takes the keys at once: ↓ highlights the first row. From below or on a phone it holds the
+  // focus too, so that no on-screen keyboard comes up before the filter is tapped.
+  if (!props.filterable || listHoldsFocus.value) {
     void nextTick(() => listRef.value?.querySelector<HTMLElement>('[role="listbox"]')?.focus());
   }
+
+  // reka-ui highlights the first row once its list has mounted, a few ticks on; from below, the last one after it.
+  if (props.fromBelow) {
+    setTimeout(highlightLast);
+  }
 });
+
+function highlightBest() {
+  if (props.fromBelow) {
+    // After reka-ui's own highlight of the first row, which the filter's input asks for a tick on.
+    void nextTick(highlightLast);
+  } else {
+    rootRef.value?.highlightFirstItem();
+  }
+}
+
+function highlightLast() {
+  const last = rows.value.findLast(row => !row.disabled);
+  if (last) {
+    rootRef.value?.highlightItem(last.value);
+  }
+}
+
+/** The list's own focus would highlight its first row: from below the highlight stays where it was put. */
+function onEntryFocus(event: Event) {
+  if (props.fromBelow) {
+    event.preventDefault();
+  }
+}
+
+function isInFilter(event: KeyboardEvent) {
+  return event.target instanceof Node && filterRef.value?.contains(event.target) === true;
+}
 
 function onHighlight(payload: { value: AcceptableValue } | undefined) {
   highlighted.value = typeof payload?.value === 'string' ? payload.value : null;
@@ -141,7 +191,8 @@ function onEnter(event: KeyboardEvent) {
   }
 
   const enabled = rows.value.filter(row => !row.disabled);
-  const target = highlightCurrent ? enabled.find(row => row.value === highlighted.value) : enabled[0];
+  const best = props.fromBelow ? enabled.at(-1) : enabled[0];
+  const target = highlightCurrent ? enabled.find(row => row.value === highlighted.value) : best;
   if (target) {
     event.preventDefault();
     event.stopPropagation();
@@ -151,7 +202,8 @@ function onEnter(event: KeyboardEvent) {
 
 /**
  * ↑ on the first enabled row goes to the last, ↓ on the last to the first (reka-ui's list stops at the ends). Anywhere
- * else the list moves the highlight itself. Taken before the list sees it, so one key never moves twice.
+ * else the list moves the highlight itself — except while a filter is shown and the list holds the focus (`fromBelow`),
+ * where reka-ui moves nothing, so the move is made here. Taken before the list sees it, so one key never moves twice.
  */
 function onArrow(event: KeyboardEvent) {
   if (event.isComposing || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) {
@@ -159,10 +211,15 @@ function onArrow(event: KeyboardEvent) {
   }
 
   const enabled = rows.value.filter(row => !row.disabled);
-  const up = event.key === 'ArrowUp';
-  const from = up ? enabled[0] : enabled.at(-1);
-  const to = up ? enabled.at(-1) : enabled[0];
-  if (from && to && highlighted.value === from.value) {
+  const step = event.key === 'ArrowUp' ? -1 : 1;
+  const index = enabled.findIndex(row => row.value === highlighted.value);
+  const atEnd = step < 0 ? index === 0 : index === enabled.length - 1;
+  if (!atEnd && (!props.filterable || isInFilter(event))) {
+    return;
+  }
+
+  const to = enabled[(index + step + enabled.length) % enabled.length];
+  if (to) {
     event.preventDefault();
     event.stopPropagation();
     rootRef.value?.highlightItem(to.value);
@@ -174,7 +231,32 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault();
     event.stopPropagation();
     emit('back');
+    return;
   }
+
+  if (props.filterable && !isInFilter(event)) {
+    onListKeydown(event);
+  }
+}
+
+/**
+ * A key pressed while the list, not the filter, holds the focus: a character goes into the filter, focusing it; the
+ * rest is the filter's to handle (⌫ and ← stepping back, Space with nothing typed toggling the highlighted row).
+ */
+function onListKeydown(event: KeyboardEvent) {
+  if (event.isComposing || event.defaultPrevented) {
+    return;
+  }
+
+  const spaceWithNothingTyped = event.key === ' ' && query.value === '';
+  if (event.key.length === 1 && !spaceWithNothingTyped && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    event.preventDefault();
+    query.value += event.key;
+    filterRef.value?.querySelector('input')?.focus();
+    return;
+  }
+
+  emit('filterKeydown', event);
 }
 </script>
 
@@ -182,10 +264,11 @@ function onKeydown(event: KeyboardEvent) {
   <ListboxRoot
     ref="root"
     v-model="model"
-    :class="[css.filterList, css[`filterList_${size}`]]"
+    :class="[css.filterList, css[`filterList_${size}`], fromBelow && css.filterList_fromBelow]"
     :multiple="multiple"
     :selection-behavior="multiple ? 'toggle' : 'replace'"
     highlight-on-hover
+    @entry-focus="onEntryFocus"
     @highlight="onHighlight"
     @keydown="onKeydown"
     @keydown.enter.capture="onEnter"
@@ -193,6 +276,7 @@ function onKeydown(event: KeyboardEvent) {
     <slot name="header" />
     <div
       v-if="filterable"
+      ref="filter"
       :class="css.filterList_input"
       @keydown.capture="onArrow"
     >
@@ -203,9 +287,10 @@ function onKeydown(event: KeyboardEvent) {
         :placeholder="placeholder"
         :aria-label="filterLabel ?? placeholder"
         :aria-controls="listId"
-        auto-focus
+        :auto-focus="!listHoldsFocus"
         @keydown="emit('filterKeydown', $event)"
       />
+      <slot name="afterFilter" />
     </div>
     <div
       ref="list"
@@ -216,6 +301,7 @@ function onKeydown(event: KeyboardEvent) {
         :id="listId"
         :class="css.filterList_list"
         :aria-label="label"
+        :aria-activedescendant="activeDescendant"
       >
         <ListboxGroup
           v-for="group in groups"
@@ -499,6 +585,69 @@ function onKeydown(event: KeyboardEvent) {
 
   .filterList_row {
     padding: 7px $spacing-10;
+  }
+}
+
+// From below (a phone's command menu): the filter's line at the bottom, under the rows, which are a thumb's height and
+// read at a phone's size (MB223); the filter's text as large as keeps iOS from zooming into it.
+.filterList_fromBelow {
+  .filterList_input {
+    order: 1;
+    min-height: $touch-target-size;
+    padding-block: $spacing-4;
+    border-top: 1px solid $color-border;
+    border-bottom: none;
+  }
+
+  .filterList_filter {
+    font-size: $font-size-phone-input;
+  }
+
+  .filterList_row {
+    min-height: $touch-target-size;
+    font-size: $font-size-xl;
+  }
+}
+
+// In a phone's menu at the bottom (MB74, MB108): the filter a field of its own under the sheet's head, the rows a
+// thumb's height running to the sheet's edges.
+.filterList_touch {
+  .filterList_input {
+    @include sheet-filter-field;
+  }
+
+  .filterList_filter {
+    font-size: $font-size-phone-input;
+  }
+
+  .filterList_list {
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid $color-border;
+  }
+
+  .filterList_scroll {
+    flex: 1;
+  }
+
+  .filterList_heading {
+    padding: $spacing-12 $spacing-20 $spacing-4;
+  }
+
+  .filterList_row {
+    gap: $spacing-12;
+    min-height: $touch-target-size;
+    padding: $spacing-6 $spacing-20;
+    font-size: $font-size-xl;
+
+    &[data-highlighted] {
+      background: $color-bg-3;
+    }
+  }
+
+  .filterList_message {
+    padding: $spacing-12 $spacing-20;
+    font-size: $font-size-md;
   }
 }
 </style>

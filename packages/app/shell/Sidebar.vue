@@ -598,9 +598,7 @@ function getProjectMark(title: string) {
 }
 
 .sidebar_close {
-  --icon-button-width: #{$touch-target-size};
-  --icon-button-height: #{$touch-target-size};
-  --icon-button-glyph-size: 20px;
+  @include touch-icon-buttons(20px);
 }
 
 // The status bar's left end on a phone, out to the panel's edges, above the user.

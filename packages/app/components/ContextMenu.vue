@@ -1,10 +1,20 @@
-<!-- A menu opened by right-clicking an area, or long-pressing it (reka-ui's `ContextMenu`), at the pointer: ↑/↓ move through its entries, → opens a submenu, Enter picks, Escape closes. The app's keys stay out of it (`data-no-commands`): a letter jumps to an entry. Entries are `MenuItem`s, `MenuSub`s, `MenuLabel`s and `MenuSeparator`s, as in a `Menu`. -->
+<!-- A menu opened by right-clicking an area, or long-pressing it (reka-ui's `ContextMenu`), at the pointer: ↑/↓ move through its entries, → opens a submenu, Enter picks, Escape closes. The app's keys stay out of it (`data-no-commands`): a letter jumps to an entry. Entries are `MenuItem`s, `MenuSub`s, `MenuLabel`s and `MenuSeparator`s, as in a `Menu`. On a phone (`PhoneLayout.active`, mobile D45) the same entries open as a menu at the bottom (`MenuSheet`), named by `label`: from the area's context-menu event (a long press where the browser gives one) or through `v-model:open` (a row's swipe, D27). -->
 <script lang="ts" setup>
-import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger } from 'reka-ui';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { ContextMenuContent, ContextMenuPortal, ContextMenuRoot, ContextMenuTrigger, Slot } from 'reka-ui';
+import { nextTick } from 'vue';
 
-defineProps<{
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+
+import MenuSheet from './MenuSheet.vue';
+
+const props = defineProps<{
   /** Right-click shows the browser's own menu. */
   disabled?: boolean;
+  /** On a phone, the name of the menu at the bottom; "Actions" when not given. */
+  label?: string;
+  /** On a phone, what it acts on, under the name (an item's reference). */
+  context?: string;
 }>();
 
 const emit = defineEmits<{
@@ -20,10 +30,42 @@ defineSlots<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const phoneLayout = useService(PhoneLayout);
+
+/**
+ * On a phone, the area's context-menu event opens the sheet. Not through reka-ui's root, which keeps its open state to
+ * itself and would never hear that the sheet closed. As reka-ui does, a tick later, so that what is inside the area may
+ * take the event first.
+ */
+async function openFromEvent(event: MouseEvent) {
+  await nextTick();
+  if (props.disabled || event.defaultPrevented) {
+    return;
+  }
+
+  event.preventDefault();
+  open.value = true;
+}
 </script>
 
 <template>
-  <ContextMenuRoot v-model:open="open">
+  <template v-if="phoneLayout.active">
+    <Slot @contextmenu="openFromEvent">
+      <slot />
+    </Slot>
+    <MenuSheet
+      v-model:open="open"
+      :title="label"
+      :context="context"
+      @close-auto-focus="emit('closeAutoFocus', $event)"
+    >
+      <slot name="content" />
+    </MenuSheet>
+  </template>
+  <ContextMenuRoot
+    v-else
+    v-model:open="open"
+  >
     <ContextMenuTrigger
       as-child
       :disabled="disabled"

@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './Menu.stories.jsx';
 
-const { Actions, Choice, Submenu } = composeStories(stories);
+const { Actions, Choice, PhoneChoice, PhoneSubmenu, Submenu } = composeStories(stories);
 
 test('works from the keyboard: Enter opens, ↓ moves past what is not available, Enter picks, focus returns', async () => {
     await Actions.run();
@@ -77,4 +77,64 @@ test('a submenu opens with → and picks from it; ← goes back to its entry', a
     await userEvent.keyboard('{ArrowRight}{ArrowDown}{Enter}');
     await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: notPlanned');
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
+test('on a phone it opens at the bottom: an entry runs and closes it', async () => {
+    await PhoneSubmenu.run();
+
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    await expect.element(sheet).toHaveAccessibleDescription('fitloop/webapp#1187');
+    expect(Math.round(sheet.element().getBoundingClientRect().bottom)).toBe(window.innerHeight);
+    const menu = sheet.getByRole('menu', { name: 'Item actions' });
+    await expect.element(menu.getByRole('menuitem', { name: 'Open on GitHub' })).toHaveFocus();
+    // No keys on a phone (mobile D52).
+    await expect.element(menu.getByText('O', { exact: true })).not.toBeInTheDocument();
+
+    await expect
+        .element(menu.getByRole('menuitem', { name: 'Transfer issue' }))
+        .toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.click(menu.getByRole('menuitem', { name: /^Copy reference/ }));
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: copy');
+    await expect.element(sheet).not.toBeInTheDocument();
+});
+
+test('on a phone a submenu drills in place: ← and Escape go back to its entry, Escape then closes', async () => {
+    await PhoneSubmenu.run();
+
+    const sheet = page.getByRole('dialog', { name: 'Item actions' });
+    const close = sheet.getByRole('menuitem', { name: 'Close issue' });
+    await userEvent.click(close);
+    const submenu = sheet.getByRole('menu', { name: 'Close issue' });
+    await expect.element(submenu.getByRole('menuitem', { name: 'Close as completed' })).toHaveFocus();
+    await expect.element(sheet.getByRole('menuitem', { name: 'Open on GitHub' })).not.toBeInTheDocument();
+
+    await userEvent.click(sheet.getByRole('button', { name: 'Back' }));
+    await expect.element(close).toHaveFocus();
+
+    await userEvent.click(close);
+    await userEvent.keyboard('{Escape}');
+    await expect.element(close).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: nothing');
+
+    await userEvent.click(page.getByRole('button', { name: 'Issue' }));
+    await userEvent.click(close);
+    await userEvent.click(sheet.getByRole('menuitem', { name: /^Close as not planned/ }));
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: notPlanned');
+    await expect.element(sheet).not.toBeInTheDocument();
+});
+
+test('on a phone a choice is checked; picking another changes it and closes the menu', async () => {
+    await PhoneChoice.run();
+
+    const sheet = page.getByRole('dialog', { name: 'Group by' });
+    await expect
+        .element(sheet.getByRole('menuitemradio', { name: 'Milestone' }))
+        .toHaveAttribute('aria-checked', 'true');
+    await userEvent.click(sheet.getByRole('menuitemradio', { name: /^Label/ }));
+
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('grouping')).toHaveTextContent('Grouping: label');
 });

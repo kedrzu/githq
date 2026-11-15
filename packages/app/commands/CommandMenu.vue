@@ -1,5 +1,6 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -8,15 +9,19 @@ import {
   ArrowUpRight,
   BookMarked,
   Check,
+  ChevronLeft,
   ChevronRight,
   CircleDot,
+  Command as CommandIcon,
   GitPullRequest,
   Inbox,
   Layers,
   PencilLine,
+  Search,
   Settings,
   SquareKanban,
   Workflow,
+  X,
   Zap,
 } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
@@ -28,10 +33,13 @@ import FilterList from '@/components/FilterList.vue';
 import type { FilterListGroup, FilterListHint, FilterListRow } from '@/components/FilterList.vue';
 import { filterOptions } from '@/components/filterOptions.js';
 import type { FoundOption } from '@/components/filterOptions.js';
+import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import MatchedText from '@/components/MatchedText.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import PhonePartChip from '@/shell/PhonePartChip.vue';
 
 import { buildCommandMenu, resolveMenuPath } from './buildCommandMenu.js';
 import type { CommandMenuAncestor, CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
@@ -115,6 +123,7 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
 const SUBMENU_LIMIT = 100;
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const query = ref('');
 const subjectRemoved = ref(false);
@@ -148,6 +157,8 @@ const chip = computed(() => {
 
   return repository.value ? { icon: BookMarked, label: repository.value } : null;
 });
+/** On a phone, opened from the command line on a list: that line's chip, the part shown, at the top level. */
+const partChip = computed(() => (phoneLayout.active && props.parts && !step.value ? phoneLayout.part : null));
 /** The action whose picker is shown; a level of rows has none. */
 const submenu = computed(() => {
   const command = step.value?.command;
@@ -206,12 +217,25 @@ const groups = computed((): FilterListGroup<Row>[] => {
       : [{ key: group.key, heading: getHeading(group.key), rows: group.entries.map(toRow) }],
   );
 });
+/**
+ * The groups as drawn. On a phone, from below (mobile D16): the first group nearest the field and the rest above it,
+ * each read downwards as on the computer; once something is typed, the whole list upwards, the best match nearest the
+ * field. The rows' order in the page is the screen's, so ↑ goes up it.
+ */
+const shownGroups = computed((): FilterListGroup<Row>[] => {
+  if (!phoneLayout.active) {
+    return groups.value;
+  }
+
+  const upwards = groups.value.toReversed();
+  return query.value === '' ? upwards : upwards.map(group => ({ ...group, rows: group.rows.toReversed() }));
+});
 const rows = computed(() => groups.value.flatMap(group => group.rows));
 const highlightedRow = computed(() => rows.value.find(row => row.value === highlighted.value) ?? null);
 const placeholder = computed(() =>
   submenu.value
     ? (submenuOptions.value?.placeholder ?? t(l.filterOptions))
-    : (step.value?.command?.placeholder ?? t(l.placeholder)),
+    : (step.value?.command?.placeholder ?? (phoneLayout.active ? t(l.doOrFind) : t(l.placeholder))),
 );
 /** Quiet text at the footer's end: where a picker's options come from, the highlighted line's, a listed line's that can't run, its level's. */
 const footerHint = computed(() => {
@@ -583,6 +607,13 @@ function onFilterKeydown(event: KeyboardEvent) {
   }
 }
 
+/** On a phone the field is not focused as the menu opens, which would bring up the keyboard (mobile D16): the list takes the focus. */
+function onOpenAutoFocus(event: Event) {
+  if (phoneLayout.active && !form.value) {
+    event.preventDefault();
+  }
+}
+
 function onEscape(event: KeyboardEvent) {
   if (step.value) {
     event.preventDefault();
@@ -596,9 +627,11 @@ function onEscape(event: KeyboardEvent) {
     v-model:open="open"
     :title="t(l.title)"
     :width="680"
+    :edge="phoneLayout.active ? 'bottom' : undefined"
     bare
     fit-content
     @escape-key-down="onEscape"
+    @open-auto-focus="onOpenAutoFocus"
   >
     <CommandForm
       v-if="form && step"
@@ -619,18 +652,70 @@ function onEscape(event: KeyboardEvent) {
       v-model:highlighted="highlighted"
       :model-value="null"
       :label="step ? step.title : t(l.title)"
-      :groups="groups"
+      :groups="shownGroups"
       :placeholder="placeholder"
       :message="message"
       :message-heading="submenuOptions?.heading"
-      :hints="hints"
+      :hints="phoneLayout.active ? undefined : hints"
+      :from-below="phoneLayout.active"
+      :class="phoneLayout.active && css.commandMenu_phone"
       size="lg"
       data-layer
       @update:model-value="activate"
       @filter-keydown="onFilterKeydown"
     >
+      <template
+        v-if="phoneLayout.active && step"
+        #header
+      >
+        <div :class="css.commandMenu_stepHead">
+          <IconButton
+            :icon="ChevronLeft"
+            :label="t(l.back)"
+            @click="back"
+          />
+          <span
+            v-if="chip"
+            :class="css.commandMenu_stepChip"
+            >{{ chip.label }}</span
+          >
+          <span :class="css.commandMenu_stepTitle">{{ withoutEllipsis(step.title) }}</span>
+        </div>
+      </template>
       <template #beforeFilter>
-        <CommandCrumbs :crumbs="crumbs" />
+        <Search
+          v-if="phoneLayout.active && step"
+          :class="css.commandMenu_search"
+          aria-hidden="true"
+        />
+        <template v-else-if="phoneLayout.active">
+          <CommandIcon
+            :class="css.commandMenu_key"
+            aria-hidden="true"
+          />
+          <PhonePartChip
+            v-if="partChip"
+            :part="partChip"
+          />
+          <CommandCrumbs
+            v-else
+            :crumbs="crumbs"
+          />
+        </template>
+        <CommandCrumbs
+          v-else
+          :crumbs="crumbs"
+        />
+      </template>
+      <template
+        v-if="phoneLayout.active && !step"
+        #afterFilter
+      >
+        <IconButton
+          :icon="X"
+          :label="t(l.close)"
+          @click="open = false"
+        />
       </template>
       <template #row="{ row }">
         <component
@@ -726,7 +811,7 @@ function onEscape(event: KeyboardEvent) {
           :aria-label="t(l.chosen)"
         />
         <Kbd
-          v-for="(key, index) in row.keys ?? []"
+          v-for="(key, index) in phoneLayout.active ? [] : (row.keys ?? [])"
           :key="index"
           :keys="key"
         />
@@ -755,6 +840,53 @@ function onEscape(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
+// ⌘ at the start of a phone's field, as on its command line.
+.commandMenu_key {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: $color-accent;
+}
+
+// A level's field on a phone finds only what the level holds (MB40).
+.commandMenu_search {
+  flex: none;
+  width: $phone-row-icon-size;
+  height: $phone-row-icon-size;
+  color: $color-fg-dim;
+}
+
+// Over a level's rows on a phone: back, what the actions act on, the level's title (MB40).
+.commandMenu_stepHead {
+  display: flex;
+  flex: none;
+  gap: $spacing-6;
+  align-items: center;
+  min-height: $touch-target-size;
+  padding: $spacing-4 $spacing-10 $spacing-4 $spacing-4;
+  font-size: $font-size-xl;
+  border-bottom: 1px solid $color-border;
+}
+
+.commandMenu_stepChip {
+  flex: none;
+  color: $color-fg-2;
+}
+
+.commandMenu_stepTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+// A phone's rows: their icons at its size (MB223).
+.commandMenu_phone .commandMenu_icon {
+  width: $phone-row-icon-size;
+  height: $phone-row-icon-size;
+}
+
 .commandMenu_icon {
   flex: none;
   width: 14px;

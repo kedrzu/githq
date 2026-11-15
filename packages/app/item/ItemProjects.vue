@@ -1,12 +1,14 @@
-<!-- The projects an opened item is in (D12: the item view shows all of them), each a card with every field of the project and the item's value of it: a single-select with its colour dot, an iteration with "current" while it runs, text, number, date. Until the detail arrives, the row's "Status" of each stands in. Where the user may write to the project, a field's value opens its editor — a picker of the options or iterations, a field for text, a number or a date — and the first project's status, priority and iteration have their keys (`S`, `P`, `I`). "Add to project" offers the projects the user can write to. -->
+<!-- The projects an opened item is in (D12: the item view shows all of them), each a card with every field of the project and the item's value of it: a single-select with its colour dot, an iteration with "current" while it runs, text, number, date. Until the detail arrives, the row's "Status" of each stands in. Where the user may write to the project, a field's value opens its editor — a picker of the options or iterations, a field for text, a number or a date; on a phone each in a menu at the bottom (mobile D45), the field's name and the item's reference in its head — and the first project's status, priority and iteration have their keys (`S`, `P`, `I`). "Add to project" offers the projects the user can write to. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import Form from '@nzyme/vue-forms/components/Form.vue';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import BottomMenu from '@/components/BottomMenu.vue';
 import Button from '@/components/Button.vue';
 import DateField from '@/components/DateField.vue';
 import NumberField from '@/components/NumberField.vue';
@@ -23,6 +25,7 @@ import { getPickedValueId, toPickedInput } from '@/edits/projectFieldValues.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ViewerProject } from '@/repos/RepositoryTypes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { ItemProject } from '@/store/ItemTypes.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
@@ -31,6 +34,8 @@ import { isCurrentIteration } from '@/utils/isCurrentIteration.js';
 import * as l from './ItemProjects.loc.js';
 
 const props = defineProps<{
+  /** The item's reference (`owner/name#1187`), under the name in the head of a phone's menu at the bottom (MB74). */
+  reference: string;
   /** The row's projects, with their "Status" only. */
   projects: readonly ItemProject[];
   /** The detail's projects, with every field; `null` until read. */
@@ -82,6 +87,7 @@ interface ProjectCard {
 }
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
 const pickerOptions = usePickerOptions();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const dates = new Intl.DateTimeFormat(APP_LANGUAGE, { dateStyle: 'medium', timeZone: 'UTC' });
@@ -320,6 +326,7 @@ function addTo(projectId: string | null) {
         v-if="canAddToProject"
         :open="adding"
         :label="t(l.addToProject)"
+        :context="reference"
         :options="addable"
         :placeholder="t(l.filterProjects)"
         :note="viewerProjects === null ? t(l.loadingProjects) : undefined"
@@ -365,6 +372,7 @@ function addTo(projectId: string | null) {
             v-if="field.editor?.kind === 'picker'"
             :open="opened === field.key"
             :label="field.name"
+            :context="reference"
             :options="field.editor.options"
             :selected="field.editor.selected === null ? [] : [field.editor.selected]"
             :none-label="t(l.clear)"
@@ -397,10 +405,14 @@ function addTo(projectId: string | null) {
               </PropertyValueButton>
             </template>
           </Picker>
-          <Popover
+          <!-- On a phone a menu at the bottom (mobile D45, D52), its field taking the focus: typing is what it is for. -->
+          <component
+            :is="phoneLayout.active ? BottomMenu : Popover"
             v-else-if="field.editor?.kind === 'input'"
             :open="opened === field.key"
-            :label="field.name"
+            v-bind="
+              phoneLayout.active ? { title: field.name, context: reference, focusField: true } : { label: field.name }
+            "
             @update:open="setOpen(field, $event)"
           >
             <template #trigger>
@@ -413,7 +425,10 @@ function addTo(projectId: string | null) {
                 }}</span>
               </PropertyValueButton>
             </template>
-            <Form @submit="save(field)">
+            <Form
+              :class="phoneLayout.active && css.itemProjects_sheetEditor"
+              @submit="save(field)"
+            >
               <NumberField
                 v-if="field.editor.type === 'number'"
                 v-model="numberDraft"
@@ -435,7 +450,7 @@ function addTo(projectId: string | null) {
                 :placeholder="t(l.emptyClears)"
               />
             </Form>
-          </Popover>
+          </component>
           <template v-else>
             <span
               v-if="field.text === null"
@@ -507,6 +522,16 @@ function addTo(projectId: string | null) {
   flex-direction: column;
   gap: 7px;
   margin: 0;
+}
+
+// In a phone's menu at the bottom: the field in line with the head's name, its text as large as keeps iOS from zooming
+// into it.
+.itemProjects_sheetEditor {
+  padding: 0 $spacing-20 $spacing-8;
+
+  input {
+    font-size: $font-size-phone-input;
+  }
 }
 
 .itemProjects_value {

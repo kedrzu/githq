@@ -3,6 +3,7 @@ import { expect, fn, userEvent, waitFor } from 'storybook/test';
 
 import type { ItemComment, ItemReviewSummary, PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import { F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
 import ReviewConversation from './ReviewConversation.vue';
@@ -29,6 +30,8 @@ const meta = {
         setup: () => ({ args }),
         template: `<div style="width: 340px; height: 500px"><ReviewConversation v-bind="args" /></div>`,
     }),
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ReviewConversation>;
 
 export default meta;

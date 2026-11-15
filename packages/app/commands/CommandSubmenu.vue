@@ -1,12 +1,15 @@
-<!-- An action with a second step, as an entry of an item menu (L1–L4, M1–M2): hovering it, → or Enter opens its options beside it — people with their pictures, labels with their colours, the values set now checked, those only some of the selected items have half-checked. A long list has a filter at the top, and typing goes into it. A quiet line under the options says what is left out ("2 of 3 editable"). Picking one makes it and closes the menu; an action picking several keeps it open. -->
+<!-- An action with a second step, as an entry of an item menu (L1–L4, M1–M2): hovering it, → or Enter opens its options beside it — people with their pictures, labels with their colours, the values set now checked, those only some of the selected items have half-checked. A long list has a filter at the top, and typing goes into it. A quiet line under the options says what is left out ("2 of 3 editable"). Picking one makes it and closes the menu; an action picking several keeps it open. In a phone's menu at the bottom (`MenuSheet`, mobile D45) its options replace the menu's entries as rows a finger's height. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Check, Info, Loader, Minus, Search } from 'lucide-vue-next';
 import { DropdownMenuCheckboxItem, DropdownMenuItem } from 'reka-ui';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import { filterOptions } from '@/components/filterOptions.js';
+import { MenuSheetContext } from '@/components/MenuSheetContext.js';
+import MenuSheetItem from '@/components/MenuSheetItem.vue';
 import MenuSub from '@/components/MenuSub.vue';
 
 import * as l from './CommandSubmenu.loc.js';
@@ -21,6 +24,7 @@ const props = defineProps<{
 const FILTER_FROM = 8;
 
 const t = useTranslate();
+const sheet = injectContext(MenuSheetContext, { optional: true });
 const open = ref(false);
 const query = ref('');
 const filterRef = useTemplateRef<HTMLInputElement>('filter');
@@ -64,6 +68,28 @@ function pick(event: Event, option: CommandOption) {
 function isChoice(option: CommandOption) {
   return option.chosen !== undefined || option.mixed !== undefined;
 }
+
+/** The option's entry: reka-ui's menu item, or in a phone's sheet its row. */
+function getEntry(option: CommandOption) {
+  if (sheet) {
+    return MenuSheetItem;
+  }
+
+  return isChoice(option) ? DropdownMenuCheckboxItem : DropdownMenuItem;
+}
+
+/** What the entry takes to say whether the option is chosen, in its own terms. */
+function getEntryProps(option: CommandOption) {
+  if (!isChoice(option)) {
+    return sheet ? {} : { textValue: option.label };
+  }
+
+  if (sheet) {
+    return { role: 'menuitemcheckbox', checked: option.mixed ? 'mixed' : option.chosen === true };
+  }
+
+  return { modelValue: option.mixed ? 'indeterminate' : option.chosen === true, textValue: option.label };
+}
 </script>
 
 <template>
@@ -76,7 +102,7 @@ function isChoice(option: CommandOption) {
     {{ title }}
     <template #content>
       <div
-        :class="css.commandSubmenu"
+        :class="[css.commandSubmenu, sheet && css.commandSubmenu_sheet]"
         @keydown.capture="typeIntoFilter"
       >
         <label
@@ -101,10 +127,9 @@ function isChoice(option: CommandOption) {
             :key="option.value"
           >
             <component
-              :is="isChoice(option) ? DropdownMenuCheckboxItem : DropdownMenuItem"
-              :class="css.commandSubmenu_option"
-              :model-value="isChoice(option) ? (option.mixed ? 'indeterminate' : option.chosen === true) : undefined"
-              :text-value="option.label"
+              :is="getEntry(option)"
+              :class="!sheet && css.commandSubmenu_option"
+              v-bind="getEntryProps(option)"
               @select="pick($event, option)"
             >
               <span
@@ -303,5 +328,62 @@ function isChoice(option: CommandOption) {
   width: 13px;
   height: 13px;
   margin-top: 1px;
+}
+
+// In a phone's menu at the bottom: the filter a field of its own, as a picker's (MB74), the options running the sheet's
+// height and to its edges.
+.commandSubmenu_sheet {
+  .commandSubmenu_filter {
+    @include sheet-filter-field;
+
+    margin-top: $spacing-4;
+  }
+
+  .commandSubmenu_filterIcon {
+    width: $phone-row-icon-size;
+    height: $phone-row-icon-size;
+  }
+
+  .commandSubmenu_filterInput {
+    font-size: $font-size-phone-input;
+  }
+
+  .commandSubmenu_options {
+    max-height: none;
+  }
+
+  .commandSubmenu_label {
+    max-width: none;
+  }
+
+  .commandSubmenu_detail {
+    @include sheet-row-detail;
+  }
+
+  .commandSubmenu_box {
+    width: 18px;
+    height: 18px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .commandSubmenu_dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .commandSubmenu_note {
+    max-width: none;
+    padding: $spacing-12 $spacing-20;
+    font-size: $font-size-md;
+  }
+
+  .commandSubmenu_note_footer {
+    margin: $spacing-4 0 0;
+    border-color: $color-border;
+  }
 }
 </style>

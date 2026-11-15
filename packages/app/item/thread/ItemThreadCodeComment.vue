@@ -1,10 +1,11 @@
-<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it — the file a link to the thread in the pull request's review, underlined under the pointer — and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
+<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it — the file a link to the thread in the pull request's review, underlined under the pointer, marked ↗ on a phone, which hands the review off to github.com (mobile D3, D11) — and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import Avatar from '@/components/Avatar.vue';
+import ExternalMark from '@/components/ExternalMark.vue';
 import { getReviewCommentPath } from '@/item/itemRoutes.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
@@ -92,8 +93,8 @@ function toggle(open: boolean) {
           :is="reviewPath ? RouterLink : 'span'"
           :to="reviewPath ?? undefined"
           :class="[css.itemThreadCodeComment_path, reviewPath && css.itemThreadCodeComment_path_link]"
-          >{{ entry.thread.path }}</component
-        >
+          >{{ entry.thread.path }}<ExternalMark v-if="reviewPath"
+        /></component>
         <time
           :class="css.itemThreadCodeComment_when"
           :datetime="first?.createdAt"

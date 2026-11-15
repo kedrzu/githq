@@ -7,6 +7,7 @@ import type { PickerOption } from '@/components/Picker.vue';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { SAMPLE_PORTAL_METADATA } from '@/testing/sampleRepositories.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import { buildIssueFormBody } from './buildIssueFormBody.js';
 import { findMissingFormFields } from './findMissingFormFields.js';
@@ -216,6 +217,8 @@ const Harness = defineComponent({
 
 const meta = {
     component: Harness,
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof Harness>;
 
 export default meta;

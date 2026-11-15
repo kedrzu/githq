@@ -250,6 +250,10 @@ $window-controls-height: 36px;
 $touch-target-size: 44px;
 // An icon in a phone's top bar or command line, larger than the desktop's for a finger's target.
 $phone-icon-size: 22px;
+// An icon at the start of a row in a phone's sheet (the command menu's, MB223).
+$phone-row-icon-size: 18px;
+// A text field on a phone: iOS Safari zooms the page into a field whose text is smaller as it is focused.
+$font-size-phone-input: 16px;
 // The bar along a phone screen's top: the places button or back, the title, the screen's actions (mobile D14).
 $phone-top-bar-height: 48px;
 // The strip under it while something holds the whole app back (mobile D12).
@@ -478,6 +482,34 @@ $motion-slide-distance: 4px;
         outline: 2px solid $color-focus;
         outline-offset: 1px;
     }
+}
+
+// Every `IconButton` inside a finger's size (the phone layout), its glyph `$glyph-size`, its corners `$radius` when given.
+@mixin touch-icon-buttons($glyph-size, $radius: null) {
+    --icon-button-width: #{$touch-target-size};
+    --icon-button-height: #{$touch-target-size};
+    --icon-button-glyph-size: #{$glyph-size};
+
+    @if $radius {
+        --icon-button-radius: #{$radius};
+    }
+}
+
+// A row's dim detail in a phone's menu at the bottom (`MenuSheet`, mobile D45): at the row's end, read at a phone's size.
+@mixin sheet-row-detail {
+    margin-left: auto;
+    font-size: $font-size-md;
+}
+
+// The filter of a phone's menu at the bottom (MB74, MB108): a field of its own under the sheet's head, a finger's
+// height; its text input takes `$font-size-phone-input`.
+@mixin sheet-filter-field {
+    min-height: $touch-target-size;
+    padding: 0 $spacing-12;
+    margin: 0 $spacing-16 $spacing-8;
+    background: $color-bg;
+    border: 1px solid $color-border-2;
+    border-radius: $radius-lg;
 }
 
 // A row of a list: the whole row is the hit area, rows touch with no gap between them, and what

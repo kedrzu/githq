@@ -1,10 +1,11 @@
-<!-- The code a thread on an item's thread was written on (`Activity / Code excerpt`), from its first comment's `diffHunk`: a head with the file — its folder dim, its name, a link to the thread in the pull request's review, underlined under the pointer — the lines it is on and, once the code moved on, "Outdated"; then the hunk's last few lines, ending on the commented one, with their numbers and diff colours. The lines keep their width and scroll sideways in the frame, which the keyboard can scroll too. -->
+<!-- The code a thread on an item's thread was written on (`Activity / Code excerpt`), from its first comment's `diffHunk`: a head with the file — its folder dim, its name, a link to the thread in the pull request's review, underlined under the pointer, marked ↗ on a phone, which hands the review off to github.com (mobile D3, D11) — the lines it is on and, once the code moved on, "Outdated"; then the hunk's last few lines, ending on the commented one, with their numbers and diff colours. The lines keep their width and scroll sideways in the frame, which the keyboard can scroll too. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { FileCode, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
+import ExternalMark from '@/components/ExternalMark.vue';
 import { getReviewCommentPath } from '@/item/itemRoutes.js';
 import { parseDiffHunk } from '@/review/threads/parseDiffHunk.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
@@ -60,7 +61,7 @@ const range = computed(() => {
           v-if="folder !== null"
           :class="css.itemThreadExcerpt_folder"
           >{{ folder }}/</span
-        ><span :class="css.itemThreadExcerpt_name">{{ name }}</span>
+        ><span :class="css.itemThreadExcerpt_name">{{ name }}</span><ExternalMark v-if="reviewPath" />
       </component>
       <span
         v-if="range !== null"

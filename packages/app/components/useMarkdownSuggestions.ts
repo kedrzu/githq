@@ -35,6 +35,8 @@ export interface MarkdownSuggestionsViewModel {
     readonly active: number;
     /** Where the `@` or `#` is drawn; `null` while the menu is closed. */
     readonly anchor: VirtualElement | null;
+    /** What is typed from the `@` or `#` to the caret, the sign included (`@s`); `''` while the menu is closed. */
+    readonly typed: string;
     /** What the text area says of the menu, for assistive technology. */
     readonly attrs: TextareaHTMLAttributes;
     /** The text or the caret changed: what is typed at the caret is looked at again. */
@@ -43,6 +45,8 @@ export interface MarkdownSuggestionsViewModel {
     onKeydown(event: KeyboardEvent): void;
     /** The menu goes, until the caret is back at a trigger. */
     close(): void;
+    /** The menu goes as Escape takes it: until another `@` or `#` is typed. */
+    dismiss(): void;
     /** Puts the row in place of what is typed from its `@` or `#`: `@login ` or `#123 `. */
     pick(index: number): void;
     highlight(index: number): void;
@@ -69,6 +73,14 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
     let dismissed: number | null = null;
 
     const start = computed(() => trigger.value?.start ?? null);
+    const typed = computed(() => {
+        const found = trigger.value;
+        if (!found) {
+            return '';
+        }
+
+        return `${found.kind === 'mention' ? '@' : '#'}${found.query}`;
+    });
     const anchor = computed((): VirtualElement | null => {
         const element = options.textarea.value;
         const at = start.value;
@@ -136,10 +148,12 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
         list,
         active,
         anchor,
+        typed,
         attrs,
         update,
         onKeydown,
         close,
+        dismiss,
         pick,
         highlight,
     });
@@ -224,13 +238,17 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
                 // Only the menu closes: not the editor, nor the item it is in.
                 event.preventDefault();
                 event.stopPropagation();
-                dismissed = trigger.value?.start ?? null;
-                close();
+                dismiss();
         }
     }
 
     function close() {
         trigger.value = null;
+    }
+
+    function dismiss() {
+        dismissed = trigger.value?.start ?? null;
+        close();
     }
 
     // Read again from the text area as it is now, so the text typed since the menu last changed is what is replaced.

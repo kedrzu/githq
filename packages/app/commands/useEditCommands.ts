@@ -106,6 +106,8 @@ export interface EditCommandsParams {
      * that moves on once the merge is sent (a list, PM32a) says so in it.
      */
     readonly merge?: (pr: PullRequestItem) => void;
+    /** `merge` leaves for github.com: a phone, which has no merge panel yet (mobile D4, D11). */
+    readonly mergeExternal?: boolean;
     /**
      * The one pull request's checks counted by whether they are required, once its merge options are read: `⇧M` then
      * says the same way forward as its standing (PM38). Without them, as its row holds it.
@@ -353,6 +355,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             section: params.section,
             key: EDIT_KEYS.merge,
             icon: GitMerge,
+            external: params.mergeExternal,
             run: () => merge(pr),
         };
     }

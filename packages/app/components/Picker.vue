@@ -1,11 +1,15 @@
-<!-- A keyboard-first picker hanging from its trigger (reka-ui's `Listbox` with its filter, in a `Popover`): type to narrow the options, ↑/↓ to move, Enter to pick. One value (a milestone, a status) is set by picking it and the picker closes. Several (labels, assignees) are toggled with Enter or Space, and applied together when it closes — Escape or a click outside — as what was added and removed. Options carry a colour dot or an avatar, a dim detail, and may sit in groups; one chosen on only some of several items shows half-chosen until toggled. -->
+<!-- A keyboard-first picker hanging from its trigger (reka-ui's `Listbox` with its filter, in a `Popover`): type to narrow the options, ↑/↓ to move, Enter to pick. One value (a milestone, a status) is set by picking it and the picker closes. Several (labels, assignees) are toggled with Enter or Space, and applied together when it closes — Escape or a click outside — as what was added and removed. Options carry a colour dot or an avatar, a dim detail, and may sit in groups; one chosen on only some of several items shows half-chosen until toggled. On a phone (`PhoneLayout.active`, mobile D45) the same list opens as a menu at the bottom (`BottomMenu`, MB74, MB108): its name and what it edits in the head, × to close, the filter under it — tapped to type, no keyboard before — then the options as rows a finger's height, the chosen ones checked at the end; picking and applying work as on the computer. -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Check, Minus } from 'lucide-vue-next';
+import { Check, Minus, Search } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+
 import Avatar from './Avatar.vue';
+import BottomMenu from './BottomMenu.vue';
 import FilterList from './FilterList.vue';
 import type { FilterListGroup, FilterListRow } from './FilterList.vue';
 import { filterOptions } from './filterOptions.js';
@@ -55,6 +59,8 @@ const props = withDefaults(
     /** A quiet line under the list ("2 of 3 editable"). */
     note?: string;
     align?: 'center' | 'end' | 'start';
+    /** On a phone, what it edits, under its name in the menu's head (an item's reference, MB74). */
+    context?: string;
   }>(),
   {
     selected: () => [],
@@ -63,6 +69,7 @@ const props = withDefaults(
     noneLabel: undefined,
     note: undefined,
     align: 'start',
+    context: undefined,
   },
 );
 
@@ -84,6 +91,7 @@ const open = defineModel<boolean>('open', { default: false });
 const NONE = '\u0000none';
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
 const query = ref('');
 const chosen = ref<string[]>([]);
 const touched = ref<ReadonlySet<string>>(new Set());
@@ -123,15 +131,19 @@ const model = computed({
   },
 });
 
-watch(open, (isOpen, wasOpen) => {
-  if (isOpen) {
-    query.value = '';
-    chosen.value = [...props.selected];
-    touched.value = new Set();
-  } else if (wasOpen && props.multiple) {
-    applyChanges();
-  }
-});
+watch(
+  open,
+  (isOpen, wasOpen) => {
+    if (isOpen) {
+      query.value = '';
+      chosen.value = [...props.selected];
+      touched.value = new Set();
+    } else if (wasOpen && props.multiple) {
+      applyChanges();
+    }
+  },
+  { immediate: true },
+);
 
 function isMixed(value: string) {
   return props.mixed.includes(value) && !touched.value.has(value) && !chosen.value.includes(value);
@@ -189,10 +201,10 @@ function onFilterKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <Popover
+  <component
+    :is="phoneLayout.active ? BottomMenu : Popover"
     v-model:open="open"
-    :label="label"
-    :align="align"
+    v-bind="phoneLayout.active ? { title: label, context } : { label, align }"
   >
     <template #trigger>
       <slot name="trigger" />
@@ -200,15 +212,24 @@ function onFilterKeydown(event: KeyboardEvent) {
     <FilterList
       v-model="model"
       v-model:query="query"
-      :class="css.picker"
+      :class="phoneLayout.active ? css.picker_phone : css.picker"
       :label="label"
       :groups="groups"
       :multiple="multiple"
       :placeholder="placeholder ?? t(l.filter)"
       :message="groups.length === 0 ? t(l.noMatch) : null"
-      size="sm"
+      :size="phoneLayout.active ? 'touch' : 'sm'"
       @filter-keydown="onFilterKeydown"
     >
+      <template
+        v-if="phoneLayout.active"
+        #beforeFilter
+      >
+        <Search
+          :class="css.picker_search"
+          aria-hidden="true"
+        />
+      </template>
       <template #row="{ row }">
         <template v-if="row.option === null">
           <span :class="[css.picker_label, css.picker_none]">{{ noneLabel }}</span>
@@ -220,7 +241,7 @@ function onFilterKeydown(event: KeyboardEvent) {
         </template>
         <template v-else>
           <span
-            v-if="multiple"
+            v-if="multiple && !phoneLayout.active"
             :class="[css.picker_box, row.checked !== false && css.picker_box_on]"
             aria-hidden="true"
           >
@@ -236,7 +257,7 @@ function onFilterKeydown(event: KeyboardEvent) {
           <span
             v-if="row.option.color"
             :class="css.picker_dot"
-            :style="{ background: `#${row.option.color}` }"
+            :style="{ '--picker-dot-color': `#${row.option.color}` }"
             aria-hidden="true"
           />
           <Avatar
@@ -253,7 +274,12 @@ function onFilterKeydown(event: KeyboardEvent) {
             >{{ row.option.detail }}</span
           >
           <Check
-            v-if="!multiple && row.checked === true"
+            v-if="(!multiple || phoneLayout.active) && row.checked === true"
+            :class="css.picker_check"
+            aria-hidden="true"
+          />
+          <Minus
+            v-else-if="multiple && phoneLayout.active && row.checked === 'mixed'"
             :class="css.picker_check"
             aria-hidden="true"
           />
@@ -268,7 +294,7 @@ function onFilterKeydown(event: KeyboardEvent) {
         </p>
       </template>
     </FilterList>
-  </Popover>
+  </component>
 </template>
 
 <style lang="scss" module="css">
@@ -303,6 +329,7 @@ function onFilterKeydown(event: KeyboardEvent) {
   flex: none;
   width: 8px;
   height: 8px;
+  background: var(--picker-dot-color);
   border-radius: 50%;
 }
 
@@ -329,6 +356,41 @@ function onFilterKeydown(event: KeyboardEvent) {
   height: 13px;
   margin-left: auto;
   color: $color-fg-2;
+}
+
+// On a phone, in a menu at the bottom: the list fills the sheet; a label's colour is a ring (MB108), the check the
+// accent's.
+.picker_phone {
+  flex: 1;
+
+  .picker_dot {
+    width: 14px;
+    height: 14px;
+    background: none;
+    border: 2px solid var(--picker-dot-color);
+  }
+
+  .picker_check {
+    width: $phone-row-icon-size;
+    height: $phone-row-icon-size;
+    color: $color-accent;
+  }
+
+  .picker_detail {
+    font-size: $font-size-md;
+  }
+
+  .picker_note {
+    padding: $spacing-12 $spacing-20;
+    font-size: $font-size-md;
+  }
+}
+
+.picker_search {
+  flex: none;
+  width: $phone-row-icon-size;
+  height: $phone-row-icon-size;
+  color: $color-fg-dim;
 }
 
 .picker_note {

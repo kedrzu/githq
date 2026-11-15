@@ -71,9 +71,7 @@ const shell = injectContext(PhoneShellContext, { optional: true });
 
 // Every icon button in it a finger's size, the screen's own too.
 .phoneTopBar_bar {
-  --icon-button-width: #{$touch-target-size};
-  --icon-button-height: #{$touch-target-size};
-  --icon-button-glyph-size: #{$phone-icon-size};
+  @include touch-icon-buttons($phone-icon-size);
 
   display: flex;
   gap: $spacing-4;

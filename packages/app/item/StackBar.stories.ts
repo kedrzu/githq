@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import StackBar from './StackBar.vue';
 
@@ -21,6 +22,8 @@ const meta = {
         setup: () => ({ args }),
         template: `<div style="display: flex; flex-direction: column; width: 560px; background: #151b23"><StackBar v-bind="args" /></div>`,
     }),
+    // The desktop's, whatever the width; a phone's story says so.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof StackBar>;
 
 export default meta;
@@ -79,4 +82,20 @@ export const Dropped: Story = {
 /** SP30: a stack of two — two squares. */
 export const StackOfTwo: Story = {
     args: { stack: sampleStackDescription(GLYPHS_STACK), currentId: GLYPHS_STACK[1]!.id },
+};
+
+/** Mobile D29, MB122: on a phone, the strip under the top bar — "Stack · 6 of 10", the pips, ← and → to its neighbours. */
+export const Phone: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: args => ({
+        components: { StackBar },
+        setup: () => ({ args }),
+        template: `<div style="display: flex; flex-direction: column; width: 390px; background: #151b23"><StackBar v-bind="args" /></div>`,
+    }),
+};
+
+/** On a phone, the first of the stack, on its base: nothing towards the base, so ← is off. */
+export const PhoneAtBase: Story = {
+    ...Phone,
+    args: { currentId: SYNC_ENGINE_STACK[0]!.id },
 };

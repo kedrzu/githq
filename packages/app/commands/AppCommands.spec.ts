@@ -18,6 +18,8 @@ import { ProjectStore } from '@/projects/ProjectStore.js';
 import type { Project } from '@/projects/ProjectTypes.js';
 import type * as settingsRoutes from '@/settings/settingsRoutes.js';
 import { CONFIRM_STABLE_PATH } from '@/settings/settingsRoutes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { SAMPLE_PROJECT, SAMPLE_VIEW_BOARD } from '@/testing/sampleProject.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -755,6 +757,8 @@ function mount(arg?: AppUpdateShape | MountOptions) {
 function createAppContainer() {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    // The frame is narrower than a phone's width: the computer's menu.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     setIndexedDbPersistence(container);
     return container;
 }
