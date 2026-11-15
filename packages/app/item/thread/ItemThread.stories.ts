@@ -17,6 +17,7 @@ import {
     THREAD_VIEWER,
 } from '@/testing/sampleThreadEvents.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ItemThread from './ItemThread.vue';
 import ItemThreadComposer from './ItemThreadComposer.vue';
@@ -72,6 +73,8 @@ const meta = {
             </ItemThread>
           </div>`,
     }),
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThread>;
 
 export default meta;

@@ -1,11 +1,15 @@
-<!-- An entry of a `Menu` or a context menu that opens a submenu beside it (reka-ui's `DropdownMenuSub`): by hovering it, by → or Enter; ← or Escape closes it again; inside it the app's keys stay out (`data-no-commands`). Its chevron sits right after the text, before the dim detail ("Set status › In progress"), so the key column at the end needs no room for it. -->
+<!-- An entry of a `Menu` or a context menu that opens a submenu beside it (reka-ui's `DropdownMenuSub`): by hovering it, by → or Enter; ← or Escape closes it again; inside it the app's keys stay out (`data-no-commands`). Its chevron sits right after the text, before the dim detail ("Set status › In progress"), so the key column at the end needs no room for it. In a phone's menu at the bottom (`MenuSheet`, mobile D45) tapping it drills in place: its entries replace the menu's, its text the sheet's name, with the way back (MB109); `open` is true while they show. -->
 <script lang="ts" setup>
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronRight } from 'lucide-vue-next';
 import { DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from 'reka-ui';
+import { useId } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 
+import { MenuSheetContext } from './MenuSheetContext.js';
+import MenuSheetItem from './MenuSheetItem.vue';
 import MenuShortcut from './MenuShortcut.vue';
 
 defineProps<{
@@ -17,7 +21,7 @@ defineProps<{
   disabled?: boolean;
 }>();
 
-defineSlots<{
+const slots = defineSlots<{
   /** The entry's text. */
   default(): unknown;
   /** The submenu's items. */
@@ -25,10 +29,57 @@ defineSlots<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const sheet = injectContext(MenuSheetContext, { optional: true });
+const entryId = useId();
+
+/** On a phone: its entries in the sheet's place, until the way back. */
+function drillIn(event: Event) {
+  event.preventDefault();
+  if (!sheet) {
+    return;
+  }
+
+  open.value = true;
+  sheet.drill({
+    heading: () => slots.default(),
+    content: () => slots.content(),
+    entry: document.querySelector<HTMLElement>(`#${CSS.escape(entryId)}`),
+    leave: () => (open.value = false),
+  });
+}
 </script>
 
 <template>
-  <DropdownMenuSub v-model:open="open">
+  <MenuSheetItem
+    v-if="sheet"
+    :id="entryId"
+    :disabled="disabled"
+    aria-haspopup="menu"
+    @select="drillIn"
+  >
+    <component
+      :is="icon"
+      v-if="icon"
+      :class="css.menuSub_icon"
+      aria-hidden="true"
+    />
+    <span :class="css.menuSub_text">
+      <span :class="css.menuSub_label"><slot /></span>
+      <span
+        v-if="detail"
+        :class="[css.menuSub_detail, css.menuSub_detail_end]"
+        >{{ detail }}</span
+      >
+    </span>
+    <ChevronRight
+      :class="css.menuSub_chevron"
+      aria-hidden="true"
+    />
+  </MenuSheetItem>
+  <DropdownMenuSub
+    v-else
+    v-model:open="open"
+  >
     <DropdownMenuSubTrigger
       :class="css.menuSub"
       :disabled="disabled"
@@ -123,6 +174,12 @@ const open = defineModel<boolean>('open', { default: false });
   font-size: $font-size-xs;
   color: $color-fg-dim;
   white-space: nowrap;
+}
+
+// On a phone the current value sits at the row's end, before the chevron.
+.menuSub_detail_end {
+  margin-left: auto;
+  font-size: $font-size-md;
 }
 
 .menuSub_content {

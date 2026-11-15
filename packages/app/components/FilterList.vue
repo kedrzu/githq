@@ -1,4 +1,4 @@
-<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover; the command menu and the new issue's choosers show it in place. Or rising from below (`fromBelow`, a phone's command menu, mobile D16): the filter under the rows, nothing focusing it until it is tapped — the list holds the focus, the highlighted row its active descendant — the row nearest the filter highlighted as the rows change; ↑/↓ follow the screen, and a key typed while the list holds the focus goes into the filter, focusing it. -->
+<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover, or on a phone in a menu at the bottom (`touch`: rows a finger's height, and the list, not the filter, takes the focus, so no on-screen keyboard comes until the filter is tapped); the command menu and the new issue's choosers show it in place. Or rising from below (`fromBelow`, a phone's command menu, mobile D16): the filter under the rows, nothing focusing it until it is tapped — the list holds the focus, the highlighted row its active descendant — the row nearest the filter highlighted as the rows change; ↑/↓ follow the screen, and a key typed while the list holds the focus goes into the filter, focusing it. -->
 <script lang="ts" setup generic="TRow extends FilterListRow">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ListboxContent, ListboxFilter, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRoot } from 'reka-ui';
@@ -59,8 +59,11 @@ const props = withDefaults(
     hints?: readonly FilterListHint[];
     /** Escape goes back (`back`) instead of closing what the list is in. */
     backOnEscape?: boolean;
-    /** `sm` in a popover, `md` in a dialog, `lg` as a dialog of its own (the command menu). */
-    size?: 'lg' | 'md' | 'sm';
+    /**
+     * `sm` in a popover, `md` in a dialog, `lg` as a dialog of its own (the command menu), `touch` in a phone's menu at
+     * the bottom (mobile D45): rows a finger's height, and the list holds the focus until the filter is tapped.
+     */
+    size?: 'lg' | 'md' | 'sm' | 'touch';
     /**
      * The filter under the rows, which the caller orders nearest-first from the bottom (a phone's command menu): the
      * last row is highlighted as the rows change, and the list, not the filter, takes the focus, so no on-screen
@@ -116,8 +119,10 @@ const filterRef = useTemplateRef<HTMLElement>('filter');
 let highlightCurrent = false;
 
 const rows = computed(() => props.groups.flatMap(group => group.rows));
-/** Read out as the highlighted row while the list, not the filter, holds the focus (`fromBelow`). */
-const activeDescendant = computed(() => (props.fromBelow ? rootRef.value?.highlightedElement?.id : undefined));
+/** The list, not the filter, takes the focus as it shows, so that no on-screen keyboard comes before a tap. */
+const listHoldsFocus = computed(() => props.fromBelow || props.size === 'touch');
+/** Read out as the highlighted row while the list, not the filter, holds the focus. */
+const activeDescendant = computed(() => (listHoldsFocus.value ? rootRef.value?.highlightedElement?.id : undefined));
 
 // The best match is the one Enter picks: the first row, or from below the last, nearest the filter.
 watch(
@@ -132,9 +137,9 @@ watch(
 );
 
 onMounted(() => {
-  // Without a filter the list takes the keys at once: ↓ highlights the first row. From below it holds the focus too,
-  // so that no on-screen keyboard comes up before the filter is tapped.
-  if (!props.filterable || props.fromBelow) {
+  // Without a filter the list takes the keys at once: ↓ highlights the first row. From below or on a phone it holds the
+  // focus too, so that no on-screen keyboard comes up before the filter is tapped.
+  if (!props.filterable || listHoldsFocus.value) {
     void nextTick(() => listRef.value?.querySelector<HTMLElement>('[role="listbox"]')?.focus());
   }
 
@@ -278,7 +283,7 @@ function onListKeydown(event: KeyboardEvent) {
         :placeholder="placeholder"
         :aria-label="filterLabel ?? placeholder"
         :aria-controls="listId"
-        :auto-focus="!fromBelow"
+        :auto-focus="!listHoldsFocus"
         @keydown="emit('filterKeydown', $event)"
       />
       <slot name="afterFilter" />
@@ -597,6 +602,53 @@ function onListKeydown(event: KeyboardEvent) {
   .filterList_row {
     min-height: $touch-target-size;
     font-size: $font-size-xl;
+  }
+}
+
+// In a phone's menu at the bottom (MB74, MB108): the filter a field of its own under the sheet's head, the rows a
+// thumb's height running to the sheet's edges.
+.filterList_touch {
+  .filterList_input {
+    min-height: $touch-target-size;
+    padding: 0 $spacing-12;
+    margin: 0 $spacing-16 $spacing-8;
+    background: $color-bg;
+    border: 1px solid $color-border-2;
+    border-radius: $radius-lg;
+  }
+
+  .filterList_filter {
+    font-size: $font-size-phone-input;
+  }
+
+  .filterList_list {
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid $color-border;
+  }
+
+  .filterList_scroll {
+    flex: 1;
+  }
+
+  .filterList_heading {
+    padding: $spacing-12 $spacing-20 $spacing-4;
+  }
+
+  .filterList_row {
+    gap: $spacing-12;
+    min-height: $touch-target-size;
+    padding: $spacing-6 $spacing-20;
+    font-size: $font-size-xl;
+
+    &[data-highlighted] {
+      background: $color-bg-3;
+    }
+  }
+
+  .filterList_message {
+    padding: $spacing-12 $spacing-20;
+    font-size: $font-size-md;
   }
 }
 </style>

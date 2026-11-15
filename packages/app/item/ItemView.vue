@@ -681,6 +681,8 @@ function getProjectOptions(): CommandOption[] {
         <Menu
           v-model:open="itemMenuOpen"
           align="start"
+          :label="t(l.itemMenu)"
+          :context="`${item.repository.nameWithOwner}#${item.number}`"
         >
           <template #trigger>
             <button
@@ -703,13 +705,16 @@ function getProjectOptions(): CommandOption[] {
             </button>
           </template>
           <CommandMenuSections :sections="itemMenuSections" />
-          <MenuSeparator />
-          <MenuLabel>
-            <span :class="css.itemView_menuFooter">
-              {{ t(l.itemMenu) }}
-              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
-            </span>
-          </MenuLabel>
+          <!-- A phone shows no keys (mobile D52): nothing to teach. -->
+          <template v-if="!phone.active">
+            <MenuSeparator />
+            <MenuLabel>
+              <span :class="css.itemView_menuFooter">
+                {{ t(l.itemMenu) }}
+                <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+              </span>
+            </MenuLabel>
+          </template>
         </Menu>
       </template>
     </ItemHeader>

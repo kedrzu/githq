@@ -12,6 +12,7 @@ import {
     sampleTrackedRepository,
 } from '@/testing/samplePlaces.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import Sidebar from './Sidebar.vue';
@@ -34,7 +35,8 @@ const meta = {
         onToggle: fn(),
         onSignOut: fn(),
     },
-    decorators: [asInTheApp],
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false), asInTheApp],
 } satisfies Meta<typeof Sidebar>;
 
 export default meta;

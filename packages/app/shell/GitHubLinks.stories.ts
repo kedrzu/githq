@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import GitHubLinks from './GitHubLinks.vue';
 
@@ -29,8 +30,9 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+// The story frame is narrower than a phone's width: the computer's menu, in the container `withGitHubLinks` sets up.
 /** Two links githq shows, an item and a comment on one, and a profile, which stays GitHub's. */
-export const Links: Story = { decorators: [withGitHubLinks()] };
+export const Links: Story = { decorators: [withPhoneLayout(false), withGitHubLinks()] };
 
 /** The same in an opened item: an item linked opens there. */
-export const InItem: Story = { decorators: [withGitHubLinks({ inItem: true })] };
+export const InItem: Story = { decorators: [withPhoneLayout(false), withGitHubLinks({ inItem: true })] };

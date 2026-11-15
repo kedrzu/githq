@@ -4,6 +4,7 @@ import { ref } from 'vue';
 
 import { D1_ISSUE, F1_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import ItemThreadComposer from './ItemThreadComposer.vue';
 
@@ -27,6 +28,8 @@ const meta = {
         setup: () => ({ args, typed: ref(text ?? '') }),
         template: `<div style="width: 760px; padding: 20px; background: #11161c"><ItemThreadComposer v-bind="args" v-model:text="typed" /></div>`,
     }),
+    // The story frame is narrower than a phone's width: the computer's menus unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof ItemThreadComposer>;
 
 export default meta;

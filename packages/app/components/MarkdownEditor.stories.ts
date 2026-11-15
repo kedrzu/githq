@@ -10,6 +10,8 @@ import { ref } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleUser } from '@/testing/sampleMyWork.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -110,6 +112,8 @@ const meta = {
             const container = createContainer();
             container.set(LanguageContext, () => APP_LANGUAGE);
             container.set(Browser, createSignedInBrowser(parameters.github));
+            // The story frame is narrower than a phone's width: the computer's menus.
+            container.set(PhoneLayout, createFixedPhoneLayout(false));
             setIndexedDbPersistence(container);
             provideContainer(container);
             const text = ref(modelValue ?? '');

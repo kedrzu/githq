@@ -50,6 +50,8 @@ const hinted = ref(false);
 let hintTimer: ReturnType<typeof setTimeout> | null = null;
 
 const permissions = computed(() => props.editing?.permissions ?? null);
+/** Under a picker's name on a phone (MB74): what it edits. */
+const reference = computed(() => `${props.item.repository.nameWithOwner}#${props.item.number}`);
 const repositories = computed(() => (props.editing?.metadata ? [props.editing.metadata] : []));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
 /** The type row: on an issue that has one, or whose repository offers them to someone who may set them. */
@@ -147,6 +149,7 @@ function open(issue: LinkedIssue) {
         v-if="permissions?.assignees"
         :open="opened === 'assignees'"
         :label="t(l.assignees)"
+        :context="reference"
         :options="options.assignees(repositories, editing?.viewerLogin ?? '')"
         :selected="item.assignees.map(user => user.login)"
         :placeholder="t(l.filterAssignees)"
@@ -217,6 +220,7 @@ function open(issue: LinkedIssue) {
         v-if="permissions?.labels"
         :open="opened === 'labels'"
         :label="t(l.labels)"
+        :context="reference"
         :options="options.labels(repositories)"
         :selected="item.labels.map(label => label.name)"
         :placeholder="t(l.filterLabels)"
@@ -273,6 +277,7 @@ function open(issue: LinkedIssue) {
         v-if="permissions?.milestone"
         :open="opened === 'milestone'"
         :label="t(l.milestone)"
+        :context="reference"
         :options="options.milestones(repositories)"
         :selected="item.milestone ? [item.milestone.title] : []"
         :placeholder="t(l.filterMilestones)"
@@ -330,6 +335,7 @@ function open(issue: LinkedIssue) {
         v-if="permissions?.issueType"
         :open="opened === 'issueType'"
         :label="t(l.type)"
+        :context="reference"
         :options="options.issueTypes(repositories)"
         :selected="issueType ? [issueType.name] : []"
         :none-label="t(l.noType)"

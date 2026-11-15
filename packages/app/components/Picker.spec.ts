@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './Picker.stories.jsx';
 
-const { Grouped, Labels, LabelsOfSeveral, MilestonePicker } = composeStories(stories);
+const { Grouped, Labels, LabelsOfSeveral, MilestonePicker, PhoneLabels, PhoneMilestone } = composeStories(stories);
 
 test('several values: type to narrow, Enter and Space toggle, Escape closes and applies what changed', async () => {
     await Labels.run();
@@ -128,4 +128,48 @@ test('a half-chosen option stays half-chosen when typed text finds it', async ()
     await userEvent.click(page.getByRole('button', { name: 'Labels of 3 items' }));
     await userEvent.keyboard('prf');
     await expect.element(page.getByRole('option', { name: 'perf' })).toHaveAttribute('aria-checked', 'mixed');
+});
+
+test('on a phone it opens at the bottom with no keyboard; typed text narrows, a tap toggles, × applies', async () => {
+    await PhoneLabels.run();
+
+    const sheet = page.getByRole('dialog', { name: 'Labels' });
+    await expect.element(sheet).toHaveAccessibleDescription('fitloop/webapp#1187');
+    // Pinned to the bottom of the screen, its whole width.
+    const box = sheet.element().getBoundingClientRect();
+    expect(Math.round(box.bottom)).toBe(window.innerHeight);
+    expect(Math.round(box.width)).toBe(window.innerWidth);
+    // No keyboard until the filter is tapped: the list holds the focus.
+    const filter = sheet.getByRole('textbox', { name: 'Filter labels…' });
+    await expect.element(filter).not.toHaveFocus();
+    await expect.element(sheet.getByRole('listbox')).toHaveFocus();
+    await expect.element(sheet.getByRole('option', { name: 'calendar' })).toHaveAttribute('aria-checked', 'true');
+
+    await userEvent.click(filter);
+    await userEvent.keyboard('cal');
+    await expect.element(sheet.getByRole('option')).toHaveLength(1);
+    await userEvent.click(sheet.getByRole('option', { name: 'calendar' }));
+    await expect.element(sheet.getByRole('option', { name: 'calendar' })).toHaveAttribute('aria-checked', 'false');
+    // Still open: several values are applied together, as on the computer.
+    await expect.element(page.getByTestId('applied')).toHaveTextContent('Nothing applied');
+
+    await userEvent.click(sheet.getByRole('button', { name: 'Close' }));
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('applied')).toHaveTextContent('Added: –; removed: calendar');
+});
+
+test('on a phone one value is picked with a tap, which closes it; Escape closes it picking nothing', async () => {
+    await PhoneMilestone.run();
+
+    const trigger = page.getByRole('button', { name: 'Milestone' });
+    await userEvent.click(trigger);
+    const sheet = page.getByRole('dialog', { name: 'Milestone' });
+    await userEvent.keyboard('{Escape}');
+    await expect.element(sheet).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Nothing picked');
+
+    await userEvent.click(trigger);
+    await userEvent.click(sheet.getByRole('option', { name: /^v4\.3/ }));
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: v4.3');
+    await expect.element(sheet).not.toBeInTheDocument();
 });

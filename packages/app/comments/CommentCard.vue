@@ -84,6 +84,7 @@ watchPostEffect(() => {
 <template>
   <ContextMenu
     :disabled="!$slots.menu"
+    :label="description ? t(l.descriptionMenu) : t(l.commentMenu)"
     @close-auto-focus="emit('menuClose', $event)"
   >
     <div :class="css.commentCard">
@@ -159,6 +160,7 @@ watchPostEffect(() => {
           <Menu
             v-if="$slots.menu"
             align="end"
+            :label="description ? t(l.descriptionMenu) : t(l.commentMenu)"
             @close-auto-focus="emit('menuClose', $event)"
           >
             <template #trigger>

@@ -14,6 +14,7 @@ import {
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow } from '@/.storybook/StoryLayout.jsx';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import Button from './Button.vue';
 import Menu from './Menu.vue';
@@ -26,6 +27,8 @@ import MenuSub from './MenuSub.vue';
 
 const meta = {
     component: Menu,
+    // The story frame is narrower than a phone's width: the computer's menu unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof Menu>;
 
 export default meta;
@@ -196,6 +199,157 @@ export const Submenu: Story = {
                                 }}
                             </Menu>
                             <span tid="picked">Picked: {picked.value}</span>
+                        </StoryRow>
+                    </StoryPage>
+                );
+            },
+        }),
+};
+
+/**
+ * Mobile D45, MB109: on a phone the item's menu opens at the bottom — "Item actions" and the reference in its head, the
+ * same entries as rows a finger's height, no keys. "Close issue" drills in place: its two ways replace the entries, its
+ * name in the head with ← back.
+ */
+export const PhoneSubmenu: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: () =>
+        defineComponent({
+            setup() {
+                const open = ref(true);
+                const picked = ref('nothing');
+
+                return () => (
+                    <StoryPage>
+                        <StoryRow>
+                            <Menu
+                                open={open.value}
+                                onUpdate:open={(value: boolean) => (open.value = value)}
+                                label="Item actions"
+                                context="fitloop/webapp#1187"
+                            >
+                                {{
+                                    trigger: () => (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                        >
+                                            Issue <ChevronDown />
+                                        </Button>
+                                    ),
+                                    default: () => [
+                                        <MenuItem
+                                            icon={ExternalLink}
+                                            kbd="O"
+                                            onSelect={() => (picked.value = 'open')}
+                                        >
+                                            Open on GitHub
+                                        </MenuItem>,
+                                        <MenuItem
+                                            icon={Copy}
+                                            detail="webapp#1187"
+                                            onSelect={() => (picked.value = 'copy')}
+                                        >
+                                            Copy reference
+                                        </MenuItem>,
+                                        <MenuItem
+                                            icon={LogOut}
+                                            disabled
+                                        >
+                                            Transfer issue
+                                        </MenuItem>,
+                                        <MenuSeparator />,
+                                        <MenuSub
+                                            icon={CircleCheckBig}
+                                            shortcut="Shift+X"
+                                        >
+                                            {{
+                                                default: () => 'Close issue',
+                                                content: () => [
+                                                    <MenuItem
+                                                        icon={CircleCheckBig}
+                                                        onSelect={() => (picked.value = 'completed')}
+                                                    >
+                                                        Close as completed
+                                                    </MenuItem>,
+                                                    <MenuItem
+                                                        icon={CircleSlash}
+                                                        detail="won't do, duplicate"
+                                                        onSelect={() => (picked.value = 'notPlanned')}
+                                                    >
+                                                        Close as not planned
+                                                    </MenuItem>,
+                                                ],
+                                            }}
+                                        </MenuSub>,
+                                    ],
+                                }}
+                            </Menu>
+                            <span tid="picked">Picked: {picked.value}</span>
+                        </StoryRow>
+                    </StoryPage>
+                );
+            },
+        }),
+};
+
+/** Mobile D45: one choice out of several on a phone — a heading, the chosen one checked; picking one closes it. */
+export const PhoneChoice: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: () =>
+        defineComponent({
+            setup() {
+                const open = ref(true);
+                const grouping = ref('milestone');
+
+                return () => (
+                    <StoryPage>
+                        <StoryRow>
+                            <Menu
+                                open={open.value}
+                                onUpdate:open={(value: boolean) => (open.value = value)}
+                                label="Group by"
+                            >
+                                {{
+                                    trigger: () => (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            icon={Rows3}
+                                        >
+                                            Group: {grouping.value}
+                                        </Button>
+                                    ),
+                                    default: () => [
+                                        <MenuLabel>From GitHub</MenuLabel>,
+                                        <MenuRadioGroup
+                                            modelValue={grouping.value}
+                                            onUpdate:modelValue={(value: string) => (grouping.value = value)}
+                                        >
+                                            <MenuRadioItem
+                                                value="milestone"
+                                                icon={Milestone}
+                                            >
+                                                Milestone
+                                            </MenuRadioItem>
+                                            <MenuRadioItem
+                                                value="assignee"
+                                                icon={User}
+                                            >
+                                                Assignee
+                                            </MenuRadioItem>
+                                            <MenuRadioItem
+                                                value="label"
+                                                icon={Tag}
+                                                detail="one column per label"
+                                            >
+                                                Label
+                                            </MenuRadioItem>
+                                        </MenuRadioGroup>,
+                                    ],
+                                }}
+                            </Menu>
+                            <span tid="grouping">Grouping: {grouping.value}</span>
                         </StoryRow>
                     </StoryPage>
                 );

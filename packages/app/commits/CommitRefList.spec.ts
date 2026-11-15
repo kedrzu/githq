@@ -4,7 +4,9 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
 
 import type { ItemReference } from '@/item/itemRoutes.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { sampleCommit, sampleCommitRef } from '@/testing/sampleCommits.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -568,6 +570,8 @@ async function mount(refs: MountRefs, { height = 600, refsComplete }: MountOptio
         states: refs.states,
         holdIf: refs.holdIf,
     });
+    // The test frame is narrower than a phone's width: the computer's menus.
+    container.set(PhoneLayout, createFixedPhoneLayout(false));
     await ready;
     const store = container.resolve(CommitGraphStore);
     await store.open(REPOSITORY);

@@ -3,8 +3,10 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, userEvent, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
+import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import { SAMPLE_COMMITS_NOW, sampleCommit, sampleCommitRef, sampleWebappHistory } from '@/testing/sampleCommits.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
@@ -163,6 +165,8 @@ function renderList(options: CommitGraphTestOptions) {
     return defineComponent({
         setup() {
             const { container, ready } = createCommitGraphTest(options);
+            // The story frame is narrower than a phone's width: the computer's menus.
+            container.set(PhoneLayout, createFixedPhoneLayout(false));
             provideContainer(container);
             const store = container.resolve(CommitGraphStore);
             const opened = shallowRef(false);

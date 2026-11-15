@@ -1,6 +1,11 @@
-<!-- A dropdown menu (reka-ui's `DropdownMenu`): opened from its trigger by click, Enter, Space or ↓; ↑/↓ move through the items, Enter picks one, Escape closes and focus goes back to the trigger. Items are `MenuItem`s, headings `MenuLabel`s. -->
+<!-- A dropdown menu (reka-ui's `DropdownMenu`): opened from its trigger by click, Enter, Space or ↓; ↑/↓ move through the items, Enter picks one, Escape closes and focus goes back to the trigger. Items are `MenuItem`s, headings `MenuLabel`s. On a phone (`PhoneLayout.active`, mobile D45) the same items open as a menu at the bottom (`MenuSheet`), named by `label`. -->
 <script lang="ts" setup>
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { DropdownMenuContent, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from 'reka-ui';
+
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
+
+import MenuSheet from './MenuSheet.vue';
 
 withDefaults(
   defineProps<{
@@ -13,8 +18,12 @@ withDefaults(
      * not given. A menu folded out of a toolbar beside a text being written is not: the text stays as it was.
      */
     modal?: boolean;
+    /** On a phone, the name of the menu at the bottom ("Item actions"); "Actions" when not given. */
+    label?: string;
+    /** On a phone, what it acts on, under the name (an item's reference). */
+    context?: string;
   }>(),
-  { align: 'start', side: 'bottom', modal: true },
+  { align: 'start', side: 'bottom', modal: true, label: undefined, context: undefined },
 );
 
 const emit = defineEmits<{
@@ -30,10 +39,24 @@ defineSlots<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const phoneLayout = useService(PhoneLayout);
 </script>
 
 <template>
+  <MenuSheet
+    v-if="phoneLayout.active"
+    v-model:open="open"
+    :title="label"
+    :context="context"
+    @close-auto-focus="emit('closeAutoFocus', $event)"
+  >
+    <template #trigger>
+      <slot name="trigger" />
+    </template>
+    <slot />
+  </MenuSheet>
   <DropdownMenuRoot
+    v-else
     v-model:open="open"
     :modal="modal"
   >

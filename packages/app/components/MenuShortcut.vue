@@ -1,8 +1,10 @@
-<!-- A menu entry's key at its end: one chip (`O`), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one. -->
+<!-- A menu entry's key at its end: one chip (`O`), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one, and nothing in a phone's menu at the bottom (`MenuSheet`, mobile D52). -->
 <script lang="ts" setup>
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { computed } from 'vue';
 
 import Kbd from './Kbd.vue';
+import { MenuSheetContext } from './MenuSheetContext.js';
 
 const props = defineProps<{
   /** One chip (`Escape`). */
@@ -11,7 +13,13 @@ const props = defineProps<{
   shortcut?: string;
 }>();
 
+const sheet = injectContext(MenuSheetContext, { optional: true });
+
 const keys = computed(() => {
+  if (sheet) {
+    return [];
+  }
+
   if (props.shortcut) {
     return props.shortcut.split('+');
   }

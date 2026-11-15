@@ -61,6 +61,8 @@ const emit = defineEmits<{
   escapeKeyDown: [event: KeyboardEvent];
   /** It opened and is about to focus its first control; `preventDefault()` and focus another (a title field). */
   openAutoFocus: [event: Event];
+  /** It closed and is about to give the focus back to its trigger; `preventDefault()` when an action moved it elsewhere. */
+  closeAutoFocus: [event: Event];
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -111,6 +113,7 @@ function endTask() {
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
         @open-auto-focus="emit('openAutoFocus', $event)"
+        @close-auto-focus="emit('closeAutoFocus', $event)"
       >
         <VisuallyHidden
           v-if="titleHidden || bare"
