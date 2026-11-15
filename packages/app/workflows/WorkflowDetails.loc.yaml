@@ -1,0 +1,108 @@
+label:
+  en: Details
+triggers:
+  en: Triggers
+countsOn:
+  en: Counts on
+runs:
+  en: Runs
+dispatchInputs:
+  en: Dispatch inputs
+workflow:
+  en: Workflow
+branches:
+  en: branches {patterns}
+tags:
+  en: tags {patterns}
+branchesIgnore:
+  en: not on branches {patterns}
+tagsIgnore:
+  en: not on tags {patterns}
+anyRef:
+  en: any branch or tag
+intoBranches:
+  en: into {patterns}
+anyPullRequest:
+  en: any pull request
+neverCounts:
+  en: Never counts
+onSchedule:
+  en: on a schedule
+manually:
+  en: run by hand
+inputs:
+  plural: count
+  en:
+    zero: no inputs
+    one: 1 input
+    many: '{count} inputs'
+calledOnly:
+  en: by other workflows
+calledOnlyHint:
+  en: Only other workflows run it, so it has no runs of its own.
+generated:
+  en: GitHub generates this workflow; it has no file in the repository.
+reading:
+  en: Reading the workflow file…
+readFailed:
+  en: The workflow file could not be read.
+missing:
+  en: The workflow file is not on the default branch.
+notYaml:
+  en: The workflow file is not valid YAML.
+noTriggers:
+  en: The workflow file names nothing that starts it.
+broken:
+  en: Broken
+passing:
+  en: Passing
+noRunsOn:
+  en: No runs on a {kind} yet
+branch:
+  en: branch
+tag:
+  en: tag
+failedStreak:
+  plural: count
+  en:
+    one: 'Since #{number}, 1 failed run'
+    many: 'Since #{number}, {count} failed runs in a row'
+passedStreak:
+  plural: count
+  en:
+    one: 'Since #{number}, 1 passed run'
+    many: 'Since #{number}, {count} passed runs in a row'
+nothingCounts:
+  en: No ref counts here.
+lastSuccess:
+  en: Last success
+noSuccess:
+  en: None known
+runWhen:
+  en: '#{number} · {when}'
+typicalRun:
+  en: Typical run
+typicalRunHint:
+  en: Median of the last 20 successful runs
+running:
+  en: Running
+optional:
+  en: '{type}, optional'
+required:
+  en: '{type}, required'
+choice:
+  en: 'choice: {options}'
+file:
+  en: File
+state:
+  en: State
+enabled:
+  en: Enabled
+disabled:
+  en: Disabled
+runInCommandMenu:
+  en: Run workflow… in the command menu
+disableInCommandMenu:
+  en: Disable workflow in the command menu
+enableInCommandMenu:
+  en: Enable workflow in the command menu

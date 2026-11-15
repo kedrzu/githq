@@ -9,9 +9,10 @@ import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemReturnRequest } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
-import { getExpandedLocation, getOpenedItemQuery, getOpenedItemRoute } from '@/item/itemRoutes.js';
+import { IssueRoutes, getItemPagePath, getItemReference } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import { useNow } from '@/services/useNow.js';
+import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 
@@ -38,14 +39,19 @@ export interface ItemListViewModel {
     open(id: string): void;
     /** Expands the item open in the panel to its page, Back to the panel returning (Enter on its row again). */
     expand(id: string): void;
+    /**
+     * Opens the item straight on its page, skipping the panel (`⇧Enter` on its row): unmarked, so Escape goes back to
+     * the list, which selects it.
+     */
+    openFullScreen(id: string): void;
     /** The items the list shows, and what an opened item steps through. */
     setListed(listed: ListedItems): void;
 }
 
 /**
  * What every list page does with items (my work, a repository, a project): an item opens in the panel when
- * it fits, else on its page (`useOpenItem`), and Enter on the opened one's row again expands it to its page, marked in the
- * history for Back to the panel (`getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
+ * it fits, else on its page (`useOpenItem`), `⇧Enter` on a row not open opens it straight on its page, and Enter on the opened one's row again expands it to its page, marked in the
+ * history for Back to the panel (`IssueRoutes.getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
  * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
  * request to select the items that failed (K2) selects those the list shows, and an Undo of a close (D29) brings the
  * selection, and an item open, back to the undone item the list shows. Its `title` is what back on an opened item's
@@ -70,10 +76,10 @@ export function useItemList(title: MaybeRefOrGetter<string>): ItemListViewModel 
     let returning: ItemReturnRequest | null = null;
 
     const listPath = computed(
-        () => router.resolve({ path: route.path, query: getOpenedItemQuery(route.query, null) }).fullPath,
+        () => router.resolve({ path: route.path, query: IssueRoutes.getQuery(route.query, null) }).fullPath,
     );
     const opened = computed(() => {
-        const found = getOpenedItemRoute(route);
+        const found = IssueRoutes.getOpened(route);
         return found && !found.onPage ? found : null;
     });
     const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
@@ -138,7 +144,8 @@ export function useItemList(title: MaybeRefOrGetter<string>): ItemListViewModel 
     // What an opened item steps through, and where closing it comes back to, by its name: on every move of the cursor.
     watch(
         [listed, listPath, () => toValue(title)],
-        ([{ steps, stepOf, around }, path, name]) => navigation.setList({ path, title: name, steps, stepOf, around }),
+        ([{ steps, stepOf, around }, path, name]) =>
+            navigation.setList({ kind: 'issue', path, title: name, steps, stepOf, around }),
         { immediate: true },
     );
 
@@ -176,6 +183,7 @@ export function useItemList(title: MaybeRefOrGetter<string>): ItemListViewModel 
         isEdited,
         open,
         expand,
+        openFullScreen,
         setListed,
     });
 
@@ -199,7 +207,16 @@ export function useItemList(title: MaybeRefOrGetter<string>): ItemListViewModel 
     function expand(id: string) {
         const reference = opened.value?.reference;
         if (reference && id === openedId.value) {
-            void router.push(getExpandedLocation(reference, items.get(id)?.kind));
+            void router.push(
+                IssueRoutes.getExpandedLocation({ reference, path: getItemPagePath(reference, items.get(id)?.kind) }),
+            );
+        }
+    }
+
+    function openFullScreen(id: string) {
+        const item = items.get(id);
+        if (item && !isPendingItem(item)) {
+            void router.push(getItemPagePath(getItemReference(item), item.kind));
         }
     }
 

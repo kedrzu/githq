@@ -250,7 +250,7 @@ async function open(device: 'computer' | 'phone' = 'computer') {
             { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
             {
                 path: '/:owner/:name/issues/:number',
-                meta: { itemPage: true },
+                meta: { itemPage: 'issue' },
                 component: defineComponent({ render: () => null }),
             },
             { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },

@@ -1,0 +1,28 @@
+failed:
+  en: Failed
+passed:
+  en: Passed
+running:
+  en: Running
+queued:
+  en: Queued
+waiting:
+  en: Waiting
+cancelled:
+  en: Cancelled
+skipped:
+  en: Skipped
+after:
+  en: after {duration}
+in:
+  en: in {duration}
+for:
+  en: for {duration}
+eventPush:
+  en: push
+eventPullRequest:
+  en: PR
+eventManual:
+  en: manual
+eventSchedule:
+  en: schedule

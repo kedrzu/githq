@@ -122,6 +122,10 @@ export const CommandRegistry = defineService({
 
         /** Runs the action by its key — or, where it does not run itself, opens the menu at its submenu. */
         function run(command: Command) {
+            if (command.unavailable !== undefined) {
+                return;
+            }
+
             const ran = command.run ? command.run() !== false : false;
             if (!ran && command.options) {
                 openMenu(command.id);
@@ -180,6 +184,7 @@ export const CommandRegistry = defineService({
                 for (const command of commands.value) {
                     if (
                         command.section === section &&
+                        command.unavailable === undefined &&
                         (command.run !== undefined || command.options !== undefined) &&
                         matches(command) &&
                         isEnabled(command)

@@ -6,8 +6,16 @@ import { matchText } from '@/testing/matchText.js';
 
 import * as stories from './WorkflowRerunToast.stories.js';
 
-const { AlreadyRunning, NoPermission, OrganizationRestricted, ServerError, TooOld, Unreachable } =
-    composeStories(stories);
+const {
+    AlreadyRunning,
+    CancelAlreadyFinished,
+    DisableNoPermission,
+    NoPermission,
+    OrganizationRestricted,
+    ServerError,
+    TooOld,
+    Unreachable,
+} = composeStories(stories);
 
 /** The toast's words, with plain spaces: the translations keep short words with the next one. */
 const toastText = () => document.querySelector('[role="region"]')?.textContent?.replaceAll(/\s+/gu, ' ');
@@ -61,4 +69,25 @@ test('G5: an organisation that has not approved githq leads to requesting that',
     await OrganizationRestricted.run();
 
     await expect.element(link('Request access on GitHub')).toBeVisible();
+});
+
+test('a cancel of a run that finished says so, with nothing to open', async () => {
+    await CancelAlreadyFinished.run();
+
+    await expect
+        .element(page.getByText(matchText("Deploy #4821 wasn't cancelled: it has already finished")))
+        .toBeVisible();
+    await expect.element(link('Open on GitHub')).not.toBeInTheDocument();
+});
+
+test('a workflow not disabled says it stays enabled and leads to the workflow on GitHub', async () => {
+    await DisableNoPermission.run();
+
+    await expect.element(page.getByText(matchText("Deploy wasn't disabled: no permission"))).toBeVisible();
+    expect(toastText()).toContain(
+        "GitHub refused it: your role in fitloop/webapp can't turn workflows on or off. The workflow stays enabled.",
+    );
+    await expect
+        .element(link('Open on GitHub'))
+        .toHaveAttribute('href', 'https://github.com/fitloop/webapp/blob/main/.github/workflows/deploy.yml');
 });

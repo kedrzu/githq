@@ -1,0 +1,16 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    branches: main
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: bun run deploy

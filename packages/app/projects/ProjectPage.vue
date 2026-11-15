@@ -551,6 +551,17 @@ function open(id: string) {
   list.open(id);
 }
 
+/** `⇧Enter`: an item straight on its page; a draft, which has none, opens as Enter opens it. */
+function openFullScreen(id: string) {
+  const entry = findEntry(id);
+  if (entry && !entry.content) {
+    open(id);
+    return;
+  }
+
+  list.openFullScreen(id);
+}
+
 function setRowField(fieldId: string | null) {
   if (project.value) {
     projects.setRowField(project.value.id, fieldId);
@@ -588,6 +599,7 @@ function setRowField(fieldId: string | null) {
     @reset="options.reset()"
     @open="open"
     @expand="list.expand"
+    @full-screen="openFullScreen"
     @listed="list.setListed"
     @move="move"
     @add-draft="addDraft"
@@ -642,6 +654,7 @@ function setRowField(fieldId: string | null) {
     :undone="list.undone"
     @open="list.open"
     @expand="list.expand"
+    @full-screen="list.openFullScreen"
     @listed="list.setListed"
   >
     <template #others>

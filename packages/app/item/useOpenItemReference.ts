@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { Item } from '@/store/ItemTypes.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
-import { getItemPagePath, getOpenedItemQuery, getOpenedItemRoute } from './itemRoutes.js';
+import { IssueRoutes, getItemPagePath, getOpenedItemRoute } from './itemRoutes.js';
 import type { ItemReference } from './itemRoutes.js';
 
 /** How an item is opened, by {@link useOpenItemReference}'s function and `useOpenItem`'s. */
@@ -37,7 +37,7 @@ export function useOpenItemReference() {
             return;
         }
 
-        const location = { path: route.path, query: getOpenedItemQuery(route.query, reference) };
+        const location = { path: route.path, query: IssueRoutes.getQuery(route.query, reference) };
         void (opened && options.replaceOpened ? router.replace(location) : router.push(location));
     }
 }

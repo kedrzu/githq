@@ -1,10 +1,6 @@
 open:
   en: Open
-otherRuns:
-  en: Other runs
-openRun:
-  en: Open run
-fold:
-  en: Fold
-ref:
-  en: Ref
+fullScreen:
+  en: Full screen
+latestFailure:
+  en: Latest failure

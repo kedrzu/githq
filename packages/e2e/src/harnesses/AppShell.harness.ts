@@ -150,9 +150,12 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /changes? failed/ });
     }
 
-    /** The status bar's button saying a run's re-run failed, which shows its toast again. */
+    /**
+     * The status bar's button saying a run's re-run or cancel, or a workflow turned off or on, failed, which shows its
+     * toast again.
+     */
     get failedRerun(): Locator {
-        return this.statusBar.getByRole('button', { name: /^Re-run / });
+        return this.statusBar.getByRole('button', { name: /^(Re-run|Cancel|Disable|Enable) / });
     }
 
     /** Opens Settings' Account section (G9), with "Settings" of the account menu and then its tab. */

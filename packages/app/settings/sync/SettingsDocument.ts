@@ -4,7 +4,7 @@ import * as z from 'zod/mini';
 
 import type { RefTreeGroup, RefTreeOrder } from '@/commits/buildRefTree.js';
 import type { TrackedProject, TrackedRepository } from '@/tracking/TrackingTypes.js';
-import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
+import type { WorkflowRefSettings, WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
 
 /**
  * The user's settings in the shape of the settings repository's `settings.json` (D13): every repository and project
@@ -55,6 +55,12 @@ export interface SettingsDocument {
      * user changes it, so read it with {@link readMaxWidth}.
      */
     readonly reviewDiffWidth?: unknown;
+    /**
+     * How a workflow's runs are shown, one setting for every workflow (`{ groupBy }`), as written in the file: the
+     * object may hold keys a newer build added, so read it with {@link readWorkflowRunsGroupBy} and write it with
+     * {@link writeWorkflowRunsGroupBy}.
+     */
+    readonly workflowRuns?: unknown;
     readonly [field: string]: unknown;
 }
 
@@ -181,6 +187,7 @@ export function serializeSettings(document: SettingsDocument): string {
         refSort,
         itemPageWidth,
         reviewDiffWidth,
+        workflowRuns,
         animations,
         usageStatistics,
         ...rest
@@ -207,6 +214,7 @@ export function serializeSettings(document: SettingsDocument): string {
         refSort,
         itemPageWidth,
         reviewDiffWidth,
+        workflowRuns,
         animations,
         usageStatistics,
         ...rest,
@@ -362,6 +370,42 @@ export function readMaxWidth(value: unknown): MaxWidth | null {
     }
 
     return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+/**
+ * How the document groups a workflow's runs; absent, or a value not known to this build (a newer one's), none.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readWorkflowRunsGroupBy(document: SettingsDocument): WorkflowRunsGroupBy {
+    const groupBy = isPlainObject(document.workflowRuns) ? document.workflowRuns.groupBy : undefined;
+    switch (groupBy) {
+        case 'status':
+        case 'ref':
+        case 'event':
+        case 'day':
+        case 'actor':
+            return groupBy;
+        default:
+            return 'none';
+    }
+}
+
+/**
+ * The document with `workflowRuns.groupBy` set — over the keys a newer githq may have added to the object, which stay
+ * (D13): the merge takes the object as one value, so dropping them here would drop them from the file. `null` when it
+ * reads as that already, so a newer build's value stays until the user picks something else.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function writeWorkflowRunsGroupBy(
+    document: SettingsDocument,
+    groupBy: WorkflowRunsGroupBy,
+): SettingsDocument | null {
+    if (readWorkflowRunsGroupBy(document) === groupBy) {
+        return null;
+    }
+
+    const previous = isPlainObject(document.workflowRuns) ? document.workflowRuns : {};
+    return { ...document, workflowRuns: { ...previous, groupBy } };
 }
 
 function readRefTreeOrder(value: unknown): RefTreeOrder {

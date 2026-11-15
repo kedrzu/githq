@@ -7,8 +7,7 @@ import { provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
 import { ArrowLeft, CloudOff, RotateCw, SearchX } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, onScopeDispose, ref, useTemplateRef, watch } from 'vue';
-import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
+import { computed, nextTick, onScopeDispose, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import Button from '@/components/Button.vue';
@@ -34,22 +33,12 @@ import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
 import { ItemNavigation } from './ItemNavigation.js';
-import {
-  formatItemReference,
-  getExpandedFrom,
-  getExpandedLocation,
-  getHistoryBack,
-  getItemPagePath,
-  getItemReference,
-  getOpenedItemQuery,
-  getOpenedItemRoute,
-  getReviewPath,
-} from './itemRoutes.js';
+import { IssueRoutes, getItemPagePath, getItemReference, getReviewPath } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
+import { useItemArrangement } from './useItemArrangement.js';
 import { useItemStack } from './useItemStack.js';
-import { useItemWalk } from './useItemWalk.js';
 import { getThreadNewestAt } from './thread/buildThread.js';
 import { useOpenedItem } from './useOpenedItem.js';
 
@@ -75,16 +64,43 @@ const itemLooked = useService(ItemLookedStore);
 const route = useRoute();
 const router = useRouter();
 
-// A link to an item in its body or comments opens that item as a linked one does: here, in this arrangement.
-provideContext(ItemLinkContext, { open: openLinked });
-
 const opened = useOpenedItem({ reference: () => props.reference });
-// In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
-// the last one's cursor stale: it walks the steps.
-const walk = useItemWalk({
+/** The item's repository, as GitHub names it once the item is known. */
+const repositoryName = computed(
+  () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
+);
+const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
+const arranging = useItemArrangement({
+  routes: IssueRoutes,
+  reference: () => props.reference,
+  arrangement: () => props.arrangement,
+  pagePath: () => getItemPagePath(props.reference, opened.item?.kind),
   id: () => opened.id,
-  followsCursor: () => props.arrangement === 'panel',
+  // With no list behind it, closing goes up to the item's repository, its Issues or Pull requests by its kind.
+  parent: () => {
+    const kind = opened.item?.kind ?? (route.name === 'item-pull' ? 'pullRequest' : 'issue');
+    return {
+      path: getRepositoryPath(repositoryName.value, kind === 'pullRequest' ? 'pullRequests' : 'issues'),
+      title: repositoryName.value,
+    };
+  },
+  resolveStep,
+  // The move to the page would lose an edit open in its thread: it moves once the last one closes.
+  holdsPanel: () => viewRef.value?.hasOpenEditor ?? false,
+  // Leaving the item while an edit in its thread has changes: the edit asks first and the item stays.
+  guard: {
+    askToLeave: go => viewRef.value?.askToLeave(go) ?? false,
+    onStay: () => {
+      if (opened.id !== null) {
+        navigation.requestStay(opened.id);
+      }
+    },
+  },
 });
+const { walk } = arranging;
+// A link to an item in its body or comments opens that item as a linked one does: here, in this arrangement, keeping the
+// fragment it names.
+provideContext(ItemLinkContext, { open: arranging.open });
 const stack = useItemStack(() => opened.item);
 // When the user last looked at it before opening it (F5), and when they opened it: read from this device as it opens —
 // another tab's look counts — and held while it stays open, in another arrangement too (`ItemLookedStore`), so the
@@ -109,7 +125,6 @@ const newestAt = computed(() =>
   opened.detail ? getThreadNewestAt({ detail: opened.detail, reviewThreads: opened.reviewThreads }) : null,
 );
 const visible = ref(document.visibilityState === 'visible');
-const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 const now = useNow(TICK_MS);
 // Which checks are required only the merge options say (merging D13): read for an open pull request with checks
 // failing or running — what the standing then weighs, as the merge panel does — and again when the row's counts move.
@@ -143,24 +158,8 @@ const waitingDetail = computed(() => {
 
   return opened.failed ? t(l.unreachableDetail) : undefined;
 });
-/** The item's repository, as GitHub names it once the item is known. */
-const repositoryName = computed(
-  () => opened.item?.repository.nameWithOwner ?? `${props.reference.owner}/${props.reference.name}`,
-);
-/**
- * The list the item was opened from: the last one shown, while the item is in it. An item opened from a link after a list
- * was shown, or one not known (yet, or at all: missing, unreachable), has no list behind it (mobile D20) — an item opened
- * from a list is always known, as the list holds it.
- */
-const ownList = computed(() => {
-  const { list } = navigation;
-  const { id } = opened;
-  return list && id !== null && (list.steps.includes(id) || list.stepOf.has(id)) ? list : null;
-});
 /** Whether the item's page draws the phone's top bar itself while the item is not there (its route has `ownTopBar`). */
 const showsPhoneBar = computed(() => phone.active && props.arrangement === 'page');
-/** What back on a phone says it returns to (mobile D20): the list's name, or with no list the repository's. */
-const backTitle = computed(() => ownList.value?.title ?? repositoryName.value);
 const closes = computed((): Item[] => {
   const { item } = opened;
   if (item?.kind !== 'pullRequest') {
@@ -220,7 +219,7 @@ onWindowEvent('visibilitychange', () => {
 // Closed, it is left: opened again, its time is read afresh. Moved to another arrangement, the address still opens an
 // item — this one, held, or another, which replaces it.
 onScopeDispose(() => {
-  if (opened.id !== null && !getOpenedItemRoute(router.currentRoute.value)) {
+  if (opened.id !== null && !IssueRoutes.getOpened(router.currentRoute.value)) {
     itemLooked.leave(opened.id);
   }
 });
@@ -273,77 +272,10 @@ watch(
   request => {
     const [first] = request?.ids ?? [];
     if (props.arrangement === 'page' && first !== undefined && !request?.ids.includes(opened.id ?? '')) {
-      openInPlace(first);
+      arranging.openInPlace(first);
     }
   },
 );
-
-// In the panel, a window narrowed until the panel no longer fits beside the screen moves the item to its page, in place
-// of the address — but not while an edit in its thread is open, which the move would lose: it moves once the last one
-// closes. Widening never brings it back. The guard below lets the move through: the item stays.
-watch(
-  () => props.arrangement === 'panel' && !navigation.panelFits && !(viewRef.value?.hasOpenEditor ?? false),
-  move => {
-    if (move) {
-      moveTo(locate(props.reference, 'page', opened.item?.kind), 'replace');
-    }
-  },
-  { immediate: true },
-);
-
-// Back and Forward move through the history before the guard below runs, and the router moves back when it stops them:
-// how far they went, for Discard to go there again.
-let poppedBy: number | null = null;
-const removeHistoryListener = router.options.history.listen((_to, _from, info) => {
-  poppedBy = info.delta;
-});
-// How the item's own navigation on its way goes — adding to the history or replacing the address (`moveTo`).
-let movingBy: HistoryMove | null = null;
-
-// Leaving the item — `K`/`J`, another item opened, closing it, anywhere else — while an edit in its thread has changes:
-// the edit asks first and the item stays; its Discard then goes on where the user was going.
-const removeLeaveGuard = router.beforeEach(to => {
-  const popped = poppedBy;
-  const by = movingBy;
-  poppedBy = null;
-  movingBy = null;
-  const next = getOpenedItemRoute(to);
-  const staying =
-    next !== null &&
-    formatItemReference(next.reference).toLowerCase() === formatItemReference(props.reference).toLowerCase();
-  if (staying || !viewRef.value?.askToLeave(() => goAgain({ to, popped, by }))) {
-    return true;
-  }
-
-  // The list's cursor moved ahead of the step (its own `j`/`k`): it comes back.
-  if (opened.id !== null) {
-    navigation.requestStay(opened.id);
-  }
-
-  return false;
-});
-
-onBeforeUnmount(() => {
-  removeLeaveGuard();
-  removeHistoryListener();
-});
-
-/**
- * The navigation an edit stopped, once its changes are discarded, made again as it was: Back or Forward as far; the
- * item's own as it went (`moveTo`); from elsewhere, another item over the same list — the list's `J`/`K` — replacing
- * the address, the rest adding to the history.
- */
-function goAgain({ to, popped, by }: GoAgainOptions) {
-  if (popped !== null && popped !== 0) {
-    router.go(popped);
-    return;
-  }
-
-  const next = getOpenedItemRoute(to);
-  const listStep = next !== null && !next.onPage && props.arrangement !== 'page' && to.path === route.path;
-  const how = by ?? (listStep ? 'replace' : 'push');
-  void (how === 'replace' ? router.replace(to.fullPath) : router.push(to.fullPath));
-}
 
 function merge() {
   const { id } = opened;
@@ -363,147 +295,20 @@ function moveOnFrom(id: string, merged: readonly string[]) {
   }
 }
 
-function step(delta: 1 | -1) {
-  const side = delta === 1 ? 'next' : 'previous';
-  // The cursor's neighbour can be the opened item's own row, which a button has nothing to open on: on past it.
-  const target = walk.neighbours[side] === opened.id ? walk.stepNeighbours[side] : walk.neighbours[side];
-  if (target !== null) {
-    openInPlace(target);
-  }
-}
-
-/** Opens the item in the opened one's place, replacing the address: `K`/`J` and a row of a stack's map. */
-function openInPlace(id: string) {
+/** Where a step of the list opens: its page, as its kind says, or over the list. */
+function resolveStep(id: string) {
   const item = details.getItem(id);
-  if (item) {
-    moveTo(locate(getItemReference(item), props.arrangement, item.kind), 'replace');
-  }
-}
-
-/**
- * Full screen adds the page to the history, marked as expanded from the panel, so Back returns to the panel where it
- * was. Back to the panel goes back to it when the page carries the mark, else replaces the page with the panel over
- * the last list.
- */
-function arrange(arrangement: ItemArrangement) {
-  if (arrangement === props.arrangement) {
-    return;
+  if (!item) {
+    return null;
   }
 
-  if (arrangement === 'page') {
-    moveTo(getExpandedLocation(props.reference, opened.item?.kind), 'push');
-  } else if (expandedFrom() === null) {
-    moveTo(locate(props.reference, 'panel', opened.item?.kind), 'replace');
-  } else {
-    backToPanel();
-  }
-}
-
-/**
- * Back to the panel the page was expanded from, scrolled where it was; when the page has since moved on to another item
- * (`K`/`J`, a stack's row), the panel then shows that one in place of the one expanded.
- */
-function backToPanel() {
-  const shown = formatItemReference(props.reference).toLowerCase();
-  if (expandedFrom()?.toLowerCase() !== shown) {
-    const { reference } = props;
-    // The page is gone once Back lands, and this instance with it: the router finishes the step.
-    const removeAfterEach = router.afterEach((to, _from, failure) => {
-      removeAfterEach();
-      const next = getOpenedItemRoute(to);
-      if (!failure && next && !next.onPage) {
-        void router.replace({ path: to.path, query: getOpenedItemQuery(to.query, reference) });
-      }
-    });
-  }
-
-  router.back();
-}
-
-/** What the page on screen was expanded from the panel for (`getExpandedLocation`); `null` off a page or unmarked. */
-function expandedFrom() {
-  return props.arrangement === 'page' ? getExpandedFrom(router.options.history.state) : null;
-}
-
-function open(reference: ItemReference) {
-  moveTo(locate(reference, props.arrangement), 'push');
-}
-
-/** A link to an item in its body or comments: opened as `open` does, keeping the fragment it names. */
-function openLinked(reference: ItemReference, hash: string) {
-  const to = locate(reference, props.arrangement);
-  moveTo(typeof to === 'string' ? `${to}${hash}` : { ...to, hash }, 'push');
-}
-
-/** Navigates as `by` says, remembered for the guard: an edit stopping it and discarded goes on the same way (`goAgain`). */
-function moveTo(to: RouteLocationRaw, by: HistoryMove) {
-  movingBy = by;
-  void (by === 'replace' ? router.replace(to) : router.push(to)).finally(() => {
-    movingBy = null;
-  });
+  const reference = getItemReference(item);
+  return { reference, path: getItemPagePath(reference, item.kind) };
 }
 
 /** Always the full page, whatever the arrangement (code review's D2); Back returns. */
 function openReview() {
-  moveTo(getReviewPath(props.reference), 'push');
-}
-
-/**
- * Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list, or
- * with none to the item's repository.
- */
-function close() {
-  if (phone.active && props.arrangement === 'page') {
-    goBack();
-    return;
-  }
-
-  if (expandedFrom() !== null && navigation.panelFits) {
-    backToPanel();
-    return;
-  }
-
-  moveTo(
-    props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
-    'push',
-  );
-}
-
-/**
- * Back on a phone (mobile D20): to the list the item was opened from — by the history's Back when the entry behind is that
- * list, so it comes back scrolled and selected as it was, else to its address; with no list, to the item's repository.
- */
-function goBack() {
-  const list = ownList.value;
-  const behind = getHistoryBack(router.options.history.state);
-  if (list && behind !== null && router.resolve(behind).fullPath === router.resolve(list.path).fullPath) {
-    router.back();
-    return;
-  }
-
-  moveTo(listPath(), 'push');
-}
-
-/** Where `reference` opens in `arrangement`: its page, or the list with it opened over it. */
-function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: Item['kind']): RouteLocationRaw {
-  if (arrangement === 'page') {
-    return getItemPagePath(reference, kind);
-  }
-
-  // From the item's page, back over the list shown last — My work before any (closing and back go to the item's own list
-  // or its repository instead, mobile D20).
-  const list = props.arrangement === 'page' ? router.resolve(navigation.list?.path ?? '/') : route;
-  return { path: list.path, query: getOpenedItemQuery(list.query, reference) };
-}
-
-/** The list the item was opened from; with none, its repository's issues or pull requests by its kind (mobile D20). */
-function listPath() {
-  if (ownList.value) {
-    return ownList.value.path;
-  }
-
-  const kind = opened.item?.kind ?? (route.name === 'item-pull' ? 'pullRequest' : 'issue');
-  return getRepositoryPath(repositoryName.value, kind === 'pullRequest' ? 'pullRequests' : 'issues');
+  arranging.navigate(getReviewPath(props.reference));
 }
 
 function edit(request: EditRequest) {
@@ -526,17 +331,6 @@ function retryComment(id: number) {
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
-
-/** The navigation an edit stopped, for `goAgain`. */
-interface GoAgainOptions {
-  readonly to: RouteLocationNormalized;
-  /** How far Back or Forward went; `null` for a navigation of the app's own. */
-  readonly popped: number | null;
-  /** How the item's own navigation went; `null` for one from elsewhere. */
-  readonly by: HistoryMove | null;
-}
-
-type HistoryMove = 'push' | 'replace';
 
 /** An item as the user opened it, read for it. */
 interface LookedRead extends ItemOpening {
@@ -572,19 +366,19 @@ interface LookedRead extends ItemOpening {
     :review-draft-first="tracking.reviewCommentChoice === 'draft'"
     :looked-at="opening?.lookedAt ?? null"
     :opened-at="opening?.openedAt ?? null"
-    :back-title="backTitle"
+    :back-title="arranging.backTitle"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"
     @discard-edit="discardEdit"
     @merge="merge"
     @need-projects="loadViewerProjects"
-    @close="close"
-    @previous="step(-1)"
-    @next="step(1)"
-    @arrange="arrange"
-    @open="open"
-    @open-in-place="openInPlace"
+    @close="arranging.close()"
+    @previous="arranging.step(-1)"
+    @next="arranging.step(1)"
+    @arrange="arranging.arrange($event)"
+    @open="arranging.open($event)"
+    @open-in-place="arranging.openInPlace($event)"
     @review="openReview"
   />
   <div
@@ -595,8 +389,8 @@ interface LookedRead extends ItemOpening {
     <PhoneTopBar v-if="showsPhoneBar">
       <template #start>
         <PhoneBackButton
-          :place="backTitle"
-          @click="goBack"
+          :place="arranging.backTitle"
+          @click="arranging.close()"
         />
       </template>
     </PhoneTopBar>
@@ -615,7 +409,7 @@ interface LookedRead extends ItemOpening {
           variant="secondary"
           size="sm"
           :icon="ArrowLeft"
-          @click="close"
+          @click="arranging.close()"
         >
           {{ t(l.backToList) }}
         </Button>

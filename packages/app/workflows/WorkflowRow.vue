@@ -1,4 +1,4 @@
-<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more; "pull requests" for one only pull requests ran), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m", "Failed on v0.1.0-rc.3, a tag without alerts", "1 of the last 5 failed") and its last result ("failed 14m ago"). A repository's Workflows section gives the standing its state alone does not tell, and the runs to show. Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
+<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more; "pull requests" for one only pull requests ran), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m", "Failed on v0.1.0-rc.3, a tag without alerts", "1 of the last 5 failed") and, muted after it, its last result ("· failed 14m ago"), nothing pinned to the row's end (W35). A repository's Workflows section gives the standing its state alone does not tell, and the runs to show. Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -35,14 +35,12 @@ const props = withDefaults(
     standing?: WorkflowRowStanding | null;
     /** The runs its strip shows, oldest first; `null`: those on the refs with alerts. */
     runs?: readonly GitHubWorkflowRun[] | null;
-    /** Whether its runs are unfolded under it; `null` for a row that does not unfold. */
-    expanded?: boolean | null;
   }>(),
-  { moreRefCount: 0, repository: null, selected: false, standing: null, runs: null, expanded: null },
+  { moreRefCount: 0, repository: null, selected: false, standing: null, runs: null },
 );
 
 const emit = defineEmits<{
-  /** The row was clicked or its button pressed: the caller opens the workflow's latest failed run, or its runs. */
+  /** The row was clicked or its button pressed: the caller opens the workflow, or its latest failed run. */
   open: [];
 }>();
 
@@ -201,8 +199,7 @@ function withRunning(status: string) {
         type="button"
         :class="[css.workflowRow_name, workflow.state === 'disabled' && css.workflowRow_name_muted]"
         :aria-current="selected ? 'true' : undefined"
-        :aria-expanded="expanded ?? undefined"
-        :aria-describedby="`${id}-status ${id}-result`"
+        :aria-describedby="lastResult ? `${id}-status ${id}-result` : `${id}-status`"
         @click="emit('open')"
       >
         <span :class="css.workflowRow_nameText">{{ workflow.workflow.name }}</span>
@@ -238,16 +235,25 @@ function withRunning(status: string) {
       :new-since="newSince"
       @click="emit('open')"
     />
-    <span
-      :id="`${id}-status`"
-      :class="[css.workflowRow_status, css[`workflowRow_status_${look.tone}`]]"
-      >{{ look.status }}</span
-    >
-    <span
-      :id="`${id}-result`"
-      :class="css.workflowRow_result"
-      >{{ lastResult }}</span
-    >
+    <span :class="css.workflowRow_standing">
+      <span
+        :id="`${id}-status`"
+        :class="[css.workflowRow_status, css[`workflowRow_status_${look.tone}`]]"
+        >{{ look.status }}</span
+      >
+      <template v-if="lastResult">
+        <span
+          :class="css.workflowRow_separator"
+          aria-hidden="true"
+          >·</span
+        >
+        <span
+          :id="`${id}-result`"
+          :class="css.workflowRow_result"
+          >{{ lastResult }}</span
+        >
+      </template>
+    </span>
   </div>
 </template>
 
@@ -380,15 +386,23 @@ function withRunning(status: string) {
   cursor: pointer;
 }
 
-.workflowRow_status {
+// How it stands, then its last result right after it: nothing pinned to the row's end.
+.workflowRow_standing {
+  display: flex;
   flex: 1;
+  gap: $spacing-8;
+  align-items: baseline;
   min-width: 0;
   padding-left: $spacing-10;
-  overflow: hidden;
   font-size: $font-size-sm;
+  white-space: nowrap;
+}
+
+.workflowRow_status {
+  min-width: 0;
+  overflow: hidden;
   color: $color-fg-2;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .workflowRow_status_new {
@@ -399,10 +413,9 @@ function withRunning(status: string) {
   color: $color-fg-dim;
 }
 
+.workflowRow_separator,
 .workflowRow_result {
   flex: none;
-  font-size: $font-size-2xs;
   color: $color-fg-dim;
-  white-space: nowrap;
 }
 </style>

@@ -23,6 +23,11 @@ export class WorkflowRunScreenHarness {
         return this.root.getByTestId('workflow-run-summary');
     }
 
+    /** The run's overview, where a run with nothing failed opens (W34). */
+    get overview(): Locator {
+        return this.root.getByTestId('workflow-run-overview');
+    }
+
     /** The jobs, in the order shown. */
     get jobs(): Locator {
         return this.root.getByTestId('workflow-job');

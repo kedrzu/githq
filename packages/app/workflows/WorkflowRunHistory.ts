@@ -14,18 +14,35 @@ import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { getAllowancePause } from '@/sync/getAllowancePause.js';
 
 import { mergeRunsById } from './utils/mergeRunsById.js';
+import { WorkflowStore } from './WorkflowStore.js';
 
 /** A page of a workflow's runs asks for this many: a screenful of lines. */
 const HISTORY_PAGE_SIZE = 30;
 
-/** Whose runs: one workflow's, on every ref or on one. */
-export interface WorkflowRunHistoryQuery {
+/** Which workflow's runs. */
+export interface WorkflowRunsTarget {
     /** `owner/name`. */
     readonly nameWithOwner: string;
     readonly workflowId: number;
-    /** Only the runs on this exact branch or tag; every ref's when `null`. */
-    readonly ref: string | null;
 }
+
+/** Which of a workflow's runs, by exact values GitHub filters on; `null` for any. */
+export interface WorkflowRunFilters {
+    /** Only the runs on this exact branch or tag. */
+    readonly ref: string | null;
+    /** Only the runs this event started: `push`, `pull_request`, `schedule`, … */
+    readonly event: string | null;
+    /** Only the runs in this status or with this conclusion (`in_progress`, `failure`, …) — GitHub takes either. */
+    readonly status: string | null;
+    /** Only the runs credited to this login. */
+    readonly actor: string | null;
+}
+
+/** Every run: no filter set. */
+export const NO_WORKFLOW_RUN_FILTERS: WorkflowRunFilters = { ref: null, event: null, status: null, actor: null };
+
+/** Whose runs: one workflow's, every one of them or those the filters let through. */
+interface WorkflowRunHistoryQuery extends WorkflowRunsTarget, WorkflowRunFilters {}
 
 /** Whether a workflow's older runs are being read; `failed`: the last page asked was not read, asking again asks it again. */
 export type WorkflowRunHistoryStatus = 'idle' | 'reading' | 'failed';
@@ -37,6 +54,22 @@ export interface WorkflowRunHistoryState {
     readonly status: WorkflowRunHistoryStatus;
     /** Every page was read: there is nothing older. */
     readonly complete: boolean;
+}
+
+/** The runs of the workflow open as an item, under the filters set there. */
+export interface WorkflowRunsBrowse extends WorkflowRunHistoryState {
+    readonly filters: WorkflowRunFilters;
+    /**
+     * Nothing was read yet under these filters: {@link runs} are those the sync keeps of the workflow that the filters
+     * let through, shown until the first page replaces them.
+     */
+    readonly seeded: boolean;
+}
+
+/** The workflow open as an item, and the filters set on its runs. */
+interface Browsed {
+    readonly target: WorkflowRunsTarget;
+    readonly filters: WorkflowRunFilters;
 }
 
 interface HistoryEntry extends WorkflowRunHistoryState {
@@ -65,10 +98,14 @@ interface ReadParams {
 const UNREAD: HistoryEntry = { runs: [], status: 'idle', complete: false, nextPageUrl: null };
 
 /**
- * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time a repository's
- * Workflows section unfolds the workflow, the next ones as it reaches the end of its runs (W3b) — on any ref or on one,
- * nothing asked while the core allowance is used up. Held in memory for the signed-in user only, never kept on disk nor
- * merged into the workflows' store: the sync's runs stay what decides a workflow's state.
+ * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time the workflow opens
+ * as an item or its filters change, the next ones as the list reaches the end of its runs — every run or those the
+ * filters let through, nothing asked while the core allowance is used up. Held
+ * in memory for the signed-in user only, never kept on disk nor merged into the workflows' store: the sync's runs stay
+ * what decides a workflow's state.
+ *
+ * The workflow open as an item ({@link open}) has filters of its own, cleared when another workflow opens; its runs
+ * show at once from those the sync keeps, until the first page read replaces them.
  */
 export type WorkflowRunHistory = Resolved<typeof WorkflowRunHistory>;
 export const WorkflowRunHistory = defineService({
@@ -77,23 +114,99 @@ export const WorkflowRunHistory = defineService({
         accounts: AccountSession,
         createRest: GitHubRestFactory,
         rateLimits: GitHubRateLimitStore,
+        workflows: WorkflowStore,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, createRest, rateLimits, clock, logger }) {
+    setup({ accounts, createRest, rateLimits, workflows, clock, logger }) {
         const entriesRef = shallowRef<ReadonlyMap<string, HistoryEntry>>(new Map());
+        const browsedRef = shallowRef<Browsed | null>(null);
         let session: HistorySession | null = null;
 
         accounts.onChange(account => {
             entriesRef.value = new Map();
+            browsedRef.value = null;
             session = account ? { account, rest: createRest(account.getToken) } : null;
         });
 
-        return { get, refresh, readMore };
+        return { open, getRuns, setFilters, readMoreRuns, refreshRuns, addRun };
 
-        /** What was read of the workflow's runs; nothing before the first page is asked. Reactive. */
-        function get(query: WorkflowRunHistoryQuery): WorkflowRunHistoryState {
-            return entriesRef.value.get(getKey(query)) ?? UNREAD;
+        /**
+         * Opens the workflow as an item: its filters are cleared when another workflow was open, kept when it was this
+         * one, and the first page under them is read anew.
+         */
+        function open(target: WorkflowRunsTarget) {
+            const browsed = browsedRef.value;
+            if (!browsed || !isSameTarget(browsed.target, target)) {
+                browsedRef.value = { target, filters: NO_WORKFLOW_RUN_FILTERS };
+            }
+
+            refresh({ ...target, ...getFilters(target) });
+        }
+
+        /** The filters set on the workflow's runs, and the first page under them read anew. */
+        function setFilters(target: WorkflowRunsTarget, filters: WorkflowRunFilters) {
+            browsedRef.value = { target, filters };
+            refresh({ ...target, ...filters });
+        }
+
+        /** Reads the next page of the workflow's runs under its filters. */
+        function readMoreRuns(target: WorkflowRunsTarget) {
+            readMore({ ...target, ...getFilters(target) });
+        }
+
+        /**
+         * Reads the first page of the workflow's runs anew under its filters, when any was read: a run the user just
+         * re-ran or cancelled shows as it now is, rather than at the sync's next poll. Nothing for runs never read.
+         */
+        function refreshRuns(target: WorkflowRunsTarget) {
+            const query = { ...target, ...getFilters(target) };
+            if (entriesRef.value.has(getKey(query))) {
+                refresh(query);
+            }
+        }
+
+        /**
+         * The workflow's runs under its filters — no filter unless it is the one open — and, while nothing was read
+         * under them, those the sync keeps that they let through. Reactive.
+         */
+        function getRuns(target: WorkflowRunsTarget): WorkflowRunsBrowse {
+            const filters = getFilters(target);
+            const entry = entriesRef.value.get(getKey({ ...target, ...filters })) ?? UNREAD;
+            if (entry.runs.length > 0 || entry.complete) {
+                return { runs: entry.runs, status: entry.status, complete: entry.complete, filters, seeded: false };
+            }
+
+            const runs = getStoredRuns(target, filters);
+            return { runs, status: entry.status, complete: false, filters, seeded: runs.length > 0 };
+        }
+
+        /**
+         * Puts a run the user just started at the top of the workflow's runs — unfiltered, and under its filters when they
+         * let it through — before any read or the sync's poll brings it.
+         */
+        function addRun(target: WorkflowRunsTarget, run: GitHubWorkflowRun) {
+            const filters = getFilters(target);
+            for (const shown of filters === NO_WORKFLOW_RUN_FILTERS ? [filters] : [NO_WORKFLOW_RUN_FILTERS, filters]) {
+                if (isRunFiltered(run, shown)) {
+                    const key = getKey({ ...target, ...shown });
+                    const entry = entriesRef.value.get(key) ?? UNREAD;
+                    const known = entry.runs.length > 0 || entry.complete ? entry.runs : getStoredRuns(target, shown);
+                    put(key, { ...entry, runs: mergeRunsById([known, [run]]) });
+                }
+            }
+        }
+
+        function getStoredRuns(target: WorkflowRunsTarget, filters: WorkflowRunFilters) {
+            const stored = workflows
+                .get(target.nameWithOwner)
+                ?.workflows.find(candidate => candidate.workflow.id === target.workflowId);
+            return (stored?.runs ?? []).filter(run => isRunFiltered(run, filters));
+        }
+
+        function getFilters(target: WorkflowRunsTarget): WorkflowRunFilters {
+            const browsed = browsedRef.value;
+            return browsed && isSameTarget(browsed.target, target) ? browsed.filters : NO_WORKFLOW_RUN_FILTERS;
         }
 
         /**
@@ -136,6 +249,9 @@ export const WorkflowRunHistory = defineService({
                     nameWithOwner: query.nameWithOwner,
                     workflowId: query.workflowId,
                     branch: query.ref ?? undefined,
+                    event: query.event ?? undefined,
+                    status: query.status ?? undefined,
+                    actor: query.actor ?? undefined,
                     perPage: HISTORY_PAGE_SIZE,
                     pageUrl: first ? undefined : (entry.nextPageUrl ?? undefined),
                 });
@@ -183,12 +299,26 @@ export const WorkflowRunHistory = defineService({
 
 /**
  * The entry after a read that did not happen. Reading anew over what is known is only a check: it stays as it was, and
- * the next unfold asks again; a page the user waits for says it was not read, asking again asks it again.
+ * the next opening asks again; a page the user waits for says it was not read, asking again asks it again.
  */
 function getNotRead({ entry, anew }: ReadParams): HistoryEntry {
     return anew && (entry.runs.length > 0 || entry.complete) ? entry : { ...entry, status: 'failed' };
 }
 
-function getKey({ nameWithOwner, workflowId, ref }: WorkflowRunHistoryQuery) {
-    return JSON.stringify([nameWithOwner, workflowId, ref]);
+function getKey({ nameWithOwner, workflowId, ref, event, status, actor }: WorkflowRunHistoryQuery) {
+    return JSON.stringify([nameWithOwner, workflowId, ref, event, status, actor]);
+}
+
+function isSameTarget(a: WorkflowRunsTarget, b: WorkflowRunsTarget) {
+    return a.nameWithOwner === b.nameWithOwner && a.workflowId === b.workflowId;
+}
+
+/** Whether GitHub would list the run under the filters: each, when set, matches exactly. */
+function isRunFiltered(run: GitHubWorkflowRun, filters: WorkflowRunFilters) {
+    return (
+        (filters.ref === null || run.headBranch === filters.ref) &&
+        (filters.event === null || run.event === filters.event) &&
+        (filters.status === null || run.status === filters.status || run.conclusion === filters.status) &&
+        (filters.actor === null || run.actor?.login === filters.actor)
+    );
 }

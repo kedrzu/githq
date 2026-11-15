@@ -104,6 +104,8 @@ const emit = defineEmits<{
   open: [id: string];
   /** Enter on the opened item's row: it expands to its page. */
   expand: [id: string];
+  /** `⇧Enter` on a row not open: it opens straight on its page. */
+  fullScreen: [id: string];
   /** The items the list shows, top to bottom — what an opened item steps through. */
   listed: [listed: ListedItems];
   /** The view options back to their defaults. */
@@ -387,6 +389,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       :get-url="item => item.url"
       @open="emit('open', $event)"
       @expand="emit('expand', $event)"
+      @full-screen="emit('fullScreen', $event)"
       @listed="emit('listed', $event)"
     >
       <template

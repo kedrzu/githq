@@ -247,3 +247,28 @@ test('a pull requests’ run being re-run still counts as the failure it was', (
 
     expect(list.groups[0]?.rows[0]?.standing).toEqual({ kind: 'pullRequestsOnly', failedCount: 1 });
 });
+
+test('a row’s latest failure is its newest failed run on any ref, a passing one’s too; none without a failure', () => {
+    const list = build({
+        workflows: [
+            {
+                id: 1,
+                name: 'Probe',
+                runs: [
+                    { conclusion: 'failure', ago: '3h', branch: 'chore/x', title: 'Older failure' },
+                    { conclusion: 'failure', ago: '2h', branch: 'sofiab/tokens', title: 'Newest failure' },
+                    { conclusion: 'cancelled', ago: '90m' },
+                    { conclusion: 'success', ago: '1h' },
+                ],
+            },
+            { id: 2, name: 'Test', runs: [{ conclusion: 'success', ago: '1h' }] },
+        ],
+    });
+    const rows = list.groups.flatMap(group => group.rows);
+
+    expect(rows.find(row => row.key === '1')?.latestFailure).toMatchObject({
+        headBranch: 'sofiab/tokens',
+        displayTitle: 'Newest failure',
+    });
+    expect(rows.find(row => row.key === '2')?.latestFailure).toBeNull();
+});

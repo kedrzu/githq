@@ -42,7 +42,7 @@ import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import { escapeHtml } from '../utils/escapeHtml.js';
 import { etagOf } from '../utils/etagOf.js';
 
-import { answerRepositoryActions } from './answerRepositoryActions.js';
+import { answerRepositoryActions, getWorkflowPath, getWorkflowText } from './answerRepositoryActions.js';
 import type {
     GitHubActionsJob,
     GitHubActionsLog,
@@ -360,6 +360,10 @@ export interface GitHubWorldWorkflowParams {
     /** `active` by default; `disabled_manually` for one turned off. */
     readonly state?: string;
     readonly runs?: readonly GitHubWorldRunParams[];
+    /** Its file's text at every ref `fileByRef` leaves out; run on push, one job, by default. */
+    readonly file?: string;
+    /** Its file's text at the refs where it differs, by branch or tag name. */
+    readonly fileByRef?: Readonly<Record<string, string>>;
 }
 
 /** A run of a workflow ({@link GitHubWorld.workflow}, {@link GitHubWorld.workflowRun}). */
@@ -372,6 +376,8 @@ export interface GitHubWorldRunParams {
     readonly branch?: string;
     /** What started it: `push` by default, `pull_request`, `schedule`, … */
     readonly event?: string;
+    /** Whose run it is: `monalisa` by default. */
+    readonly actor?: string;
 }
 
 /** A job of a run ({@link GitHubWorld.runJobs}). */
@@ -509,6 +515,8 @@ interface WorldRepository {
     logs: Map<number, GitHubActionsLog>;
     /** What re-running a run's failed jobs answers instead of starting them ({@link GitHubWorld.refuseRerun}). */
     rerunRefusal: GitHubRestAnswer | null;
+    /** What running a workflow answers instead of starting a run ({@link GitHubWorld.refuseDispatch}). */
+    dispatchRefusal: GitHubRestAnswer | null;
     /** Its commits by oid; none for an empty repository. */
     commits: ReadonlyMap<string, WorldCommit>;
     branches: Readonly<Record<string, string>>;
@@ -780,7 +788,8 @@ const PROJECT_FIRST_PAGE = 100;
  * `ProjectSchema`, `ProjectItems` — `updated:>=` by day, any other query matched against the titles, as GitHub
  * answers a saved view's free text) and its change signal (`GET /users|orgs/{o}/projectsV2/{n}`). Both REST
  * answers carry an ETag that is a hash of what they say, answered `304` while it is the one the app sent back. A
- * repository's GitHub Actions are answered the same way: none until a test gives it workflows ({@link workflow}).
+ * repository's GitHub Actions are answered the same way: none until a test gives it workflows ({@link workflow}), their
+ * files also all at once at a ref (`RepositoryWorkflowFiles`); running one by hand queues a run ({@link refuseDispatch}).
  *
  * It answers the app's edits as GitHub does: each mutation changes the world and answers with the state it
  * then has — unless the test said GitHub fails it ({@link failEdit}). {@link holdEdits} keeps their answers
@@ -853,7 +862,13 @@ export class GitHubWorld {
         const repository = this.getRepository(params.repository);
         let workflow = repository.workflows.find(candidate => candidate.name === params.name);
         if (!workflow) {
-            workflow = { id: this.nextWorkflowId++, name: params.name, state: params.state ?? 'active' };
+            workflow = {
+                id: this.nextWorkflowId++,
+                name: params.name,
+                state: params.state ?? 'active',
+                ...(params.file !== undefined && { file: params.file }),
+                ...(params.fileByRef !== undefined && { fileByRef: params.fileByRef }),
+            };
             repository.workflows.push(workflow);
         }
 
@@ -881,6 +896,7 @@ export class GitHubWorld {
             status: run.conclusion === null ? 'in_progress' : 'completed',
             conclusion: run.conclusion,
             createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
+            ...(run.actor !== undefined && { actor: run.actor }),
         });
         return id;
     }
@@ -917,6 +933,11 @@ export class GitHubWorld {
     /** Re-running the repository's runs' failed jobs is refused from now on: GitHub's status and its words. */
     refuseRerun(nameWithOwner: string, status: number, message: string): void {
         this.getRepository(nameWithOwner).rerunRefusal = { status, json: { message } };
+    }
+
+    /** Running the repository's workflows by hand is refused from now on: GitHub's status and its words. */
+    refuseDispatch(nameWithOwner: string, status: number, message: string): void {
+        this.getRepository(nameWithOwner).dispatchRefusal = { status, json: { message } };
     }
 
     /** A job of the run finishes, as GitHub records it between two reads, keeping its id. */
@@ -1444,6 +1465,30 @@ export class GitHubWorld {
                         nodes: users.map(login => ({ id: userId(login), name: null, ...createUser(login) })),
                     },
                     issueTypes: null,
+                },
+            };
+        });
+        github.graphql('RepositoryWorkflowFiles', ({ variables }) => {
+            const repository = this.findRepository(variables);
+            if (!repository) {
+                return { repository: null };
+            }
+
+            const expression = String(variables.expression);
+            const ref = expression.slice(0, expression.indexOf(':'));
+            const at = ref === 'HEAD' || ref === repository.defaultBranch ? null : ref;
+            return {
+                repository: {
+                    // No `.github/workflows` directory without a workflow.
+                    object:
+                        repository.workflows.length === 0
+                            ? null
+                            : {
+                                  entries: repository.workflows.map(workflow => ({
+                                      path: getWorkflowPath(workflow.name),
+                                      object: { text: getWorkflowText(workflow, at), isTruncated: false },
+                                  })),
+                              },
                 },
             };
         });
@@ -2024,7 +2069,13 @@ export class GitHubWorld {
             github,
             repository.nameWithOwner,
             () => ({ ...repository, tags: repository.tagNames }),
-            runId => answerRerun(repository, runId),
+            {
+                dispatch: (workflowId, body) => this.answerDispatch(repository, workflowId, body),
+                rerun: runId => answerRerun(repository, runId),
+                rerunJob: jobId => answerRerunJob(repository, jobId),
+                cancel: runId => answerCancel(repository, runId),
+                setEnabled: (workflowId, enabled) => answerSetEnabled(repository, workflowId, enabled),
+            },
         );
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
@@ -2048,6 +2099,41 @@ export class GitHubWorld {
      * Answers a project's change signal (`GET /users|orgs/{o}/projectsV2/{n}`): the project, with an ETag hashed from
      * its items' values and their issues' — `304` while it is the one sent.
      */
+    /**
+     * Runs a workflow as GitHub does when asked with `return_run_details` (`POST …/actions/workflows/{id}/dispatches`): a
+     * run queued on the ref asked, credited to the viewer, answered with its id and addresses — unless
+     * {@link refuseDispatch} said otherwise.
+     */
+    private answerDispatch(repository: WorldRepository, workflowId: number, body: unknown): GitHubRestAnswer {
+        if (repository.dispatchRefusal) {
+            return repository.dispatchRefusal;
+        }
+
+        if (!isPlainObject(body) || typeof body.ref !== 'string' || body.return_run_details !== true) {
+            return { status: 422, json: { message: 'Invalid request.' } };
+        }
+
+        const id = this.nextRunId++;
+        repository.runs.push({
+            id,
+            workflowId,
+            headBranch: body.ref,
+            event: 'workflow_dispatch',
+            status: 'queued',
+            conclusion: null,
+            createdAt: new Date().toISOString(),
+            actor: this.viewer,
+        });
+        return {
+            status: 200,
+            json: {
+                workflow_run_id: id,
+                run_url: `https://api.github.com/repos/${repository.nameWithOwner}/actions/runs/${id}`,
+                html_url: `https://github.com/${repository.nameWithOwner}/actions/runs/${id}`,
+            },
+        };
+    }
+
     private answerProjectPoll(github: GitHubMock, project: WorldProject) {
         const base = project.ownerKind === 'org' ? 'orgs' : 'users';
         github.rest('GET', `/${base}/${project.owner}/projectsV2/${project.number}`, ({ ifNoneMatch }) => {
@@ -3002,6 +3088,7 @@ export class GitHubWorld {
                 jobs: new Map(),
                 logs: new Map(),
                 rerunRefusal: null,
+                dispatchRefusal: null,
                 commits: new Map(),
                 branches: {},
                 tags: {},
@@ -3421,6 +3508,61 @@ function answerRerun(repository: WorldRepository, runId: number): GitHubRestAnsw
         ),
     );
     return { status: 201, json: {} };
+}
+
+/** Re-runs one job as GitHub does (`POST …/actions/jobs/{id}/rerun`): its run goes again as its next attempt, the job started. */
+function answerRerunJob(repository: WorldRepository, jobId: number): GitHubRestAnswer {
+    const runId = [...repository.jobs].find(([, jobs]) => jobs.some(job => job.id === jobId))?.[0];
+    if (runId === undefined) {
+        return { status: 404, json: { message: 'Not Found' } };
+    }
+
+    repository.runs = repository.runs.map(run =>
+        run.id === runId ? { ...run, status: 'in_progress', conclusion: null, attempt: (run.attempt ?? 1) + 1 } : run,
+    );
+    repository.jobs.set(
+        runId,
+        (repository.jobs.get(runId) ?? []).map(job =>
+            job.id === jobId
+                ? {
+                      ...job,
+                      status: 'in_progress',
+                      conclusion: null,
+                      startedAt: new Date().toISOString(),
+                      completedAt: null,
+                  }
+                : job,
+        ),
+    );
+    return { status: 201, json: {} };
+}
+
+/**
+ * Cancels a run as GitHub does (`POST …/actions/runs/{id}/cancel`): one still going is cancelled; one that ended answers
+ * 409, in GitHub's words.
+ */
+function answerCancel(repository: WorldRepository, runId: number): GitHubRestAnswer {
+    const run = repository.runs.find(candidate => candidate.id === runId);
+    if (!run) {
+        return { status: 404, json: { message: 'Not Found' } };
+    }
+
+    if (run.status === 'completed') {
+        return { status: 409, json: { message: 'Cannot cancel a workflow run that is completed.' } };
+    }
+
+    repository.runs = repository.runs.map(candidate =>
+        candidate.id === runId ? { ...candidate, status: 'completed', conclusion: 'cancelled' } : candidate,
+    );
+    return { status: 202, json: {} };
+}
+
+/** Turns a workflow on or off as GitHub does (`PUT …/actions/workflows/{id}/enable`, `/disable`). */
+function answerSetEnabled(repository: WorldRepository, workflowId: number, enabled: boolean): GitHubRestAnswer {
+    repository.workflows = repository.workflows.map(workflow =>
+        workflow.id === workflowId ? { ...workflow, state: enabled ? 'active' : 'disabled_manually' } : workflow,
+    );
+    return { status: 204 };
 }
 
 /** A ref's target as `CommitRefTargetFields` gives it. */

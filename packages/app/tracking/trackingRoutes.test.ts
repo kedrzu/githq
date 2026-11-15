@@ -77,6 +77,7 @@ test('the phone shows lists, items and settings, and hands off code review, comm
     expect(shown('review')).toBe(false);
     expect(shown('draft-reviews')).toBe(false);
     expect(shown('workflows')).toBe(false);
+    expect(shown('workflow-page')).toBe(false);
     expect(shown('workflow-run')).toBe(false);
     expect(shown('workflow-run-job')).toBe(false);
 });

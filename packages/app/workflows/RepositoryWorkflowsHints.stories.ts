@@ -4,15 +4,15 @@ import RepositoryWorkflowsHints from './RepositoryWorkflowsHints.vue';
 
 const meta = {
     component: RepositoryWorkflowsHints,
-    args: { unfolded: false },
+    args: { failure: true },
 } satisfies Meta<typeof RepositoryWorkflowsHints>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** W3a: on a workflow's row, Enter opens and → unfolds the other runs. */
-export const Folded: Story = {};
+/** W35: on a workflow with a failed run, every key has something to do. */
+export const WithFailure: Story = {};
 
-/** W3b: with a workflow unfolded, Enter opens a run, ← folds and F filters by ref. */
-export const Unfolded: Story = { args: { unfolded: true } };
+/** W35: on a workflow that never failed, F's hint is dimmed. */
+export const WithoutFailure: Story = { args: { failure: false } };

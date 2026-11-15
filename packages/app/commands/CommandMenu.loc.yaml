@@ -40,3 +40,5 @@ removeContext:
   en: Remove context
 commandsOnly:
   en: Commands only
+cantRun:
+  en: can't run

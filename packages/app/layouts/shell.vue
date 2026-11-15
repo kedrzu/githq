@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, which brings the item's comment box into view with the cursor in it (`ItemNavigation.requestComment`), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`); either opens the command menu. The toasts then sit above it. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, which brings the item's comment box into view with the cursor in it (`ItemNavigation.requestComment`), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`); either opens the command menu. The toasts then sit above it. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -72,6 +72,8 @@ import { releaseTabFocus, useTabFocus } from '@/utils/useTabFocus.js';
 import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
+import OpenedWorkflow from '@/workflows/OpenedWorkflow.vue';
+import WorkflowDispatchToast from '@/workflows/WorkflowDispatchToast.vue';
 import WorkflowRerunToast from '@/workflows/WorkflowRerunToast.vue';
 import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
@@ -300,7 +302,9 @@ const shownFreshness = computed((): Freshness => {
 const opened = computed(() => getOpenedItemRoute(route));
 /** The item opened over the screen, in the panel beside it; `null` with none, or on the item's own page. */
 const overScreen = computed(() => (opened.value && !opened.value.onPage ? opened.value : null));
-const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
+const openedId = computed(() =>
+  opened.value?.kind === 'issue' ? (resolver.peek(opened.value.reference) ?? null) : null,
+);
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
 // The user's edits (D15): the list's segment names the item being sent, the item's the fields. A merge GitHub has not
@@ -354,7 +358,7 @@ const itemEdits = computed((): SegmentEdits | null => {
 });
 // How fresh the opened item's detail is (D15); nothing for an item GitHub says does not exist.
 const itemFreshness = computed((): Freshness | null => {
-  if (!opened.value) {
+  if (opened.value?.kind !== 'issue') {
     return null;
   }
 
@@ -419,6 +423,12 @@ function showLastFailure() {
       #panel
     >
       <OpenedItem
+        v-if="overScreen.kind === 'issue'"
+        :reference="overScreen.reference"
+        arrangement="panel"
+      />
+      <OpenedWorkflow
+        v-else
         :reference="overScreen.reference"
         arrangement="panel"
       />
@@ -453,6 +463,7 @@ function showLastFailure() {
     <EditToasts />
     <MergeToasts />
     <WorkflowRerunToast />
+    <WorkflowDispatchToast />
     <SyncStoppedToast :login="auth.viewer.login" />
     <UntrackToast />
     <TrackFailedToast />

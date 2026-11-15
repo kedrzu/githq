@@ -43,7 +43,7 @@ export interface GitHubWebAnswer {
     readonly body?: string;
 }
 
-/** A REST call of GitHub's API as a test answers it ({@link GitHubMock.rest}): its status, JSON and ETag. */
+/** A REST call of GitHub's API as a test answers it ({@link GitHubMock.rest}): its status, JSON, ETag and Link. */
 export interface GitHubRestAnswer {
     readonly status: number;
     /** The body; none for a `304`. */
@@ -52,6 +52,8 @@ export interface GitHubRestAnswer {
     readonly text?: string;
     /** The `ETag` header, which the app sends back as `If-None-Match`. */
     readonly etag?: string;
+    /** The `Link` header: where the next page of a list is (`<…&page=2>; rel="next"`). */
+    readonly link?: string;
 }
 
 /** A REST call as the app made it, for a handler to answer by. */
@@ -500,7 +502,11 @@ export class GitHubMock {
             await route.fulfill({
                 ...fulfilled,
                 ...(answer.text === undefined ? { json } : { body: answer.text, contentType: 'text/plain' }),
-                headers: { ...fulfilled.headers, ...(answer.etag === undefined ? {} : { etag: answer.etag }) },
+                headers: {
+                    ...fulfilled.headers,
+                    ...(answer.etag === undefined ? {} : { etag: answer.etag }),
+                    ...(answer.link === undefined ? {} : { link: answer.link }),
+                },
             });
             return;
         }

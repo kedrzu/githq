@@ -24,7 +24,14 @@ const LIST = '/acme/web/issues?q=bug';
 
 test('mobile D20: back on a phone, the list right behind, is the history’s Back — the list comes back as it was left', async () => {
     const { router, history, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/1'] });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1', 'i2'], stepOf: new Map(), around: null });
+    navigation.setList({
+        kind: 'issue',
+        path: LIST,
+        title: 'Issues',
+        steps: ['i1', 'i2'],
+        stepOf: new Map(),
+        around: null,
+    });
 
     // `J` replaces the address: the list is still the entry behind.
     await userEvent.click(page.getByRole('button', { name: 'Next item' }));
@@ -41,7 +48,14 @@ test('mobile D20: back on a phone, another item behind (a link followed), goes t
         phone: true,
         visits: [LIST, '/acme/web/issues/2', '/acme/web/issues/1'],
     });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1', 'i2'], stepOf: new Map(), around: null });
+    navigation.setList({
+        kind: 'issue',
+        path: LIST,
+        title: 'Issues',
+        steps: ['i1', 'i2'],
+        stepOf: new Map(),
+        around: null,
+    });
 
     await userEvent.click(page.getByRole('button', { name: 'Back to Issues' }));
 
@@ -61,7 +75,7 @@ test('mobile D20: back on a phone with no list (opened from a link) goes up to t
 
 test('mobile D20: an item opened from a link after a list was shown, not in that list, goes up to its repository', async () => {
     const { router, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/1'] });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i2'], stepOf: new Map(), around: null });
+    navigation.setList({ kind: 'issue', path: LIST, title: 'Issues', steps: ['i2'], stepOf: new Map(), around: null });
 
     await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
 
@@ -70,7 +84,7 @@ test('mobile D20: an item opened from a link after a list was shown, not in that
 
 test('mobile D20: Escape on a phone goes back as back does, by the history’s Back to the list behind', async () => {
     const { router, history, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/1'] });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
+    navigation.setList({ kind: 'issue', path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
     await expect.element(page.getByRole('button', { name: 'Back to Issues' })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
@@ -81,7 +95,7 @@ test('mobile D20: Escape on a phone goes back as back does, by the history’s B
 
 test('mobile D20: on a phone an item not in the local copy has back in its top bar, to its repository whatever list was shown', async () => {
     const { router, navigation } = await mountItemPage({ phone: true, visits: [LIST, '/acme/web/issues/99'] });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
+    navigation.setList({ kind: 'issue', path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
 
     await userEvent.click(page.getByRole('button', { name: 'Back to acme/web' }));
 
@@ -98,7 +112,7 @@ test('D20: on the computer, closing an item’s page with no list goes to its re
 
 test('on the computer, closing an item’s page goes to the list it was opened from, as before', async () => {
     const { router, navigation } = await mountItemPage({ phone: false, visits: [LIST, '/acme/web/issues/1'] });
-    navigation.setList({ path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
+    navigation.setList({ kind: 'issue', path: LIST, title: 'Issues', steps: ['i1'], stepOf: new Map(), around: null });
 
     await userEvent.click(page.getByRole('button', { name: 'Close', exact: true }));
 
@@ -135,7 +149,7 @@ async function mountItemPage({ phone, visits }: MountItemPageOptions) {
                 path,
                 name: index === 0 ? 'item-issue' : 'item-pull',
                 component: ItemPage,
-                meta: { itemPage: true },
+                meta: { itemPage: 'issue' as const },
             })),
             { path: '/:path(.*)*', component: { render: () => null } },
         ],

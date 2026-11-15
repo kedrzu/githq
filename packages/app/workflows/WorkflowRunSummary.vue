@@ -83,9 +83,7 @@ const event = computed(() => {
     return '';
   }
 
-  return run.runAttempt != null && run.runAttempt > 1
-    ? t(l.eventAttempt, { event: run.event, attempt: run.runAttempt })
-    : run.event;
+  return run.runAttempt > 1 ? t(l.eventAttempt, { event: run.event, attempt: run.runAttempt }) : run.event;
 });
 </script>
 

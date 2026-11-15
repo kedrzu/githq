@@ -139,6 +139,8 @@ const emit = defineEmits<{
   open: [id: string];
   /** Enter on the opened item's row: it expands to its page. */
   expand: [id: string];
+  /** `⇧Enter` on a row not open: it opens straight on its page. */
+  fullScreen: [id: string];
   listed: [listed: ListedItems];
   /** An item dropped into another column or group: set its field. */
   move: [move: ListMove];
@@ -582,6 +584,7 @@ function hasItemView(entry: ProjectEntry) {
         :can-open-over="hasItemView"
         @open="emit('open', $event)"
         @expand="emit('expand', $event)"
+        @full-screen="emit('fullScreen', $event)"
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >

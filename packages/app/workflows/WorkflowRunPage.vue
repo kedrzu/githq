@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line of the job it names, and on no other's. The job the address names is selected, else the one shown so far, else the first failed: as the run goes the jobs change places, and a job that passes or another that fails takes nothing over, reached by ⌥J/⌥K in its place at the top. Selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Re-running the failed jobs is the store's (W4j, W4l): the page follows as the run goes, and the answer, whenever it comes, is shown above the page. Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows section. -->
+<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line of the job it names, and on no other's. A run whose jobs, as first known, have none failed opens at its overview (W34) and stays there with no job in the address, whatever fails later; one with a failure opens at it and stays there through a re-run. Opening a job's log from the overview pushes, so Back returns to the overview. The job the address names is selected, else the one shown so far, else the first failed: as the run goes the jobs change places, and a job that passes or another that fails takes nothing over, reached by ⌥J/⌥K in its place at the top. Selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Re-running the failed jobs is the store's (W4j, W4l): the page follows as the run goes, and the answer, whenever it comes, is shown above the page. Esc goes back where the run was opened from — the workflow in its arrangement, Broken workflows, the row kept (`WorkflowTabPlaces`) —, with no history to the run's workflow's page, or to the repository's Workflows section while the workflow isn't known. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -17,15 +17,22 @@ import {
   getWorkflowRunPath,
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { goBack } from '@/utils/goBack.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
-import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane } from './buildWorkflowRun.js';
+import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane, opensAtOverview } from './buildWorkflowRun.js';
 import { getRefKind } from './utils/getRefKind.js';
+import { getRepositoryDispatchBlock } from './utils/getRepositoryDispatchBlock.js';
+import { getWorkflowFile } from './utils/getWorkflowFile.js';
 import { parseLogLineHash } from './utils/logLineHash.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
+import type { WorkflowRunTarget } from './WorkflowRunStore.js';
 import WorkflowRunView from './WorkflowRunView.vue';
 import { WorkflowStore } from './WorkflowStore.js';
 import type { WorkflowRowRef } from './WorkflowTypes.js';
+import { WorkflowRoutes } from './workflowRoutes.js';
+import type { WorkflowReference } from './workflowRoutes.js';
 
 /** How often a run still going is asked again, and what is running is counted on. */
 const REFRESH_MS = 30_000;
@@ -36,6 +43,7 @@ const store = useService(WorkflowRunStore);
 const workflows = useService(WorkflowStore);
 const repositories = useService(RepositoryStore);
 const browser = useService(Browser);
+const tracking = useService(TrackingStore);
 const clock = useService(Clock);
 const now = useNow(REFRESH_MS);
 
@@ -52,15 +60,22 @@ const jobId = computed<number | null>(previous => {
 });
 /** Fixed for the page's life with its run (`meta.key`), so another run starts with none; a job gone from the run gives way. */
 const shownJobId = ref<number | null>(null);
+/** Decided once, as the jobs are first known (`opensAtOverview`); `null` until then. */
+const overview = ref<boolean | null>(null);
+/** Where Back went from the run, as the page opened: read before a job's log is pushed over it. */
+const backPath = router.options.history.state.back;
 const model = computed(() =>
   buildWorkflowRun({
     run: store.getRun(nameWithOwner, runId),
     jobs: store.getJobs(nameWithOwner, runId),
     jobId: jobId.value,
     shownJobId: shownJobId.value,
+    overview: overview.value === true,
   }),
 );
 const canRerun = computed(() => canRerunFailedJobs(model.value, repositories.get(nameWithOwner)));
+/** Re-running and cancelling go by the same gate as re-running the failed jobs: write access, not archived. */
+const canChangeRuns = computed(() => getRepositoryDispatchBlock(repositories.get(nameWithOwner)) === null);
 // Only with the columns shown: a run GitHub no longer shows reads no log.
 const logPane = computed(() =>
   getWorkflowLogPane({
@@ -106,9 +121,30 @@ const gitRef = computed((): WorkflowRowRef | null => {
 
   return { name, kind: stored.value ? getRefKind(stored.value, name) : 'branch' };
 });
-const workflowPath = computed(() => {
+const workflow = computed(() => {
   const id = model.value.run?.workflowId;
-  return stored.value?.workflows.find(entry => entry.workflow.id === id)?.workflow.path ?? null;
+  return stored.value?.workflows.find(entry => entry.workflow.id === id)?.workflow ?? null;
+});
+/** The run's workflow as its addresses name it; `null` while the workflow isn't known. */
+const workflowReference = computed((): WorkflowReference | null =>
+  workflow.value ? { ...parseRepositoryName(nameWithOwner), file: getWorkflowFile(workflow.value) } : null,
+);
+const workflowPage = computed(() =>
+  workflowReference.value ? WorkflowRoutes.getPagePath(workflowReference.value) : null,
+);
+/** Esc lands on the run's workflow: with no history, on its page; or Back goes to it, on its page or in the panel. */
+const backToWorkflow = computed(() => {
+  if (typeof backPath !== 'string') {
+    return backPath == null;
+  }
+
+  const reference = workflowReference.value;
+  const opened = WorkflowRoutes.getOpened(router.resolve(backPath));
+  return (
+    reference !== null &&
+    opened !== null &&
+    WorkflowRoutes.formatKey(opened.reference) === WorkflowRoutes.formatKey(reference)
+  );
 });
 const stillBroken = computed(() => {
   const id = model.value.run?.workflowId;
@@ -118,6 +154,16 @@ const stillBroken = computed(() => {
 });
 
 let cancelRefresh: (() => void) | null = null;
+
+watch(
+  () => store.getJobs(nameWithOwner, runId).jobs,
+  jobs => {
+    if (overview.value === null && jobs.length > 0) {
+      overview.value = opensAtOverview(jobs);
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => model.value.selectedJob?.id ?? null,
@@ -176,8 +222,10 @@ function scheduleRefresh() {
   }, REFRESH_MS);
 }
 
+// From the overview a job's log is a level in: Back returns to the overview. Between jobs, the address is replaced.
 function selectJob(job: GitHubWorkflowJob) {
-  void router.replace(getWorkflowRunPath({ nameWithOwner, runId, jobId: job.id }));
+  const path = getWorkflowRunPath({ nameWithOwner, runId, jobId: job.id });
+  void (model.value.body.kind === 'overview' ? router.push(path) : router.replace(path));
 }
 
 function retry() {
@@ -189,8 +237,25 @@ function retry() {
   }
 }
 
+function actOnRun(act: (target: WorkflowRunTarget) => void) {
+  const { run } = model.value;
+  if (run) {
+    act({ nameWithOwner, run });
+  }
+}
+
+function rerunJob(job: GitHubWorkflowJob) {
+  actOnRun(target => store.rerunJob({ ...target, jobId: job.id }));
+}
+
+function openWorkflow() {
+  if (workflowPage.value) {
+    void router.push(workflowPage.value);
+  }
+}
+
 function close() {
-  goBack(router, getRepositoryPath(nameWithOwner, 'workflows'));
+  goBack(router, workflowPage.value ?? getRepositoryPath(nameWithOwner, 'workflows'));
 }
 </script>
 
@@ -202,14 +267,23 @@ function close() {
     :log-pane="logPane"
     :line-address="lineAddress"
     :git-ref="gitRef"
-    :workflow-path="workflowPath"
+    :workflow-path="workflow?.path ?? null"
+    :workflow-page="workflowPage"
+    :back-to-workflow="backToWorkflow"
     :still-broken="stillBroken"
     :can-rerun="canRerun"
+    :can-change-runs="canChangeRuns"
+    :page-width="tracking.itemPageWidth"
     :now="now"
     @select-job="selectJob"
     @rerun="store.rerun(nameWithOwner, runId)"
+    @rerun-all="actOnRun(store.rerunAll)"
+    @rerun-job="rerunJob"
+    @cancel="actOnRun(store.cancel)"
+    @open-workflow="openWorkflow"
     @retry="retry"
     @open-on-git-hub="browser.openInNewTab($event)"
     @close="close"
+    @resize-page="tracking.setMaxWidth('itemPageWidth', $event)"
   />
 </template>

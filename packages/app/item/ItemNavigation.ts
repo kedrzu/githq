@@ -4,8 +4,12 @@ import { shallowRef } from 'vue';
 
 import type { ListedItems } from '@/lists/ListTypes.js';
 
+import type { OpenedItemKind } from './defineOpenedItemKind.js';
+
 /** The list items are opened from: where it is, and what `K`/`J` step through. */
 export interface ItemList extends Omit<ListedItems, 'all'> {
+    /** The kind of item it lists: an item of another kind is not in it. */
+    readonly kind: OpenedItemKind;
     /** The list's address, query included (`/issues/assigned?…`): where closing an item goes back to. */
     readonly path: string;
     /** What back on an item's page says it returns to (mobile D20): "Issues", "My work", a project's view. */
