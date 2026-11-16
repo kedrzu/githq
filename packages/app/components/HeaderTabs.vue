@@ -1,4 +1,4 @@
-<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link — both drawn alike, one bordered group with the current tab filled and the counts dim (CH67, the List / Board switch's look). A section's tooltip says where it goes, with its key; a saved view's only when GitHub answers it or it was changed on this device. `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked. -->
+<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link — both drawn alike, one bordered group with the current tab filled and the counts dim (CH67, the List / Board switch's look). A section's tooltip says where it goes, with its key; a saved view's only when GitHub answers it or it was changed on this device. `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked; a tab's key picks it there too, as the app's keys run nothing from inside a menu. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
@@ -52,8 +52,10 @@ export type HeaderTabsSet =
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, ChevronDown, Cloud } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 
 import Button from './Button.vue';
 import * as l from './HeaderTabs.loc.js';
@@ -74,6 +76,7 @@ const props = withDefaults(
 
 const t = useTranslate();
 const router = useRouter();
+const menuOpen = ref(false);
 
 /** Every tab alike, for the compact form. */
 const entries = computed(() => {
@@ -123,13 +126,28 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
       }))
     : [],
 );
+
+function pickByKey(event: KeyboardEvent) {
+  const entry = entries.value.find(
+    candidate => candidate.keyshortcuts != null && matchesCommandKey(event, candidate.keyshortcuts),
+  );
+  if (!entry) {
+    return;
+  }
+
+  event.preventDefault();
+  menuOpen.value = false;
+  entry.pick();
+}
 </script>
 
 <template>
   <Menu
     v-if="compact"
+    v-model:open="menuOpen"
     align="start"
     :label="tabs.label"
+    @keydown="pickByKey"
   >
     <template #trigger>
       <Button

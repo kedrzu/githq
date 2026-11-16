@@ -29,3 +29,12 @@ test('the animations switch is named, described by its text, shows the model and
     await userEvent.keyboard(' ');
     expect(onUpdate).toHaveBeenCalledTimes(2);
 });
+
+test('Display offers no choice of a layout: the Animations switch is its one control', async () => {
+    await AnimationsOff.run();
+
+    await expect.element(page.getByRole('switch', { name: 'Animations' })).toBeVisible();
+    expect(page.getByRole('radio').elements()).toHaveLength(0);
+    expect(page.getByRole('switch').elements()).toHaveLength(1);
+    expect(page.getByRole('combobox').elements()).toHaveLength(0);
+});

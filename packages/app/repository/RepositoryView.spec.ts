@@ -10,6 +10,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { matchText } from '@/testing/matchText.js';
 import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
@@ -561,6 +562,27 @@ test('Commits, narrowing: its tabs fold into one menu, then its title is cut, so
     await expect.element(page.getByRole('menuitem', { name: /Issues/ })).toHaveAttribute('aria-keyshortcuts', '1');
     await userEvent.click(page.getByRole('menuitem', { name: /Issues/ }));
     expect(view.section.value).toBe('issues');
+});
+
+test("a section's tooltip says where it goes, with its key", async () => {
+    mount();
+    const pullRequests = page.getByRole('group', { name: 'Sections' }).getByRole('button', { name: 'Pull requests 1' });
+
+    await userEvent.hover(pullRequests);
+    await expect.element(pullRequests).toHaveAccessibleDescription(matchText('Go to pull requests2'));
+});
+
+test("the sections' keys work with the folded tabs' menu open: 3 shows Commits and closes it", async () => {
+    const view = mount();
+    const fits = await narrowToolbar(view.host, [360]);
+    expect(fits[0]?.step).toBe(2);
+
+    await userEvent.click(page.getByRole('button', { name: 'Sections: Issues 5' }));
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await userEvent.keyboard('3');
+
+    await expect.poll(() => view.section.value).toBe('commits');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });
 
 test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the reading of items', async () => {

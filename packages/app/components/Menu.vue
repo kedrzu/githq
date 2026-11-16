@@ -29,6 +29,8 @@ withDefaults(
 const emit = defineEmits<{
   /** Closed, about to give the focus back to the trigger; `preventDefault()` when an entry moved it elsewhere. */
   closeAutoFocus: [event: Event];
+  /** A key pressed in the open menu (not in the menu at the bottom); the items' own keys are the caller's to handle. */
+  keydown: [event: KeyboardEvent];
 }>();
 
 defineSlots<{
@@ -71,6 +73,7 @@ const phoneLayout = useService(PhoneLayout);
         :side-offset="4"
         :collision-padding="8"
         @close-auto-focus="emit('closeAutoFocus', $event)"
+        @keydown="emit('keydown', $event)"
       >
         <slot />
       </DropdownMenuContent>
