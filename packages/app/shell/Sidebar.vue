@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button (⌘B, as its tooltip says), then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); the open place (`open`, also while one of its items is open) shows its rows under it (`SidebarSubRows`, from `getChildren`) — a repository's sections with their tabs' counts, a project's saved views —, sliding open and closed while `animate`, the current row marked instead of the place's, the place scrolled into view as it opens; leaving it for another place moves them there; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user; there tapping a place with rows shows or hides them in place, the panel staying open — the open place's shown to begin with, one place's at a time —, and tapping one of them goes there. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button (⌘B, as its tooltip says), then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); the open place's row (`open`, also while one of its items is open) is the current one — its sections or saved views are the header's tabs (git-client D27); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user; there tapping a place with rows (`SidebarSubRows`, from `getChildren`: a repository's sections with their tabs' counts, a project's saved views) shows or hides them in place, sliding open and closed while `animate`, the panel staying open — the open place's shown to begin with, one place's at a time, its current row marked instead of the place's —, and tapping one of them goes there. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -28,8 +28,8 @@ export interface SidebarTrackedEntry {
   /** The marker on a repository's icon, of its workflows (actions W1); none when nothing there can be told. */
   readonly workflowMarker?: SidebarWorkflowMarker | null;
   /**
-   * The place the screen is in (`getOpenPlace`), also while one of its items is open: on a computer its rows show under
-   * it; collapsed, its row is the current one.
+   * The place the screen is in (`getOpenPlace`), also while one of its items is open: its row is the current one, unless
+   * its rows show under it on a phone.
    */
   readonly open?: boolean;
   /**
@@ -67,7 +67,7 @@ import {
   Workflow,
 } from 'lucide-vue-next';
 import Reveal from '@nzyme/vue/components/Reveal.vue';
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -117,8 +117,8 @@ const props = defineProps<{
    */
   phone?: boolean;
   /**
-   * The rows under a tracked project or repository — its sections or saved views —, asked for the open place on a
-   * computer and for the place tapped open on a phone; none without it.
+   * On a phone, the rows under a tracked project or repository — its sections or saved views —, asked for the place
+   * tapped open; none without it.
    */
   getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
   /** The rows under a place slide open and closed (`Reveal`): the app's animations on, and no reduced motion asked for. */
@@ -164,33 +164,17 @@ const rail = computed(() => props.collapsed && !props.phone);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
 /** On a phone, the place tapped open — the open one to begin with; it is this panel's own, gone once it closes. */
 const phoneExpandedKey = ref(props.phone ? (places.value.find(place => place.open)?.key ?? null) : null);
-/**
- * The one place whose rows show, with them: on a computer the open one, on a phone the one tapped open; none on the rail,
- * nor for a place without rows.
- */
+/** On a phone, the one place tapped open, with its rows; none for a place without rows. */
 const expanded = computed(() => {
   const { getChildren } = props;
-  if (rail.value || !getChildren) {
+  if (!props.phone || !getChildren) {
     return null;
   }
 
-  const place = places.value.find(candidate =>
-    props.phone ? candidate.key === phoneExpandedKey.value : candidate.open === true,
-  );
+  const place = places.value.find(candidate => candidate.key === phoneExpandedKey.value);
   const children = place ? getChildren(place.target) : [];
   return place && children.length > 0 ? { key: place.key, children } : null;
 });
-
-// The open place comes into view, scrolled to as little as it takes.
-watch(() => (props.phone ? null : (expanded.value?.key ?? null)), scrollToExpanded, { flush: 'post' });
-onMounted(scrollToExpanded);
-
-function scrollToExpanded() {
-  const key = props.phone ? null : (expanded.value?.key ?? null);
-  if (key !== null) {
-    navRef.value?.querySelector(`[data-place="${CSS.escape(key)}"]`)?.scrollIntoView({ block: 'nearest' });
-  }
-}
 
 /** A place's row is the current one while it is the open place with its rows hidden: expanded, its current row is. */
 function isPlaceCurrent(place: SidebarTrackedEntry) {
@@ -397,7 +381,6 @@ function getProjectMark(title: string) {
             <li
               v-for="place in group.entries"
               :key="place.key"
-              :data-place="place.key"
             >
               <ContextMenu :disabled="!$slots.trackedMenu">
                 <component
@@ -456,13 +439,11 @@ function getProjectMark(title: string) {
                   v-if="expanded?.key === place.key"
                   key="rows"
                   :entries="expanded.children"
-                  :phone="phone"
                 />
               </Reveal>
               <SidebarSubRows
                 v-else-if="expanded?.key === place.key"
                 :entries="expanded.children"
-                :phone="phone"
               />
             </li>
           </ul>

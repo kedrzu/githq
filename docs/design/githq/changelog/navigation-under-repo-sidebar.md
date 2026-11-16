@@ -390,3 +390,55 @@ tracked" chip) → an instance named `Header`, fill width. Other content unchang
   Workflows 2.
 - [x] CH37 (`U4pHX` → `aBTdN`): `Repository / Header`, book-marked icon, "nuxt/nuxt", `Chip not tracked` shown, Issues
   current and Pull requests without counts, Commits, Workflows hidden, `Right part` hidden.
+
+## Round 5 · agent brief · the desktop sidebar stops expanding
+
+Asked (`.context/sidebar-expand-mobile-only-brief.md`, not committed; PR #338): the owner, after trying it, "I don't
+like the expanding on the desktop — make it only for the sidebar on mobile" (git-client D27). On a computer the open
+place's row is the current one with nothing under it; the header's tabs move between its sections or views. The phone's
+places panel is unchanged.
+
+Changed: the two expanded-place sidebars show a plain current row, which reaches every desktop screen drawing them; CH71
+and the desktop sub-row components are deleted; captions and notes no longer say the desktop sidebar expands.
+
+Left for the owner:
+
+- On a narrow computer window D13 folds a project's views into the dropdown, which has no "changed here" dot; the
+  sidebar's sub-row used to carry it there. The built `HeaderTabs` menu has none either. Adding the dot to
+  `Tabs / dropdown` and the menu would be a new decision, not drawn.
+
+- [x] `Sidebar / expanded · repository open` (`DhmYq`): `Place fitloop/webapp, open` (`elBja`, the row and four
+  sub-rows) → one current row `Nav fitloop/webapp` (`aONzF`): fill `$bg-3`, icon and label `$fg` 500, as the other
+  current rows. Reaches CH72, CH73, CH74, R4 and CH83.
+
+- [x] `Sidebar / expanded · project open` (`Aztvq`): `Place Platform Q4, open` (`s7uqH`, the row and five view
+  sub-rows) → one current row `Nav Platform Q4` (`EAEHN`). Reaches D12, D13, D17 and R5.
+
+- [x] CH73's sidebar (`vZN70` → `xKgNt`) and R4's (`rj2Hl` → `nyhAl`): new plain `DhmYq` instances, without their
+  sub-row overrides (Issues current).
+
+- [x] Deleted `Slot · CH71 · An indent with a thin guide line` (`rJsYu`). CH71 is not reused.
+
+- [x] `Row of screens · The header tabs and the sub-rows` (`SN2Eo`) → `Row of screens · The header tabs`.
+
+- [x] Deleted `Sidebar / sub-row` (`FueBC`), `Sidebar / sub-row · current` (`IuMvE`) and their holder `Sidebar
+  sub-rows` (`fTxvB`) in `Parts · navigation in the sidebar`: nothing used them.
+
+- [x] App · Repository group title (`F2Chi`): "…, under it in the sidebar" → "The repository's navigation: its row
+  current in the sidebar, its sections in the header".
+
+- [x] App · Project group title (`n7sYVu`): "…, under it in the sidebar" → "The project's views: its row current in the
+  sidebar, its views in the header".
+
+- [x] Notes `t9fdJ`, `lNXwe` (App · Repository), `vKYzC` (App · Project), `AvRbJ` (App · Commits): on a computer the
+  open place's row is current and the header's tabs move between its sections or views; only the phone's places panel
+  expands a place (MB270, MB271).
+
+- [x] Captions CH72 (`p4gMfd`), CH73 (`SVwD8`), CH74 (`Ju0Ra`), D12 (`B1Gtz`), D13 (`owJqP`), D14 (`MJS6F`): the
+  place's row current in the sidebar instead of expanded; D13's "Changed here gives way to the view's dot in the
+  sidebar" → "Changed here gives way. The sidebar keeps Platform Q4 current."
+
+- [x] W3a caption (`bBxmR`): "under the repository in the sidebar (App · Repository, CH72)" → "in the header's tabs
+  (CH72) and, on a phone, under the repository in the places panel (MB270)".
+
+- [x] CH80 caption (`WTLo1`): Animations turns off the sliding of a place's rows in the phone's places panel.

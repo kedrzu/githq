@@ -8,34 +8,29 @@ import SidebarSubRows from './SidebarSubRows.vue';
 const PORTAL = { kind: 'repository', nameWithOwner: 'skyline-labs/portal' } as const;
 const PLATFORM = { kind: 'project', id: 'PVT_1' } as const;
 
-/** As wide as the sidebar, on its background. */
-const inTheSidebar: Decorator = (story, { args }) => {
+/** As wide as the places panel, on its background. */
+const inThePlacesPanel: Decorator = story => {
     const Story = story();
-    const width = args.phone ? '320px' : '236px';
     return defineComponent({
-        setup: () => () => h('div', { style: { width, padding: '0 10px', background: '#151b23' } }, [h(Story)]),
+        setup: () => () =>
+            h('div', { style: { width: '320px', padding: '0 10px', background: '#151b23' } }, [h(Story)]),
     });
 };
 
 const meta = {
     component: SidebarSubRows,
     args: { entries: sampleGetChildren({ open: PORTAL, current: 'pullRequests' })(PORTAL) },
-    decorators: [inTheSidebar],
+    decorators: [inThePlacesPanel],
 } satisfies Meta<typeof SidebarSubRows>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** `Sidebar / sub-row`: a repository's sections, Pull requests current, Workflows with the red dot of its broken ones. */
+/** `Phone / Place row · sub-row` (MB270): a repository's sections, Pull requests current, Commits and Workflows leaving for github.com. */
 export const RepositorySections: Story = {};
 
 /** A project's saved views: no counts, a cloud on the one GitHub answers, a dot on the one changed here. */
 export const ProjectViews: Story = {
     args: { entries: sampleGetChildren({ open: PLATFORM, current: 'view-1' })(PLATFORM) },
-};
-
-/** `Phone / Place row · sub-row`: a finger's height, Commits and Workflows leaving for github.com. */
-export const Phone: Story = {
-    args: { phone: true, entries: sampleGetChildren({ open: PORTAL, current: 'pullRequests', phone: true })(PORTAL) },
 };

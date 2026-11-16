@@ -315,9 +315,23 @@ test('on a phone, the command menu rises from below with its field unfocused, it
     await expect.element(line).toBeVisible();
 });
 
-test("the open place's rows slide open in a Reveal with the animations on, and appear as they are with them off", async () => {
-    const { router, tracking } = await open();
+test("on a computer the open place's row is the current one, with nothing under it", async () => {
+    const { router } = await open();
     await router.push('/acme/web/issues');
+
+    await expect
+        .element(
+            page.getByRole('navigation', { name: 'Sidebar' }).getByRole('link', { name: new RegExp(`^${WEB}`, 'u') }),
+        )
+        .toHaveAttribute('aria-current', 'page');
+    expect(openPlaceRows(WEB)).toBeNull();
+});
+
+test("on a phone the open place's rows slide open in a Reveal with the animations on, and appear as they are with them off", async () => {
+    const { router, tracking } = await open('phone');
+    await router.push('/acme/web/issues');
+    // The list draws its own top bar with the button, over the shell's.
+    await userEvent.click(page.getByRole('button', { name: 'Open places' }).first());
     const rows = () => openPlaceRows(WEB);
     await expect.poll(() => rows()?.parentElement?.tagName).toBe('DIV');
     const wrapper = rows()?.closest('li > div');
@@ -347,11 +361,13 @@ function sidebarLink(name: string) {
     return page.getByRole('link', { name });
 }
 
-/** The list of rows under a tracked place in the sidebar, while it shows them. */
+/** The list of rows under a tracked place in the sidebar or the places panel, while it shows them; its row a link, or a button on a phone. */
 function openPlaceRows(name: string) {
-    return page
-        .getByRole('navigation', { name: 'Sidebar' })
-        .getByRole('link', { name: new RegExp(`^${name}`, 'u') })
+    const nav = page.getByRole('navigation', { name: 'Sidebar' });
+    const pattern = new RegExp(`^${name}`, 'u');
+    return nav
+        .getByRole('link', { name: pattern })
+        .or(nav.getByRole('button', { name: pattern }))
         .element()
         .closest('li')
         ?.querySelector('ul');
