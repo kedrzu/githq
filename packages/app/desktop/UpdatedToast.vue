@@ -1,4 +1,4 @@
-<!-- The app was updated (desktop releases D7, U23, U24): a toast in the corner saying from which version to which, and "What changed" (⌥W on the newest toast; in the command menu while it shows) to Settings: Changelog. Going back to an older version (U25) says which one runs and offers nothing to read (D10). It comes once for each update — remembered as told at once, so not again on reload — and goes by itself after a few seconds; no window opens by itself. Never at the first ever run, which has nothing before it (`VersionRecord.ts`). -->
+<!-- The app was updated (desktop releases D7, U23, U24): a toast in the corner saying from which version to which, and "What changed" (⌥W on the newest toast; in the command menu while it shows) to Settings: Updates, where the changelog is. Going back to an older version (U25) says which one runs and offers nothing to read (D10). It comes once for each update — remembered as told at once, so not again on reload — and goes by itself after a few seconds; no window opens by itself. Never at the first ever run, which has nothing before it (`VersionRecord.ts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -55,7 +55,7 @@ const commands = computed((): Command[] =>
 
 function openChangelog() {
   shown.value = null;
-  void router.push(getSettingsPath('changelog'));
+  void router.push(getSettingsPath('updates'));
 }
 
 function onOpenChange(open: boolean) {

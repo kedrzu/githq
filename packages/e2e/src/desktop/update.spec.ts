@@ -147,6 +147,8 @@ test('a Development build goes to Stable only through the confirmation; Developm
     native,
 }) => {
     native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
 
     const menu = new CommandMenuHarness(page);
@@ -164,11 +166,13 @@ test('a Development build goes to Stable only through the confirmation; Developm
     await expect.poll(() => native.streamChanges).toEqual(['development']);
 });
 
-test('Settings has Updates in the desktop app: the seventh tab, on `7` and in the command menu', async ({
+test('Settings has Updates in the desktop app: the last tab, on `8` and in the command menu', async ({
     page,
     github,
     native,
 }) => {
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
@@ -181,7 +185,8 @@ test('Settings has Updates in the desktop app: the seventh tab, on `7` and in th
     const settings = new SettingsScreenHarness(page);
     await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
     await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '8');
-    await expect(page.getByText('githq 1.3.0', { exact: true })).toBeVisible();
+    // The version's line, not the changelog's fold of the same version.
+    await expect(page.locator('p').getByText('githq 1.3.0', { exact: true })).toBeVisible();
 
     await page.keyboard.press('7');
     await expect(settings.section('Account')).toHaveAttribute('aria-pressed', 'true');
@@ -198,6 +203,8 @@ test('U13: Switch to Stable opens the confirmation once; cancelling keeps the st
     native,
 }) => {
     native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
 
     const menu = new CommandMenuHarness(page);
@@ -240,6 +247,8 @@ test('an address asking to confirm with nothing to confirm loses it and switches
     github,
     native,
 }) => {
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
@@ -263,6 +272,8 @@ test('an address asking to confirm with nothing to confirm loses it and switches
 
 test('Windows offers no choice of stream in Settings', async ({ page, github, native }) => {
     native.updateState = { ...native.updateState, canChoose: false };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
@@ -275,7 +286,7 @@ test('Windows offers no choice of stream in Settings', async ({ page, github, na
     await expect(page.getByRole('radio')).toHaveCount(0);
 });
 
-test('after an update the toast says so once and What changed leads to the Changelog; the first ever run says nothing', async ({
+test('after an update the toast says so once and What changed leads to the changelog in Updates; the first ever run says nothing', async ({
     page,
     github,
     native,
@@ -302,12 +313,15 @@ test('after an update the toast says so once and What changed leads to the Chang
     await page.keyboard.press('Escape');
 
     await toast.getByRole('button', { name: 'What changed' }).click();
-    await expect(page).toHaveURL(/\/settings\?tab=changelog$/);
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
     await expect(toast).toBeHidden();
 
     const settings = new SettingsScreenHarness(page);
-    await expect(settings.section('Changelog')).toHaveAttribute('aria-pressed', 'true');
-    await expect(settings.section('Changelog')).toHaveAttribute('aria-keyshortcuts', '9');
+    await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
+    await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '8');
+    await expect(
+        page.getByRole('group', { name: 'Settings sections' }).getByRole('button', { name: /^Changelog/ }),
+    ).toHaveCount(0);
     const latest = page.getByRole('button', { name: /^githq 1\.4\.0/ });
     await expect(latest).toHaveAttribute('aria-expanded', 'true');
     await expect(latest).toContainText(/New\s*Running/);
@@ -332,7 +346,7 @@ test('⌥W is What changed while the toast shows', async ({ page, github, native
     await expect(shell.toasts.filter({ hasText: 'Updated to githq 1.4.0' })).toBeVisible();
 
     await page.keyboard.press('Alt+KeyW');
-    await expect(page).toHaveURL(/\/settings\?tab=changelog$/);
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
     await expect(shell.toasts).toHaveCount(0);
 });
 
@@ -360,7 +374,7 @@ test('a Development build lists its commits since the last Stable, and O opens t
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
-    await menu.field.pressSequentially('Settings: Changelog');
+    await menu.field.pressSequentially('Settings: Updates');
     await page.keyboard.press('Enter');
 
     await expect(page.getByRole('button', { name: /^Development/ })).toContainText(/since 1\.4\.0\s*Running/);
@@ -383,18 +397,18 @@ test('a refused read answers with the failure and the releases on GitHub, and op
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
-    await menu.field.pressSequentially('Settings: Changelog');
+    await menu.field.pressSequentially('Settings: Updates');
     await page.keyboard.press('Enter');
     await expect(page.getByText("GitHub isn't answering")).toBeVisible();
 
     answerChangelog(github);
     const settings = new SettingsScreenHarness(page);
+    await settings.section('Account').click();
     await settings.section('Updates').click();
-    await settings.section('Changelog').click();
     await expect(page.getByRole('button', { name: /^githq 1\.4\.0/ })).toBeVisible();
 });
 
-/** GitHub's answers for the Changelog: two Stable versions, and commits back to the last of them. */
+/** GitHub's answers for the changelog: two Stable versions, and commits back to the last of them. */
 function answerChangelog(github: GitHubMock) {
     github.graphql('RepositoryReleases', {
         repository: {

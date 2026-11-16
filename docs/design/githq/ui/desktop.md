@@ -56,7 +56,7 @@ getting in my way."
 
 ## Updates in Settings
 
-A section only the desktop app has, after Account, with the key 6.
+A section only the desktop app has, the last one, after Account, with the key 8. Under the version and the stream it holds the changelog (After an update, below).
 
 - **What is running (U3, U4).** The version in the monospace font (`0.2.0`, `0.3.0-dev.214`), and under it what kind of
   build that is and which stream it follows, since after a switch the two can differ. A Development build also names
@@ -85,7 +85,7 @@ A section only the desktop app has, after Account, with the key 6.
 ## Update commands in the command palette
 
 Every update action is a command in ⌘K, shown only while it can run ([D18](../../desktop-releases/DECISIONS.md#d18)): Check
-for updates, Settings: Updates, Settings: Changelog, Switch to Stable or Development, Restart, Later, Try again and What changed.
+for updates, Settings: Updates, Switch to Stable or Development, Restart, Later, Try again and What changed.
 
 Check for updates is the same action as in Settings (U20). The palette closes on running it and the outcome appears at the right end of the status
 bar, where U1 speaks (U21), never as a toast. U22 has every outcome. Up to date goes away by itself; a failure stays until
@@ -95,9 +95,10 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
 
 - **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, a brief
   toast: it goes by itself after 6 seconds, not while hovered or focused ([D40](../DECISIONS.md#d40)). No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
-  while the toast shows), which goes to the changelog. After going back to an older Stable (U25) it says which version is
+  while the toast shows), which goes to Settings: Updates, where the changelog is. After going back to an older Stable (U25) it says which version is
   running and offers nothing.
-- **Changelog.** A section of Settings, after Updates, with the key 7, on the desktop app only. Every version has its own
+- **Changelog.** A block of Settings' Updates section, under the version and the update stream ([D20](../../desktop-releases/DECISIONS.md#d20)),
+  on the desktop app only. Its head has the keys ↑↓ and Space and the link to GitHub (`O`). Every version has its own
   fold, newest first, the first open and the rest collapsed, and each opens on its own. There are no ranges between
   versions: a version says its own changes.
   - Stable (U41): a plain-language summary, then the list under Breaking changes, Features, Fixes and Performance. A release

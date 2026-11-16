@@ -25,8 +25,7 @@ export class SettingsScreenHarness {
             | 'Projects'
             | 'Repositories'
             | 'Sync settings'
-            | 'Updates'
-            | 'Changelog',
+            | 'Updates',
     ): Locator {
         return this.root
             .getByRole('group', { name: 'Settings sections' })

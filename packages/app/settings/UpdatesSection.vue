@@ -1,4 +1,4 @@
-<!-- The Updates section of Settings, wired to `AppUpdate`, in the desktop app only (`SettingsPage.vue`). The address holds the confirmation of switching to Stable (`?confirm=stable`, `CONFIRM_STABLE_PATH`, U13), so the command menu can open it from anywhere: closing it, whichever way, takes that out of the address, and so it opens once. An address with nothing to confirm (already on Stable, a stable version, Windows) just loses it. -->
+<!-- The Updates section of Settings, wired to `AppUpdate`, in the desktop app only (`SettingsPage.vue`), with the changelog under the version and the stream (`ChangelogSection`, desktop releases D20). The address holds the confirmation of switching to Stable (`?confirm=stable`, `CONFIRM_STABLE_PATH`, U13), so the command menu can open it from anywhere: closing it, whichever way, takes that out of the address, and so it opens once. An address with nothing to confirm (already on Stable, a stable version, Windows) just loses it. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watchEffect } from 'vue';
@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { AppUpdate, isPrereleaseVersion } from '@/services/AppUpdate.js';
 import { useNow } from '@/services/useNow.js';
 
+import ChangelogSection from './ChangelogSection.vue';
 import { CONFIRM_STABLE_PATH, getSettingsPath } from './settingsRoutes.js';
 import UpdatesView from './UpdatesView.vue';
 
@@ -45,5 +46,7 @@ watchEffect(() => {
     @check="update.check()"
     @restart="update.restart()"
     @set-stream="update.setStream($event)"
-  />
+  >
+    <ChangelogSection />
+  </UpdatesView>
 </template>

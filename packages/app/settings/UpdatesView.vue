@@ -1,4 +1,4 @@
-<!-- The Updates section of Settings, in the desktop app only (U3–U19): what is running and what it follows, Check for updates (`U`), one line saying what the updater is doing or how it last ended, whoever started it (D11), with Restart or Try again (`R`) when there is something to run, and the choice of stream where there is one (not on Windows, U12). Choosing Stable on a build with a prerelease part asks first (U13, D5), since that can install an older version; the radio follows the native side's stream, so it moves only once the switch has been made. -->
+<!-- The Updates section of Settings, in the desktop app only (U3–U19): what is running and what it follows, Check for updates (`U`), one line saying what the updater is doing or how it last ended, whoever started it (D11), with Restart or Try again (`R`) when there is something to run, and the choice of stream where there is one (not on Windows, U12). Choosing Stable on a build with a prerelease part asks first (U13, D5), since that can install an older version; the radio follows the native side's stream, so it moves only once the switch has been made. Below them, the slot: the changelog (`ChangelogSection`, D20), in the same column and scroll. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleArrowDown, Info, LoaderCircle, RefreshCw, TriangleAlert } from 'lucide-vue-next';
@@ -346,6 +346,7 @@ function focusConfirmButton(event: Event) {
           :options="streamOptions"
         />
       </section>
+      <slot />
     </div>
     <Dialog
       v-model:open="confirming"

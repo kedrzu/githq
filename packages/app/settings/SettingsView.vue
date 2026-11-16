@@ -1,4 +1,4 @@
-<!-- The Settings screen (githq D26, `Settings / Sections column`): a column of the sections beside the page (`SegmentedTabs`, vertical). Each row has its icon, how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and its key, by its place in `SETTINGS_SECTIONS`, which switches to it while the screen is shown (the command menu goes to them as places). The page's header holds only the section's name; the section itself in the default slot, Changelog bringing a header of its own (`Changelog / Pane`). -->
+<!-- The Settings screen (githq D26, `Settings / Sections column`): a column of the sections beside the page (`SegmentedTabs`, vertical). Each row has its icon, how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and its key, by its place in `SETTINGS_SECTIONS`, which switches to it while the screen is shown (the command menu goes to them as places). The page's header holds only the section's name; the section itself in the default slot. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -81,7 +81,6 @@ function getKey(index: number) {
     </div>
     <div :class="css.settingsView_page">
       <header
-        v-if="section !== 'changelog'"
         :class="css.settingsView_header"
         v-bind="WINDOW_DRAG_REGION"
       >

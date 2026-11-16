@@ -118094,9 +118094,6 @@
                   "descendants": {
                     "NJNWb": {
                       "enabled": true
-                    },
-                    "XRz95": {
-                      "enabled": true
                     }
                   }
                 },
@@ -118293,8 +118290,8 @@
               "id": "Q7XjaK",
               "name": "Updates / Pane",
               "reusable": true,
+              "clip": true,
               "width": 760,
-              "height": 640,
               "layout": "vertical",
               "children": [
                 {
@@ -118331,7 +118328,6 @@
                   "id": "q5E9Cf",
                   "name": "Body",
                   "width": "fill_container",
-                  "height": "fill_container",
                   "padding": [
                     28,
                     20
@@ -118544,6 +118540,13 @@
                               ]
                             }
                           ]
+                        },
+                        {
+                          "id": "d4WWO",
+                          "type": "ref",
+                          "ref": "jSJW3",
+                          "name": "Block Changelog",
+                          "width": "fill_container"
                         }
                       ]
                     }
@@ -119629,49 +119632,33 @@
             },
             {
               "type": "frame",
-              "id": "t5HjX",
-              "name": "Changelog / Pane",
+              "id": "jSJW3",
+              "name": "Changelog / Block",
               "reusable": true,
-              "width": 760,
-              "height": 640,
+              "width": 680,
               "layout": "vertical",
+              "gap": 10,
               "children": [
                 {
                   "type": "frame",
-                  "id": "D6Xfl",
-                  "name": "Page header",
+                  "id": "k1Yhf",
+                  "name": "Head",
                   "width": "fill_container",
-                  "height": 48,
-                  "stroke": "$border",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
                   "gap": 14,
-                  "padding": [
-                    0,
-                    20
-                  ],
                   "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "T5uMp",
-                      "name": "Title",
-                      "fill": "$fg",
+                      "id": "W13Rmj",
+                      "name": "Block title",
+                      "fill": "$fg-2",
                       "content": "Changelog",
                       "fontFamily": "$font",
-                      "fontSize": 14,
+                      "fontSize": 12.5,
                       "fontWeight": "600"
                     },
                     {
-                      "type": "frame",
-                      "id": "FmEmz",
-                      "name": "spacer",
-                      "width": "fill_container",
-                      "height": 1
-                    },
-                    {
-                      "id": "B1tP4",
+                      "id": "ionjE",
                       "type": "ref",
                       "ref": "XSeiZ",
                       "name": "Hint Move",
@@ -119682,7 +119669,7 @@
                       }
                     },
                     {
-                      "id": "UFulb",
+                      "id": "CSamr",
                       "type": "ref",
                       "ref": "xfbOl",
                       "name": "Hint Open or close",
@@ -119700,7 +119687,7 @@
                       }
                     },
                     {
-                      "id": "H5QV6",
+                      "id": "cGRSZ",
                       "type": "ref",
                       "ref": "n73Aps",
                       "name": "Button On GitHub",
@@ -119723,34 +119710,81 @@
                 },
                 {
                   "type": "frame",
-                  "id": "uugCv",
-                  "name": "Body",
+                  "id": "h4MZl",
+                  "name": "List",
                   "width": "fill_container",
-                  "height": "fill_container",
-                  "padding": [
-                    28,
-                    20
-                  ],
+                  "layout": "vertical",
+                  "gap": 8,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "cUWZt",
-                      "name": "Column",
-                      "width": 680,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "XF1Lq",
-                          "name": "List",
-                          "clip": true,
-                          "width": "fill_container",
-                          "height": 60,
-                          "cornerRadius": 10,
-                          "stroke": "$border",
-                          "strokeWidth": 1
+                      "id": "ixJ8N",
+                      "type": "ref",
+                      "ref": "kYYMN",
+                      "name": "Version githq 0.2.0",
+                      "width": "fill_container",
+                      "descendants": {
+                        "UbJRm": {
+                          "content": "githq 0.2.0"
+                        },
+                        "J3brH": {
+                          "content": "November 3, 2026"
+                        },
+                        "wFBLn": {
+                          "enabled": true
+                        },
+                        "upOKl": {
+                          "id": "qepor",
+                          "type": "ref",
+                          "ref": "ofOJx",
+                          "name": "Content",
+                          "width": "fill_container"
                         }
-                      ]
+                      }
+                    },
+                    {
+                      "id": "b9WYiV",
+                      "type": "ref",
+                      "ref": "q6YMI",
+                      "name": "Version githq 0.1.2",
+                      "width": "fill_container",
+                      "descendants": {
+                        "UbJRm": {
+                          "content": "githq 0.1.2"
+                        },
+                        "J3brH": {
+                          "content": "October 21, 2026"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Omnn7",
+                      "type": "ref",
+                      "ref": "q6YMI",
+                      "name": "Version githq 0.1.1",
+                      "width": "fill_container",
+                      "descendants": {
+                        "UbJRm": {
+                          "content": "githq 0.1.1"
+                        },
+                        "J3brH": {
+                          "content": "October 14, 2026"
+                        }
+                      }
+                    },
+                    {
+                      "id": "YWeSy",
+                      "type": "ref",
+                      "ref": "q6YMI",
+                      "name": "Version githq 0.1.0",
+                      "width": "fill_container",
+                      "descendants": {
+                        "UbJRm": {
+                          "content": "githq 0.1.0"
+                        },
+                        "J3brH": {
+                          "content": "October 2, 2026"
+                        }
+                      }
                     }
                   ]
                 }
@@ -121790,7 +121824,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "A section only the desktop app has, after Account. One line says what is running and what it follows; below it, the outcome of the last check in one place, so nothing jumps. Check for updates is U in this section. The stream is a radio group: Tab reaches it, arrow keys choose.",
+              "content": "A section only the desktop app has, after Account. One line says what is running and what it follows; below it, the outcome of the last check in one place, so nothing jumps. Check for updates is U in this section. The stream is a radio group: Tab reaches it, arrow keys choose. Under the stream, the changelog (U41–U48); the page scrolls as one.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -122064,6 +122098,79 @@
                             },
                             "IKEAI/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "FqDrt",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "pcMya",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "jIziF",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "n0u927",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "X6uvK",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -122490,6 +122597,86 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "IVrwB",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "W1DAG",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    },
+                                    "upOKl": {
+                                      "id": "chkxD",
+                                      "type": "ref",
+                                      "ref": "ofOJx",
+                                      "name": "Content",
+                                      "width": "fill_container"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "eN4bM",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ciB2z",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.1",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.1"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 14, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "jRExa",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 2, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -122661,6 +122848,86 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "EtdiG",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "P6hW6",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    },
+                                    "upOKl": {
+                                      "id": "cXKH3",
+                                      "type": "ref",
+                                      "ref": "ofOJx",
+                                      "name": "Content",
+                                      "width": "fill_container"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "wDHa7",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "E6rZDl",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.1",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.1"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 14, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ciz8K",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 2, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -122834,6 +123101,40 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
+                              "enabled": false
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "BuZFH",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "jXAsq",
+                                  "type": "ref",
+                                  "ref": "IEXvI",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "cloud-off"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "You're offline"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The changelog shows up by itself once you're back."
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -122972,6 +123273,37 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "BqEWU",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "M2Z0f",
+                                  "type": "ref",
+                                  "ref": "IEXvI",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "triangle-alert"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "GitHub isn't answering"
+                                    },
+                                    "QFwBj": {
+                                      "content": "githq couldn't read the changelog. GitHub has the same changes."
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -123110,6 +123442,46 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
+                              "enabled": false
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "JI32T",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "FguCj",
+                                  "type": "ref",
+                                  "ref": "hk0U0",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "info"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "No Stable version yet"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The first one will be 0.1.0. Its changes appear here once it's out."
+                                    },
+                                    "Yt5tW": {
+                                      "enabled": true
+                                    },
+                                    "ELmuw": {
+                                      "content": "stable: none · next 0.1.0"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -123424,6 +123796,79 @@
                             },
                             "IKEAI/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "ecGVE",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "z3x0lH",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "R5PVS",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "rigMt",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "i3rtz",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -123591,6 +124036,79 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "cg6F3",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "L611h0",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "yJkFU",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "oOl1j",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ql9x8",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -123762,6 +124280,79 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "UlCLI",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "q8A6fI",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "mO0Dk",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "sl0wp",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "CtsB5",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -123927,6 +124518,40 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
+                              "enabled": false
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "RQRqN",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "UlW9Y",
+                                  "type": "ref",
+                                  "ref": "IEXvI",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "cloud-off"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "You're offline"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The changelog shows up by itself once you're back."
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -124073,6 +124698,46 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
+                              "enabled": false
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "gdqhc",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "TBE6W",
+                                  "type": "ref",
+                                  "ref": "hk0U0",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "info"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "No Stable version yet"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The first one will be 0.1.0. Its changes appear here once it's out."
+                                    },
+                                    "Yt5tW": {
+                                      "enabled": true
+                                    },
+                                    "ELmuw": {
+                                      "content": "stable: none · next 0.1.0"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -124351,6 +125016,79 @@
                             },
                             "IKEAI/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "XwHSv",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "Q5bG7E",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "TuIJP",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "V3GHP",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Ppael",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -124440,7 +125178,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Every update action is in the command menu (D18), and a command shows only while it can run. Always: Check for updates, Settings: Updates, Settings: Changelog, and on macOS and Linux Switch to Stable or Switch to Development, whichever isn't chosen. While an update is ready: Restart and Later. After a refused or failed install: Try again and Later. While the toast shows: What changed (⌥W).",
+                      "content": "Every update action is in the command menu (D18), and a command shows only while it can run. Always: Check for updates, Settings: Updates (the changelog is in it; there is no Settings: Changelog), and on macOS and Linux Switch to Stable or Switch to Development, whichever isn't chosen. While an update is ready: Restart and Later. After a refused or failed install: Try again and Later. While the toast shows: What changed (⌥W).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -125793,7 +126531,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "On the first launch after the version changed, in the bottom right corner, above the status bar. A brief toast (App · Toasts): it goes by itself after 6 seconds, not while hovered or focused, and the indigo ring around its × shows how long is left; Changelog in Settings keeps what it says. Only ever a toast: no window opens by itself (D7). ⌥W goes to the changelog and is a command in ⌘K while the toast shows.",
+              "content": "On the first launch after the version changed, in the bottom right corner, above the status bar. A brief toast (App · Toasts): it goes by itself after 6 seconds, not while hovered or focused, and the indigo ring around its × shows how long is left; the changelog in Settings: Updates keeps what it says. Only ever a toast: no window opens by itself (D7). ⌥W opens Updates and is a command in ⌘K while the toast shows.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -125839,7 +126577,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Says the version and the one it replaced, however many it skipped. What changed opens Settings: Changelog (U41). Brief: gone after 6 s.",
+                      "content": "Says the version and the one it replaced, however many it skipped. What changed opens Settings: Updates, with the changelog under the stream (U41). Brief: gone after 6 s.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -126177,7 +126915,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same toast. It comes after every restart into a new build, so it must stay this small. What changed opens Settings: Changelog (U43).",
+                      "content": "The same toast. It comes after every restart into a new build, so it must stay this small. What changed opens Settings: Updates, with the changelog under the stream (U43).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -126515,7 +127253,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "After U15. It says which version is running and why the number went down. Nothing new to read, so no button; the status bar shows the first sync under way. The changelog stays in Settings as always.",
+                      "content": "After U15. It says which version is running and why the number went down. Nothing new to read, so no button; the status bar shows the first sync under way. The changelog stays in Settings: Updates as always.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -126839,7 +127577,7 @@
               "id": "M7RDj",
               "name": "Group title",
               "fill": "$fg",
-              "content": "Changelog",
+              "content": "The changelog, in Updates",
               "fontFamily": "$font",
               "fontSize": 20,
               "fontWeight": "600"
@@ -126851,7 +127589,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "A section of Settings, after Updates, that's always there, on the desktop app only. Every version has its own fold with its own text, newest first: the first open, the rest collapsed. The toast's What changed (⌥W) opens it, and so does Settings: Changelog in ⌘K. It is read from GitHub when opened (D10).",
+              "content": "The changelog is a block of the Updates section, on the desktop app only, under the version and the stream: the page scrolls as one, with no header of its own. Every version has its own fold with its own text, newest first: the first open, the rest collapsed. The toast's What changed (⌥W) opens Updates. It is read from GitHub each time Updates opens (D10).",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -126868,7 +127606,7 @@
             {
               "type": "frame",
               "id": "v2orvo",
-              "name": "Slot · U41 · Stable",
+              "name": "Slot · U41 · Changelog, Stable",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -126885,7 +127623,7 @@
                       "id": "HvG1C",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U41 · Stable",
+                      "content": "U41 · Changelog, Stable",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -126908,7 +127646,7 @@
                 {
                   "type": "frame",
                   "id": "H0SvWV",
-                  "name": "U41 · Settings · Changelog · Stable",
+                  "name": "U41 · Settings · Updates · Changelog, Stable",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -126939,42 +127677,65 @@
                           }
                         },
                         {
-                          "id": "QIazL",
+                          "id": "QPI6q",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "FgSdW",
+                          "id": "Z6SsU",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "XF1Lq": {
+                            "IJsrw": {
+                              "content": "githq 0.2.0"
+                            },
+                            "chKF1": {
+                              "content": "Stable version, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest version"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 2 hours ago."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
                               "type": "frame",
-                              "id": "u3KGUR",
+                              "id": "HXsB6",
                               "name": "List",
                               "width": "fill_container",
                               "layout": "vertical",
                               "gap": 8,
                               "children": [
                                 {
-                                  "id": "EvGh8",
+                                  "id": "VKWZV",
                                   "type": "ref",
                                   "ref": "kYYMN",
                                   "name": "Version githq 0.2.0",
@@ -126993,7 +127754,7 @@
                                       "enabled": true
                                     },
                                     "upOKl": {
-                                      "id": "eBz9n",
+                                      "id": "Bt8EC",
                                       "type": "ref",
                                       "ref": "ofOJx",
                                       "name": "Content",
@@ -127002,7 +127763,7 @@
                                   }
                                 },
                                 {
-                                  "id": "EeDuj",
+                                  "id": "K39Jym",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.2",
@@ -127020,7 +127781,7 @@
                                   }
                                 },
                                 {
-                                  "id": "AFmMg",
+                                  "id": "VpdPY",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.1",
@@ -127038,7 +127799,7 @@
                                   }
                                 },
                                 {
-                                  "id": "ERMwV",
+                                  "id": "F2EwS",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.0",
@@ -127072,7 +127833,7 @@
             {
               "type": "frame",
               "id": "USqYr",
-              "name": "Slot · U42 · A release with no summary",
+              "name": "Slot · U42 · Changelog, a release with no summary",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -127089,7 +127850,7 @@
                       "id": "zJtDR",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U42 · A release with no summary",
+                      "content": "U42 · Changelog, a release with no summary",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -127112,7 +127873,7 @@
                 {
                   "type": "frame",
                   "id": "dPgvW",
-                  "name": "U42 · Settings · Changelog · A release with no summary",
+                  "name": "U42 · Settings · Updates · Changelog, a release with no summary",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -127143,42 +127904,65 @@
                           }
                         },
                         {
-                          "id": "ZdPqn",
+                          "id": "Y1kdI",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "XdrXt",
+                          "id": "I6j5j",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "XF1Lq": {
+                            "IJsrw": {
+                              "content": "githq 0.2.0"
+                            },
+                            "chKF1": {
+                              "content": "Stable version, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest version"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 2 hours ago."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
                               "type": "frame",
-                              "id": "B9atV",
+                              "id": "x6MHu",
                               "name": "List",
                               "width": "fill_container",
                               "layout": "vertical",
                               "gap": 8,
                               "children": [
                                 {
-                                  "id": "x2ohLr",
+                                  "id": "Kiej5",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.2.0",
@@ -127196,7 +127980,7 @@
                                   }
                                 },
                                 {
-                                  "id": "pnZtJ",
+                                  "id": "bTpie",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.2",
@@ -127211,7 +127995,7 @@
                                   }
                                 },
                                 {
-                                  "id": "dhrqY",
+                                  "id": "WomBF",
                                   "type": "ref",
                                   "ref": "kYYMN",
                                   "name": "Version githq 0.1.1",
@@ -127224,7 +128008,7 @@
                                       "content": "October 14, 2026"
                                     },
                                     "upOKl": {
-                                      "id": "kd6vh",
+                                      "id": "u5boia",
                                       "type": "ref",
                                       "ref": "c9dRl",
                                       "name": "Content",
@@ -127233,7 +128017,7 @@
                                   }
                                 },
                                 {
-                                  "id": "jHFyM",
+                                  "id": "D49zl",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.0",
@@ -127275,7 +128059,7 @@
             {
               "type": "frame",
               "id": "rpcUQ",
-              "name": "Slot · U43 · Development",
+              "name": "Slot · U43 · Changelog, Development",
               "fill": "#00000000",
               "stroke": "#D29922",
               "layout": "vertical",
@@ -127294,7 +128078,7 @@
                       "id": "Q1Bj1",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U43 · Development",
+                      "content": "U43 · Changelog, Development",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -127317,7 +128101,7 @@
                 {
                   "type": "frame",
                   "id": "ksgH6",
-                  "name": "U43 · Settings · Changelog · Development",
+                  "name": "U43 · Settings · Updates · Changelog, Development",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -127348,45 +128132,68 @@
                           }
                         },
                         {
-                          "id": "FABRG",
+                          "id": "Slcso",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "a4a4F2",
+                          "id": "XT1Lr",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "H5QV6/i9UKWn": {
+                            "IJsrw": {
+                              "content": "githq 0.3.0-dev.214"
+                            },
+                            "chKF1": {
+                              "content": "Development build from commit 632d28b, following Development"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest build"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 6 minutes ago."
+                            },
+                            "IKEAI/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "IKEAI/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
                               "content": "All commits on GitHub"
                             },
-                            "XF1Lq": {
+                            "d4WWO/h4MZl": {
                               "type": "frame",
-                              "id": "gbQ2Y",
+                              "id": "aGvqC",
                               "name": "List",
                               "width": "fill_container",
                               "layout": "vertical",
                               "gap": 8,
                               "children": [
                                 {
-                                  "id": "Y0kGG",
+                                  "id": "QKsPa",
                                   "type": "ref",
                                   "ref": "kYYMN",
                                   "name": "Version Development",
@@ -127402,7 +128209,7 @@
                                       "enabled": true
                                     },
                                     "upOKl": {
-                                      "id": "jlUKo",
+                                      "id": "tZsQF",
                                       "type": "ref",
                                       "ref": "n6TPY",
                                       "name": "Content",
@@ -127416,7 +128223,7 @@
                                   }
                                 },
                                 {
-                                  "id": "hnW8n",
+                                  "id": "r1rlKf",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.2.0",
@@ -127431,7 +128238,7 @@
                                   }
                                 },
                                 {
-                                  "id": "F3Ay7b",
+                                  "id": "IbnRs",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.2",
@@ -127465,7 +128272,7 @@
             {
               "type": "frame",
               "id": "VJfEa",
-              "name": "Slot · U44 · Development, nothing you'd notice",
+              "name": "Slot · U44 · Changelog, Development, nothing you'd notice",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -127482,7 +128289,7 @@
                       "id": "k9y7f",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U44 · Development, nothing you'd notice",
+                      "content": "U44 · Changelog, Development, nothing you'd notice",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -127494,7 +128301,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Everything since the last Stable was filtered out. It says so, and the header's link goes to all commits.",
+                      "content": "Everything since the last Stable was filtered out. It says so, and the block's link goes to all commits.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -127505,7 +128312,7 @@
                 {
                   "type": "frame",
                   "id": "elkuv",
-                  "name": "U44 · Settings · Changelog · Development, nothing you'd notice",
+                  "name": "U44 · Settings · Updates · Changelog, Development, nothing you'd notice",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -127536,45 +128343,68 @@
                           }
                         },
                         {
-                          "id": "GIKsb",
+                          "id": "KBB9D",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "S4sq9b",
+                          "id": "nzFop",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "H5QV6/i9UKWn": {
+                            "IJsrw": {
+                              "content": "githq 0.3.0-dev.214"
+                            },
+                            "chKF1": {
+                              "content": "Development build from commit 632d28b, following Development"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest build"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 6 minutes ago."
+                            },
+                            "IKEAI/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "IKEAI/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/cGRSZ/i9UKWn": {
                               "content": "All commits on GitHub"
                             },
-                            "XF1Lq": {
+                            "d4WWO/h4MZl": {
                               "type": "frame",
-                              "id": "XQTOO",
+                              "id": "Eh8tu",
                               "name": "List",
                               "width": "fill_container",
                               "layout": "vertical",
                               "gap": 8,
                               "children": [
                                 {
-                                  "id": "C31f4m",
+                                  "id": "aZlQF",
                                   "type": "ref",
                                   "ref": "kYYMN",
                                   "name": "Version Development",
@@ -127592,7 +128422,7 @@
                                     "P9sAU": {
                                       "children": [
                                         {
-                                          "id": "xOrMD",
+                                          "id": "ZwtfQ",
                                           "type": "ref",
                                           "ref": "oVaNJ",
                                           "name": "Content",
@@ -127611,7 +128441,7 @@
                                   }
                                 },
                                 {
-                                  "id": "XHzeo",
+                                  "id": "Qd5RC",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.2.0",
@@ -127626,7 +128456,7 @@
                                   }
                                 },
                                 {
-                                  "id": "B5zxt4",
+                                  "id": "q3HON",
                                   "type": "ref",
                                   "ref": "q6YMI",
                                   "name": "Version githq 0.1.2",
@@ -127660,7 +128490,7 @@
             {
               "type": "frame",
               "id": "vsh7q",
-              "name": "Slot · U45 · No versions yet",
+              "name": "Slot · U45 · Changelog, no versions yet",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -127677,7 +128507,7 @@
                       "id": "WSlpW",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U45 · No versions yet",
+                      "content": "U45 · Changelog, no versions yet",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -127689,7 +128519,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Before 0.1.0, on a build that chose Stable. The section is still there and says why it's empty.",
+                      "content": "Before 0.1.0, on a build that chose Stable (as in U11). The Changelog block is still there and says why it's empty.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -127700,7 +128530,7 @@
                 {
                   "type": "frame",
                   "id": "w4LFD6",
-                  "name": "U45 · Settings · Changelog · No versions yet",
+                  "name": "U45 · Settings · Updates · Changelog, no versions yet",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -127731,75 +128561,92 @@
                           }
                         },
                         {
-                          "id": "wWDee",
+                          "id": "x6gySi",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "s20SGC",
+                          "id": "wuqKN",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "H5QV6": {
+                            "IJsrw": {
+                              "content": "githq 0.1.0-dev.187"
+                            },
+                            "chKF1": {
+                              "content": "Development build from commit 632d28b, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "info",
+                              "fill": "$fg-2"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "No Stable version yet"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "The first one will be 0.1.0. githq gets it by itself once it's out."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
                               "enabled": false
                             },
-                            "cUWZt": {
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "vjXdV",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "xfVya",
-                                  "name": "Message",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "padding": [
-                                    120,
-                                    16,
-                                    80,
-                                    16
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "RFTeA",
-                                      "type": "ref",
-                                      "ref": "hk0U0",
-                                      "name": "Empty state",
-                                      "descendants": {
-                                        "qEsb9": {
-                                          "icon": "info"
-                                        },
-                                        "P3dpQw": {
-                                          "content": "No Stable version yet"
-                                        },
-                                        "QFwBj": {
-                                          "content": "The first one will be 0.1.0. Its changes appear here once it's out."
-                                        },
-                                        "Yt5tW": {
-                                          "enabled": true
-                                        },
-                                        "ELmuw": {
-                                          "content": "stable: none · next 0.1.0"
-                                        }
-                                      }
+                                  "id": "OhNsA",
+                                  "type": "ref",
+                                  "ref": "hk0U0",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "info"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "No Stable version yet"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The first one will be 0.1.0. Its changes appear here once it's out."
+                                    },
+                                    "Yt5tW": {
+                                      "enabled": true
+                                    },
+                                    "ELmuw": {
+                                      "content": "stable: none · next 0.1.0"
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -127829,7 +128676,7 @@
             {
               "type": "frame",
               "id": "IlPc1",
-              "name": "Slot · U46 · Loading",
+              "name": "Slot · U46 · Changelog, loading",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -127846,7 +128693,7 @@
                       "id": "rUCt5",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U46 · Loading",
+                      "content": "U46 · Changelog, loading",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -127858,7 +128705,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The versions are fetched when the section opens. Quiet lines hold the place, no spinner, and the GitHub link already works.",
+                      "content": "The versions are fetched each time Updates opens. Quiet lines hold the place, no spinner, and the GitHub link already works.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -127869,7 +128716,7 @@
                 {
                   "type": "frame",
                   "id": "RNY74",
-                  "name": "U46 · Settings · Changelog · Loading",
+                  "name": "U46 · Settings · Updates · Changelog, loading",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -127900,35 +128747,58 @@
                           }
                         },
                         {
-                          "id": "R7CIdv",
+                          "id": "ymr1X",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "SDZWz",
+                          "id": "lPTwe",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "XF1Lq": {
+                            "IJsrw": {
+                              "content": "githq 0.2.0"
+                            },
+                            "chKF1": {
+                              "content": "Stable version, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest version"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 2 hours ago."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
                               "type": "frame",
-                              "id": "Lv3S6",
+                              "id": "kdIED",
                               "name": "List",
                               "clip": true,
                               "width": "fill_container",
@@ -127939,7 +128809,7 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "f0I5h",
+                                  "id": "Qdspj",
                                   "name": "Loading",
                                   "width": "fill_container",
                                   "layout": "vertical",
@@ -127949,7 +128819,7 @@
                                   ],
                                   "children": [
                                     {
-                                      "id": "ZgBUZ",
+                                      "id": "WLl4L",
                                       "type": "ref",
                                       "ref": "ol23G",
                                       "name": "Loading",
@@ -127977,7 +128847,7 @@
             {
               "type": "frame",
               "id": "hpcGX",
-              "name": "Slot · U47 · Offline",
+              "name": "Slot · U47 · Changelog, offline",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -127994,7 +128864,7 @@
                       "id": "KL9ri",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U47 · Offline",
+                      "content": "U47 · Changelog, offline",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -128017,7 +128887,7 @@
                 {
                   "type": "frame",
                   "id": "hLewv",
-                  "name": "U47 · Settings · Changelog · Offline",
+                  "name": "U47 · Settings · Updates · Changelog, offline",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -128048,69 +128918,86 @@
                           }
                         },
                         {
-                          "id": "LlN5O",
+                          "id": "wKdzd",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "QI6Ls",
+                          "id": "xSekA",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "H5QV6": {
+                            "IJsrw": {
+                              "content": "githq 0.2.0"
+                            },
+                            "chKF1": {
+                              "content": "Stable version, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest version"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 2 hours ago."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/cGRSZ": {
                               "enabled": false
                             },
-                            "cUWZt": {
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "a0p0SI",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "j76Gt",
-                                  "name": "Message",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "padding": [
-                                    120,
-                                    16,
-                                    80,
-                                    16
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "u7L0IY",
-                                      "type": "ref",
-                                      "ref": "IEXvI",
-                                      "name": "Empty state",
-                                      "descendants": {
-                                        "qEsb9": {
-                                          "icon": "cloud-off"
-                                        },
-                                        "P3dpQw": {
-                                          "content": "You're offline"
-                                        },
-                                        "QFwBj": {
-                                          "content": "The changelog shows up by itself once you're back."
-                                        }
-                                      }
+                                  "id": "b1tlM9",
+                                  "type": "ref",
+                                  "ref": "IEXvI",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "cloud-off"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "You're offline"
+                                    },
+                                    "QFwBj": {
+                                      "content": "The changelog shows up by itself once you're back."
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -128132,7 +129019,7 @@
             {
               "type": "frame",
               "id": "M6N6H",
-              "name": "Slot · U48 · Failure",
+              "name": "Slot · U48 · Changelog, failure",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -128149,7 +129036,7 @@
                       "id": "SYwSa",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U48 · Failure",
+                      "content": "U48 · Changelog, failure",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -128161,7 +129048,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "GitHub answered with an error or not at all. The header's link leads to the same changes on GitHub: O, in the system browser.",
+                      "content": "GitHub answered with an error or not at all. The block's link leads to the same changes on GitHub: O, in the system browser.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -128172,7 +129059,7 @@
                 {
                   "type": "frame",
                   "id": "Fctc6",
-                  "name": "U48 · Settings · Changelog · Failure",
+                  "name": "U48 · Settings · Updates · Changelog, failure",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -128203,66 +129090,83 @@
                           }
                         },
                         {
-                          "id": "mdH0r",
+                          "id": "vNJ0L",
                           "type": "ref",
                           "ref": "Mxhs1",
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "XRz95": {
+                            "NJNWb": {
+                              "enabled": true,
                               "fill": "$bg-3"
                             },
-                            "XRz95/kk8BQ": {
+                            "NJNWb/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "XRz95/upTOT": {
+                            "NJNWb/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
                             }
                           }
                         },
                         {
-                          "id": "uLqXE",
+                          "id": "SPFmZ",
                           "type": "ref",
-                          "ref": "t5HjX",
-                          "name": "Changelog pane",
+                          "ref": "Q7XjaK",
+                          "name": "Updates pane",
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "cUWZt": {
+                            "IJsrw": {
+                              "content": "githq 0.2.0"
+                            },
+                            "chKF1": {
+                              "content": "Stable version, following Stable"
+                            },
+                            "U7pCT/xepJB": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "U7pCT/o3YUv": {
+                              "content": "You're on the newest version"
+                            },
+                            "U7pCT/c3RbR": {
+                              "content": "Checked 2 hours ago."
+                            },
+                            "BOAGw/q5uuTV": {
+                              "stroke": "$accent"
+                            },
+                            "BOAGw/dOaO4": {
+                              "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "IfDyV",
+                              "name": "Message",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                32,
+                                16
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "c6WxZW",
-                                  "name": "Message",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "padding": [
-                                    120,
-                                    16,
-                                    80,
-                                    16
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "DMYdr",
-                                      "type": "ref",
-                                      "ref": "IEXvI",
-                                      "name": "Empty state",
-                                      "descendants": {
-                                        "qEsb9": {
-                                          "icon": "triangle-alert"
-                                        },
-                                        "P3dpQw": {
-                                          "content": "GitHub isn't answering"
-                                        },
-                                        "QFwBj": {
-                                          "content": "githq couldn't read the changelog. GitHub has the same changes."
-                                        }
-                                      }
+                                  "id": "zossh",
+                                  "type": "ref",
+                                  "ref": "IEXvI",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "triangle-alert"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "GitHub isn't answering"
+                                    },
+                                    "QFwBj": {
+                                      "content": "githq couldn't read the changelog. GitHub has the same changes."
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -128790,6 +129694,86 @@
                             },
                             "BOAGw/dOaO4": {
                               "enabled": true
+                            },
+                            "d4WWO/h4MZl": {
+                              "type": "frame",
+                              "id": "C6UZ2Y",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "mW7SH",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    },
+                                    "upOKl": {
+                                      "id": "vWQdF",
+                                      "type": "ref",
+                                      "ref": "ofOJx",
+                                      "name": "Content",
+                                      "width": "fill_container"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "G3x9zV",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "vzscW",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.1",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.1"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 14, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "M0SF0k",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 2, 2026"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -232862,25 +233846,6 @@
                         },
                         "v5Hae9/luKkY": {
                           "content": "8"
-                        }
-                      }
-                    },
-                    {
-                      "id": "XRz95",
-                      "type": "ref",
-                      "ref": "N8UMD",
-                      "name": "Section Changelog",
-                      "enabled": false,
-                      "width": "fill_container(0)",
-                      "descendants": {
-                        "kk8BQ": {
-                          "icon": "scroll-text"
-                        },
-                        "upTOT": {
-                          "content": "Changelog"
-                        },
-                        "v5Hae9/luKkY": {
-                          "content": "9"
                         }
                       }
                     }
