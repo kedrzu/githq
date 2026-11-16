@@ -46,15 +46,15 @@ request clicks.** (2026-11-01, owner, on the design agent's proposal)
 **Why.** A filter changes constantly and each synced change would be a commit, and it describes what the user is
 looking at now.
 
-| State                                      | Where today (`packages/app/`)                                         |        |
-| ------------------------------------------ | --------------------------------------------------------------------- | ------ |
-| Tracked repositories and projects          | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`         | synced |
-| Layout, grouping, sort, visible properties | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`         | synced |
-| Row field per project                      | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | synced |
-| Filter per list                            | same key as layout, `lists/useListViewOptions.ts:39-45`               | local  |
-| How items open (panel, modal, page)        | `githq.itemArrangement`, `services/LocalPreferences.ts:11`            | local  |
-| Sidebar collapsed, panel widths            | `services/LocalPreferences.ts:12-13`                                  | local  |
-| New issue drafts, approval request clicks  | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`  | local  |
+|State|Where today (`packages/app/`)||
+|-|-|-|
+|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
+|Layout, grouping, sort, visible properties|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|synced|
+|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|synced|
+|Filter per list|same key as layout, `lists/useListViewOptions.ts:39-45`|local|
+|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
+|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
+|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
 
 **Rejected.**
 

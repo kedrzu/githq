@@ -106,17 +106,17 @@ githq cannot delete the repository with the scopes it has.
   while the settings hold names of private repositories. There is no unique name or server-side lookup, so finding one
   means reading all the user's gists, and several can exist. A write cannot detect that another device wrote first.
 
-    > **Checked 2026-11-01:** "To read or write gists on a user's behalf, you need the gist OAuth scope and a token" —
-    > [Gists](https://docs.github.com/en/rest/gists/gists). Secret gists are listed "only … if the token has the gist
-    > scope" — [GitHub bounty note, 2015](https://bounty.github.com/2015/06/30/gist-api-authz.html), the only explicit
-    > statement found. "Secret gists aren't private… if someone you don't know discovers the URL, they'll also be able to
-    > see your gist." — [Creating gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists).
-    > `GET /gists` takes only `since`, `per_page` (max 100) and `page`; GraphQL `viewer.gists` filters only on `privacy`.
-    > "Conditional requests for unsafe methods, such as POST, PUT, PATCH, and DELETE are not supported unless otherwise
-    > noted" — [Best practices](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
+  > **Checked 2026-11-01:** "To read or write gists on a user's behalf, you need the gist OAuth scope and a token" —
+  > [Gists](https://docs.github.com/en/rest/gists/gists). Secret gists are listed "only … if the token has the gist
+  > scope" — [GitHub bounty note, 2015](https://bounty.github.com/2015/06/30/gist-api-authz.html), the only explicit
+  > statement found. "Secret gists aren't private… if someone you don't know discovers the URL, they'll also be able to
+  > see your gist." — [Creating gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists).
+  > `GET /gists` takes only `since`, `per_page` (max 100) and `page`; GraphQL `viewer.gists` filters only on `privacy`.
+  > "Conditional requests for unsafe methods, such as POST, PUT, PATCH, and DELETE are not supported unless otherwise
+  > noted" — [Best practices](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
 
-    Would win if a repository created by the app were unacceptable to users. Choosing among several same-named gists goes
-    with it: with a fixed repository name, one account holds one set of settings.
+  Would win if a repository created by the app were unacceptable to users. Choosing among several same-named gists goes
+  with it: with a fixed repository name, one account holds one set of settings.
 
 ## D7
 
@@ -135,19 +135,19 @@ depends on the user, who will rarely change it". So the unfolded folders of the 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
 
-| State                                              | Where today (`packages/app/`)                                                          |        |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------- | ------ |
-| Tracked repositories and projects                  | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`                          | synced |
-| How a code review's comment goes out               | `reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts` | synced |
-| Whether the short UI animations play               | `animations` at the root of the document, `settings/sync/SettingsDocument.ts`          | synced |
-| Whether usage statistics are shared                | `usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`     | synced |
-| Ref list sort, per group                           | `refSort` at the root of the document, `settings/sync/SettingsDocument.ts`             | synced |
-| Layout, grouping, sort, visible properties, filter | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`                          | local  |
-| Row field per project                              | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`                  | local  |
-| How items open (panel, modal, page)                | `githq.itemArrangement`, `services/LocalPreferences.ts:11`                             | local  |
-| Ref list's unfolded folders                        | `githq.refFolders.<login>`, `commits/CommitRefFolders.ts`                              | local  |
-| Sidebar collapsed, panel widths                    | `services/LocalPreferences.ts:12-13`                                                   | local  |
-| New issue drafts, approval request clicks          | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`                   | local  |
+|State|Where today (`packages/app/`)||
+|-|-|-|
+|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
+|How a code review's comment goes out|`reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Ref list sort, per group|`refSort` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
+|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
+|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
+|Ref list's unfolded folders|`githq.refFolders.<login>`, `commits/CommitRefFolders.ts`|local|
+|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
+|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
 
 No other per-user setting exists today (the app is dark only, `styles/tokens.scss:4`). The "modified locally" label on a project
 view stays true and stays as it is.
