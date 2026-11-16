@@ -143,3 +143,105 @@ Left for the owner:
 
 - [ ] App · States (`epLfx`), App · Freshness (`iZkBN`), App · Loading and empty states (`O6Vuj8`) and App · Toasts
   (`Sz7Bf`) moved 1520 px right. App · Settings grew by CH80 and overlapped App · States.
+
+## Round 2 · owner's picks
+
+Asked (`.context/navigation-under-repo-sidebar-brief-2.md`, not committed): the owner picked CH67 (one bordered tab
+group) and CH71 (sub-rows with a thin guide line); the guide line on every expanded place, desktop and phone; the
+repository's book/lock icon inside the title button, before the name, at the project title's size and gap (16 px, 10
+px), so icon, name and chevron are one clickable unit with one hover background; W15 deleted; "All items" shown only
+while it is the view shown; `Tabs / group` taking any number of tabs, shown with five views on D12.
+
+Changed: the two `Variants` frames are gone, CH67 and CH71 sit in a new row; `Sidebar / sub-row` carries the guide
+line, so every expanded place on the desktop shows it; the phone has its own sub-row variants with the line;
+`Repository / Header`'s title holds its icon; `Tabs / group` holds its tabs in a slot.
+
+Picked by the agent, not by the brief:
+
+- Platform Q4's five saved views are Current sprint, Backlog, Next sprint, By assignee (board) and Bugs (list), the
+  same set in D12's tab group, the expanded sidebar (D12, D13), D13's views menu and MB271.
+- The sidebar's guide line lives in each sub-row (a 1 px line at the place icon's centre, running 2 px up into the gap
+  above), so a place with any number of sub-rows draws one unbroken line without a drawn overlay.
+- The phone's `Phone / Place row · group` is shared with My work's groups, which keep no line, so the line is a hidden
+  child shown only by the new `Phone / Place row · sub-row` variants.
+
+Left for the owner:
+
+- `Repository / Header · not tracked` (`tb2FD`, J3, J5–J7) still shows the icon outside the title and the word
+  "public". The spec drops the visibility word there too; the brief named only `Repository / Header`.
+
+### Settling the variants
+
+- [ ] App · Repository (`N1wdc`): new `Row of screens · The header tabs and the sub-rows` (`SN2Eo`) where the
+  `Variants` frames were.
+- [ ] Deleted `Variants · How the header tabs look` (`QVhRU`) with `Slot · CH68 · Variant B · An underline on the
+  current tab, inside a bordered strip` (`W9O47`, screen `Tyjv1`) and `Slot · CH69 · Variant C · A filled pill on a
+  subtle track, no border` (`h9PlCT`, screen `gwlUf`).
+- [ ] CH67 moved into `SN2Eo`. Renamed: slot (`A9Y31`), screen (`O7LAnr`) and caption title (`HVMcR`) "CH67 · Variant A
+  · One bordered group, the current tab filled" → "CH67 · One bordered group, the current tab filled". Caption note
+  (`FqcEh`) "Recommended. The owner's suggestion…" → "The owner's pick…", plus the title's icon inside the button.
+- [ ] Deleted `Variants · Sub-rows under the open place` (`D1VJC`) with `Slot · CH70 · Variant A · A plain indent, like
+  My work's groups` (`M0u07`, screen `C0DLK`).
+- [ ] CH71 moved into `SN2Eo`. Renamed: slot (`rJsYu`), screen (`JnliA`) and caption title (`zbSzj`) "CH71 · Variant B ·
+  An indent with a thin guide line" → "CH71 · An indent with a thin guide line". Caption note (`mIVCw`) now says it is
+  the owner's pick and that `Sidebar / sub-row` carries the line.
+- [ ] CH71's sidebar `VlGZu` (a `Sidebar / expanded` with the place drawn in and a `Guide` rectangle over it) →
+  `TAqGP`, an instance of `Sidebar / expanded · repository open` at the same position.
+
+### The guide line everywhere
+
+- [ ] `Sidebar / sub-row` (`FueBC`): new child `Guide` (`sPuOL`), absolute, x 15, y −2, 1 × 28, `$border-2`. Every
+  sub-row instance shows it: `Sidebar / sub-row · current`, `Sidebar / expanded · repository open` (CH71–CH74, R4),
+  `Sidebar / expanded · project open` (D12, D13).
+- [ ] `Phone / Place row · group` (`dWgb5`): new hidden child `Guide` (`qAyJ9`), absolute, x 22, 1 × 40, `$border-2`.
+  My work's groups are unchanged.
+- [ ] New `Phone / Place row · sub-row` (`i27xk`, instance of `dWgb5`, `Guide` shown) and `Phone / Place row ·
+  sub-row, current` (`oHde3`, instance of it, filled `$sel`), in Components · Mobile › Menus (`GnvbT`) after the group
+  row.
+- [ ] Deleted `Phone / Place row · group, current` (`QGDhI`): round 1 made it for the sub-rows, which now use `oHde3`.
+- [ ] `Phone / Places panel · a repository expanded` (`bPX1Y`, MB270): the four sub-rows → `Phone / Place row ·
+  sub-row`, Pull requests → `· sub-row, current` (new ids). Same content.
+
+### "All items" and five saved views
+
+- [ ] `Sidebar / expanded · project open` (`Aztvq`): `Sub-row All items` (`dfQXC`) removed; new `Sub-row By assignee`
+  (`Q8lML8`, columns-3) and `Sub-row Bugs` (`juPDo`, list). D12 and D13 follow.
+- [ ] `Phone / Places panel · a project expanded` (`LGMJ4`, MB271): sub-rows → the new phone sub-row variants (Current
+  sprint current); All items removed; By assignee and Bugs added.
+- [ ] `Tabs / group` (`S7NcJg`): its four tabs moved into a new child frame `Tabs` (`QqSEm`, gap 2, a slot listing
+  `Tab / segment`, `· with count`, `· current`, `· with count, current`). An instance replaces the slot to show any
+  number of tabs; the border and padding stay on the group.
+- [ ] D12 (`fSh91`): the project pane's views (`NPHaG` › `o8OS7x`) replace the slot with `ns4fs`: Current sprint
+  (current, dot), Backlog, Next sprint (cloud), By assignee, Bugs. All items gone. Caption note (`B1Gtz`): five views,
+  the group takes any number, All items is a temporary tab.
+- [ ] D13 (`r6pLoA`): `Views menu` (`V8fBA3`): `Item All items` (`J0rx9N`) removed; new `Item By assignee` (`id57p`)
+  and `Item Bugs` (`kBiPE`). Caption note (`owJqP`): "All items isn't listed: it appears only while it is the view
+  shown."
+
+### The repository title's icon
+
+- [ ] `Repository / Header` (`I3AnbD`): `Visibility` (`LxZ7B`, 16 px) moved from `Left part` into `Repository menu
+  trigger` (`FV59l`), inside a new frame `Name` (`YQhqK`, gap 10) with `Title` (`Gp4jb`), followed by the chevron.
+  The trigger's padding and radius are its hover and open background, now covering the icon too.
+- [ ] Moving the nodes dropped the instances' overrides into them; re-applied, same values: `Gp4jb` "fitloop/webapp"
+  on CH72 (`B4T0j`), CH73 (`mXRrD`) and R4 (`VD4xc`); the tabs' counts and current tab on CH67 (`H3q05Q`: Issues
+  current 0, Pull requests hovered 15), CH72 and CH73 (118, 24, 2), R4 (Issues current 118, Pull requests 24,
+  Workflows 2).
+- [ ] CH72 caption note (`p4gMfd`): "the lock beside the name" → "the lock sits inside the title button right before the
+  name… one clickable unit".
+- [ ] App · Repository group note (`lNXwe`): names CH67 and CH71, CH75–CH79, and the icon inside the title button.
+
+### W15
+
+- [ ] App · Workflows (`gOvS3`): deleted `Slot · W15 · The Workflows section in the column layout`.
+- [ ] Caption note `bBxmR`: "in the tabs here and in the column layout (W15)" → "in the tabs here and under the
+  repository in the sidebar (App · Repository, CH72)".
+
+### Rebuilt with the same content
+
+A failed call during the round rolled back by dropping overrides that pointed into the changed phone and sub-row
+components. They were restored from the saved file; nothing visible changed.
+
+- [ ] CH73's sidebar `o6Hqn` → `vZN70` and R4's sidebar `nwW6w` → `rj2Hl`: new instances of `Sidebar / expanded ·
+  repository open`, Issues current again.
+- [ ] MB141's `Places` (`nvzXK`): its count overrides re-applied.

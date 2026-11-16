@@ -1182,57 +1182,72 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "id": "lBrrI",
-                          "type": "ref",
-                          "ref": "PGGNf",
-                          "name": "Tab Issues",
-                          "descendants": {
-                            "xWB44": {
-                              "content": "Issues"
+                          "type": "frame",
+                          "id": "QqSEm",
+                          "name": "Tabs",
+                          "slot": [
+                            "OAxbv",
+                            "PGGNf",
+                            "rrBZ7",
+                            "e34gBd"
+                          ],
+                          "gap": 2,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "lBrrI",
+                              "type": "ref",
+                              "ref": "PGGNf",
+                              "name": "Tab Issues",
+                              "descendants": {
+                                "xWB44": {
+                                  "content": "Issues"
+                                },
+                                "om1Pb": {
+                                  "content": "0"
+                                }
+                              }
                             },
-                            "om1Pb": {
-                              "content": "0"
-                            }
-                          }
-                        },
-                        {
-                          "id": "UIgL9",
-                          "type": "ref",
-                          "ref": "e34gBd",
-                          "name": "Tab Pull requests",
-                          "descendants": {
-                            "xWB44": {
-                              "content": "Pull requests"
+                            {
+                              "id": "UIgL9",
+                              "type": "ref",
+                              "ref": "e34gBd",
+                              "name": "Tab Pull requests",
+                              "descendants": {
+                                "xWB44": {
+                                  "content": "Pull requests"
+                                },
+                                "om1Pb": {
+                                  "content": "15"
+                                }
+                              }
                             },
-                            "om1Pb": {
-                              "content": "15"
-                            }
-                          }
-                        },
-                        {
-                          "id": "U8Jsk3",
-                          "type": "ref",
-                          "ref": "OAxbv",
-                          "name": "Tab Commits",
-                          "descendants": {
-                            "xWB44": {
-                              "content": "Commits"
-                            }
-                          }
-                        },
-                        {
-                          "id": "r5Hms",
-                          "type": "ref",
-                          "ref": "PGGNf",
-                          "name": "Tab Workflows",
-                          "descendants": {
-                            "xWB44": {
-                              "content": "Workflows"
+                            {
+                              "id": "U8Jsk3",
+                              "type": "ref",
+                              "ref": "OAxbv",
+                              "name": "Tab Commits",
+                              "descendants": {
+                                "xWB44": {
+                                  "content": "Commits"
+                                }
+                              }
                             },
-                            "om1Pb": {
-                              "content": "1"
+                            {
+                              "id": "r5Hms",
+                              "type": "ref",
+                              "ref": "PGGNf",
+                              "name": "Tab Workflows",
+                              "descendants": {
+                                "xWB44": {
+                                  "content": "Workflows"
+                                },
+                                "om1Pb": {
+                                  "content": "1"
+                                }
+                              }
                             }
-                          }
+                          ]
                         }
                       ]
                     },
@@ -32975,7 +32990,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The project's row expands into its saved views; Current sprint is current, with the dot because its sort was changed here, and Next sprint carries the cloud because GitHub answers its filter. The header's views are the same tab group as a repository's sections.",
+                      "content": "The project's row expands into its five saved views; Current sprint is current, with the dot because its sort was changed here, and Next sprint carries the cloud because GitHub answers its filter. The header's views are the same tab group as a repository's sections; it takes as many views as the project has. All items is a temporary tab: it shows, in the tabs, the sub-rows and the dropdown, only while it is the view shown, so it is not here.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -33020,58 +33035,78 @@
                               "type": "ref",
                               "ref": "S7NcJg",
                               "name": "Views",
-                              "descendants": {
-                                "lBrrI": {
-                                  "id": "FGUv6",
-                                  "type": "ref",
-                                  "ref": "rrBZ7",
-                                  "name": "View Current sprint",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Current sprint"
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ns4fs",
+                                  "name": "Tabs",
+                                  "gap": 2,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "p1L2Cx",
+                                      "type": "ref",
+                                      "ref": "rrBZ7",
+                                      "name": "View Current sprint",
+                                      "descendants": {
+                                        "xWB44": {
+                                          "content": "Current sprint"
+                                        },
+                                        "V8D89b": {
+                                          "enabled": true
+                                        }
+                                      }
                                     },
-                                    "V8D89b": {
-                                      "enabled": true
-                                    }
-                                  }
-                                },
-                                "UIgL9": {
-                                  "id": "HmgJI",
-                                  "type": "ref",
-                                  "ref": "OAxbv",
-                                  "name": "View Backlog",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Backlog"
-                                    }
-                                  }
-                                },
-                                "U8Jsk3": {
-                                  "id": "xHcSI",
-                                  "type": "ref",
-                                  "ref": "OAxbv",
-                                  "name": "View Next sprint",
-                                  "descendants": {
-                                    "o6FOZ6": {
-                                      "enabled": true
+                                    {
+                                      "id": "r0J0Mn",
+                                      "type": "ref",
+                                      "ref": "OAxbv",
+                                      "name": "View Backlog",
+                                      "descendants": {
+                                        "xWB44": {
+                                          "content": "Backlog"
+                                        }
+                                      }
                                     },
-                                    "xWB44": {
-                                      "content": "Next sprint"
+                                    {
+                                      "id": "LHLKF",
+                                      "type": "ref",
+                                      "ref": "OAxbv",
+                                      "name": "View Next sprint",
+                                      "descendants": {
+                                        "o6FOZ6": {
+                                          "enabled": true
+                                        },
+                                        "xWB44": {
+                                          "content": "Next sprint"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "bohXW",
+                                      "type": "ref",
+                                      "ref": "OAxbv",
+                                      "name": "View By assignee",
+                                      "descendants": {
+                                        "xWB44": {
+                                          "content": "By assignee"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "g00Cqv",
+                                      "type": "ref",
+                                      "ref": "OAxbv",
+                                      "name": "View Bugs",
+                                      "descendants": {
+                                        "xWB44": {
+                                          "content": "Bugs"
+                                        }
+                                      }
                                     }
-                                  }
-                                },
-                                "r5Hms": {
-                                  "id": "H88qo1",
-                                  "type": "ref",
-                                  "ref": "OAxbv",
-                                  "name": "View All items",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "All items"
-                                    }
-                                  }
+                                  ]
                                 }
-                              }
+                              ]
                             }
                           }
                         }
@@ -33121,7 +33156,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "With an item open the pane is 644 px wide: the views collapse into one dropdown showing the current view, Display is an icon, and \"Changed here\" gives way to the view's dot in the sidebar. The dropdown is open: every view, the cloud where GitHub answers the filter. Views carry no count, as their tabs don't (owner, 2026-11-16), and no keys yet (proposed: 1–9, like a repository's sections).",
+                      "content": "With an item open the pane is 644 px wide: the views collapse into one dropdown showing the current view, Display is an icon, and \"Changed here\" gives way to the view's dot in the sidebar. The dropdown is open: every view, the cloud where GitHub answers the filter. Views carry no count, as their tabs don't (owner, 2026-11-16), and no keys yet (proposed: 1–9, like a repository's sections). All items isn't listed: it appears only while it is the view shown.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -33312,21 +33347,44 @@
                           }
                         },
                         {
-                          "id": "J0rx9N",
+                          "id": "id57p",
                           "type": "ref",
                           "ref": "e1dJP",
-                          "name": "Item All items",
+                          "name": "Item By assignee",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r7XKB1": {
+                              "icon": "columns-3"
+                            },
+                            "BTaY6": {
+                              "content": "By assignee"
+                            },
+                            "hQDLM": {
+                              "enabled": false
+                            },
+                            "rnLdq": {
+                              "enabled": false
+                            },
+                            "Wto9D": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "kBiPE",
+                          "type": "ref",
+                          "ref": "e1dJP",
+                          "name": "Item Bugs",
                           "width": "fill_container",
                           "descendants": {
                             "r7XKB1": {
                               "icon": "list"
                             },
                             "BTaY6": {
-                              "content": "All items"
+                              "content": "Bugs"
                             },
                             "hQDLM": {
-                              "enabled": false,
-                              "content": "128"
+                              "enabled": false
                             },
                             "rnLdq": {
                               "enabled": false
@@ -34483,16 +34541,6 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "icon",
-                          "id": "LxZ7B",
-                          "name": "Visibility",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "lock",
-                          "library": "lucide",
-                          "fill": "$fg-2"
-                        },
-                        {
                           "type": "frame",
                           "id": "FV59l",
                           "name": "Repository menu trigger",
@@ -34505,14 +34553,33 @@
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "Gp4jb",
-                              "name": "Title",
-                              "fill": "$fg",
-                              "content": "healedcare/healed",
-                              "fontFamily": "$font",
-                              "fontSize": 14,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "YQhqK",
+                              "name": "Name",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "LxZ7B",
+                                  "name": "Visibility",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Gp4jb",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "healedcare/healed",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             },
                             {
                               "type": "icon",
@@ -34772,6 +34839,17 @@
                           "fontFamily": "$mono",
                           "fontSize": 11.5,
                           "fontWeight": "normal"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "sPuOL",
+                          "layoutPosition": "absolute",
+                          "x": 15,
+                          "y": -2,
+                          "name": "Guide",
+                          "fill": "$border-2",
+                          "width": 1,
+                          "height": 28
                         }
                       ]
                     },
@@ -35069,19 +35147,35 @@
                           }
                         },
                         {
-                          "id": "dfQXC",
+                          "id": "Q8lML8",
                           "type": "ref",
                           "ref": "FueBC",
-                          "name": "Sub-row All items",
+                          "name": "Sub-row By assignee",
+                          "descendants": {
+                            "U4oLA": {
+                              "icon": "columns-3"
+                            },
+                            "zvngK": {
+                              "content": "By assignee"
+                            },
+                            "Fv4Jj": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "id": "juPDo",
+                          "type": "ref",
+                          "ref": "FueBC",
+                          "name": "Sub-row Bugs",
                           "descendants": {
                             "U4oLA": {
                               "icon": "list"
                             },
                             "zvngK": {
-                              "content": "All items"
+                              "content": "Bugs"
                             },
                             "Fv4Jj": {
-                              "content": "128",
                               "enabled": false
                             }
                           }
@@ -40050,7 +40144,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "The repository's own column (CH4–CH6, CH42) is gone, and so is the setting that chose it. The open place expands in the sidebar instead: a tracked repository shows its sections under its row, a tracked project its saved views. The header keeps its tabs while they fit, now drawn as one tab group with a tooltip naming each tab's key, and gives way in steps as the window narrows (App · Toolbar, CH75–CH78). The title carries the sidebar's icon, lock or book, instead of the word \"private\".",
+              "content": "The repository's own column (CH4–CH6, CH42) is gone, and so is the setting that chose it. The open place expands in the sidebar instead: a tracked repository shows its sections under its row, a tracked project its saved views, each set tied to its place by a thin guide line (CH71). The header keeps its tabs while they fit, drawn as one bordered tab group with a tooltip naming each tab's key (CH67), and gives way in steps as the window narrows (App · Toolbar, CH75–CH79). The title carries the sidebar's icon, lock or book, inside the title button right before the name, instead of the word \"private\".",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -40060,29 +40154,14 @@
         },
         {
           "type": "frame",
-          "id": "QVhRU",
-          "name": "Variants · How the header tabs look",
-          "fill": "#D299221A",
-          "stroke": "#D29922",
-          "strokeWidth": 2,
-          "layout": "vertical",
-          "gap": 40,
-          "padding": 24,
+          "id": "SN2Eo",
+          "name": "Row of screens · The header tabs and the sub-rows",
+          "gap": 80,
           "children": [
-            {
-              "type": "text",
-              "id": "OBXeA",
-              "name": "Question",
-              "fill": "$fg",
-              "content": "Variants · How the header tabs look",
-              "fontFamily": "$font",
-              "fontSize": 18,
-              "fontWeight": "600"
-            },
             {
               "type": "frame",
               "id": "A9Y31",
-              "name": "Slot · CH67 · Variant A · One bordered group, the current tab filled",
+              "name": "Slot · CH67 · One bordered group, the current tab filled",
               "width": 1204,
               "layout": "vertical",
               "gap": 14,
@@ -40100,7 +40179,7 @@
                       "id": "HVMcR",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CH67 · Variant A · One bordered group, the current tab filled",
+                      "content": "CH67 · One bordered group, the current tab filled",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -40112,7 +40191,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Recommended. The owner's suggestion: the tabs share one border, like the List / Board switch beside them, and the current one is filled. It reads as a single control with one choice made, matches the toolbar's other bordered controls, and stays as dense as before. Hovering a tab shows where it goes and its key.",
+                      "content": "The owner's pick. The tabs share one border, like the List / Board switch beside them, and the current one is filled: one control with one choice made, matching the toolbar's other bordered controls and as dense as before. Hovering a tab shows where it goes and its key. The repository's icon sits inside the title button, before the name, so icon, name and chevron are one clickable unit with one hover background.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -40123,7 +40202,7 @@
                 {
                   "type": "frame",
                   "id": "O7LAnr",
-                  "name": "CH67 · Variant A · One bordered group, the current tab filled",
+                  "name": "CH67 · One bordered group, the current tab filled",
                   "clip": true,
                   "width": 1204,
                   "fill": "$bg",
@@ -40137,7 +40216,7 @@
                       "width": "fill_container",
                       "descendants": {
                         "IQzza/lBrrI": {
-                          "id": "Ih8z4",
+                          "id": "u4YMDX",
                           "type": "ref",
                           "ref": "e34gBd",
                           "name": "Tab Issues",
@@ -40151,7 +40230,7 @@
                           }
                         },
                         "IQzza/UIgL9": {
-                          "id": "ybVPu",
+                          "id": "ldhzC",
                           "type": "ref",
                           "ref": "PGGNf",
                           "name": "Tab Pull requests",
@@ -40205,15 +40284,15 @@
             },
             {
               "type": "frame",
-              "id": "W9O47",
-              "name": "Slot · CH68 · Variant B · An underline on the current tab, inside a bordered strip",
-              "width": 1204,
+              "id": "rJsYu",
+              "name": "Slot · CH71 · An indent with a thin guide line",
+              "width": 420,
               "layout": "vertical",
               "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "S76fdV",
+                  "id": "e0goxl",
                   "name": "Caption",
                   "width": "fill_container",
                   "layout": "vertical",
@@ -40221,22 +40300,22 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "TDHbp",
+                      "id": "zbSzj",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CH68 · Variant B · An underline on the current tab, inside a bordered strip",
+                      "content": "CH71 · An indent with a thin guide line",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
                     {
                       "type": "text",
-                      "id": "U0nvi",
+                      "id": "mIVCw",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same bordered strip, with no fill: the current tab is marked by a 2 px line along the strip's bottom edge. Classic tabs, but the underline is a second visual language next to the filled List / Board switch.",
+                      "content": "The owner's pick. The sections start where the place's name starts, with a 1 px line down from the place's icon, as a file tree draws it, so they read as belonging to the row above. The current section is filled like any selected row. Every expanded place uses it: `Sidebar / sub-row` carries the line.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -40246,676 +40325,21 @@
                 },
                 {
                   "type": "frame",
-                  "id": "Tyjv1",
-                  "name": "CH68 · Variant B · An underline on the current tab, inside a bordered strip",
+                  "id": "JnliA",
+                  "name": "CH71 · An indent with a thin guide line",
                   "clip": true,
-                  "width": 1204,
-                  "fill": "$bg",
-                  "layout": "vertical",
+                  "width": 236,
+                  "height": 420,
+                  "fill": "$bg-2",
+                  "layout": "none",
                   "children": [
                     {
-                      "id": "CfR1B",
+                      "id": "TAqGP",
                       "type": "ref",
-                      "ref": "I3AnbD",
-                      "name": "Header",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IQzza": {
-                          "type": "frame",
-                          "id": "Ymfbq",
-                          "name": "Tabs",
-                          "cornerRadius": 6,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 2,
-                          "padding": [
-                            0,
-                            4
-                          ],
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "vgZ6Z",
-                              "name": "Tab Issues",
-                              "layout": "vertical",
-                              "padding": [
-                                2,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "id": "np8s8",
-                                  "type": "ref",
-                                  "ref": "PGGNf",
-                                  "name": "Tab Issues",
-                                  "fill": "#00000000",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Issues"
-                                    },
-                                    "om1Pb": {
-                                      "content": "0"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "gDV2A",
-                                  "name": "Underline",
-                                  "fill": "$fg",
-                                  "width": "fill_container",
-                                  "height": 2
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "z2gZZ",
-                              "name": "Tab Pull requests",
-                              "layout": "vertical",
-                              "padding": [
-                                2,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "id": "T516Fq",
-                                  "type": "ref",
-                                  "ref": "PGGNf",
-                                  "name": "Tab Pull requests",
-                                  "fill": "#F0F6FC0D",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Pull requests",
-                                      "fill": "$fg"
-                                    },
-                                    "om1Pb": {
-                                      "content": "15"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "G5FLIc",
-                                  "name": "Underline",
-                                  "fill": "#00000000",
-                                  "width": "fill_container",
-                                  "height": 2
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Ozlv4",
-                              "name": "Tab Commits",
-                              "layout": "vertical",
-                              "padding": [
-                                2,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "id": "MWwQd",
-                                  "type": "ref",
-                                  "ref": "OAxbv",
-                                  "name": "Tab Commits",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Commits"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "d2gGM",
-                                  "name": "Underline",
-                                  "fill": "#00000000",
-                                  "width": "fill_container",
-                                  "height": 2
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "aVQFN",
-                              "name": "Tab Workflows",
-                              "layout": "vertical",
-                              "padding": [
-                                2,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "id": "CX9QE",
-                                  "type": "ref",
-                                  "ref": "PGGNf",
-                                  "name": "Tab Workflows",
-                                  "descendants": {
-                                    "xWB44": {
-                                      "content": "Workflows"
-                                    },
-                                    "om1Pb": {
-                                      "content": "1"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "hWCPw",
-                                  "name": "Underline",
-                                  "fill": "#00000000",
-                                  "width": "fill_container",
-                                  "height": 2
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "id": "u9cUh",
-                      "type": "ref",
-                      "ref": "fT1ix",
-                      "name": "Row",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "s93fcF",
-                      "type": "ref",
-                      "ref": "fT1ix",
-                      "name": "Row 2",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "m6Ntzp",
-                      "type": "ref",
-                      "ref": "TO1uL",
-                      "name": "Tooltip",
-                      "layoutPosition": "absolute",
-                      "x": 286,
-                      "y": 45,
-                      "descendants": {
-                        "tTbYz": {
-                          "content": "Go to pull requests"
-                        },
-                        "BatY3/luKkY": {
-                          "content": "2"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "h9PlCT",
-              "name": "Slot · CH69 · Variant C · A filled pill on a subtle track, no border",
-              "width": 1204,
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "zlU0k",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "r9ymnt",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "CH69 · Variant C · A filled pill on a subtle track, no border",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "pGj6s",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "No outline: the tabs sit on a slightly lighter track and the current one is a raised pill. Calm, but without a border it reads less like the bordered controls on the right, and the track is faint on some displays.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "gwlUf",
-                  "name": "CH69 · Variant C · A filled pill on a subtle track, no border",
-                  "clip": true,
-                  "width": 1204,
-                  "fill": "$bg",
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "id": "jxfTK",
-                      "type": "ref",
-                      "ref": "I3AnbD",
-                      "name": "Header",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IQzza": {
-                          "type": "frame",
-                          "id": "lsDry",
-                          "name": "Tabs",
-                          "fill": "$bg-2",
-                          "cornerRadius": 7,
-                          "gap": 2,
-                          "padding": 2,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "c86B6",
-                              "type": "ref",
-                              "ref": "e34gBd",
-                              "name": "Tab Issues",
-                              "fill": "$border",
-                              "descendants": {
-                                "xWB44": {
-                                  "content": "Issues"
-                                },
-                                "om1Pb": {
-                                  "content": "0"
-                                }
-                              }
-                            },
-                            {
-                              "id": "nnL4S",
-                              "type": "ref",
-                              "ref": "PGGNf",
-                              "name": "Tab Pull requests",
-                              "fill": "#F0F6FC0D",
-                              "descendants": {
-                                "xWB44": {
-                                  "content": "Pull requests",
-                                  "fill": "$fg"
-                                },
-                                "om1Pb": {
-                                  "content": "15"
-                                }
-                              }
-                            },
-                            {
-                              "id": "oaajA",
-                              "type": "ref",
-                              "ref": "OAxbv",
-                              "name": "Tab Commits",
-                              "descendants": {
-                                "xWB44": {
-                                  "content": "Commits"
-                                }
-                              }
-                            },
-                            {
-                              "id": "vygsQ",
-                              "type": "ref",
-                              "ref": "PGGNf",
-                              "name": "Tab Workflows",
-                              "descendants": {
-                                "xWB44": {
-                                  "content": "Workflows"
-                                },
-                                "om1Pb": {
-                                  "content": "1"
-                                }
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "id": "Q6TM1R",
-                      "type": "ref",
-                      "ref": "fT1ix",
-                      "name": "Row",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "Cx1pu",
-                      "type": "ref",
-                      "ref": "fT1ix",
-                      "name": "Row 2",
-                      "width": "fill_container"
-                    },
-                    {
-                      "id": "RPhBq",
-                      "type": "ref",
-                      "ref": "TO1uL",
-                      "name": "Tooltip",
-                      "layoutPosition": "absolute",
-                      "x": 284,
-                      "y": 43,
-                      "descendants": {
-                        "tTbYz": {
-                          "content": "Go to pull requests"
-                        },
-                        "BatY3/luKkY": {
-                          "content": "2"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "D1VJC",
-          "name": "Variants · Sub-rows under the open place",
-          "fill": "#D299221A",
-          "stroke": "#D29922",
-          "strokeWidth": 2,
-          "layout": "vertical",
-          "gap": 24,
-          "padding": 24,
-          "children": [
-            {
-              "type": "text",
-              "id": "stBg9",
-              "name": "Question",
-              "fill": "$fg",
-              "content": "Variants · Sub-rows under the open place",
-              "fontFamily": "$font",
-              "fontSize": 18,
-              "fontWeight": "600"
-            },
-            {
-              "type": "frame",
-              "id": "pg2q9",
-              "name": "Variants",
-              "gap": 80,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "M0u07",
-                  "name": "Slot · CH70 · Variant A · A plain indent, like My work's groups",
-                  "width": 420,
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "ZhEAz",
-                      "name": "Caption",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "lZocc",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "CH70 · Variant A · A plain indent, like My work's groups",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "iyyqo",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Recommended. The sections start where the repository's name starts, with nothing else to mark them: the indent and the smaller, dimmer icons say they belong to the row above, as the sidebar's My work groups do. The current section is filled like any selected row.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "C0DLK",
-                      "name": "CH70 · Variant A · A plain indent, like My work's groups",
-                      "clip": true,
-                      "width": 236,
-                      "height": 420,
-                      "fill": "$bg-2",
-                      "layout": "none",
-                      "children": [
-                        {
-                          "id": "dbTS1",
-                          "type": "ref",
-                          "ref": "DhmYq",
-                          "name": "Sidebar",
-                          "x": 0,
-                          "y": -230
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "rJsYu",
-                  "name": "Slot · CH71 · Variant B · An indent with a thin guide line",
-                  "width": 420,
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "e0goxl",
-                      "name": "Caption",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "zbSzj",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "CH71 · Variant B · An indent with a thin guide line",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "mIVCw",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "The same indent with a 1 px line down from the repository's icon, as a file tree draws it. It ties the sections to their place more firmly, but adds a line no other part of the sidebar has.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "JnliA",
-                      "name": "CH71 · Variant B · An indent with a thin guide line",
-                      "clip": true,
-                      "width": 236,
-                      "height": 420,
-                      "fill": "$bg-2",
-                      "layout": "none",
-                      "children": [
-                        {
-                          "id": "VlGZu",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "x": 0,
-                          "y": -230,
-                          "descendants": {
-                            "w7B2q": {
-                              "type": "frame",
-                              "id": "Hm4P7",
-                              "name": "Place fitloop/webapp, open",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 2,
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "S6Nx33",
-                                  "name": "Nav fitloop/webapp",
-                                  "width": "fill_container",
-                                  "cornerRadius": 6,
-                                  "gap": 9,
-                                  "padding": [
-                                    5,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "d1eURW",
-                                      "name": "Icon fitloop/webapp",
-                                      "width": 15,
-                                      "height": 15,
-                                      "icon": "lock",
-                                      "library": "lucide",
-                                      "fill": "$fg"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "OkDJ5",
-                                      "name": "Label fitloop/webapp",
-                                      "fill": "$fg",
-                                      "content": "fitloop/webapp",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13,
-                                      "fontWeight": "500"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "Lbve9",
-                                      "name": "spacer",
-                                      "width": "fill_container",
-                                      "height": 1
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "Kr1OO",
-                                      "name": "Count fitloop/webapp",
-                                      "fill": "$fg-dim",
-                                      "content": "142",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 11.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "uWII5",
-                                  "type": "ref",
-                                  "ref": "FueBC",
-                                  "name": "Sub-row Issues",
-                                  "descendants": {
-                                    "U4oLA": {
-                                      "icon": "circle-dot"
-                                    },
-                                    "zvngK": {
-                                      "content": "Issues"
-                                    },
-                                    "Fv4Jj": {
-                                      "content": "118"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "R7Hme",
-                                  "type": "ref",
-                                  "ref": "IuMvE",
-                                  "name": "Sub-row Pull requests",
-                                  "descendants": {
-                                    "U4oLA": {
-                                      "icon": "git-pull-request"
-                                    },
-                                    "zvngK": {
-                                      "content": "Pull requests"
-                                    },
-                                    "Fv4Jj": {
-                                      "content": "24"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "vGgaM",
-                                  "type": "ref",
-                                  "ref": "FueBC",
-                                  "name": "Sub-row Commits",
-                                  "descendants": {
-                                    "U4oLA": {
-                                      "icon": "git-commit-horizontal"
-                                    },
-                                    "zvngK": {
-                                      "content": "Commits"
-                                    },
-                                    "Fv4Jj": {
-                                      "enabled": false
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "qCj4d",
-                                  "type": "ref",
-                                  "ref": "FueBC",
-                                  "name": "Sub-row Workflows",
-                                  "descendants": {
-                                    "U4oLA": {
-                                      "icon": "workflow"
-                                    },
-                                    "zvngK": {
-                                      "content": "Workflows"
-                                    },
-                                    "B6Q0TV": {
-                                      "enabled": true
-                                    },
-                                    "Fv4Jj": {
-                                      "content": "2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "f5stVe",
-                                  "layoutPosition": "absolute",
-                                  "x": 15,
-                                  "y": 30,
-                                  "name": "Guide",
-                                  "fill": "$border-2",
-                                  "width": 1,
-                                  "height": 110
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
+                      "ref": "DhmYq",
+                      "name": "Sidebar",
+                      "x": 0,
+                      "y": -230
                     }
                   ]
                 }
@@ -40962,7 +40386,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The repository's row expands into its sections; Pull requests is current there and in the tab group. The header no longer repeats \"private\": the lock beside the name says it, as in the sidebar. Display is bordered like every other control.",
+                      "content": "The repository's row expands into its sections; Pull requests is current there and in the tab group. The header no longer repeats \"private\": the lock sits inside the title button right before the name, as in the sidebar, so icon, name and chevron are one clickable unit. Display is bordered like every other control.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -41635,14 +41059,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "o6Hqn",
+                          "id": "vZN70",
                           "type": "ref",
                           "ref": "DhmYq",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "JMD9k": {
-                              "id": "XsXyG",
+                              "id": "xL64b",
                               "type": "ref",
                               "ref": "IuMvE",
                               "name": "Sub-row Issues",
@@ -41659,7 +41083,7 @@
                               }
                             },
                             "C5Wam": {
-                              "id": "uU39s",
+                              "id": "j0ulAy",
                               "type": "ref",
                               "ref": "FueBC",
                               "name": "Sub-row Pull requests",
@@ -78480,14 +77904,14 @@
                   "height": "fill_container",
                   "children": [
                     {
-                      "id": "nwW6w",
+                      "id": "rj2Hl",
                       "type": "ref",
                       "ref": "DhmYq",
                       "name": "Sidebar",
                       "height": "fill_container",
                       "descendants": {
                         "JMD9k": {
-                          "id": "N2fCi6",
+                          "id": "XtOIK",
                           "type": "ref",
                           "ref": "IuMvE",
                           "name": "Sub-row Issues",
@@ -78504,7 +77928,7 @@
                           }
                         },
                         "C5Wam": {
-                          "id": "PPKfw",
+                          "id": "weVPJ",
                           "type": "ref",
                           "ref": "FueBC",
                           "name": "Sub-row Pull requests",
@@ -78544,7 +77968,7 @@
                               "content": "fitloop/webapp"
                             },
                             "IQzza/lBrrI": {
-                              "id": "PQcqI",
+                              "id": "FLFqi",
                               "type": "ref",
                               "ref": "e34gBd",
                               "name": "Tab Issues",
@@ -78558,7 +77982,7 @@
                               }
                             },
                             "IQzza/UIgL9": {
-                              "id": "K5mzPO",
+                              "id": "y117X",
                               "type": "ref",
                               "ref": "PGGNf",
                               "name": "Tab Pull requests",
@@ -192589,7 +192013,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Every workflow, one row each: Broken, Pull requests only, No alerts, Passing, Not known yet, Disabled, each while it has rows. Workflows is the fourth section of the repository view, on 4, shown only while the repository is tracked, in the tabs here and in the column layout (W15). Its count is the broken workflows, a dash until every workflow is read, none with no workflows or alerts off. The strip of a pull-request-only workflow, or one without alerts, uses quiet red, the same colour as an old break: it failed, and it isn't news. A cancelled run is a short dash with no verdict. The hollow amber tick is a run in progress. Disabled and generated workflows are plain rows. The Alerts bar above the list says which branches and tags raise alerts here, and P opens the repository's settings on Workflow alerts (T16). The toolbar's end holds only the key hints: ↵ Open, → Other runs.",
+                      "content": "Every workflow, one row each: Broken, Pull requests only, No alerts, Passing, Not known yet, Disabled, each while it has rows. Workflows is the fourth section of the repository view, on 4, shown only while the repository is tracked, in the tabs here and under the repository in the sidebar (App · Repository, CH72). Its count is the broken workflows, a dash until every workflow is read, none with no workflows or alerts off. The strip of a pull-request-only workflow, or one without alerts, uses quiet red, the same colour as an old break: it failed, and it isn't news. A cancelled run is a short dash with no verdict. The hollow amber tick is a run in progress. Disabled and generated workflows are plain rows. The Alerts bar above the list says which branches and tags raise alerts here, and P opens the repository's settings on Workflow alerts (T16). The toolbar's end holds only the key hints: ↵ Open, → Other runs.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -210551,921 +209975,6 @@
                     },
                     {
                       "id": "bu08z",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD": {
-                          "name": "Segment · Pane"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "gOvS3",
-              "name": "Slot · W15 · The Workflows section in the column layout",
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "Ymz49",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "HSI7D",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "W15 · The Workflows section in the column layout",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "GaucR",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The other layout (CH43). The column holds the repository's name and its way to GitHub, then the sections on 1–4 with Workflows selected; projects belong to Issues and Pull requests, so nothing sits below them here. The pane's header is the section's name and its key hints, no filters and no Display: what it shows is not a list of items. Everything else as W3a.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ElgIh",
-                  "name": "W15 · The Workflows section in the column layout",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "L3baRj",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "otcxA",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "xJU2l": {
-                              "enabled": true
-                            },
-                            "m9ZtIx": {
-                              "enabled": true
-                            },
-                            "CTGG0": {
-                              "content": "6",
-                              "fill": "$red"
-                            },
-                            "xwW6r": {
-                              "enabled": true,
-                              "fill": "$red-quiet"
-                            },
-                            "pxvMV": {
-                              "enabled": true,
-                              "fill": "$red-quiet"
-                            },
-                            "w7B2q": {
-                              "fill": "$bg-3"
-                            },
-                            "j1VWpL": {
-                              "fill": "$fg"
-                            },
-                            "y14orI": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            },
-                            "KMmC0": {
-                              "enabled": true,
-                              "stroke": "$bg-3"
-                            },
-                            "ifNnb": {
-                              "enabled": true
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "fZZ1Z",
-                          "name": "Repository column",
-                          "width": 280,
-                          "height": "fill_container",
-                          "fill": "$bg-2",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "right": 1
-                          },
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "YZ58m",
-                              "name": "Repository head",
-                              "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                14
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "x2QL9",
-                                  "name": "icon lock",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "lock",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "ZszH2",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/webapp",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13.5,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "d8rY5",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "FX4GI",
-                                  "name": "github",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "Ef91t",
-                                      "name": "icon github",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "github",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "ea3mq",
-                              "name": "Sections",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 1,
-                              "padding": [
-                                8,
-                                6
-                              ],
-                              "children": [
-                                {
-                                  "id": "U8NBUx",
-                                  "type": "ref",
-                                  "ref": "I8wOQ",
-                                  "name": "Section Issues",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "G59Us": {
-                                      "icon": "circle-dot"
-                                    },
-                                    "r2R5mQ": {
-                                      "content": "Issues"
-                                    },
-                                    "F8d2ET": {
-                                      "content": "118"
-                                    },
-                                    "utBWV/luKkY": {
-                                      "content": "1"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "PVC8W",
-                                  "type": "ref",
-                                  "ref": "I8wOQ",
-                                  "name": "Section Pull requests",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "G59Us": {
-                                      "icon": "git-pull-request"
-                                    },
-                                    "r2R5mQ": {
-                                      "content": "Pull requests"
-                                    },
-                                    "F8d2ET": {
-                                      "content": "24"
-                                    },
-                                    "utBWV/luKkY": {
-                                      "content": "2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "rZidw",
-                                  "type": "ref",
-                                  "ref": "I8wOQ",
-                                  "name": "Section Commits",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "G59Us": {
-                                      "icon": "git-commit-horizontal"
-                                    },
-                                    "r2R5mQ": {
-                                      "content": "Commits"
-                                    },
-                                    "F8d2ET": {
-                                      "enabled": false
-                                    },
-                                    "utBWV/luKkY": {
-                                      "content": "3"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "AqEXH",
-                                  "type": "ref",
-                                  "ref": "n3iMo",
-                                  "name": "Section Workflows",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "G59Us": {
-                                      "icon": "workflow"
-                                    },
-                                    "r2R5mQ": {
-                                      "content": "Workflows"
-                                    },
-                                    "F8d2ET": {
-                                      "content": "2"
-                                    },
-                                    "utBWV/luKkY": {
-                                      "content": "4"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Ccrpi",
-                          "name": "Pane",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "qDcnK",
-                              "name": "Header",
-                              "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 10,
-                              "padding": [
-                                0,
-                                20
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "GHQ9A",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Workflows",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "KAjAg",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "lbLSE",
-                                  "type": "ref",
-                                  "ref": "xfbOl",
-                                  "name": "Hint Open",
-                                  "gap": 5,
-                                  "descendants": {
-                                    "m5wIG9": {
-                                      "name": "Kbd ↵"
-                                    },
-                                    "m5wIG9/luKkY": {
-                                      "content": "↵"
-                                    },
-                                    "IOvfA": {
-                                      "name": "Open",
-                                      "content": "Open"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Oxs93",
-                                  "type": "ref",
-                                  "ref": "xfbOl",
-                                  "name": "Hint Other runs",
-                                  "gap": 5,
-                                  "descendants": {
-                                    "m5wIG9": {
-                                      "name": "Kbd →"
-                                    },
-                                    "m5wIG9/luKkY": {
-                                      "content": "→"
-                                    },
-                                    "IOvfA": {
-                                      "name": "Other runs",
-                                      "content": "Other runs"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "id": "D9K7pJ",
-                              "type": "ref",
-                              "ref": "tnY9k",
-                              "name": "Counted refs bar",
-                              "width": "fill_container"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "MpePq",
-                              "name": "Rows",
-                              "clip": true,
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "layout": "vertical",
-                              "children": [
-                                {
-                                  "id": "nkaL0",
-                                  "type": "ref",
-                                  "ref": "ghcgQ",
-                                  "name": "Group Broken",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "yM8xq": {
-                                      "name": "Broken",
-                                      "content": "Broken"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "CVvW4",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Deploy",
-                                  "descendants": {
-                                    "vjiSo": {
-                                      "fill": "$sel",
-                                      "stroke": "#7B87F74D",
-                                      "strokeWidth": 1
-                                    },
-                                    "z3ieO": {
-                                      "icon": "circle-x",
-                                      "fill": "$red"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Deploy",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "main"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 14,
-                                      "fill": "$red"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 14,
-                                      "fill": "$red"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 14,
-                                      "fill": "$red"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Broken for 3h",
-                                      "fill": "$fg"
-                                    },
-                                    "riEF4": {
-                                      "content": "failed 14m ago"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "p5hRE",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Release",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-x",
-                                      "fill": "$red-quiet"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Release",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "tag"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "v*"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 2,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Broken for 4 days",
-                                      "fill": "$fg-2"
-                                    },
-                                    "riEF4": {
-                                      "content": "failed Oct 28"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "FnxyK",
-                                  "type": "ref",
-                                  "ref": "iqFfG",
-                                  "name": "Group Pull requests only",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "REqiR": {
-                                      "name": "Pull requests only",
-                                      "content": "Pull requests only"
-                                    },
-                                    "hB5MV": {
-                                      "name": "1",
-                                      "content": "1"
-                                    },
-                                    "f8aLy": {
-                                      "name": "never counts",
-                                      "content": "never counts"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "wspI9",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow CLA",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "git-pull-request",
-                                      "fill": "$fg-3"
-                                    },
-                                    "bTWdE": {
-                                      "content": "CLA",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-pull-request"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "pull requests",
-                                      "fontFamily": "$font"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "KY9vM": {
-                                      "content": "1 of the last 5 failed",
-                                      "fill": "$fg-dim"
-                                    },
-                                    "riEF4": {
-                                      "content": "passed 12m ago"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "qOzv1",
-                                  "type": "ref",
-                                  "ref": "iqFfG",
-                                  "name": "Group No alerts",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "REqiR": {
-                                      "name": "No alerts",
-                                      "content": "No alerts"
-                                    },
-                                    "hB5MV": {
-                                      "name": "1",
-                                      "content": "1"
-                                    },
-                                    "f8aLy": {
-                                      "name": "failing only on branches and tags without alerts · P to change that",
-                                      "content": "failing only on branches and tags without alerts · P to change that"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "OpiTT",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Nightly e2e",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-dashed",
-                                      "fill": "$fg-3"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Nightly e2e",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "staging"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Failing on a branch without alerts",
-                                      "fill": "$fg-dim"
-                                    },
-                                    "riEF4": {
-                                      "content": "failed 6h ago"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "FXUS9",
-                                  "type": "ref",
-                                  "ref": "ghcgQ",
-                                  "name": "Group Passing",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "yM8xq": {
-                                      "name": "Passing",
-                                      "content": "Passing"
-                                    },
-                                    "H8Skhc": {
-                                      "name": "3",
-                                      "content": "3"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "z3cyO",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Probe",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-check",
-                                      "fill": "$green"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Probe",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "main"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 14,
-                                      "fill": "#00000000",
-                                      "stroke": "$amber",
-                                      "strokeWidth": 1
-                                    },
-                                    "KY9vM": {
-                                      "content": "Passing · #88 running 1m",
-                                      "fill": "$fg-2"
-                                    },
-                                    "riEF4": {
-                                      "content": "passed 11m ago"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "hBCKz",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Test",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-check",
-                                      "fill": "$green"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Test",
-                                      "fill": "$fg"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "main"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 2,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Passing",
-                                      "fill": "$fg-2"
-                                    },
-                                    "riEF4": {
-                                      "content": "passed 14m ago"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "CzAam",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Dependabot Updates",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-check",
-                                      "fill": "$green"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Dependabot Updates",
-                                      "fill": "$fg"
-                                    },
-                                    "N0Xzma": {
-                                      "enabled": true,
-                                      "content": "by GitHub"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "main"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Passing",
-                                      "fill": "$fg-2"
-                                    },
-                                    "riEF4": {
-                                      "content": "passed Oct 30"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "E9jb7",
-                                  "type": "ref",
-                                  "ref": "iqFfG",
-                                  "name": "Group Disabled",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "REqiR": {
-                                      "name": "Disabled",
-                                      "content": "Disabled"
-                                    },
-                                    "hB5MV": {
-                                      "name": "1",
-                                      "content": "1"
-                                    },
-                                    "f8aLy": {
-                                      "name": "doesn't count",
-                                      "content": "doesn't count"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "d5U7fG",
-                                  "type": "ref",
-                                  "ref": "I98wYc",
-                                  "name": "Workflow Nightly backup",
-                                  "descendants": {
-                                    "z3ieO": {
-                                      "icon": "circle-slash",
-                                      "fill": "$fg-3"
-                                    },
-                                    "bTWdE": {
-                                      "content": "Nightly backup",
-                                      "fill": "$fg-dim"
-                                    },
-                                    "uQJwS": {
-                                      "icon": "git-branch"
-                                    },
-                                    "Px6TZ": {
-                                      "content": "main"
-                                    },
-                                    "R95wz4/Q7SQQM": {
-                                      "height": 1,
-                                      "fill": "$border-2"
-                                    },
-                                    "R95wz4/R41fYw": {
-                                      "height": 1,
-                                      "fill": "$border-2"
-                                    },
-                                    "R95wz4/wFOKm": {
-                                      "height": 1,
-                                      "fill": "$border-2"
-                                    },
-                                    "R95wz4/t11n0I": {
-                                      "height": 14,
-                                      "fill": "$red-quiet"
-                                    },
-                                    "R95wz4/ibAGL": {
-                                      "height": 5,
-                                      "fill": "$fg-3"
-                                    },
-                                    "KY9vM": {
-                                      "content": "Disabled on GitHub",
-                                      "fill": "$fg-dim"
-                                    },
-                                    "riEF4": {
-                                      "content": "last ran Aug 12"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "EQuSv",
                       "type": "ref",
                       "ref": "BFhwj",
                       "name": "Status bar",
@@ -458451,6 +456960,18 @@
                       "icon": "arrow-up-right",
                       "library": "lucide",
                       "fill": "$fg-dim"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "qAyJ9",
+                      "layoutPosition": "absolute",
+                      "x": 22,
+                      "y": 0,
+                      "name": "Guide",
+                      "enabled": false,
+                      "fill": "$border-2",
+                      "width": 1,
+                      "height": 40
                     }
                   ]
                 },
@@ -459415,11 +457936,23 @@
                   ]
                 },
                 {
-                  "id": "QGDhI",
+                  "id": "i27xk",
                   "type": "ref",
                   "reusable": true,
                   "ref": "dWgb5",
-                  "name": "Phone / Place row · group, current",
+                  "name": "Phone / Place row · sub-row",
+                  "descendants": {
+                    "qAyJ9": {
+                      "enabled": true
+                    }
+                  }
+                },
+                {
+                  "id": "oHde3",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "i27xk",
+                  "name": "Phone / Place row · sub-row, current",
                   "fill": "$sel"
                 },
                 {
@@ -459431,7 +457964,7 @@
                   "descendants": {
                     "KYQi4": {
                       "type": "frame",
-                      "id": "LIh5R",
+                      "id": "JO5ts",
                       "name": "Places, scrolled",
                       "clip": true,
                       "width": "fill_container",
@@ -459439,7 +457972,7 @@
                       "layout": "none",
                       "children": [
                         {
-                          "id": "h1tcV0",
+                          "id": "ErbBD",
                           "type": "ref",
                           "ref": "VmPIZ",
                           "name": "Places",
@@ -459449,13 +457982,13 @@
                           "descendants": {
                             "gXLYb": {
                               "type": "frame",
-                              "id": "CHkk3",
+                              "id": "aSHfF",
                               "name": "Place fitloop/webapp, open",
                               "width": "fill_container",
                               "layout": "vertical",
                               "children": [
                                 {
-                                  "id": "M9JEf",
+                                  "id": "DGMtQ",
                                   "type": "ref",
                                   "ref": "iYE61",
                                   "name": "fitloop/webapp",
@@ -459473,9 +458006,9 @@
                                   }
                                 },
                                 {
-                                  "id": "D86Mo",
+                                  "id": "xcZtd",
                                   "type": "ref",
-                                  "ref": "dWgb5",
+                                  "ref": "i27xk",
                                   "name": "Sub-row Issues",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459491,9 +458024,9 @@
                                   }
                                 },
                                 {
-                                  "id": "sPAh7",
+                                  "id": "SHAhh",
                                   "type": "ref",
-                                  "ref": "QGDhI",
+                                  "ref": "oHde3",
                                   "name": "Sub-row Pull requests",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459509,9 +458042,9 @@
                                   }
                                 },
                                 {
-                                  "id": "D35KP",
+                                  "id": "m4rb7",
                                   "type": "ref",
-                                  "ref": "dWgb5",
+                                  "ref": "i27xk",
                                   "name": "Sub-row Commits",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459530,9 +458063,9 @@
                                   }
                                 },
                                 {
-                                  "id": "OICXs",
+                                  "id": "NkCpO",
                                   "type": "ref",
-                                  "ref": "dWgb5",
+                                  "ref": "i27xk",
                                   "name": "Sub-row Workflows",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459570,7 +458103,7 @@
                   "descendants": {
                     "KYQi4": {
                       "type": "frame",
-                      "id": "g3ySkr",
+                      "id": "EWFhP",
                       "name": "Places, scrolled",
                       "clip": true,
                       "width": "fill_container",
@@ -459578,7 +458111,7 @@
                       "layout": "none",
                       "children": [
                         {
-                          "id": "rv3F4",
+                          "id": "cMLqA",
                           "type": "ref",
                           "ref": "VmPIZ",
                           "name": "Places",
@@ -459588,13 +458121,13 @@
                           "descendants": {
                             "wncrL": {
                               "type": "frame",
-                              "id": "ttyS5",
+                              "id": "f4gsdV",
                               "name": "Place Platform Q4, open",
                               "width": "fill_container",
                               "layout": "vertical",
                               "children": [
                                 {
-                                  "id": "tPG6V",
+                                  "id": "VZCwL",
                                   "type": "ref",
                                   "ref": "iYE61",
                                   "name": "Platform Q4",
@@ -459612,9 +458145,9 @@
                                   }
                                 },
                                 {
-                                  "id": "a58bA1",
+                                  "id": "fJyEo",
                                   "type": "ref",
-                                  "ref": "QGDhI",
+                                  "ref": "oHde3",
                                   "name": "Sub-row Current sprint",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459633,9 +458166,9 @@
                                   }
                                 },
                                 {
-                                  "id": "Aw4jR",
+                                  "id": "t8CTC1",
                                   "type": "ref",
-                                  "ref": "dWgb5",
+                                  "ref": "i27xk",
                                   "name": "Sub-row Backlog",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459651,9 +458184,9 @@
                                   }
                                 },
                                 {
-                                  "id": "gHTQi",
+                                  "id": "HnA9Y",
                                   "type": "ref",
-                                  "ref": "dWgb5",
+                                  "ref": "i27xk",
                                   "name": "Sub-row Next sprint",
                                   "width": "fill_container",
                                   "descendants": {
@@ -459670,17 +458203,35 @@
                                   }
                                 },
                                 {
-                                  "id": "vaI4y",
+                                  "id": "iHpSX",
                                   "type": "ref",
-                                  "ref": "dWgb5",
-                                  "name": "Sub-row All items",
+                                  "ref": "i27xk",
+                                  "name": "Sub-row By assignee",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "uzDWM": {
+                                      "icon": "columns-3"
+                                    },
+                                    "KS5dK": {
+                                      "content": "By assignee"
+                                    },
+                                    "L1LVQ": {
+                                      "enabled": false
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "B5GNp",
+                                  "type": "ref",
+                                  "ref": "i27xk",
+                                  "name": "Sub-row Bugs",
                                   "width": "fill_container",
                                   "descendants": {
                                     "uzDWM": {
                                       "icon": "list"
                                     },
                                     "KS5dK": {
-                                      "content": "All items"
+                                      "content": "Bugs"
                                     },
                                     "L1LVQ": {
                                       "enabled": false
