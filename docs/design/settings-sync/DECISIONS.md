@@ -126,7 +126,7 @@ sizes, plus new issue drafts and approval request clicks.** (2026-11-01, owner; 
 design agent's reading) The repository layout synced here from 2026-11-02 went with the layout itself on 2026-11-16 ([git-client D25](../git-client/DECISIONS.md#d25)). Added
 since, as a chosen preference rather than a view detail: what a comment does by default
 ([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on), and
-how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)).
+how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)), and the keys a user rebound ([commands D10](../commands/DECISIONS.md#d10)).
 
 **The rule (2026-11-14, owner):** "what changes often and is only an aspect of the current temporary view is saved only in
 local storage; what may be more portable between devices — a user preference — can be synced; e.g. the branch sort: it
