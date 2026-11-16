@@ -20,11 +20,6 @@ export interface SettingsDocument {
     readonly repositories: readonly SettingsRepository[];
     readonly projects: readonly SettingsProject[];
     /**
-     * How a repository's sections are laid out (git-client D14), as written in the file: a newer build's value is kept
-     * until the user changes it, so read it with {@link readRepositoryLayout}.
-     */
-    readonly repositoryLayout?: unknown;
-    /**
      * Whether the short UI animations play, as written in the file: read it with {@link readAnimations}, which treats
      * absent or unknown as on.
      */
@@ -63,9 +58,6 @@ export interface SettingsDocument {
     readonly workflowRuns?: unknown;
     readonly [field: string]: unknown;
 }
-
-/** How a repository's sections are laid out: tabs beside its name, or a column of its own (git-client D14). */
-export type RepositoryLayout = 'tabs' | 'column';
 
 /** How a code review's comment goes out with no draft open: as a single comment, or into a draft review (code-review D17). */
 export type ReviewCommentChoice = 'single' | 'draft';
@@ -182,7 +174,6 @@ export function serializeSettings(document: SettingsDocument): string {
         version,
         repositories,
         projects,
-        repositoryLayout,
         reviewCommentChoice,
         refSort,
         itemPageWidth,
@@ -209,7 +200,6 @@ export function serializeSettings(document: SettingsDocument): string {
             tracking,
             ...unknown,
         })),
-        repositoryLayout,
         reviewCommentChoice,
         refSort,
         itemPageWidth,
@@ -291,14 +281,6 @@ export function writeWorkflowSettings(params: WriteWorkflowSettingsParams): Sett
         ...document,
         repositories: document.repositories.map(entry => (entry === repository ? { ...entry, workflows } : entry)),
     };
-}
-
-/**
- * The layout the document chooses; absent or not known to this build (a newer one's), tabs.
- * @__NO_SIDE_EFFECTS__
- */
-export function readRepositoryLayout(document: SettingsDocument): RepositoryLayout {
-    return document.repositoryLayout === 'column' ? 'column' : 'tabs';
 }
 
 /**

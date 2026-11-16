@@ -20,10 +20,12 @@ test('mobile D5, D19, D20: on a phone the places panel leads to a repository, an
     await expect(page.getByRole('button', { name: 'Open places' })).toBeVisible();
     expect(page.url()).toBe(before);
 
-    // The places panel, from the top-left corner: choosing a repository closes it and opens its issues.
+    // The places panel, from the top-left corner: a repository shows its sections, and choosing Issues closes it and
+    // opens them.
     await page.getByRole('button', { name: 'Open places' }).click();
     const places = page.getByRole('dialog', { name: 'Places' });
-    await places.getByRole('link', { name: SAMPLE_REPOSITORY }).click();
+    await places.getByRole('button', { name: new RegExp(`^${SAMPLE_REPOSITORY}`, 'u') }).click();
+    await places.getByRole('link', { name: /^Issues/u }).click();
     await expect(places).toHaveCount(0);
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
     // The command line names the part of the place shown.

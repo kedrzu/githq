@@ -306,8 +306,9 @@ two taps away when wanted, back and the panel, or the command menu's Go to.
 
 ## D21
 
-**A repository's Commits and Actions, which a phone does not show, are offered in the command menu marked ↗ as leaving
-for github.com, and nowhere else.** (2026-11-08, owner, picked from the drawings: `MB46`)
+**A repository's Commits and Actions, which a phone does not show, are offered marked ↗ as leaving for github.com: in
+the command menu, and under the repository in the places panel ([D53](#d53)).** (2026-11-08, owner, picked from the
+drawings: `MB46`; "and nowhere else" retired 2026-11-16 by D53, [history](history/RETIRED.md#d21))
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: they stay findable, so nobody concludes githq
 does not know about them, and the mark says before the tap that they leave ([D11](#d11)).
@@ -397,14 +398,15 @@ desktop's stack bar shrunk to a phone. Left and right read as moving along the s
 ## D30
 
 **Settings on a phone has the same sections as on the computer, tracking included — which repositories and projects
-are tracked, and each tracked one's own settings. Left out are only the settings about the computer's layout: the
-repository layout (sections as tabs, or a column beside the sidebar). Code review's comment setting stays, though code
-review itself is not on a phone.** (2026-11-08, owner: the same options, minus those about layout; which exactly is the
-design agent's proposal)
+are tracked, and each tracked one's own settings. Nothing is left out: the one setting about the computer's layout, the
+repository layout, went on the computer too ([git-client D25](../git-client/DECISIONS.md#d25)). Code review's comment
+setting stays, though code review itself is not on a phone.** (2026-11-08, owner: the same options, minus those about
+layout; which exactly is the design agent's proposal; the layout's exception retired 2026-11-16,
+[history](history/RETIRED.md#d30))
 
 **Why.** The owner: the technical settings must be the same on a phone, and the user will not necessarily configure
 the phone through settings synced from the computer. A phone that cannot change what it tracks is stuck with its
-first sign-in's choice. The repository layout chooses between two desktop arrangements a phone does not have. Code
+first sign-in's choice. Code
 review's setting is kept because it is the user's choice about GitHub, synced with the rest, and hiding it would make
 the phone's Settings a different list to learn.
 
@@ -716,3 +718,20 @@ named: on a pull request the description starts more than a screen down.
 - The phone's rows and chips ([D25, retired](history/RETIRED.md#d25)).
 - A hybrid: the desktop's standing card, Reviews and Checks, then the phone's rows and chips (MB264–MB267) — shorter,
   but two summaries to keep in step.
+
+## D53
+
+**In the places panel, tapping a tracked repository or project expands it in place, without going anywhere, the panel
+staying open: a repository's Issues, Pull requests, Commits and Workflows, a project's saved views, one place at a time,
+the place the user is in expanded to begin with. Tapping one of them opens it and closes the panel. Commits and Workflows
+are marked ↗ and open github.com, as in the command menu ([D21](#d21)), whose menu keeps the place's sections and views.**
+(2026-11-16, owner, with the computer's sidebar: [git-client D25](../git-client/DECISIONS.md#d25); `MB270`, `MB271`)
+
+**Why.** The computer's sidebar now shows the open place's sections under its row, and the phone's places panel is that
+sidebar ([D19](#d19)), so a place's parts are one tap from the panel rather than only from the command line ([D17](#d17)).
+Expanding in place is no drill: the places stay in view and the panel takes no step in history.
+
+**Rejected.**
+
+- A place's parts in the command line's menu only (D21's "nowhere else", [history](history/RETIRED.md#d21)) — the
+  panel would differ from the computer's sidebar it is.

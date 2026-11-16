@@ -77,24 +77,24 @@ export class CommitGraphHarness {
         await this.page.mouse.up();
     }
 
-    /** The edge of the repository's left column, in either layout. */
-    get leftColumnEdge(): Locator {
-        return this.page.getByRole('separator', { name: 'Resize the left column' });
+    /** The edge of the list of branches and tags beside the graph. */
+    get refListEdge(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize the branches and tags' });
     }
 
-    /** How far the left column's edge is from the window's, the sidebar's width included. */
-    async leftColumnEdgeX(): Promise<number> {
-        const box = await this.leftColumnEdge.boundingBox();
+    /** How far the list's edge is from the window's, the sidebar's width included. */
+    async refListEdgeX(): Promise<number> {
+        const box = await this.refListEdge.boundingBox();
         if (!box) {
-            throw new Error("The left column's edge is not on screen");
+            throw new Error("The list's edge is not on screen");
         }
 
         return Math.round(box.x);
     }
 
-    /** Drags the left column's edge by `by` pixels with the mouse. */
-    async dragLeftColumnEdge(by: number): Promise<void> {
-        const x = await this.leftColumnEdgeX();
+    /** Drags the list's edge by `by` pixels with the mouse. */
+    async dragRefListEdge(by: number): Promise<void> {
+        const x = await this.refListEdgeX();
         await this.page.mouse.move(x, 300);
         await this.page.mouse.down();
         await this.page.mouse.move(x + by, 300, { steps: 5 });

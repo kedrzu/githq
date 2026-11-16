@@ -305,8 +305,7 @@ export const Commits: Story = {
                 return () =>
                     h('div', { style: 'display: flex; height: 100vh' }, [
                         h(RepositoryView, args, {
-                            commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) =>
-                                h(CommitGraphView, { nameWithOwner: 'acme/web', refListInColumn }),
+                            commits: () => h(CommitGraphView, { nameWithOwner: 'acme/web' }),
                         }),
                     ]);
             },
@@ -323,68 +322,6 @@ export const CommitsNotTracked: Story = {
     render: Commits.render,
     play: async ({ canvasElement }) => {
         await expect(await findGraphRow(canvasElement)).toBeVisible();
-    },
-};
-
-/** CH4: the column layout on Issues: the sections and the projects its issues live in in the column; the toolbar in the pane. */
-export const ColumnIssues: Story = {
-    args: { layout: 'column', selectedId: 'I_1187' },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-        await expect(canvas.getByRole('navigation', { name: 'Its issues live in' })).toHaveTextContent(
-            '1 in no project',
-        );
-    },
-};
-
-/** CH5: the column layout on Pull requests. */
-export const ColumnPullRequests: Story = {
-    args: {
-        layout: 'column',
-        section: 'pullRequests',
-        list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'milestone', 'pullRequest'),
-    },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: 'Pull requests', level: 1 })).toBeVisible();
-        await expect(canvas.getByRole('navigation', { name: 'Its pull requests live in' })).toBeVisible();
-    },
-};
-
-/** CH6: the column layout on Commits: the list of branches and tags in the column, the graph the whole pane. */
-export const ColumnCommits: Story = {
-    args: { ...Commits.args, layout: 'column' },
-    loaders: Commits.loaders,
-    render: Commits.render,
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(await findGraphRow(canvasElement)).toBeVisible();
-        await expect(await canvas.findByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
-        await expect(canvas.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
-    },
-};
-
-/** D11, D20: the column layout not tracked: the chip in the column's head, Commits in full. */
-export const ColumnCommitsNotTracked: Story = {
-    args: { ...ColumnCommits.args, tracked: false },
-    loaders: Commits.loaders,
-    render: Commits.render,
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(await findGraphRow(canvasElement)).toBeVisible();
-        await expect(canvas.getByText('not tracked')).toBeVisible();
-    },
-};
-
-/** J5, D20: not tracked in the column layout: the chip in the column only, the toolbar and the count in the pane. */
-export const ColumnNotTracked: Story = {
-    args: { ...NOT_TRACKED, layout: 'column' },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-        await expect(canvas.getAllByText('not tracked')).toHaveLength(1);
-        await expect(canvas.getByText('5 of 3412')).toBeVisible();
     },
 };
 

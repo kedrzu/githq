@@ -1,9 +1,10 @@
-<!-- A list's display options (D9): "Display" on the toolbar, opening the view options the toolbar has no room for (a phone has its own sheet, `ListOptionsSheet`), each a section with its icon and its choices right there, what the list adds, and a footer saying they are kept on this device only, with a reset while they differ from the defaults. -->
+<!-- A list's display options (D9): "Display" on the toolbar, bordered like the toolbar's other controls — an icon alone when the toolbar is short of room (`iconOnly`, its name kept for screen readers and as its tooltip) — opening the view options the toolbar has no room for (a phone has its own sheet, `ListOptionsSheet`), each a section with its icon and its choices right there, what the list adds, and a footer saying they are kept on this device only, with a reset while they differ from the defaults. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { RotateCcw, SlidersHorizontal } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
+import IconButton from '@/components/IconButton.vue';
 import Popover from '@/components/Popover.vue';
 
 import * as l from './ListDisplayOptions.loc.js';
@@ -16,8 +17,10 @@ withDefaults(
     options: readonly ListToolbarOption[];
     /** The options differ from the list's defaults: it offers to reset them. */
     modified?: boolean;
+    /** The trigger without its label: the icon, named "Display" for screen readers and in its tooltip. */
+    iconOnly?: boolean;
   }>(),
-  { modified: false },
+  { modified: false, iconOnly: false },
 );
 
 const emit = defineEmits<{
@@ -42,8 +45,15 @@ const t = useTranslate();
     flush
   >
     <template #trigger>
+      <IconButton
+        v-if="iconOnly"
+        :class="css.listDisplayOptions_icon"
+        :icon="SlidersHorizontal"
+        :label="t(l.display)"
+      />
       <Button
-        variant="ghost"
+        v-else
+        variant="outline"
         size="sm"
         :icon="SlidersHorizontal"
       >
@@ -81,6 +91,16 @@ const t = useTranslate();
   flex-direction: column;
   width: 340px;
   max-width: 100%;
+}
+
+/* As tall as the toolbar's outlined controls (`Button`'s `sm`), bordered like them. */
+.listDisplayOptions_icon {
+  --icon-button-width: 26px;
+  --icon-button-height: 24px;
+  --icon-button-border: 1px solid #{$color-border};
+  --icon-button-radius: #{$radius-md};
+  --icon-button-glyph-size: 14px;
+  --icon-button-hover-background: #{$color-bg-2};
 }
 
 /* Under the sections, each closed by its own border. */

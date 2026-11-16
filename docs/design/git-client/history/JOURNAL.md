@@ -60,3 +60,8 @@ Append-only; one line per turn that settled something.
   tab, so the list becomes a combobox with a grid popup (D15). The CI mark opens the details, which list the checks, with
   the app's run page for Actions, a new tab for anything else or an untracked repository, read on opening alone, and the
   place remembered across a run's page (D18, D24).
+- 2026-11-16 — Owner: githq has to work on smaller screens; the repository's column goes with its setting, and the open
+  repository's sections, or a tracked project's saved views, show under its row in the sidebar; the header keeps the
+  tabs while they fit, one bordered group (CH67) with tooltips naming the keys, giving way in steps as room runs out; the
+  visibility an icon inside the title; the repository menu without Open, with keys on the open repository's menu (D25).
+  D14, D15 and D22 retired in part to history; D18 no longer mentions the column. CH72–CH80 drawn.

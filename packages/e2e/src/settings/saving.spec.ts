@@ -170,7 +170,7 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
     await expect(shell.account(LOGIN)).toHaveAccessibleName(`Account: ${LOGIN}`);
 });
 
-test('the repository layout chosen with saving on is written to the file, and is still chosen after a reload', async ({
+test('animations turned off with saving on are written to the file, and are still off after a reload', async ({
     page,
     github,
 }) => {
@@ -184,18 +184,16 @@ test('the repository layout chosen with saving on is written to the file, and is
     const settings = new SettingsScreenHarness(page);
     const shell = new AppShellHarness(page);
     await expect(shell.statusBar).toContainText(`Up to date · settings saved in ${LOGIN}/githq-settings`);
-    await expect(settings.repositoryLayout('Tabs')).toBeChecked();
-    await settings.repositoryLayout('Tabs').focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(settings.repositoryLayout('Column')).toBeChecked();
+    await expect(settings.animationsSwitch).toBeChecked();
+    await settings.animationsSwitch.click();
+    await expect(settings.animationsSwitch).not.toBeChecked();
 
     await expect
         .poll((): unknown => repository.file && JSON.parse(repository.file.text))
-        .toMatchObject({ repositoryLayout: 'column' });
+        .toMatchObject({ animations: false });
 
     await page.reload();
-    await expect(settings.repositoryLayout('Column')).toBeChecked();
-    await expect(settings.repositoryLayout('Tabs')).not.toBeChecked();
+    await expect(settings.animationsSwitch).not.toBeChecked();
 });
 
 /**

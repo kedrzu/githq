@@ -43,7 +43,7 @@ test('`1` to `7` and the tabs switch the sections, kept in the address', async (
     await page.keyboard.press('3');
     await expect(page).toHaveURL('/settings?tab=display');
     await expect(settings.section('Display')).toHaveAttribute('aria-pressed', 'true');
-    await expect(settings.repositoryLayout('Tabs')).toBeChecked();
+    await expect(settings.animationsSwitch).toBeChecked();
     await expect(shell.statusBar).toContainText('Up to date · saving is off');
 
     await page.keyboard.press('4');

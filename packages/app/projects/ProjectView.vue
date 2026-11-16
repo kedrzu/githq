@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. On a phone the toolbar is the phone's top bar, the saved views left to the command menu (`ListToolbar`), its options a sheet from below headed by the view's name — the view's filter as a chip cleared here by its ×, Back to GitHub's view while changed, the view on github.com (`ListOptionsSheet`, mobile D36, D46, D49) —, a board view is a list grouped by its columns, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the view shown with its count, dotted when changed on this device (mobile D17, D49), its menu listing the saved views first (`viewCommands`), each with its count (`countView`), the one shown checked, those changed on this device dotted; the rows are the phone's (`ItemRow`, `StackRow`: mobile D23), a tracked repository named without its owner. -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. The title is led by the project's icon (D12). A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. On a phone the toolbar is the phone's top bar, the saved views left to the places panel and the command menu (`ListToolbar`, mobile D53), its options a sheet from below headed by the view's name — the view's filter as a chip cleared here by its ×, Back to GitHub's view while changed, the view on github.com (`ListOptionsSheet`, mobile D36, D46, D49) —, a board view is a list grouped by its columns, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the view shown with its count, dotted when changed on this device (mobile D17, D49), its menu listing the saved views first (`viewCommands`), each with its count (`countView`), the one shown checked, those changed on this device dotted; the rows are the phone's (`ItemRow`, `StackRow`: mobile D23), a tracked repository named without its owner. -->
 <script lang="ts" setup>
 import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -22,7 +22,6 @@ import {
   BookMarked,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { RouterLink } from 'vue-router';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
@@ -32,6 +31,7 @@ import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
+import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import FilteredOut from '@/components/FilteredOut.vue';
 import { countListRows } from '@/lists/countListRows.js';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -40,6 +40,7 @@ import type { ItemProperty } from '@/lists/ItemProperty.js';
 import * as propertyLabels from '@/lists/ItemProperty.loc.js';
 import ItemCard from '@/lists/ItemCard.vue';
 import ItemRow from '@/lists/ItemRow.vue';
+import type { ListTitleIcon } from '@/lists/ListTitle.vue';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import type {
@@ -308,6 +309,21 @@ const rowFieldOption = computed((): ListToolbarOption => {
     choose: chosen => emit('update:rowFieldId', chosen === NO_ROW_FIELD ? null : chosen),
   };
 });
+/** The project's board before its title, inside the title's button (D12). */
+const TITLE_ICON: ListTitleIcon = { icon: SquareKanban, tone: 'accent' };
+/** The saved views as the header's tabs, each a link; while items are checked the selection's actions take their place. */
+const viewTabs = computed((): HeaderTabsSet => ({
+  kind: 'links',
+  label: t(l.savedViews),
+  links: props.tabs.map(tab => ({
+    key: tab.key,
+    label: tab.name,
+    to: tab.to,
+    current: tab.current,
+    answered: tab.answered,
+    modified: tab.modified,
+  })),
+}));
 const fieldNames = computed(() => props.project.fields.map(field => `${field.name} (${field.kind})`).join(', '));
 const sortSummary = computed(() => {
   const levels = parseProjectSort(props.project, options.value.sort);
@@ -364,6 +380,7 @@ function hasItemView(entry: ProjectEntry) {
     <ListToolbar
       v-model:options="options"
       :title="project.title"
+      :title-icon="TITLE_ICON"
       :groupings="groupings"
       :sorts="sorts"
       :properties="properties"
@@ -372,6 +389,7 @@ function hasItemView(entry: ProjectEntry) {
       :extra-options="[rowFieldOption]"
       :list-name="tabs.find(tab => tab.current)?.name"
       :git-hub-view="view && `${project.url}/views/${view.number}`"
+      :tabs="tabs.length > 0 && checkedIds.length === 0 ? viewTabs : null"
       @reset="emit('reset')"
       @clear-filter="emit('clearFilter')"
     >
@@ -398,34 +416,6 @@ function hasItemView(entry: ProjectEntry) {
           :span="getSelectionSpan(groups ?? [], checkedIds)"
         />
       </template>
-      <!-- The selection's actions take the saved views' place. -->
-      <nav
-        v-if="tabs.length > 0 && checkedIds.length === 0"
-        :class="css.projectView_tabs"
-        :aria-label="t(l.savedViews)"
-      >
-        <RouterLink
-          v-for="tab in tabs"
-          :key="tab.key"
-          :to="tab.to"
-          :class="[css.projectView_tab, tab.current && css.projectView_tab_current]"
-          :aria-current="tab.current ? 'page' : undefined"
-        >
-          <Cloud
-            v-if="tab.answered"
-            :class="css.projectView_tabIcon"
-            role="img"
-            :aria-label="t(l.answeredByGitHub)"
-          />
-          {{ tab.name }}
-          <span
-            v-if="tab.modified"
-            :class="css.projectView_tabDot"
-            role="img"
-            :aria-label="t(l.modifiedLocally)"
-          />
-        </RouterLink>
-      </nav>
       <span
         v-if="modified"
         :class="css.projectView_changed"
@@ -800,55 +790,6 @@ function hasItemView(entry: ProjectEntry) {
   flex: none;
   width: 12px;
   height: 12px;
-}
-
-.projectView_tabs {
-  display: flex;
-  gap: 2px;
-  align-items: center;
-  min-width: 0;
-  padding-left: $spacing-8;
-  overflow-x: auto;
-}
-
-.projectView_tab {
-  @include focus-ring;
-
-  display: inline-flex;
-  flex: none;
-  gap: 6px;
-  align-items: center;
-  height: 26px;
-  padding: 0 $spacing-10;
-  font-size: $font-size-sm;
-  color: $color-fg-2;
-  text-decoration: none;
-  white-space: nowrap;
-  border-radius: $radius-md;
-
-  &:hover {
-    color: $color-fg;
-    background: $color-bg-2;
-  }
-}
-
-.projectView_tab_current {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
-}
-
-.projectView_tabIcon {
-  width: 13px;
-  height: 13px;
-  color: $color-purple;
-}
-
-.projectView_tabDot {
-  width: 6px;
-  height: 6px;
-  background: $color-accent;
-  border-radius: 50%;
 }
 
 .projectView_changed {

@@ -57,6 +57,20 @@ An item is anything opened from a list: an issue, a pull request, a workflow.
 - **A run in the panel** is a query on the list's address, `?pane=run&run=owner|name|<run>[|<job>]`, as a workflow's
   is `?pane=workflow&workflow=owner|name|<file>`.
 
+## Places in the sidebar
+
+- **Only the open place is expanded:** a tracked repository shows its sections under its row, a tracked project its
+  saved views ([git-client D25](../git-client/DECISIONS.md#d25)). Going to another place moves them there.
+- **The current sub-row stays marked while one of its items is open,** in the panel or full screen. An item full screen
+  is in the list it was opened from while that list steps through it, else in its own repository's section of its kind;
+  a list outside any place (My work) expands nothing.
+- **A place's row opens its list:** a repository on the section it was left on, a project on its first saved view. On
+  the open place this closes an item open over the list.
+- **An untracked repository has no row,** so nothing expands: its header is its navigation.
+- **The rail is unchanged:** it lists no repositories and expands nothing.
+- **On a phone** the places panel expands a place tapped, without going anywhere; a sub-row tapped opens and closes the
+  panel ([mobile D53](../mobile/DECISIONS.md#d53)).
+
 ## Starting things
 
 A single key never starts a workflow on GitHub: a re-run, a dispatch or a cancel goes through the command menu or an

@@ -1,8 +1,10 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
+import { CircleDot, GitCommitHorizontal, GitPullRequest, ListFilter, Workflow } from 'lucide-vue-next';
 import { userEvent, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
 import { NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
+import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import { useCommands } from '@/commands/useCommands.js';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -58,6 +60,60 @@ export const Phone: Story = {
     }),
 };
 
+/** A repository's sections as tabs, Pull requests shown. */
+const SECTIONS: HeaderTabsSet = {
+    kind: 'model',
+    label: 'Sections',
+    options: [
+        { value: 'issues', label: 'Issues', icon: CircleDot, count: 0, keyshortcuts: '1' },
+        { value: 'pullRequests', label: 'Pull requests', icon: GitPullRequest, count: 15, keyshortcuts: '2' },
+        { value: 'commits', label: 'Commits', icon: GitCommitHorizontal, keyshortcuts: '3' },
+        { value: 'workflows', label: 'Workflows', icon: Workflow, count: 1, keyshortcuts: '4' },
+    ],
+    value: 'pullRequests',
+    choose: () => undefined,
+};
+
+/**
+ * A repository's header with its sections and its state, at a width (`tid="toolbar-frame"`): the steps it gives way in
+ * as the room runs out.
+ */
+export const Tabs: Story = {
+    decorators: [withWidth(1200)],
+    args: {
+        title: 'healedcare/healed',
+        tabs: SECTIONS,
+        sorts: [
+            { value: 'updated', label: 'Updated' },
+            { value: 'created', label: 'Created' },
+        ],
+        filters: [
+            {
+                kind: 'menu',
+                key: 'state',
+                label: 'State',
+                icon: ListFilter,
+                title: 'Open',
+                choices: [
+                    { value: 'open', label: 'Open' },
+                    { value: 'closed', label: 'Closed' },
+                ],
+                value: 'open',
+                choose: () => undefined,
+            },
+        ],
+    },
+};
+
+/** Step 1 (CH75): some view options moved into Display, the tabs side by side, Display labelled. */
+export const OptionsInDisplay: Story = { ...Tabs, decorators: [withWidth(720)] };
+
+/** Step 2 (CH76): every option in Display, which is an icon now — its name the tooltip and what screen readers say. */
+export const DisplayAsIcon: Story = { ...Tabs, decorators: [withWidth(590)] };
+
+/** Step 3 (CH77): the tabs one menu showing the current section, its icon and count. */
+export const TabsAsMenu: Story = { ...Tabs, decorators: [withWidth(480)] };
+
 /** On a phone, the options opened: a sheet from below with the grouping (`ListOptionsSheet`, mobile D36). */
 export const PhoneDisplay: Story = {
     ...Phone,
@@ -65,6 +121,16 @@ export const PhoneDisplay: Story = {
         await userEvent.click(within(canvasElement).getByRole('button', { name: 'Display' }));
     },
 };
+
+/** The story inside a frame of that width (`tid="toolbar-frame"`), which a spec narrows. */
+function withWidth(width: number): Decorator {
+    return story => {
+        const Story = story();
+        return defineComponent({
+            setup: () => () => h('div', { tid: 'toolbar-frame', style: { width: `${width}px` } }, h(Story)),
+        });
+    };
+}
 
 /** The app's New issue, on `C` as `AppCommands` offers it; under the story a line says whether it ran (`tid="new-issue"`). */
 function withNewIssue(): Decorator {

@@ -212,8 +212,7 @@ $spacing-8: 8px;
 $spacing-9: 9px;
 $spacing-10: 10px;
 $spacing-12: 12px;
-// Around and between what a settings card's footer holds; the inset of a repository's column, lining its head up with
-// its rows' icons.
+// Around and between what a settings card's footer holds.
 $spacing-14: 14px;
 $spacing-16: 16px;
 $spacing-20: 20px;
@@ -754,7 +753,7 @@ $row-surface-inset: $spacing-2 $spacing-8;
     border-bottom: 1px solid $color-border;
 }
 
-// A row of navigation, in the sidebar or a repository's column: an icon, its label, a dim count. Its parts are the
+// A row of navigation, in the sidebar: an icon, its label, a dim count. Its parts are the
 // mixins after it.
 @mixin nav-row {
     @include focus-ring;
@@ -796,6 +795,50 @@ $row-surface-inset: $spacing-2 $spacing-8;
     font-weight: $font-weight-medium;
     color: $color-fg;
     background: $color-bg-3;
+}
+
+// One choice out of a few in one bordered box, the chosen one filled (`SegmentedTabs`' `boxed`: the List / Board switch,
+// a header's tabs, CH67). Its parts are the mixins after it, for tabs that are links rather than toggle buttons.
+@mixin segmented-box {
+    gap: $spacing-2;
+    padding: $spacing-2;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+}
+
+@mixin segmented-box-item {
+    @include focus-ring;
+
+    display: inline-flex;
+    gap: $spacing-6;
+    align-items: center;
+    padding: 3px 8px;
+    font-size: $font-size-xs;
+    line-height: 16px;
+    color: $color-fg-2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: $radius-sm;
+
+    &:hover {
+        color: $color-fg;
+    }
+}
+
+@mixin segmented-box-item-current {
+    font-weight: $font-weight-medium;
+    color: $color-fg;
+    background: $color-bg-3;
+}
+
+// How many a tab holds, dim after its label ("Pull requests 15").
+@mixin segmented-count {
+    font-family: $font-family-mono;
+    font-size: $font-size-2xs;
+    color: $color-fg-dim;
 }
 
 // What doesn't match, still readable, still in place (D30): instead of opacity, which would take text under AA.

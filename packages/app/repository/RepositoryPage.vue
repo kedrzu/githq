@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. Tracked, a section whose state its download has not read yet, with nothing listed, stands as still arriving — ghost rows, on the board ghost columns — never as nothing there (first run and loading D5, ES14, ES15, ES29). What stands in the way — tracked, what its sync says of it; not tracked, of the section and state read on demand — is told once the kept copy is loaded, so a copy still loading never reads as offline (`cantBeRead`, D6, D12, ES16, ES17). The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Untracked with Undo on offer (D25), it reads as not tracked already, as in the sidebar, and Track takes it back. Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. Tracked, a section whose state its download has not read yet, with nothing listed, stands as still arriving — ghost rows, on the board ghost columns — never as nothing there (first run and loading D5, ES14, ES15, ES29). What stands in the way — tracked, what its sync says of it; not tracked, of the section and state read on demand — is told once the kept copy is loaded, so a copy still loading never reads as offline (`cantBeRead`, D6, D12, ES16, ES17). The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Untracked with Undo on offer (D25), it reads as not tracked already, as in the sidebar, and Track takes it back. Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -42,6 +42,7 @@ import { WorkflowTabPlaces } from '@/workflows/WorkflowTabPlaces.js';
 
 import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
+import { getRepositorySectionCounts } from './getRepositorySectionCounts.js';
 import { isRepositoryStateArriving } from './isRepositoryStateArriving.js';
 import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
@@ -262,21 +263,14 @@ const workflowList = computed(() =>
     now: list.now,
   }),
 );
-/**
- * How many open items each section holds, for its tab; `null` while its download has yet to read them, as a partial total
- * would read as the whole, and with none held of one GitHub hides, as nothing would read as nothing there (first run and
- * loading D4, D6, D14).
- */
-const openCounts = computed((): Record<RepositoryItemSection, number | null> => {
-  const open = repositoryItems.value.filter(item => item.state === 'OPEN');
-  const syncState = tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value });
-  return { issues: countOf('issue'), pullRequests: countOf('pullRequest') };
-
-  function countOf(kind: Item['kind']) {
-    const count = open.filter(item => item.kind === kind).length;
-    return isRepositoryStateArriving(syncState, kind, 'open') || (syncState?.hidden && count === 0) ? null : count;
-  }
-});
+/** What its sections count, for their tabs. */
+const counts = computed(() =>
+  getRepositorySectionCounts({
+    items: repositoryItems.value,
+    sync: tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value }),
+    workflows: workflowList.value,
+  }),
+);
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
 const projectLinks = computed(() => {
@@ -452,7 +446,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-private="isPrivate"
     :tracked="trackedShown"
     :list="itemsShown ? shownList : null"
-    :open-counts="openCounts"
+    :open-counts="counts"
     :status="status"
     :cant-be-read="cantBeRead"
     :projects="itemsShown ? projectLinks.links : []"
@@ -463,8 +457,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
-    :workflow-count="trackedShown ? workflowList.count : null"
-    :layout="tracking.repositoryLayout"
+    :workflow-count="trackedShown ? counts.workflows : null"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
@@ -489,7 +482,10 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       />
     </template>
     <template #menu>
-      <RepositoryContextMenu :name-with-owner="nameWithOwner" />
+      <RepositoryContextMenu
+        :name-with-owner="nameWithOwner"
+        current
+      />
     </template>
     <template #selection="{ ids, span }">
       <SelectionActions
@@ -505,11 +501,10 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
         @open="menu.open"
       />
     </template>
-    <template #commits="{ refListInColumn }">
+    <template #commits>
       <CommitGraphView
         ref="graphView"
         :name-with-owner="nameWithOwner"
-        :ref-list-in-column="refListInColumn"
       />
     </template>
   </RepositoryView>

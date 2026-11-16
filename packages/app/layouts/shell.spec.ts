@@ -48,7 +48,7 @@ const WebList = defineComponent({
                 now: SAMPLE_NOW,
                 options: REPOSITORY_VIEW_DEFAULTS,
                 state: 'open',
-                section: route.params.segment === 'pulls' ? 'pullRequests' : 'issues',
+                section: route.params.section === 'pulls' ? 'pullRequests' : 'issues',
                 'onUpdate:section': (section: RepositorySection) =>
                     void router.replace(getRepositoryPath(WEB, section)),
             });
@@ -313,8 +313,31 @@ test('on a phone, the command menu rises from below with its field unfocused, it
     await expect.element(line).toBeVisible();
 });
 
+test("the open place's rows slide open in a Reveal with the animations on, and appear as they are with them off", async () => {
+    const { router, tracking } = await open();
+    await router.push('/acme/web/issues');
+    const rows = () => openPlaceRows(WEB);
+    await expect.poll(() => rows()?.parentElement?.tagName).toBe('DIV');
+    const wrapper = rows()?.closest('li > div');
+    expect(wrapper && getComputedStyle(wrapper).transitionProperty).toContain('height');
+
+    tracking.setAnimations(false);
+
+    await expect.poll(() => rows()?.parentElement?.tagName).toBe('LI');
+});
+
 function sidebarLink(name: string) {
     return page.getByRole('link', { name });
+}
+
+/** The list of rows under a tracked place in the sidebar, while it shows them. */
+function openPlaceRows(name: string) {
+    return page
+        .getByRole('navigation', { name: 'Sidebar' })
+        .getByRole('link', { name: new RegExp(`^${name}`, 'u') })
+        .element()
+        .closest('li')
+        ?.querySelector('ul');
 }
 
 /**
@@ -342,7 +365,8 @@ async function open(device: 'computer' | 'phone' = 'computer') {
         history: createMemoryHistory(),
         routes: [
             { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
-            { path: '/acme/web/:segment(issues|pulls)', component: WebList },
+            // The repository's route, by name, so the sidebar knows the place it is in (`getOpenPlace`).
+            { path: '/:owner(acme)/:name(web)/:section(issues|pulls)', name: 'repository', component: WebList },
             { path: ITEM_PAGE_PATHS[0], meta: { itemPage: 'issue' }, component: ItemPage },
             { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
         ],

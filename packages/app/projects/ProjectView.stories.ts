@@ -53,6 +53,15 @@ type Story = StoryObj<typeof meta>;
 /** D4: "Current sprint" as a list by Status, by Priority; a draft issue among the items. */
 export const List: Story = { args: { selectedId: 'I_470' } };
 
+/** D13 at a narrow width (CH77's project): the saved views one menu showing the current one, Display an icon. */
+export const NarrowHeader: Story = {
+    render: args => ({
+        components: { ProjectView },
+        setup: () => ({ args }),
+        template: '<div style="display: flex; height: 100vh; width: 760px"><ProjectView v-bind="args" /></div>',
+    }),
+};
+
 /** D5: "Board", a column per Status; items move between columns, a draft is written at the bottom of one. */
 export const Board: Story = {
     args: {

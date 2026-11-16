@@ -3,20 +3,20 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h, ref, shallowRef, Teleport, unref } from 'vue';
+import { createApp, defineComponent, h, ref, shallowRef, unref } from 'vue';
 import type { Ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
-import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { matchText } from '@/testing/matchText.js';
+import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListEntry, ListViewOptions } from '@/lists/ListTypes.js';
 import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
-import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
@@ -33,7 +33,6 @@ import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 
 type Options = ListViewOptions<RepositoryGrouping, ItemSort>;
 
-const COLUMN_WIDTH_KEY = 'githq.panelWidth.repositoryColumn';
 const GITHUB_URL = `https://github.com/${SAMPLE_REPOSITORY}`;
 
 const TEXTS: RepositoryListTexts = {
@@ -139,12 +138,31 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
 
-    view.host.style.width = '560px';
+    view.host.style.width = '400px';
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).not.toBeInTheDocument();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
     const states = page.getByRole('dialog', { name: 'Display' }).getByRole('group', { name: 'State' });
     await userEvent.click(states.getByRole('button', { name: 'Open and closed' }));
     expect(view.state.value.issues).toBe('all');
+});
+
+test('CH72: the title leads with a lock or a book inside its button, read out as private or public, never written beside it', async () => {
+    mount({ withMenu: true });
+    const title = page.getByRole('button', { name: `Actions of ${SAMPLE_REPOSITORY} (private)` });
+    await expect.element(title).toBeVisible();
+    expect(title.element().querySelector('svg')).not.toBeNull();
+    await expect.element(page.getByText(/^(private|public)$/u)).not.toBeInTheDocument();
+    await userEvent.click(title);
+    await expect.element(page.getByText('The repository menu')).toBeVisible();
+});
+
+test('CH72: not tracked and public, the title has the book, named, and the "not tracked" chip beside it', async () => {
+    mount({ tracked: false, isPrivate: false });
+    const heading = page.getByRole('heading', { level: 1 });
+    await expect.element(heading.getByRole('img', { name: 'public' })).toBeVisible();
+    await expect.element(heading).toHaveTextContent(SAMPLE_REPOSITORY);
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect.element(page.getByText(/^(private|public)$/u)).not.toBeInTheDocument();
 });
 
 test('J5: not tracked, the same toolbar and list as tracked, with the chip and how much is read, no counts on the tabs and no offer to track', async () => {
@@ -519,171 +537,60 @@ test('D10, D11, CH3: Commits on 3 has none of the list tools, only the way to it
     await expect.element(page.getByText('The commit graph')).not.toBeInTheDocument();
 });
 
+test('Commits, narrowing: its tabs fold into one menu, then its title is cut, so Branches and tags and the way to GitHub stay whole on the header, never under the title', async () => {
+    const view = mount({ section: 'commits' });
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+
+    const widths: number[] = [];
+    for (let width = 1400; width >= 320; width -= 20) {
+        widths.push(width);
+    }
+
+    const fits = await narrowToolbar(view.host, widths);
+
+    expect(fits.filter(fit => fit.overlaps.length > 0)).toEqual([]);
+    // Bare, it has no Display to fold: the tabs side by side, then one menu.
+    const steps = fits.map(fit => fit.step);
+    expect(steps).toEqual(steps.toSorted((a, b) => a - b));
+    expect(new Set(steps)).toEqual(new Set([0, 2]));
+    // At the narrowest the title is what gives way, cut, the whole name its tooltip.
+    await expect.element(page.getByTitle(SAMPLE_REPOSITORY)).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Branches and tags/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: 'Commits', expanded: false }));
+    await expect.element(page.getByRole('menuitem', { name: /Issues/ })).toHaveAttribute('aria-keyshortcuts', '1');
+    await userEvent.click(page.getByRole('menuitem', { name: /Issues/ }));
+    expect(view.section.value).toBe('issues');
+});
+
+test("a section's tooltip says where it goes, with its key", async () => {
+    mount();
+    const pullRequests = page.getByRole('group', { name: 'Sections' }).getByRole('button', { name: 'Pull requests 1' });
+
+    await userEvent.hover(pullRequests);
+    await expect.element(pullRequests).toHaveAccessibleDescription(matchText('Go to pull requests2'));
+});
+
+test("the sections' keys work with the folded tabs' menu open: 3 shows Commits and closes it", async () => {
+    const view = mount();
+    const fits = await narrowToolbar(view.host, [360]);
+    expect(fits[0]?.step).toBe(2);
+
+    await userEvent.click(page.getByRole('button', { name: 'Sections: Issues 5' }));
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await userEvent.keyboard('3');
+
+    await expect.poll(() => view.section.value).toBe('commits');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
 test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the reading of items', async () => {
     mount({ tracked: false, section: 'commits' });
 
     await expect.element(page.getByText('The commit graph')).toBeVisible();
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Read/ })).not.toBeInTheDocument();
-});
-
-test("D14, CH4: in the column layout the sections and the projects are in the column, and the pane holds the section's name and its tools", async () => {
-    const view = mount({ layout: 'column' });
-    const sections = page.getByRole('group', { name: 'Sections' });
-    const issues = sections.getByRole('button', { name: 'Issues 5' });
-
-    await expect.element(issues).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(issues).toHaveAttribute('aria-keyshortcuts', '1');
-    expect(issues.element().textContent).toContain('1');
-    await expect
-        .element(sections.getByRole('button', { name: 'Commits', exact: true }))
-        .toHaveAttribute('aria-keyshortcuts', '3');
-    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 2 })).toBeVisible();
-    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
-    await expect.element(page.getByRole('button', { name: 'Display' })).toBeVisible();
-    await expect
-        .element(page.getByRole('link', { name: 'Open on GitHub' }))
-        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}`);
-
-    const projects = page.getByRole('navigation', { name: 'Its issues live in' });
-    await expect
-        .element(projects.getByRole('link', { name: /Platform Q4/ }))
-        .toHaveAttribute('href', '/orgs/acme/projects/1');
-    await expect.element(projects.getByRole('link', { name: /Bug triage/ })).toHaveAttribute('target', '_blank');
-    await expect.element(projects).toHaveTextContent('2 in no project');
-    // The same projects are not drawn again over the list.
-    expect(page.getByRole('navigation').elements()).toHaveLength(1);
-
-    await userEvent.keyboard('2');
-    expect(view.section.value).toBe('pullRequests');
-    await expect
-        .element(sections.getByRole('button', { name: /^Pull requests/ }))
-        .toHaveAttribute('aria-pressed', 'true');
-    await expect.element(page.getByRole('heading', { name: 'Pull requests', level: 1 })).toBeVisible();
-    await expect.element(page.getByRole('navigation', { name: 'Its pull requests live in' })).toBeVisible();
-
-    await userEvent.click(sections.getByRole('button', { name: 'Issues 5' }));
-    expect(view.section.value).toBe('issues');
-});
-
-test('D14, CH6: in the column layout Commits has the plain header over the graph, the way to its history in the column, and the slot told where the list goes', async () => {
-    mount({ layout: 'column', section: 'commits' });
-
-    await expect.element(page.getByText('The commit graph')).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
-    await expect
-        .element(page.getByRole('link', { name: 'Open on GitHub' }))
-        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}/commits`);
-    await expect.element(page.getByRole('button', { name: 'Branches and tags' })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('navigation')).not.toBeInTheDocument();
-    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
-    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).not.toBeNull();
-});
-
-test("D14, D20: not tracked, in the column layout the chip is in the column, and the pane has the section's name, its tools and the count", async () => {
-    const view = mount({ layout: 'column', tracked: false, status: browsedStatus({ total: 3412 }) });
-    const sections = page.getByRole('group', { name: 'Sections' });
-
-    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
-    expect(page.getByText('not tracked', { exact: true }).elements()).toHaveLength(1);
-    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
-    await expect.element(page.getByText('5 of 3412', { exact: true })).toBeVisible();
-
-    await userEvent.keyboard('3');
-    expect(view.section.value).toBe('commits');
-    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
-});
-
-test('J7 in the column layout: the name of the section over what GitHub does not show, the sections staying in the column', async () => {
-    mount({ layout: 'column', tracked: false, items: [], cantBeRead: { kind: 'hidden', url: GITHUB_URL } });
-
-    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
-    await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
-    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
-});
-
-test('D14: in the column layout a long name is cut to the column, its GitHub icon still in it', async () => {
-    const name = 'a-very-long-organisation-name/an-even-longer-repository-name';
-    mount({ layout: 'column', nameWithOwner: name });
-    const github = page.getByRole('link', { name: 'Open on GitHub' });
-    const menu = page.getByRole('heading', { name, level: 2 });
-
-    await expect.element(github).toBeVisible();
-    const column = menu.element().closest('[class*="repositoryColumn_head"]')?.parentElement?.getBoundingClientRect();
-    const icon = github.element().getBoundingClientRect();
-    // The default 280 px, less the panel's border.
-    expect(column?.width).toBe(279);
-    expect(icon.right).toBeLessThanOrEqual(column?.right ?? 0);
-    expect(menu.element().getBoundingClientRect().right).toBeLessThanOrEqual(icon.left);
-});
-
-test('D14: in the column layout Workflows has its name over its body, the way to it on GitHub in the column', async () => {
-    mount({ layout: 'column', section: 'workflows', workflowCount: 2 });
-
-    await expect.element(page.getByText('The workflows body')).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: 'Workflows', level: 1 })).toBeVisible();
-    await expect
-        .element(page.getByRole('link', { name: 'Open on GitHub' }))
-        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}/actions`);
-    await expect.element(page.getByRole('button', { name: 'Display' })).not.toBeInTheDocument();
-});
-
-test('D14: the pane stays mounted as the layout changes live, what it holds kept, and on Commits the list has its place in the column', async () => {
-    const layout = ref<RepositoryLayout>('tabs');
-    mount({ layout, section: 'commits' });
-    const held = page.getByRole('textbox', { name: 'Held by the graph' });
-    await userEvent.fill(held, 'kept');
-    const element = held.element();
-
-    layout.value = 'column';
-    await expect.element(page.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
-    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
-    expect(held.element()).toBe(element);
-    await expect.element(held).toHaveValue('kept');
-    await expect
-        .poll(() => document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)?.textContent)
-        .toBe('Branches and tags');
-
-    layout.value = 'tabs';
-    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
-    await expect.element(page.getByTestId('target')).toHaveTextContent('beside');
-    expect(held.element()).toBe(element);
-    await expect.element(held).toHaveValue('kept');
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).not.toBeInTheDocument();
-    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).toBeNull();
-    await expect.element(page.getByTestId('refList')).toBeVisible();
-});
-
-test('D14: the column is as wide on every section of the column layout, resized by its edge', async () => {
-    const view = mount({ layout: 'column' });
-    const edge = page.getByRole('separator', { name: 'Resize the left column' });
-    const column = () => edge.element().previousElementSibling?.getBoundingClientRect().width;
-    await expect.element(edge).toBeInTheDocument();
-    await expect.poll(column).toBe(280);
-    onTestFinished(() => window.localStorage.removeItem(COLUMN_WIDTH_KEY));
-
-    edge.element().focus();
-    await userEvent.keyboard('{ArrowLeft}');
-    await expect.poll(column).toBe(200);
-    await expect.poll(() => window.localStorage.getItem(COLUMN_WIDTH_KEY)).toBe('200');
-
-    view.section.value = 'commits';
-    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
-    expect(column()).toBe(200);
-    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).not.toBeNull();
-});
-
-test('D14: in the tabs layout the slot is told the list stays beside the graph, and there is no column', async () => {
-    mount({ section: 'commits' });
-
-    await expect.element(page.getByText('The commit graph')).toBeVisible();
-    await expect.element(page.getByTestId('target')).toHaveTextContent('beside');
-    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
 });
 
 test("the sections are the command menu's repository group, each once on its key 1–4 with an icon", () => {
@@ -714,12 +621,12 @@ interface MountOptions {
     readonly canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
     readonly hostHeight?: string;
     readonly section?: RepositorySection;
-    /** A ref to change it while mounted. */
-    readonly layout?: RepositoryLayout | Ref<RepositoryLayout>;
-    readonly nameWithOwner?: string;
     readonly workflowCount?: number | 'unknown' | null;
     /** The options differ from the defaults. */
     readonly modified?: boolean;
+    readonly isPrivate?: boolean | null;
+    /** The title opens a menu (the page's `menu` slot). */
+    readonly withMenu?: boolean;
 }
 
 /**
@@ -735,10 +642,10 @@ function mount({
     canMove,
     hostHeight = '100vh',
     section: firstSection = 'issues',
-    layout = 'tabs',
-    nameWithOwner = SAMPLE_REPOSITORY,
     workflowCount = null,
     modified = false,
+    isPrivate = true,
+    withMenu = false,
 }: MountOptions = {}) {
     const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
@@ -774,8 +681,8 @@ function mount({
             return h(
                 RepositoryView,
                 {
-                    nameWithOwner,
-                    isPrivate: true,
+                    nameWithOwner: SAMPLE_REPOSITORY,
+                    isPrivate,
                     tracked,
                     list: listed
                         ? buildRepositoryList({
@@ -793,7 +700,6 @@ function mount({
                     cantBeRead,
                     onReadMore: readMore,
                     canMove,
-                    layout: unref(layout),
                     modified,
                     workflowCount: workflowCountRef.value,
                     projects: [
@@ -824,21 +730,8 @@ function mount({
                 },
                 {
                     workflows: () => h('p', 'The workflows body'),
-                    commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) => [
-                        h('p', 'The commit graph'),
-                        h('p', { tid: 'target' }, refListInColumn ? 'column' : 'beside'),
-                        h('input', { 'aria-label': 'Held by the graph' }),
-                        // As the graph holds its list of branches and tags.
-                        h(
-                            Teleport,
-                            {
-                                to: refListInColumn ? `#${COMMIT_REF_LIST_TARGET_ID}` : undefined,
-                                disabled: !refListInColumn,
-                                defer: true,
-                            },
-                            h('p', { tid: 'refList' }, 'Branches and tags'),
-                        ),
-                    ],
+                    commits: () => h('p', 'The commit graph'),
+                    ...(withMenu ? { menu: () => h('p', 'The repository menu') } : {}),
                 },
             );
         },

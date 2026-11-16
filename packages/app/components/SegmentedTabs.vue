@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed; pressing the chosen one again is told (`repeat`: a project's order on a phone flips its direction). `variant="strip"`: pills a finger can tap, in a row that scrolls sideways when they don't fit (a phone's filters of my work, mobile D23). `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed; pressing the chosen one again is told (`repeat`: a project's order on a phone flips its direction). `variant="strip"`: pills a finger can tap, in a row that scrolls sideways when they don't fit (a phone's filters of my work, mobile D23). `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (Settings' sections, `roomy`). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -17,6 +17,8 @@ export interface SegmentedTabsOption<T extends string> {
   count?: number | string;
   /** An amber dot after the label: something there needs the user, read out as this ("Syncing stopped"). */
   attention?: string;
+  /** A hint on hover and focus ("Go to issues"), its key after it. */
+  tooltip?: string;
 }
 </script>
 
@@ -25,6 +27,7 @@ import type { AcceptableValue } from 'reka-ui';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 
 import Kbd from './Kbd.vue';
+import Tooltip from './Tooltip.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -81,49 +84,55 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     ]"
     @update:model-value="choose"
   >
-    <ToggleGroupItem
+    <Tooltip
       v-for="option in options"
       :key="option.value"
-      :value="option.value"
-      :disabled="option.disabled"
-      :aria-label="option.iconOnly ? option.label : undefined"
-      :aria-keyshortcuts="option.keyshortcuts"
-      :class="[css.segmentedTabs_item, option.iconOnly && css.segmentedTabs_item_icon]"
+      :text="option.tooltip"
+      :kbd="option.keyshortcuts"
+      :disabled="!option.tooltip"
     >
-      <component
-        :is="option.icon"
-        v-if="option.icon"
-        :class="css.segmentedTabs_icon"
-        aria-hidden="true"
-      />
-      <span
-        v-if="!option.iconOnly"
-        :class="css.segmentedTabs_label"
-        >{{ option.label }}</span
+      <ToggleGroupItem
+        :value="option.value"
+        :disabled="option.disabled"
+        :aria-label="option.iconOnly ? option.label : undefined"
+        :aria-keyshortcuts="option.keyshortcuts"
+        :class="[css.segmentedTabs_item, option.iconOnly && css.segmentedTabs_item_icon]"
       >
-      <span
-        v-if="option.count != null"
-        :class="css.segmentedTabs_count"
-        >{{ option.count }}</span
-      >
-      <span
-        v-if="showKeys && option.keyshortcuts"
-        :class="css.segmentedTabs_count"
-        aria-hidden="true"
-        >{{ option.keyshortcuts }}</span
-      >
-      <span
-        v-if="option.attention"
-        :class="css.segmentedTabs_attention"
-        role="img"
-        :aria-label="option.attention"
-      />
-      <Kbd
-        v-if="orientation === 'vertical' && option.keyshortcuts"
-        :keys="option.keyshortcuts"
-        size="sm"
-      />
-    </ToggleGroupItem>
+        <component
+          :is="option.icon"
+          v-if="option.icon"
+          :class="css.segmentedTabs_icon"
+          aria-hidden="true"
+        />
+        <span
+          v-if="!option.iconOnly"
+          :class="css.segmentedTabs_label"
+          >{{ option.label }}</span
+        >
+        <span
+          v-if="option.count != null"
+          :class="css.segmentedTabs_count"
+          >{{ option.count }}</span
+        >
+        <span
+          v-if="showKeys && option.keyshortcuts"
+          :class="css.segmentedTabs_count"
+          aria-hidden="true"
+          >{{ option.keyshortcuts }}</span
+        >
+        <span
+          v-if="option.attention"
+          :class="css.segmentedTabs_attention"
+          role="img"
+          :aria-label="option.attention"
+        />
+        <Kbd
+          v-if="orientation === 'vertical' && option.keyshortcuts"
+          :keys="option.keyshortcuts"
+          size="sm"
+        />
+      </ToggleGroupItem>
+    </Tooltip>
   </ToggleGroupRoot>
 </template>
 
@@ -154,10 +163,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
 }
 
 .segmentedTabs_boxed {
-  gap: $spacing-2;
-  padding: $spacing-2;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
+  @include segmented-box;
 }
 
 .segmentedTabs_vertical {
@@ -170,30 +176,16 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   gap: $spacing-2;
 }
 
+// The chosen one by `aria-pressed`, not `data-state`: a tooltip's trigger sets a `data-state` of its own.
 .segmentedTabs_item {
-  @include focus-ring;
+  @include segmented-box-item;
 
-  display: inline-flex;
-  gap: $spacing-6;
-  align-items: center;
-  padding: 3px 8px;
-  font-size: $font-size-xs;
-  line-height: 16px;
-  color: $color-fg-2;
-  white-space: nowrap;
-  cursor: pointer;
-  background: none;
   border: 1px solid transparent;
   border-radius: $radius-md;
 
-  &:hover {
-    color: $color-fg;
-  }
+  &[aria-pressed='true'] {
+    @include segmented-box-item-current;
 
-  &[data-state='on'] {
-    font-weight: $font-weight-medium;
-    color: $color-fg;
-    background: $color-bg-3;
     border-color: $color-border-2;
   }
 
@@ -216,7 +208,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     border-color: $color-border-2;
     border-radius: calc(#{$phone-pill-height} / 2);
 
-    &[data-state='on'] {
+    &[aria-pressed='true'] {
       background: $color-sel;
       border-color: $color-accent;
     }
@@ -229,7 +221,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     text-align: left;
     border: none;
 
-    &[data-state='on'] {
+    &[aria-pressed='true'] {
       @include nav-row-current;
     }
   }
@@ -263,9 +255,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
 }
 
 .segmentedTabs_count {
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
+  @include segmented-count;
 
   .segmentedTabs_strip & {
     font-size: $font-size-xs;

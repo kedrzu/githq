@@ -6,8 +6,6 @@ import DisplayView from './DisplayView.vue';
 const meta = {
     component: DisplayView,
     args: {
-        modelValue: 'tabs',
-        'onUpdate:modelValue': fn(),
         animations: true,
         'onUpdate:animations': fn(),
     },
@@ -18,16 +16,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** CH43: tabs chosen. */
-export const TabsChosen: Story = {};
-
-/** CH43, the other card chosen. */
-export const ColumnChosen: Story = { args: { modelValue: 'column' } };
+/** CH49: animations turned on. */
+export const AnimationsOn: Story = {};
 
 /** CH49: animations turned off. */
 export const AnimationsOff: Story = { args: { animations: false } };
 
-/** A narrow window: the cards stay side by side. */
+/** A narrow window. */
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 480px"><story /></div>' })],
 };

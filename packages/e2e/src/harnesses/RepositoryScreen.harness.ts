@@ -8,7 +8,7 @@ type RepositoryStateName = 'Closed' | 'Open' | 'Open and closed';
  * `/owner/name/pulls` and `/owner/name/actions`, and `/owner/name` opening one): the title opening its menu, the section
  * tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups — named regions, or a board's
  * columns — and their rows; untracked, read on demand (D34), "not tracked", how much is read and "Read more", or that
- * GitHub does not show it. In the column layout the same sections and title are in the column.
+ * GitHub does not show it.
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -40,11 +40,6 @@ export class RepositoryScreenHarness {
         return this.root
             .getByRole('group', { name: 'Sections' })
             .getByRole('button', { name: new RegExp(`^${name}\\b`) });
-    }
-
-    /** The pane's title in the column layout: the section's name. */
-    sectionTitle(name: 'Commits' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
-        return this.root.getByRole('heading', { name, level: 1 });
     }
 
     /** The grouping menu's button ("Group: Milestone"). */

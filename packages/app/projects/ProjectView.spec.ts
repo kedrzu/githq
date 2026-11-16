@@ -11,6 +11,7 @@ import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
+import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import type { ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import {
@@ -44,6 +45,44 @@ test('the saved views are tabs: the one shown is current, one changed here is ma
     await expect
         .element(tabs.getByRole('link', { name: /Next sprint/ }).getByRole('img', { name: 'answered by GitHub' }))
         .toBeVisible();
+});
+
+test('while items are checked their actions take the saved views’ place', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { checkedIds: ['I_470'] });
+
+    await expect.element(page.getByText('Actions of the checked items')).toBeVisible();
+    await expect.element(page.getByRole('navigation', { name: 'Saved views' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Current sprint/, expanded: false })).not.toBeInTheDocument();
+});
+
+test('as it narrows the header gives way in steps — the options into Display, Display an icon, the saved views one menu — never drawing a control over the title, the views or “Changed here”', async () => {
+    const view = mount(SAMPLE_VIEW_SPRINT, { grouping: 'none' });
+    await expect.element(page.getByText('Changed here')).toBeVisible();
+
+    const widths: number[] = [];
+    for (let width = 1400; width >= 480; width -= 10) {
+        widths.push(width);
+    }
+
+    const fits = await narrowToolbar(view.host, widths);
+
+    expect(fits.filter(fit => fit.overlaps.length > 0)).toEqual([]);
+    const steps = fits.map(fit => fit.step);
+    expect(steps).toEqual(steps.toSorted((a, b) => a - b));
+    expect(new Set(steps)).toEqual(new Set([0, 1, 2]));
+    for (const [index, fit] of fits.entries()) {
+        const before = fits[index - 1];
+        if (before && fit.step > before.step) {
+            expect(before.options).toEqual([]);
+        }
+    }
+
+    // Folded, the current view names the menu, which lists every saved view as a way there.
+    await userEvent.click(page.getByRole('button', { name: /Current sprint/, expanded: false }));
+    await expect
+        .element(page.getByRole('menuitem', { name: /Current sprint/ }))
+        .toHaveAttribute('aria-current', 'true');
+    await expect.element(page.getByRole('menuitem', { name: /Board/ })).toBeVisible();
 });
 
 test('changing the grouping marks the view modified locally; Reset goes back to GitHub’s version', async () => {
@@ -245,6 +284,8 @@ interface MountOptions {
     readonly cantBeRead?: CantBeReadCause | null;
     /** The grouping shown in place of the view's own. */
     readonly grouping?: ProjectViewOptions['grouping'];
+    /** The items checked, whose actions the selection slot draws. */
+    readonly checkedIds?: readonly string[];
 }
 
 /** Mounts the sample project on a saved view, rebuilding the groups from the options it holds, as the page does. */
@@ -258,6 +299,7 @@ function mount(
         arriving = false,
         cantBeRead = null,
         grouping,
+        checkedIds = [],
     }: MountOptions = {},
 ) {
     const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries });
@@ -283,34 +325,39 @@ function mount(
 
     const app = createApp({
         setup: () => () =>
-            h(ProjectView, {
-                ...sampleProjectView({
-                    project: SAMPLE_PROJECT,
-                    view: saved,
-                    entries,
-                    options: options.value,
-                    modifiedViews,
-                    arriving,
-                }),
-                ...(groups && { groups }),
-                cantBeRead,
-                onClearFilter: () => view.clearedFilter++,
-                modified: options.value !== initial.options,
-                rowFieldId: 'F_status',
-                viewerLogin: SAMPLE_VIEWER.login,
-                now: SAMPLE_NOW,
-                canMove: () => canMove,
-                'onUpdate:options': (value: ProjectViewOptions) => {
-                    options.value = value;
+            h(
+                ProjectView,
+                {
+                    ...sampleProjectView({
+                        project: SAMPLE_PROJECT,
+                        view: saved,
+                        entries,
+                        options: options.value,
+                        modifiedViews,
+                        arriving,
+                    }),
+                    ...(groups && { groups }),
+                    cantBeRead,
+                    onClearFilter: () => view.clearedFilter++,
+                    modified: options.value !== initial.options,
+                    rowFieldId: 'F_status',
+                    viewerLogin: SAMPLE_VIEWER.login,
+                    now: SAMPLE_NOW,
+                    canMove: () => canMove,
+                    'onUpdate:options': (value: ProjectViewOptions) => {
+                        options.value = value;
+                    },
+                    'onUpdate:rowFieldId': (value: string | null) => view.rowFields.push(value),
+                    onReset: () => {
+                        view.resets++;
+                        options.value = initial.options;
+                    },
+                    onMove: (move: ListMove) => view.moves.push(move),
+                    onAddDraft: (title: string, group: string | null) => view.drafts.push([title, group]),
+                    checkedIds,
                 },
-                'onUpdate:rowFieldId': (value: string | null) => view.rowFields.push(value),
-                onReset: () => {
-                    view.resets++;
-                    options.value = initial.options;
-                },
-                onMove: (move: ListMove) => view.moves.push(move),
-                onAddDraft: (title: string, group: string | null) => view.drafts.push([title, group]),
-            }),
+                { selection: () => h('span', 'Actions of the checked items') },
+            ),
     });
     app.use(IocPlugin, { container });
     app.use(

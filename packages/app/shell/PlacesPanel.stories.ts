@@ -3,7 +3,7 @@ import { fn } from 'storybook/test';
 import { defineComponent, h, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { SAMPLE_MY_WORK_COUNTS, SAMPLE_TRACKED } from '@/testing/samplePlaces.js';
+import { SAMPLE_MY_WORK_COUNTS, SAMPLE_TRACKED, sampleGetChildren, withOpenPlace } from '@/testing/samplePlaces.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import PlacesPanel from './PlacesPanel.vue';
@@ -17,6 +17,7 @@ const meta = {
         viewer: SAMPLE_VIEWER,
         counts: SAMPLE_MY_WORK_COUNTS,
         tracked: SAMPLE_TRACKED,
+        getChildren: sampleGetChildren({ phone: true }),
         freshness: { kind: 'fresh', checkedAt: CHECKED_AT },
         rateLimit: { resource: 'graphql', limit: 5000, remaining: 4812, resetAt: new Date('2026-10-30T15:00:00Z') },
         onSignOut: fn(),
@@ -32,8 +33,18 @@ type Story = StoryObj<typeof meta>;
 /** In My work (mobile MB26): the places over the dimmed screen, My work marked; at the foot how fresh and the allowance, then the user. */
 export const InMyWork: Story = { decorators: [onPage('/')] };
 
-/** In a repository (mobile MB27): its row marked. */
-export const InRepository: Story = { decorators: [onPage('/skyline-labs/portal')] };
+/** In a repository, on its pull requests (MB270): its sections shown under it to begin with, Pull requests marked. */
+export const InRepository: Story = {
+    args: {
+        tracked: withOpenPlace(SAMPLE_TRACKED, 'repository:skyline-labs/portal'),
+        getChildren: sampleGetChildren({
+            open: { kind: 'repository', nameWithOwner: 'skyline-labs/portal' },
+            current: 'pullRequests',
+            phone: true,
+        }),
+    },
+    decorators: [onPage('/skyline-labs/portal/pulls')],
+};
 
 /** While everything tracked downloads (mobile D31): the foot says how far in place of the allowance. */
 export const Downloading: Story = {

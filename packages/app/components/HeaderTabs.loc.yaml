@@ -1,0 +1,10 @@
+answeredByGitHub:
+  en: answered by GitHub
+modifiedLocally:
+  en: modified locally
+answeredHint:
+  en: githq can't check this view's filter itself, so GitHub answers it
+modifiedHint:
+  en: Modified locally, on this device only
+compactLabel:
+  en: '{group}: {tab}'

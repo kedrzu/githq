@@ -2,6 +2,22 @@
 
 Decisions no longer in force, with what replaced them.
 
+## D21
+
+Retired in part 2026-11-16 by [D53](../DECISIONS.md#d53): the places panel offers a repository's sections too.
+
+**A repository's Commits and Actions, which a phone does not show, are offered in the command menu marked ↗ as leaving
+for github.com, and nowhere else.** (2026-11-08, owner, picked from the drawings: `MB46`)
+
+## D30
+
+Retired in part 2026-11-16: the repository layout went on the computer too
+([git-client D25](../../git-client/DECISIONS.md#d25)), so nothing is left out, see [D30](../DECISIONS.md#d30).
+
+**Left out are only the settings about the computer's layout: the repository layout (sections as tabs, or a column
+beside the sidebar).** (2026-11-08) Why: the repository layout chose between two desktop arrangements a phone does not
+have.
+
 ## D25
 
 Retired 2026-11-14 by [D52](../DECISIONS.md#d52): the phone shows the desktop's summary.

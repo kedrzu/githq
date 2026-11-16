@@ -2,6 +2,46 @@
 
 Full text of decisions, or parts of decisions, that no longer hold, under their original IDs.
 
+## D14
+
+Retired 2026-11-16 in part: the two layouts and their setting gave way to the sections under the repository's row in
+the sidebar, see [D25](../DECISIONS.md#d25). The sections themselves stand in [D14](../DECISIONS.md#d14).
+
+**The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with
+its own tools, in two layouts the user chooses between in Settings · Display: tabs beside the repository's name, each
+with its toolbar on the same line (CH1–CH3), or a column of the repository's own beside the sidebar holding its
+sections, its projects and, on Commits, the branch and tag list (CH4–CH6, CH42). … The choice is saved with the synced
+settings. Both are built; after trying them the owner keeps the switch or one layout.** (2026-11-02, owner: "a very hard
+decision, both are potentially good, so let's use both… a setting in our settings… synced… we'll test which is better
+and either keep the switch or pick one"; the details are the design agent's)
+
+**Why (then).** Neither shape wins on paper: tabs keep the full width for the list and the graph, the column gives the
+repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
+decides it. The layout is a preference of the user, not of a view, so it travels with the settings
+([settings-sync D4](../../settings-sync/DECISIONS.md#d4)).
+
+**Rejected (then).** Picking one layout now — owner: test both first.
+
+## D15
+
+Retired 2026-11-16 in part: with the column layout gone ([D25](../DECISIONS.md#d25)), the list has the one place under
+the header, see [D15](../DECISIONS.md#d15).
+
+**In the column layout it is the column's lower part on Commits (CH6). … This left column and the repository's column
+are one column with one width.** (2026-11-02, design agent's proposal; the one width by the owner 2026-11-03) Why: two
+layouts placing the same list on opposite sides made one of them feel wrong to the owner, and the list was the same
+column in both.
+
+Rejected then: in the column, judging the threshold on the window less the column — a threshold nobody can tell from the
+window's width, for little more graph (owner, 2026-11-03).
+
+## D22
+
+Retired 2026-11-16 in part: the repository layout left Display with [D14](../DECISIONS.md#d14)'s layouts, see
+[D22](../DECISIONS.md#d22).
+
+**Its first setting is the repository layout of D14, two cards with a sketch of each.** (2026-11-02, CH43)
+
 ## D7
 
 Retired 2026-11-02 in part: the replace prompt for a second clone gave way to a message, see

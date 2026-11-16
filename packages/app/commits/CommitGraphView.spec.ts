@@ -3,8 +3,7 @@ import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h, nextTick, ref, unref } from 'vue';
-import type { Ref } from 'vue';
+import { createApp, defineComponent, h, nextTick } from 'vue';
 import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-router';
 import type { RouteLocationNormalizedLoaded } from 'vue-router';
 
@@ -32,7 +31,6 @@ import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRou
 import CommitGraphView from './CommitGraphView.vue';
 import { CommitRoutes } from './commitRoutes.js';
 import { COMMIT_ROW_DOT_Y, COMMIT_ROW_HEIGHT } from './CommitRow.vue';
-import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
 import type { CommitRef, CommitState, KeptCommit } from './CommitTypes.js';
 import OpenedCommit from './OpenedCommit.vue';
 
@@ -880,7 +878,7 @@ test('D15: on a wide window the list is left of the graph from the first draw, i
     const view = await mount({ commits: parallelBranches(4) });
 
     await expect.element(refList()).toBeVisible();
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    await expect.element(page.getByRole('separator', { name: 'Resize the branches and tags' })).toBeInTheDocument();
     const list = refList().element().getBoundingClientRect();
     const graph = view.scroller().getBoundingClientRect();
     expect(list.right).toBeLessThanOrEqual(graph.left);
@@ -898,7 +896,7 @@ test('D15, first run and loading D17: a first open holds the column for the list
         holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
     });
     await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    await expect.element(page.getByRole('separator', { name: 'Resize the branches and tags' })).toBeInTheDocument();
     await expect.element(refList()).not.toBeInTheDocument();
     expect(view.scroller().clientWidth).toBe(1200 - 280);
 
@@ -935,7 +933,7 @@ test('D15, D16: crossing 1,200 px moves one list, its filter kept, and leaves th
     expect(refList().element().getBoundingClientRect().right).toBeLessThanOrEqual(
         scroller.getBoundingClientRect().left,
     );
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    await expect.element(page.getByRole('separator', { name: 'Resize the branches and tags' })).toBeInTheDocument();
 
     // The graph keeps its scroll and cursor, and the keys on it stay there both ways.
     expect(scroller.scrollTop).toBe(1000);
@@ -1013,96 +1011,6 @@ test("D17: the graph's share is of the pane without the list", async () => {
     expect(graphCells()[0]?.getBoundingClientRect().width).toBe(92);
 });
 
-test('D14, D15, CH6, CH42: with the list in the column it renders there at any window width, leaving the graph the pane; B, typing and Enter behave as in tabs; the commit opens in the panel with the list staying, and Esc closes it', async () => {
-    await page.viewport(1500, 800);
-    onTestFinished(() => page.viewport(414, 896));
-    const target = columnTarget();
-    const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: true });
-    const list = target.querySelector.bind(target);
-    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
-
-    await expect.poll(() => list('[role="grid"]')).not.toBeNull();
-    await expect.poll(() => view.scroller().clientWidth).toBe(1200);
-    // D17: the share is of the pane, the list taking none of it.
-    expect(graphCells()[0]?.getBoundingClientRect().width).toBe(120);
-
-    await userEvent.keyboard('b');
-    await expect.element(filter()).toHaveFocus();
-    await userEvent.keyboard('branch-3{Enter}');
-    await expect.poll(() => cursor()?.textContent).toContain('branch-3');
-    expect(document.activeElement).toBe(view.scroller());
-
-    await userEvent.keyboard('{Enter}');
-    await expect.element(details()).toBeVisible();
-    expect(list('[role="grid"]')).not.toBeNull();
-    expect(view.scroller().clientWidth).toBe(1200 - 440);
-    // Beside the graph, not over it.
-    expect(details().element().getBoundingClientRect().left).toBeGreaterThanOrEqual(
-        view.scroller().getBoundingClientRect().right,
-    );
-
-    // B with the details open: the filter, and they stay.
-    await userEvent.keyboard('b');
-    await expect.element(filter()).toHaveFocus();
-    await expect.element(details()).toBeVisible();
-    await userEvent.keyboard('{Escape}');
-    expect(document.activeElement).toBe(view.scroller());
-    await expect.element(details()).toBeVisible();
-
-    await userEvent.keyboard('{Escape}');
-    await expect.element(details()).not.toBeInTheDocument();
-    expect(list('[role="grid"]')).not.toBeNull();
-});
-
-test('D14: the layout changed while the graph is open, by another tab or device: the list moves to the column and back', async () => {
-    await page.viewport(1500, 800);
-    onTestFinished(() => page.viewport(414, 896));
-    const target = columnTarget();
-    const inColumn = ref(false);
-    const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: inColumn });
-
-    await expect.element(page.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
-    expect(target.querySelector('[role="grid"]')).toBeNull();
-    const list = refList().element();
-
-    inColumn.value = true;
-    await expect.poll(() => target.querySelector('[role="grid"]')).not.toBeNull();
-    expect(refList().element()).toBe(list);
-    await expect.poll(() => view.scroller().clientWidth).toBe(1200);
-
-    inColumn.value = false;
-    await expect.poll(() => target.querySelector('[role="grid"]')).toBeNull();
-    await expect.element(page.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
-    expect(refList().element()).toBe(list);
-    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
-    expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(view.scroller().getBoundingClientRect().left);
-
-    // The column's panel is remounted between two visits: the list goes to the element there now.
-    target.remove();
-    const remounted = columnTarget();
-    inColumn.value = true;
-    await expect.poll(() => remounted.querySelector('[role="grid"]')).not.toBeNull();
-});
-
-test('D14, D15: the layout changed with the list open over the graph: it moves to the column, the same list with its filter', async () => {
-    await page.viewport(1100, 800);
-    onTestFinished(() => page.viewport(414, 896));
-    const target = columnTarget();
-    const inColumn = ref(false);
-    await mount({ commits: parallelBranches(4) }, { refListInColumn: inColumn });
-    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
-
-    await userEvent.keyboard('b');
-    await userEvent.keyboard('branch');
-    const list = refList().element();
-
-    inColumn.value = true;
-    await expect.poll(() => target.querySelector('[role="grid"]')).not.toBeNull();
-    expect(refList().element()).toBe(list);
-    expect(getComputedStyle(list).position).toBe('static');
-    await expect.element(filter()).toHaveValue('branch');
-});
-
 test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet, a third of the way down; Esc leaves cursor and scroll where they were', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
@@ -1178,21 +1086,17 @@ test('D12, CH16: a ref whose commit is not loaded opens it in the panel, the gra
     expect(cursor()?.textContent).toContain('Commit c2');
 });
 
-test("D12, CH42: in the column, with an unloaded tag's details open, choosing the ref on the cursor's commit brings the details to it and draws the cursor", async () => {
+test("D12: with an unloaded tag's details open, choosing the ref on the cursor's commit brings the details to it and draws the cursor", async () => {
     await page.viewport(1500, 800);
     onTestFinished(() => page.viewport(414, 896));
     const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
-    columnTarget();
-    await mount(
-        {
-            commits: [...history, sampleCommit('old', 1)],
-            branches: [sampleCommitRef('main', 'c2')],
-            tags: [sampleCommitRef('v0.1', 'old')],
-            kept: history,
-            holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
-        },
-        { refListInColumn: true },
-    );
+    await mount({
+        commits: [...history, sampleCommit('old', 1)],
+        branches: [sampleCommitRef('main', 'c2')],
+        tags: [sampleCommitRef('v0.1', 'old')],
+        kept: history,
+        holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+    });
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
 
     await userEvent.keyboard('b');
@@ -2116,19 +2020,6 @@ function parallelBranches(lanes: number) {
     return [...tips, sampleCommit('root', 1)];
 }
 
-/** The element a repository's column gives the list, 280 px wide as the column is by default. */
-function columnTarget() {
-    const target = document.createElement('div');
-    target.id = COMMIT_REF_LIST_TARGET_ID;
-    target.style.display = 'flex';
-    target.style.flexDirection = 'column';
-    target.style.width = '280px';
-    target.style.height = '600px';
-    document.body.append(target);
-    onTestFinished(() => target.remove());
-    return target;
-}
-
 /** The section as the app has it, under a router view: leaving for another route unmounts it. */
 async function mountRouted(options: CommitGraphTestOptions) {
     const { container, store, github, ready } = createCommitGraphTest(toShas(options));
@@ -2136,7 +2027,7 @@ async function mountRouted(options: CommitGraphTestOptions) {
     const section = defineComponent({
         setup() {
             const route = useRoute();
-            return () => renderSection(route, getRouteNameWithOwner(route), false);
+            return () => renderSection(route, getRouteNameWithOwner(route));
         },
     });
     const elsewhere = defineComponent({ render: () => null });
@@ -2182,10 +2073,8 @@ async function mountRouted(options: CommitGraphTestOptions) {
 interface MountPlace {
     /** Kept on this device as the graph's share of the pane. */
     readonly keptShare?: string;
-    /** Kept on this device as the left column's width. */
+    /** Kept on this device as the width of the list of branches and tags. */
     readonly keptColumnWidth?: number;
-    /** A ref to change it while mounted. */
-    readonly refListInColumn?: boolean | Ref<boolean>;
     /** What the section has of the window: 1,200 px when not given. */
     readonly width?: number;
     /** The graph was opened before: the section is entered with it in memory. */
@@ -2200,7 +2089,7 @@ interface MountPlace {
  */
 async function mount(
     options: CommitGraphTestOptions,
-    { keptShare, keptColumnWidth, refListInColumn, width = 1200, graphInMemory, lastOpened }: MountPlace = {},
+    { keptShare, keptColumnWidth, width = 1200, graphInMemory, lastOpened }: MountPlace = {},
 ) {
     const { container, store, github, setOnline, ready } = createCommitGraphTest(toShas(options));
     await ready;
@@ -2213,7 +2102,7 @@ async function mount(
     }
 
     if (keptColumnWidth !== undefined) {
-        container.resolve(LocalPreferences).getPanelWidth('repositoryColumn').value = keptColumnWidth;
+        container.resolve(LocalPreferences).getPanelWidth('commitRefList').value = keptColumnWidth;
     }
 
     if (lastOpened !== undefined) {
@@ -2239,7 +2128,7 @@ async function mount(
     const app = createApp({
         setup() {
             const route = useRoute();
-            return () => renderSection(route, REPOSITORY, unref(refListInColumn));
+            return () => renderSection(route, REPOSITORY);
         },
     });
     app.use(IocPlugin, { container });
@@ -2279,14 +2168,10 @@ async function mount(
 }
 
 /** The section, and beside it in a 440 px panel the commit `route` opens over it, as the shell shows it. */
-function renderSection(
-    route: RouteLocationNormalizedLoaded,
-    nameWithOwner: string,
-    refListInColumn: boolean | undefined,
-) {
+function renderSection(route: RouteLocationNormalizedLoaded, nameWithOwner: string) {
     const opened = CommitRoutes.getOpened(route);
     return [
-        h(CommitGraphView, { nameWithOwner, refListInColumn }),
+        h(CommitGraphView, { nameWithOwner }),
         opened && !opened.onPage
             ? h('div', { style: 'display: flex; flex: none; width: 440px' }, [
                   h(OpenedCommit, { reference: opened.reference, arrangement: 'panel' }),

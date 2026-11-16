@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `IssueCreatedToast.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`, `UpdateReadyToast.vue`).
+ * the rail) with the account menu and what is tracked — the open place's sections or saved views under it —, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `IssueCreatedToast.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`, `UpdateReadyToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -33,10 +33,33 @@ export class AppShellHarness {
         return this.myWorkLink(name).locator('span').last();
     }
 
-    /** The sidebar's link to a tracked repository (`owner/name`) or project (its title). */
+    /**
+     * The sidebar's row of a tracked repository (`owner/name`) or project (its title): a link to its view — on a phone,
+     * with rows to show, the button showing them in place.
+     */
     tracked(name: string): Locator {
         // Its count follows its name, blank while its open items are still arriving.
-        return this.sidebar.getByRole('link', { name: new RegExp(`^${escapeRegExp(name)}(\\s|$)`) });
+        return this.sidebar.locator(this.placeRowOf(name));
+    }
+
+    /** The links under a tracked repository or project while it is expanded: its sections or its saved views. */
+    placeRows(name: string): Locator {
+        return this.sidebar
+            .getByRole('listitem')
+            .filter({ has: this.placeRowOf(name) })
+            .getByRole('list')
+            .getByRole('link');
+    }
+
+    /** A tracked place's row, as a locator relative to whatever holds it. */
+    private placeRowOf(name: string): Locator {
+        const label = new RegExp(`^${escapeRegExp(name)}(\\s|$)`);
+        return this.page.getByRole('link', { name: label }).or(this.page.getByRole('button', { name: label }));
+    }
+
+    /** One of {@link placeRows} by its name: "Pull requests", "Backlog". */
+    placeRow(name: string, row: string): Locator {
+        return this.placeRows(name).filter({ hasText: new RegExp(`^${escapeRegExp(row)}`) });
     }
 
     /** Right-clicks a tracked repository (`owner/name`) or project (its title) in the sidebar: its context menu. */
