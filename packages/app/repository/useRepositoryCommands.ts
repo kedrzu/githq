@@ -1,6 +1,6 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, CloudDownload, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { CloudDownload, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
@@ -11,13 +11,11 @@ import { RepositoryTracker } from '@/tracking/RepositoryTracker.js';
 import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
-import { LastRepositoryTab } from './LastRepositoryTab.js';
 import { REPOSITORY_SECTION_ICONS } from './RepositorySection.js';
 import * as l from './useRepositoryCommands.loc.js';
 
 /** A repository's actions, by the name after `repository.`. */
 export interface RepositoryCommands {
-    readonly open: Command;
     readonly issues: Command;
     readonly pullRequests: Command;
     readonly commits: Command;
@@ -31,7 +29,7 @@ export interface RepositoryCommands {
 }
 
 /**
- * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests,
+ * The actions of a repository (`owner/name`): going to one of its sections (its issues, its pull requests,
  * its commits — tracked or not, git-client D11 — and its workflows only while it is tracked, actions D4), a new issue in
  * it, its page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is
  * tracked and not on its way out; untracking offers Undo, `PendingUntracks`), and tracking it (only while it is not, or is
@@ -48,20 +46,12 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
     const tracker = useService(RepositoryTracker);
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
-    const tabs = useService(LastRepositoryTab);
 
     return nameWithOwner => {
         const url = `${GITHUB_ORIGIN}/${nameWithOwner}`;
         const target = { kind: 'repository', nameWithOwner } as const;
         const isListed = () => tracking.isTracked(target) && !pending.isPending(target);
         return {
-            open: {
-                id: 'repository.open',
-                title: t(l.open),
-                section: 'repository',
-                icon: ArrowRight,
-                run: () => void router.push(tabs.getPath(nameWithOwner)),
-            },
             issues: {
                 id: 'repository.issues',
                 title: t(l.issues),

@@ -482,7 +482,10 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       />
     </template>
     <template #menu>
-      <RepositoryContextMenu :name-with-owner="nameWithOwner" />
+      <RepositoryContextMenu
+        :name-with-owner="nameWithOwner"
+        current
+      />
     </template>
     <template #selection="{ ids, span }">
       <SelectionActions

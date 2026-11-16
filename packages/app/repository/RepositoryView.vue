@@ -65,7 +65,12 @@ import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
 import { REPOSITORY_STATES } from './buildRepositoryList.js';
-import { isItemSection, REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from './RepositorySection.js';
+import {
+  isItemSection,
+  REPOSITORY_SECTION_ICONS,
+  REPOSITORY_SECTION_KEYS,
+  REPOSITORY_SECTIONS,
+} from './RepositorySection.js';
 import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
@@ -183,13 +188,6 @@ const phone = useService(PhoneLayout);
 const listLayout = useShownLayout(() => options.value.layout);
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
-/** Each section's key. */
-const SECTION_KEYS: Readonly<Record<RepositorySection, string>> = {
-  issues: '1',
-  pullRequests: '2',
-  commits: '3',
-  workflows: '4',
-};
 /** Each section's tooltip on its tab. */
 const SECTION_TOOLTIPS = {
   issues: l.goToIssues,
@@ -233,7 +231,7 @@ const sectionTabs = computed((): HeaderTabsSet => ({
     value,
     label: t(l[value]),
     icon: REPOSITORY_SECTION_ICONS[value],
-    keyshortcuts: SECTION_KEYS[value],
+    keyshortcuts: REPOSITORY_SECTION_KEYS[value],
     tooltip: t(SECTION_TOOLTIPS[value]),
     count: getSectionCount(value),
   })),
@@ -356,7 +354,7 @@ function getSectionCommand(candidate: RepositorySection): Command {
     id: `repository.section.${candidate}`,
     title: t(l[candidate]),
     section: 'repository',
-    key: SECTION_KEYS[candidate],
+    key: REPOSITORY_SECTION_KEYS[candidate],
     icon: REPOSITORY_SECTION_ICONS[candidate],
     run: () => {
       section.value = candidate;

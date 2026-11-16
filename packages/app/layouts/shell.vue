@@ -654,6 +654,7 @@ function openCommandLineMenu() {
       <RepositoryContextMenu
         v-if="target.kind === 'repository'"
         :name-with-owner="target.nameWithOwner"
+        :current="openPlace?.kind === 'repository' && openPlace.nameWithOwner === target.nameWithOwner"
       />
       <ProjectContextMenu
         v-else

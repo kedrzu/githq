@@ -45,7 +45,7 @@ test("a repository's Workflows section lists every workflow — runs on any ref 
 
     // The repository's menu leads there, after Pull requests.
     const menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
-    await expect(menu.getByRole('menuitem')).toContainText(['Open', 'Issues', 'Pull requests', 'Workflows']);
+    await expect(menu.getByRole('menuitem')).toContainText(['Issues', 'Pull requests', 'Commits', 'Workflows']);
     await menu.getByRole('menuitem', { name: 'Workflows' }).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
 
