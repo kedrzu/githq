@@ -24,3 +24,6 @@
   "command", define function not `defineCommand` (D5). README, DECISIONS written; all folded into the story.
 - Open: how "where a command can be offered" is described and whether a narrower command may shadow a wider one's
   key; one command offered by two places at once; numbered families (1–9); where user keys are stored.
+- Owner: a narrower place may take a wider one's key (shown in settings, not a conflict); places only for conflict
+  checks, runtime keyboard focus decides priority (D6). Owner: creating an issue gets no app-wide single key, githq is
+  more than an issue tracker (D7). Folded into README. Raised: should app-wide commands use letters at all.

@@ -26,7 +26,7 @@ the same name, the same icon and the same key, and the button in the merge panel
 it from the same place.
 
 You open the settings and find a list of every command in githq with its key. You change "Open on GitHub" from
-`O` to `G`. githq tells you that `G` is already used by a command that can be active at the same time, before you
+`O` to `G`. githq tells you that `G` is already taken by a command that can be active at the same time, before you
 save, rather than letting one of them silently stop working. Once saved, `G` works on every screen that opens
 something on GitHub, and every hint and menu entry shows `G`.
 
@@ -51,13 +51,26 @@ why), the current value to show beside its name, and the choices of a picker it 
 
 Rebinding needs to know whether two commands can be active at the same moment, since only then is a shared key a
 conflict. `1` picking a repository section and `1` picking a My work filter never meet; `C` for a new issue and
-`C` for commenting on a line in a review do.
+`⌘B` for the sidebar and `⌘B` for a review's list of files do.
 
-So each definition also says where the command can be offered, and githq can check a key against every other
-command that can be offered in the same places, without any screen being open.
-[Why this is declared rather than discovered](DECISIONS.md#d3). How those places are described, and what
-happens when a screen's command deliberately takes a key that a wider one also uses, is the open question of this
-design (see below).
+So each definition also says where the command can be offered: one or more places from a short list such as the
+whole app, a list, an open item, a review or a job log. Places sit inside one another, and the same place can sit in
+more than one: an item opens beside a list or on its own, full screen. Two commands with the same key collide only if
+their places can be active at the same time without one containing the other, and githq can check that from the
+definitions alone, without any screen being open. [Why this is declared rather than
+discovered](DECISIONS.md#d3).
+
+A command in a narrower place may take a key that a wider one uses: in a review, `⌘B` shows the list of files rather
+than hiding the sidebar. The settings show this as "here, ⌘B does this instead of that" rather than as a conflict,
+because screens like a review are where single keys are worth most. [How places nest and when keys
+collide](DECISIONS.md#d6).
+
+Places are only for that check. Which command gets a key while you work is decided by what has the keyboard: with an
+item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row though the item is the
+narrower place.
+
+That also means app-wide single keys are few. Creating an issue, for example, is in the command menu but has no
+letter of its own everywhere: githq is more than an issue tracker. [Why](DECISIONS.md#d7).
 
 ## Keys that are not commands
 
@@ -76,10 +89,7 @@ function that defines one has a different name. [The naming](DECISIONS.md#d5).
 
 ## What is still open
 
-- How the places a command can be offered are described, and whether a screen-specific command may shadow a
-  wider one's key (today a review's `C` hides the global "new issue" `C`) without that counting as a conflict.
-- What happens when one command is offered by two places at once, such as "Open on GitHub" for the selected row
-  and for the item open beside the list.
+- Which keys the whole app may use at all: only keys with a modifier and symbols, or letters too.
 - Commands that come in numbered families: views on `1`–`9`, repository sections on `1`–`4`.
 - Where your own keys are kept: on this device, or with the settings that can follow you between devices.
 

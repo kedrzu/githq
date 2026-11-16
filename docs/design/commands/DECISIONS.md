@@ -53,10 +53,10 @@ screen that offers it being mounted.
 ## D3
 
 **A definition declares where the command can be offered, so key conflicts are found from the definitions alone,
-before a key is saved.** (2026-11-16, owner) How "where" is described is open.
+before a key is saved.** (2026-11-16, owner) How "where" is described: [D6](#d6).
 
 **Why.** A shared key is only a conflict between commands that can be active at once (`1` for a repository section
-and `1` for a My work filter never are; the global new-issue `C` and the review's line-comment `C` are). The
+and `1` for a My work filter never are; the sidebar's `Mod+B` and the review's file-list `Mod+B` are). The
 settings screen has to tell the user before saving, and no screen is mounted there.
 
 **Rejected.**
@@ -95,3 +95,39 @@ and the code already say command. `defineCommand` is `@nzyme/ioc`'s singleton fu
 **Rejected.**
 
 - "Action" — in githq Actions means GitHub Actions, which has its own screens and design (`docs/design/actions/`).
+
+## D6
+
+**"Where" is a place from a short fixed list (the app, a list, an open item, a review, a job log, the commit graph,
+the settings, …); places nest, and one place can sit in several others (an item open beside a list, or full
+screen). Two commands sharing a key conflict only if their places can be active together and neither contains the
+other. A command in a narrower place may take a key a wider one uses; the settings show it as "here, C does X
+instead of Y", not as a conflict. Places serve only conflict checks: which command gets a key at runtime is still
+decided by who has the keyboard.** (2026-11-16, owner)
+
+**Why.** The defaults already rely on narrower screens taking keys (the review's `Mod+B` over the sidebar's), and
+modes like a review or a job log are where single keys are worth most. Priority by nesting alone gets the list with
+an item open beside it wrong: the list keeps the keyboard there (`docs/design/githq/navigation.md`), so `J`, `K` and
+`O` act on the selected row though the item is the narrower place. Runtime focus already handles that today
+(`ListView.vue:58,757` strips `O` and `Enter` from the row's commands).
+
+**Rejected.**
+
+- A key unique along the whole path from the app to the narrowest place — every app-wide key would be unusable on
+  every screen, and the review would lose `Mod+B`.
+- Priority decided by nesting alone — wrong for a list with an item open beside it.
+
+## D7
+
+**Creating an issue has no app-wide single key.** (2026-11-16, owner)
+
+**Why.** githq is more than an issue tracker; creating an issue is not its primary function everywhere, so it does
+not earn one letter on every screen. It stays in the command menu.
+
+> **Checked 2026-11-16:** today it is `NEW_ISSUE_KEY = 'C'` in the app section
+> (`packages/app/commands/CommandTypes.ts:35`), and the landing page advertises `C`
+> (`packages/app/landing/LandingFeatures.vue:27-32`).
+
+**Rejected.**
+
+- `C` everywhere, as in issue trackers — overstates issues in an app that is also pull requests, reviews and Actions.
