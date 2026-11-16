@@ -1,8 +1,9 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a workflow's run on its own page (`WorkflowRunView.vue`, actions W4a), at
- * `/owner/name/actions/runs/123`: its title, what the run is, its jobs and steps, and the log's pane.
+ * Playwright harness for a workflow's run (`WorkflowRunView.vue`, actions W4a) on its own page, at
+ * `/owner/name/actions/runs/123`, or in the panel beside the Workflows section (`?pane=run&run=…`): its title, what the
+ * run is, its jobs and steps, and the log's pane.
  */
 export class WorkflowRunScreenHarness {
     readonly page: Page;
@@ -10,12 +11,25 @@ export class WorkflowRunScreenHarness {
 
     constructor(page: Page) {
         this.page = page;
-        this.root = page.getByRole('main').getByRole('article');
+        this.root = page
+            .getByRole('main')
+            .getByRole('article')
+            .or(page.getByRole('complementary', { name: 'Opened item' }).getByRole('article'));
     }
 
     /** The page's title: "Deploy #12". */
     heading(name: string): Locator {
         return this.root.getByRole('heading', { name, level: 1 });
+    }
+
+    /** "Open full screen" (`⇧Enter`), in the panel. */
+    get openFullScreen(): Locator {
+        return this.root.getByRole('button', { name: 'Open full screen', exact: true });
+    }
+
+    /** "Back to the panel" (`⇧Enter`), on the run's page while the panel fits. */
+    get backToPanel(): Locator {
+        return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
     }
 
     /** What the run is: its state, ref, event, commit and when. */

@@ -89,6 +89,9 @@ export const Refused: Story = {
 /** D15: Probe open in the panel beside the section: its row is the selected one. */
 export const Opened: Story = { args: { openedKey: '5' } };
 
+/** A run of Deploy open in the panel beside the section: Deploy's row is the selected one, the keys are the run's. */
+export const RunOpened: Story = { args: { openedKey: '1', runOpen: true } };
+
 function sampleList(repository: Omit<SampleRepositoryParams, 'nameWithOwner'>, settings = DEFAULT) {
     return buildRepositoryWorkflows({
         stored: sampleStoredWorkflows({ nameWithOwner: WEBAPP, ...repository }),
