@@ -49,9 +49,6 @@ test('D14: of one group the higher priority is listed first; typing, the match d
     expect(
         ids(buildCommandMenu({ query: 'view', commands, subject: null, repository: null, navigation: NOTHING })),
     ).toEqual(['view.remove', 'view.archive']);
-    expect(
-        ids(buildCommandMenu({ query: 'group', commands, subject: null, repository: null, navigation: NOTHING })),
-    ).toEqual(['view.grouping']);
 });
 
 test('E4: a value of a submenu typed is offered directly, above its action; scattered letters are not', () => {

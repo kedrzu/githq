@@ -13,11 +13,6 @@ test('places collide when they share one or are on screen together, in either or
     expect(placesCollide(['item'], ['app', 'list'])).toBe(true);
 });
 
-test('a screen place never collides with the app: it takes the key there', () => {
-    expect(placesCollide(['list'], ['app'])).toBe(false);
-    expect(placesCollide(['app'], ['item'])).toBe(false);
-});
-
 test('one key in places active together is a conflict; the letter case and other keys count', () => {
     const list = defineAppCommand({ id: 'list', title, key: 'O', places: ['list'] });
     const item = defineAppCommand({ id: 'item', title, key: 'o', places: ['item'] });

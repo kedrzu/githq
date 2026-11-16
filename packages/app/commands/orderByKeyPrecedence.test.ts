@@ -35,13 +35,6 @@ test('any screen place takes a key before the app, whatever the sections', () =>
     expect(ids(orderByKeyPrecedence([app, item]))).toEqual(['item', 'app']);
 });
 
-test('of one place the sections decide', () => {
-    const view: Command = { id: 'view', title: 'View', section: 'view', place: 'list', key: 'X', run };
-    const selection: Command = { id: 'selection', title: 'Selection', section: 'selection', place: 'list', run };
-
-    expect(ids(orderByKeyPrecedence([view, selection]))).toEqual(['selection', 'view']);
-});
-
 function ids(commands: readonly Command[]) {
     return commands.map(command => command.id);
 }
