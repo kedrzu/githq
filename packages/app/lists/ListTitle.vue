@@ -1,4 +1,4 @@
-<!-- The title of a screen's header, opening a menu of what can be done with it when given one (`menu`). `narrow`, for a column's head: under the screen's own title, smaller and cut to the room it has. -->
+<!-- The title of a screen's header, opening a menu of what can be done with it when given one (`menu`). `cut`, when its header has no other room left: cut to the room it has, in full in its tooltip. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown } from 'lucide-vue-next';
@@ -9,8 +9,8 @@ import * as l from './ListTitle.loc.js';
 
 defineProps<{
   title: string;
-  /** In a column's head: a heading under the screen's own, cut to the room there is. */
-  narrow?: boolean;
+  /** Cut to the room there is, ending in "…", the whole title its tooltip (the header's last step, `ListToolbar`). */
+  cut?: boolean;
 }>();
 
 defineSlots<{
@@ -22,10 +22,7 @@ const t = useTranslate();
 </script>
 
 <template>
-  <component
-    :is="narrow ? 'h2' : 'h1'"
-    :class="[css.listTitle, narrow && css.listTitle_narrow]"
-  >
+  <h1 :class="[css.listTitle, cut && css.listTitle_cut]">
     <Menu
       v-if="$slots.menu"
       align="start"
@@ -38,7 +35,8 @@ const t = useTranslate();
         >
           <span
             :class="css.listTitle_text"
-            :title="narrow ? title : undefined"
+            :title="cut ? title : undefined"
+            data-title-text
             >{{ title }}</span
           >
           <ChevronDown
@@ -52,10 +50,11 @@ const t = useTranslate();
     <span
       v-else
       :class="css.listTitle_text"
-      :title="narrow ? title : undefined"
+      :title="cut ? title : undefined"
+      data-title-text
       >{{ title }}</span
     >
-  </component>
+  </h1>
 </template>
 
 <style lang="scss" module="css">
@@ -65,11 +64,10 @@ const t = useTranslate();
   white-space: nowrap;
 }
 
-/* The button may not outgrow the column; its negative margin stays visible, so the text is what is cut. */
-.listTitle_narrow {
-  flex: 1;
+/* The button may not outgrow the header; its negative margin stays visible, so the text is what is cut. */
+.listTitle_cut {
+  flex: 0 1 auto;
   min-width: 0;
-  font-size: $font-size-md;
 
   .listTitle_button {
     max-width: 100%;

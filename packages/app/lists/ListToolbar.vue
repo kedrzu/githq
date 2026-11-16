@@ -1,4 +1,4 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (the actions of the items selected together, its tabs — `tabs`, drawn by `HeaderTabs` —, what else it says), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As room runs out the header gives way in steps, measuring its left part (the title and all beside it, the tabs side by side and as one menu), what it ends with (`end`) and each control: first the options move into the display options, as many as fit staying on the toolbar, the filters longest; then "Display" drops its label for its icon; then the tabs become one menu button showing the current tab; last the title is cut to the room left. Its left part paints the header's background above the controls, which clip what doesn't fit, so before or between measurements a control is covered, never drawn under the title. The options moved go to the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,8 @@ import { computed, ref, useTemplateRef, watch } from 'vue';
 import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
+import HeaderTabs from '@/components/HeaderTabs.vue';
+import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import IconButton from '@/components/IconButton.vue';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
@@ -47,6 +49,11 @@ const props = withDefaults(
     listName?: string;
     /** The saved view on github.com the list shows (a project's): a phone's options sheet links to it (`ListOptionsSheet`). */
     gitHubView?: string | null;
+    /**
+     * The tabs beside the title, after the selection's actions (a repository's sections, a project's saved views): side
+     * by side while they fit, else one menu. Not drawn on a phone.
+     */
+    tabs?: HeaderTabsSet | null;
   }>(),
   {
     extraOptions: () => [],
@@ -56,6 +63,7 @@ const props = withDefaults(
     bare: false,
     listName: undefined,
     gitHubView: null,
+    tabs: null,
   },
 );
 
@@ -76,9 +84,9 @@ const slots = defineSlots<{
    * command menu's (`SelectionActions`). Given, the list can be selected from on a phone (mobile D28).
    */
   selection?(): unknown;
-  /** After the title and the selection's actions: tabs. */
+  /** After the tabs: what else the list says beside its title (how much is read, "Changed here · Reset"). */
   default?(): unknown;
-  /** At the toolbar's end, on a `bare` one only — its room is not measured: a tab's key hints. */
+  /** At the toolbar's end, before the view options, kept whatever the room (Commits' tools, Workflows' key hints). */
   end?(): unknown;
   /** More in the display options, after the options that didn't fit the toolbar (why the board is unavailable). */
   display?(): unknown;
@@ -116,19 +124,29 @@ const PRIORITY = ['layout', 'grouping', 'sort', 'properties'];
 
 /** The keys of the options that fit the toolbar; all of them until it has been measured. */
 const fitting = ref<ReadonlySet<string> | null>(null);
+/** Step two of giving way: "Display" as its icon alone. */
+const displayIconOnly = ref(false);
+/** Step three: the tabs as one menu. */
+const tabsCompact = ref(false);
+/** The last step, when even that leaves no room for what the header keeps: the title cut to the room left. */
+const titleCut = ref(false);
 const onToolbar = computed(() => viewOptions.value.filter(option => !fitting.value || fitting.value.has(option.key)));
 /** The options the toolbar has no room for, in the display options. */
 const inDisplay = computed(() => viewOptions.value.filter(option => fitting.value && !fitting.value.has(option.key)));
 
+const header = useTemplateRef<HTMLElement>('header');
+const lead = useTemplateRef<HTMLElement>('lead');
+const tabsBox = useTemplateRef<HTMLElement>('tabsBox');
 const controls = useTemplateRef<HTMLElement>('controls');
+const end = useTemplateRef<HTMLElement>('end');
 const measure = useTemplateRef<HTMLElement>('measure');
 let frame = 0;
 
 // Measured while the toolbar is drawn — not on a phone, whose top bar takes its place, and again once it comes back.
 watch(
-  [controls, measure],
-  ([controlsElement, measureElement], _, onCleanup) => {
-    if (!controlsElement || !measureElement) {
+  [header, lead, measure, end],
+  (elements, _, onCleanup) => {
+    if (!header.value || !lead.value || !measure.value) {
       return;
     }
 
@@ -137,8 +155,11 @@ watch(
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(fit);
     });
-    observer.observe(controlsElement);
-    observer.observe(measureElement);
+    for (const element of elements) {
+      if (element) {
+        observer.observe(element);
+      }
+    }
     onCleanup(() => {
       observer.disconnect();
       cancelAnimationFrame(frame);
@@ -147,18 +168,72 @@ watch(
   { flush: 'post' },
 );
 
-/** Keeps on the toolbar as many options as its free space holds, by priority, each at its full width. */
+/**
+ * Gives way in steps until what the header must keep fits beside its left part — the tabs side by side and "Display"
+ * labelled, then "Display" an icon, then the tabs one menu, and last the title cut to the room left — and keeps on the toolbar as many options as the room left
+ * holds, by priority, each at its full width.
+ */
 function fit() {
-  if (!controls.value || !measure.value) {
+  if (!header.value || !lead.value || !controls.value || !measure.value) {
     return;
   }
 
-  const gap = Number.parseFloat(getComputedStyle(measure.value).columnGap) || 0;
-  const available = controls.value.clientWidth;
   const widths = new Map<string, number>();
+  const parts = new Map<string, number>();
   for (const element of measure.value.children) {
-    if (element instanceof HTMLElement && element.dataset.key) {
-      widths.set(element.dataset.key, element.getBoundingClientRect().width);
+    if (element instanceof HTMLElement) {
+      const width = element.getBoundingClientRect().width;
+      if (element.dataset.key) {
+        widths.set(element.dataset.key, width);
+      } else if (element.dataset.measure) {
+        parts.set(element.dataset.measure, width);
+      }
+    }
+  }
+
+  const headerStyle = getComputedStyle(header.value);
+  const controlsStyle = getComputedStyle(controls.value);
+  const gap = px(controlsStyle.columnGap);
+  // The room for the left part, the gap after it and the controls' content.
+  const inner =
+    header.value.getBoundingClientRect().width -
+    px(headerStyle.paddingLeft) -
+    px(headerStyle.paddingRight) -
+    px(headerStyle.columnGap) -
+    px(controlsStyle.paddingLeft) -
+    px(controlsStyle.paddingRight) -
+    px(controlsStyle.marginLeft) -
+    px(controlsStyle.marginRight);
+  // The left part at its natural width, short of its tabs: the same whichever form they take, the title in full.
+  const titleText = lead.value.querySelector('[data-title-text]');
+  const beside =
+    lead.value.getBoundingClientRect().width -
+    (tabsBox.value?.getBoundingClientRect().width ?? 0) +
+    (titleText ? titleText.scrollWidth - titleText.clientWidth : 0);
+  const endWidth = end.value?.getBoundingClientRect().width;
+
+  // What stays on the toolbar whatever the room — its end and "Display" —, with the gaps between them.
+  let chosen = { iconOnly: false, compact: false };
+  let room = 0;
+  let slack = 0;
+  for (const step of getSteps()) {
+    const kept = [endWidth, props.bare ? undefined : parts.get(step.iconOnly ? 'displayIcon' : 'display')];
+    let keptWidth = 0;
+    let keptCount = 0;
+    for (const width of kept) {
+      if (width !== undefined) {
+        keptWidth += width + (keptCount > 0 ? gap : 0);
+        keptCount += 1;
+      }
+    }
+
+    const tabsWidth = props.tabs ? (parts.get(step.compact ? 'tabsCompact' : 'tabs') ?? 0) : 0;
+    chosen = step;
+    room = inner - beside - tabsWidth - keptWidth;
+    // Each option takes its width and the gap after it; with nothing kept, the last one has none.
+    slack = keptCount > 0 ? 0 : gap;
+    if (room >= 0) {
+      break;
     }
   }
 
@@ -166,8 +241,8 @@ function fit() {
   const fits = new Set<string>();
   let used = 0;
   for (const key of ranked) {
-    used += (widths.get(key) ?? 0) + (fits.size > 0 ? gap : 0);
-    if (used > available) {
+    used += (widths.get(key) ?? 0) + gap;
+    if (used > room + slack) {
       break;
     }
 
@@ -177,6 +252,28 @@ function fit() {
   if (!fitting.value || fitting.value.size !== fits.size || [...fits].some(key => !fitting.value?.has(key))) {
     fitting.value = fits;
   }
+
+  displayIconOnly.value = chosen.iconOnly;
+  tabsCompact.value = chosen.compact;
+  titleCut.value = room < 0;
+}
+
+/** The forms the header tries, richest first; a bare one has no "Display", a header without tabs nothing to fold. */
+function getSteps() {
+  const steps = [{ iconOnly: false, compact: false }];
+  if (!props.bare) {
+    steps.push({ iconOnly: true, compact: false });
+  }
+
+  if (props.tabs) {
+    steps.push({ iconOnly: !props.bare, compact: true });
+  }
+
+  return steps;
+}
+
+function px(value: string) {
+  return Number.parseFloat(value) || 0;
 }
 
 function rank(key: string) {
@@ -395,36 +492,74 @@ function change(changes: Partial<ListViewOptions>) {
   </PhoneTopBar>
   <header
     v-else
+    ref="header"
     :class="css.listToolbar"
     v-bind="WINDOW_DRAG_REGION"
   >
-    <ListTitle :title="title">
-      <template
-        v-if="$slots.titleMenu"
-        #menu
+    <div
+      ref="lead"
+      :class="[css.listToolbar_lead, titleCut && css.listToolbar_lead_cut]"
+      tid="list-toolbar-lead"
+    >
+      <ListTitle
+        :title="title"
+        :cut="titleCut"
       >
-        <slot name="titleMenu" />
-      </template>
-    </ListTitle>
-    <slot name="title" />
-    <slot name="selection" />
-    <slot />
+        <template
+          v-if="$slots.titleMenu"
+          #menu
+        >
+          <slot name="titleMenu" />
+        </template>
+      </ListTitle>
+      <slot name="title" />
+      <slot name="selection" />
+      <div
+        v-if="tabs"
+        ref="tabsBox"
+        :class="css.listToolbar_tabs"
+        tid="list-toolbar-tabs"
+      >
+        <HeaderTabs
+          :tabs="tabs"
+          :compact="tabsCompact"
+        />
+      </div>
+      <slot />
+    </div>
     <div
       ref="controls"
-      :class="css.listToolbar_controls"
+      :class="[css.listToolbar_controls, titleCut && css.listToolbar_controls_kept]"
+      tid="list-toolbar-controls"
     >
-      <slot
-        v-if="bare"
-        name="end"
-      />
+      <div
+        v-if="$slots.end"
+        ref="end"
+        :class="css.listToolbar_end"
+      >
+        <slot name="end" />
+      </div>
       <ListToolbarControl
         v-for="option in onToolbar"
         :key="option.key"
+        :data-key="option.key"
         :option="option"
         place="toolbar"
       />
+      <ListDisplayOptions
+        v-if="!bare"
+        :options="inDisplay"
+        :modified="modified"
+        :icon-only="displayIconOnly"
+        @reset="emit('reset')"
+      >
+        <template #header>
+          <slot name="displayHeader" />
+        </template>
+        <slot name="display" />
+      </ListDisplayOptions>
     </div>
-    <!-- Every option as the toolbar would draw it, unseen: the widths `fit` compares with the room there is. -->
+    <!-- Every option, "Display" and the tabs in each of their forms as the toolbar would draw them, unseen: the widths `fit` compares with the room there is. -->
     <div
       :class="css.listToolbar_measure"
       aria-hidden="true"
@@ -441,19 +576,36 @@ function change(changes: Partial<ListViewOptions>) {
           :option="option"
           place="toolbar"
         />
+        <template v-if="!bare">
+          <div data-measure="display">
+            <ListDisplayOptions :options="[]" />
+          </div>
+          <div data-measure="displayIcon">
+            <ListDisplayOptions
+              :options="[]"
+              icon-only
+            />
+          </div>
+        </template>
+        <template v-if="tabs">
+          <div
+            data-measure="tabs"
+            :class="css.listToolbar_tabs"
+          >
+            <HeaderTabs :tabs="tabs" />
+          </div>
+          <div
+            data-measure="tabsCompact"
+            :class="css.listToolbar_tabs"
+          >
+            <HeaderTabs
+              :tabs="tabs"
+              compact
+            />
+          </div>
+        </template>
       </div>
     </div>
-    <ListDisplayOptions
-      v-if="!bare"
-      :options="inDisplay"
-      :modified="modified"
-      @reset="emit('reset')"
-    >
-      <template #header>
-        <slot name="displayHeader" />
-      </template>
-      <slot name="display" />
-    </ListDisplayOptions>
   </header>
 </template>
 
@@ -462,16 +614,61 @@ function change(changes: Partial<ListViewOptions>) {
   @include list-header;
 
   position: relative;
+  overflow: hidden;
 }
 
-/* Takes the room the rest leaves, whatever its options need: `fit` keeps in it only those that fit. */
+/* At its natural width whatever the room, above the controls and painting the header's background over them. */
+.listToolbar_lead {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  gap: $spacing-10;
+  align-items: center;
+  align-self: stretch;
+  background: $color-bg;
+}
+
+/* The last step: it shrinks, its title cut, so that what the header keeps stays whole. */
+.listToolbar_lead_cut {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.listToolbar_tabs {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+/*
+ * Takes the room the rest leaves, whatever its controls need: `fit` keeps in it only those that fit, and what overflows
+ * before it has measured is clipped at its start, never drawn under the left part. Its padding keeps the focus ring of
+ * the last control inside what it clips, the negative margin keeping that control at the header's padding.
+ */
 .listToolbar_controls {
   display: flex;
   flex: 1 1 0;
   gap: $spacing-10;
   align-items: center;
+  align-self: stretch;
   justify-content: flex-end;
   min-width: 0;
+  padding: 0 $spacing-4;
+  margin-right: -$spacing-4;
+  overflow: hidden;
+  background: $color-bg;
+}
+
+.listToolbar_controls_kept {
+  flex: none;
+}
+
+.listToolbar_end {
+  display: flex;
+  flex: none;
+  gap: $spacing-10;
+  align-items: center;
 }
 
 .listToolbar_measure {

@@ -10,6 +10,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { createFixedPhoneLayout } from '@/testing/createFixedPhoneLayout.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
@@ -136,7 +137,7 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
 
-    view.host.style.width = '560px';
+    view.host.style.width = '440px';
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).not.toBeInTheDocument();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
     const states = page.getByRole('dialog', { name: 'Display' }).getByRole('group', { name: 'State' });
@@ -514,6 +515,33 @@ test('D10, D11, CH3: Commits on 3 has none of the list tools, only the way to it
     await userEvent.keyboard('1');
     expect(view.section.value).toBe('issues');
     await expect.element(page.getByText('The commit graph')).not.toBeInTheDocument();
+});
+
+test('Commits, narrowing: its tabs fold into one menu, then its title is cut, so Branches and tags and the way to GitHub stay whole on the header, never under the title', async () => {
+    const view = mount({ section: 'commits' });
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+
+    const widths: number[] = [];
+    for (let width = 1400; width >= 320; width -= 20) {
+        widths.push(width);
+    }
+
+    const fits = await narrowToolbar(view.host, widths);
+
+    expect(fits.filter(fit => fit.overlaps.length > 0)).toEqual([]);
+    // Bare, it has no Display to fold: the tabs side by side, then one menu.
+    const steps = fits.map(fit => fit.step);
+    expect(steps).toEqual(steps.toSorted((a, b) => a - b));
+    expect(new Set(steps)).toEqual(new Set([0, 2]));
+    // At the narrowest the title is what gives way, cut, the whole name its tooltip.
+    await expect.element(page.getByTitle(SAMPLE_REPOSITORY)).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Branches and tags/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: 'Commits', expanded: false }));
+    await expect.element(page.getByRole('menuitem', { name: /Issues/ })).toHaveAttribute('aria-keyshortcuts', '1');
+    await userEvent.click(page.getByRole('menuitem', { name: /Issues/ }));
+    expect(view.section.value).toBe('issues');
 });
 
 test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the reading of items', async () => {

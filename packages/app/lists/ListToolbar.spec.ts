@@ -2,6 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { assertValue } from '@nzyme/utils/assert.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
@@ -9,11 +10,12 @@ import { createApp, h } from 'vue';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { SquareKanban } from 'lucide-vue-next';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { narrowToolbar } from '@/testing/narrowToolbar.js';
 
 import ListToolbar from './ListToolbar.vue';
 import * as stories from './ListToolbar.stories.js';
 
-const { Phone, PlainTitle, TitleMenu } = composeStories(stories);
+const { Phone, PlainTitle, Tabs, TabsAsMenu, TitleMenu } = composeStories(stories);
 
 test('with a menu, the title is a button that opens it', async () => {
     await TitleMenu.run();
@@ -117,3 +119,50 @@ test('a menu option with a command title is a command of its own: its choices ar
     submenu?.find(option => option.value === 'none')?.pick();
     expect(choose).toHaveBeenCalledWith('none');
 });
+
+test('as it narrows the header gives way in steps — the options into Display by priority, the state last; then Display an icon; then the tabs one menu — and no control is ever drawn over the title and tabs', async () => {
+    await Tabs.run();
+    const frame = assertValue(document.querySelector<HTMLElement>('[tid="toolbar-frame"]'));
+
+    const fits = await narrowToolbar(frame, widthsBetween(1200, 300));
+
+    expect(fits.filter(fit => fit.overlaps.length > 0)).toEqual([]);
+    const steps = fits.map(fit => fit.step);
+    expect(steps).toEqual(steps.toSorted((a, b) => a - b));
+    expect(new Set(steps)).toEqual(new Set([0, 1, 2]));
+    expect(fits[0]?.options.length).toBe(5);
+    for (const [index, fit] of fits.entries()) {
+        // A step is taken only once every option has moved into Display.
+        const before = fits[index - 1];
+        if (before && fit.step > before.step) {
+            expect(before.options).toEqual([]);
+        }
+
+        // What stays is the start of the order they stay in: the state, the layout, the grouping, the order, the properties.
+        expect(fit.options.toSorted()).toEqual(STAYING.slice(0, fit.options.length).toSorted());
+    }
+});
+
+test('folded, the tabs are one menu button showing the current section and Display an icon still named Display; its menu lists every section with its count and key, the current one marked', async () => {
+    await TabsAsMenu.run();
+
+    // Display is its icon by now, still named.
+    await expect.element(page.getByRole('button', { name: 'Display' })).toHaveTextContent(/^$/);
+    await userEvent.click(page.getByRole('button', { name: /Pull requests/, expanded: false }));
+    const menu = page.getByRole('menu');
+    await expect.element(menu.getByRole('menuitem', { name: /Pull requests/ })).toHaveAttribute('aria-current', 'true');
+    await expect.element(menu.getByRole('menuitem', { name: /Issues/ })).toHaveAttribute('aria-keyshortcuts', '1');
+    await expect.element(menu.getByRole('menuitem', { name: /Workflows/ })).toHaveTextContent(/Workflows\s*1/);
+});
+
+/** The order the view options stay on the toolbar in (`PRIORITY` in `ListToolbar`, the filters first). */
+const STAYING = ['state', 'layout', 'grouping', 'sort', 'properties'];
+
+function widthsBetween(from: number, to: number) {
+    const widths: number[] = [];
+    for (let width = from; width >= to; width -= 10) {
+        widths.push(width);
+    }
+
+    return widths;
+}

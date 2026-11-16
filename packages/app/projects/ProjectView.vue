@@ -22,7 +22,6 @@ import {
   BookMarked,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { RouterLink } from 'vue-router';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
@@ -32,6 +31,7 @@ import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
+import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import FilteredOut from '@/components/FilteredOut.vue';
 import { countListRows } from '@/lists/countListRows.js';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -308,6 +308,19 @@ const rowFieldOption = computed((): ListToolbarOption => {
     choose: chosen => emit('update:rowFieldId', chosen === NO_ROW_FIELD ? null : chosen),
   };
 });
+/** The saved views as the header's tabs, each a link; while items are checked the selection's actions take their place. */
+const viewTabs = computed((): HeaderTabsSet => ({
+  kind: 'links',
+  label: t(l.savedViews),
+  links: props.tabs.map(tab => ({
+    key: tab.key,
+    label: tab.name,
+    to: tab.to,
+    current: tab.current,
+    answered: tab.answered,
+    modified: tab.modified,
+  })),
+}));
 const fieldNames = computed(() => props.project.fields.map(field => `${field.name} (${field.kind})`).join(', '));
 const sortSummary = computed(() => {
   const levels = parseProjectSort(props.project, options.value.sort);
@@ -372,6 +385,7 @@ function hasItemView(entry: ProjectEntry) {
       :extra-options="[rowFieldOption]"
       :list-name="tabs.find(tab => tab.current)?.name"
       :git-hub-view="view && `${project.url}/views/${view.number}`"
+      :tabs="tabs.length > 0 && checkedIds.length === 0 ? viewTabs : null"
       @reset="emit('reset')"
       @clear-filter="emit('clearFilter')"
     >
@@ -398,34 +412,6 @@ function hasItemView(entry: ProjectEntry) {
           :span="getSelectionSpan(groups ?? [], checkedIds)"
         />
       </template>
-      <!-- The selection's actions take the saved views' place. -->
-      <nav
-        v-if="tabs.length > 0 && checkedIds.length === 0"
-        :class="css.projectView_tabs"
-        :aria-label="t(l.savedViews)"
-      >
-        <RouterLink
-          v-for="tab in tabs"
-          :key="tab.key"
-          :to="tab.to"
-          :class="[css.projectView_tab, tab.current && css.projectView_tab_current]"
-          :aria-current="tab.current ? 'page' : undefined"
-        >
-          <Cloud
-            v-if="tab.answered"
-            :class="css.projectView_tabIcon"
-            role="img"
-            :aria-label="t(l.answeredByGitHub)"
-          />
-          {{ tab.name }}
-          <span
-            v-if="tab.modified"
-            :class="css.projectView_tabDot"
-            role="img"
-            :aria-label="t(l.modifiedLocally)"
-          />
-        </RouterLink>
-      </nav>
       <span
         v-if="modified"
         :class="css.projectView_changed"
@@ -800,55 +786,6 @@ function hasItemView(entry: ProjectEntry) {
   flex: none;
   width: 12px;
   height: 12px;
-}
-
-.projectView_tabs {
-  display: flex;
-  gap: 2px;
-  align-items: center;
-  min-width: 0;
-  padding-left: $spacing-8;
-  overflow-x: auto;
-}
-
-.projectView_tab {
-  @include focus-ring;
-
-  display: inline-flex;
-  flex: none;
-  gap: 6px;
-  align-items: center;
-  height: 26px;
-  padding: 0 $spacing-10;
-  font-size: $font-size-sm;
-  color: $color-fg-2;
-  text-decoration: none;
-  white-space: nowrap;
-  border-radius: $radius-md;
-
-  &:hover {
-    color: $color-fg;
-    background: $color-bg-2;
-  }
-}
-
-.projectView_tab_current {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
-}
-
-.projectView_tabIcon {
-  width: 13px;
-  height: 13px;
-  color: $color-purple;
-}
-
-.projectView_tabDot {
-  width: 6px;
-  height: 6px;
-  background: $color-accent;
-  border-radius: 50%;
 }
 
 .projectView_changed {

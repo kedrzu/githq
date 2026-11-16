@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. On a phone (mobile MB32) every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the command menu —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4` — one menu showing the current one when the header runs out of room (`ListToolbar`) — the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. On a phone (mobile MB32) every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the command menu —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -26,10 +26,9 @@ import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import FilteredOut from '@/components/FilteredOut.vue';
+import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import IconButton from '@/components/IconButton.vue';
 import NothingThere from '@/components/NothingThere.vue';
-import SegmentedTabs from '@/components/SegmentedTabs.vue';
-import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
 import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import ItemCard from '@/lists/ItemCard.vue';
@@ -40,7 +39,6 @@ import ListEndSentinel from '@/lists/ListEndSentinel.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
-import ListTitle from '@/lists/ListTitle.vue';
 import type {
   ListChoice,
   ListContextMenuProps,
@@ -58,7 +56,6 @@ import { useShownLayout } from '@/lists/useShownLayout.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhoneTopBar from '@/shell/PhoneTopBar.vue';
 import { usePhonePart } from '@/shell/usePhonePart.js';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
@@ -220,14 +217,22 @@ const SECTION_TEXTS = {
 const sections = computed(() =>
   props.tracked ? REPOSITORY_SECTIONS : REPOSITORY_SECTIONS.filter(value => value !== 'workflows'),
 );
-const sectionOptions = computed((): SegmentedTabsOption<RepositorySection>[] =>
-  sections.value.map(value => ({
+/** The sections as the header's tabs, each with its icon, key and count. */
+const sectionTabs = computed((): HeaderTabsSet => ({
+  kind: 'model',
+  label: t(l.sections),
+  options: sections.value.map(value => ({
     value,
     label: t(l[value]),
+    icon: REPOSITORY_SECTION_ICONS[value],
     keyshortcuts: SECTION_KEYS[value],
     count: getSectionCount(value),
   })),
-);
+  value: section.value,
+  choose: value => {
+    section.value = sections.value.find(candidate => candidate === value) ?? section.value;
+  },
+}));
 /** The item section shown; `null` on Commits. */
 const itemSection = computed(() => (isItemSection(section.value) ? section.value : null));
 const sectionTexts = computed(() => SECTION_TEXTS[itemSection.value ?? 'issues']);
@@ -381,6 +386,7 @@ function getSectionCount(value: RepositorySection) {
         :properties="choices.properties.value"
         :filters="[stateOption]"
         :modified="modified"
+        :tabs="sectionTabs"
         bare
         @reset="emit('reset')"
       >
@@ -393,12 +399,6 @@ function getSectionCount(value: RepositorySection) {
         <template #title>
           <RepositoryMeta :is-private="isPrivate" />
         </template>
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
         <template #end>
           <slot name="workflowsHints" />
         </template>
@@ -411,45 +411,45 @@ function getSectionCount(value: RepositorySection) {
         v-if="phone.active"
         :title="nameWithOwner"
       />
-      <header
+      <ListToolbar
         v-else
-        :class="css.repositoryView_header"
-        v-bind="WINDOW_DRAG_REGION"
+        v-model:options="options"
+        :title="nameWithOwner"
+        :groupings="groupings"
+        :sorts="choices.sorts.value"
+        :properties="choices.properties.value"
+        :tabs="sectionTabs"
+        bare
       >
-        <ListTitle :title="nameWithOwner">
-          <template
-            v-if="$slots.menu"
-            #menu
-          >
-            <slot name="menu" />
-          </template>
-        </ListTitle>
-        <RepositoryMeta :is-private="isPrivate" />
-        <NotTrackedChip v-if="!tracked" />
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
-        <span :class="css.repositoryView_spacer" />
-        <Button
-          variant="ghost"
-          size="sm"
-          :icon="GitBranch"
-          kbd="B"
-          keyshortcuts="B"
-          @click="emit('openRefList')"
+        <template
+          v-if="$slots.menu"
+          #titleMenu
         >
-          {{ t(l.branchesAndTags) }}
-        </Button>
-        <IconButton
-          :icon="Github"
-          :label="t(l.openOnGitHub)"
-          :link="commitsUrl"
-          target="_blank"
-        />
-      </header>
+          <slot name="menu" />
+        </template>
+        <template #title>
+          <RepositoryMeta :is-private="isPrivate" />
+          <NotTrackedChip v-if="!tracked" />
+        </template>
+        <template #end>
+          <Button
+            variant="ghost"
+            size="sm"
+            :icon="GitBranch"
+            kbd="B"
+            keyshortcuts="B"
+            @click="emit('openRefList')"
+          >
+            {{ t(l.branchesAndTags) }}
+          </Button>
+          <IconButton
+            :icon="Github"
+            :label="t(l.openOnGitHub)"
+            :link="commitsUrl"
+            target="_blank"
+          />
+        </template>
+      </ListToolbar>
       <slot name="commits" />
     </template>
 
@@ -459,21 +459,25 @@ function getSectionCount(value: RepositorySection) {
         v-if="phone.active"
         :title="nameWithOwner"
       />
-      <header
+      <ListToolbar
         v-else
-        :class="css.repositoryView_header"
-        v-bind="WINDOW_DRAG_REGION"
+        v-model:options="options"
+        :title="nameWithOwner"
+        :groupings="groupings"
+        :sorts="choices.sorts.value"
+        :properties="choices.properties.value"
+        bare
       >
-        <ListTitle :title="nameWithOwner">
-          <template
-            v-if="$slots.menu"
-            #menu
-          >
-            <slot name="menu" />
-          </template>
-        </ListTitle>
-        <NotTrackedChip />
-      </header>
+        <template
+          v-if="$slots.menu"
+          #titleMenu
+        >
+          <slot name="menu" />
+        </template>
+        <template #title>
+          <NotTrackedChip />
+        </template>
+      </ListToolbar>
       <CantBeRead
         place="screen"
         :cause="unreadableAlone"
@@ -491,6 +495,7 @@ function getSectionCount(value: RepositorySection) {
         :properties="choices.properties.value"
         :filters="[stateOption]"
         :modified="modified"
+        :tabs="sectionTabs"
         @reset="emit('reset')"
       >
         <template
@@ -514,12 +519,6 @@ function getSectionCount(value: RepositorySection) {
             :span="getSelectionSpan(list.groups, checkedIds)"
           />
         </template>
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
         <span
           v-if="readCount"
           :class="css.repositoryView_readCount"
@@ -704,18 +703,6 @@ function getSectionCount(value: RepositorySection) {
   flex: none;
   width: 12px;
   height: 12px;
-}
-
-.repositoryView_header {
-  @include list-header;
-}
-
-.repositoryView_spacer {
-  flex: 1;
-}
-
-.repositoryView_sections {
-  padding-left: $spacing-8;
 }
 
 .repositoryView_projects {
