@@ -205,11 +205,11 @@ interface Band {
   readonly link: BandLink | null;
 }
 
-/** A link out of the panel, with a key of its own unless the user took it away. */
+/** A link out of the panel, with a key of its own. */
 interface BandLink {
   readonly label: string;
   readonly url: string;
-  readonly key: string | undefined;
+  readonly key: string;
 }
 
 /** What `⌘↵` does where the stack speaks for its range. */
@@ -1646,7 +1646,7 @@ function onKeydown(event: KeyboardEvent) {
   ) {
     event.preventDefault();
     checksOpen.value = !checksOpen.value;
-  } else if (band.value?.link?.key !== undefined && matchesCommandKey(event, band.value.link.key)) {
+  } else if (band.value?.link && matchesCommandKey(event, band.value.link.key)) {
     event.preventDefault();
     emit('visit', band.value.link.url);
   }

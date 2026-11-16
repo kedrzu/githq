@@ -87,3 +87,17 @@ test("a place may offer it without its key, and add its own words to the definit
     });
     expect(bound).not.toHaveProperty('keyed');
 });
+
+test('a place may offer it by its key alone, without its other keys', () => {
+    const next = defineAppCommand({
+        id: 'next',
+        title: () => 'Next',
+        key: 'J',
+        otherKeys: ['ArrowDown'],
+        places: ['item'],
+    });
+
+    const bound = bindCommand(next, { section: 'item', otherKeys: false, run }, t);
+    expect(bound).toMatchObject({ key: 'J', otherKeys: undefined });
+    expect(bindCommand(next, { section: 'item', run }, t)).toMatchObject({ key: 'J', otherKeys: ['ArrowDown'] });
+});

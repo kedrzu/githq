@@ -21,14 +21,21 @@ interface AppCommandBase<TPlaces extends CommandPlaces> {
     readonly priority: number;
 }
 
-/** A command (commands D1): what it is, whatever place offers it. */
-export interface AppCommand<TPlaces extends CommandPlaces = CommandPlaces> extends AppCommandBase<TPlaces> {
+/**
+ * A command (commands D1): what it is, whatever place offers it. `TKey` keeps whether it was given a key, so `keyOf`
+ * answers a `string` for one that was.
+ */
+export interface AppCommand<
+    TPlaces extends CommandPlaces = CommandPlaces,
+    TKey extends string | undefined = string | undefined,
+> extends AppCommandBase<TPlaces> {
     readonly kind: 'command';
     /**
-     * Its default key, in the notation of `Command.key` (`O`, `Shift+Enter`, `Mod+K`). App-wide commands take no bare
-     * letter (commands D8, tested). Shown and run through `keyOf`, never read directly.
+     * Its default key, in the notation of `Command.key` (`O`, `Shift+Enter`, `Mod+K`); `undefined` for one offered in
+     * menus only. App-wide commands take no bare letter (commands D8, tested). Shown and run through `keyOf`, never read
+     * directly.
      */
-    readonly key?: string;
+    readonly key: TKey;
     /** Fixed keys doing the same (`ArrowDown` beside `J`), never rebound. */
     readonly otherKeys?: readonly string[];
     /** `false` for a key a user can't change (commands D9, D11): `J`/`K`, the Escape closing a panel. */
@@ -56,11 +63,11 @@ export interface CommandNumbers {
 export type AnyAppCommand = AppCommand | AppCommandFamily;
 
 /** What {@link defineAppCommand} takes for a single command. */
-export interface AppCommandOptions<TPlaces extends CommandPlaces> {
+export interface AppCommandOptions<TPlaces extends CommandPlaces, TKey extends string | undefined> {
     readonly id: string;
     readonly title: Translation;
     readonly icon?: LucideIcon;
-    readonly key?: string;
+    readonly key?: TKey;
     readonly otherKeys?: readonly string[];
     readonly keywords?: readonly Translation[];
     readonly places: TPlaces;
@@ -88,9 +95,9 @@ export interface AppCommandFamilyOptions<TPlaces extends CommandPlaces> {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function defineAppCommand<const TPlaces extends CommandPlaces>(
-    options: AppCommandOptions<TPlaces>,
-): AppCommand<TPlaces>;
+export function defineAppCommand<const TPlaces extends CommandPlaces, TKey extends string | undefined = undefined>(
+    options: AppCommandOptions<TPlaces, TKey>,
+): AppCommand<TPlaces, TKey>;
 /**
  * Defines a numbered family (commands D9): one definition for the keys `numbers.first`–`numbers.last`.
  *
@@ -101,11 +108,17 @@ export function defineAppCommand<const TPlaces extends CommandPlaces>(
 ): AppCommandFamily<TPlaces>;
 /** @__NO_SIDE_EFFECTS__ */
 export function defineAppCommand<const TPlaces extends CommandPlaces>(
-    options: AppCommandOptions<TPlaces> | AppCommandFamilyOptions<TPlaces>,
+    options: AppCommandOptions<TPlaces, string | undefined> | AppCommandFamilyOptions<TPlaces>,
 ): AppCommand<TPlaces> | AppCommandFamily<TPlaces> {
     if ('numbers' in options) {
         return { ...options, kind: 'family', priority: options.priority ?? 0, configurable: false };
     }
 
-    return { ...options, kind: 'command', priority: options.priority ?? 0, configurable: options.configurable ?? true };
+    return {
+        ...options,
+        kind: 'command',
+        key: options.key,
+        priority: options.priority ?? 0,
+        configurable: options.configurable ?? true,
+    };
 }

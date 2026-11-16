@@ -1,6 +1,5 @@
 <!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c), and with its field focused only the field's. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a log the desktop app refused, which says so and can be tried again, or one too big for it, which GitHub is the way to and nothing tries again; a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
-import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleSlash, FileX, Ghost, Github, Hourglass, RotateCw, ShieldX, Unplug } from 'lucide-vue-next';
@@ -152,7 +151,7 @@ const canRetry = computed(() => props.pane.kind === 'failed' || props.pane.kind 
 const hints = computed((): readonly KeyHint[] => {
   const { pane } = props;
   const job = { keys: ['Alt+J', 'Alt+K'], label: t(l.job) };
-  const gitHub = { keys: filterNotNull([keyOf(openOnGitHub)]), label: t(l.gitHub) };
+  const gitHub = { keys: [keyOf(openOnGitHub)], label: t(l.gitHub) };
   if (pane.kind !== 'ready') {
     return canRetry.value ? [{ keys: ['Enter'], label: t(l.tryAgain) }, job, gitHub] : [job, gitHub];
   }

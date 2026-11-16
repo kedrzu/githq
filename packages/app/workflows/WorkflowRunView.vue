@@ -2,7 +2,6 @@
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
-import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -27,7 +26,7 @@ import { RouterLink } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { fullScreen, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -38,7 +37,7 @@ import Kbd from '@/components/Kbd.vue';
 import { useMaxWidth } from '@/components/useMaxWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
-import { ITEM_ARRANGEMENT_KEYS, useOtherArrangement } from '@/item/useItemArrangement.js';
+import { useOtherArrangement } from '@/item/useItemArrangement.js';
 import type { OtherArrangement } from '@/item/useItemArrangement.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
@@ -254,7 +253,7 @@ const hints = computed(() => [
         ? t(l.backTo, { workflow: props.model.run.workflowName })
         : t(l.back),
   },
-  { id: 'gitHub', keys: filterNotNull([keyOf(openOnGitHub)]), label: t(l.hintGitHub) },
+  { id: 'gitHub', keys: [keyOf(openOnGitHub)], label: t(l.hintGitHub) },
 ]);
 
 useCommands(() => [
@@ -391,14 +390,17 @@ onMounted(() => {
 onBeforeUnmount(() => roomObserver?.disconnect());
 
 function getArrangeCommand(other: OtherArrangement): Command {
-  return {
-    id: `workflowRun.arrange.${other.arrangement}`,
-    title: other.title,
-    section: 'item',
-    key: ITEM_ARRANGEMENT_KEYS.arrange,
-    icon: other.icon,
-    run: () => emit('arrange', other.arrangement),
-  };
+  return bindCommand(
+    fullScreen,
+    {
+      place: 'workflowRun',
+      section: 'item',
+      title: other.title,
+      icon: other.icon,
+      run: () => emit('arrange', other.arrangement),
+    },
+    t,
+  );
 }
 
 function selectJob(job: GitHubWorkflowJob) {
@@ -508,8 +510,8 @@ function getInvalidFileMessage(): RunMessage {
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
-        :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
-        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
+        :kbd="keyOf(fullScreen)"
+        :keyshortcuts="keyOf(fullScreen)"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton

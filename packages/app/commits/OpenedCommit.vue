@@ -82,6 +82,7 @@ const arranging = useItemArrangement({
   },
 });
 const keys = useItemKeys({
+  place: 'commit',
   arrangement: () => props.arrangement,
   // In the panel the graph beside it moves its cursor with them, and the panel follows.
   steps: () => props.arrangement === 'page',
@@ -97,7 +98,8 @@ const keys = useItemKeys({
 useCommands(() => {
   const { commands } = keys;
   return [
-    ...(props.arrangement === 'page' ? [commands.next, commands.previous] : []),
+    commands.next,
+    commands.previous,
     {
       id: 'commit.firstParent',
       title: t(l.firstParent),

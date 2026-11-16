@@ -6,6 +6,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ChevronDown, ChevronRight, ChevronsDown, Folder, FolderOpen, GitBranch, Tag } from 'lucide-vue-next';
 import { computed, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
+import { findRef } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Menu from '@/components/Menu.vue';
 import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
 import MenuRadioItem from '@/components/MenuRadioItem.vue';
@@ -439,7 +441,7 @@ function getNameId(row: ListRow) {
         :class="css.commitRefList_field"
         :label="t(l.filterLabel)"
         :placeholder="t(l.filterPlaceholder)"
-        kbd="B"
+        :kbd="keyOf(findRef)"
         :grid="{ id: gridId, activeId: selectedNameId }"
       />
     </div>

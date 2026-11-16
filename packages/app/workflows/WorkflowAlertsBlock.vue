@@ -6,6 +6,7 @@ import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -134,11 +135,11 @@ const hints = computed(() => {
   const actions =
     row?.kind === 'pattern'
       ? [
-          { keys: 'Enter', label: t(l.edit) },
-          { keys: 'Backspace', label: t(l.remove) },
+          { keys: keyOf(definitions.open), label: t(l.edit) },
+          { keys: keyOf(definitions.remove), label: t(l.remove) },
         ]
-      : [{ keys: 'Space', label: t(l.switch) }];
-  return [...actions, { keys: 'A', label: t(l.add) }];
+      : [{ keys: keyOf(definitions.toggleRow), label: t(l.switch) }];
+  return [...actions, { keys: keyOf(definitions.add), label: t(l.add) }];
 });
 
 // Space and ⌫ never from a button, which does what it says (Space the registry's rule, ⌫ the binding's).
@@ -385,13 +386,13 @@ function onPatternClick(event: MouseEvent, pattern: string) {
             <IconButton
               :icon="Pencil"
               :label="t(l.editPattern, { pattern: entry.pattern })"
-              kbd="Enter"
+              :kbd="keyOf(definitions.open)"
               @click="startEditing(entry.pattern)"
             />
             <IconButton
               :icon="X"
               :label="t(l.removePattern, { pattern: entry.pattern })"
-              kbd="Backspace"
+              :kbd="keyOf(definitions.remove)"
               @click="remove(entry.pattern)"
             />
           </span>

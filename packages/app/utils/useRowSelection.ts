@@ -13,7 +13,7 @@ import { followSelection } from './followSelection.js';
 import { takeFocusOffControl } from './takeFocusOffControl.js';
 
 /** The places whose rows `next`, `previous` and `open` move through and open. */
-export type RowSelectionPlace = (typeof definitions.next.places)[number];
+export type RowSelectionPlace = (typeof definitions.open.places)[number];
 
 /** What every list of rows says, however its selected row is brought into sight. */
 interface RowSelectionListOptions<T> {

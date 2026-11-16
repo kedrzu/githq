@@ -1376,7 +1376,14 @@ test("with the commit's pull request open, Shift+Enter is the item's (it expands
     const expand = vi.fn();
     const unregister = view.container.resolve(CommandRegistry).register({
         commands: [
-            { id: 'item.arrange.page', title: 'Open full screen', section: 'item', key: 'Shift+Enter', run: expand },
+            {
+                id: 'item.fullScreen',
+                title: 'Open full screen',
+                section: 'item',
+                place: 'item',
+                key: 'Shift+Enter',
+                run: expand,
+            },
         ],
         subject: null,
     });

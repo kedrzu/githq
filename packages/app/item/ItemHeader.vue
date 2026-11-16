@@ -4,7 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ChevronDown, ChevronUp, Github, X } from 'lucide-vue-next';
 
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { closeItem, fullScreen, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import IconButton from '@/components/IconButton.vue';
 import PhoneBackButton from '@/shell/PhoneBackButton.vue';
@@ -15,7 +15,6 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemArrangement } from './itemRoutes.js';
 import * as l from './useItemArrangement.loc.js';
 import ItemWalkStepper from './ItemWalkStepper.vue';
-import { ITEM_ARRANGEMENT_KEYS } from './useItemArrangement.js';
 import type { ItemStepKeys, OtherArrangement } from './useItemArrangement.js';
 import type { ItemWalkPosition } from './useItemWalk.js';
 
@@ -97,8 +96,8 @@ const phone = useService(PhoneLayout);
       v-if="otherArrangement"
       :icon="otherArrangement.icon"
       :label="otherArrangement.title"
-      :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
-      :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
+      :kbd="keyOf(fullScreen)"
+      :keyshortcuts="keyOf(fullScreen)"
       @click="emit('arrange', otherArrangement.arrangement)"
     />
     <IconButton
@@ -113,8 +112,8 @@ const phone = useService(PhoneLayout);
     <IconButton
       :icon="X"
       :label="t(l.close)"
-      :kbd="ITEM_ARRANGEMENT_KEYS.close"
-      :keyshortcuts="ITEM_ARRANGEMENT_KEYS.close"
+      :kbd="keyOf(closeItem)"
+      :keyshortcuts="keyOf(closeItem)"
       @click="emit('close')"
     />
   </header>

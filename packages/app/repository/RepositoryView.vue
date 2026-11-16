@@ -24,7 +24,8 @@ import {
 import { computed, ref } from 'vue';
 
 import type { Command, CommandParts } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { findRef, openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -486,8 +487,8 @@ function getSectionCount(value: RepositorySection) {
             variant="ghost"
             size="sm"
             :icon="GitBranch"
-            kbd="B"
-            keyshortcuts="B"
+            :kbd="keyOf(findRef)"
+            :keyshortcuts="keyOf(findRef)"
             @click="emit('openRefList')"
           >
             {{ t(l.branchesAndTags) }}

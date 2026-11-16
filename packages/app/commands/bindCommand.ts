@@ -6,7 +6,7 @@ import type { AppCommand, AppCommandFamily, CommandPlaces } from './defineAppCom
 import { keyOf } from './keyOf.js';
 
 /** The fields of a {@link Command} that come from its definition, never from a place (commands D1). */
-type DefinedField = 'id' | 'title' | 'icon' | 'key' | 'otherKeys' | 'keywords' | 'priority' | 'place';
+type DefinedField = 'id' | 'title' | 'key' | 'otherKeys' | 'keywords' | 'priority' | 'place';
 
 /** Which of its places a binding offers a definition in: named when the definition has several. */
 export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends readonly [infer TPlace]
@@ -16,7 +16,8 @@ export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends
 /**
  * What a place says of a defined command: what it does there and when it can (`run`, `when`, `unavailable`, `detail`,
  * a picker's `options`…), and the heading it sits under there (`section`). `title` only names what a family's number
- * picks (`Go to "Backlog" view`).
+ * picks (`Go to "Backlog" view`), or with `icon` the way a command goes here (`fullScreen` on a page: "Back to the
+ * panel").
  */
 export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit<Command, DefinedField> & {
     readonly title?: string;
@@ -27,6 +28,11 @@ export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit
      * "Open on GitHub", where `O` opens the selected row or the opened item).
      */
     readonly keyed?: false;
+    /**
+     * `false`: run here by its key alone, its other keys being the place's own (an opened item's page scrolls by ↓/↑,
+     * so `J`/`K` alone step through the list it was opened from).
+     */
+    readonly otherKeys?: false;
 } & CommandBindingPlace<TPlaces>;
 
 /** A family's binding: what its number does, or `null` where the screen has nothing at that number. */
@@ -92,16 +98,17 @@ function toCommand<TPlaces extends CommandPlaces>(
     t: Translator,
     bound: BoundKey,
 ): Command {
-    const { keyed, keywords, ...rest } = binding;
+    const { keyed, keywords, otherKeys, ...rest } = binding;
     const place = rest.place ?? definition.places[0];
     const ownKeywords = definition.keywords?.map(keyword => t(keyword)) ?? [];
     return {
         ...rest,
         id: `${place}.${bound.id}`,
         title: rest.title ?? t(definition.title),
-        icon: definition.icon,
+        icon: rest.icon ?? definition.icon,
         key: keyed === false ? undefined : bound.key,
-        otherKeys: keyed === false || definition.kind === 'family' ? undefined : definition.otherKeys,
+        otherKeys:
+            keyed === false || otherKeys === false || definition.kind === 'family' ? undefined : definition.otherKeys,
         keywords: keywords || definition.keywords ? [...ownKeywords, ...(keywords ?? [])] : undefined,
         priority: definition.priority,
         place,

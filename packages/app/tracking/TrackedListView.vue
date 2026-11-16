@@ -7,6 +7,7 @@ import { computed, useTemplateRef } from 'vue';
 import { bindCommand } from '@/commands/bindCommand.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import NothingThere from '@/components/NothingThere.vue';
@@ -18,9 +19,6 @@ import TrackedListHead from './TrackedListHead.vue';
 import * as l from './TrackedListView.loc.js';
 import TrackedOwnerHeader from './TrackedOwnerHeader.vue';
 import type { TrackedOwnerGroup } from './utils/groupTrackedByOwner.js';
-
-/** The key adding more. */
-const ADD_KEY = 'A';
 
 const props = defineProps<{
   /** What is listed, and so the words. */
@@ -178,8 +176,8 @@ function onRowClick(event: MouseEvent, row: T) {
           variant="secondary"
           size="sm"
           :icon="Plus"
-          :kbd="ADD_KEY"
-          :keyshortcuts="formatAriaKeyShortcuts(ADD_KEY)"
+          :kbd="keyOf(definitions.add)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.add))"
           @click="emit('add')"
         >
           {{ addLabel }}
@@ -199,7 +197,7 @@ function onRowClick(event: MouseEvent, row: T) {
         "
         :description="t(projects ? l.projectsDescription : l.repositoriesDescription)"
         :add-label="addLabel"
-        :add-key="ADD_KEY"
+        :add-key="keyOf(definitions.add)"
         @add="emit('add')"
       />
       <section

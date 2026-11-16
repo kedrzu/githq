@@ -447,9 +447,10 @@ defineExpose({
 
 // Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from.
 const keys = useItemKeys({
+  place: 'item',
   arrangement: () => props.arrangement,
-  // Here rather than in a listener of the copy's own, which would run after the item's. Not a `data-layer` either: that
-  // would cover the screen and switch `J`/`K` off while the rows are dropped.
+  // Part of the item's Escape rather than a command of the copy's own: one Escape in the help sheet. Not a `data-layer`
+  // either: that would cover the screen and switch `J`/`K` off while the rows are dropped.
   onEscape: () => {
     if (!stackDropped.value) {
       return false;
@@ -520,6 +521,16 @@ function editFromDock(request: EditRequest) {
 }
 
 /** Escape in the docked composer: back to the pill, the item stays. */
+/**
+ * Escape in the comment box leaves it, what is typed staying, and the item stays open: the key is the field's (commands
+ * D11), and its next Escape the item's.
+ */
+function leaveComposer(event: KeyboardEvent) {
+  if (event.target instanceof HTMLElement) {
+    event.target.blur();
+  }
+}
+
 function leaveDock(event: KeyboardEvent) {
   event.preventDefault();
   composing.value = false;
@@ -639,7 +650,7 @@ function getItemCommands(): Command[] {
     });
   }
 
-  // Its own keys (`useItemKeys` above), listed in the help sheet.
+  // Its own keys (`useItemKeys` above).
   commands.push(keys.commands.next, keys.commands.previous, keys.commands.close, {
     id: 'item.menu',
     title: t(l.itemMenu),
@@ -1051,6 +1062,7 @@ function getProjectOptions(): CommandOption[] {
                         :read-only="readOnly"
                         :people="threadPeople"
                         @edit="edit"
+                        @cancel="leaveComposer"
                       />
                     </template>
                   </ItemThread>

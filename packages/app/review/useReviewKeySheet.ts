@@ -1,4 +1,3 @@
-import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onScopeDispose } from 'vue';
@@ -117,7 +116,7 @@ export function useReviewKeySheet(): void {
             footer: [
                 { keys: [REVIEW_KEYS.fileList], label: t(l.fileList) },
                 { keys: [REVIEW_KEYS.conversation], label: t(l.conversation) },
-                { keys: filterNotNull([keyOf(openOnGitHub)]), label: t(openOnGitHub.title) },
+                { keys: [keyOf(openOnGitHub)], label: t(openOnGitHub.title) },
                 { keys: [REVIEW_KEYS.review], label: t(l.review) },
             ],
         })),

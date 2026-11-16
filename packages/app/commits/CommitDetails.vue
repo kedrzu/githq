@@ -15,7 +15,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Copy, GitCommitHorizontal, GitPullRequest, Github, Info, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { closeItem, next, openOnGitHub, previous } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
@@ -194,19 +194,19 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
       <span :class="css.commitDetails_spacer" />
       <IconButton
         :label="t(l.previous)"
-        kbd="K"
-        keyshortcuts="K"
+        :kbd="keyOf(previous)"
+        :keyshortcuts="keyOf(previous)"
         @click="emit('step', -1)"
       >
-        <Kbd keys="K" />
+        <Kbd :keys="keyOf(previous)" />
       </IconButton>
       <IconButton
         :label="t(l.next)"
-        kbd="J"
-        keyshortcuts="J"
+        :kbd="keyOf(next)"
+        :keyshortcuts="keyOf(next)"
         @click="emit('step', 1)"
       >
-        <Kbd keys="J" />
+        <Kbd :keys="keyOf(next)" />
       </IconButton>
       <IconButton
         v-if="otherArrangement"
@@ -226,8 +226,8 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
       <IconButton
         :icon="X"
         :label="t(l.close)"
-        kbd="Escape"
-        keyshortcuts="Escape"
+        :kbd="keyOf(closeItem)"
+        :keyshortcuts="keyOf(closeItem)"
         @click="emit('close')"
       />
     </header>

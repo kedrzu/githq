@@ -14,7 +14,8 @@ export interface KeyConflict {
 /**
  * The pairs of definitions whose keys (`keyOf`, other keys, a family's numbers) are one and whose places can be active
  * together ({@link placesCollide}) — found from the definitions alone, with no screen shown (commands D3). A screen
- * taking an app-wide key is not one (D13).
+ * taking an app-wide key is not one (D13), nor two fixed Escapes: Escape steps back one layer at a time, the keeper's
+ * while it has something to close, then the other's (a list's checked items, then the item open beside it).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -28,8 +29,9 @@ export function findKeyConflicts(definitions: readonly AnyAppCommand[]): KeyConf
             }
 
             const others = new Set(getKeys(second).map(normalizeKey));
+            const bothFixed = !first.configurable && !second.configurable;
             for (const key of keys) {
-                if (others.has(normalizeKey(key))) {
+                if (others.has(normalizeKey(key)) && !(bothFixed && key === 'Escape')) {
                     conflicts.push({ key, first, second });
                 }
             }

@@ -1,6 +1,5 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -10,12 +9,11 @@ import type { MaybeRefOrGetter } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import type { GetExpandedLocationParams, OpenedItemKindRoutes } from './defineOpenedItemKind.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -25,12 +23,6 @@ import * as l from './useItemArrangement.loc.js';
 import { useItemWalk } from './useItemWalk.js';
 import type { ItemWalkViewModel } from './useItemWalk.js';
 
-/** The keys of an opened item's moves, every kind's; the steps' are {@link ItemStepKeys}. */
-export const ITEM_ARRANGEMENT_KEYS = {
-    arrange: 'Shift+Enter',
-    close: 'Escape',
-} as const;
-
 /** The keys stepping through the list an item was opened from, in the app's key notation (`J`, `Shift+J`). */
 export interface ItemStepKeys {
     readonly previous: string;
@@ -39,9 +31,9 @@ export interface ItemStepKeys {
 
 /** Options of {@link useItemKeys}. */
 export interface UseItemKeysOptions {
+    /** What is opened, where its keys are offered (commands D13): a workflow steps by `⇧K`/`⇧J`, its runs having `K`/`J`. */
+    place: 'item' | 'commit' | 'workflow';
     arrangement: MaybeRefOrGetter<ItemArrangement>;
-    /** Left out, `K`/`J`. */
-    stepKeys?: ItemStepKeys;
     /**
      * `false` leaves the step keys to the screen beside the item, which moves through its list itself (the commit graph's
      * cursor, which the opened commit follows); left out, `true`.
@@ -53,8 +45,8 @@ export interface UseItemKeysOptions {
      */
     arrangeByKey?: boolean;
     /**
-     * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already): `true`
-     * when it took the key.
+     * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already, a field
+     * keeps its own): `true` when it took the key.
      */
     onEscape?: () => boolean;
     close(): void;
@@ -86,8 +78,6 @@ export interface ItemKeysViewModel {
     readonly stepKeys: ItemStepKeys;
     readonly commands: ItemKeyCommands;
 }
-
-const DEFAULT_STEP_KEYS: ItemStepKeys = { previous: 'K', next: 'J' };
 
 /** Options of {@link useItemArrangement}. */
 export interface UseItemArrangementOptions<TReference> {
@@ -429,86 +419,76 @@ interface GoAgainOptions {
 type HistoryMove = 'push' | 'replace';
 
 /**
- * The keys of an opened item, every kind's: Escape closes it — after an open picker or menu (`isLayerOpen`), the view's
- * own layers (`onEscape`), and a focused field, which gives the key up first — and the step keys step through the list
- * it was opened from (in a panel the list's own `j`/`k`, run first, move its selection instead, which the opened item
- * follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone). The commands — listed in the help
- * sheet, `⇧Enter` run by its key — are for the view to register among its own, with its own "Open on GitHub"
- * (`openOnGitHub`); `⇧Enter` is not offered on a page where the window has no room for the panel, and a kind may offer
- * the other arrangement with no key.
+ * The keys of an opened item, every kind's, bound from their definitions for the view to register among its own, with
+ * its own "Open on GitHub" (`openOnGitHub`): Escape closes it (`closeItem`) — after an open picker or menu (the registry's
+ * `isLayerOpen`) and the view's own layers (`onEscape`); a field's Escape is the field's — the step keys step through
+ * the list it was opened from (in a panel the list's own `j`/`k`, its place keeping the keyboard, move its selection
+ * instead, which the opened item follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone),
+ * and `⇧Enter` moves it to the other arrangement (`fullScreen`) — not offered on a page where the window has no room
+ * for the panel, and a kind may offer it with no key.
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
+    const { place } = options;
     const arrangement = makeRef(options.arrangement);
     const steps = makeRef(options.steps ?? true);
-    const stepKeys = options.stepKeys ?? DEFAULT_STEP_KEYS;
+    const stepKeys: ItemStepKeys =
+        place === 'workflow'
+            ? { previous: keyOf(definitions.previousWorkflow), next: keyOf(definitions.nextWorkflow) }
+            : { previous: keyOf(definitions.previous), next: keyOf(definitions.next) };
 
     const otherArrangement = useOtherArrangement(arrangement);
     const commands = computed((): ItemKeyCommands => {
         const other = otherArrangement.value;
         return {
-            // Run by the listener below, listed in the help sheet.
-            next: { id: 'item.next', title: t(l.next), section: 'item', key: stepKeys.next, menu: false },
-            previous: {
-                id: 'item.previous',
-                title: t(l.previous),
-                section: 'item',
-                key: stepKeys.previous,
-                menu: false,
-            },
-            close: {
-                id: 'item.close',
-                title: t(l.close),
-                section: 'item',
-                key: ITEM_ARRANGEMENT_KEYS.close,
-                menu: false,
-            },
-            arrange: other && {
-                id: `item.arrange.${other.arrangement}`,
-                title: other.title,
-                section: 'item',
-                key: options.arrangeByKey === false ? undefined : ITEM_ARRANGEMENT_KEYS.arrange,
-                icon: other.icon,
-                run: () => options.arrange(other.arrangement),
-            },
+            ...bindSteps(),
+            close: bindCommand(definitions.closeItem, { place, section: 'item', menu: false, run: close }, t),
+            arrange:
+                other &&
+                bindCommand(
+                    definitions.fullScreen,
+                    {
+                        place,
+                        section: 'item',
+                        title: other.title,
+                        icon: other.icon,
+                        keyed: options.arrangeByKey === false ? false : undefined,
+                        run: () => options.arrange(other.arrangement),
+                    },
+                    t,
+                ),
         };
     });
 
-    onWindowEvent('keydown', event => {
-        // An open picker or menu takes Escape for itself.
-        if (event.key === 'Escape' && !event.defaultPrevented && !isLayerOpen()) {
-            // Here rather than in listeners of the layers' own, which would run after this one.
-            if (options.onEscape?.()) {
-                event.preventDefault();
-                return;
-            }
-
-            // A field gives the key up first: Escape in the comment box leaves it.
-            const { target } = event;
-            if (target instanceof HTMLElement && isEditableTarget(target)) {
-                target.blur();
-                return;
-            }
-
-            event.preventDefault();
-            options.close();
-            return;
-        }
-
-        if (!isScreenKey(event) || !steps.value) {
-            return;
-        }
-
-        if (matchesCommandKey(event, stepKeys.next)) {
-            event.preventDefault();
-            options.next();
-        } else if (matchesCommandKey(event, stepKeys.previous)) {
-            event.preventDefault();
-            options.previous();
-        }
-    });
-
     return reactive<ItemKeysViewModel>({ otherArrangement, stepKeys, commands });
+
+    function bindSteps() {
+        const own = { section: 'item', menu: false, when: () => steps.value } as const;
+        if (place === 'workflow') {
+            return {
+                next: bindCommand(definitions.nextWorkflow, { ...own, run: () => options.next() }, t),
+                previous: bindCommand(definitions.previousWorkflow, { ...own, run: () => options.previous() }, t),
+            };
+        }
+
+        // ↓/↑ scroll the item.
+        const item = { ...own, place, otherKeys: false } as const;
+        return {
+            next: bindCommand(definitions.next, { ...item, title: t(l.next), run: () => options.next() }, t),
+            previous: bindCommand(
+                definitions.previous,
+                { ...item, title: t(l.previous), run: () => options.previous() },
+                t,
+            ),
+        };
+    }
+
+    /** The view's own layers take Escape first (here rather than in listeners of theirs, which would run after). */
+    function close() {
+        if (!options.onEscape?.()) {
+            options.close();
+        }
+    }
 }
 
 /**

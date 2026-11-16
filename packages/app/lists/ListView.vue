@@ -4,7 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
-import { ChevronDown, ChevronRight, GitMerge, Maximize2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, GitMerge } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
@@ -57,7 +57,7 @@ import { useRowSwipe } from './useRowSwipe.js';
  * A row's action keys the list has itself — its "Open" and "Open on GitHub": a context menu draws them, the registry must
  * not run the row's (its `item` section would come before the list's `view`).
  */
-const OWN_KEYS: ReadonlySet<string | undefined> = new Set([keyOf(definitions.open), keyOf(definitions.openOnGitHub)]);
+const OWN_KEYS: ReadonlySet<string> = new Set([keyOf(definitions.open), keyOf(definitions.openOnGitHub)]);
 
 /** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
 const ORDINARY_KEYS: ReadonlySet<string> = new Set(Object.values(PULL_REQUEST_COMMAND_KEYS));
@@ -882,23 +882,24 @@ function getKeyCommands(): Command[] {
       t,
     ),
     // On the opened item's row, `⇧Enter` is the opened item's own (back and forth between the panel and its page).
-    {
-      id: 'list.fullScreen',
-      title: t(l.openFullScreen),
-      section: 'view',
-      key: 'Shift+Enter',
-      icon: Maximize2,
-      // The row it opens, named in the menu: it may be scrolled out of view.
-      detail: rowSubject.value?.kind === 'item' ? rowSubject.value.title : undefined,
-      actsOnRow: true,
-      when: () => getFullScreenId() !== null,
-      run: () => {
-        const id = getFullScreenId();
-        if (id !== null) {
-          emit('fullScreen', id);
-        }
+    bindCommand(
+      definitions.fullScreen,
+      {
+        place: 'list',
+        section: 'view',
+        // The row it opens, named in the menu: it may be scrolled out of view.
+        detail: rowSubject.value?.kind === 'item' ? rowSubject.value.title : undefined,
+        actsOnRow: true,
+        when: () => getFullScreenId() !== null,
+        run: () => {
+          const id = getFullScreenId();
+          if (id !== null) {
+            emit('fullScreen', id);
+          }
+        },
       },
-    },
+      t,
+    ),
     // The row's in the menu is its context menu's (`getRowCommands`).
     bindCommand(
       definitions.openOnGitHub,

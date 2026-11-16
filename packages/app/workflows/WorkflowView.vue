@@ -19,7 +19,8 @@ import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest, Play }
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { closeItem, next, open, openOnGitHub, previous } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -96,8 +97,6 @@ const emit = defineEmits<{
 
 /** The details' column: 400 px by default, dragged from 320 to 640 px. */
 const DETAILS_WIDTH = { key: 'workflowDetails', default: 400, min: 320, max: 640 };
-/** The keys that step to the next or previous workflow: `j`/`k` are the runs'. */
-const STEP_KEYS = { previous: 'Shift+K', next: 'Shift+J' };
 
 const t = useTranslate();
 const browser = useService(Browser);
@@ -172,23 +171,24 @@ const standing = computed((): Standing => {
       return assertNever(state.state);
   }
 });
-const hints = computed(() => [
-  { id: 'run', keys: ['J', 'K'], label: t(l.hintRun) },
-  { id: 'workflow', keys: [STEP_KEYS.next, STEP_KEYS.previous], label: t(l.hintWorkflow) },
-  { id: 'open', keys: ['Enter'], label: t(l.hintOpenRun) },
-  ...(props.latestFailure ? [{ id: 'failure', keys: ['F'], label: t(l.hintLatestFailure) }] : []),
-  { id: 'escape', keys: ['Escape'], label: props.escapeTo === 'panel' ? t(l.backToPanel) : t(l.backToList) },
-]);
 
 // `⇧K`/`⇧J` step through the list it was opened from; Escape closes it.
 const keys = useItemKeys({
+  place: 'workflow',
   arrangement: () => props.arrangement,
-  stepKeys: STEP_KEYS,
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
   previous: () => emit('previous'),
   next: () => emit('next'),
 });
+
+const hints = computed(() => [
+  { id: 'run', keys: [keyOf(next), keyOf(previous)], label: t(l.hintRun) },
+  { id: 'workflow', keys: [keys.stepKeys.next, keys.stepKeys.previous], label: t(l.hintWorkflow) },
+  { id: 'open', keys: [keyOf(open)], label: t(l.hintOpenRun) },
+  ...(props.latestFailure ? [{ id: 'failure', keys: ['F'], label: t(l.hintLatestFailure) }] : []),
+  { id: 'escape', keys: [keyOf(closeItem)], label: props.escapeTo === 'panel' ? t(l.backToPanel) : t(l.backToList) },
+]);
 
 useCommands(() => {
   const { commands } = keys;

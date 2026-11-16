@@ -16,22 +16,25 @@ const ROW_PLACES = [
     'trackedList',
 ] as const;
 
-/** Moves the cursor of what is listed one step down. */
+/**
+ * Moves the cursor of what is listed one step down; an opened item, or a commit on its page, to the next of the list it
+ * was opened from (`useItemKeys`).
+ */
 export const next = defineAppCommand({
     id: 'next',
     title: l.next,
     key: 'J',
     otherKeys: ['ArrowDown'],
-    places: ROW_PLACES,
+    places: [...ROW_PLACES, 'item', 'commit'],
 });
 
-/** Moves the cursor of what is listed one step up. */
+/** Moves the cursor of what is listed one step up; an opened item, or a commit on its page, to the previous one. */
 export const previous = defineAppCommand({
     id: 'previous',
     title: l.previous,
     key: 'K',
     otherKeys: ['ArrowUp'],
-    places: ROW_PLACES,
+    places: [...ROW_PLACES, 'item', 'commit'],
 });
 
 /**

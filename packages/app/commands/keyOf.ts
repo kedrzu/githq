@@ -1,4 +1,4 @@
-import type { AppCommand } from './defineAppCommand.js';
+import type { AppCommand, CommandPlaces } from './defineAppCommand.js';
 
 /**
  * The key a command is shown with and run by — every hint (`:kbd="keyOf(definition)"`), the registry and the help
@@ -7,6 +7,14 @@ import type { AppCommand } from './defineAppCommand.js';
  *
  * @__NO_SIDE_EFFECTS__
  */
+export function keyOf(definition: AppCommand<CommandPlaces, string>): string;
+/**
+ * The key of a command that may have none: `undefined` for one offered in menus only.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function keyOf(definition: AppCommand): string | undefined;
+/** @__NO_SIDE_EFFECTS__ */
 export function keyOf(definition: AppCommand): string | undefined {
     return definition.key;
 }

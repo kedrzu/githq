@@ -7,7 +7,7 @@ import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { fullScreen, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -124,19 +124,21 @@ const emptyState = computed(() => {
 
 useCommands(() => [
   // On the row open in the panel, ⇧Enter is the opened item's own (back and forth between the panel and its page).
-  {
-    id: 'workflows.fullScreen',
-    title: t(l.openFullScreen),
-    section: 'view',
-    key: 'Shift+Enter',
-    actsOnRow: true,
-    when: () => !props.runOpen && selection.selectedKey !== null && selection.selectedKey !== props.openedKey,
-    run: () => {
-      if (selection.selectedKey !== null) {
-        emit('fullScreen', selection.selectedKey);
-      }
+  bindCommand(
+    fullScreen,
+    {
+      place: 'workflows',
+      section: 'view',
+      actsOnRow: true,
+      when: () => !props.runOpen && selection.selectedKey !== null && selection.selectedKey !== props.openedKey,
+      run: () => {
+        if (selection.selectedKey !== null) {
+          emit('fullScreen', selection.selectedKey);
+        }
+      },
     },
-  },
+    t,
+  ),
   {
     id: 'workflows.latestFailure',
     title: t(l.openLatestFailure),

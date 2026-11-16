@@ -13,7 +13,7 @@ import { computed, createApp, defineComponent, h, nextTick, ref, shallowRef } fr
 import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import KeyHelp from '@/commands/KeyHelp.vue';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { closeItem, next as nextDefinition, openOnGitHub } from '@/commands/definitions/index.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
@@ -628,7 +628,7 @@ test("a key the list has nothing to do with is left to what is under it: Escape 
             passed.push(event.key);
         }
     };
-    // After the registry's, as an opened item's own listener is.
+    // After the registry's, as a component's own listener is.
     window.addEventListener('keydown', listen);
     onTestFinished(() => window.removeEventListener('keydown', listen));
 
@@ -645,28 +645,38 @@ test("a key the list has nothing to do with is left to what is under it: Escape 
     expect(passed).toHaveLength(5);
 });
 
-test("? lists each of the list's keys once, beside what runs: its own over an opened item's, which keeps Escape while nothing is checked", async () => {
+test("an opened item's keys yield to the list's: J is the list's, Escape the item's close while nothing is checked, and ? lists each key once, beside what runs", async () => {
     const view = mount([['todo', ['a1', 'a2']]], 'list', { followOpened: true });
     const registry = view.container.resolve(CommandRegistry);
-    // The opened item's own keys, run by its own listener and only listed, as the item view registers them.
+    const t = view.container.resolve(Translator);
+    // The opened item's own keys, as the item view binds them (`useItemKeys`).
+    const step = vi.fn();
+    const close = vi.fn();
+    const item = { place: 'item', section: 'item', menu: false } as const;
     onTestFinished(
         registry.register({
             commands: [
-                {
-                    id: 'item.next',
-                    title: 'Next item',
-                    section: 'item',
-                    key: 'J',
-                    otherKeys: ['ArrowDown'],
-                    menu: false,
-                },
-                { id: 'item.close', title: 'Close', section: 'item', key: 'Escape', menu: false },
+                bindCommand(nextDefinition, { ...item, title: 'Next item', run: step }, t),
+                bindCommand(closeItem, { ...item, run: close }, t),
             ],
             subject: null,
         }),
     );
     await userEvent.keyboard('j{Enter}');
     await expect.poll(() => view.openedId.value).toBe('a1');
+
+    view.checkedIds.value = ['a1'];
+    await userEvent.keyboard('{Escape}');
+    expect(view.checkedIds.value).toEqual([]);
+    expect(close).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+    expect(close).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a2');
+    expect(step).not.toHaveBeenCalled();
+    await userEvent.keyboard('k');
+    await expect.poll(selectedCard).toBe('a1');
+
     mountHelp(view.container);
 
     const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });

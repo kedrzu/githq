@@ -3,6 +3,8 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
+import { fullScreen, open } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Kbd from '@/components/Kbd.vue';
 
 import * as l from './RepositoryWorkflowsHints.loc.js';
@@ -15,8 +17,8 @@ const props = defineProps<{
 const t = useTranslate();
 
 const hints = computed(() => [
-  { keys: 'Enter', label: t(l.open), off: false },
-  { keys: 'Shift+Enter', label: t(l.fullScreen), off: false },
+  { keys: keyOf(open), label: t(l.open), off: false },
+  { keys: keyOf(fullScreen), label: t(l.fullScreen), off: false },
   { keys: 'F', label: t(l.latestFailure), off: !props.failure },
 ]);
 </script>
