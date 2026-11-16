@@ -8,6 +8,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { rowField } from '@/commands/definitions/index.js';
 import { SquareKanban } from 'lucide-vue-next';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { narrowToolbar } from '@/testing/narrowToolbar.js';
@@ -56,7 +57,7 @@ test('on a phone it is the top bar: the title alone, the options in a sheet with
     await expect.element(page.getByTestId('new-issue')).toHaveTextContent(/^Started$/);
 });
 
-test('a menu option with a command title is a command of its own: its choices are the submenu and picking one chooses it, "none" too', () => {
+test('a menu option naming a command is that command: its choices are the submenu and picking one chooses it, "none" too', () => {
     const choose = vi.fn();
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -77,7 +78,7 @@ test('a menu option with a command title is a command of its own: its choices ar
                         label: 'Row field',
                         icon: SquareKanban,
                         title: 'Row field: Priority',
-                        commandTitle: 'Row field…',
+                        command: rowField,
                         choices: [
                             { value: 'F_priority', label: 'Priority' },
                             { value: 'none', label: 'None' },
@@ -106,9 +107,13 @@ test('a menu option with a command title is a command of its own: its choices ar
     });
 
     const commands = container.resolve(CommandRegistry).commands;
-    expect(commands.map(command => command.id)).toContain('view.rowField');
-    expect(commands.map(command => command.id)).not.toContain('view.plain');
-    const command = commands.find(candidate => candidate.id === 'view.rowField');
+    expect(commands.filter(command => command.options !== undefined).map(command => command.id)).toEqual([
+        'list.groupBy',
+        'list.orderBy',
+        'list.rowField',
+        'list.showProperties',
+    ]);
+    const command = commands.find(candidate => candidate.id === 'list.rowField');
     expect(command?.title).toBe('Row field…');
     expect(command?.detail).toBe('Priority');
     const submenu = command?.options?.().options;

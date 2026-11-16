@@ -8,6 +8,7 @@ import type { Ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import * as viewDefinitions from '@/commands/definitions/view.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { matchText } from '@/testing/matchText.js';
@@ -800,18 +801,19 @@ async function settle() {
     });
 }
 
-/** The view's commands as the command menu would list them, by id. */
+/** The toolbar's view options as commands the command menu would list (`definitions/view.ts`), by id. */
 function viewCommands(container: ReturnType<typeof createContainer>) {
+    const ids = new Set(Object.values(viewDefinitions).map(definition => `list.${definition.id}`));
     return container
         .resolve(CommandRegistry)
-        .commands.filter(command => command.id.startsWith('view.'))
+        .commands.filter(command => ids.has(command.id))
         .filter(command => command.when?.() ?? true);
 }
 
 test("the state is a command on both item sections, showing the toolbar's value and changing only the shown section", async () => {
     const view = mount();
     const { container } = view;
-    const command = () => viewCommands(container).find(candidate => candidate.id === 'view.state');
+    const command = () => viewCommands(container).find(candidate => candidate.id === 'list.filterByState');
     expect(command()?.detail).toBe('Open');
 
     const closed = command()
@@ -842,7 +844,7 @@ test("the state is a command on both item sections, showing the toolbar's value 
 
 test('the state is a command wherever the toolbar shows it: an untracked repository too, not Commits, Workflows or one GitHub does not show', () => {
     const untracked = mount({ tracked: false, status: browsedStatus({ total: 3 }) });
-    expect(viewCommands(untracked.container).map(command => command.id)).toContain('view.state');
+    expect(viewCommands(untracked.container).map(command => command.id)).toContain('list.filterByState');
 
     const commits = mount({ section: 'commits' });
     expect(viewCommands(commits.container).map(command => command.id)).toEqual([]);
@@ -856,7 +858,7 @@ test('the state is a command wherever the toolbar shows it: an untracked reposit
 
 test('the properties are one command that toggles each one and keeps the rest, the menu staying open', async () => {
     const view = mount();
-    const command = () => viewCommands(view.container).find(candidate => candidate.id === 'view.properties');
+    const command = () => viewCommands(view.container).find(candidate => candidate.id === 'list.showProperties');
     const submenu = () => command()?.options?.();
     expect(submenu()?.several).toBe(true);
     const before = view.options.value.issues.properties;
@@ -877,23 +879,23 @@ test('the properties are one command that toggles each one and keeps the rest, t
 
 test('Reset view options is offered only while the options differ from the defaults', () => {
     const pristine = mount();
-    expect(viewCommands(pristine.container).map(command => command.id)).not.toContain('view.reset');
+    expect(viewCommands(pristine.container).map(command => command.id)).not.toContain('list.resetView');
 
     const changed = mount({ modified: true });
-    expect(viewCommands(changed.container).map(command => command.id)).toContain('view.reset');
+    expect(viewCommands(changed.container).map(command => command.id)).toContain('list.resetView');
 });
 
 test('Group by… and Order by… still set the grouping and the order', () => {
     const view = mount();
     const commands = viewCommands(view.container);
     commands
-        .find(command => command.id === 'view.groupBy')
+        .find(command => command.id === 'list.groupBy')
         ?.options?.()
         .options.find(option => option.value === 'issueType')
         ?.pick();
     expect(view.options.value.issues.grouping).toBe('issueType');
 
-    const orderBy = commands.find(command => command.id === 'view.orderBy')?.options?.();
+    const orderBy = commands.find(command => command.id === 'list.orderBy')?.options?.();
     const other = orderBy?.options.find(option => !option.chosen);
     other?.pick();
     expect(view.options.value.issues.sort).toBe(other?.value);

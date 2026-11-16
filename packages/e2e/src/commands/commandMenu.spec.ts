@@ -98,6 +98,34 @@ test('E1: the view’s options are actions — ⇧V shows it as a board, "Order 
     await expect(menu.option(/^Order by…\s*Title/)).toBeVisible();
 });
 
+test('D14: a list\'s "This view" opens on what acts on the list and its row, its view options after them', async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_PROJECT).click();
+    const project = new ProjectScreenHarness(page);
+    await project.tab('Board').click();
+    await expect(project.rows('Todo')).toHaveCount(3);
+    // Away from the tabs, so the keys are the board's: a card selected, which "Open full screen" opens.
+    await project.group('Todo').click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press('j');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await expect(menu.group('This view').getByRole('option')).toHaveText([
+        `New issue in ${SAMPLE_PROJECT}C`,
+        `Add existing issues to ${SAMPLE_PROJECT}…`,
+        `Open on GitHub${SAMPLE_PROJECT}`,
+        'Open full screenDocument the setup',
+        'Show as listV',
+        'Group by…Status',
+        "Order by…GitHub's order",
+        'Row field…Status',
+        'Show properties…',
+    ]);
+});
+
 test("⌘K on a tracked repository's view groups its sections, Open on GitHub, Copy link and Settings under its name, and a section runs as its tab", async ({
     page,
     github,

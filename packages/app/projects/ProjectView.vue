@@ -29,6 +29,7 @@ import { useRouter } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { Command, CommandPart, CommandParts } from '@/commands/CommandTypes.js';
+import { rowField } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -312,7 +313,7 @@ const rowFieldOption = computed((): ListToolbarOption => {
     choices,
     value,
     detail: t(l.rowFieldDetail),
-    commandTitle: t(l.rowFieldCommand),
+    command: rowField,
     choose: chosen => emit('update:rowFieldId', chosen === NO_ROW_FIELD ? null : chosen),
   };
 });

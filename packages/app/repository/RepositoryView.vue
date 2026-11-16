@@ -24,7 +24,7 @@ import {
 import { computed, ref } from 'vue';
 
 import type { Command, CommandParts } from '@/commands/CommandTypes.js';
-import { findRef, openOnGitHub } from '@/commands/definitions/index.js';
+import { filterByState, findRef, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -283,7 +283,7 @@ const stateOption = computed((): ListToolbarOption => {
     label,
     icon: ListFilter,
     title: t(STATE_LABELS[state.value]),
-    commandTitle: t(l.filterByStateCommand),
+    command: filterByState,
     choices: REPOSITORY_STATES.map(value => ({ value, label: t(STATE_LABELS[value]), section: label })),
     value: state.value,
     choose: value => {
