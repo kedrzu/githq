@@ -520,7 +520,6 @@ function editFromDock(request: EditRequest) {
   composing.value = false;
 }
 
-/** Escape in the docked composer: back to the pill, the item stays. */
 /**
  * Escape in the comment box leaves it, what is typed staying, and the item stays open: the key is the field's (commands
  * D11), and its next Escape the item's.
@@ -531,6 +530,7 @@ function leaveComposer(event: KeyboardEvent) {
   }
 }
 
+/** Escape in the docked composer: back to the pill, the item stays. */
 function leaveDock(event: KeyboardEvent) {
   event.preventDefault();
   composing.value = false;

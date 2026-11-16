@@ -162,10 +162,12 @@ useCommands(() => {
         ...own,
         place: 'workflowAlerts',
         title: t(l.removeSelected),
-        when: () => selection.selectedRow?.kind === 'pattern' && !isActivatableTarget(document.activeElement),
+        when: () => selection.selectedRow?.kind === 'pattern',
+        // Not from a pattern's own button: the focus there is not reactive, so it is asked as the key is pressed, not
+        // in `when`, which the help sheet caches.
         run: () => {
           const row = selection.selectedRow;
-          if (row?.kind === 'pattern') {
+          if (row?.kind === 'pattern' && !isActivatableTarget(document.activeElement)) {
             remove(row.pattern);
           }
         },
