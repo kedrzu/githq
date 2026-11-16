@@ -28,7 +28,7 @@ import PlacesPanel from './PlacesPanel.vue';
 import type { SegmentEdits } from './SegmentEdits.js';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
-import type { SidebarBrokenWorkflows, SidebarMyWorkCounts } from './SidebarTypes.js';
+import type { SidebarBrokenWorkflows, SidebarMyWorkCounts, SidebarSubEntry } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
 
 const props = defineProps<{
@@ -53,6 +53,10 @@ const props = defineProps<{
   myWorkCounts?: SidebarMyWorkCounts | null;
   /** The tracked projects and repositories for the sidebar. */
   tracked?: SidebarTracked;
+  /** The rows under a tracked project or repository in the sidebar and the places panel (`Sidebar`). */
+  getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
+  /** Those rows slide open and closed. */
+  animate?: boolean;
   /** Syncing the settings stopped (settings-sync T9): an amber dot on the user's avatar. */
   settingsSyncStopped?: boolean;
   /** The sidebar's entry "Broken workflows" (actions W1); not drawn when `null`. */
@@ -229,6 +233,8 @@ function onLayout(sizes: number[]) {
       :viewer="viewer"
       :counts="myWorkCounts"
       :tracked="tracked"
+      :get-children="getChildren"
+      :animate="animate"
       :settings-sync-stopped="settingsSyncStopped"
       :freshness="freshness"
       :edits="edits"
@@ -274,6 +280,8 @@ function onLayout(sizes: number[]) {
           :window-controls="windowControls.overlaid"
           :counts="myWorkCounts"
           :tracked="tracked"
+          :get-children="getChildren"
+          :animate="animate"
           :settings-sync-stopped="settingsSyncStopped"
           :broken-workflows="brokenWorkflows"
           :draft-reviews="draftReviews"

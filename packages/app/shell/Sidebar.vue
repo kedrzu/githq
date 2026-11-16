@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); the open place (`open`, also while one of its items is open) shows its rows under it (`SidebarSubRows`, from `getChildren`) — a repository's sections with their tabs' counts, a project's saved views —, sliding open and closed while `animate`, the current row marked instead of the place's, the place scrolled into view as it opens; leaving it for another place moves them there; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user; there tapping a place with rows shows or hides them in place, the panel staying open — the open place's shown to begin with, one place's at a time —, and tapping one of them goes there. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -27,6 +27,11 @@ export interface SidebarTrackedEntry {
   readonly isPrivate?: boolean;
   /** The marker on a repository's icon, of its workflows (actions W1); none when nothing there can be told. */
   readonly workflowMarker?: SidebarWorkflowMarker | null;
+  /**
+   * The place the screen is in (`getOpenPlace`), also while one of its items is open: on a computer its rows show under
+   * it; collapsed, its row is the current one.
+   */
+  readonly open?: boolean;
 }
 
 /** The tracked projects and repositories, in the user's order. */
@@ -56,8 +61,9 @@ import {
   User,
   Workflow,
 } from 'lucide-vue-next';
-import { computed, useTemplateRef } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import Reveal from '@nzyme/vue/components/Reveal.vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
@@ -72,13 +78,14 @@ import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { BROKEN_WORKFLOWS_PATH, REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/tracking/trackingRoutes.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { moveTabFocus } from '@/utils/useTabFocus.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
-import type { SidebarBrokenWorkflows, SidebarMyWorkCounts } from './SidebarTypes.js';
+import SidebarSubRows from './SidebarSubRows.vue';
+import type { SidebarBrokenWorkflows, SidebarMyWorkCounts, SidebarSubEntry } from './SidebarTypes.js';
 
 const props = defineProps<{
   viewer: Viewer;
@@ -104,6 +111,13 @@ const props = defineProps<{
    * work" with its icon, rows a finger's height, and the `status` slot above the user.
    */
   phone?: boolean;
+  /**
+   * The rows under a tracked project or repository — its sections or saved views —, asked for the open place on a
+   * computer and for the place tapped open on a phone; none without it.
+   */
+  getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
+  /** The rows under a place slide open and closed (`Reveal`): the app's animations on, and no reduced motion asked for. */
+  animate?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -130,20 +144,79 @@ const GROUP_ICONS: Readonly<Record<MyWorkGroup, LucideIcon>> = {
 };
 
 const t = useTranslate();
-const route = useRoute();
 const navRef = useTemplateRef<HTMLElement>('nav');
 
 const projects = computed(() => props.tracked?.projects ?? []);
 const repositories = computed(() => props.tracked?.repositories ?? []);
+const places = computed(() => [...projects.value, ...repositories.value]);
+const placeGroups = computed(() =>
+  [
+    { key: 'projects', heading: t(l.projects), entries: projects.value },
+    { key: 'repositories', heading: t(l.repositories), entries: repositories.value },
+  ].filter(group => group.entries.length > 0),
+);
 const rail = computed(() => props.collapsed && !props.phone);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
-
-/** A repository's row is the current page on its view whichever section of it the address names (`/owner/name/issues`). */
-function isCurrentRepository(repository: SidebarTrackedEntry) {
-  return (
-    route.path === repository.to ||
-    Object.values(REPOSITORY_SECTION_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
+/**
+ * On a phone, the places with rows to show: tapping one shows or hides them in place, without going anywhere (the panel
+ * stays open); the others are links, as before.
+ */
+const phoneExpandable = computed(() => {
+  const { getChildren } = props;
+  return new Set(
+    props.phone && getChildren
+      ? places.value.filter(place => getChildren(place.target).length > 0).map(place => place.key)
+      : [],
   );
+});
+/** On a phone, the place tapped open — the open one to begin with; it is this panel's own, gone once it closes. */
+const phoneExpandedKey = ref(props.phone ? (places.value.find(place => place.open)?.key ?? null) : null);
+/**
+ * The one place whose rows show, with them: on a computer the open one, on a phone the one tapped open; none on the rail,
+ * nor for a place without rows.
+ */
+const expanded = computed(() => {
+  const { getChildren } = props;
+  if (rail.value || !getChildren) {
+    return null;
+  }
+
+  const place = places.value.find(candidate =>
+    props.phone ? candidate.key === phoneExpandedKey.value : candidate.open === true,
+  );
+  const children = place ? getChildren(place.target) : [];
+  return place && children.length > 0 ? { key: place.key, children } : null;
+});
+
+// The open place comes into view, scrolled to as little as it takes.
+watch(() => (props.phone ? null : (expanded.value?.key ?? null)), scrollToExpanded, { flush: 'post' });
+onMounted(scrollToExpanded);
+
+function scrollToExpanded() {
+  const key = props.phone ? null : (expanded.value?.key ?? null);
+  if (key !== null) {
+    navRef.value?.querySelector(`[data-place="${CSS.escape(key)}"]`)?.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+/** A place's row is the current one while it is the open place with its rows hidden: expanded, its current row is. */
+function isPlaceCurrent(place: SidebarTrackedEntry) {
+  return place.open === true && expanded.value?.key !== place.key;
+}
+
+/** A place's row: on a phone, with rows to show, a button showing or hiding them; else a link to its view. */
+function getPlaceBinding(place: SidebarTrackedEntry) {
+  return phoneExpandable.value.has(place.key)
+    ? {
+        type: 'button',
+        'aria-expanded': expanded.value?.key === place.key,
+        onClick: () => togglePlace(place.key),
+      }
+    : { to: place.to };
+}
+
+function togglePlace(key: string) {
+  phoneExpandedKey.value = phoneExpandedKey.value === key ? null : key;
 }
 
 function moveBetweenLinks(event: KeyboardEvent) {
@@ -314,82 +387,82 @@ function getProjectMark(title: string) {
           </li>
         </ul>
 
-        <template v-if="projects.length > 0">
-          <h2 :class="css.sidebar_section">{{ t(l.projects) }}</h2>
+        <template
+          v-for="group in placeGroups"
+          :key="group.key"
+        >
+          <h2 :class="css.sidebar_section">{{ group.heading }}</h2>
           <ul :class="css.sidebar_list">
             <li
-              v-for="project in projects"
-              :key="project.key"
+              v-for="place in group.entries"
+              :key="place.key"
+              :data-place="place.key"
             >
               <ContextMenu :disabled="!$slots.trackedMenu">
-                <RouterLink
-                  :to="project.to"
-                  :class="css.sidebar_item"
-                  :active-class="css.sidebar_item_active"
+                <component
+                  :is="phoneExpandable.has(place.key) ? 'button' : RouterLink"
+                  v-bind="getPlaceBinding(place)"
+                  :class="[
+                    css.sidebar_item,
+                    isPlaceCurrent(place) && css.sidebar_item_active,
+                    expanded?.key === place.key && css.sidebar_item_open,
+                  ]"
+                  :aria-current="isPlaceCurrent(place) ? 'page' : undefined"
                 >
                   <SquareKanban
+                    v-if="place.target.kind === 'project'"
                     :class="css.sidebar_itemIcon"
                     aria-hidden="true"
                   />
-                  <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
-                  <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
-                </RouterLink>
-                <template #content>
-                  <slot
-                    name="trackedMenu"
-                    :target="project.target"
-                  />
-                </template>
-              </ContextMenu>
-            </li>
-          </ul>
-        </template>
-
-        <template v-if="repositories.length > 0">
-          <h2 :class="css.sidebar_section">{{ t(l.repositories) }}</h2>
-          <ul :class="css.sidebar_list">
-            <li
-              v-for="repository in repositories"
-              :key="repository.key"
-            >
-              <ContextMenu :disabled="!$slots.trackedMenu">
-                <RouterLink
-                  :to="repository.to"
-                  :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
-                  :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
-                >
-                  <span :class="css.sidebar_repositoryIcon">
+                  <span
+                    v-else
+                    :class="css.sidebar_repositoryIcon"
+                  >
                     <component
-                      :is="repository.isPrivate ? Lock : BookMarked"
+                      :is="place.isPrivate ? Lock : BookMarked"
                       :class="css.sidebar_itemIcon"
                       aria-hidden="true"
                     />
                     <span
-                      v-if="repository.workflowMarker && !phone"
-                      :class="[css.sidebar_marker, css[`sidebar_marker_${repository.workflowMarker}`]]"
+                      v-if="place.workflowMarker && !phone"
+                      :class="[css.sidebar_marker, css[`sidebar_marker_${place.workflowMarker}`]]"
                       tid="workflow-marker"
-                      :data-marker="repository.workflowMarker"
+                      :data-marker="place.workflowMarker"
                       aria-hidden="true"
                     />
                   </span>
                   <span :class="css.sidebar_itemLabel"
-                    >{{ repository.label
+                    >{{ place.label
                     }}<span
-                      v-if="!phone && (repository.workflowMarker === 'new' || repository.workflowMarker === 'settled')"
+                      v-if="!phone && (place.workflowMarker === 'new' || place.workflowMarker === 'settled')"
                       :class="css.sidebar_hidden"
                     >
                       · {{ t(l.workflowsBroken) }}</span
                     ></span
                   >
-                  <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
-                </RouterLink>
+                  <span :class="css.sidebar_count">{{ statusText(place.status) }}</span>
+                </component>
                 <template #content>
                   <slot
                     name="trackedMenu"
-                    :target="repository.target"
+                    :target="place.target"
                   />
                 </template>
               </ContextMenu>
+              <!-- Collapsed, the rows are not on the page: nothing there to focus. -->
+              <Reveal v-if="animate">
+                <SidebarSubRows
+                  v-if="expanded?.key === place.key"
+                  key="rows"
+                  :entries="expanded.children"
+                  :phone="phone"
+                />
+              </Reveal>
+              <SidebarSubRows
+                v-else-if="expanded?.key === place.key"
+                :entries="expanded.children"
+                :phone="phone"
+              />
             </li>
           </ul>
         </template>
@@ -693,6 +766,15 @@ function getProjectMark(title: string) {
   @include nav-row;
 }
 
+// A place on a phone showing or hiding its rows: a button drawn as the links are.
+:where(button).sidebar_item {
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
 .sidebar_itemLabel {
   @include nav-row-label;
 }
@@ -703,6 +785,12 @@ function getProjectMark(title: string) {
 
 .sidebar_item_active {
   @include nav-row-current;
+}
+
+// The place whose rows show: its name stands out, the fill is its current row's.
+.sidebar_item_open {
+  font-weight: $font-weight-medium;
+  color: $color-fg;
 }
 
 // Amber all the time: it's the one thing here that blocks someone else (code review D28).

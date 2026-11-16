@@ -25,7 +25,11 @@ const {
     NoProjects,
     NoRepositories,
     NothingTracked,
-    OnRepositoryIssues,
+    OnPlaceWithoutRows,
+    OnProject,
+    OnRepository,
+    OnRepositoryAnimated,
+    PhoneOnRepository,
     SomeCountsArriving,
     SyncStopped,
     CollapsedSyncStopped,
@@ -37,11 +41,108 @@ const {
 
 const NOTHING_TRACKED_NOTE = 'Repositories and projects you track appear here.';
 
-test("a tracked repository's row is current on any of its lists, not only on its own address", async () => {
-    await OnRepositoryIssues.run();
+test('the open repository shows its sections under its row with their counts, the current one marked instead of its row', async () => {
+    await OnRepository.run();
 
-    await expect.element(page.getByRole('link', { name: /^kedrzu\/githq/ })).toHaveAttribute('aria-current', 'page');
-    await expect.element(page.getByRole('link', { name: /^kedrzu\/skills/ })).not.toHaveAttribute('aria-current');
+    const rows = subRows('skyline-labs/portal');
+    await expect.element(rows.getByRole('link').nth(0)).toHaveTextContent(/^Issues\s*118$/u);
+    await expect.element(rows.getByRole('link').nth(1)).toHaveTextContent(/^Pull requests\s*24$/u);
+    await expect.element(rows.getByRole('link').nth(2)).toHaveTextContent(/^Commits$/u);
+    await expect.element(rows.getByRole('link').nth(3)).toHaveTextContent(/^Workflows\s*2$/u);
+    expect(rows.getByRole('link').elements()).toHaveLength(4);
+
+    await expect.element(rows.getByRole('link', { name: 'Pull requests' })).toHaveAttribute('aria-current', 'page');
+    await expect.element(placeRow('skyline-labs/portal')).not.toHaveAttribute('aria-current');
+    // Exactly one current row in the whole sidebar.
+    expect(document.querySelectorAll('nav [aria-current="page"]')).toHaveLength(1);
+    // Another repository is closed: nothing under it, nothing of it to focus.
+    expect(placeItem('kedrzu/githq').querySelector('ul')).toBeNull();
+});
+
+test("a place's row is current while it has no rows to show", async () => {
+    await OnPlaceWithoutRows.run();
+
+    await expect.element(placeRow('Platform Q4')).toHaveAttribute('aria-current', 'page');
+    expect(document.querySelectorAll('nav [aria-current="page"]')).toHaveLength(1);
+});
+
+test("the open project shows its saved views: no counts, a cloud on GitHub's, a dot on the one changed here", async () => {
+    await OnProject.run();
+
+    const rows = subRows('Platform Q4');
+    expect(
+        rows
+            .getByRole('link')
+            .elements()
+            .map(link => link.textContent?.trim()),
+    ).toEqual(['Current sprint', 'Backlog', 'Next sprint', 'By assignee', 'Bugs']);
+    await expect.element(rows.getByRole('link', { name: 'Current sprint' })).toHaveAttribute('aria-current', 'page');
+    await expect.element(rows.getByRole('link', { name: 'Current sprint modified locally' })).toBeInTheDocument();
+    await expect.element(rows.getByRole('link', { name: 'answered by GitHub Next sprint' })).toBeInTheDocument();
+    await expect.element(placeRow('Platform Q4')).not.toHaveAttribute('aria-current');
+    expect(document.querySelectorAll('nav [aria-current="page"]')).toHaveLength(1);
+});
+
+test('with the animations off the rows appear as they are, in no Reveal', async () => {
+    await OnRepository.run();
+
+    expect(subRows('skyline-labs/portal').element().parentElement?.tagName).toBe('LI');
+});
+
+test('with the animations on the rows slide open in a Reveal', async () => {
+    await OnRepositoryAnimated.run();
+
+    const revealed = subRows('skyline-labs/portal').element();
+    expect(revealed.parentElement?.tagName).not.toBe('LI');
+    const wrapper = revealed.closest('li > div');
+    expect(wrapper && getComputedStyle(wrapper).transitionProperty).toContain('height');
+});
+
+test("↑/↓ from a link Tab focused walk through the open place's rows and on past them", async () => {
+    await OnRepository.run();
+
+    const portal = placeRow('skyline-labs/portal').element();
+    if (!(portal instanceof HTMLElement)) {
+        throw new TypeError('The place row is not an element');
+    }
+    portal.focus();
+    portal.setAttribute('data-tab-focus', '');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(subRows('skyline-labs/portal').getByRole('link', { name: 'Issues' })).toHaveFocus();
+    for (let step = 0; step < 3; step++) {
+        await userEvent.keyboard('{ArrowDown}');
+    }
+    await expect.element(subRows('skyline-labs/portal').getByRole('link', { name: 'Workflows' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(placeRow('skyline-labs/api')).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(subRows('skyline-labs/portal').getByRole('link', { name: 'Workflows' })).toHaveFocus();
+});
+
+test('on a phone the open place starts expanded; tapping a place shows or hides its rows without going anywhere', async () => {
+    await PhoneOnRepository.run();
+
+    const portal = page.getByRole('button', { name: /^skyline-labs\/portal/u });
+    await expect.element(portal).toHaveAttribute('aria-expanded', 'true');
+    await expect
+        .element(subRows('skyline-labs/portal').getByRole('link', { name: /^Commits/u }))
+        .toHaveAttribute('href', 'https://github.com/skyline-labs/portal/commits');
+    await expect
+        .element(subRows('skyline-labs/portal').getByRole('link', { name: /^Workflows/u }))
+        .toHaveAccessibleName(/^Workflows\s+opens on\sgithub\.com$/u);
+
+    const githq = page.getByRole('button', { name: /^kedrzu\/githq/u });
+    await userEvent.click(githq);
+    await expect.element(githq).toHaveAttribute('aria-expanded', 'true');
+    await expect.element(portal).toHaveAttribute('aria-expanded', 'false');
+    expect(placeItem('skyline-labs/portal').querySelector('ul')).toBeNull();
+    // Not the open place: none of its rows is current; the open one's row is again.
+    expect(subRows('kedrzu/githq').element().querySelector('[aria-current]')).toBeNull();
+    await expect.element(portal).toHaveAttribute('aria-current', 'page');
+
+    await userEvent.click(githq);
+    expect(placeItem('kedrzu/githq').querySelector('ul')).toBeNull();
 });
 
 test('a private repository has a lock instead of the repository icon', async () => {
@@ -434,3 +535,30 @@ test('D14: a group of my work counts once its search is in; the others and the t
     await expect.element(page.getByRole('link', { name: /^Assigned to\sme$/ })).toBeVisible();
     await expect.element(page.getByRole('link', { name: /^My\swork$/ })).toBeVisible();
 });
+
+/** A tracked place's own row, by its name. */
+function placeRow(name: string) {
+    return page
+        .getByRole('navigation', { name: 'Sidebar' })
+        .getByRole('link', { name: new RegExp(`^${name}`, 'u') })
+        .or(
+            page
+                .getByRole('navigation', { name: 'Sidebar' })
+                .getByRole('button', { name: new RegExp(`^${name}`, 'u') }),
+        );
+}
+
+/** The list item of a tracked place, holding its row and the rows under it. */
+function placeItem(name: string) {
+    const item = placeRow(name).element().closest('li');
+    if (!item) {
+        throw new Error(`No list item for ${name}`);
+    }
+
+    return item;
+}
+
+/** The rows under a tracked place. */
+function subRows(name: string) {
+    return page.elementLocator(placeItem(name)).getByRole('list');
+}

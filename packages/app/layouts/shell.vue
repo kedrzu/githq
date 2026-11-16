@@ -1,10 +1,14 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the place the screen is in (`getOpenPlace`) — under its row in the sidebar, and under any tracked place tapped open in the places panel, its sections with their tabs' counts or its saved views (`getSidebarChildren`), sliding open while the animations are on and no reduced motion is asked for —, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
+import { Columns3, List } from 'lucide-vue-next';
 import { computed, defineAsyncComponent, watch, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import type { RouteLocationRaw } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import AppCommands from '@/commands/AppCommands.vue';
@@ -20,6 +24,8 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
+import { prefersReducedMotion } from '@/landing/prefersReducedMotion.js';
+import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
 import { getPullRequestCommands } from '@/merge/getPullRequestCommands.js';
@@ -30,16 +36,25 @@ import { PullRequestCommands } from '@/merge/PullRequestCommands.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import { getDraftReviews } from '@/myWork/getDraftReviews.js';
 import IssueCreatedToasts from '@/newIssue/IssueCreatedToasts.vue';
+import { getProjectViewTabs } from '@/projects/getProjectViewTabs.js';
+import * as projectTexts from '@/projects/ProjectPage.loc.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
+import { ProjectStore } from '@/projects/ProjectStore.js';
+import type { Project } from '@/projects/ProjectTypes.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { BrowsedRepositories } from '@/repos/BrowsedRepositories.js';
+import { getRepositorySectionCounts } from '@/repository/getRepositorySectionCounts.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
+import { REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from '@/repository/RepositorySection.js';
+import type { RepositorySection } from '@/repository/RepositorySection.js';
+import * as repositoryTexts from '@/repository/RepositoryView.loc.js';
 import { saysWhereSettingsAreSaved } from '@/settings/settingsRoutes.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
 import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
+import { useNow } from '@/services/useNow.js';
 import AppShell from '@/shell/AppShell.vue';
 import PhoneCommandLine from '@/shell/PhoneCommandLine.vue';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -47,7 +62,7 @@ import { getNewestEdits } from '@/shell/getNewestEdits.js';
 import type { DatedSegmentEdits } from '@/shell/getNewestEdits.js';
 import type { SegmentEdits } from '@/shell/SegmentEdits.js';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
-import type { SidebarMyWorkCounts } from '@/shell/SidebarTypes.js';
+import type { SidebarMyWorkCounts, SidebarSubEntry } from '@/shell/SidebarTypes.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -56,12 +71,16 @@ import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { DownloadProgress } from '@/tracking/DownloadProgress.js';
+import { getOpenPlace } from '@/tracking/getOpenPlace.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import {
+  getGitHubUrl,
   getProjectPath,
+  getRepositoryPath,
   getRepositorySection,
   getRouteNameWithOwner,
+  isRepositorySectionShownOnPhone,
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -72,6 +91,7 @@ import { ReviewScreenFreshness } from '@/review/ReviewScreenFreshness.js';
 import ReviewViewedToast from '@/review/ReviewViewedToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { releaseTabFocus, useTabFocus } from '@/utils/useTabFocus.js';
+import { buildRepositoryWorkflows } from '@/workflows/buildRepositoryWorkflows.js';
 import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
@@ -139,6 +159,12 @@ const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
 const pullRequestCommands = useService(PullRequestCommands);
 const phone = useService(PhoneLayout);
+const projectStore = useService(ProjectStore);
+const listViewOptions = useService(ListViewOptionsStore);
+const router = useRouter();
+const t = useTranslate();
+// The day a project's saved filters count from, and the time a repository's broken workflows are told against.
+const now = useNow(60_000);
 
 // Motion plays under this attribute (the `motion` mixin, `styles/tokens.scss`); leaving the shell takes it away. Not
 // `useHead`: `nuxt/app` doesn't resolve in the component tests that mount this layout, and the shell is never prerendered.
@@ -149,6 +175,10 @@ watchEffect(onCleanup => {
     onCleanup(() => delete root.dataset.motion);
   }
 });
+
+// The sidebar's rows under a place slide open by script (`Reveal`), which the `motion` mixin can't hold back: they ask
+// the same — the app's animations on, and no reduced motion asked for.
+const animate = computed(() => tracking.animations && !prefersReducedMotion());
 
 useTabFocus();
 // Another screen: the keys are its list's again, whatever Tab focused on the last one.
@@ -211,7 +241,30 @@ const myWorkCounts = computed((): SidebarMyWorkCounts | null => {
   };
 });
 
-// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, blank before (first run and loading D4).
+/** The repository's section or the project's view the screen is in, which the sidebar expands under its row. */
+const openPlace = computed(() =>
+  getOpenPlace({
+    route,
+    list: navigation.list,
+    resolve: path => router.resolve(path),
+    getShownSection: (nameWithOwner, section) => repositoryTabs.getShown(nameWithOwner, section),
+    findProject: address => {
+      const found = tracking.projects.find(
+        candidate =>
+          candidate.owner === address.owner &&
+          candidate.ownerKind === address.ownerKind &&
+          candidate.number === address.number,
+      );
+      return found ? (projectStore.get(found.id) ?? { id: found.id, views: [] }) : null;
+    },
+    findItem: reference => {
+      const id = resolver.peek(reference);
+      return (id && items.get(id)) || null;
+    },
+  }),
+);
+
+// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, blank before (first run and loading D4), the open place marked.
 const tracked = computed((): SidebarTracked => ({
   projects: pendingUntracks.projects.map(project => ({
     key: `project:${project.id}`,
@@ -222,6 +275,7 @@ const tracked = computed((): SidebarTracked => ({
       { kind: 'project', id: project.id },
       haveOpenItemsArrived(tracking.getSyncState({ kind: 'project', id: project.id })),
     ),
+    open: openPlace.value?.kind === 'project' && openPlace.value.id === project.id,
   })),
   repositories: pendingUntracks.repositories.map(repository => {
     const target: TrackedTarget = { kind: 'repository', nameWithOwner: repository.nameWithOwner };
@@ -233,6 +287,7 @@ const tracked = computed((): SidebarTracked => ({
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
       isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
       workflowMarker: getSidebarWorkflowMarker(workflows.getState(repository.nameWithOwner)),
+      open: openPlace.value?.kind === 'repository' && openPlace.value.nameWithOwner === repository.nameWithOwner,
     };
   }),
 }));
@@ -376,6 +431,123 @@ const itemFreshness = computed((): Freshness | null => {
   return id === undefined ? { kind: 'partial' } : details.getFreshness(id);
 });
 
+/**
+ * The rows under a tracked place in the sidebar, as its tabs show them: a repository's sections, a project's saved views.
+ * Called by the sidebar as it draws, so they follow the stores.
+ */
+function getSidebarChildren(target: TrackedTarget): readonly SidebarSubEntry[] {
+  switch (target.kind) {
+    case 'repository':
+      return getRepositoryChildren(target.nameWithOwner);
+    case 'project':
+      return getProjectChildren(target.id);
+    default:
+      return assertNever(target);
+  }
+}
+
+/**
+ * A tracked repository's sections with their tabs' counts — Workflows its broken ones, with the red dot of "Broken
+ * workflows" (actions W1). On a phone Commits and Workflows leave for github.com, as the command line's menu says (mobile
+ * D21).
+ */
+function getRepositoryChildren(nameWithOwner: string): SidebarSubEntry[] {
+  const place = openPlace.value;
+  const shown = place?.kind === 'repository' && place.nameWithOwner === nameWithOwner ? place.section : null;
+  const counts = getRepositorySectionCounts({
+    items: items.all.filter(item => item.repository.nameWithOwner === nameWithOwner),
+    sync: tracking.getSyncState({ kind: 'repository', nameWithOwner }),
+    workflows: buildRepositoryWorkflows({
+      stored: workflows.get(nameWithOwner),
+      settings: workflows.getRefSettings(nameWithOwner),
+      now: now.value,
+    }),
+  });
+  const marker = getSidebarWorkflowMarker(workflows.getState(nameWithOwner));
+  return REPOSITORY_SECTIONS.map(section => {
+    const external =
+      phone.active && !isRepositorySectionShownOnPhone(section)
+        ? getGitHubUrl(getRepositoryPath(nameWithOwner, section))
+        : undefined;
+    const broken = section === 'workflows' && typeof counts.workflows === 'number' && counts.workflows > 0;
+    return {
+      key: section,
+      label: t(repositoryTexts[section]),
+      to: getRepositoryPath(nameWithOwner, section),
+      icon: REPOSITORY_SECTION_ICONS[section],
+      count: getSectionCount(section),
+      current: section === shown,
+      external,
+      marker: broken && (marker === 'new' || marker === 'settled') ? marker : undefined,
+    };
+  });
+
+  function getSectionCount(section: RepositorySection) {
+    switch (section) {
+      case 'issues':
+      case 'pullRequests':
+        return counts[section] === null ? '' : String(counts[section]);
+      case 'commits':
+        return '';
+      case 'workflows':
+        return counts.workflows === 'unknown' ? '–' : counts.workflows === null ? '' : String(counts.workflows);
+      default:
+        return assertNever(section);
+    }
+  }
+}
+
+/**
+ * A tracked project's saved views as its tabs show them — "All items" after them only while it is shown —, each with
+ * its layout's icon; none before its copy is loaded.
+ */
+function getProjectChildren(projectId: string): SidebarSubEntry[] {
+  const project = projectStore.get(projectId);
+  if (!project) {
+    return [];
+  }
+
+  const place = openPlace.value;
+  const projectItems = projectStore.getItems(projectId);
+  const tabs = getProjectViewTabs({
+    project,
+    shownKey: place?.kind === 'project' && place.id === projectId ? place.viewKey : null,
+    allItems: { name: t(projectTexts.allItems), to: getAllItemsAddress(project) },
+    isKept: list => listViewOptions.has(list),
+    filterContext: {
+      viewerLogin: auth.viewer?.login ?? '',
+      today: new Date(now.value).toISOString().slice(0, 10),
+      hasDrafts: projectItems.some(item => item.draft !== null),
+      hasDraftPullRequests: projectItems.some(item => {
+        const content = item.contentId === null ? undefined : items.get(item.contentId);
+        return content?.kind === 'pullRequest' && content.isDraft;
+      }),
+    },
+  });
+  return tabs.map(tab => ({
+    key: tab.key,
+    label: tab.name,
+    to: tab.to,
+    icon: project.views.find(view => view.id === tab.key)?.layout === 'BOARD_LAYOUT' ? Columns3 : List,
+    count: '',
+    current: tab.current,
+    modified: tab.modified,
+    answered: tab.answered,
+  }));
+}
+
+/**
+ * Where "All items" is while it is shown: the project's page showing it, or the list an item full screen was opened
+ * from.
+ */
+function getAllItemsAddress(project: Project): RouteLocationRaw {
+  if (typeof route.name === 'string' && route.name.startsWith('project-')) {
+    return { path: route.path, query: { all: null } };
+  }
+
+  return navigation.list?.path ?? { path: getProjectPath(project), query: { all: null } };
+}
+
 function getTrackedStatus(target: TrackedTarget, openArrived: boolean): SidebarTrackedStatus {
   if (tracking.getProgress(target).state === 'hidden') {
     return { kind: 'hidden' };
@@ -424,6 +596,8 @@ function openCommandLineMenu() {
     :item-freshness="opened?.onPage ? null : itemFreshness"
     :my-work-counts="myWorkCounts"
     :tracked="tracked"
+    :get-children="getSidebarChildren"
+    :animate="animate"
     :edits="opened?.onPage ? (itemEdits ?? listEdits) : listEdits"
     :item-edits="opened?.onPage ? null : itemEdits"
     :settings-sync-stopped="settingsSync.state.state === 'stopped'"
