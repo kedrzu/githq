@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. The title is led by the project's icon (D12). A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. On a phone the toolbar is the phone's top bar, the saved views left to the places panel and the command menu (`ListToolbar`, mobile D53), its options a sheet from below headed by the view's name — the view's filter as a chip cleared here by its ×, Back to GitHub's view while changed, the view on github.com (`ListOptionsSheet`, mobile D36, D46, D49) —, a board view is a list grouped by its columns, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the view shown with its count, dotted when changed on this device (mobile D17, D49), its menu listing the saved views first (`viewCommands`), each with its count (`countView`), the one shown checked, those changed on this device dotted; the rows are the phone's (`ItemRow`, `StackRow`: mobile D23), a tracked repository named without its owner. -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13) — the first nine on `1`–`9`, said in each tab's tooltip ("Go to Backlog"), `[` and `]` stepping to the previous and next tab as shown, wrapping around (D14–D17) —, each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar, "Sorted by …" right after them — as a List or a Board through the list engine. The title is led by the project's icon (D12). A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way — named as its items ("Platform Q4's items"), as the project and its views are in; with rows on screen the status bar alone tells. On a phone the toolbar is the phone's top bar, the saved views left to the places panel and the command menu (`ListToolbar`, mobile D53), its options a sheet from below headed by the view's name — the view's filter as a chip cleared here by its ×, Back to GitHub's view while changed, the view on github.com (`ListOptionsSheet`, mobile D36, D46, D49) —, a board view is a list grouped by its columns, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the view shown with its count, dotted when changed on this device (mobile D17, D49), its menu listing the saved views first (`viewCommands`), each with its count (`countView`), the one shown checked, those changed on this device dotted; the rows are the phone's (`ItemRow`, `StackRow`: mobile D23), a tracked repository named without its owner. -->
 <script lang="ts" setup>
 import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -20,18 +20,23 @@ import {
   Tag,
   User,
   BookMarked,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { Command, CommandPart, CommandParts } from '@/commands/CommandTypes.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
+import { TAB_STEP_KEYS } from '@/components/HeaderTabs.vue';
 import FilteredOut from '@/components/FilteredOut.vue';
 import { countListRows } from '@/lists/countListRows.js';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -128,8 +133,9 @@ const props = withDefaults(
     /** The tracked repositories (`owner/name`): a phone's rows name them without their owner (mobile D23). */
     trackedRepositories?: readonly string[];
     /**
-     * Going to each saved view, as the command menu's level under the project has them (`useProjectCommands`): the
-     * phone's menu of the views lists them first (mobile D17).
+     * Going to each saved view, as the command menu's level under the project has them (`useProjectCommands`), the first
+     * nine on `1`–`9`: run by their keys while the view is shown, their keys on the tabs, and the phone's menu of the
+     * views lists them first (mobile D17).
      */
     viewCommands?: readonly Command[];
     /**
@@ -198,6 +204,7 @@ defineSlots<{
 const NO_ROW_FIELD = '';
 
 const t = useTranslate();
+const router = useRouter();
 /** What is drawn: a list on a phone, a board view keeping its columns as its grouping (mobile D9). */
 const layout = useShownLayout(() => options.value.layout);
 const language = useLanguage();
@@ -322,7 +329,10 @@ const viewTabs = computed((): HeaderTabsSet => ({
     current: tab.current,
     answered: tab.answered,
     modified: tab.modified,
+    keyshortcuts: getViewCommand(tab.key)?.key,
+    tooltip: t(l.goToView, { view: tab.name }),
   })),
+  stepHint: t(l.stepViews),
 }));
 const fieldNames = computed(() => props.project.fields.map(field => `${field.name} (${field.kind})`).join(', '));
 const sortSummary = computed(() => {
@@ -331,6 +341,34 @@ const sortSummary = computed(() => {
     ? t(l.manual)
     : (props.sorts.find(choice => choice.value === options.value.sort)?.label ?? '');
 });
+
+// The saved views run by their keys while the project is on screen; the command menu finds them under the project
+// already (`AppCommands`), so they are not offered in it a second time. `[` and `]` step through the tabs as shown,
+// "All items" too while it is one, wrapping around (D17).
+useCommands(() => [
+  ...props.viewCommands.map(command => ({ ...command, menu: false })),
+  {
+    id: 'project.previousView',
+    // Keys and the help sheet only: in ⌘K it would only stand between the sections.
+    menu: false,
+    title: t(l.previousView),
+    section: 'view',
+    key: TAB_STEP_KEYS.previous,
+    icon: ChevronLeft,
+    when: () => props.tabs.length > 1,
+    run: () => stepView(-1),
+  },
+  {
+    id: 'project.nextView',
+    menu: false,
+    title: t(l.nextView),
+    section: 'view',
+    key: TAB_STEP_KEYS.next,
+    icon: ChevronRight,
+    when: () => props.tabs.length > 1,
+    run: () => stepView(1),
+  },
+]);
 
 // On a phone the command line names the tab shown with how many the view lists, left out while they arrive, with a dot
 // when it was changed on this device (mobile D17, D49); its menu lists the saved views first.
@@ -363,6 +401,21 @@ function getPhoneParts(): CommandParts {
       return [{ kind: 'command', command: marked }];
     }),
   };
+}
+
+/** Goes to the tab before (`-1`) or after (`1`) the one shown, from the last to the first and back. */
+function stepView(step: number) {
+  const { tabs } = props;
+  const index = tabs.findIndex(tab => tab.current);
+  const next = tabs[(index + step + tabs.length) % tabs.length];
+  if (next) {
+    void router.push(next.to);
+  }
+}
+
+/** The command going to a saved view, by its tab's key; none for "All items". */
+function getViewCommand(key: string) {
+  return props.viewCommands.find(command => command.id === `view:${key}`);
 }
 
 function addDraft(title: string, group: string | null) {

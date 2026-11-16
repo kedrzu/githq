@@ -2,6 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import * as stories from './Sidebar.stories.js';
@@ -178,7 +179,7 @@ test('the logo and the collapse button head the sidebar, the user ends it, and n
     await expect.element(nav.getByRole('img', { name: 'githq' })).toBeVisible();
     await expect
         .element(nav.getByRole('button', { name: 'Collapse sidebar' }))
-        .toHaveAttribute('aria-keyshortcuts', '[');
+        .toHaveAttribute('aria-keyshortcuts', formatAriaKeyShortcuts('Mod+B'));
     expect(nav.getByRole('link', { name: /track/iu }).elements()).toHaveLength(0);
     expect(nav.getByRole('button', { name: /track/iu }).elements()).toHaveLength(0);
 

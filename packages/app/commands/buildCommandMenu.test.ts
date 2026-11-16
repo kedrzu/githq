@@ -20,7 +20,7 @@ const STATUS: Command = {
     }),
 };
 const SELECTION_ASSIGN: Command = { id: 'selection.assignees', title: 'Assign to…', section: 'selection' };
-const SIDEBAR: Command = { id: 'app.sidebar', title: 'Collapse sidebar', section: 'app', key: '[' };
+const SIDEBAR: Command = { id: 'app.sidebar', title: 'Collapse sidebar', section: 'app', key: 'Mod+B' };
 const KEYS_ONLY: Command = { id: 'app.commandMenu', title: 'Open the command menu', section: 'app', menu: false };
 
 test("the subject's actions are offered for their subject only, none once it is taken out", () => {

@@ -167,13 +167,14 @@ test('E4: the selection\'s actions say "2 of 3 editable"; its key runs the same 
         );
 });
 
-test('⌘K opens the menu; a single key typed in it is text, not its action', async () => {
+test("⌘K opens the menu; a key typed in it is text, and no action's key runs from it", async () => {
     await Closed.run();
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
     await userEvent.keyboard('[[');
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveValue('[');
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
     await expect.element(page.getByTestId('sidebar')).toHaveTextContent('expanded');
 });
 

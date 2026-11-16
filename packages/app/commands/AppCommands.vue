@@ -355,7 +355,7 @@ function getPlaces(): NavigationPlace[] {
       keywords: [project.owner],
       path: getProjectPath(project),
       children: () => getProjectChildren(project),
-      foundAlone: () => projectCommands(project).savedViews,
+      foundAlone: () => getSavedViews(project),
     });
   }
 
@@ -406,7 +406,12 @@ function getSettingsRow(section: SettingsSection): Command {
 
 function getProjectChildren(project: TrackedProject): Command[] {
   const commands = projectCommands(project);
-  return [...commands.savedViews, commands.newIssue, commands.openOnGitHub, commands.copyLink, commands.settings];
+  return [...getSavedViews(project), commands.newIssue, commands.openOnGitHub, commands.copyLink, commands.settings];
+}
+
+/** A project's saved views without their keys, which run only on the project's own screen. */
+function getSavedViews(project: TrackedProject): Command[] {
+  return projectCommands(project).savedViews.map(command => ({ ...command, key: undefined }));
 }
 
 /** A repository's level, tracked or not: `when` of each row says which it is offered. Track last, as in its group (D34). */

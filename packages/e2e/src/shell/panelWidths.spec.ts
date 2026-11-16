@@ -31,10 +31,10 @@ test('the sidebar and the item panel are resized by dragging their edges, and ke
     await expect.poll(() => getWidth(item.root)).toBe(460 - BORDER);
 
     // The rail is as narrow as ever, and expanded the sidebar is as wide as it was; the panel stays as it is.
-    await page.keyboard.press('[');
+    await page.keyboard.press('ControlOrMeta+B');
     await expect.poll(() => getWidth(shell.sidebar)).toBe(56);
     await expect.poll(() => getWidth(item.root)).toBe(460 - BORDER);
-    await page.keyboard.press('[');
+    await page.keyboard.press('ControlOrMeta+B');
     await expect.poll(() => getWidth(shell.sidebar)).toBe(300);
     await expect.poll(() => getWidth(item.root)).toBe(460 - BORDER);
 

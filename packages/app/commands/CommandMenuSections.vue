@@ -1,5 +1,7 @@
-<!-- Actions as the entries of an item menu — the context menu of a list's rows (L1–L4) or the opened item's menu (M1–M2): one group after another with a line between them, each action with its icon, current value and key, so the menu teaches the keyboard. An action with a second step opens it beside the menu (`CommandSubmenu`); the others run when picked. One that leaves for github.com on a phone is marked ↗ (mobile D11). -->
+<!-- Actions as the entries of an item menu — the context menu of a list's rows (L1–L4) or the opened item's menu (M1–M2): one group after another with a line between them, each action with its icon, current value and key, so the menu teaches the keyboard, the one shown checked (`current`: a project's saved view, R5). An action with a second step opens it beside the menu (`CommandSubmenu`); the others run when picked. One that leaves for github.com on a phone is marked ↗ (mobile D11). -->
 <script lang="ts" setup>
+import { Check } from 'lucide-vue-next';
+
 import ExternalMark from '@/components/ExternalMark.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
@@ -32,10 +34,29 @@ defineProps<{
         :icon="command.icon"
         :detail="command.detail"
         :shortcut="command.key"
+        :aria-current="command.current ? 'true' : undefined"
         @select="command.run?.()"
       >
         {{ command.title }}<ExternalMark v-if="command.external" />
+        <template
+          v-if="command.current"
+          #status
+        >
+          <Check
+            :class="css.commandMenuSections_check"
+            aria-hidden="true"
+          />
+        </template>
       </MenuItem>
     </template>
   </template>
 </template>
+
+<style lang="scss" module="css">
+.commandMenuSections_check {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-fg-2;
+}
+</style>

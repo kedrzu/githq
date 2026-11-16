@@ -65,3 +65,6 @@ Append-only; one line per turn that settled something.
   tabs while they fit, one bordered group (CH67) with tooltips naming the keys, giving way in steps as room runs out; the
   visibility an icon inside the title; the repository menu without Open, with keys on the open repository's menu (D25).
   D14, D15 and D22 retired in part to history; D18 no longer mentions the column. CH72–CH80 drawn.
+- 2026-11-16 — Owner: the keys proposed for a place are fine and the sidebar collapses on ⌘B; a project's first nine
+  saved views on `1`–`9`, `[` `]` to the previous and next section or view, wrapping around, the open place's alone
+  (D26). The project's D14–D17, CH82–CH84 and R5 drawn.

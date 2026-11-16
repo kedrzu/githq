@@ -1,6 +1,6 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, Eye, EyeOff, Github, LayoutList, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { Eye, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
@@ -14,11 +14,15 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { ProjectStore } from './ProjectStore.js';
 import * as l from './useProjectCommands.loc.js';
 
+/** How many of a project's saved views have a key, `1` to `9`: a tenth and later have none. */
+const SAVED_VIEW_KEYS = 9;
+
 /** A project's actions, by the name after `project.`. */
 export interface ProjectCommands {
-    readonly open: Command;
-    readonly views: Command;
-    /** Going to each of its saved views (`view:<id>`), as the command menu's level under the project lists them. */
+    /**
+     * Going to each of its saved views (`view:<id>`), as the command menu's level under the project lists them; the first
+     * nine on `1`–`9`, which run only while the project is on screen — any other menu leaves them out.
+     */
     readonly savedViews: readonly Command[];
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
@@ -33,7 +37,7 @@ export interface ProjectCommandsTarget extends ProjectAddress {
 }
 
 /**
- * The actions of a project: going to its view or one of its saved views — picked from one action, or one action each —, a new issue in it (where the user may add
+ * The actions of a project: going to one of its saved views, one action each, a new issue in it (where the user may add
  * one), its page on GitHub and the link to it, its settings (T17) and no longer tracking it (both only while it is tracked
  * and not on its way out; untracking offers Undo, `PendingUntracks`). The sidebar's
  * menu of a project offers them all; the project's view offers its page on GitHub in the command menu, and the menu's
@@ -58,33 +62,13 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
             tracking.isTracked({ kind: 'project', id: target.id }) &&
             !pending.isPending({ kind: 'project', id: target.id });
         return {
-            open: {
-                id: 'project.open',
-                title: t(l.open),
-                section: 'view',
-                icon: ArrowRight,
-                run: () => void router.push(path),
-            },
-            views: {
-                id: 'project.views',
-                title: t(l.views),
-                section: 'view',
-                icon: LayoutList,
-                when: () => (project()?.views.length ?? 0) > 0,
-                options: () => ({
-                    options: (project()?.views ?? []).map(view => ({
-                        value: view.id,
-                        label: view.name,
-                        pick: () => void router.push(getProjectPath(target, view.number)),
-                    })),
-                }),
-            },
-            savedViews: (project()?.views ?? []).map(view => ({
+            savedViews: (project()?.views ?? []).map((view, index) => ({
                 id: `view:${view.id}`,
                 title: view.name,
                 detail: t(l.savedView),
                 icon: Eye,
                 section: 'view',
+                key: index < SAVED_VIEW_KEYS ? String(index + 1) : undefined,
                 run: () => void router.push(getProjectPath(target, view.number)),
             })),
             newIssue: {

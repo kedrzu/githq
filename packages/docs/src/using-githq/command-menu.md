@@ -79,7 +79,7 @@ right-clicking a row.
 |<kbd>?</kbd>|Keyboard shortcuts|
 |<kbd>C</kbd>|New issue, in the repository or project you are in|
 |<kbd>,</kbd>|Settings|
-|<kbd>[</kbd>|Collapse or expand the sidebar|
+|<kbd>⌘</kbd> <kbd>B</kbd>|Collapse or expand the sidebar|
 
 Letter keys work without <kbd>Shift</kbd> unless <kbd>Shift</kbd> is shown. Single keys don't act while you type in a
 field.

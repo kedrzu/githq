@@ -104,6 +104,30 @@ test('D14: Issues and Pull requests are sections on 1 and 2, each counting its o
     expect(view.section.value).toBe('pullRequests');
 });
 
+test('[ and ] step to the previous and next section, wrapping around', async () => {
+    const view = mount({ section: 'workflows' });
+    await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
+
+    await userEvent.keyboard(']');
+    expect(view.section.value).toBe('issues');
+    // `[[` is how user-event writes a literal `[`.
+    await userEvent.keyboard('[[');
+    expect(view.section.value).toBe('workflows');
+    await userEvent.keyboard('[[');
+    expect(view.section.value).toBe('commits');
+});
+
+test('untracked, ] steps past Commits to Issues and [ back: it has no Workflows', async () => {
+    const view = mount({ tracked: false, section: 'commits' });
+    await expect.element(page.getByRole('button', { name: 'Commits', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
+
+    await userEvent.keyboard(']');
+    expect(view.section.value).toBe('issues');
+    await userEvent.keyboard('[[');
+    expect(view.section.value).toBe('commits');
+});
+
 test('the order and the properties sit on the toolbar while they fit; on a narrow screen the properties move into Display', async () => {
     const view = mount();
     const row = page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' });

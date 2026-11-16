@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the place the screen is in (`getOpenPlace`) — under its row in the sidebar, and under any tracked place tapped open in the places panel, its sections with their tabs' counts or its saved views (`getSidebarChildren`), sliding open while the animations are on and no reduced motion is asked for —, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the place the screen is in (`getOpenPlace`) — under its row in the sidebar, and under any tracked place tapped open in the places panel, its sections with their tabs' counts or its saved views (`getSidebarChildren`; whether a place has any, `expandable`, told without working them out), sliding open while the animations are on and no reduced motion is asked for —, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -277,6 +277,7 @@ const tracked = computed((): SidebarTracked => ({
       haveOpenItemsArrived(tracking.getSyncState({ kind: 'project', id: project.id })),
     ),
     open: openPlace.value?.kind === 'project' && openPlace.value.id === project.id,
+    expandable: hasProjectChildren(project.id),
   })),
   repositories: pendingUntracks.repositories.map(repository => {
     const target: TrackedTarget = { kind: 'repository', nameWithOwner: repository.nameWithOwner };
@@ -289,6 +290,8 @@ const tracked = computed((): SidebarTracked => ({
       isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
       workflowMarker: getSidebarWorkflowMarker(workflows.getState(repository.nameWithOwner)),
       open: openPlace.value?.kind === 'repository' && openPlace.value.nameWithOwner === repository.nameWithOwner,
+      // Its sections are always there.
+      expandable: true,
     };
   }),
 }));
@@ -537,6 +540,23 @@ function getProjectChildren(projectId: string): SidebarSubEntry[] {
   }));
 }
 
+/**
+ * Whether {@link getProjectChildren} gives a tracked project any row, without working them out: its copy is loaded and
+ * has saved views, or it is the open place showing "All items".
+ */
+function hasProjectChildren(projectId: string) {
+  const project = projectStore.get(projectId);
+  if (!project) {
+    return false;
+  }
+
+  const place = openPlace.value;
+  return (
+    project.views.length > 0 ||
+    (place?.kind === 'project' && place.id === projectId && place.viewKey === ALL_ITEMS_LIST)
+  );
+}
+
 /** Where a project's row leads: the open project's view the screen is in, so its row goes back to that list; another its first view. */
 function getProjectRowPath(project: TrackedProject) {
   const place = openPlace.value;
@@ -675,6 +695,8 @@ function openCommandLineMenu() {
       <ProjectContextMenu
         v-else
         :project-id="target.id"
+        :current="openPlace?.kind === 'project' && openPlace.id === target.id"
+        :shown-view="openPlace?.kind === 'project' && openPlace.id === target.id ? openPlace.viewKey : null"
       />
     </template>
   </AppShell>

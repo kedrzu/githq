@@ -19,6 +19,9 @@ A project you don't track shows only the items that concern you, and points you 
 A project's saved views from GitHub are tabs at the top. Each brings what it has on GitHub: its filter, its grouping, its
 order, its layout and the fields it shows. A roadmap view, which githq doesn't have, shows as a list.
 
+The first nine views are on <kbd>1</kbd> to <kbd>9</kbd>, in the order of the tabs. <kbd>[</kbd> and <kbd>]</kbd> go to
+the previous and next tab, from the last back to the first.
+
 You can change a view's layout, grouping, order and fields in githq. The tab is then marked **modified locally**, and
 **Reset** puts back GitHub's version. These changes stay on this device: githq never writes them back, so the view your
 team shares on GitHub stays as it is.

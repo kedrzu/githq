@@ -1,4 +1,4 @@
-<!-- A short hint on hover or keyboard focus of its trigger (reka-ui's tooltip): what an icon button does and its key, or the whole sentence behind a shortened status. The trigger is the default slot's single element. -->
+<!-- A short hint on hover or keyboard focus of its trigger (reka-ui's tooltip): what an icon button does and its key, or the whole sentence behind a shortened status — with a dimmer second line under them when given (`note`: a saved view's "Answered by GitHub"). The trigger is the default slot's single element. -->
 <script lang="ts" setup>
 import { TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot, TooltipTrigger } from 'reka-ui';
 
@@ -23,6 +23,8 @@ defineSlots<{
   default(): unknown;
   /** Richer content than `text`. */
   content?(): unknown;
+  /** A dimmer line under the text and the key ("Answered by GitHub"). */
+  note?(): unknown;
 }>();
 </script>
 
@@ -42,11 +44,19 @@ defineSlots<{
           :side-offset="6"
           :collision-padding="8"
         >
-          <slot name="content">{{ text }}</slot>
-          <Kbd
-            v-if="kbd"
-            :keys="kbd"
-          />
+          <span :class="css.tooltip_line">
+            <slot name="content">{{ text }}</slot>
+            <Kbd
+              v-if="kbd"
+              :keys="kbd"
+            />
+          </span>
+          <span
+            v-if="$slots.note"
+            :class="css.tooltip_note"
+          >
+            <slot name="note" />
+          </span>
         </TooltipContent>
       </TooltipPortal>
     </TooltipRoot>
@@ -57,8 +67,9 @@ defineSlots<{
 .tooltip {
   z-index: 30;
   display: flex;
-  gap: $spacing-8;
-  align-items: center;
+  flex-direction: column;
+  gap: $spacing-2;
+  align-items: flex-start;
   max-width: 320px;
   padding: $spacing-4 $spacing-8;
   font-size: $font-size-xs;
@@ -77,5 +88,18 @@ defineSlots<{
       animation-timing-function: ease-out;
     }
   }
+}
+
+.tooltip_line {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+}
+
+.tooltip_note {
+  display: flex;
+  flex-direction: column;
+  font-size: $font-size-2xs;
+  color: $color-fg-2;
 }
 </style>
