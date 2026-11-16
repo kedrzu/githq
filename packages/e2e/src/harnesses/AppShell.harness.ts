@@ -42,7 +42,7 @@ export class AppShellHarness {
         return this.sidebar.locator(this.placeRowOf(name));
     }
 
-    /** The links under a tracked repository or project while it is expanded: its sections or its saved views. */
+    /** The links under a tracked repository or project while it is expanded on a phone: its sections or its saved views. */
     placeRows(name: string): Locator {
         return this.sidebar
             .getByRole('listitem')

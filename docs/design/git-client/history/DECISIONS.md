@@ -158,3 +158,39 @@ Retired 2026-11-03 in part: the details no longer wait for `↵` nor open over t
 **The panel opens on `↵`. Below about 1,200 px of window it opens over the graph from the right; in the tabs layout the
 list and the panel are then one at a time. On a wide window the panel is a fixed 440 px, giving up width where the graph
 would have under 240 px.** (2026-11-03, owner)
+
+## D25
+
+Retired 2026-11-16 in part: on a computer the open place no longer expands in the sidebar, see [D27](../DECISIONS.md#d27).
+The header, the tabs and the menus stand in [D25](../DECISIONS.md#d25).
+
+**The repository's own column and the setting that chose it go. While a tracked repository is the open place, its
+sections show under its row in the app's sidebar, with the counts its tabs show: open issues, open pull requests, none
+for Commits, Workflows its broken ones, a dash while that is unknown; Workflows only while it is tracked. They slide open
+and closed unless Settings · Animations is off. The header keeps the tabs while they fit, drawn as one bordered group
+with the current tab filled (CH67), each with a tooltip naming where it goes and its key ("Go to issues" `1`). As room
+runs out the header gives way in steps: the view options move into Display, Display drops its label for its icon, the
+tabs fold into one menu showing the current section, last the title is cut. The repository's visibility is a book or a
+lock inside the title's button, read out as public or private, no longer a word beside the name (CH72). The repository's
+menu, its title's and the sidebar's, drops Open and lists Issues, Pull requests, Commits and Workflows, their keys `1`–`4`
+shown on the open repository's menu only. A tracked project's saved views follow the same model: under its row in the
+sidebar, in the same tab group, folding the same way, with no counts.** (2026-11-16, owner: the column takes a third of a
+small screen and repeats the repository's name, the tabs neither read as tabs nor hint at their keys, a narrow header has
+nowhere to go; picked CH67 and the sub-rows' guide line, CH71; the title's icon "isn't clickable, is a bit too big and
+too far from the repository's name"; a project's views without counts, "as its tabs have none". CH72–CH80)
+
+**Why (then).** The sidebar already lists the repository, so its sections nest under its row at no width of their own, and the
+list and the graph keep the window. Only the open place expands, so the sidebar stays a list of places. Tooltips teach
+the keys the tabs never showed. Giving way in steps keeps every control reachable at any width; the header's left part
+paints over the controls, so one that doesn't fit is covered, never drawn under the title. On another repository's menu
+the keys would do nothing, so they would lie.
+
+**Rejected (then).**
+
+- Keeping the column beside the tabs behind a setting ([D14](../DECISIONS.md#d14)'s two layouts,
+  [history](#d14)) — it takes a third of a small screen and repeats the repository's name (owner).
+- The current tab underlined inside a bordered strip (CH68), or a filled pill on a track with no border (CH69) — owner
+  picked CH67, the List / Board switch's look.
+- Sub-rows as a plain indent, like My work's groups (CH70) — owner picked the thin guide line (CH71).
+- A marker on the collapsed sidebar for the open repository — the rail lists no repositories; there the header is the way
+  around.

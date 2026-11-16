@@ -17,7 +17,7 @@ const meta = {
         viewer: SAMPLE_VIEWER,
         counts: SAMPLE_MY_WORK_COUNTS,
         tracked: SAMPLE_TRACKED,
-        getChildren: sampleGetChildren({ phone: true }),
+        getChildren: sampleGetChildren(),
         freshness: { kind: 'fresh', checkedAt: CHECKED_AT },
         rateLimit: { resource: 'graphql', limit: 5000, remaining: 4812, resetAt: new Date('2026-10-30T15:00:00Z') },
         onSignOut: fn(),
@@ -40,7 +40,6 @@ export const InRepository: Story = {
         getChildren: sampleGetChildren({
             open: { kind: 'repository', nameWithOwner: 'skyline-labs/portal' },
             current: 'pullRequests',
-            phone: true,
         }),
     },
     decorators: [onPage('/skyline-labs/portal/pulls')],
