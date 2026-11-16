@@ -131,29 +131,29 @@ test('with no job to select, O opens the run on GitHub', async ({ page, github }
     await seen.close();
 });
 
-test('F on a broken workflow’s row opens the failed run in githq; a job selected leaves no history, and Esc comes back', async ({
+test('F on a broken workflow’s row opens the failed run in githq, in the panel; a job selected leaves no history, and Esc comes back', async ({
     page,
     github,
 }) => {
-    const { world, runId, path } = createFailedRun();
+    const { world, runId } = createFailedRun();
     const [lintId] = world.runJobs(SAMPLE_REPOSITORY, runId, [LINT, BUILD]);
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
     await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('f');
-    await expect(page).toHaveURL(path);
+    await expect(page).toHaveURL(getRunPanePath(`${runId}`));
 
     await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
     // A job selected leaves no history entry: Esc still comes back in one step.
     await page.keyboard.press('Alt+j');
-    await expect(page).toHaveURL(`${path}/job/${lintId}`);
+    await expect(page).toHaveURL(getRunPanePath(`${runId}|${lintId}`));
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
 });
 
 test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun();
+    const { world, runId } = createFailedRun();
     const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
     world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, RUN_LOG);
     await openTrackedWork(page, github, world);
@@ -166,7 +166,7 @@ test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ p
     await page.keyboard.press('f');
 
     const screen = new WorkflowRunScreenHarness(page);
-    await expect(page).toHaveURL(path);
+    await expect(page).toHaveURL(getRunPanePath(`${runId}`));
     await expect(screen.heading(`Deploy #${runId}`)).toBeVisible();
     await expect(screen.summary).toContainText('Failed');
     await expect(screen.jobsPlaceholder).toBeVisible();
@@ -869,3 +869,8 @@ test('W4l: an answer after leaving the page still shows, wherever the user went'
 
     await expect(shell.toasts).toContainText(/already\srunning/u);
 });
+
+/** The repository's Workflows section with its run — `run` the pane's run part, `<id>[|<job>]` — in the panel. */
+function getRunPanePath(run: string) {
+    return `/${SAMPLE_REPOSITORY}/actions?pane=run&run=${encodeURIComponent(`${SAMPLE_REPOSITORY.replace('/', '|')}|${run}`)}`;
+}

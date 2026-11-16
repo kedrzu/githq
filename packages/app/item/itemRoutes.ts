@@ -8,6 +8,8 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import type { RepositoryName } from '@/utils/parseRepositoryName.js';
 import { WorkflowRoutes } from '@/workflows/workflowRoutes.js';
 import type { WorkflowReference } from '@/workflows/workflowRoutes.js';
+import { WorkflowRunRoutes } from '@/workflows/workflowRunRoutes.js';
+import type { WorkflowRunReference } from '@/workflows/workflowRunRoutes.js';
 
 import { defineOpenedItemKind } from './defineOpenedItemKind.js';
 import type { OpenedItemKind, OpenedItemRouteSource, OpenedKindRoute } from './defineOpenedItemKind.js';
@@ -27,7 +29,8 @@ export interface ItemReference extends RepositoryName {
 export type OpenedItemRoute =
     | (OpenedKindRoute<ItemReference> & { readonly kind: 'issue' })
     | (OpenedKindRoute<WorkflowReference> & { readonly kind: 'workflow' })
-    | (OpenedKindRoute<CommitReference> & { readonly kind: 'commit' });
+    | (OpenedKindRoute<CommitReference> & { readonly kind: 'commit' })
+    | (OpenedKindRoute<WorkflowRunReference> & { readonly kind: 'run' });
 
 /**
  * The route paths of an item's own page, shaped like GitHub's: a github.com path pasted after the app's host
@@ -89,7 +92,12 @@ export function getOpenedItemRoute(route: OpenedItemRouteSource): OpenedItemRout
     }
 
     const commit = CommitRoutes.getOpened(route);
-    return commit ? { kind: 'commit', ...commit } : null;
+    if (commit) {
+        return { kind: 'commit', ...commit };
+    }
+
+    const run = WorkflowRunRoutes.getOpened(route);
+    return run ? { kind: 'run', ...run } : null;
 }
 
 /**
@@ -196,7 +204,10 @@ function toReference(owner: string, name: string, number: unknown): ItemReferenc
 
 declare module 'vue-router' {
     interface RouteMeta {
-        /** The route is the own page of an item of this kind (`ITEM_PAGE_PATHS`, `WORKFLOW_PAGE_PATH`, `COMMIT_PAGE_PATH`). */
+        /**
+         * The route is the own page of an item of this kind (`ITEM_PAGE_PATHS`, `WORKFLOW_PAGE_PATH`, `COMMIT_PAGE_PATH`,
+         * `WORKFLOW_RUN_PATH` and `WORKFLOW_RUN_JOB_PATH`).
+         */
         itemPage?: OpenedItemKind;
         /**
          * The screen is a list an item opens over, in the panel beside it (D9): opening one from anywhere else — a

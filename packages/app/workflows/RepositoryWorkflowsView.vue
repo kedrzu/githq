@@ -1,4 +1,4 @@
-<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, W35, D7, D15): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). Before the first read, ghost workflow rows stand in their place (`WorkflowsArriving`, first run and loading D17). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved; with a workflow open in the panel the selection is that workflow's row, and moving it opens the next one in its place —, Enter or a click opens the workflow, the one open expands to full screen; ⇧Enter opens it full screen straight (the open one's is the item's own key); F opens its latest failed run on any ref, nothing without one; P opens the repository's alert settings. -->
+<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, W35, D7, D15): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). Before the first read, ghost workflow rows stand in their place (`WorkflowsArriving`, first run and loading D17). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved; with a workflow open in the panel the selection is that workflow's row, and moving it opens the next one in its place —, Enter or a click opens the workflow, the one open expands to full screen; ⇧Enter opens it full screen straight (the open one's is the item's own key); F opens its latest failed run on any ref, nothing without one; P opens the repository's alert settings. With a run open in the panel the selection is its workflow's row and J/K, ↓/↑, Enter, ⇧Enter and F are the run's; a click on a row opens that workflow in the run's place. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -25,10 +25,18 @@ const props = withDefaults(
     list: RepositoryWorkflowList;
     /** Epoch ms the ages are counted to. */
     now: number;
-    /** The key of the row whose workflow is open in the panel beside the section; `null` with none. */
+    /**
+     * The key of the row whose workflow is open in the panel beside the section — or whose run is, with `runOpen` —;
+     * `null` with none.
+     */
     openedKey?: string | null;
+    /**
+     * Whether a run is open in the panel: its keys win, so the list's J/K, ↓/↑, Enter, ⇧Enter and F are off and the
+     * selection stays on the run's workflow.
+     */
+    runOpen?: boolean;
   }>(),
-  { openedKey: null },
+  { openedKey: null, runOpen: false },
 );
 
 const emit = defineEmits<{
@@ -65,6 +73,7 @@ const selection = useRowSelection({
   selectFirst: true,
   chosenKey: selected,
   open: row => openKey(row.key),
+  enabled: () => !props.runOpen,
 });
 /** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain, or while the first read runs. */
 const emptyState = computed(() => {
@@ -108,17 +117,34 @@ const emptyState = computed(() => {
 });
 
 useCommands(() => [
-  { id: 'workflows.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-  { id: 'workflows.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-  { id: 'workflows.open', title: t(l.open), section: 'view', key: 'Enter', menu: false },
-  // On the row open in the panel, ⇧Enter is the opened workflow's own (back and forth between the panel and its page).
+  // With a run in the panel these keys are the run's (`useRowSelection`'s `enabled`).
+  {
+    id: 'workflows.next',
+    title: t(l.next),
+    section: 'view',
+    key: 'J',
+    otherKeys: ['ArrowDown'],
+    menu: false,
+    when: () => !props.runOpen,
+  },
+  {
+    id: 'workflows.previous',
+    title: t(l.previous),
+    section: 'view',
+    key: 'K',
+    otherKeys: ['ArrowUp'],
+    menu: false,
+    when: () => !props.runOpen,
+  },
+  { id: 'workflows.open', title: t(l.open), section: 'view', key: 'Enter', menu: false, when: () => !props.runOpen },
+  // On the row open in the panel, ⇧Enter is the opened item's own (back and forth between the panel and its page).
   {
     id: 'workflows.fullScreen',
     title: t(l.openFullScreen),
     section: 'view',
     key: 'Shift+Enter',
     actsOnRow: true,
-    when: () => selection.selectedKey !== null && selection.selectedKey !== props.openedKey,
+    when: () => !props.runOpen && selection.selectedKey !== null && selection.selectedKey !== props.openedKey,
     run: () => {
       if (selection.selectedKey !== null) {
         emit('fullScreen', selection.selectedKey);
@@ -131,7 +157,7 @@ useCommands(() => [
     section: 'view',
     key: 'F',
     actsOnRow: true,
-    when: () => selection.selectedRow?.latestFailure != null,
+    when: () => !props.runOpen && selection.selectedRow?.latestFailure != null,
     run: () => {
       const run = selection.selectedRow?.latestFailure;
       if (run) {
@@ -174,11 +200,11 @@ watch(
   },
   { immediate: true },
 );
-// With a workflow open in the panel, the selection moving opens the next one in its place.
+// With a workflow open in the panel, the selection moving opens the next one in its place; a run there stays.
 watch(
   () => selection.selectedKey,
   key => {
-    if (key !== null && props.openedKey !== null && key !== props.openedKey) {
+    if (!props.runOpen && key !== null && props.openedKey !== null && key !== props.openedKey) {
       emit('open', key);
     }
   },
@@ -193,18 +219,21 @@ onMounted(() => {
   }
 });
 
-/** A click on a row: selected, and opened — with a workflow open in the panel, selecting it opens it in its place. */
+/**
+ * A click on a row: selected, and opened — with a workflow open in the panel, selecting it opens it in its place; with
+ * a run there, the row's workflow opens in the run's place.
+ */
 function openRow(key: string) {
   const moved = key !== selection.selectedKey;
   selection.select(key);
-  if (!moved || props.openedKey === null) {
+  if (props.runOpen || !moved || props.openedKey === null) {
     openKey(key);
   }
 }
 
-/** The row open in the panel expands to full screen; any other opens. */
+/** The row whose workflow is open in the panel expands to full screen; any other opens — the run's workflow's too. */
 function openKey(key: string) {
-  if (key === props.openedKey) {
+  if (key === props.openedKey && !props.runOpen) {
     emit('expand', key);
   } else {
     emit('open', key);

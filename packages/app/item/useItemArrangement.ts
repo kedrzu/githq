@@ -441,18 +441,11 @@ type HistoryMove = 'push' | 'replace';
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
-    const navigation = useService(ItemNavigation);
     const arrangement = makeRef(options.arrangement);
     const steps = makeRef(options.steps ?? true);
     const stepKeys = options.stepKeys ?? DEFAULT_STEP_KEYS;
 
-    const otherArrangement = computed((): OtherArrangement | null => {
-        if (arrangement.value === 'panel') {
-            return { arrangement: 'page', title: t(l.openFullScreen), icon: Maximize2 };
-        }
-
-        return navigation.panelFits ? { arrangement: 'panel', title: t(l.backToPanel), icon: Minimize2 } : null;
-    });
+    const otherArrangement = useOtherArrangement(arrangement);
     const commands = computed((): ItemKeyCommands => {
         const other = otherArrangement.value;
         return {
@@ -526,4 +519,23 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     });
 
     return reactive<ItemKeysViewModel>({ otherArrangement, stepKeys, commands });
+}
+
+/**
+ * The arrangement an opened item in `arrangement` moves to — the header's button and `⇧Enter`: full screen from the
+ * panel; back to the panel from a page while the window has room for it, else `null`. For a view with keys of its own
+ * in place of {@link useItemKeys} (a workflow's run).
+ */
+export function useOtherArrangement(arrangement: MaybeRefOrGetter<ItemArrangement>) {
+    const t = useTranslate();
+    const navigation = useService(ItemNavigation);
+    const current = makeRef(arrangement);
+
+    return computed((): OtherArrangement | null => {
+        if (current.value === 'panel') {
+            return { arrangement: 'page', title: t(l.openFullScreen), icon: Maximize2 };
+        }
+
+        return navigation.panelFits ? { arrangement: 'panel', title: t(l.backToPanel), icon: Minimize2 } : null;
+    });
 }

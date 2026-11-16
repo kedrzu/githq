@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions` (actions W3a, W35, D15): a tracked repository's Workflows section, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A workflow opens as an item (`OpenedWorkflow`): in the panel beside the section when it fits (`?pane=workflow&workflow=…`), else on its page; the one open in the panel expands to its page, marked for Back to the panel; ⇧Enter opens one full screen straight, Esc there coming back here. The section is the list the opened workflow steps through (`ItemNavigation.list`, by `WorkflowRoutes.formatKey`). F opens a workflow's latest failed run on its page in githq (W4a). "Run workflow · Deploy" in the command menu runs the selected workflow, or says why it can't (W47, W48). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there, as from a run's page, comes back here to the same row (`WorkflowTabPlaces`, W13); from a workflow, to the row of the one opened last (`ItemNavigation.lastOpenedId`). -->
+<!-- `/owner/name/actions` (actions W3a, W35, D15): a tracked repository's Workflows section, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A workflow opens as an item (`OpenedWorkflow`): in the panel beside the section when it fits (`?pane=workflow&workflow=…`), else on its page; the one open in the panel expands to its page, marked for Back to the panel; ⇧Enter opens one full screen straight, Esc there coming back here. The section is the list the opened workflow steps through (`ItemNavigation.list`, by `WorkflowRoutes.formatKey`). F opens a workflow's latest failed run (W4a) in the panel when it fits (`?pane=run&run=…`), else on its page in githq; with a run in the panel the row of its workflow is the one marked open, and a click on a row opens that workflow in the run's place. "Run workflow · Deploy" in the command menu runs the selected workflow, or says why it can't (W47, W48). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there, as from a run's page, comes back here to the same row (`WorkflowTabPlaces`, W13); from a workflow, to the row of the one opened last (`ItemNavigation.lastOpenedId`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -21,6 +21,8 @@ import * as l from './RepositoryWorkflowsTab.loc.js';
 import { getWorkflowFile } from './utils/getWorkflowFile.js';
 import { WorkflowRoutes } from './workflowRoutes.js';
 import type { WorkflowReference } from './workflowRoutes.js';
+import { WorkflowRunRoutes } from './workflowRunRoutes.js';
+import { WorkflowRunStore } from './WorkflowRunStore.js';
 import { WorkflowTabPlaces } from './WorkflowTabPlaces.js';
 
 const props = defineProps<{
@@ -36,6 +38,7 @@ const browser = useService(Browser);
 const navigation = useService(ItemNavigation);
 const places = useService(WorkflowTabPlaces);
 const repositories = useService(RepositoryStore);
+const runStore = useService(WorkflowRunStore);
 const route = useRoute();
 const router = useRouter();
 const openRun = useOpenWorkflowRun();
@@ -59,8 +62,25 @@ const references = computed(() => {
 
   return found;
 });
-/** The key of the row whose workflow is open in the panel; `null` with none, or one of another repository. */
+/** The run open in the panel over the section; `null` with none, or one of another repository. */
+const openedRun = computed(() => {
+  const opened = WorkflowRunRoutes.getOpened(route);
+  if (!opened || opened.onPage) {
+    return null;
+  }
+
+  const { owner, name, runId } = opened.reference;
+  return `${owner}/${name}`.toLowerCase() === props.nameWithOwner.toLowerCase() ? runId : null;
+});
+/**
+ * The key of the row whose workflow is open in the panel — or whose run is, `null` until the run is known —; `null`
+ * with none, or one of another repository.
+ */
 const openedKey = computed(() => {
+  if (openedRun.value !== null) {
+    return findRunRow(openedRun.value);
+  }
+
   const opened = WorkflowRoutes.getOpened(route);
   if (!opened || opened.onPage) {
     return null;
@@ -80,12 +100,13 @@ const listPath = computed(
   () => router.resolve({ path: route.path, query: WorkflowRoutes.getQuery(route.query, null) }).fullPath,
 );
 
-// "Run workflow · Deploy" for the selected row (the first until moved); the workflow open in the panel offers its own.
+// "Run workflow · Deploy" for the selected row (the first until moved) — with a run in the panel, its workflow's —; the
+// workflow open in the panel offers its own.
 useCommands(() => {
   const rows = props.list.groups.flatMap(group => group.rows);
   const row = rows.find(candidate => candidate.key === selected.value) ?? rows[0];
   const command =
-    row && openedKey.value === null
+    row && (openedKey.value === null || openedRun.value !== null)
       ? runWorkflowCommands.forWorkflow({
           nameWithOwner: props.nameWithOwner,
           state: row.workflow,
@@ -136,7 +157,25 @@ function followOpened(key: string | null, found: ReadonlyMap<string, WorkflowRef
   }
 }
 
-/** In the panel beside the section when it fits — in place of the workflow open there —, else on its page. */
+/** The key of the row of the run's workflow; `null` while the run isn't known, or its workflow isn't listed. */
+function findRunRow(runId: number) {
+  const { run } = runStore.getRun(props.nameWithOwner, runId);
+  if (!run) {
+    return null;
+  }
+
+  for (const group of props.list.groups) {
+    for (const row of group.rows) {
+      if (row.workflow.workflow.id === run.workflowId) {
+        return row.key;
+      }
+    }
+  }
+
+  return null;
+}
+
+/** In the panel beside the section when it fits — in place of the workflow or run open there —, else on its page. */
 function openWorkflow(key: string) {
   const reference = references.value.get(key);
   if (!reference) {
@@ -149,7 +188,7 @@ function openWorkflow(key: string) {
   }
 
   const location = { path: route.path, query: WorkflowRoutes.getQuery(route.query, reference) };
-  void (openedKey.value === null ? router.push(location) : router.replace(location));
+  void (openedKey.value === null && openedRun.value === null ? router.push(location) : router.replace(location));
 }
 
 /** The workflow open in the panel, full screen: Back returns to the panel. */
@@ -180,10 +219,11 @@ function openSettings(addPattern: boolean) {
     :list="list"
     :now="now"
     :opened-key="openedKey"
+    :run-open="openedRun !== null"
     @open="openWorkflow"
     @expand="expandWorkflow"
     @full-screen="openFullScreen"
-    @open-run="openRun(nameWithOwner, $event)"
+    @open-run="openRun({ nameWithOwner, run: $event, where: navigation.panelFits ? 'panel' : 'page' })"
     @settings="openSettings"
     @open-on-git-hub="browser.openInNewTab($event)"
   />
