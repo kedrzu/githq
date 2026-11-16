@@ -27,9 +27,8 @@ import { getSettingsPath, readPhoneSettingsSection, readSettingsSection, SETTING
 import { SettingsSync } from './sync/SettingsSync.js';
 import { useSettingsOrigin } from './useSettingsOrigin.js';
 
-// The desktop app's sections, in the desktop build only (`__DESKTOP__`); the web builds drop them.
+// The desktop app's section, in the desktop build only (`__DESKTOP__`); the web builds drop it.
 const UpdatesSection = __DESKTOP__ ? defineAsyncComponent(() => import('./UpdatesSection.vue')) : null;
-const ChangelogSection = __DESKTOP__ ? defineAsyncComponent(() => import('./ChangelogSection.vue')) : null;
 
 const tracking = useService(TrackingStore);
 const sync = useService(SettingsSync);
@@ -107,10 +106,6 @@ function add() {
     <component
       :is="UpdatesSection"
       v-if="UpdatesSection && section === 'updates'"
-    />
-    <component
-      :is="ChangelogSection"
-      v-else-if="ChangelogSection && section === 'changelog'"
     />
     <AccountSection
       v-else-if="section === 'account'"

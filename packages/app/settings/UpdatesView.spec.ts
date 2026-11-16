@@ -30,6 +30,7 @@ const {
     ToDevelopmentNothingNewer,
     Installing,
     InstallFailed,
+    WithChangelog,
 } = composeStories(stories);
 
 const STILL_STABLE = "It's older than the build you're on, as expected.";
@@ -294,4 +295,17 @@ test('a Development build already on Stable goes back to Development with no dia
 
     expect(onSetStream).toHaveBeenCalledExactlyOnceWith('development');
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+});
+
+test("U41: ↑↓ on the stream's choice move that choice, not the changelog's folds below it", async () => {
+    await WithChangelog.run();
+    const latest = page.getByRole('button', { name: /^githq 0\.2\.0/ });
+
+    await userEvent.click(page.getByRole('radio', { name: /^Stable/ }));
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(latest).not.toHaveFocus();
+
+    await userEvent.click(page.getByRole('heading', { name: 'Changelog' }));
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(latest).toHaveFocus();
 });

@@ -63,13 +63,13 @@ signature arrives, those installs keep updating, because updates are verified wi
 
 ## What changed
 
-The app says it updated with a toast in a corner, and it leads to Changelog, a section of Settings. Every version has its own fold
-there, newest first, the first open: on Stable its plain-language summary and formal list, so skipping two versions loses nothing. The
+The app says it updated with a toast in a corner, and it leads to the changelog, in Settings' Updates section under the version and
+the update stream. Every version has its own fold there, newest first, the first open: on Stable its plain-language summary and formal list, so skipping two versions loses nothing. The
 agent that takes a release through writes that summary on the draft before publishing it.
 
 On Development there is no description to read, because the release is replaced by each build, so the app asks GitHub for the commits
 and lists what users would notice. [Everything is read from GitHub when needed](DECISIONS.md#d10), because the owner corrects
 descriptions after the build, and a correction should still arrive. Offline, the list waits for the connection.
-[Why a section and not a range](DECISIONS.md#d17).
+[Why a list and not a range](DECISIONS.md#d17), [and why in Updates](DECISIONS.md#d20).
 
 [Every decision, with the evidence](DECISIONS.md).
