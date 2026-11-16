@@ -17,6 +17,10 @@ import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT } from '../tracking/sampleTrackedWork.js';
 
 const ISSUE = 'Crash on start';
+// A phone in portrait (mobile D5: the phone layout below 640 px of window width).
+const PHONE = { width: 390, height: 844 };
+// How long a phone's sheet slides (`$motion-sheet`).
+const SHEET_MS = 200;
 
 /** One kind of overlay: how it opens, what it is in the page, and how it closes. */
 interface Overlay {
@@ -65,6 +69,75 @@ test('with animations off, no overlay animates and each is out of the page with 
             expect(await overlay.surface.count()).toBe(0);
         });
     }
+
+    // Back to the list from the item the popover was opened on, where a phone has its places button.
+    await shell.myWorkLink('My work').click();
+    await expect(myWork.row(ISSUE)).toBeVisible();
+    await page.setViewportSize(PHONE);
+    for (const sheet of phoneSheets(page)) {
+        await test.step(`phone: ${sheet.name}`, async () => {
+            await sheet.open();
+            expect((await motionOf(sheet.surface)).name).toBe('none');
+
+            await sheet.close();
+            await nextFrame(page);
+            expect(await sheet.surface.count()).toBe(0);
+
+            // Nothing of it stayed behind: it opens again.
+            await sheet.open();
+            await sheet.close();
+        });
+    }
+});
+
+test('on a phone with animations on, the places panel and the command menu slide in from their edge and back out', async ({
+    page,
+    github,
+}) => {
+    await openOverlayApp(page, github);
+    await page.setViewportSize(PHONE);
+
+    for (const sheet of phoneSheets(page)) {
+        await test.step(sheet.name, async () => {
+            await sheet.open();
+            expect(await motionOf(sheet.surface)).toEqual({ name: 'motion-sheet-in', durationMs: SHEET_MS });
+
+            const restore = await slowAnimations(page);
+            await sheet.close();
+            expect(await motionOf(sheet.surface)).toEqual({ name: 'motion-sheet-out', durationMs: SHEET_MS });
+            await restore();
+            await expect(sheet.surface).toHaveCount(0);
+
+            // Nothing of it stayed behind: it opens again.
+            await sheet.open();
+            await sheet.close();
+            await expect(sheet.surface).toHaveCount(0);
+        });
+    }
+});
+
+test('on a phone, a tap on the places panel while it slides out does nothing', async ({ page, github }) => {
+    await openOverlayApp(page, github);
+    await page.setViewportSize(PHONE);
+    const places = phoneSheets(page)[0]!;
+    await places.open();
+    // In place, slid in all the way.
+    await places.surface.evaluate(async element => {
+        await Promise.all(element.getAnimations().map(animation => animation.finished));
+    });
+    const link = places.surface.getByRole('link').filter({ has: page.getByText('Mentioned', { exact: true }) });
+    const box = await link.boundingBox();
+    expect(box).not.toBeNull();
+    const address = page.url();
+
+    const restore = await slowAnimations(page);
+    await places.close();
+    expect((await motionOf(places.surface)).name).toBe('motion-sheet-out');
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await restore();
+
+    await expect(places.surface).toHaveCount(0);
+    expect(page.url()).toBe(address);
 });
 
 test('the Animations switch applies without a reload and is still as set after one', async ({ page, github }) => {
@@ -225,6 +298,35 @@ function overlays(page: Page, shell: AppShellHarness, myWork: MyWorkScreenHarnes
     ];
 }
 
+/** A phone's sheets: the places panel from the left and the command menu from below. Escape closes each. */
+function phoneSheets(page: Page): Overlay[] {
+    const places = page.getByRole('dialog', { name: 'Places' });
+    const menu = new CommandMenuHarness(page);
+    const escape = async () => {
+        await page.keyboard.press('Escape');
+    };
+    return [
+        {
+            name: 'places panel',
+            surface: places,
+            open: async () => {
+                await page.getByRole('button', { name: 'Open places' }).click();
+                await expect(places).toBeVisible();
+            },
+            close: escape,
+        },
+        {
+            name: 'command menu',
+            surface: menu.root,
+            open: async () => {
+                await page.getByRole('button', { name: /Do or find…/u }).click();
+                await expect(menu.root).toBeVisible();
+            },
+            close: escape,
+        },
+    ];
+}
+
 /** What `surface` animates by, as computed. */
 async function motionOf(surface: Locator): Promise<{ name: string; durationMs: number }> {
     return await surface.first().evaluate(element => {
@@ -238,6 +340,20 @@ async function transitionOf(element: Locator): Promise<{ durationMs: number }> {
     return await element.evaluate(node => ({
         durationMs: Number.parseFloat(getComputedStyle(node).transitionDuration) * 1000,
     }));
+}
+
+/**
+ * Plays the page's animations ten times slower, so a check surely lands while a sheet of 200 ms slides out however
+ * loaded the machine is; the function it returns plays them at their speed again.
+ */
+async function slowAnimations(page: Page): Promise<() => Promise<void>> {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 0.1 });
+    return async () => {
+        await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 });
+        await cdp.detach();
+    };
 }
 
 /** Resolves after the browser painted a frame: Vue has updated the page by then, a fade of 150 ms has not ended. */

@@ -1,4 +1,4 @@
-<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, the highlight staying as the pointer leaves the list, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover, or on a phone in a menu at the bottom (`touch`: rows a finger's height, and the list, not the filter, takes the focus, so no on-screen keyboard comes until the filter is tapped); the command menu and the new issue's choosers show it in place. Or rising from below (`fromBelow`, a phone's command menu, mobile D16): the filter under the rows, nothing focusing it until it is tapped — the list holds the focus, the highlighted row its active descendant — the row nearest the filter highlighted as the rows change; ↑/↓ follow the screen, and a key typed while the list holds the focus goes into the filter, focusing it. -->
+<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. Only a mouse or pen highlights the row it hovers: a finger scrolling the list moves neither the highlight nor, as it lifts, the scroll. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, the highlight staying as the pointer leaves the list, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover, or on a phone in a menu at the bottom (`touch`: rows a finger's height, and the list, not the filter, takes the focus, so no on-screen keyboard comes until the filter is tapped); the command menu and the new issue's choosers show it in place. Or rising from below (`fromBelow`, a phone's command menu, mobile D16): the filter under the rows, nothing focusing it until it is tapped — the list holds the focus, the highlighted row its active descendant — the row nearest the filter highlighted as the rows change; ↑/↓ follow the screen, and a key typed while the list holds the focus goes into the filter, focusing it. -->
 <script lang="ts" setup generic="TRow extends FilterListRow">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ListboxContent, ListboxFilter, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRoot } from 'reka-ui';
@@ -182,6 +182,17 @@ function onLeave(event: Event) {
   }
 }
 
+/**
+ * A finger is no hover: its move, scrolling the list, would highlight every row it passes (reka-ui's items highlight on
+ * any pointer), and its leave, as it lifts, would clear the highlight that {@link onLeave} then scrolls back into view.
+ * Stopped on the way down, before reka-ui's items and root see it.
+ */
+function onTouchPointer(event: PointerEvent) {
+  if (event.pointerType === 'touch') {
+    event.stopPropagation();
+  }
+}
+
 function isInFilter(event: KeyboardEvent) {
   return event.target instanceof Node && filterRef.value?.contains(event.target) === true;
 }
@@ -278,6 +289,8 @@ function onListKeydown(event: KeyboardEvent) {
     :multiple="multiple"
     :selection-behavior="multiple ? 'toggle' : 'replace'"
     highlight-on-hover
+    @pointermove.capture="onTouchPointer"
+    @pointerleave.capture="onTouchPointer"
     @entry-focus="onEntryFocus"
     @highlight="onHighlight"
     @leave="onLeave"

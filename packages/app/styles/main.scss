@@ -55,6 +55,27 @@ html {
     }
 }
 
+// An overlay leaving: a phone's sheet's dim (`Dialog`).
+@keyframes motion-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+// A phone's sheet sliding in from fully off its edge and back out, named in `--motion-sheet-from` (`Dialog`). Two names,
+// because reka's `Presence` waits for a closing animation only when the name changes.
+@keyframes motion-sheet-in {
+    from {
+        translate: var(--motion-sheet-from);
+    }
+}
+
+@keyframes motion-sheet-out {
+    to {
+        translate: var(--motion-sheet-from);
+    }
+}
+
 // A skeleton's bands moving left to right by one band's tile (`@mixin skeleton-fill`), which brings them back to where
 // they started; each shape shifts them back by where it starts in its wrapper.
 @keyframes skeleton-sweep {

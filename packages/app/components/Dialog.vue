@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu), or the whole screen (a phone's new issue form, mobile D42) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top. -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu), or the whole screen (a phone's new issue form, mobile D42) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). A phone's sheet (`left`, `bottom`) slides in from its edge and back out, 200 ms, with animations on; a tap on it while it slides out does nothing. It is put in the page as it opens, so the one opened last is on top, and leaves it once closed (a sheet once it has slid out). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -13,7 +13,7 @@ import {
   DialogTrigger,
   VisuallyHidden,
 } from 'reka-ui';
-import { onScopeDispose, watch } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 
@@ -72,6 +72,10 @@ const width = defineModel<number>('width', { default: 560 });
 const t = useTranslate();
 const phoneLayout = useService(PhoneLayout);
 let closeTask: (() => void) | null = null;
+// Whether the portal is in the page. It comes as the dialog opens and leaves as it closes — a phone's sheet only once its
+// content has: reka's `Presence` keeps it until it has slid out, and the title unmounting with it says it is gone.
+const inPage = ref(open.value);
+const sheet = computed(() => props.edge === 'left' || props.edge === 'bottom');
 
 // A sheet from below or a screen of its own is a task: the phone's command line leaves while it is open (mobile D18).
 watch(
@@ -85,11 +89,34 @@ watch(
   },
   { immediate: true },
 );
+watch(open, isOpen => {
+  if (isOpen || !sheet.value) {
+    inPage.value = isOpen;
+  }
+});
 onScopeDispose(endTask);
 
 function endTask() {
   closeTask?.();
   closeTask = null;
+}
+
+/**
+ * Focus goes back where it was as the content leaves the page — unless what closed it put the focus somewhere since (a
+ * command's field), which a sheet sliding out for 200 ms would otherwise take away again.
+ */
+function onCloseAutoFocus(event: Event) {
+  emit('closeAutoFocus', event);
+  const active = document.activeElement;
+  if (active && active !== document.body && event.target instanceof Node && !event.target.contains(active)) {
+    event.preventDefault();
+  }
+}
+
+function leavePage() {
+  if (!open.value) {
+    inPage.value = false;
+  }
 }
 </script>
 
@@ -101,8 +128,8 @@ function endTask() {
     >
       <slot name="trigger" />
     </DialogTrigger>
-    <DialogPortal v-if="open">
-      <DialogOverlay :class="css.dialog_overlay" />
+    <DialogPortal v-if="inPage">
+      <DialogOverlay :class="[css.dialog_overlay, sheet && css.dialog_overlay_sheet]" />
       <DialogContent
         :class="[
           css.dialog,
@@ -114,17 +141,18 @@ function endTask() {
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
         @open-auto-focus="emit('openAutoFocus', $event)"
-        @close-auto-focus="emit('closeAutoFocus', $event)"
+        @close-auto-focus="onCloseAutoFocus"
       >
         <VisuallyHidden
           v-if="titleHidden || bare"
           as-child
         >
-          <DialogTitle>{{ title }}</DialogTitle>
+          <DialogTitle @vue:unmounted="leavePage">{{ title }}</DialogTitle>
         </VisuallyHidden>
         <DialogTitle
           v-else
           :class="css.dialog_title"
+          @vue:unmounted="leavePage"
         >
           {{ title }}
         </DialogTitle>
@@ -183,6 +211,23 @@ function endTask() {
   }
 }
 
+// Behind a phone's sheet: fades in and out with it.
+.dialog_overlay_sheet {
+  &[data-state='open'] {
+    @include motion {
+      animation-duration: $motion-sheet;
+    }
+  }
+
+  &[data-state='closed'] {
+    @include motion {
+      animation-name: global(motion-fade-out);
+      animation-duration: $motion-sheet;
+      animation-timing-function: ease-in;
+    }
+  }
+}
+
 .dialog {
   position: fixed;
   top: 14vh;
@@ -237,11 +282,7 @@ function endTask() {
   border-width: 0 1px 0 0;
   border-radius: 0;
   transform: none;
-
-  &[data-state='open'] {
-    --motion-slide-x: #{-$motion-slide-distance};
-    --motion-slide-y: 0;
-  }
+  --motion-sheet-from: -100% 0;
 }
 
 .dialog_bottom {
@@ -255,9 +296,30 @@ function endTask() {
   border-width: 1px 0 0;
   border-radius: $radius-xl $radius-xl 0 0;
   transform: none;
+  --motion-sheet-from: 0 100%;
+}
 
+// A phone's sheet slides from fully off its edge and back out (`docs/decisions/motion-as-opt-in-css.md`).
+.dialog_left,
+.dialog_bottom {
   &[data-state='open'] {
-    --motion-slide-y: #{$motion-slide-distance};
+    @include motion {
+      animation-name: global(motion-sheet-in);
+      animation-duration: $motion-sheet;
+      animation-timing-function: ease-out;
+    }
+  }
+
+  &[data-state='closed'] {
+    // `!important` overrides the `pointer-events: auto` reka keeps inline on the content until it unmounts: a tap on a
+    // sheet sliding out would run what it lands on again.
+    pointer-events: none !important;
+
+    @include motion {
+      animation-name: global(motion-sheet-out);
+      animation-duration: $motion-sheet;
+      animation-timing-function: ease-in;
+    }
   }
 }
 
