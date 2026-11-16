@@ -13,6 +13,7 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
+import EmptyState from '@/components/EmptyState.vue';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
@@ -295,6 +296,21 @@ test('board: ⇧→ or a drag of a stack card moves all its pull requests, and o
     expect(held.moves).toEqual([]);
     expect(page.getByText('stack S_1').element().closest('li')?.getAttribute('draggable')).toBeNull();
 });
+
+test.each(['list', 'board'] as const)(
+    "ES1, D19 (%s): with nothing listed, the owner's note fills the list's area and stands in its middle, not under its top",
+    async layout => {
+        mount([], layout, { empty: true });
+
+        const title = page.getByRole('heading', { name: 'Nothing here' });
+        await expect.element(title).toBeVisible();
+        const box = title.element().getBoundingClientRect();
+        const middle = window.innerHeight / 2;
+        // The note's padding leaves more room below than above, so its title sits a little above the middle.
+        expect(box.top).toBeGreaterThan(middle - 120);
+        expect(box.bottom).toBeLessThan(middle + 40);
+    },
+);
 
 test('list: ←/→ move nothing, ↓ crosses into the next group', async () => {
     mount(BOARD, 'list');
@@ -716,6 +732,8 @@ interface MountOptions {
     readonly layout?: ListLayout;
     /** Which entries can open over the list; all of them when not given. */
     readonly canOpenOver?: (value: string) => boolean;
+    /** Fills the `empty` slot with a whole-screen note, as a screen's owner does. */
+    readonly empty?: boolean;
 }
 
 /** A merge panel opened: for which item, and what it runs once the merge is sent. */
@@ -2117,6 +2135,9 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                                   : []),
                           ])
                         : h('span', props.entry.value),
+                ...(options.empty && {
+                    empty: () => h(EmptyState, { title: 'Nothing here', detail: 'GitHub lists none here.' }),
+                }),
                 ...(options.contextMenu && {
                     contextMenu: ({ ids, open, merge }: ListContextMenuProps) => [
                         h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),
