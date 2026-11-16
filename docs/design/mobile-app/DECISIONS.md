@@ -194,3 +194,26 @@ before it expires, or the next review fails.
 - A demo mode on the mocked GitHub the e2e tests use — the nicest for a reviewer, but needs Apple's prior approval
   and ships test code in the published app.
 - The token link on every platform — nobody reviews the web or the desktop app (owner).
+
+## D7
+
+**The phone app's web app is built for a fourth target, `mobile`, beside `production`, `local` and `desktop`: native
+code shared with the desktop goes into both native targets, and what belongs to one of them only is cut out at build
+time. One `mobile` target serves iOS and Android; Tauri settles what differs between them.** (2026-11-16, design
+agent's proposal, accepted by the owner)
+
+Shared by both native targets: the bridge to Tauri, the sign-in through `githq://` ([D4](#d4)), the token store, opening
+links, the "what changed" list after an update. Desktop only: the updater and its status bar segment, the stream choice
+in Settings, the macOS window controls. Phone only: the token link ([D6](#d6)). iOS runs its own build through a
+platform config file of Tauri's, so `tauri ios build` builds the `mobile` target.
+
+**Why.** It is how the desktop's code is kept out of the web today — a build target, with a script after the build that
+asserts what is absent (`packages/app/nuxt.config.ts:24`, `checkProductionBuild.ts`) — so the same check can prove the
+token link never reaches the desktop and the updater never reaches the phone. On the phone the stream is which app you
+installed (TestFlight or the App Store, [D5](#d5)), so there is nothing to choose in Settings and no updater to show.
+
+**Rejected.**
+
+- One native build for both, asking Tauri at run time which platform it is on — one build fewer, but the desktop's
+  code ships to the iPhone and keeping the token link off the desktop rests on a run-time check rather than on the code
+  being absent. Would win if the fourth build became a burden to maintain.

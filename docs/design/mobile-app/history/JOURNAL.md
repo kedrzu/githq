@@ -42,3 +42,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   reviewer vs a dedicated mailbox vs demo mode.
 - 2026-11-15 — Owner: token sign-in for reviewers, phone app only (D6). Next put to the owner: how the phone build
   differs from the desktop build (a target of its own or the desktop target deciding at run time).
+- 2026-11-16 — Owner accepted a fourth build target `mobile` (D7). README now has the build order and what is left
+  for later; folded up to here. Next: rightsize, then propose closing.

@@ -34,7 +34,14 @@ code that changes what it does, so every change reaches the phone only with a ne
 app on the phone will trail the website by days, and that is accepted.
 
 The app is built with Tauri, the same as the desktop app, as one more target of the same project
-([why Tauri](DECISIONS.md#d2)).
+([why Tauri](DECISIONS.md#d2)). The desktop app's native side already signs in, keeps the token in the system's
+keychain and opens links, and the same code reaches a phone; only iOS's sign-in sheet needs a little Swift of our own.
+
+The web app inside is built for the phone specifically, as it is for the desktop: what both apps share goes into
+both, and what only one of them needs — the desktop's updater and window controls, the phone's reviewer sign-in below
+— is left out of the other ([one build for phones](DECISIONS.md#d7)). On a phone there is no update button and no
+choice of stream in Settings: iOS updates the app, and which stream you are on is whether you installed it from
+TestFlight or the App Store.
 
 ## Signing in
 
@@ -66,7 +73,20 @@ phone skips that version and gets the fix with the next one.
 The versions are the desktop's: an iPhone only accepts three numbers as a version, so the desktop's
 `0.3.0-dev.214` becomes version `0.3.0`, build `214`.
 
-## What is still open
+## What gets built first
 
-- What the desktop-only parts become: the self-updater and the macOS window controls have no place on a phone.
-- Android, after iOS.
+Each step is something the owner can try:
+
+1. **One sign-in for the desktop.** The desktop app signs in through the browser and comes back to the app; the
+   code-copying sign-in is gone. This needs nothing from the phone and lands on its own.
+2. **githq on the owner's iPhone.** The phone build, the iOS project, the sign-in sheet, the token in the Keychain
+   and the reviewer's token link, installed from Xcode.
+3. **Every merge on the iPhone.** CI sends each Development build to TestFlight.
+4. **In the App Store.** The demo account, the first submission, and Stable releases going to the App Store.
+
+## Left for later
+
+- Android: the same app and the same build for phones; its token store needs a little Kotlin at start-up.
+- githq.dev links opening in the app instead of Safari (a file Apple checks on githq.dev). Links to github.com cannot
+  open in githq: that domain is GitHub's.
+- Being reviewed by Apple will show what this design did not foresee.
