@@ -106,3 +106,5 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-16 — With the computer's sidebar (git-client D25): tapping a repository or project in the places panel expands
   it in place, tapping a section opens it and closes the panel, Commits and Workflows ↗ (D53, MB270, MB271); D21's
   "nowhere else" and D30's repository-layout exception retired in part to history.
+- 2026-11-16 — Owner: the computer's sidebar no longer expands the open place (git-client D27); the places panel keeps
+  expanding a place tapped, now the phone's alone (D53's why reworded).

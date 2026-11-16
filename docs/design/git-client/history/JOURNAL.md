@@ -68,3 +68,6 @@ Append-only; one line per turn that settled something.
 - 2026-11-16 — Owner: the keys proposed for a place are fine and the sidebar collapses on ⌘B; a project's first nine
   saved views on `1`–`9`, `[` `]` to the previous and next section or view, wrapping around, the open place's alone
   (D26). The project's D14–D17, CH82–CH84 and R5 drawn.
+- 2026-11-16 — Owner, after trying it: the open place no longer expands in the computer's sidebar, its row is current
+  and the header's tabs move between its sections; only the phone's places panel expands a place (D27). D25's sidebar
+  part retired to history; CH71 deleted, CH72–CH74, R4, D12 and D13 redrawn.

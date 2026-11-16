@@ -1,4 +1,4 @@
-<!-- The rows under a place expanded in the sidebar (`Sidebar`): a repository's sections or a project's saved views, each a link with its icon, smaller and dimmer than a place's, and its tab's count, indented to the place's name with a thin line running down from the place's icon; the one shown filled and `aria-current`. A saved view GitHub answers has a cloud before its name (K6), one changed on this device a dot after it (D13); a repository's Workflows with broken ones the red dot of "Broken workflows" (actions W1). On a phone (`phone`) the rows are a finger's height, and one leaving for github.com (`external`, mobile D21) is marked ↗ instead of a count. -->
+<!-- The rows under a place tapped open in the phone's places panel (`Sidebar`, mobile D53): a repository's sections or a project's saved views, each a link a finger's height with its icon, dimmer than a place's, and its tab's count, indented as "my work"'s groups with a thin line running down from the place's icon; the one shown filled and `aria-current`. A saved view GitHub answers has a cloud before its name (K6), one changed on this device a dot after it (D13); one leaving for github.com (`external`, mobile D21) is marked ↗ instead of a count. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight, Cloud } from 'lucide-vue-next';
@@ -9,15 +9,13 @@ import type { SidebarSubEntry } from './SidebarTypes.js';
 
 defineProps<{
   entries: readonly SidebarSubEntry[];
-  /** The phone's places panel: rows a finger's height. */
-  phone?: boolean;
 }>();
 
 const t = useTranslate();
 </script>
 
 <template>
-  <ul :class="[css.subRows, phone && css.subRows_phone]">
+  <ul :class="css.subRows">
     <li
       v-for="entry in entries"
       :key="entry.key"
@@ -68,11 +66,6 @@ const t = useTranslate();
             :aria-label="t(l.modifiedLocally)"
           />
         </span>
-        <span
-          v-if="entry.marker"
-          :class="[css.subRows_broken, css[`subRows_broken_${entry.marker}`]]"
-          aria-hidden="true"
-        />
         <span :class="css.subRows_count">{{ entry.count }}</span>
       </RouterLink>
     </li>
@@ -80,7 +73,7 @@ const t = useTranslate();
 </template>
 
 <style lang="scss" module="css">
-// The line runs down from the centre of the place's icon (the row's padding and half its 15px icon), over the rows' fill.
+// The line runs down from the centre of the place's 18px icon, over the rows' fill.
 .subRows {
   position: relative;
   display: flex;
@@ -94,7 +87,7 @@ const t = useTranslate();
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 15px;
+    left: 17px;
     z-index: 1;
     width: 1px;
     pointer-events: none;
@@ -103,11 +96,13 @@ const t = useTranslate();
   }
 }
 
-// Indented to the place's name: the place row's padding, its icon and their gap.
+// A finger's height, the text a phone's, indented as "my work"'s groups (mobile MB26).
 .subRows_row {
   @include nav-row;
 
-  padding-left: 32px;
+  min-height: $touch-target-size;
+  padding-left: $spacing-24;
+  font-size: $font-size-xl;
 }
 
 .subRows_row_current {
@@ -120,8 +115,8 @@ const t = useTranslate();
 
 .subRows_icon {
   flex: none;
-  width: 13px;
-  height: 13px;
+  width: 18px;
+  height: 18px;
   color: $color-fg-3;
 }
 
@@ -155,16 +150,10 @@ const t = useTranslate();
   border-radius: 50%;
 }
 
-.subRows_broken {
-  @include workflow-broken-marker;
-}
-
-.subRows_broken_settled {
-  background: $color-red-quiet;
-}
-
 .subRows_count {
   @include nav-row-count;
+
+  font-size: $font-size-sm;
 }
 
 .subRows_external {
@@ -176,28 +165,5 @@ const t = useTranslate();
 
 .subRows_hidden {
   @include visually-hidden;
-}
-
-// The phone's rows (mobile MB26): a finger's height, the text a phone's, indented as "my work"'s groups; the line from
-// the centre of the place's 18px icon.
-.subRows_phone {
-  &::before {
-    left: 17px;
-  }
-
-  .subRows_row {
-    min-height: $touch-target-size;
-    padding-left: $spacing-24;
-    font-size: $font-size-xl;
-  }
-
-  .subRows_icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .subRows_count {
-    font-size: $font-size-sm;
-  }
 }
 </style>

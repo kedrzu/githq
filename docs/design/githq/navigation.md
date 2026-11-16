@@ -59,8 +59,9 @@ An item is anything opened from a list: an issue, a pull request, a workflow.
 
 ## Places in the sidebar
 
-- **Only the open place is expanded:** a tracked repository shows its sections under its row, a tracked project its
-  saved views ([git-client D25](../git-client/DECISIONS.md#d25)). Going to another place moves them there.
+- **On a computer no place expands:** the open place's row is the current one, and the header's tabs move between a
+  repository's sections or a project's saved views ([git-client D27](../git-client/DECISIONS.md#d27)). Going to
+  another place moves the mark there.
 - **The open place has keys:** a repository's sections on `1`–`4`, a project's first nine saved views on `1`–`9`, in
   the order of its tabs; `[` and `]` go to the previous and next tab as shown, wrapping around at the ends. A tenth view
   and later have no key, nor has "All items", which `[` `]` step through while it shows. Only the screen showing the
@@ -68,15 +69,16 @@ An item is anything opened from a list: an issue, a pull request, a workflow.
   ([git-client D26](../git-client/DECISIONS.md#d26)). In a code review `[` `]` are the previous and next file.
 - **`⌘B` collapses or expands the sidebar** (`Ctrl+B` off a Mac), also from a one-line field but never from a text
   being written. A screen that forces the rail keeps `⌘B` to itself: in a code review it hides the file list.
-- **The current sub-row stays marked while one of its items is open,** in the panel or full screen. An item full screen
-  is in the list it was opened from while that list steps through it, else in its own repository's section of its kind;
-  a list outside any place (My work) expands nothing.
+- **The open place's row stays marked while one of its items is open,** in the panel or full screen, and so does its
+  current tab. An item full screen is in the list it was opened from while that list steps through it, else in its own
+  repository's section of its kind; a list outside any place (My work) marks none.
 - **A place's row opens its list:** a repository on the section it was left on, a project on its first saved view. On
   the open place this closes an item open over the list.
-- **An untracked repository has no row,** so nothing expands: its header is its navigation.
-- **The rail is unchanged:** it lists no repositories and expands nothing.
-- **On a phone** the places panel expands a place tapped, without going anywhere; a sub-row tapped opens and closes the
-  panel ([mobile D53](../mobile/DECISIONS.md#d53)).
+- **An untracked repository has no row:** its header is its navigation.
+- **The rail is unchanged:** it lists no repositories.
+- **On a phone** the places panel expands a place tapped, without going anywhere, the open place expanded to begin
+  with, its current sub-row marked; a sub-row tapped opens and closes the panel
+  ([mobile D53](../mobile/DECISIONS.md#d53)).
 
 ## Starting things
 

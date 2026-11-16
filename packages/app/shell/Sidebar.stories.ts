@@ -129,38 +129,17 @@ export const CollapsedSyncStopped: Story = {
 const PORTAL: TrackedTarget = { kind: 'repository', nameWithOwner: 'skyline-labs/portal' };
 
 /**
- * CH71: in a tracked repository, on its pull requests — its sections under its row with their counts, Pull requests
- * current, Workflows with the red dot of its broken ones; the other repositories closed.
+ * CH72: in a tracked repository, on its pull requests — its row is the current one, with nothing under it: its sections
+ * are the header's tabs (git-client D27).
  */
 export const OnRepository: Story = {
-    args: {
-        tracked: withOpenPlace(SAMPLE_TRACKED, 'repository:skyline-labs/portal'),
-        getChildren: sampleGetChildren({ open: PORTAL, current: 'pullRequests' }),
-    },
+    args: { tracked: withOpenPlace(SAMPLE_TRACKED, 'repository:skyline-labs/portal') },
     decorators: [onPage('/skyline-labs/portal/pulls')],
 };
 
-/** The same with the app's animations on: the sections slide open and closed (`Reveal`). */
-export const OnRepositoryAnimated: Story = {
-    args: { ...OnRepository.args, animate: true },
-    decorators: [onPage('/skyline-labs/portal/pulls')],
-};
-
-/**
- * D12: in a tracked project, on its first saved view — its views under its row, no counts, a cloud on the one GitHub
- * answers, a dot on the one changed here.
- */
+/** D12: in a tracked project, on its first saved view — its row is the current one, its views the header's tabs. */
 export const OnProject: Story = {
-    args: {
-        tracked: withOpenPlace(SAMPLE_TRACKED, 'project:1'),
-        getChildren: sampleGetChildren({ open: { kind: 'project', id: 'PVT_1' }, current: 'view-1' }),
-    },
-    decorators: [onPage('/orgs/skyline-labs/projects/1')],
-};
-
-/** The open place with no rows to show (a project with no saved views): its row is the current one, as before. */
-export const OnPlaceWithoutRows: Story = {
-    args: { tracked: withOpenPlace(SAMPLE_TRACKED, 'project:1'), getChildren: () => [] },
+    args: { tracked: withOpenPlace(SAMPLE_TRACKED, 'project:1') },
     decorators: [onPage('/orgs/skyline-labs/projects/1')],
 };
 
@@ -322,8 +301,15 @@ export const PhoneOnRepository: Story = {
     args: {
         phone: true,
         tracked: withOpenPlace(SAMPLE_TRACKED, 'repository:skyline-labs/portal'),
-        getChildren: sampleGetChildren({ open: PORTAL, current: 'pullRequests', phone: true }),
+        getChildren: sampleGetChildren({ open: PORTAL, current: 'pullRequests' }),
     },
+    decorators: [onPage('/skyline-labs/portal/pulls')],
+};
+
+/** The same with the app's animations on: the sections slide open and closed (`Reveal`). */
+export const PhoneOnRepositoryAnimated: Story = {
+    args: { ...PhoneOnRepository.args, animate: true },
+    decorators: [onPage('/skyline-labs/portal/pulls')],
 };
 
 /** On a phone, in a project (MB271): its saved views shown under it to begin with. */
@@ -331,8 +317,9 @@ export const PhoneOnProject: Story = {
     args: {
         phone: true,
         tracked: withOpenPlace(SAMPLE_TRACKED, 'project:1'),
-        getChildren: sampleGetChildren({ open: { kind: 'project', id: 'PVT_1' }, current: 'view-1', phone: true }),
+        getChildren: sampleGetChildren({ open: { kind: 'project', id: 'PVT_1' }, current: 'view-1' }),
     },
+    decorators: [onPage('/orgs/skyline-labs/projects/1')],
 };
 
 /** In the macOS desktop app, a strip along the top holds the window controls and moves the window; here with more repositories than fit, as the sidebar scrolls. */

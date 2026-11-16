@@ -33662,7 +33662,7 @@
               "id": "n7sYVu",
               "name": "Group title",
               "fill": "$fg",
-              "content": "The project's views, under it in the sidebar",
+              "content": "The project's views: its row current in the sidebar, its views in the header",
               "fontFamily": "$font",
               "fontSize": 22,
               "fontWeight": "600"
@@ -33674,7 +33674,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Like a repository (App · Repository, CH72–CH74), the open project expands in the sidebar into its saved views: each with the cloud when GitHub answers its filter and the dot when it was changed on this device, and no count, as its tabs have none. Its header shows the views as the same tab group, and collapses them into one dropdown when room runs out.",
+              "content": "Like a repository (App · Repository, CH72–CH74), the open project's row is marked current in the sidebar, with nothing under it, and the header's views move between its saved views: each with the cloud when GitHub answers its filter and the dot when it was changed on this device, and no count. Its header shows the views as the same tab group, and collapses them into one dropdown when room runs out. Only the phone's places panel expands the project into its views (App · Mobile, MB271).",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -33721,7 +33721,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The project's row expands into its five saved views; Current sprint is current, with the dot because its sort was changed here, and Next sprint carries the cloud because GitHub answers its filter. The header's views are the same tab group as a repository's sections; it takes as many views as the project has. All items is a temporary tab: it shows, in the tabs, the sub-rows and the dropdown, only while it is the view shown, so it is not here.",
+                      "content": "The project's row is the current one in the sidebar, with nothing under it; the header's views move between its five saved views. Current sprint is current there, with the dot because its sort was changed here, and Next sprint carries the cloud because GitHub answers its filter. The header's views are the same tab group as a repository's sections; it takes as many views as the project has. All items is a temporary tab: it shows, in the tabs and the dropdown, only while it is the view shown, so it is not here.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -33887,7 +33887,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Hovering a view's tab shows where it goes and its key, as a repository's sections do (CH67): the first saved view takes 1, the second 2, up to the ninth on 9; a tenth and later have no key, and their tooltip is the name alone. The keys follow the views' order on GitHub, the same order as the tabs, the sub-rows and the dropdown. [ and ] step to the previous and next view; they are taught in the views dropdown (D17), not here.",
+                      "content": "Hovering a view's tab shows where it goes and its key, as a repository's sections do (CH67): the first saved view takes 1, the second 2, up to the ninth on 9; a tenth and later have no key, and their tooltip is the name alone. The keys follow the views' order on GitHub, the same order as the tabs, the dropdown and the phone's places panel. [ and ] step to the previous and next view; they are taught in the views dropdown (D17), not here.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -34370,7 +34370,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "With an item open the pane is 644 px wide: the views collapse into one dropdown showing the current view, Display is an icon, and \"Changed here\" gives way to the view's dot in the sidebar. The dropdown is open: every view, the cloud where GitHub answers the filter. Views carry no count, as their tabs don't (owner, 2026-11-16), and no keys here: D17 is the same menu with the views' keys, 1–9, and the [ ] hint. All items isn't listed: it appears only while it is the view shown.",
+                      "content": "With an item open the pane is 644 px wide: the views collapse into one dropdown showing the current view, Display is an icon, and \"Changed here\" gives way. The sidebar keeps Platform Q4 current. The dropdown is open: every view, the cloud where GitHub answers the filter. Views carry no count, as their tabs don't (owner, 2026-11-16), and no keys here: D17 is the same menu with the views' keys, 1–9, and the [ ] hint. All items isn't listed: it appears only while it is the view shown.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -36515,139 +36515,6 @@
                   ]
                 },
                 {
-                  "type": "frame",
-                  "id": "fTxvB",
-                  "name": "Sidebar sub-rows",
-                  "width": 236,
-                  "layout": "vertical",
-                  "gap": 12,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "FueBC",
-                      "name": "Sidebar / sub-row",
-                      "reusable": true,
-                      "width": "fill_container",
-                      "cornerRadius": 6,
-                      "gap": 8,
-                      "padding": [
-                        5,
-                        8,
-                        5,
-                        32
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "U4oLA",
-                          "name": "Icon",
-                          "width": 14,
-                          "height": 14,
-                          "icon": "circle-dot",
-                          "library": "lucide",
-                          "fill": "$fg-3"
-                        },
-                        {
-                          "type": "icon",
-                          "id": "n3zKJr",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Cloud",
-                          "enabled": false,
-                          "width": 12,
-                          "height": 12,
-                          "icon": "cloud",
-                          "library": "lucide",
-                          "fill": "$amber"
-                        },
-                        {
-                          "type": "text",
-                          "id": "zvngK",
-                          "name": "Label",
-                          "fill": "$fg-2",
-                          "content": "Issues",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "ellipse",
-                          "id": "PkBO3",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Modified dot",
-                          "enabled": false,
-                          "fill": "$accent",
-                          "width": 6,
-                          "height": 6
-                        },
-                        {
-                          "type": "frame",
-                          "id": "HrrAr",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "ellipse",
-                          "id": "B6Q0TV",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Broken dot",
-                          "enabled": false,
-                          "fill": "$red",
-                          "width": 6,
-                          "height": 6
-                        },
-                        {
-                          "type": "text",
-                          "id": "Fv4Jj",
-                          "name": "Count",
-                          "fill": "$fg-dim",
-                          "content": "118",
-                          "fontFamily": "$mono",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "rectangle",
-                          "id": "sPuOL",
-                          "layoutPosition": "absolute",
-                          "x": 15,
-                          "y": -2,
-                          "name": "Guide",
-                          "fill": "$border-2",
-                          "width": 1,
-                          "height": 28
-                        }
-                      ]
-                    },
-                    {
-                      "id": "IuMvE",
-                      "type": "ref",
-                      "reusable": true,
-                      "ref": "FueBC",
-                      "name": "Sidebar / sub-row · current",
-                      "fill": "$bg-3",
-                      "descendants": {
-                        "U4oLA": {
-                          "fill": "$fg",
-                          "icon": "git-pull-request"
-                        },
-                        "zvngK": {
-                          "fill": "$fg",
-                          "fontWeight": "500",
-                          "content": "Pull requests"
-                        },
-                        "Fv4Jj": {
-                          "content": "24"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
                   "id": "DhmYq",
                   "type": "ref",
                   "reusable": true,
@@ -36656,134 +36523,69 @@
                   "descendants": {
                     "w7B2q": {
                       "type": "frame",
-                      "id": "elBja",
-                      "name": "Place fitloop/webapp, open",
+                      "id": "aONzF",
+                      "name": "Nav fitloop/webapp",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 2,
+                      "fill": "$bg-3",
+                      "cornerRadius": 6,
+                      "gap": 9,
+                      "padding": [
+                        5,
+                        8
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "pU4o1",
+                          "name": "Icon fitloop/webapp",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "lock",
+                          "library": "lucide",
+                          "fill": "$fg"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xQ8Ry",
+                          "name": "Label fitloop/webapp",
+                          "fill": "$fg",
+                          "content": "fitloop/webapp",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
                           "type": "frame",
-                          "id": "g4xPY0",
-                          "name": "Nav fitloop/webapp",
+                          "id": "Wt20m",
+                          "name": "spacer",
                           "width": "fill_container",
-                          "cornerRadius": 6,
-                          "gap": 9,
-                          "padding": [
-                            5,
-                            8
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "NLKC1",
-                              "name": "Icon fitloop/webapp",
-                              "width": 15,
-                              "height": 15,
-                              "icon": "lock",
-                              "library": "lucide",
-                              "fill": "$fg"
-                            },
-                            {
-                              "type": "text",
-                              "id": "osap4",
-                              "name": "Label fitloop/webapp",
-                              "fill": "$fg",
-                              "content": "fitloop/webapp",
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "SjPDq",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "lVypi",
-                              "name": "Count fitloop/webapp",
-                              "fill": "$fg-dim",
-                              "content": "142",
-                              "fontFamily": "$mono",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "height": 1
                         },
                         {
-                          "id": "JMD9k",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Issues",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "circle-dot"
-                            },
-                            "zvngK": {
-                              "content": "Issues"
-                            },
-                            "Fv4Jj": {
-                              "content": "118"
-                            }
-                          }
+                          "type": "text",
+                          "id": "XiG3g",
+                          "name": "Count fitloop/webapp",
+                          "fill": "$fg-dim",
+                          "content": "142",
+                          "fontFamily": "$mono",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
                         },
                         {
-                          "id": "C5Wam",
-                          "type": "ref",
-                          "ref": "IuMvE",
-                          "name": "Sub-row Pull requests",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "git-pull-request"
-                            },
-                            "zvngK": {
-                              "content": "Pull requests"
-                            },
-                            "Fv4Jj": {
-                              "content": "24"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Ve1O6",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Commits",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "git-commit-horizontal"
-                            },
-                            "zvngK": {
-                              "content": "Commits"
-                            },
-                            "Fv4Jj": {
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
-                          "id": "GAxnh",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Workflows",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "workflow"
-                            },
-                            "zvngK": {
-                              "content": "Workflows"
-                            },
-                            "B6Q0TV": {
-                              "enabled": true
-                            },
-                            "Fv4Jj": {
-                              "content": "2"
-                            }
-                          }
+                          "type": "ellipse",
+                          "id": "htd3a",
+                          "layoutPosition": "absolute",
+                          "x": 18,
+                          "y": 15,
+                          "name": "Broken marker",
+                          "enabled": false,
+                          "fill": "$red",
+                          "width": 7,
+                          "height": 7,
+                          "stroke": "$bg-2",
+                          "strokeWidth": 1.5,
+                          "strokeAlignment": "outer"
                         }
                       ]
                     }
@@ -36798,157 +36600,54 @@
                   "descendants": {
                     "TjcGY": {
                       "type": "frame",
-                      "id": "s7uqH",
-                      "name": "Place Platform Q4, open",
+                      "id": "EAEHN",
+                      "name": "Nav Platform Q4",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 2,
+                      "fill": "$bg-3",
+                      "cornerRadius": 6,
+                      "gap": 9,
+                      "padding": [
+                        5,
+                        8
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "d8m2A6",
+                          "name": "Icon Platform Q4",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "square-kanban",
+                          "library": "lucide",
+                          "fill": "$fg"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jyy6b",
+                          "name": "Label Platform Q4",
+                          "fill": "$fg",
+                          "content": "Platform Q4",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
                           "type": "frame",
-                          "id": "PiMsf",
-                          "name": "Nav Platform Q4",
+                          "id": "AeFIn",
+                          "name": "spacer",
                           "width": "fill_container",
-                          "cornerRadius": 6,
-                          "gap": 9,
-                          "padding": [
-                            5,
-                            8
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "KZCKs",
-                              "name": "Icon Platform Q4",
-                              "width": 15,
-                              "height": 15,
-                              "icon": "square-kanban",
-                              "library": "lucide",
-                              "fill": "$fg"
-                            },
-                            {
-                              "type": "text",
-                              "id": "V1M8t",
-                              "name": "Label Platform Q4",
-                              "fill": "$fg",
-                              "content": "Platform Q4",
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "fJ0XX",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "bHgwc",
-                              "name": "Count Platform Q4",
-                              "fill": "$fg-dim",
-                              "content": "128",
-                              "fontFamily": "$mono",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "height": 1
                         },
                         {
-                          "id": "FFkvk",
-                          "type": "ref",
-                          "ref": "IuMvE",
-                          "name": "Sub-row Current sprint",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "columns-3"
-                            },
-                            "zvngK": {
-                              "content": "Current sprint"
-                            },
-                            "PkBO3": {
-                              "enabled": true
-                            },
-                            "Fv4Jj": {
-                              "content": "24",
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
-                          "id": "yb4ky",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Backlog",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "list"
-                            },
-                            "zvngK": {
-                              "content": "Backlog"
-                            },
-                            "Fv4Jj": {
-                              "content": "61",
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
-                          "id": "G2mip",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Next sprint",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "list"
-                            },
-                            "n3zKJr": {
-                              "enabled": true
-                            },
-                            "zvngK": {
-                              "content": "Next sprint"
-                            },
-                            "Fv4Jj": {
-                              "content": "18",
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
-                          "id": "Q8lML8",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row By assignee",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "columns-3"
-                            },
-                            "zvngK": {
-                              "content": "By assignee"
-                            },
-                            "Fv4Jj": {
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
-                          "id": "juPDo",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Bugs",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "list"
-                            },
-                            "zvngK": {
-                              "content": "Bugs"
-                            },
-                            "Fv4Jj": {
-                              "enabled": false
-                            }
-                          }
+                          "type": "text",
+                          "id": "Q35ie",
+                          "name": "Count Platform Q4",
+                          "fill": "$fg-dim",
+                          "content": "128",
+                          "fontFamily": "$mono",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -40113,7 +39812,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on 1–4, each with its own tools; All, the open count beside the title and grouping by kind are gone. The sections are tabs beside the name (CH1, CH2). The second layout, a column of the repository's own (CH4, CH5), is gone with its setting: the open repository now expands in the sidebar instead (CH72–CH74, below). Commits: App · Commits (CH3). J1–J3 above show the view before this change.",
+              "content": "The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on 1–4, each with its own tools; All, the open count beside the title and grouping by kind are gone. The sections are tabs beside the name (CH1, CH2). The second layout, a column of the repository's own (CH4, CH5), is gone with its setting: on a computer the open repository's row is marked current in the sidebar and the header's tabs move between its sections (CH72–CH74, below); only the phone's places panel expands a place (App · Mobile, MB270). Commits: App · Commits (CH3). J1–J3 above show the view before this change.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -41438,7 +41137,7 @@
               "id": "F2Chi",
               "name": "Group title",
               "fill": "$fg",
-              "content": "The repository's navigation, under it in the sidebar",
+              "content": "The repository's navigation: its row current in the sidebar, its sections in the header",
               "fontFamily": "$font",
               "fontSize": 22,
               "fontWeight": "600"
@@ -41450,7 +41149,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "The repository's own column (CH4–CH6, CH42) is gone, and so is the setting that chose it. The open place expands in the sidebar instead: a tracked repository shows its sections under its row, a tracked project its saved views, each set tied to its place by a thin guide line (CH71). The header keeps its tabs while they fit, drawn as one bordered tab group with a tooltip naming each tab's key (CH67), and gives way in steps as the window narrows (App · Toolbar, CH75–CH79). The title carries the sidebar's icon, lock or book, inside the title button right before the name, instead of the word \"private\".",
+              "content": "The repository's own column (CH4–CH6, CH42) is gone, and so is the setting that chose it. On a computer the open place's row is marked current in the sidebar, as any other current row, with nothing under it: the header's tabs move between a repository's sections or a project's saved views. Only the phone's places panel expands a place into them (App · Mobile, MB270, MB271). The header keeps its tabs while they fit, drawn as one bordered tab group with a tooltip naming each tab's key (CH67), and gives way in steps as the window narrows (App · Toolbar, CH75–CH79). The title carries the sidebar's icon, lock or book, inside the title button right before the name, instead of the word \"private\".",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -41461,7 +41160,7 @@
         {
           "type": "frame",
           "id": "SN2Eo",
-          "name": "Row of screens · The header tabs and the sub-rows",
+          "name": "Row of screens · The header tabs",
           "gap": 80,
           "children": [
             {
@@ -41583,69 +41282,6 @@
                           "content": "2"
                         }
                       }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "rJsYu",
-              "name": "Slot · CH71 · An indent with a thin guide line",
-              "width": 420,
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "e0goxl",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "zbSzj",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "CH71 · An indent with a thin guide line",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "mIVCw",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The owner's pick. The sections start where the place's name starts, with a 1 px line down from the place's icon, as a file tree draws it, so they read as belonging to the row above. The current section is filled like any selected row. Every expanded place uses it: `Sidebar / sub-row` carries the line.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "JnliA",
-                  "name": "CH71 · An indent with a thin guide line",
-                  "clip": true,
-                  "width": 236,
-                  "height": 420,
-                  "fill": "$bg-2",
-                  "layout": "none",
-                  "children": [
-                    {
-                      "id": "TAqGP",
-                      "type": "ref",
-                      "ref": "DhmYq",
-                      "name": "Sidebar",
-                      "x": 0,
-                      "y": -230
                     }
                   ]
                 }
@@ -41860,7 +41496,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The repository's row expands into its sections; Pull requests is current there and in the tab group. The header no longer repeats \"private\": the lock sits inside the title button right before the name, as in the sidebar, so icon, name and chevron are one clickable unit. Display is bordered like every other control.",
+                      "content": "The repository's row is the current one in the sidebar, with nothing under it; Pull requests is current in the header's tab group, which moves between the sections. The header no longer repeats \"private\": the lock sits inside the title button right before the name, as in the sidebar, so icon, name and chevron are one clickable unit. Display is bordered like every other control.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -42504,7 +42140,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Opening an issue keeps Issues current in the sidebar. With the panel open the pane is 644 px wide, so the header has given way to its last step: the view options are in Display, Display is an icon, and the tabs are one dropdown showing the current section.",
+                      "content": "Opening an issue keeps fitloop/webapp current in the sidebar and Issues current in the header. With the panel open the pane is 644 px wide, so the header has given way to its last step: the view options are in Display, Display is an icon, and the tabs are one dropdown showing the current section.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -42533,47 +42169,11 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "vZN70",
+                          "id": "xKgNt",
                           "type": "ref",
                           "ref": "DhmYq",
                           "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "JMD9k": {
-                              "id": "xL64b",
-                              "type": "ref",
-                              "ref": "IuMvE",
-                              "name": "Sub-row Issues",
-                              "descendants": {
-                                "U4oLA": {
-                                  "icon": "circle-dot"
-                                },
-                                "zvngK": {
-                                  "content": "Issues"
-                                },
-                                "Fv4Jj": {
-                                  "content": "118"
-                                }
-                              }
-                            },
-                            "C5Wam": {
-                              "id": "j0ulAy",
-                              "type": "ref",
-                              "ref": "FueBC",
-                              "name": "Sub-row Pull requests",
-                              "descendants": {
-                                "U4oLA": {
-                                  "icon": "git-pull-request"
-                                },
-                                "zvngK": {
-                                  "content": "Pull requests"
-                                },
-                                "Fv4Jj": {
-                                  "content": "24"
-                                }
-                              }
-                            }
-                          }
+                          "height": "fill_container"
                         },
                         {
                           "type": "frame",
@@ -43181,7 +42781,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Full screen, the sidebar still shows where the pull request lives: the repository expanded, Pull requests current. Esc goes back to that list.",
+                      "content": "Full screen, the sidebar still shows where the pull request lives: the repository's row stays current. Esc goes back to its Pull requests.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -79158,47 +78758,11 @@
                   "height": "fill_container",
                   "children": [
                     {
-                      "id": "rj2Hl",
+                      "id": "nyhAl",
                       "type": "ref",
                       "ref": "DhmYq",
                       "name": "Sidebar",
-                      "height": "fill_container",
-                      "descendants": {
-                        "JMD9k": {
-                          "id": "XtOIK",
-                          "type": "ref",
-                          "ref": "IuMvE",
-                          "name": "Sub-row Issues",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "circle-dot"
-                            },
-                            "zvngK": {
-                              "content": "Issues"
-                            },
-                            "Fv4Jj": {
-                              "content": "118"
-                            }
-                          }
-                        },
-                        "C5Wam": {
-                          "id": "weVPJ",
-                          "type": "ref",
-                          "ref": "FueBC",
-                          "name": "Sub-row Pull requests",
-                          "descendants": {
-                            "U4oLA": {
-                              "icon": "git-pull-request"
-                            },
-                            "zvngK": {
-                              "content": "Pull requests"
-                            },
-                            "Fv4Jj": {
-                              "content": "24"
-                            }
-                          }
-                        }
-                      }
+                      "height": "fill_container"
                     },
                     {
                       "type": "frame",
@@ -194658,7 +194222,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Every workflow, one row each: Broken, Pull requests only, No alerts, Passing, Not known yet, Disabled, each while it has rows. Workflows is the fourth section of the repository view, on 4, shown only while the repository is tracked, in the tabs here and under the repository in the sidebar (App · Repository, CH72). Its count is the broken workflows, a dash until every workflow is read, none with no workflows or alerts off. The strip of a pull-request-only workflow, or one without alerts, uses quiet red, the same colour as an old break: it failed, and it isn't news. A cancelled run is a short dash with no verdict. The hollow amber tick is a run in progress. Disabled and generated workflows are plain rows. The Alerts bar above the list says which branches and tags raise alerts here, and P opens the repository's settings on Workflow alerts (T16). The toolbar's end holds only the key hints: ↵ Open, → Other runs.",
+                      "content": "Every workflow, one row each: Broken, Pull requests only, No alerts, Passing, Not known yet, Disabled, each while it has rows. Workflows is the fourth section of the repository view, on 4, shown only while the repository is tracked, in the header's tabs (CH72) and, on a phone, under the repository in the places panel (MB270). Its count is the broken workflows, a dash until every workflow is read, none with no workflows or alerts off. The strip of a pull-request-only workflow, or one without alerts, uses quiet red, the same colour as an old break: it failed, and it isn't news. A cancelled run is a short dash with no verdict. The hollow amber tick is a run in progress. Disabled and generated workflows are plain rows. The Alerts bar above the list says which branches and tags raise alerts here, and P opens the repository's settings on Workflow alerts (T16). The toolbar's end holds only the key hints: ↵ Open, → Other runs.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -239057,7 +238621,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The repository layout is gone with the column it chose (CH4–CH6, CH42 deleted): a repository's sections are tabs in its header and sub-rows under it in the sidebar. Display keeps the Animations card alone, which also turns off the sidebar's expand and collapse.",
+                      "content": "The repository layout is gone with the column it chose (CH4–CH6, CH42 deleted): a repository's sections are tabs in its header, and on a phone rows under it in the places panel. Display keeps the Animations card alone, which also turns off the sliding open and closed of a place's rows in the phone's places panel.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -312858,7 +312422,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Commits is one of the repository's sections, a tab in its header (CH3), and every screen in this frame is drawn that way. The column layout (CH6, CH42) is gone with its setting; the repository's sections also sit under it in the sidebar (App · Repository, CH72–CH74).",
+              "content": "Commits is one of the repository's sections, a tab in its header (CH3), and every screen in this frame is drawn that way. The column layout (CH6, CH42) is gone with its setting; on a computer the sidebar marks the repository's row current and the header's tabs move between its sections (App · Repository, CH72–CH74).",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,

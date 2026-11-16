@@ -24,8 +24,8 @@ export interface SidebarBrokenWorkflows {
 export type SidebarMyWorkCounts = Readonly<Record<MyWorkGroup | 'total', number | null>>;
 
 /**
- * A row under the open place in the sidebar: one of a repository's sections or one of a project's saved views — as its
- * tab shows it, with the tab's count.
+ * A row under a place tapped open in the phone's places panel: one of a repository's sections or one of a project's
+ * saved views — as its tab shows it, with the tab's count.
  */
 export interface SidebarSubEntry {
     /** Unique among the place's rows: the section, or the saved view's id. */
@@ -40,8 +40,6 @@ export interface SidebarSubEntry {
     readonly current: boolean;
     /** The github.com address it leaves for instead, marked ↗ (Commits and Workflows on a phone, mobile D21). */
     readonly external?: string;
-    /** A repository's Workflows with some broken: the red dot of "Broken workflows" (actions W1), bright or quiet. */
-    readonly marker?: 'new' | 'settled';
     /** A saved view whose options were changed on this device (D13): a dot after its name. */
     readonly modified?: boolean;
     /** A saved view whose filter GitHub answers (K6): a cloud before its name. */
