@@ -1,7 +1,10 @@
-<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link — both drawn alike, one bordered group with the current tab filled and the counts dim (CH67, the List / Board switch's look). A section's tooltip says where it goes, with its key; a saved view's only when GitHub answers it or it was changed on this device. `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked; a tab's key picks it there too, as the app's keys run nothing from inside a menu. -->
+<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link — both drawn alike, one bordered group with the current tab filled and the counts dim (CH67, the List / Board switch's look). Each tab's tooltip says where it goes, with its key; a saved view's says under it when GitHub answers it or it was changed on this device (D14–D16). `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked, and when the caller steps through the tabs on `[` and `]` a hint saying so at its end (CH82, D17); a tab's key, `[` and `]` work there too, as the app's keys run nothing from inside a menu. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
+
+/** The keys that step to the previous and the next tab, wrapping around: a repository's sections, a project's saved views. */
+export const TAB_STEP_KEYS = { previous: '[', next: ']' } as const;
 
 /** A tab switched through a model (a repository's section). */
 export interface HeaderTabsOption {
@@ -29,6 +32,10 @@ export interface HeaderTabsLink {
   readonly answered?: boolean;
   /** Changed on this device: a dot (D13). */
   readonly modified?: boolean;
+  /** Its key ("1"), for `aria-keyshortcuts`, its tooltip and the compact form's menu; the caller handles the key. */
+  readonly keyshortcuts?: string;
+  /** Its hint on hover and focus ("Go to Backlog"), its key after it. */
+  readonly tooltip?: string;
 }
 
 /** The tabs a header shows, by how one is chosen. */
@@ -40,12 +47,16 @@ export type HeaderTabsSet =
       readonly options: readonly HeaderTabsOption[];
       readonly value: string;
       readonly choose: (value: string) => void;
+      /** The compact form's hint for {@link TAB_STEP_KEYS} ("Previous / next section"); the caller handles the keys. */
+      readonly stepHint?: string;
     }
   | {
       readonly kind: 'links';
       /** The group's accessible name ("Saved views"). */
       readonly label: string;
       readonly links: readonly HeaderTabsLink[];
+      /** The compact form's hint for {@link TAB_STEP_KEYS} ("Previous / next view"); the caller handles the keys. */
+      readonly stepHint?: string;
     };
 </script>
 
@@ -59,8 +70,11 @@ import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 
 import Button from './Button.vue';
 import * as l from './HeaderTabs.loc.js';
+import Kbd from './Kbd.vue';
 import Menu from './Menu.vue';
 import MenuItem from './MenuItem.vue';
+import MenuLabel from './MenuLabel.vue';
+import MenuSeparator from './MenuSeparator.vue';
 import SegmentedTabs from './SegmentedTabs.vue';
 import type { SegmentedTabsOption } from './SegmentedTabs.vue';
 import Tooltip from './Tooltip.vue';
@@ -98,7 +112,7 @@ const entries = computed(() => {
     label: link.label,
     icon: link.answered ? Cloud : undefined,
     count: undefined,
-    keyshortcuts: undefined,
+    keyshortcuts: link.keyshortcuts,
     current: link.current,
     pick: () => void router.push(link.to),
   }));
@@ -128,9 +142,7 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
 );
 
 function pickByKey(event: KeyboardEvent) {
-  const entry = entries.value.find(
-    candidate => candidate.keyshortcuts != null && matchesCommandKey(event, candidate.keyshortcuts),
-  );
+  const entry = findByKey(event);
   if (!entry) {
     return;
   }
@@ -138,6 +150,31 @@ function pickByKey(event: KeyboardEvent) {
   event.preventDefault();
   menuOpen.value = false;
   entry.pick();
+}
+
+/** The tab a key pressed in the compact form's menu picks: its own, or the one `[` or `]` steps to. */
+function findByKey(event: KeyboardEvent) {
+  const all = entries.value;
+  const step = getStep(event);
+  if (step === 0) {
+    return all.find(candidate => candidate.keyshortcuts != null && matchesCommandKey(event, candidate.keyshortcuts));
+  }
+
+  const index = all.findIndex(candidate => candidate.current);
+  return all[(index + step + all.length) % all.length];
+}
+
+/** Which way a key steps through the tabs: -1, 1, or 0 for none — or while the caller doesn't step them. */
+function getStep(event: KeyboardEvent) {
+  if (props.tabs.stepHint === undefined) {
+    return 0;
+  }
+
+  if (matchesCommandKey(event, TAB_STEP_KEYS.previous)) {
+    return -1;
+  }
+
+  return matchesCommandKey(event, TAB_STEP_KEYS.next) ? 1 : 0;
 }
 </script>
 
@@ -189,6 +226,19 @@ function pickByKey(event: KeyboardEvent) {
         />
       </template>
     </MenuItem>
+    <template v-if="tabs.stepHint">
+      <MenuSeparator />
+      <!-- A hint, not an item: the cursor skips it and its keys pick no tab. -->
+      <MenuLabel>
+        <span :class="css.headerTabs_stepHint">
+          <span :class="css.headerTabs_stepKeys">
+            <Kbd :keys="TAB_STEP_KEYS.previous" />
+            <Kbd :keys="TAB_STEP_KEYS.next" />
+          </span>
+          {{ tabs.stepHint }}
+        </span>
+      </MenuLabel>
+    </template>
   </Menu>
   <SegmentedTabs
     v-else-if="tabs.kind === 'model'"
@@ -207,12 +257,15 @@ function pickByKey(event: KeyboardEvent) {
     <Tooltip
       v-for="link in tabs.links"
       :key="link.key"
-      :disabled="!link.answered && !link.modified"
+      :text="link.tooltip"
+      :kbd="link.keyshortcuts"
+      :disabled="!link.tooltip"
     >
       <RouterLink
         :to="link.to"
         :class="css.headerTabs_link"
         :aria-current="link.current ? 'page' : undefined"
+        :aria-keyshortcuts="link.keyshortcuts"
       >
         <Cloud
           v-if="link.answered"
@@ -228,9 +281,12 @@ function pickByKey(event: KeyboardEvent) {
           :aria-label="t(l.modifiedLocally)"
         />
       </RouterLink>
-      <template #content>
-        <span v-if="link.answered">{{ t(l.answeredHint) }}</span>
-        <span v-if="link.modified">{{ t(l.modifiedHint) }}</span>
+      <template
+        v-if="link.answered || link.modified"
+        #note
+      >
+        <span v-if="link.answered">{{ t(l.answeredNote) }}</span>
+        <span v-if="link.modified">{{ t(l.modifiedNote) }}</span>
       </template>
     </Tooltip>
   </nav>
@@ -268,6 +324,17 @@ function pickByKey(event: KeyboardEvent) {
   height: 6px;
   background: $color-accent;
   border-radius: 50%;
+}
+
+.headerTabs_stepHint {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+}
+
+.headerTabs_stepKeys {
+  display: flex;
+  gap: $spacing-4;
 }
 
 .headerTabs_count {

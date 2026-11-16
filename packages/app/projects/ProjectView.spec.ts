@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import type { Command } from '@/commands/CommandTypes.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -29,6 +30,7 @@ import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { ProjectEntry, ProjectView as SavedView } from './ProjectTypes.js';
 import ProjectView from './ProjectView.vue';
+import type { ProjectTab } from './ProjectView.vue';
 import type { ProjectViewOptions } from './projectViewOptions.js';
 
 test('the saved views are tabs: the one shown is current, one changed here is marked, one GitHub answers has a cloud', async () => {
@@ -45,6 +47,47 @@ test('the saved views are tabs: the one shown is current, one changed here is ma
     await expect
         .element(tabs.getByRole('link', { name: /Next sprint/ }).getByRole('img', { name: 'answered by GitHub' }))
         .toBeVisible();
+});
+
+test('a saved view runs on its key while the view is shown, and its tab, still a link to its address, says the key', async () => {
+    const opened: string[] = [];
+    const viewCommands = SAMPLE_PROJECT.views.map((saved, index): Command => ({
+        id: `view:${saved.id}`,
+        title: saved.name,
+        section: 'view',
+        key: String(index + 1),
+        run: () => void opened.push(saved.name),
+    }));
+    mount(SAMPLE_VIEW_SPRINT, { viewCommands });
+    const tabs = page.getByRole('navigation', { name: 'Saved views' });
+
+    await expect.element(tabs.getByRole('link', { name: /Board/ })).toHaveAttribute('aria-keyshortcuts', '2');
+    await expect
+        .element(tabs.getByRole('link', { name: /Board/ }))
+        .toHaveAttribute('href', '/orgs/skyline-labs/projects/2/views/2');
+    await userEvent.keyboard('3');
+    expect(opened).toEqual(['Next sprint']);
+});
+
+test('[ and ] step to the previous and next tab as shown, wrapping around, “All items” among them', async () => {
+    const view = mount(SAMPLE_VIEW_SPRINT);
+    await expect.element(page.getByRole('navigation', { name: 'Saved views' })).toBeVisible();
+
+    // `[[` is how user-event writes a literal `[`.
+    await userEvent.keyboard('[[');
+    await expect.poll(() => view.router.currentRoute.value.path).toBe('/orgs/skyline-labs/projects/2/views/5');
+    await userEvent.keyboard(']');
+    await expect.poll(() => view.router.currentRoute.value.path).toBe('/orgs/skyline-labs/projects/2/views/2');
+});
+
+test('from “All items”, the last tab, ] goes to the first saved view and [ to the last', async () => {
+    const view = mount(SAMPLE_VIEW_SPRINT, { allItems: true });
+    await expect.element(page.getByRole('link', { name: 'All items' })).toHaveAttribute('aria-current', 'page');
+
+    await userEvent.keyboard(']');
+    await expect.poll(() => view.router.currentRoute.value.path).toBe('/orgs/skyline-labs/projects/2/views/1');
+    await userEvent.keyboard('[[');
+    await expect.poll(() => view.router.currentRoute.value.path).toBe('/orgs/skyline-labs/projects/2/views/5');
 });
 
 test('while items are checked their actions take the saved views’ place', async () => {
@@ -271,6 +314,16 @@ test('D15: a stack’s entry shows the field values all its pull requests share,
     await expect.element(entry.getByText('+1', { exact: true })).toBeVisible();
 });
 
+/** "All items" as its tab shows it while it is the one shown. */
+const ALL_ITEMS_TAB: ProjectTab = {
+    key: 'all',
+    name: 'All items',
+    to: '/orgs/skyline-labs/projects/2?all',
+    current: true,
+    modified: false,
+    answered: false,
+};
+
 interface MountOptions {
     readonly modifiedViews?: SampleProjectViewParams['modifiedViews'];
     readonly canMove?: boolean;
@@ -286,6 +339,10 @@ interface MountOptions {
     readonly grouping?: ProjectViewOptions['grouping'];
     /** The items checked, whose actions the selection slot draws. */
     readonly checkedIds?: readonly string[];
+    /** Going to each saved view, as the page passes them. */
+    readonly viewCommands?: readonly Command[];
+    /** "All items" shown, its tab after the saved views (K9). */
+    readonly allItems?: boolean;
 }
 
 /** Mounts the sample project on a saved view, rebuilding the groups from the options it holds, as the page does. */
@@ -300,6 +357,8 @@ function mount(
         cantBeRead = null,
         grouping,
         checkedIds = [],
+        viewCommands = [],
+        allItems = false,
     }: MountOptions = {},
 ) {
     const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries });
@@ -317,6 +376,10 @@ function mount(
     container.set(LanguageContext, () => APP_LANGUAGE);
     // The desktop's layout, whatever the frame's width.
     container.set(PhoneLayout, createFixedPhoneLayout(false));
+    const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:path(.*)*', component: { render: () => null } }],
+    });
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';
@@ -324,19 +387,22 @@ function mount(
     document.body.append(host);
 
     const app = createApp({
-        setup: () => () =>
-            h(
+        setup: () => () => {
+            const sample = sampleProjectView({
+                project: SAMPLE_PROJECT,
+                view: saved,
+                entries,
+                options: options.value,
+                modifiedViews,
+                arriving,
+            });
+            return h(
                 ProjectView,
                 {
-                    ...sampleProjectView({
-                        project: SAMPLE_PROJECT,
-                        view: saved,
-                        entries,
-                        options: options.value,
-                        modifiedViews,
-                        arriving,
-                    }),
+                    ...sample,
+                    ...(allItems && { tabs: [...sample.tabs.map(tab => ({ ...tab, current: false })), ALL_ITEMS_TAB] }),
                     ...(groups && { groups }),
+                    viewCommands,
                     cantBeRead,
                     onClearFilter: () => view.clearedFilter++,
                     modified: options.value !== initial.options,
@@ -357,22 +423,18 @@ function mount(
                     checkedIds,
                 },
                 { selection: () => h('span', 'Actions of the checked items') },
-            ),
+            );
+        },
     });
     app.use(IocPlugin, { container });
-    app.use(
-        createRouter({
-            history: createMemoryHistory(),
-            routes: [{ path: '/:path(.*)*', component: { render: () => null } }],
-        }),
-    );
+    app.use(router);
     app.mount(host);
     onTestFinished(() => {
         app.unmount();
         host.remove();
     });
 
-    return Object.assign(view, { host });
+    return Object.assign(view, { host, router });
 }
 
 /** The groups shown, top to bottom or left to right. */

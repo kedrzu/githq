@@ -166,3 +166,9 @@ goToCommits:
   en: Go to commits
 goToWorkflows:
   en: Go to workflows
+stepSections:
+  en: Previous / next section
+previousSection:
+  en: Previous section
+nextSection:
+  en: Next section

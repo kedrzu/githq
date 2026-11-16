@@ -675,6 +675,8 @@ function openCommandLineMenu() {
       <ProjectContextMenu
         v-else
         :project-id="target.id"
+        :current="openPlace?.kind === 'project' && openPlace.id === target.id"
+        :shown-view="openPlace?.kind === 'project' && openPlace.id === target.id ? openPlace.viewKey : null"
       />
     </template>
   </AppShell>

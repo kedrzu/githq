@@ -14,8 +14,7 @@ test("a project's menu in the sidebar goes to a saved view, starts an issue in i
 
     let menu = await shell.openTrackedMenu(SAMPLE_PROJECT);
     await expect(menu).toContainText(SAMPLE_PROJECT);
-    await menu.getByRole('menuitem', { name: 'Views' }).click();
-    await page.getByRole('menuitem', { name: 'Board' }).click();
+    await menu.getByRole('menuitem', { name: 'Board' }).click();
     await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
 
     menu = await shell.openTrackedMenu(SAMPLE_PROJECT);
@@ -47,6 +46,24 @@ test("⌘K on a project's view opens it on GitHub", async ({ page, github }) => 
     const popup = page.waitForEvent('popup');
     await page.keyboard.press('Enter');
     expect((await popup).url()).toBe(`https://github.com${SAMPLE_PROJECT_PATH}`);
+});
+
+test("a project view's title opens the same menu, its saved views with their keys, which go to them, as [ steps back", async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_PROJECT).click();
+
+    const project = new ProjectScreenHarness(page);
+    const menu = await project.openTitleMenu(SAMPLE_PROJECT);
+    await expect(menu.getByRole('menuitem', { name: 'Board' })).toHaveAttribute('aria-keyshortcuts', '2');
+    await page.keyboard.press('Escape');
+
+    await page.keyboard.press('2');
+    await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
+    await page.keyboard.press('[');
+    await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/1`);
 });
 
 test("a project view's title opens the same menu: a new issue in it, with its key, and its page on GitHub", async ({

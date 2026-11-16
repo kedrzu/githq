@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, D25, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title — itself led by a lock or a book, read out as private or public (CH72) — on `1`, `2`, `3` and `4`, each with its tooltip ("Go to issues" and its key) — one menu showing the current one when the header runs out of room (`ListToolbar`) — the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. On a phone (mobile MB32) every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the places panel and the command menu (mobile D53) —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, D25, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title — itself led by a lock or a book, read out as private or public (CH72) — on `1`, `2`, `3` and `4`, `[` and `]` stepping to the previous and next one as shown, wrapping around, each with its tooltip ("Go to issues" and its key) — one menu showing the current one when the header runs out of room (`ListToolbar`), ending in the hint for `[` `]` (CH82) — the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. On a phone (mobile MB32) every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the places panel and the command menu (mobile D53) —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -9,6 +9,8 @@ import {
   Github,
   Ban,
   BookMarked,
+  ChevronLeft,
+  ChevronRight,
   CircleDashed,
   ListFilter,
   Lock,
@@ -28,6 +30,7 @@ import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import FilteredOut from '@/components/FilteredOut.vue';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
+import { TAB_STEP_KEYS } from '@/components/HeaderTabs.vue';
 import IconButton from '@/components/IconButton.vue';
 import NothingThere from '@/components/NothingThere.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -239,6 +242,7 @@ const sectionTabs = computed((): HeaderTabsSet => ({
   choose: value => {
     section.value = sections.value.find(candidate => candidate === value) ?? section.value;
   },
+  stepHint: t(l.stepSections),
 }));
 /** Before the name, inside the title's button (CH72): a lock or a book, read out as private or public; none while unknown. */
 const titleIcon = computed((): ListTitleIcon | null => {
@@ -337,7 +341,26 @@ usePhonePart(() =>
     : null,
 );
 
-useCommands(() => sections.value.map(getSectionCommand));
+// `[` and `]` step through the sections as the tabs show them, wrapping around (CH82).
+useCommands(() => [
+  ...sections.value.map(getSectionCommand),
+  {
+    id: 'repository.previousSection',
+    title: t(l.previousSection),
+    section: 'repository',
+    key: TAB_STEP_KEYS.previous,
+    icon: ChevronLeft,
+    run: () => stepSection(-1),
+  },
+  {
+    id: 'repository.nextSection',
+    title: t(l.nextSection),
+    section: 'repository',
+    key: TAB_STEP_KEYS.next,
+    icon: ChevronRight,
+    run: () => stepSection(1),
+  },
+]);
 
 /**
  * What moving looks the end of the list up again; the state and the section each read pages of their own. Each page read
@@ -360,6 +383,13 @@ function getSectionCommand(candidate: RepositorySection): Command {
       section.value = candidate;
     },
   };
+}
+
+/** Goes to the section before (`-1`) or after (`1`) the one shown, from the last to the first and back. */
+function stepSection(step: number) {
+  const all = sections.value;
+  const index = all.indexOf(section.value);
+  section.value = all[(index + step + all.length) % all.length] ?? section.value;
 }
 
 function getPhoneParts(): CommandParts {

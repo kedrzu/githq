@@ -184,7 +184,10 @@ useCommands(() => [
     detail: tracked.value?.title ?? `${owner.value}#${number.value}`,
   },
 ]);
-/** Going to each saved view, as the command menu's level under the project: the phone's menu of the views (mobile D17). */
+/**
+ * Going to each saved view, as the command menu's level under the project: run by their keys `1`–`9` while the project is
+ * on screen (`ProjectView` registers them), and the phone's menu of the views (mobile D17).
+ */
 const viewCommands = computed(() => projectCommands({ ...address.value, id: tracked.value?.id ?? null }).savedViews);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
@@ -610,6 +613,8 @@ function setRowField(fieldId: string | null) {
       <ProjectContextMenu
         :project-id="project.id"
         :new-issue-key="NEW_ISSUE_KEY"
+        current
+        :shown-view="showAll ? null : (view?.id ?? null)"
       />
     </template>
     <template #selection="{ ids, span }">

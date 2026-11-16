@@ -104,3 +104,11 @@ itemsOf:
   en: "{project}'s items"
 phoneViews:
   en: '{project} · views'
+goToView:
+  en: Go to {view}
+stepViews:
+  en: Previous / next view
+previousView:
+  en: Previous saved view
+nextView:
+  en: Next saved view
