@@ -116,13 +116,6 @@ would have been the obvious alternative, but in githq Actions means GitHub Actio
 `defineCommand` is already taken in the code by the dependency-injection library for something unrelated, so the
 function that defines one has a different name. [The naming](DECISIONS.md#d5).
 
-## What gets built first
-
-The module of definitions, `useCommand` and the key helper, with the registry's one listener reading definitions, and
-one command moved onto them end to end: "Open on GitHub", the one written about ten times today. The settings screen
-for keys comes once enough commands are on definitions to make the list worth showing; the rest move one by one,
-which is where their duplicates and key clashes get resolved.
-
 ## How far this goes
 
 This design settles how commands are defined, offered, shown and rebound. Going through the existing commands to
