@@ -31,3 +31,6 @@
   sections, filters, merge methods) are fixed, not rebindable (D9). Owner: user keys live in the synced settings
   document (D10; storing only changed keys by id is the agent's proposal); settings-sync D7 updated. Folded into
   README; the open list is now empty.
+- Owner: fixed screen keys are definitions with `configurable: false` and run through the registry (D11). The code
+  shape (defineAppCommand / useCommand / CommandButton, translation key in the definition) recorded as D12, the
+  agent's proposal unopposed. Folded into README. Next: rightsize before proposing to close.

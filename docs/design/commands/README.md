@@ -84,6 +84,19 @@ on the web, and are shown in the list of keys but cannot be changed. [Where the 
 Neither can the numbers that pick the n-th thing on screen: a project's views on `1`–`9`, a repository's sections on
 `1`–`4`. The number is the position, so there is nothing to rebind. [Why](DECISIONS.md#d9).
 
+Fixed does not mean handled somewhere else. The numbers, `J` and `K` with the arrows beside them, and the Escape
+that closes a panel are defined like every other command, only marked as not configurable, and run the same way, so
+the list of keys can never show one thing while another runs. Only the keys a control owns while it has focus, Enter
+in a field or Tab, stay with the control. [Why](DECISIONS.md#d11).
+
+## How it looks in code
+
+A definition says what the command is: its id, title, icon, default key and the places it can be offered, and
+whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
+component that offers a command takes a definition and says what running it does there and when it can run. A
+button that runs a command is drawn from the definition, so its name, icon and key hint are the command's, with the
+key you chose. [The shape](DECISIONS.md#d12).
+
 ## Where your keys are kept
 
 The keys you change are kept with the settings that can follow you between devices, so rebinding once is enough.

@@ -180,3 +180,42 @@ stay in the browser, as every synced setting does.
 **Rejected.**
 
 - Keys on each device — a user who rebinds would have to do it again on every computer.
+
+## D11
+
+**Fixed keys that act on a screen (the numbers of [D9](#d9), `J`/`K` with the arrows as their other keys, the Escape
+that closes a panel) are definitions too, marked `configurable: false`, and run through the registry's one listener.
+Keys a control owns while focused (Enter in a field, Tab, Escape in a dialog) are not commands; the list of keys shows
+them as one fixed section.** (2026-11-16, owner; the flag's name is the owner's)
+
+**Why.** Today a list key is declared twice, a help-only stub and a separate listener, and the two can disagree;
+with one definition and one listener, what the list of keys shows is what runs. It removes the ~18 separate window
+listeners and every help-only stub.
+
+> **Checked 2026-11-16:** separate `keydown` listeners on `window` in `utils/useRowSelection.ts:92`,
+> `lists/ListView.vue:619`, `item/useItemArrangement.ts:487`, `workflows/WorkflowJobLog.vue:518`,
+> `tracking/TrackedListView.vue:73` and others; the registry's own at `commands/CommandRegistry.ts:108`.
+
+**Rejected.**
+
+- The registry handling only configurable commands, fixed keys described for the list but run by their own listeners
+  — keeps two places for one key, the problem this design starts from.
+
+## D12
+
+**The shape in code: `defineAppCommand({ id, title, icon, key, places, configurable? })` in
+`commands/definitions/*.ts`, all re-exported from one index; `useCommand(definition, { run, when, unavailable,
+detail, options })` in the component that knows what it does; `<CommandButton :command>` draws a button's name, icon
+and key chip from the definition with the user's key applied. A definition holds a translation key, translated when
+shown.** (2026-11-16, design agent's proposal, not opposed by the owner)
+
+**Why.** Each part has one job from [D1](#d1): what a command is, what it does here, how it looks. A button reading
+its key from the definition replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not
+work. A title translated when shown follows a change of language.
+
+> **Checked 2026-11-16:** healed translates an action's name once, at registration
+> (`packages/doctor-app/actions/ActionManager.ts:128-131`), so its palette keeps the old language after a switch.
+
+**Rejected.**
+
+- Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
