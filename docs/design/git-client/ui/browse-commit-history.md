@@ -126,22 +126,21 @@ A worktree can have no branch at all, checked out on a bare commit, so it has no
 
 ## The screens
 
-In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`); the two layouts with Issues and Pull
-requests (CH1, CH2, CH4, CH5) are in **"App · Repository"** (`N1wdc`), and Settings · Display (CH43) in **"App · Settings"**
-(`i3VkT`). The numbers are the frames'.
-Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
+In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`); the repository view with Issues and Pull
+requests (CH1, CH2, CH67, CH72–CH74) is in **"App · Repository"** (`N1wdc`). The numbers are the frames'.
+Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 
 |Question|Answer in the frame|
 |-|-|
-|1. The shape of the repository view|Sections on `1`–`4`, All removed, in two layouts chosen in Settings · Display (CH43): tabs, CH1–CH3; a column of the repository's own, CH4–CH6, CH42. Both are built and tried; the Work and Code shape was dropped (D14, D22)|
-|2. Where the branch and tag list lives|On the left in both, one column with one width, resizable: CH46; names nest into folders: CH53; a sort button per group: CH60. Tabs layout: under the header, always there on a wide window: CH3, CH15–CH17. Column layout: the lower part of the repository's column: CH6 (D15)|
-|3. How a commit's details open|As an item, in the shared panel or on its page; a click, `↵`, a chosen ref or `P`/`⇧P` opens it, in place of an item open there; once open, `J`/`K` move the cursor and the panel follows: CH18; a merge: CH20; facts above the message in one scroll: CH55, checks passed with no pull request CH57, not known yet CH58; in the column layout: CH42; CH48 (under the graph) is superseded (D16, 2026-11-15)|
+|1. The shape of the repository view|Sections on `1`–`4`, All removed, as tabs beside the title (CH1–CH3), one bordered group (CH67), and under the open repository's row in the sidebar (CH72). The column layout and its setting (CH4–CH6, CH42, CH43) are gone; the Work and Code shape was dropped (D14, D25)|
+|2. Where the branch and tag list lives|On the left in both, one column with one width, resizable: CH46; names nest into folders: CH53; a sort button per group: CH60. Under the header, always there on a wide window: CH3, CH15–CH17 (D15)|
+|3. How a commit's details open|As an item, in the shared panel or on its page; a click, `↵`, a chosen ref or `P`/`⇧P` opens it, in place of an item open there; once open, `J`/`K` move the cursor and the panel follows: CH18; a merge: CH20; facts above the message in one scroll: CH55, checks passed with no pull request CH57, not known yet CH58; CH48 (under the graph) is superseded (D16, 2026-11-15)|
 |4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|
 |5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI right after it, author and age at the right, a faint stripe; a failure is a lane-coloured ring with a red centre and a red ✕: CH12, CH61; the selected and hovered row spans the graph column: CH54; the pull request as a chip: CH59 (D18)|
 |6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details again after `Esc`, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
 |7. A Worktrees section in the list|No: a worktree is a row nested under its branch; one on a bare commit is in the graph only: CD2 (D21)|
 
-The repository view: CH1–CH3 and CH4–CH6, the setting CH43. The graph: few branches CH3, many CH10. The list: CH15–CH17, in folders CH53, sorted CH60. A
+The repository view: CH1–CH3, CH67, CH72. The graph: few branches CH3, many CH10. The list: CH15–CH17, in folders CH53, sorted CH60. A
 commit's details: CH18, CH20, CH48, CH55, CH57, CH58. The row: CH54, CH59; the graph's lanes: CH61. Desktop second step: CD2, worktree actions CD3, adding a folder CD4, CD5.
 
 States: opened before CH31; first open, the first second CH32, branches filling in CH33; pull request and CI not known yet CH34, in the details CH58;

@@ -103,3 +103,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   to see drawn: Variant A as on the desktop, Variant B a hybrid.
 - 2026-11-14 — Owner picked Variant A of the summary (MB260–MB263): the desktop's summary on a phone (D52), D25 retired.
 - 2026-11-14 — The new issue form follows the item's summary (D42 updated after D52): its rows and project card, as on the desktop's full form (H3).
+- 2026-11-16 — With the computer's sidebar (git-client D25): tapping a repository or project in the places panel expands
+  it in place, tapping a section opens it and closes the panel, Commits and Workflows ↗ (D53, MB270, MB271); D21's
+  "nowhere else" and D30's repository-layout exception retired in part to history.

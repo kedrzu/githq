@@ -21,8 +21,7 @@ of the user's is optional — so the phone has to be able to set itself up on it
 - After "Track these" the app goes straight to My work; there is no download screen. Each screen says itself what is
   still arriving.
 - **Settings on a phone has the same sections as on the computer**: repositories and projects tracked, and each
-  tracked one's own settings screen; display (animations only — the repository layout, tabs or a column, is a computer
-  setting and is not shown); code review's comment setting; where settings are saved; account. githq has no
+  tracked one's own settings screen; display (animations, as on the computer); code review's comment setting; where settings are saved; account. githq has no
   notifications, so there are no notification settings.
 - The phone's navigation is settled and drawn in `App · Mobile`: no bottom tab bar, a command line floating over the
   bottom with ⌘ that leaves inside a task, the command menu rising from below, the places as a panel from the top-left

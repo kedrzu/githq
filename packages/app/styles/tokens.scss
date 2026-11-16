@@ -212,8 +212,7 @@ $spacing-8: 8px;
 $spacing-9: 9px;
 $spacing-10: 10px;
 $spacing-12: 12px;
-// Around and between what a settings card's footer holds; the inset of a repository's column, lining its head up with
-// its rows' icons.
+// Around and between what a settings card's footer holds.
 $spacing-14: 14px;
 $spacing-16: 16px;
 $spacing-20: 20px;
@@ -754,7 +753,7 @@ $row-surface-inset: $spacing-2 $spacing-8;
     border-bottom: 1px solid $color-border;
 }
 
-// A row of navigation, in the sidebar or a repository's column: an icon, its label, a dim count. Its parts are the
+// A row of navigation, in the sidebar: an icon, its label, a dim count. Its parts are the
 // mixins after it.
 @mixin nav-row {
     @include focus-ring;

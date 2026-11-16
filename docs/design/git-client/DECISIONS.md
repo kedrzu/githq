@@ -268,42 +268,32 @@ the panel simple, and a failing check is visible without a click.
 
 ## D14
 
-**The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with
-its own tools, in two layouts the user chooses between in Settings · Display: tabs beside the repository's name, each
-with its toolbar on the same line (CH1–CH3), or a column of the repository's own beside the sidebar holding its
-sections, its projects and, on Commits, the branch and tag list (CH4–CH6, CH42). In both, All is removed; Issues and
-Pull requests are two lists with their own state, grouping, List or Board and Display; the open count beside the title
-and grouping by kind go too. The choice is saved with the synced settings. Both are built; after trying them the owner
-keeps the switch or one layout.** (2026-11-02, owner: "a very hard decision, both are potentially good, so let's use
-both… a setting in our settings… synced… we'll test which is better and either keep the switch or pick one"; the
-details are the design agent's)
+**The repository view is a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with its own
+tools. All is removed; Issues and Pull requests are two lists with their own state, grouping, List or Board and Display;
+the open count beside the title and grouping by kind go too. Where the sections show is [D25](#d25).** (2026-11-02,
+owner; the details are the design agent's. The two layouts and their setting were retired 2026-11-16 by D25,
+[history](history/DECISIONS.md#d14))
 
-**Why.** Neither shape wins on paper: tabs keep the full width for the list and the graph, the column gives the
-repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
-decides it. The layout is a preference of the user, not of a view, so it travels with the settings
-([settings-sync D4](../settings-sync/DECISIONS.md#d4)). This adds the first synced setting beyond what is tracked, which
-[settings-sync D7](../settings-sync/DECISIONS.md#d7) lists.
+**Why.** Issues and pull requests are grouped and viewed differently, so each keeps its own list.
 
 **Rejected.**
 
 - Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows) — keeps All
   but shares one grouping between issues and pull requests, and puts the branch list behind a key (owner, 2026-11-02;
   the screens were CH7–CH9 and CH21, deleted).
-- Picking one layout now — owner: test both first.
 
 ## D15
 
-**The branch and tag list sits on the left of the graph, in both layouts. In the tabs layout it is under the header,
-always there on a wide window; below about 1,200 px it folds away and `B` opens it over the graph from the left (CH47). In the
-column layout it is the column's lower part on Commits (CH6). The default branch is first, then branches, then tags, each
-newest first unless the user sorts it by name (below), with the pull request and CI of each branch's tip, and names
-nested into folders by `/` (below).
+**The branch and tag list sits on the left of the graph, under the header, always there on a wide window; below about
+1,200 px it folds away and `B` opens it over the graph from the left (CH47). The default branch is first, then
+branches, then tags, each newest first unless the user sorts it by name (below), with the pull request and CI of each
+branch's tip, and names nested into folders by `/` (below).
 `B` puts the cursor in its filter, typing narrows both groups, every letter typed, and `↑`/`↓` move through the matches.
-This left column and the repository's column are one column with one width: 280 px by default, dragged or moved with
-`←`/`→` on its edge from 200 to 480 px, on every section, kept on the device. The pane keeps 400 px on a small window, the
-column giving way down to 200 px; the width chosen comes back with the room (CH46).** (2026-11-02, design agent's proposal;
-CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03; the left, the one width and its resizing by the owner
-2026-11-03, the numbers the agent's)
+Its column is 280 px wide by default, dragged or moved with `←`/`→` on its edge from 200 to 480 px, kept on the device. The
+pane keeps 400 px on a small window, the column giving way down to 200 px; the width chosen comes back with the room
+(CH46).** (2026-11-02, design agent's proposal; CH3, CH15–CH17; the keys settled by the owner 2026-11-03; the left and
+the resizing by the owner 2026-11-03, the numbers the agent's; the column layout's part retired 2026-11-16 with
+[D14](#d14)'s layouts, [history](history/DECISIONS.md#d15))
 
 **Names nest into folders by `/` at every level, separately in Branches and in Tags.** A prefix holding one ref is no
 folder: that ref stays one row under its full remaining name. Folders start folded (CH53). The unfolded ones are kept on the
@@ -322,9 +312,8 @@ keys stay in the filter, the selection is the row's name cell with the whole row
 the tab order.** (2026-11-04, owner: the link must be copyable and open in a new tab; the keyboard's target is the title,
 the highlight the whole row)
 
-**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key. Two layouts
-placing the same list on opposite sides made one of them feel wrong to the owner, and the list is the same column in
-both, so it has one place and one width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key. Panel widths
+are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
 > **Checked 2026-11-02:** GitHub's `RefOrderField` has only `TAG_COMMIT_DATE` (tags only) and `ALPHABETICAL`
 > (`gh api graphql`, `__type(name: "RefOrderField")`). "Newest first" for branches needs each tip's
@@ -340,8 +329,6 @@ both, so it has one place and one width. Panel widths are local ([settings-sync 
 - An arrow icon for the sort direction — the button's words say the order better (owner, 2026-11-14).
 - Building the list on `FilterList` — it always highlights its first row, has one message per list and a plain heading;
   extending it for this one list costs more than the keys it would share (owner, 2026-11-03).
-- In the column, judging the threshold on the window less the column — a threshold nobody can tell from the window's
-  width, for little more graph (owner, 2026-11-03).
 - The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
   screen says where branches stand.
 
@@ -414,7 +401,7 @@ pull request's state and number, the number a link to it that opens it as any it
 right edge. Rows alternate with a very faint stripe. A failing commit keeps its lane-coloured ring with a red centre, 1 px of the row's
 background between them, and a red ✕ after its pull request, and its text is never red; running is amber in both places
 (CH61). A merge is a hollow dot, in its lane's colour, with a dimmed headline. Pull request
-and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open, the column layout) the
+and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open) the
 headline is cut first and the author's name gives way to the avatar.** (2026-11-02, owner: pull request and checks to
 the right of the headline, "not somewhere far right in a separate column"; the author as avatar and name, the avatar a
 little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
@@ -487,9 +474,10 @@ actions can grow without crowding the row.
 ## D22
 
 **Settings gains a Display section, between Projects and Code review (`3`; Settings is now a column of sections,
-[githq D26](../githq/DECISIONS.md)). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
-once; where it is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a
-tab like General or Display"; the section's name and place are the design agent's; CH43)
+[githq D26](../githq/DECISIONS.md)). It holds whether things animate ([githq D38](../githq/DECISIONS.md#d38)); the change applies at once; where it
+is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a tab like General or Display"; the
+section's name and place are the design agent's; CH43. The repository layout, its first setting, went with
+[D14](#d14)'s layouts on 2026-11-16, [D25](#d25); CH80)
 
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
 would collect anything.
@@ -531,3 +519,36 @@ nothing: only the opened commit reads the list.
   with the details open, and without polling it would still miss a check finishing (owner).
 - The Log links of an opened pull request's checks and the merge panel moving to the run page too — left as they are, on
   GitHub, for now (owner).
+
+## D25
+
+**The repository's own column and the setting that chose it go. While a tracked repository is the open place, its
+sections show under its row in the app's sidebar, with the counts its tabs show: open issues, open pull requests, none
+for Commits, Workflows its broken ones, a dash while that is unknown; Workflows only while it is tracked. They slide open
+and closed unless Settings · Animations is off. The header keeps the tabs while they fit, drawn as one bordered group
+with the current tab filled (CH67), each with a tooltip naming where it goes and its key ("Go to issues" `1`). As room
+runs out the header gives way in steps: the view options move into Display, Display drops its label for its icon, the
+tabs fold into one menu showing the current section, last the title is cut. The repository's visibility is a book or a
+lock inside the title's button, read out as public or private, no longer a word beside the name (CH72). The repository's
+menu, its title's and the sidebar's, drops Open and lists Issues, Pull requests, Commits and Workflows, their keys `1`–`4`
+shown on the open repository's menu only. A tracked project's saved views follow the same model: under its row in the
+sidebar, in the same tab group, folding the same way, with no counts.** (2026-11-16, owner: the column takes a third of a
+small screen and repeats the repository's name, the tabs neither read as tabs nor hint at their keys, a narrow header has
+nowhere to go; picked CH67 and the sub-rows' guide line, CH71; the title's icon "isn't clickable, is a bit too big and
+too far from the repository's name"; a project's views without counts, "as its tabs have none". CH72–CH80)
+
+**Why.** The sidebar already lists the repository, so its sections nest under its row at no width of their own, and the
+list and the graph keep the window. Only the open place expands, so the sidebar stays a list of places. Tooltips teach
+the keys the tabs never showed. Giving way in steps keeps every control reachable at any width; the header's left part
+paints over the controls, so one that doesn't fit is covered, never drawn under the title. On another repository's menu
+the keys would do nothing, so they would lie.
+
+**Rejected.**
+
+- Keeping the column beside the tabs behind a setting ([D14](#d14)'s two layouts,
+  [history](history/DECISIONS.md#d14)) — it takes a third of a small screen and repeats the repository's name (owner).
+- The current tab underlined inside a bordered strip (CH68), or a filled pill on a track with no border (CH69) — owner
+  picked CH67, the List / Board switch's look.
+- Sub-rows as a plain indent, like My work's groups (CH70) — owner picked the thin guide line (CH71).
+- A marker on the collapsed sidebar for the open repository — the rail lists no repositories; there the header is the way
+  around.

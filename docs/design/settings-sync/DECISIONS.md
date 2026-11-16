@@ -120,10 +120,10 @@ githq cannot delete the repository with the scopes it has.
 
 ## D7
 
-**Synced: which repositories and projects are tracked, and the repository layout. Local: everything about views, meaning a list's
+**Synced: which repositories and projects are tracked. Local: everything about views, meaning a list's
 layout, grouping, sort, visible properties and filter, a project's row field, the last view, how items open, sidebar and panel
 sizes, plus new issue drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the
-design agent's reading; 2026-11-02, owner for the repository layout, [git-client D14](../git-client/DECISIONS.md#d14)) Added
+design agent's reading) The repository layout synced here from 2026-11-02 went with the layout itself on 2026-11-16 ([git-client D25](../git-client/DECISIONS.md#d25)). Added
 since, as a chosen preference rather than a view detail: what a comment does by default
 ([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on), and
 how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)).
@@ -138,7 +138,6 @@ later; they are not part of this design.
 |State|Where today (`packages/app/`)||
 |-|-|-|
 |Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
-|Repository layout|`repositoryLayout` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |How a code review's comment goes out|`reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
@@ -149,10 +148,6 @@ later; they are not part of this design.
 |Ref list's unfolded folders|`githq.refFolders.<login>`, `commits/CommitRefFolders.ts`|local|
 |Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
 |New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
-
-The repository layout chooses how a repository's sections are shown, for every repository, so it is the user's preference rather than
-a view's ([D4](#d4)). Absent or not known to a build, it means tabs, and a value a build does not know stays as written until the
-user picks a layout ([D13](#d13)).
 
 No other per-user setting exists today (the app is dark only, `styles/tokens.scss:4`). The "modified locally" label on a project
 view stays true and stays as it is.

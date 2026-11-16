@@ -2,7 +2,12 @@ import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
-import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
+import {
+    createSampleTrackedWork,
+    SAMPLE_PROJECT,
+    SAMPLE_PROJECT_PATH,
+    SAMPLE_REPOSITORY,
+} from '../tracking/sampleTrackedWork.js';
 
 /** A second tracked repository of the viewer's, with nothing in it. */
 const DOCS = `${SAMPLE_VIEWER.viewer.login}/docs`;
@@ -48,6 +53,27 @@ test("the open repository's sections are under its row with their counts, the sh
         /^Workflows/u,
     ]);
     await expect(shell.placeRow(DOCS, 'Issues')).toHaveAttribute('aria-current', 'page');
+});
+
+test("the open project's saved views are under its row, the shown one current, and its row goes back to that view", async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+
+    await shell.tracked(SAMPLE_PROJECT).click();
+    await expect(shell.placeRows(SAMPLE_PROJECT)).toHaveText([
+        /^Backlog/u,
+        /^Board/u,
+        /^Sidebar work/u,
+        /^Shipped bugs/u,
+    ]);
+
+    await shell.placeRow(SAMPLE_PROJECT, 'Board').click();
+    await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
+    await expect(shell.placeRow(SAMPLE_PROJECT, 'Board')).toHaveAttribute('aria-current', 'page');
+    await expect(shell.sidebar.locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(shell.tracked(SAMPLE_PROJECT)).toHaveAttribute('href', `${SAMPLE_PROJECT_PATH}/views/2`);
 });
 
 test('on a phone, tapping a repository in the places panel shows its sections with the panel open; Pull requests opens that list and closes it', async ({

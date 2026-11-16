@@ -1,4 +1,4 @@
-<!-- The Display section of Settings (git-client D22): whether things animate (D36, a `SettingsToggleCard`). It applies at once; where it is saved shows in the status bar. On a phone (`phone`, mobile D30, MB158) a switch row under Motion. -->
+<!-- The Display section of Settings (git-client D22): whether things animate (githq D38, a `SettingsToggleCard`). It applies at once; where it is saved shows in the status bar. On a phone (`phone`, mobile D30, MB158) a switch row under Motion. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 

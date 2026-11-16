@@ -41,6 +41,7 @@ import * as projectTexts from '@/projects/ProjectPage.loc.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import type { Project } from '@/projects/ProjectTypes.js';
+import { ALL_ITEMS_LIST } from '@/projects/projectViewOptions.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { BrowsedRepositories } from '@/repos/BrowsedRepositories.js';
 import { getRepositorySectionCounts } from '@/repository/getRepositorySectionCounts.js';
@@ -84,7 +85,7 @@ import {
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
-import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+import type { TrackedProject, TrackedTarget } from '@/tracking/TrackingTypes.js';
 import TrackFailedToast from '@/tracking/TrackFailedToast.vue';
 import UntrackToast from '@/tracking/UntrackToast.vue';
 import { ReviewScreenFreshness } from '@/review/ReviewScreenFreshness.js';
@@ -269,7 +270,7 @@ const tracked = computed((): SidebarTracked => ({
   projects: pendingUntracks.projects.map(project => ({
     key: `project:${project.id}`,
     label: project.title,
-    to: getProjectPath(project),
+    to: getProjectRowPath(project),
     target: { kind: 'project', id: project.id },
     status: getTrackedStatus(
       { kind: 'project', id: project.id },
@@ -534,6 +535,21 @@ function getProjectChildren(projectId: string): SidebarSubEntry[] {
     modified: tab.modified,
     answered: tab.answered,
   }));
+}
+
+/** Where a project's row leads: the open project's view the screen is in, so its row goes back to that list; another its first view. */
+function getProjectRowPath(project: TrackedProject) {
+  const place = openPlace.value;
+  if (place?.kind !== 'project' || place.id !== project.id || place.viewKey === null) {
+    return getProjectPath(project);
+  }
+
+  if (place.viewKey === ALL_ITEMS_LIST) {
+    return `${getProjectPath(project)}?all`;
+  }
+
+  const view = projectStore.get(project.id)?.views.find(candidate => candidate.id === place.viewKey);
+  return getProjectPath(project, view?.number);
 }
 
 /**
