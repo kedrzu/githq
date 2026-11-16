@@ -81,3 +81,5 @@ cancelRun:
   en: Cancel run
 runNumber:
   en: '#{number}'
+openRun:
+  en: Open run

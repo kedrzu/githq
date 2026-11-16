@@ -195,33 +195,7 @@ useCommands(() => {
   return [
     commands.next,
     commands.previous,
-    // Run by the runs' own selection (`WorkflowRuns`), listed in the help sheet.
-    {
-      id: 'workflow.nextRun',
-      title: t(l.nextRun),
-      section: 'item',
-      key: 'J',
-      otherKeys: ['ArrowDown'],
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
-    {
-      id: 'workflow.previousRun',
-      title: t(l.previousRun),
-      section: 'item',
-      key: 'K',
-      otherKeys: ['ArrowUp'],
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
-    {
-      id: 'workflow.openRun',
-      title: t(l.openRun),
-      section: 'item',
-      key: 'Enter',
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
+    // `J`/`K` and Enter are the runs' own (`WorkflowRuns`), full screen.
     // In the panel the list beside it owns `F`, for the workflow under its cursor.
     {
       id: 'workflow.openLatestFailure',

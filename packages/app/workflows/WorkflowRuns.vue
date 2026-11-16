@@ -166,6 +166,10 @@ const selection = useRowSelection({
   chosenKey: chosenRun,
   open: row => emit('openRun', row.run),
   enabled: () => props.keys,
+  // The opened workflow's own keys, under its heading.
+  place: 'workflow',
+  section: 'item',
+  openTitle: l.openRun,
 });
 
 // No key starts or stops a run (D10): ⌘K only.

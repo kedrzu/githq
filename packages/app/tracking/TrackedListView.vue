@@ -1,17 +1,17 @@
 <!-- Settings' Repositories and Projects (G8, T17, D25): the head (`TrackedListHead`, "15 tracked repositories" and "Track repositories A"), then only what is tracked, by owner (`groupTrackedByOwner`), each group under its header (`TrackedOwnerHeader`) with its rows in the `row` slot. A row opens its settings on click or Enter. Keys while it is shown and no layer is open, never from a field: J/K and ↑/↓ move the selection, Enter opens the selected row, ⌫ untracks it — the selection moving to the next row, the previous one after the last — and A adds more (the picker); `1` to `4` stay Settings'. Nothing tracked, the note in its place says what tracking does, its button adding the first (`NothingThere`, first run and loading D6, ES24), once what is tracked is known: nothing says "none" before. On a phone (`phone`, mobile D35, MB151, MB154, MB162) no head — the screen's top bar has the title and "+" — but a line saying what githq does with them, then the groups (`TrackedOwnerHeader`), each row a button drilling into its settings; nothing tracked, the note's button is the screen's one action, the width of its column. The keys stay, with no hints drawn. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { BookMarked, Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import NothingThere from '@/components/NothingThere.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import TrackedListHead from './TrackedListHead.vue';
@@ -58,24 +58,36 @@ const selection = useRowSelection({
   root,
   keyAttribute: 'data-tracked-key',
   open: row => emit('open', row),
+  place: 'trackedList',
+  openTitle: l.open,
 });
 const projects = computed(() => props.kind === 'projects');
 const addLabel = computed(() => t(projects.value ? l.addProjects : l.addRepositories));
 
 useCommands(() => [
-  { id: 'tracking.add', title: addLabel.value, section: 'view', key: ADD_KEY, run: () => emit('add') },
-  { id: 'tracking.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-  { id: 'tracking.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-  { id: 'tracking.open', title: t(l.open), section: 'view', key: 'Enter', menu: false },
-  { id: 'tracking.untrack', title: t(l.untrack), section: 'view', key: 'Backspace', menu: false },
+  bindCommand(
+    definitions.add,
+    { place: 'trackedList', section: 'view', title: addLabel.value, run: () => emit('add') },
+    t,
+  ),
+  bindCommand(
+    definitions.remove,
+    {
+      place: 'trackedList',
+      section: 'view',
+      title: t(l.untrack),
+      menu: false,
+      actsOnRow: true,
+      when: () => selection.selectedRow !== null,
+      run: () => {
+        if (selection.selectedRow !== null) {
+          emit('untrack', selection.selectedRow);
+        }
+      },
+    },
+    t,
+  ),
 ]);
-
-onWindowEvent('keydown', event => {
-  if (event.key === 'Backspace' && isScreenKey(event) && selection.selectedRow !== null) {
-    event.preventDefault();
-    emit('untrack', selection.selectedRow);
-  }
-});
 
 /** The row's own buttons (Untrack) do what they say instead. */
 function onRowClick(event: MouseEvent, row: T) {

@@ -16,8 +16,9 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
 /**
  * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list in
  * either layout, a list shown as a board (the keys only the board has: its ←/→ are not the list layout's), an opened
- * item, a commit, workflow or workflow run opened as one, a repository's Workflows section, a review, the changelog, a
- * screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places tell which keys
+ * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
+ * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, a review, the
+ * changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places tell which keys
  * collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
  * the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
@@ -29,7 +30,11 @@ export type CommandPlace =
     | 'commit'
     | 'workflow'
     | 'workflowRun'
+    | 'commits'
     | 'workflows'
+    | 'brokenWorkflows'
+    | 'workflowAlerts'
+    | 'trackedList'
     | 'review'
     | 'changelog'
     | 'cantBeRead'
@@ -38,14 +43,17 @@ export type CommandPlace =
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list or a board with an item
- * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); an item opened over a review, or beside
- * a screen GitHub won't show; a workflow's run beside its repository's Workflows section, whose keys are then the
- * run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with
+ * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); the commit graph with a commit open
+ * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
+ * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
+ * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with
  * every place, and every place keeps the keyboard over it.
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
     ['board', 'item'],
+    ['commits', 'commit'],
+    ['workflows', 'workflow'],
     ['item', 'review'],
     ['item', 'cantBeRead'],
     ['workflowRun', 'workflows'],

@@ -24,10 +24,6 @@ addRepositories:
   en: Track repositories
 addProjects:
   en: Track projects
-next:
-  en: Next
-previous:
-  en: Previous
 open:
   en: Open settings
 untrack:

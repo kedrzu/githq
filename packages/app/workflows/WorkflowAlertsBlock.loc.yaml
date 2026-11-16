@@ -56,10 +56,6 @@ remove:
   en: Remove
 add:
   en: Add
-next:
-  en: Next branch or pattern
-previous:
-  en: Previous branch or pattern
 switchDefault:
   en: Switch the default branch's alerts
 editSelected:

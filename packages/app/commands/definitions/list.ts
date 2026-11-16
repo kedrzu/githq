@@ -1,13 +1,28 @@
 import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './list.loc.js';
 
-/** Moves the cursor of what is listed one step down: a list's rows (on the board within the column). */
+/**
+ * The places whose rows the cursor keys move through and open: a list (on the board within the column), the commit
+ * graph, a repository's Workflows section, the broken workflows, an opened workflow's runs, a repository's workflow
+ * alerts and the tracked repositories or projects (`useRowSelection`).
+ */
+const ROW_PLACES = [
+    'list',
+    'commits',
+    'workflows',
+    'brokenWorkflows',
+    'workflow',
+    'workflowAlerts',
+    'trackedList',
+] as const;
+
+/** Moves the cursor of what is listed one step down. */
 export const next = defineAppCommand({
     id: 'next',
     title: l.next,
     key: 'J',
     otherKeys: ['ArrowDown'],
-    places: ['list'],
+    places: ROW_PLACES,
 });
 
 /** Moves the cursor of what is listed one step up. */
@@ -16,15 +31,18 @@ export const previous = defineAppCommand({
     title: l.previous,
     key: 'K',
     otherKeys: ['ArrowUp'],
-    places: ['list'],
+    places: ROW_PLACES,
 });
 
-/** Opens what the cursor is on: a list's row beside the list, or — on the opened one's row — on its page. */
+/**
+ * Opens what the cursor is on: a list's row beside the list, or — on the opened one's row — on its page; a commit, a
+ * workflow, a run, a tracked repository's settings; edits an alert pattern in place.
+ */
 export const open = defineAppCommand({
     id: 'open',
     title: l.open,
     key: 'Enter',
-    places: ['list'],
+    places: ROW_PLACES,
     configurable: false,
 });
 
@@ -123,5 +141,36 @@ export const toggleStackCard = defineAppCommand({
     title: l.toggleStack,
     key: 'Space',
     places: ['board'],
+    configurable: false,
+});
+
+/**
+ * Adds an entry to the list on screen: repositories or projects to track, a branch or tag pattern raising workflow
+ * alerts. One command (commands D1): whoever moves "add" off `A` moves it for every list of settings.
+ */
+export const add = defineAppCommand({
+    id: 'add',
+    title: l.add,
+    key: 'A',
+    places: ['trackedList', 'workflowAlerts'],
+});
+
+/**
+ * Removes the selected entry of the list on screen at once: untracks a repository or project, removes an alert pattern.
+ * One command (commands D1), as Backspace deletes what is selected wherever it is.
+ */
+export const remove = defineAppCommand({
+    id: 'remove',
+    title: l.remove,
+    key: 'Backspace',
+    places: ['trackedList', 'workflowAlerts'],
+});
+
+/** Switches the selected row's switch, as Space on the switch itself does (the default branch's workflow alerts). */
+export const toggleRow = defineAppCommand({
+    id: 'toggleRow',
+    title: l.toggleRow,
+    key: 'Space',
+    places: ['workflowAlerts'],
     configurable: false,
 });

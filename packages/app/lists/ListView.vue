@@ -858,11 +858,12 @@ function isAllMerged(key: string, merged: readonly string[]) {
 function getKeyCommands(): Command[] {
   const own = { section: 'view', menu: false, actsOnRow: true } as const;
   const commands: Command[] = [
-    bindCommand(definitions.next, { ...own, run: () => step(1) }, t),
-    bindCommand(definitions.previous, { ...own, run: () => step(-1) }, t),
+    bindCommand(definitions.next, { place: 'list', ...own, run: () => step(1) }, t),
+    bindCommand(definitions.previous, { place: 'list', ...own, run: () => step(-1) }, t),
     bindCommand(
       definitions.open,
       {
+        place: 'list',
         ...own,
         when: () => currentOpenId() !== null,
         run: () => {

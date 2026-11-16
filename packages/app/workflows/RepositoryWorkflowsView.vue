@@ -76,7 +76,10 @@ const selection = useRowSelection({
   selectFirst: true,
   chosenKey: selected,
   open: row => openKey(row.key),
+  // With a run in the panel these keys are the run's.
   enabled: () => !props.runOpen,
+  place: 'workflows',
+  openTitle: l.open,
 });
 /** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain, or while the first read runs. */
 const emptyState = computed(() => {
@@ -120,26 +123,6 @@ const emptyState = computed(() => {
 });
 
 useCommands(() => [
-  // With a run in the panel these keys are the run's (`useRowSelection`'s `enabled`).
-  {
-    id: 'workflows.next',
-    title: t(l.next),
-    section: 'view',
-    key: 'J',
-    otherKeys: ['ArrowDown'],
-    menu: false,
-    when: () => !props.runOpen,
-  },
-  {
-    id: 'workflows.previous',
-    title: t(l.previous),
-    section: 'view',
-    key: 'K',
-    otherKeys: ['ArrowUp'],
-    menu: false,
-    when: () => !props.runOpen,
-  },
-  { id: 'workflows.open', title: t(l.open), section: 'view', key: 'Enter', menu: false, when: () => !props.runOpen },
   // On the row open in the panel, ⇧Enter is the opened item's own (back and forth between the panel and its page).
   {
     id: 'workflows.fullScreen',

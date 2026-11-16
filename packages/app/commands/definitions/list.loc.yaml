@@ -26,3 +26,9 @@ collapseStack:
   en: Collapse the stack
 toggleStack:
   en: Expand or collapse the stack
+add:
+  en: Add
+remove:
+  en: Remove
+toggleRow:
+  en: Switch on or off

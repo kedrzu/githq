@@ -1,12 +1,19 @@
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
+import type { Translation } from '@nzyme/i18n-core/Translation.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, nextTick, ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { CommandSection } from '@/commands/CommandTypes.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { useCommands } from '@/commands/useCommands.js';
+
 import { followSelection } from './followSelection.js';
-import { isActivatableTarget } from './isActivatableTarget.js';
-import { isScreenKey } from './isScreenKey.js';
 import { takeFocusOffControl } from './takeFocusOffControl.js';
+
+/** The places whose rows `next`, `previous` and `open` move through and open. */
+export type RowSelectionPlace = (typeof definitions.next.places)[number];
 
 /** What every list of rows says, however its selected row is brought into sight. */
 interface RowSelectionListOptions<T> {
@@ -25,6 +32,12 @@ interface RowSelectionListOptions<T> {
     open(row: T): void;
     /** Whether the keys are the list's now; always when not given. Something opened over it may take them. */
     readonly enabled?: MaybeRefOrGetter<boolean>;
+    /** The place its keys are offered in (commands D13). */
+    readonly place: RowSelectionPlace;
+    /** The heading its keys sit under in the help sheet; `view` when not given. */
+    readonly section?: CommandSection;
+    /** What Enter does here, when it is more than "Open" ("Open failed run", "Edit the pattern"). */
+    readonly openTitle?: Translation;
 }
 
 /** A list with every row in the page: the selected one is found by its key and scrolled into sight. */
@@ -64,11 +77,13 @@ export interface RowSelectionViewModel<T> {
 /**
  * The selection of a screen's list of rows: J/K and ↓/↑ move it — from nothing selected, either way to the first
  * row — and bring the selected row into sight, Enter opens the selected row (not from a button or a link, which do
- * what they say, nor with Shift, a screen's own; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
- * screen has them ({@link isScreenKey}).
+ * what they say; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest
+ * neighbour ({@link followSelection}). The keys are the `next`, `previous` and `open` commands, registered in `place`
+ * while `enabled`, each acting on the row: not from what Tab focused outside the list.
  * @util
  */
 export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel<T> {
+    const t = useTranslate();
     /** The row the user moved to; `null` until they do. */
     const chosenKey = options.chosenKey ?? ref<string | null>(null);
 
@@ -89,28 +104,32 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         chosenKey.value = followSelection(previous, next, chosenKey.value);
     });
 
-    onWindowEvent('keydown', event => {
-        if (!isScreenKey(event) || toValue(options.enabled) === false) {
-            return;
-        }
-
-        switch (event.key) {
-            case 'j':
-            case 'ArrowDown':
-                event.preventDefault();
-                step(1);
-                return;
-            case 'k':
-            case 'ArrowUp':
-                event.preventDefault();
-                step(-1);
-                return;
-            case 'Enter':
-                if (!event.shiftKey && selectedRow.value !== null && !isActivatableTarget(event.target)) {
-                    event.preventDefault();
-                    options.open(selectedRow.value);
-                }
-        }
+    useCommands(() => {
+        const binding = {
+            place: options.place,
+            section: options.section ?? 'view',
+            menu: false,
+            actsOnRow: true,
+            when: () => toValue(options.enabled) !== false,
+        } as const;
+        return [
+            bindCommand(definitions.next, { ...binding, run: () => step(1) }, t),
+            bindCommand(definitions.previous, { ...binding, run: () => step(-1) }, t),
+            bindCommand(
+                definitions.open,
+                {
+                    ...binding,
+                    title: options.openTitle && t(options.openTitle),
+                    when: () => binding.when() && selectedRow.value !== null,
+                    run: () => {
+                        if (selectedRow.value !== null) {
+                            options.open(selectedRow.value);
+                        }
+                    },
+                },
+                t,
+            ),
+        ];
     });
 
     return reactive<RowSelectionViewModel<T>>({ selectedKey, selectedRow, select, reveal, step });
