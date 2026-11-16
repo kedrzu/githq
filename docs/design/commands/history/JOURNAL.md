@@ -46,3 +46,9 @@
   even when not visible; its title does not name the row. Not part of this design; offered as a separate fix.
 - Owner: a key helper for buttons, not `<CommandButton>` (D12 amended, old form in history). First build step written
   into README. Owner agreed to close the design and to a separate issue for the "Open full screen" bug.
+
+## 2026-11-16 (delivery, M1)
+
+- Built: the ordered pairs of places on screen together decide at runtime which command runs a shared key (the list's
+  `O` before the opened item's). Review flagged it against D13's "places serve only these checks"; owner chose to keep
+  it over section order (D13 rewritten, prior form in history).

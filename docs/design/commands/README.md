@@ -64,9 +64,11 @@ the sidebar. The settings show this as "here, ⌘B does this instead of that" ra
 screens like a review are where single keys are worth most. [How places are described and when keys
 collide](DECISIONS.md#d13).
 
-Places are only for that check. Which command gets a key while you work is decided by what has the keyboard: with an
-item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row. That is also why `O` on both
-is a conflict and not one taking over from the other: the item's would never run.
+The same list decides which command gets a key while you work, because it says what has the keyboard: each pair
+names the place that keeps it first. With an item open beside a list, the list keeps it, so `J`, `K` and `O` act on
+the selected row. That is also why two different commands on `O` there are a conflict and not one taking over from
+the other: the item's would never run. ["Open on GitHub" offered by both is one command, and the list's
+runs](DECISIONS.md#d13).
 
 Keys that work across the whole app are few and never a bare letter by default: `⌘K`, `?`, `,` and `⌘B`. Letters
 belong to screens, so a screen's letter never takes anything app-wide. Creating an issue, for example, is in the

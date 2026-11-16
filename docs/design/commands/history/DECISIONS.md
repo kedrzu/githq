@@ -89,3 +89,29 @@ hardcoded (`translations` skill), so it holds the key and whatever shows it tran
 **Rejected.**
 
 - Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
+
+## D13
+
+Retired in part 2026-11-16: places now also decide which command runs a shared key; the rest holds in
+[D13](../DECISIONS.md#d13).
+
+**"Where" is a place from a flat list: the whole app, or one kind of screen or panel (a list, an open item, a review,
+a job log, the commit graph, the settings, …). A short hand-kept list names the places that can be on screen together
+(a list with an item open beside it). Two commands sharing a key conflict if they share a place or their places are
+on that list. A screen's command may take a key of an app-wide command; the settings show it as "here, ⌘B does X
+instead of Y", not as a conflict. Places serve only these checks: which command gets a key at runtime is decided by
+what has the keyboard.** (2026-11-16, owner)
+
+**Why.** The defaults rely on a screen taking an app-wide key (the review's `Mod+B` over the sidebar's), and screens
+like a review are where single keys are worth most. Places that nest get the list with an item beside it wrong: the
+item is narrower, so its `O` would be shown as deliberately taking the list's, yet the list keeps the keyboard
+(`docs/design/githq/navigation.md`, `ListView.vue:58,757`), so the item's `O` never fires. That is a real conflict,
+and the flat list with pairs reports it as one.
+
+**Rejected.**
+
+- Places that nest, one place inside several parents, conflict when "active together and neither contains the
+  other" — calls the list-and-item clash a deliberate override, and needs data nesting does not hold
+  ([history](history/DECISIONS.md#d6)).
+- A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
+- Priority decided by nesting — wrong for a list with an item open beside it.
