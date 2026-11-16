@@ -522,26 +522,24 @@ nothing: only the opened commit reads the list.
 
 ## D25
 
-**The repository's own column and the setting that chose it go. While a tracked repository is the open place, its
-sections show under its row in the app's sidebar, with the counts its tabs show: open issues, open pull requests, none
-for Commits, Workflows its broken ones, a dash while that is unknown; Workflows only while it is tracked. They slide open
-and closed unless Settings · Animations is off. The header keeps the tabs while they fit, drawn as one bordered group
-with the current tab filled (CH67), each with a tooltip naming where it goes and its key ("Go to issues" `1`). As room
-runs out the header gives way in steps: the view options move into Display, Display drops its label for its icon, the
-tabs fold into one menu showing the current section, last the title is cut. The repository's visibility is a book or a
-lock inside the title's button, read out as public or private, no longer a word beside the name (CH72). The repository's
-menu, its title's and the sidebar's, drops Open and lists Issues, Pull requests, Commits and Workflows, their keys `1`–`4`
-shown on the open repository's menu only. A tracked project's saved views follow the same model: under its row in the
-sidebar, in the same tab group, folding the same way, with no counts.** (2026-11-16, owner: the column takes a third of a
-small screen and repeats the repository's name, the tabs neither read as tabs nor hint at their keys, a narrow header has
-nowhere to go; picked CH67 and the sub-rows' guide line, CH71; the title's icon "isn't clickable, is a bit too big and
-too far from the repository's name"; a project's views without counts, "as its tabs have none". CH72–CH80)
+**The repository's own column and the setting that chose it go. The header keeps the tabs while they fit, drawn as one
+bordered group with the current tab filled (CH67), each with a tooltip naming where it goes and its key ("Go to issues"
+`1`). As room runs out the header gives way in steps: the view options move into Display, Display drops its label for
+its icon, the tabs fold into one menu showing the current section, last the title is cut. The repository's visibility
+is a book or a lock inside the title's button, read out as public or private, no longer a word beside the name (CH72).
+The repository's menu, its title's and the sidebar's, drops Open and lists Issues, Pull requests, Commits and
+Workflows, their keys `1`–`4` shown on the open repository's menu only. A tracked project's saved views follow the same
+model: in the same tab group, folding the same way, with no counts. In the sidebar the open place's row is the current
+one ([D27](#d27)).** (2026-11-16, owner: the column takes a third of a small screen and repeats the repository's name,
+the tabs neither read as tabs nor hint at their keys, a narrow header has nowhere to go; picked CH67; the title's icon
+"isn't clickable, is a bit too big and too far from the repository's name"; a project's views without counts, "as its
+tabs have none". CH72–CH80; the sections under the place's row retired the same day by [D27](#d27),
+[history](history/DECISIONS.md#d25))
 
-**Why.** The sidebar already lists the repository, so its sections nest under its row at no width of their own, and the
-list and the graph keep the window. Only the open place expands, so the sidebar stays a list of places. Tooltips teach
-the keys the tabs never showed. Giving way in steps keeps every control reachable at any width; the header's left part
-paints over the controls, so one that doesn't fit is covered, never drawn under the title. On another repository's menu
-the keys would do nothing, so they would lie.
+**Why.** The list and the graph keep the window, as the tabs take no width of their own. Tooltips teach the keys the
+tabs never showed. Giving way in steps keeps every control reachable at any width; the header's left part paints over
+the controls, so one that doesn't fit is covered, never drawn under the title. On another repository's menu the keys
+would do nothing, so they would lie.
 
 **Rejected.**
 
@@ -549,9 +547,6 @@ the keys would do nothing, so they would lie.
   [history](history/DECISIONS.md#d14)) — it takes a third of a small screen and repeats the repository's name (owner).
 - The current tab underlined inside a bordered strip (CH68), or a filled pill on a track with no border (CH69) — owner
   picked CH67, the List / Board switch's look.
-- Sub-rows as a plain indent, like My work's groups (CH70) — owner picked the thin guide line (CH71).
-- A marker on the collapsed sidebar for the open repository — the rail lists no repositories; there the header is the way
-  around.
 
 ## D26
 
@@ -574,3 +569,20 @@ where the rail is forced and the sidebar's command stands down.
   they are to know what it does.
 - Keys for a tenth view and later, or for "All items" — no single key is left, and "All items" is a tab only while it
   shows.
+
+## D27
+
+**On a computer the open place does not expand in the sidebar: its row is the current one, also while one of its items
+is open in the panel or full screen, with nothing under it, and the header's tabs move between its sections or saved
+views. Only the phone's places panel expands a place into its rows ([mobile D53](../mobile/DECISIONS.md#d53)).**
+(2026-11-16, owner, after trying D25's sections under the row: "I don't like the expanding on the desktop — make it only
+for the sidebar on mobile". CH71 deleted; CH72–CH74, R4, D12 and D13 redrawn)
+
+**Why.** On a computer the header's tabs already show the place's sections, with their counts and keys, so the rows
+under the place said the same thing twice and pushed the other places down. The phone has no header tabs, so the panel
+is where the place's parts are one tap away.
+
+**Rejected.**
+
+- The sections under the open place's row on a computer too (D25 as first decided, CH71–CH74,
+  [history](history/DECISIONS.md#d25)) — the owner disliked it in use.

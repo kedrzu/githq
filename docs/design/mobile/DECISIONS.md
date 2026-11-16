@@ -725,13 +725,15 @@ named: on a pull request the description starts more than a screen down.
 staying open: a repository's Issues, Pull requests, Commits and Workflows, a project's saved views, one place at a time,
 the place the user is in expanded to begin with. Tapping one of them opens it and closes the panel. Commits and Workflows
 are marked ↗ and open github.com, as in the command menu ([D21](#d21)), whose menu keeps the place's sections and views.**
-(2026-11-16, owner, with the computer's sidebar: [git-client D25](../git-client/DECISIONS.md#d25); `MB270`, `MB271`)
+(2026-11-16, owner, first with the computer's sidebar ([git-client D25](../git-client/DECISIONS.md#d25)), then for the
+phone alone: "make it only for the sidebar on mobile" ([git-client D27](../git-client/DECISIONS.md#d27)); `MB270`,
+`MB271`)
 
-**Why.** The computer's sidebar now shows the open place's sections under its row, and the phone's places panel is that
-sidebar ([D19](#d19)), so a place's parts are one tap from the panel rather than only from the command line ([D17](#d17)).
+**Why.** A phone has no header tabs, so its places panel is where a place's parts are one tap away rather than only in
+the command line ([D17](#d17)); on a computer the header's tabs do that and the open place's row is just marked current.
 Expanding in place is no drill: the places stay in view and the panel takes no step in history.
 
 **Rejected.**
 
 - A place's parts in the command line's menu only (D21's "nowhere else", [history](history/RETIRED.md#d21)) — the
-  panel would differ from the computer's sidebar it is.
+  parts would be reachable only through the command line, with nothing in the panel saying they exist.

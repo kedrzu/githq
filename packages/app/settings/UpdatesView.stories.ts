@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import type { UpdateState } from '@/services/AppUpdate.js';
+import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
+import changelogStories from './ChangelogView.stories.js';
+import ChangelogView from './ChangelogView.vue';
 import UpdatesView from './UpdatesView.vue';
 
 const NOW = Date.UTC(2026, 10, 4, 12);
@@ -146,4 +150,18 @@ export const Installing: Story = { args: { state: { ...STABLE, activity: { kind:
 /** U39's place: a failed install, with the wording that holds for any failure. */
 export const InstallFailed: Story = {
     args: { state: { ...STABLE, activity: { kind: 'installFailed', version: '0.2.1' } } },
+};
+
+/** U41: the changelog in its place, under the version and the stream. */
+export const WithChangelog: Story = {
+    decorators: [withPhoneLayout(false), withGitHubLinks()],
+    render: args => ({
+        components: { UpdatesView, ChangelogView },
+        setup: () => ({ args, changelog: changelogStories.args }),
+        template: `
+          <UpdatesView v-bind="args">
+            <ChangelogView v-bind="changelog" />
+          </UpdatesView>
+        `,
+    }),
 };

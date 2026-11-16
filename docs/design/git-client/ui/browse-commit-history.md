@@ -132,7 +132,7 @@ Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 
 |Question|Answer in the frame|
 |-|-|
-|1. The shape of the repository view|Sections on `1`–`4`, All removed, as tabs beside the title (CH1–CH3), one bordered group (CH67), and under the open repository's row in the sidebar (CH72). The column layout and its setting (CH4–CH6, CH42, CH43) are gone; the Work and Code shape was dropped (D14, D25)|
+|1. The shape of the repository view|Sections on `1`–`4`, All removed, as tabs beside the title (CH1–CH3), one bordered group (CH67), the open repository's row current in the sidebar (CH72, D27). The column layout and its setting (CH4–CH6, CH42, CH43) are gone; the Work and Code shape was dropped (D14, D25)|
 |2. Where the branch and tag list lives|On the left in both, one column with one width, resizable: CH46; names nest into folders: CH53; a sort button per group: CH60. Under the header, always there on a wide window: CH3, CH15–CH17 (D15)|
 |3. How a commit's details open|As an item, in the shared panel or on its page; a click, `↵`, a chosen ref or `P`/`⇧P` opens it, in place of an item open there; once open, `J`/`K` move the cursor and the panel follows: CH18; a merge: CH20; facts above the message in one scroll: CH55, checks passed with no pull request CH57, not known yet CH58; CH48 (under the graph) is superseded (D16, 2026-11-15)|
 |4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|

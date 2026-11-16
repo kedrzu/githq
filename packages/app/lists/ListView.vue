@@ -5,7 +5,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { ChevronDown, ChevronRight, GitMerge } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, GitMerge, Maximize2 } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
@@ -961,6 +961,9 @@ function getKeyCommands(): Command[] {
       title: t(l.openFullScreen),
       section: 'view',
       key: 'Shift+Enter',
+      icon: Maximize2,
+      // The row it opens, named in the menu: it may be scrolled out of view.
+      detail: rowSubject.value?.kind === 'item' ? rowSubject.value.title : undefined,
       actsOnRow: true,
       when: () => getFullScreenId() !== null,
       run: () => {
@@ -1425,20 +1428,17 @@ function select(key: string | null) {
 
 /**
  * The items the selected entry stands for — read from the entry, as the model given by the owner changes only once it
- * re-renders.
+ * re-renders. None while no entry of this list is selected: the model may hold an item this list doesn't show (the one
+ * opened last, from another list), which the keys must not reach.
  */
 function currentIds(): readonly string[] {
-  if (selectedKey.value === null) {
-    return selectedId.value === null ? [] : [selectedId.value];
-  }
-
   return selectedCard.value?.ids ?? [];
 }
 
-/** The item Enter opens for the selected entry. */
+/** The item Enter opens for the selected entry; none while no entry of this list is selected, as {@link currentIds}. */
 function currentOpenId() {
   const key = selectedKey.value;
-  return key === null ? selectedId.value : (placed.value.get(key)?.openId ?? null);
+  return key === null ? null : (placed.value.get(key)?.openId ?? null);
 }
 
 /** What `⇧Enter` opens full screen: the selected entry's item, unless it is the one open over the list. */

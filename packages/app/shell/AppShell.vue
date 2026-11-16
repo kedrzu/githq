@@ -53,7 +53,7 @@ const props = defineProps<{
   myWorkCounts?: SidebarMyWorkCounts | null;
   /** The tracked projects and repositories for the sidebar. */
   tracked?: SidebarTracked;
-  /** The rows under a tracked project or repository in the sidebar and the places panel (`Sidebar`). */
+  /** The rows under a tracked project or repository in the phone's places panel (`Sidebar`). */
   getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
   /** Those rows slide open and closed. */
   animate?: boolean;
@@ -281,8 +281,6 @@ function onLayout(sizes: number[]) {
           :window-controls="windowControls.overlaid"
           :counts="myWorkCounts"
           :tracked="tracked"
-          :get-children="getChildren"
-          :animate="animate"
           :settings-sync-stopped="settingsSyncStopped"
           :broken-workflows="brokenWorkflows"
           :draft-reviews="draftReviews"

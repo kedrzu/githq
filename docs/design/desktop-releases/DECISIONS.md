@@ -352,7 +352,8 @@ Built with one wording for a refused password and any other failure, U40's, beca
 
 **What changed is a section of Settings, Changelog, and it lists every version with its own changes, each in a fold: the first open,
 the rest collapsed. There are no ranges between versions.** (2026-11-04, owner) This replaces the ranges of [D10](#d10); GitHub is still
-read when needed, and the toast of [D7](#d7) still comes, with its action leading here.
+read when needed, and the toast of [D7](#d7) still comes, with its action leading here. Its place is now under Updates, as a block of
+that section ([D20](#d20)).
 
 **Why.** A version saying its own changes needs no range to work out, and the section stays reachable after the toast is gone.
 
@@ -375,7 +376,7 @@ agent, accepted by the owner).
 **Everything the app can do about updates is a command in the command menu, and a command shows only while it can run.** (2026-11-04, owner)
 This widens the "check now" of [D11](#d11).
 
-Always: Check for updates, Settings: Updates and Settings: Changelog. On macOS and Linux also Switch to Stable or Switch to Development,
+Always: Check for updates and Settings: Updates (Settings: Changelog went with its section, [D20](#d20)). On macOS and Linux also Switch to Stable or Switch to Development,
 whichever isn't chosen; switching to Stable from a Development build asks first, as in [D5](#d5). While an update is ready: Restart and
 Later. After a refused or failed install: Try again and Later. While the toast shows: What changed. The exact list beyond update and
 restart is the design agent's reading of the owner's "and so on".
@@ -403,3 +404,15 @@ tell an agreed prompt from no prompt, and the usual install in `/Applications` n
 
 - Restarting at once during any job: on macOS during the install of a newer build it would restart into a half-replaced
   app, and on Linux and Windows it would install the older build while a newer one downloads.
+
+## D20
+
+**The changelog is a block of Settings' Updates section, under the version and the update stream; there is no Changelog
+section.** (2026-11-16, owner) This amends where [D17](#d17) put the changelog and the commands of [D18](#d18).
+
+**Why.** Both sections are about the version of the app: what runs, where it comes from and what came with it. One
+section keeps them in one place, and the column of sections one row shorter.
+
+The block's head carries its title, the keys ↑↓ and Space, and All releases or All commits on GitHub (`O`); the folds and
+their states are unchanged (U41–U48). The whole page scrolls as one. What changed in the toast opens Updates. The
+changelog is read from GitHub each time Updates opens, as it was for its own section.

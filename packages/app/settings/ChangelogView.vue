@@ -1,4 +1,4 @@
-<!-- The Changelog section of Settings, in the desktop app only (desktop releases D17, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests open in githq (`GitHubLinks`, as links to GitHub's HTML do). No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. -->
+<!-- The changelog, a block of Settings' Updates section under the version and the stream, in the desktop app only (desktop releases D17, D20, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests open in githq (`GitHubLinks`, as links to GitHub's HTML do). No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. Its title, the keys and that button are the block's head row; the Updates page scrolls it. -->
 <script lang="ts">
 /** What the section has to show. */
 export type ChangelogContent =
@@ -38,12 +38,10 @@ import type { ChangeGroupKind } from '@/scripts/releasePlan.js';
 import { RELEASES_URL } from '@/landing/landingLinks.js';
 import { getGitHubLinkTarget, GITHQ_LINK_ATTRIBUTE } from '@/shell/gitHubLinks.js';
 import GitHubLinks from '@/shell/GitHubLinks.vue';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import { getPullRequestUrl } from './buildChangelog.js';
 import type { ChangelogDevelopment, ChangelogVersion } from './buildChangelog.js';
 import * as l from './ChangelogView.loc.js';
-import * as sectionLabels from './SettingsSectionLabel.loc.js';
 
 /** The lengths of the quiet lines that hold the place (U46), as drawn. */
 const LOADING_LINES = [120, 560, 500, 200, 420, 380, 460];
@@ -215,12 +213,9 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
 </script>
 
 <template>
-  <div :class="css.changelogView">
-    <header
-      :class="css.changelogView_header"
-      v-bind="WINDOW_DRAG_REGION"
-    >
-      <h2 :class="css.changelogView_title">{{ t(sectionLabels.changelog) }}</h2>
+  <section :class="css.changelogView">
+    <div :class="css.changelogView_head">
+      <h2 :class="css.changelogView_title">{{ t(l.title) }}</h2>
       <span :class="css.changelogView_hint">
         <Kbd keys="ArrowUp ArrowDown" />
         {{ t(l.move) }}
@@ -240,165 +235,153 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
       >
         {{ gitHubLabel }}
       </Button>
-    </header>
+    </div>
     <div
-      :class="css.changelogView_body"
-      data-route-scroll="settings-changelog"
+      v-if="content.kind === 'loading'"
+      :class="css.changelogView_loading"
+      aria-hidden="true"
     >
-      <div :class="css.changelogView_column">
+      <span
+        v-for="(width, index) in LOADING_LINES"
+        :key="index"
+        :class="css.changelogView_loadingLine"
+        :style="{ width: `${width}px` }"
+      />
+    </div>
+    <EmptyState
+      v-else-if="message"
+      :icon="message.icon"
+      :tone="message.tone"
+      :title="message.title"
+      :detail="message.detail"
+      :fact="message.fact"
+      role="status"
+    />
+    <ul
+      v-else
+      ref="list"
+      :class="css.changelogView_list"
+    >
+      <li
+        v-for="(version, index) in versions"
+        :key="getKey(version)"
+        :class="css.changelogView_fold"
+      >
+        <h3 :class="css.changelogView_heading">
+          <button
+            type="button"
+            :class="css.changelogView_head"
+            :aria-expanded="isOpen(version, index)"
+            :aria-controls="`${id}-${index}`"
+            data-changelog-head
+            @click="toggle(version, index)"
+            @focus="current = index"
+          >
+            <component
+              :is="isOpen(version, index) ? ChevronDown : ChevronRight"
+              :class="css.changelogView_chevron"
+              aria-hidden="true"
+            />
+            <template v-if="version.kind === 'release'">
+              <span :class="css.changelogView_version">{{ t(l.version, { version: version.version }) }}</span>
+              <span :class="css.changelogView_date">{{ DATES.format(new Date(version.publishedAt)) }}</span>
+              <span
+                v-if="version.isNew"
+                :class="[css.changelogView_tag, css.changelogView_tag_new]"
+              >
+                {{ t(l.tagNew) }}
+              </span>
+              <span
+                v-if="version.running"
+                :class="css.changelogView_tag"
+              >
+                {{ t(l.tagRunning) }}
+              </span>
+            </template>
+            <template v-else>
+              <span :class="css.changelogView_version">{{ t(l.development) }}</span>
+              <span
+                v-if="version.since"
+                :class="css.changelogView_date"
+              >
+                {{ t(l.since, { version: version.since }) }}
+              </span>
+              <span :class="css.changelogView_tag">{{ t(l.tagRunning) }}</span>
+            </template>
+          </button>
+        </h3>
         <div
-          v-if="content.kind === 'loading'"
-          :class="css.changelogView_loading"
-          aria-hidden="true"
+          v-if="isOpen(version, index)"
+          :id="`${id}-${index}`"
+          :class="css.changelogView_content"
         >
-          <span
-            v-for="(width, index) in LOADING_LINES"
-            :key="index"
-            :class="css.changelogView_loadingLine"
-            :style="{ width: `${width}px` }"
+          <GitHubHtml
+            v-if="version.kind === 'release'"
+            :class="css.changelogView_release"
+            :html="version.html"
+          />
+          <GitHubLinks v-else-if="version.groups.length > 0">
+            <div :class="css.changelogView_development">
+              <p :class="css.changelogView_count">{{ getCountLine(version) }}</p>
+              <section
+                v-for="group in version.groups"
+                :key="group.kind"
+                :class="css.changelogView_group"
+              >
+                <h4 :class="css.changelogView_groupTitle">{{ t(GROUP_TITLES[group.kind]) }}</h4>
+                <ul :class="css.changelogView_changes">
+                  <li
+                    v-for="(change, changeIndex) in group.changes"
+                    :key="changeIndex"
+                    :class="css.changelogView_change"
+                  >
+                    {{ change.description }}
+                    <a
+                      v-if="change.pullRequest !== undefined"
+                      :class="css.changelogView_pullRequest"
+                      v-bind="getPullRequestLink(change.pullRequest)"
+                    >
+                      #{{ change.pullRequest }}
+                    </a>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </GitHubLinks>
+          <EmptyState
+            v-else
+            place="column"
+            :icon="Check"
+            :title="
+              version.limited
+                ? t(l.nothingTitleNewest, { count: version.commits })
+                : t(l.nothingTitle, { count: version.commits })
+            "
           />
         </div>
-        <EmptyState
-          v-else-if="message"
-          :icon="message.icon"
-          :tone="message.tone"
-          :title="message.title"
-          :detail="message.detail"
-          :fact="message.fact"
-          role="status"
-        />
-        <ul
-          v-else
-          ref="list"
-          :class="css.changelogView_list"
-        >
-          <li
-            v-for="(version, index) in versions"
-            :key="getKey(version)"
-            :class="css.changelogView_fold"
-          >
-            <h3 :class="css.changelogView_heading">
-              <button
-                type="button"
-                :class="css.changelogView_head"
-                :aria-expanded="isOpen(version, index)"
-                :aria-controls="`${id}-${index}`"
-                data-changelog-head
-                @click="toggle(version, index)"
-                @focus="current = index"
-              >
-                <component
-                  :is="isOpen(version, index) ? ChevronDown : ChevronRight"
-                  :class="css.changelogView_chevron"
-                  aria-hidden="true"
-                />
-                <template v-if="version.kind === 'release'">
-                  <span :class="css.changelogView_version">{{ t(l.version, { version: version.version }) }}</span>
-                  <span :class="css.changelogView_date">{{ DATES.format(new Date(version.publishedAt)) }}</span>
-                  <span
-                    v-if="version.isNew"
-                    :class="[css.changelogView_tag, css.changelogView_tag_new]"
-                  >
-                    {{ t(l.tagNew) }}
-                  </span>
-                  <span
-                    v-if="version.running"
-                    :class="css.changelogView_tag"
-                  >
-                    {{ t(l.tagRunning) }}
-                  </span>
-                </template>
-                <template v-else>
-                  <span :class="css.changelogView_version">{{ t(l.development) }}</span>
-                  <span
-                    v-if="version.since"
-                    :class="css.changelogView_date"
-                  >
-                    {{ t(l.since, { version: version.since }) }}
-                  </span>
-                  <span :class="css.changelogView_tag">{{ t(l.tagRunning) }}</span>
-                </template>
-              </button>
-            </h3>
-            <div
-              v-if="isOpen(version, index)"
-              :id="`${id}-${index}`"
-              :class="css.changelogView_content"
-            >
-              <GitHubHtml
-                v-if="version.kind === 'release'"
-                :class="css.changelogView_release"
-                :html="version.html"
-              />
-              <GitHubLinks v-else-if="version.groups.length > 0">
-                <div :class="css.changelogView_development">
-                  <p :class="css.changelogView_count">{{ getCountLine(version) }}</p>
-                  <section
-                    v-for="group in version.groups"
-                    :key="group.kind"
-                    :class="css.changelogView_group"
-                  >
-                    <h4 :class="css.changelogView_groupTitle">{{ t(GROUP_TITLES[group.kind]) }}</h4>
-                    <ul :class="css.changelogView_changes">
-                      <li
-                        v-for="(change, changeIndex) in group.changes"
-                        :key="changeIndex"
-                        :class="css.changelogView_change"
-                      >
-                        {{ change.description }}
-                        <a
-                          v-if="change.pullRequest !== undefined"
-                          :class="css.changelogView_pullRequest"
-                          v-bind="getPullRequestLink(change.pullRequest)"
-                        >
-                          #{{ change.pullRequest }}
-                        </a>
-                      </li>
-                    </ul>
-                  </section>
-                </div>
-              </GitHubLinks>
-              <EmptyState
-                v-else
-                place="column"
-                :icon="Check"
-                :title="
-                  version.limited
-                    ? t(l.nothingTitleNewest, { count: version.commits })
-                    : t(l.nothingTitle, { count: version.commits })
-                "
-              />
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style lang="scss" module="css">
 .changelogView {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  min-height: 0;
+  gap: $spacing-10;
 }
 
-.changelogView_header {
+.changelogView_head {
   display: flex;
-  flex: none;
   flex-wrap: wrap;
   gap: $spacing-6 14px;
   align-items: center;
-  min-height: 48px;
-  padding: $spacing-6 20px;
-  border-bottom: 1px solid $color-border;
 }
 
 .changelogView_title {
-  flex: 1;
-  font-size: $font-size-lg;
+  font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
+  color: $color-fg-2;
 }
 
 .changelogView_hint {
@@ -407,17 +390,6 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
   align-items: center;
   font-size: 11.5px;
   color: $color-fg-dim;
-}
-
-.changelogView_body {
-  flex: 1;
-  min-height: 0;
-  padding: 28px 20px;
-  overflow-y: auto;
-}
-
-.changelogView_column {
-  max-width: $settings-column-width;
 }
 
 .changelogView_list {

@@ -664,8 +664,9 @@ took that Enter and made the app's screen harder to reach.
 ### D33
 
 **The desktop app's update screens are drawn in `githq.pen`, frame "Desktop · Updates" (U1–U48), following
-[desktop releases](../desktop-releases/DECISIONS.md).** (design agent, 2026-11-04, for the owner to overrule.) What changed is the section
-Changelog, the owner's choice ([D17](../desktop-releases/DECISIONS.md#d17)).
+[desktop releases](../desktop-releases/DECISIONS.md).** (design agent, 2026-11-04, for the owner to overrule.) What changed is the changelog,
+the owner's choice ([D17](../desktop-releases/DECISIONS.md#d17)), a block of the Updates section
+([D20](../desktop-releases/DECISIONS.md#d20)).
 
 - **The outcome of a check started from the palette appears at the right end of the status bar, not in a toast.** That's where
   U1 already speaks and the palette has just closed. Up to date goes away by itself; a failure stays until Try again or

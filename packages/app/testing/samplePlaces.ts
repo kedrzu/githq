@@ -70,18 +70,16 @@ export function withOpenPlace(tracked: SidebarTracked, key: string): SidebarTrac
     return { projects: tracked.projects.map(mark), repositories: tracked.repositories.map(mark) };
 }
 
-/** Which sample place is open, on which of its rows, and whether its rows are a phone's. */
+/** Which sample place is open, and on which of its rows. */
 export interface SampleGetChildrenOptions {
     readonly open?: TrackedTarget;
     /** The open place's row shown: a section, or a saved view's key. */
     readonly current?: string;
-    /** Commits and Workflows leave for github.com, as on a phone. */
-    readonly phone?: boolean;
 }
 
 /**
- * The rows under a sample place, as the shell gives them to the sidebar: a repository's sections with their counts —
- * Workflows with two broken, one new — and a project's saved views, the first changed on this device, the third answered
+ * The rows under a sample place, as the shell gives them to the places panel: a repository's sections with their counts,
+ * Commits and Workflows leaving for github.com, and a project's saved views, the first changed on this device, the third answered
  * by GitHub, as the drawings show them.
  */
 export function sampleGetChildren(options: SampleGetChildrenOptions = {}) {
@@ -93,12 +91,12 @@ export function sampleGetChildren(options: SampleGetChildrenOptions = {}) {
                 : options.open.kind === 'project' && options.open.id === target.id);
         const current = isOpen ? options.current : undefined;
         return target.kind === 'repository'
-            ? sampleSections(target.nameWithOwner, current, options.phone ?? false)
+            ? sampleSections(target.nameWithOwner, current)
             : sampleViews(target.id, current);
     };
 }
 
-function sampleSections(nameWithOwner: string, current: string | undefined, phone: boolean): SidebarSubEntry[] {
+function sampleSections(nameWithOwner: string, current: string | undefined): SidebarSubEntry[] {
     const sections = [
         { key: 'issues', label: 'Issues', segment: 'issues', count: '118' },
         { key: 'pullRequests', label: 'Pull requests', segment: 'pulls', count: '24' },
@@ -106,7 +104,7 @@ function sampleSections(nameWithOwner: string, current: string | undefined, phon
         { key: 'workflows', label: 'Workflows', segment: 'actions', count: '2' },
     ] as const;
     return sections.map(section => {
-        const external = phone && (section.key === 'commits' || section.key === 'workflows');
+        const external = section.key === 'commits' || section.key === 'workflows';
         return {
             key: section.key,
             label: section.label,
@@ -115,7 +113,6 @@ function sampleSections(nameWithOwner: string, current: string | undefined, phon
             count: external ? '' : section.count,
             current: section.key === current,
             external: external ? `https://github.com/${nameWithOwner}/${section.segment}` : undefined,
-            marker: section.key === 'workflows' ? 'new' : undefined,
         };
     });
 }

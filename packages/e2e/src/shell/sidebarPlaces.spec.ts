@@ -15,63 +15,46 @@ const DOCS = `${SAMPLE_VIEWER.viewer.login}/docs`;
 // A phone in portrait (mobile D5: the phone layout below 640 px of window width).
 const PHONE = { width: 390, height: 844 };
 
-test("the open repository's sections are under its row with their counts, the shown one current — also with an item open — and opening another moves them", async ({
+test("on a computer the open repository's row is the current one with nothing under it — also with an item open — and opening another moves the mark", async ({
     page,
     github,
 }) => {
     const { world } = createSampleTrackedWork();
     world.repository(DOCS);
     const shell = await openTrackedWork(page, github, world);
-    await expect(shell.placeRows(SAMPLE_REPOSITORY)).toHaveCount(0);
 
     await shell.tracked(SAMPLE_REPOSITORY).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
-    await expect(shell.placeRows(SAMPLE_REPOSITORY)).toHaveText([
-        /^Issues\s*3$/u,
-        /^Pull requests\s*1$/u,
-        /^Commits$/u,
-        /^Workflows/u,
-    ]);
-    await expect(shell.placeRow(SAMPLE_REPOSITORY, 'Issues')).toHaveAttribute('aria-current', 'page');
-    await expect(shell.tracked(SAMPLE_REPOSITORY)).not.toHaveAttribute('aria-current');
-    await expect(shell.placeRows(DOCS)).toHaveCount(0);
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveAttribute('aria-current', 'page');
+    await expect(shell.placeRows(SAMPLE_REPOSITORY)).toHaveCount(0);
 
-    await shell.placeRow(SAMPLE_REPOSITORY, 'Pull requests').click();
+    // The sections are the header's tabs, on their keys.
+    await page.keyboard.press('2');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
     await new RepositoryScreenHarness(page).row('Fix the crash on start').click();
     await expect(page).toHaveURL(/[?&]pane=issue/u);
-    await expect(shell.placeRow(SAMPLE_REPOSITORY, 'Pull requests')).toHaveAttribute('aria-current', 'page');
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveAttribute('aria-current', 'page');
     await expect(shell.sidebar.locator('[aria-current="page"]')).toHaveCount(1);
 
     await shell.tracked(DOCS).click();
     await expect(page).toHaveURL(`/${DOCS}/issues`);
-    await expect(shell.placeRows(SAMPLE_REPOSITORY)).toHaveCount(0);
-    await expect(shell.placeRows(DOCS)).toHaveText([
-        /^Issues\s*0$/u,
-        /^Pull requests\s*0$/u,
-        /^Commits$/u,
-        /^Workflows/u,
-    ]);
-    await expect(shell.placeRow(DOCS, 'Issues')).toHaveAttribute('aria-current', 'page');
+    await expect(shell.tracked(DOCS)).toHaveAttribute('aria-current', 'page');
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).not.toHaveAttribute('aria-current');
+    await expect(shell.placeRows(DOCS)).toHaveCount(0);
 });
 
-test("the open project's saved views are under its row, the shown one current, and its row goes back to that view", async ({
+test("on a computer the open project's row is the current one with nothing under it, and goes back to the view shown", async ({
     page,
     github,
 }) => {
     const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
 
     await shell.tracked(SAMPLE_PROJECT).click();
-    await expect(shell.placeRows(SAMPLE_PROJECT)).toHaveText([
-        /^Backlog/u,
-        /^Board/u,
-        /^Sidebar work/u,
-        /^Shipped bugs/u,
-    ]);
+    await expect(shell.tracked(SAMPLE_PROJECT)).toHaveAttribute('aria-current', 'page');
+    await expect(shell.placeRows(SAMPLE_PROJECT)).toHaveCount(0);
 
-    await shell.placeRow(SAMPLE_PROJECT, 'Board').click();
+    await page.keyboard.press('2');
     await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
-    await expect(shell.placeRow(SAMPLE_PROJECT, 'Board')).toHaveAttribute('aria-current', 'page');
     await expect(shell.sidebar.locator('[aria-current="page"]')).toHaveCount(1);
     await expect(shell.tracked(SAMPLE_PROJECT)).toHaveAttribute('href', `${SAMPLE_PROJECT_PATH}/views/2`);
 });
