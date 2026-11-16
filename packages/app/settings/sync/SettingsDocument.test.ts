@@ -7,7 +7,6 @@ import {
     readAnimations,
     readMaxWidth,
     readUsageStatistics,
-    readRepositoryLayout,
     readRefSort,
     readReviewCommentChoice,
     readWorkflowRunsGroupBy,
@@ -22,7 +21,6 @@ import type { WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
 import type {
     MaxWidth,
     RefSort,
-    RepositoryLayout,
     ReviewCommentChoice,
     SettingsDocument,
     SettingsRepository,
@@ -201,20 +199,6 @@ test('writing the workflows setting replaces the value whole, keeps fields a new
     expect(
         writeWorkflowSettings({ document: newer, nameWithOwner: 'kedrzu/githq', settings })?.repositories[0]?.workflows,
     ).toEqual({ muted: ['CLA'], defaultBranch: true, refs: ['v*', 'release/*'] });
-});
-
-test.each<[unknown, RepositoryLayout]>([
-    ['column', 'column'],
-    ['a newer build’s layout', 'tabs'],
-    [7, 'tabs'],
-])('a file with the layout %j is readable, reads as %s and keeps what it holds', (written, reads) => {
-    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, repositoryLayout: written }));
-    if (parsed.kind !== 'ok') {
-        throw new Error(`Not read: ${parsed.kind}`);
-    }
-
-    expect(readRepositoryLayout(parsed.document)).toBe(reads);
-    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, repositoryLayout: written });
 });
 
 test.each<[unknown, boolean]>([

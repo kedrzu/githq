@@ -33,3 +33,5 @@ lanesFit:
     many: '{fit} of {total} lanes'
 olderWhenOnline:
   en: Older commits load when you're back online
+resizeRefList:
+  en: Resize the branches and tags

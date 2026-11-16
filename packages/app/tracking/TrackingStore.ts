@@ -24,7 +24,6 @@ import {
     readMaxWidth,
     readUsageStatistics,
     readRefSort,
-    readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
     readWorkflowRunsGroupBy,
@@ -34,7 +33,6 @@ import {
 } from '@/settings/sync/SettingsDocument.js';
 import type {
     MaxWidth,
-    RepositoryLayout,
     ReviewCommentChoice,
     SettingsDocument,
     SettingsProject,
@@ -187,10 +185,6 @@ export const TrackingStore = defineService({
             get document() {
                 return keptRef.value.document;
             },
-            /** How a repository's sections are laid out (git-client D14); reactive. */
-            get repositoryLayout() {
-                return readRepositoryLayout(keptRef.value.document);
-            },
             /** Whether the short UI animations play; reactive. */
             get animations() {
                 return readAnimations(keptRef.value.document);
@@ -238,7 +232,6 @@ export const TrackingStore = defineService({
             untrack,
             replaceDocument,
             setWorkflowSettings,
-            setRepositoryLayout,
             setAnimations,
             setUsageStatistics,
             setReviewCommentChoice,
@@ -354,21 +347,6 @@ export const TrackingStore = defineService({
             }
         }
 
-        /**
-         * The user's choice of the repository layout, in the settings as the slot holds them now. Nothing when it reads
-         * as that already: a value of a newer build, which reads as tabs, stays until the user picks something else.
-         */
-        function setRepositoryLayout(layout: RepositoryLayout) {
-            const written = write(kept =>
-                readRepositoryLayout(kept.document) === layout
-                    ? null
-                    : { ...kept, document: { ...kept.document, repositoryLayout: layout } },
-            );
-            if (written) {
-                changedHere();
-            }
-        }
-
         /** The user's choice of whether animations play. Nothing when it reads as that already (absent reads as on). */
         function setAnimations(on: boolean) {
             const written = write(kept =>
@@ -474,7 +452,7 @@ export const TrackingStore = defineService({
 
         /**
          * Calls `listener` after the user changed their settings in this tab — chose, tracked or untracked, picked the
-         * repository layout or the way of a review's comment, or set a repository's workflows — not when another tab
+         * way of a review's comment, or set a repository's workflows — not when another tab
          * did, nor when the document was replaced.
          */
         function onLocalChange(listener: () => void) {

@@ -4,7 +4,6 @@ import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
-import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { WorkflowItemHarness } from '../harnesses/WorkflowItem.harness.js';
 import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
@@ -302,59 +301,41 @@ test('git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
     await expect(graph.cursorRow).toContainText('chore: set up the build');
 });
 
-test('git-client D15, CH46: the left column is one width: dragged in tabs it is kept across a reload, and the column layout has it on every section; dragged there it is back in tabs, within 200 to 480 px', async ({
+test('git-client D15, CH46: the list of branches and tags is dragged by its edge within 200 to 480 px, and its width is kept across a reload', async ({
     page,
     github,
 }) => {
     await page.setViewportSize({ width: 1500, height: 800 });
     const sample = createSampleTrackedWork();
     giveHistory(sample.world, SAMPLE_REPOSITORY);
-    const shell = await openTrackedWork(page, github, sample.world);
+    await openTrackedWork(page, github, sample.world);
 
     await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    const repository = new RepositoryScreenHarness(page);
     await expect(graph.refList).toBeVisible();
-    const start = await graph.leftColumnEdgeX();
+    const start = await graph.refListEdgeX();
 
-    await graph.dragLeftColumnEdge(60);
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+    await graph.dragRefListEdge(60);
+    await expect.poll(() => graph.refListEdgeX()).toBe(start + 60);
 
     await page.reload();
     await expect(graph.refList).toBeVisible();
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
-
-    await page.goto('/settings?tab=display');
-    await new SettingsScreenHarness(page).repositoryLayout('Column').click();
-    // A repository opens on the section it was last on.
-    await shell.tracked(SAMPLE_REPOSITORY).click();
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
-    await expect(graph.refList).toBeVisible();
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
-
-    await page.keyboard.press('1');
-    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+    await expect.poll(() => graph.refListEdgeX()).toBe(start + 60);
 
     // Past each limit it stops there: 280 + 60 less 400 is under the 200, and plus 400 is over the 480.
-    await graph.dragLeftColumnEdge(-400);
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start - 80);
-    await graph.dragLeftColumnEdge(600);
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 200);
+    await graph.dragRefListEdge(-400);
+    await expect.poll(() => graph.refListEdgeX()).toBe(start - 80);
+    await graph.dragRefListEdge(600);
+    await expect.poll(() => graph.refListEdgeX()).toBe(start + 200);
 
-    await graph.leftColumnEdge.focus();
+    await graph.refListEdge.focus();
     await page.keyboard.press('ArrowLeft');
-    await expect.poll(() => graph.leftColumnEdgeX()).toBeLessThan(start + 200);
-    const byKey = await graph.leftColumnEdgeX();
+    await expect.poll(() => graph.refListEdgeX()).toBeLessThan(start + 200);
+    const byKey = await graph.refListEdgeX();
 
-    await page.goto('/settings?tab=display');
-    await new SettingsScreenHarness(page).repositoryLayout('Tabs').click();
-    await shell.tracked(SAMPLE_REPOSITORY).click();
-    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
-    await page.keyboard.press('3');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    await page.reload();
     await expect(graph.refList).toBeVisible();
-    await expect.poll(() => graph.leftColumnEdgeX()).toBe(byKey);
+    await expect.poll(() => graph.refListEdgeX()).toBe(byKey);
 });
 
 test('a failing check opens its run in the app, and Esc comes back to the commit open in the panel with the cursor on it (D24); another way into the section opens nothing, its cursor on the commit opened last', async ({
@@ -424,76 +405,6 @@ test('with a workflow open in the panel, a click on a commit in Commits opens th
     await expect(probe.root).toHaveCount(0);
     await expect(page).toHaveURL(commitPanel('commits', 'm3'));
     await expect(graph.cursorRow).toContainText('docs: describe the setup');
-});
-
-test("git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column at once; 2 and 3 change section in it, B, typing and Enter choose a ref from its list, the chosen ref's commit opens in the panel beside the graph with the list staying, and Esc closes it", async ({
-    page,
-    github,
-}) => {
-    await page.setViewportSize({ width: 1500, height: 800 });
-    const sample = createSampleTrackedWork();
-    giveHistory(sample.world, SAMPLE_REPOSITORY);
-    const shell = await openTrackedWork(page, github, sample.world);
-
-    await page.goto('/settings?tab=display');
-    await new SettingsScreenHarness(page).repositoryLayout('Column').click();
-    await shell.tracked(SAMPLE_REPOSITORY).click();
-
-    const repository = new RepositoryScreenHarness(page);
-    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.sectionTitle('Issues')).toBeVisible();
-    await expect(repository.titleMenuButton(SAMPLE_REPOSITORY)).toBeVisible();
-    await expect(repository.groupingButton).toBeVisible();
-
-    await page.keyboard.press('2');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
-    await expect(repository.sectionTitle('Pull requests')).toBeVisible();
-
-    await page.keyboard.press('3');
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
-    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    await expect(graph.rows).toHaveCount(6);
-    await expect(graph.refList).toBeVisible();
-    await expect(graph.refListTool).toHaveCount(0);
-    await expect(repository.groupingButton).toHaveCount(0);
-    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
-
-    await page.keyboard.press('b');
-    await expect(graph.refFilter).toBeFocused();
-    await page.keyboard.type('rel');
-    await expect(graph.selectedRef).toContainText('release/1.0');
-    await page.keyboard.press('Enter');
-    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
-    await expect(graph.refFilter).toHaveValue('');
-    await expect(graph.root).toBeFocused();
-    await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
-    await expect(graph.refList).toBeVisible();
-    // Beside the graph, not over it.
-    const [rows, details] = await Promise.all([graph.root.boundingBox(), graph.details.boundingBox()]);
-    if (!rows || !details) {
-        throw new Error('The graph and the details are not both on screen');
-    }
-
-    expect(rows.x + rows.width).toBeLessThanOrEqual(details.x);
-
-    await page.keyboard.press('j');
-    await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
-    await page.keyboard.press('p');
-    await expect(graph.detailsHeadline).toHaveText('chore: set up the build');
-
-    await page.keyboard.press('Escape');
-    await expect(graph.details).toHaveCount(0);
-    await expect(graph.refList).toBeVisible();
-    await expect(graph.root).toBeFocused();
-
-    // An item opens in its panel over the list, as in tabs; the column stays.
-    await page.keyboard.press('1');
-    await expect(repository.groupingButton).toBeVisible();
-    await page.keyboard.press('j');
-    await page.keyboard.press('Enter');
-    await expect(new ItemViewHarness(page).title).toHaveText('Crash on start');
-    await expect(repository.sectionTitle('Issues')).toBeVisible();
-    await expect(repository.section('Issues')).toBeVisible();
 });
 
 /**

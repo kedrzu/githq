@@ -33,11 +33,6 @@ export class SettingsScreenHarness {
             .getByRole('button', { name: new RegExp(`^${name}`, 'u') });
     }
 
-    /** A card of the Display section's repository layout. */
-    repositoryLayout(name: 'Column' | 'Tabs'): Locator {
-        return this.root.getByRole('radiogroup', { name: 'Repository layout' }).getByRole('radio', { name });
-    }
-
     /** The Display section's switch for animations. */
     get animationsSwitch(): Locator {
         return this.root.getByRole('switch', { name: 'Animations' });

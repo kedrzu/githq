@@ -1,4 +1,4 @@
-<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps the repository layout and whether things animate with the rest of the settings; on a phone only whether things animate (mobile D30). -->
+<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps whether things animate with the rest of the settings; on a phone a switch row (mobile D30). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -14,11 +14,6 @@ defineProps<{
 
 const tracking = useService(TrackingStore);
 
-const layout = computed({
-  get: () => tracking.repositoryLayout,
-  set: value => tracking.setRepositoryLayout(value),
-});
-
 const animations = computed({
   get: () => tracking.animations,
   set: value => tracking.setAnimations(value),
@@ -27,7 +22,6 @@ const animations = computed({
 
 <template>
   <DisplayView
-    v-model="layout"
     v-model:animations="animations"
     :phone="phone"
   />

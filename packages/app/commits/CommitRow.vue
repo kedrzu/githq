@@ -203,7 +203,7 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   content: '·' / '';
 }
 
-// Narrow rows (details open, the column layout): the short sha and its "·" give way.
+// Narrow rows (details open): the short sha and its "·" give way.
 @container (max-width: #{$commit-row-narrow-width}) {
   .commitRow_sha {
     display: none;

@@ -1,15 +1,3 @@
-layoutTitle:
-  en: Repository layout
-layoutDescription:
-  en: "How a repository's sections are laid out: Issues, Pull requests, Commits and Workflows."
-tabs:
-  en: Tabs
-tabsDetail:
-  en: Sections as tabs beside the repository's name, each with its toolbar. The list and the graph keep the full width.
-column:
-  en: Column
-columnDetail:
-  en: "A column of the repository's own beside the sidebar: its sections, its projects, and on Commits its branches and tags."
 animationsTitle:
   en: Animations
 animationsDescription:

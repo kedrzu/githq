@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). On a phone (mobile MB32) there is no column, and every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the command menu —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, author, status (a pull request's stage as its status line tells; an issue open, closed or not planned), label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`) — never to another status or author; a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it, whatever arrived; GitHub refusing its changes, offline, paused or GitHub failing only for what hasn't arrived, named as the section's items in the state chosen ("fitloop/webapp's closed issues"), not the whole repository (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`; counted only while tracked, as an untracked copy holds only what was read), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. On a phone (mobile MB32) every header is the phone's top bar with the repository's name — on Issues and Pull requests the list's (`ListToolbar`), its options a sheet from below headed by the section, the state a row of chips there (`ListOptionsSheet`, mobile D36, D46), the sections left to the command menu —, the items a list, never a board, the layout kept for a wider window (`useShownLayout`, mobile D9), and the command line names the section with its open items while tracked ("Issues 142", mobile D17), its menu listing the sections first under the repository's name — Issues and Pull requests with their counts and the one shown checked, Commits and Workflows marked ↗ as leaving for github.com (mobile D21). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -18,11 +18,10 @@ import {
   Tag,
   User,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 import type { Command, CommandParts } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
@@ -63,13 +62,10 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
-import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
-import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
 import { REPOSITORY_STATES } from './buildRepositoryList.js';
-import RepositoryColumn from './RepositoryColumn.vue';
-import RepositoryColumnSplit from './RepositoryColumnSplit.vue';
 import RepositoryMeta from './RepositoryMeta.vue';
 import { isItemSection, REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from './RepositorySection.js';
 import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
@@ -123,8 +119,6 @@ const props = withDefaults(
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
     /** The Workflows section's count: its broken workflows; `unknown` shows a dash, `null` none. */
     workflowCount?: number | 'unknown' | null;
-    /** The sections as tabs beside the title, or in a column of the repository's own (git-client D14). */
-    layout?: RepositoryLayout;
   }>(),
   {
     list: null,
@@ -138,7 +132,6 @@ const props = withDefaults(
     modified: false,
     canMove: () => false,
     workflowCount: null,
-    layout: 'tabs',
   },
 );
 
@@ -181,11 +174,8 @@ defineSlots<{
   workflows?(): unknown;
   /** The Workflows section's key hints, at the toolbar's end. */
   workflowsHints?(): unknown;
-  /**
-   * The Commits section's body, the commit graph; `refListInColumn` says its branches and tags render in the column,
-   * in the element of `COMMIT_REF_LIST_TARGET_ID`, rather than beside it.
-   */
-  commits?(props: { refListInColumn: boolean }): unknown;
+  /** The Commits section's body, the commit graph. */
+  commits?(): unknown;
 }>();
 
 const t = useTranslate();
@@ -310,30 +300,8 @@ const unreadableAlone = computed(() => {
 });
 const githubUrl = computed(() => getGitHubUrl(props.nameWithOwner));
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
-const workflowsUrl = computed(() => getGitHubUrl(getRepositoryPath(props.nameWithOwner, 'workflows')));
-const columnGitHubUrl = computed(() => {
-  switch (section.value) {
-    case 'commits':
-      return commitsUrl.value;
-    case 'workflows':
-      return workflowsUrl.value;
-    default:
-      return githubUrl.value;
-  }
-});
 /** A group of the list is collapsed (`ListView`). */
 const someCollapsed = ref(false);
-// A phone has no room for the column: the sections are in the command menu there.
-const inColumn = computed(() => props.layout === 'column' && !phone.active);
-// A column coming mounts after the pane is updated, and the graph's list must find its place there once told to go.
-const refListInColumn = ref(inColumn.value);
-watch(
-  inColumn,
-  value => {
-    refListInColumn.value = value;
-  },
-  { flush: 'post' },
-);
 
 // On a phone the command line names the section with its open items while tracked (mobile D17); Commits and Workflows,
 // which a phone hands off to GitHub, none.
@@ -404,382 +372,322 @@ function getSectionCount(value: RepositorySection) {
 
 <template>
   <div :class="css.repositoryView">
-    <RepositoryColumnSplit :shown="inColumn">
-      <template #column>
-        <RepositoryColumn
-          v-model:section="section"
-          :name-with-owner="nameWithOwner"
-          :is-private="isPrivate"
-          :tracked="tracked"
-          :sections="sectionOptions"
-          :github-url="columnGitHubUrl"
-          :projects="itemSection !== null ? projects : []"
-          :without-project="withoutProject"
-          :projects-label="t(sectionTexts.liveIn)"
+    <template v-if="section === 'workflows'">
+      <ListToolbar
+        v-model:options="options"
+        :title="nameWithOwner"
+        :groupings="groupings"
+        :sorts="choices.sorts.value"
+        :properties="choices.properties.value"
+        :filters="[stateOption]"
+        :modified="modified"
+        bare
+        @reset="emit('reset')"
+      >
+        <template
+          v-if="$slots.menu"
+          #titleMenu
         >
+          <slot name="menu" />
+        </template>
+        <template #title>
+          <RepositoryMeta :is-private="isPrivate" />
+        </template>
+        <SegmentedTabs
+          v-model="section"
+          :class="css.repositoryView_sections"
+          :label="t(l.sections)"
+          :options="sectionOptions"
+        />
+        <template #end>
+          <slot name="workflowsHints" />
+        </template>
+      </ListToolbar>
+      <slot name="workflows" />
+    </template>
+    <!-- Commits (git-client D10, D11): none of the list's tools apply, and tracked or not it shows in full. -->
+    <template v-else-if="itemSection === null || !list">
+      <PhoneTopBar
+        v-if="phone.active"
+        :title="nameWithOwner"
+      />
+      <header
+        v-else
+        :class="css.repositoryView_header"
+        v-bind="WINDOW_DRAG_REGION"
+      >
+        <ListTitle :title="nameWithOwner">
           <template
             v-if="$slots.menu"
             #menu
           >
             <slot name="menu" />
           </template>
-          <div
-            v-if="section === 'commits'"
-            :id="COMMIT_REF_LIST_TARGET_ID"
-            :class="css.repositoryView_refList"
-          />
-        </RepositoryColumn>
-      </template>
-      <div :class="css.repositoryView_pane">
-        <!-- In the column, the section's name alone, where the section has no tools of its own to put beside it. -->
-        <header
-          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || unreadableAlone)"
-          :class="css.repositoryView_header"
-          v-bind="WINDOW_DRAG_REGION"
+        </ListTitle>
+        <RepositoryMeta :is-private="isPrivate" />
+        <NotTrackedChip v-if="!tracked" />
+        <SegmentedTabs
+          v-model="section"
+          :class="css.repositoryView_sections"
+          :label="t(l.sections)"
+          :options="sectionOptions"
+        />
+        <span :class="css.repositoryView_spacer" />
+        <Button
+          variant="ghost"
+          size="sm"
+          :icon="GitBranch"
+          kbd="B"
+          keyshortcuts="B"
+          @click="emit('openRefList')"
         >
-          <ListTitle :title="t(l[section])" />
-        </header>
-        <template v-if="section === 'workflows'">
-          <ListToolbar
-            v-model:options="options"
-            :title="inColumn ? t(l.workflows) : nameWithOwner"
-            :groupings="groupings"
-            :sorts="choices.sorts.value"
-            :properties="choices.properties.value"
-            :filters="[stateOption]"
-            :modified="modified"
-            bare
-            @reset="emit('reset')"
+          {{ t(l.branchesAndTags) }}
+        </Button>
+        <IconButton
+          :icon="Github"
+          :label="t(l.openOnGitHub)"
+          :link="commitsUrl"
+          target="_blank"
+        />
+      </header>
+      <slot name="commits" />
+    </template>
+
+    <!-- J7, ES17: nothing of it can be listed, and none of the list's tools apply. -->
+    <template v-else-if="unreadableAlone">
+      <PhoneTopBar
+        v-if="phone.active"
+        :title="nameWithOwner"
+      />
+      <header
+        v-else
+        :class="css.repositoryView_header"
+        v-bind="WINDOW_DRAG_REGION"
+      >
+        <ListTitle :title="nameWithOwner">
+          <template
+            v-if="$slots.menu"
+            #menu
           >
-            <template
-              v-if="$slots.menu && !inColumn"
-              #titleMenu
-            >
-              <slot name="menu" />
-            </template>
-            <template
-              v-if="!inColumn"
-              #title
-            >
-              <RepositoryMeta :is-private="isPrivate" />
-            </template>
-            <SegmentedTabs
-              v-if="!inColumn"
-              v-model="section"
-              :class="css.repositoryView_sections"
-              :label="t(l.sections)"
-              :options="sectionOptions"
-            />
-            <template #end>
-              <slot name="workflowsHints" />
-            </template>
-          </ListToolbar>
-          <slot name="workflows" />
+            <slot name="menu" />
+          </template>
+        </ListTitle>
+        <NotTrackedChip />
+      </header>
+      <CantBeRead
+        place="screen"
+        :cause="unreadableAlone"
+        :thing="nameWithOwner"
+      />
+    </template>
+
+    <template v-else>
+      <ListToolbar
+        v-model:options="options"
+        :title="nameWithOwner"
+        :list-name="t(l[itemSection])"
+        :groupings="groupings"
+        :sorts="choices.sorts.value"
+        :properties="choices.properties.value"
+        :filters="[stateOption]"
+        :modified="modified"
+        @reset="emit('reset')"
+      >
+        <template
+          v-if="$slots.menu"
+          #titleMenu
+        >
+          <slot name="menu" />
         </template>
-        <!-- Commits (git-client D10, D11): none of the list's tools apply, and tracked or not it shows in full. -->
-        <template v-else-if="itemSection === null || !list">
-          <PhoneTopBar
-            v-if="phone.active"
-            :title="nameWithOwner"
-          />
-          <header
-            v-else-if="!inColumn"
-            :class="css.repositoryView_header"
-            v-bind="WINDOW_DRAG_REGION"
-          >
-            <ListTitle :title="nameWithOwner">
-              <template
-                v-if="$slots.menu"
-                #menu
-              >
-                <slot name="menu" />
-              </template>
-            </ListTitle>
-            <RepositoryMeta :is-private="isPrivate" />
-            <NotTrackedChip v-if="!tracked" />
-            <SegmentedTabs
-              v-model="section"
-              :class="css.repositoryView_sections"
-              :label="t(l.sections)"
-              :options="sectionOptions"
-            />
-            <span :class="css.repositoryView_spacer" />
-            <Button
-              variant="ghost"
-              size="sm"
-              :icon="GitBranch"
-              kbd="B"
-              keyshortcuts="B"
-              @click="emit('openRefList')"
-            >
-              {{ t(l.branchesAndTags) }}
-            </Button>
-            <IconButton
-              :icon="Github"
-              :label="t(l.openOnGitHub)"
-              :link="commitsUrl"
-              target="_blank"
-            />
-          </header>
+        <template #title>
+          <RepositoryMeta :is-private="isPrivate" />
+          <NotTrackedChip v-if="!tracked" />
+        </template>
+        <template
+          v-if="$slots.selection"
+          #selection
+        >
           <slot
-            name="commits"
-            :ref-list-in-column="refListInColumn"
+            v-if="checkedIds.length > 0"
+            name="selection"
+            :ids="checkedIds"
+            :span="getSelectionSpan(list.groups, checkedIds)"
           />
         </template>
-
-        <!-- J7, ES17: nothing of it can be listed, and none of the list's tools apply. -->
-        <template v-else-if="unreadableAlone">
-          <PhoneTopBar
-            v-if="phone.active"
-            :title="nameWithOwner"
-          />
-          <header
-            v-else-if="!inColumn"
-            :class="css.repositoryView_header"
-            v-bind="WINDOW_DRAG_REGION"
-          >
-            <ListTitle :title="nameWithOwner">
-              <template
-                v-if="$slots.menu"
-                #menu
-              >
-                <slot name="menu" />
-              </template>
-            </ListTitle>
-            <NotTrackedChip />
-          </header>
-          <CantBeRead
-            place="screen"
-            :cause="unreadableAlone"
-            :thing="nameWithOwner"
-          />
-        </template>
-
-        <template v-else>
-          <ListToolbar
-            v-model:options="options"
-            :title="inColumn ? t(l[itemSection]) : nameWithOwner"
-            :list-name="inColumn ? undefined : t(l[itemSection])"
-            :groupings="groupings"
-            :sorts="choices.sorts.value"
-            :properties="choices.properties.value"
-            :filters="[stateOption]"
-            :modified="modified"
-            @reset="emit('reset')"
-          >
-            <template
-              v-if="$slots.menu && !inColumn"
-              #titleMenu
-            >
-              <slot name="menu" />
-            </template>
-            <template #title>
-              <RepositoryMeta
-                v-if="!inColumn"
-                :is-private="isPrivate"
-              />
-              <NotTrackedChip v-if="!inColumn && !tracked" />
-            </template>
-            <template
-              v-if="$slots.selection"
-              #selection
-            >
-              <slot
-                v-if="checkedIds.length > 0"
-                name="selection"
-                :ids="checkedIds"
-                :span="getSelectionSpan(list.groups, checkedIds)"
-              />
-            </template>
-            <SegmentedTabs
-              v-if="!inColumn"
-              v-model="section"
-              :class="css.repositoryView_sections"
-              :label="t(l.sections)"
-              :options="sectionOptions"
-            />
-            <span
-              v-if="readCount"
-              :class="css.repositoryView_readCount"
-              >{{ readCount }}</span
-            >
-            <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. So too
+        <SegmentedTabs
+          v-model="section"
+          :class="css.repositoryView_sections"
+          :label="t(l.sections)"
+          :options="sectionOptions"
+        />
+        <span
+          v-if="readCount"
+          :class="css.repositoryView_readCount"
+          >{{ readCount }}</span
+        >
+        <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. So too
                  with a group collapsed: a page gone into it leaves the end where it was, and reading stops until expanded. -->
-            <Button
-              v-if="status?.hasMore && (listLayout === 'board' || someCollapsed)"
-              variant="outline"
-              size="sm"
-              @click="emit('readMore')"
-            >
-              {{ t(status.reading ? l.readingMore : l.readMore) }}
-            </Button>
-          </ListToolbar>
+        <Button
+          v-if="status?.hasMore && (listLayout === 'board' || someCollapsed)"
+          variant="outline"
+          size="sm"
+          @click="emit('readMore')"
+        >
+          {{ t(status.reading ? l.readingMore : l.readMore) }}
+        </Button>
+      </ListToolbar>
 
-          <nav
-            v-if="!inColumn && projects.length > 0"
-            :class="css.repositoryView_projects"
-            :aria-label="t(sectionTexts.liveIn)"
-          >
-            <span>{{ t(sectionTexts.liveIn) }}</span>
-            <Button
-              v-for="project in projects"
-              :key="project.id"
-              variant="outline"
-              size="sm"
-              :icon="SquareKanban"
-              :link="project.to"
-              :target="project.external ? '_blank' : undefined"
-            >
-              {{ project.title }}
-              <span :class="css.repositoryView_count">{{ project.count }}</span>
-              <component
-                :is="project.external ? ArrowUpRight : ArrowRight"
-                :class="css.repositoryView_projectIcon"
-                aria-hidden="true"
-              />
-            </Button>
-            <span v-if="withoutProject > 0">· {{ t(l.inNoProject, { count: withoutProject }) }}</span>
-          </nav>
+      <nav
+        v-if="projects.length > 0"
+        :class="css.repositoryView_projects"
+        :aria-label="t(sectionTexts.liveIn)"
+      >
+        <span>{{ t(sectionTexts.liveIn) }}</span>
+        <Button
+          v-for="project in projects"
+          :key="project.id"
+          variant="outline"
+          size="sm"
+          :icon="SquareKanban"
+          :link="project.to"
+          :target="project.external ? '_blank' : undefined"
+        >
+          {{ project.title }}
+          <span :class="css.repositoryView_count">{{ project.count }}</span>
+          <component
+            :is="project.external ? ArrowUpRight : ArrowRight"
+            :class="css.repositoryView_projectIcon"
+            aria-hidden="true"
+          />
+        </Button>
+        <span v-if="withoutProject > 0">· {{ t(l.inNoProject, { count: withoutProject }) }}</span>
+      </nav>
 
-          <ListView
-            v-model:selected-id="selectedId"
-            v-model:checked-ids="checkedIds"
-            :scroll-key="`repository:${nameWithOwner}:${section}`"
-            :groups="list.groups"
-            :groups-arriving="list.arriving && !unreadable"
-            :layout="listLayout"
+      <ListView
+        v-model:selected-id="selectedId"
+        v-model:checked-ids="checkedIds"
+        :scroll-key="`repository:${nameWithOwner}:${section}`"
+        :groups="list.groups"
+        :groups-arriving="list.arriving && !unreadable"
+        :layout="listLayout"
+        :opened-id="openedId"
+        :is-edited="isEdited"
+        :get-url="item => item.url"
+        :can-move="canMove"
+        @open="emit('open', $event)"
+        @expand="emit('expand', $event)"
+        @full-screen="emit('fullScreen', $event)"
+        @listed="emit('listed', $event)"
+        @move="emit('move', $event)"
+        @some-collapsed="someCollapsed = $event"
+      >
+        <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, expanded, toggleStack }">
+          <StackRow
+            v-if="stack"
+            :stack="stack"
+            :properties="properties"
+            :repository="nameWithOwner"
+            :now="now"
+            :selected="selected"
+            :checked="checked"
+            :half-checked="halfChecked"
+            :expanded="expanded"
             :opened-id="openedId"
-            :is-edited="isEdited"
-            :get-url="item => item.url"
-            :can-move="canMove"
-            @open="emit('open', $event)"
-            @expand="emit('expand', $event)"
-            @full-screen="emit('fullScreen', $event)"
-            @listed="emit('listed', $event)"
-            @move="emit('move', $event)"
-            @some-collapsed="someCollapsed = $event"
-          >
-            <template
-              #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, expanded, toggleStack }"
-            >
-              <StackRow
-                v-if="stack"
-                :stack="stack"
-                :properties="properties"
-                :repository="nameWithOwner"
-                :now="now"
-                :selected="selected"
-                :checked="checked"
-                :half-checked="halfChecked"
-                :expanded="expanded"
-                :opened-id="openedId"
-                @toggle="toggleStack"
-              />
-              <ItemRow
-                v-else
-                :item="entry.value"
-                :parent="parent?.value"
-                :properties="properties"
-                people="assignees"
-                :repository="nameWithOwner"
-                :viewer-login="viewerLogin"
-                :now="now"
-                :checked="checked"
-                :undone="undone.get(entry.id)"
-                :stack="stackMarker"
-              />
-            </template>
-            <template
-              #card="{
-                entry,
-                checked,
-                halfChecked,
-                stack,
-                stackMarker,
-                expanded,
-                selectedMember,
-                toggleStack,
-                openMember,
-              }"
-            >
-              <StackCard
-                v-if="stack"
-                :stack="stack"
-                :properties="properties"
-                :repository="nameWithOwner"
-                :now="now"
-                :checked="checked"
-                :half-checked="halfChecked"
-                :opened-id="openedId"
-                :expanded="expanded"
-                :selected-member="selectedMember"
-                @toggle="toggleStack"
-                @open="openMember"
-              />
-              <ItemCard
-                v-else
-                :item="entry.value"
-                :properties="properties"
-                people="assignees"
-                :repository="nameWithOwner"
-                :viewer-login="viewerLogin"
-                :now="now"
-                :checked="checked"
-                :undone="undone.get(entry.id)"
-                :stack="stackMarker"
-              />
-            </template>
-            <template #empty>
-              <CantBeRead
-                v-if="unreadable"
-                place="screen"
-                :cause="unreadable"
-                :thing="unreadable.kind === 'hidden' ? nameWithOwner : unreadThing"
-                :plural="unreadable.kind !== 'hidden'"
-              />
-              <FilteredOut
-                v-else-if="list.held > 0"
-                :fact="tracked ? t(l.filteredToZeroFact, { total: list.held }) : undefined"
-                :detail="
-                  tracked
-                    ? t(sectionTexts.hidden, { count: list.held, state: stateIs })
-                    : t(sectionTexts.hiddenRead, { state: stateIs })
-                "
-                :clear="() => (state = 'all')"
-              />
-              <NothingThere
-                v-else
-                place="screen"
-                :icon="BookMarked"
-                :title="t(sectionTexts.nothing[state])"
-                :fact="t(sectionTexts.nothingFact[state])"
-                :detail="t(l.nothingDetail, { repository: nameWithOwner })"
-              />
-            </template>
-            <template
-              v-if="status?.hasMore"
-              #end="end"
-            >
-              <ListEndSentinel
-                :position="getReadPosition(end)"
-                @reach="emit('readMore')"
-              >
-                <template v-if="status.reading">{{ t(l.readingMore) }}</template>
-              </ListEndSentinel>
-            </template>
-            <template
-              v-if="$slots.contextMenu"
-              #contextMenu="menu"
-            >
-              <slot
-                name="contextMenu"
-                v-bind="menu"
-              />
-            </template>
-          </ListView>
+            @toggle="toggleStack"
+          />
+          <ItemRow
+            v-else
+            :item="entry.value"
+            :parent="parent?.value"
+            :properties="properties"
+            people="assignees"
+            :repository="nameWithOwner"
+            :viewer-login="viewerLogin"
+            :now="now"
+            :checked="checked"
+            :undone="undone.get(entry.id)"
+            :stack="stackMarker"
+          />
         </template>
-      </div>
-    </RepositoryColumnSplit>
+        <template
+          #card="{ entry, checked, halfChecked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }"
+        >
+          <StackCard
+            v-if="stack"
+            :stack="stack"
+            :properties="properties"
+            :repository="nameWithOwner"
+            :now="now"
+            :checked="checked"
+            :half-checked="halfChecked"
+            :opened-id="openedId"
+            :expanded="expanded"
+            :selected-member="selectedMember"
+            @toggle="toggleStack"
+            @open="openMember"
+          />
+          <ItemCard
+            v-else
+            :item="entry.value"
+            :properties="properties"
+            people="assignees"
+            :repository="nameWithOwner"
+            :viewer-login="viewerLogin"
+            :now="now"
+            :checked="checked"
+            :undone="undone.get(entry.id)"
+            :stack="stackMarker"
+          />
+        </template>
+        <template #empty>
+          <CantBeRead
+            v-if="unreadable"
+            place="screen"
+            :cause="unreadable"
+            :thing="unreadable.kind === 'hidden' ? nameWithOwner : unreadThing"
+            :plural="unreadable.kind !== 'hidden'"
+          />
+          <FilteredOut
+            v-else-if="list.held > 0"
+            :fact="tracked ? t(l.filteredToZeroFact, { total: list.held }) : undefined"
+            :detail="
+              tracked
+                ? t(sectionTexts.hidden, { count: list.held, state: stateIs })
+                : t(sectionTexts.hiddenRead, { state: stateIs })
+            "
+            :clear="() => (state = 'all')"
+          />
+          <NothingThere
+            v-else
+            place="screen"
+            :icon="BookMarked"
+            :title="t(sectionTexts.nothing[state])"
+            :fact="t(sectionTexts.nothingFact[state])"
+            :detail="t(l.nothingDetail, { repository: nameWithOwner })"
+          />
+        </template>
+        <template
+          v-if="status?.hasMore"
+          #end="end"
+        >
+          <ListEndSentinel
+            :position="getReadPosition(end)"
+            @reach="emit('readMore')"
+          >
+            <template v-if="status.reading">{{ t(l.readingMore) }}</template>
+          </ListEndSentinel>
+        </template>
+        <template
+          v-if="$slots.contextMenu"
+          #contextMenu="menu"
+        >
+          <slot
+            name="contextMenu"
+            v-bind="menu"
+          />
+        </template>
+      </ListView>
+    </template>
   </div>
 </template>
 
@@ -787,25 +695,9 @@ function getSectionCount(value: RepositorySection) {
 .repositoryView {
   display: flex;
   flex: 1;
-  min-width: 0;
-  min-height: 0;
-}
-
-.repositoryView_pane {
-  display: flex;
-  flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-}
-
-// CH6: the column's lower part, where the graph renders its branches and tags.
-.repositoryView_refList {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  border-top: 1px solid $color-border;
 }
 
 .repositoryView_projectIcon {
