@@ -215,7 +215,10 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
 
     const groups = GROUP_ORDER.flatMap(key => {
         const entries = [...(found.get(key)?.values() ?? [])];
-        const sorted = typed === '' ? entries : limitOptions(entries.toSorted((a, b) => b.score - a.score));
+        const sorted =
+            typed === ''
+                ? entries
+                : limitOptions(entries.toSorted((a, b) => b.score - a.score || getPriority(b) - getPriority(a)));
         return sorted.length === 0 ? [] : [{ key, best: sorted[0]?.score ?? 0, entries: sorted }];
     });
     const ordered = typed === '' ? groups : groups.toSorted((a, b) => b.best - a.best);
@@ -233,7 +236,9 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
                       command =>
                           command.menu !== false && !partIds.has(command.id) && isOffered(command, subject, repository),
                   )
-                  .toSorted((a, b) => getRepositoryRank(a) - getRepositoryRank(b));
+                  .toSorted(
+                      (a, b) => getRepositoryRank(a) - getRepositoryRank(b) || (b.priority ?? 0) - (a.priority ?? 0),
+                  );
     }
 
     function getRowTrail(row: Command): MenuTrail {
@@ -564,6 +569,11 @@ function isOffered(command: Command, subject: CommandSubject | null, repository:
  */
 function getRepositoryRank(command: Command) {
     return command.section === 'repository' && command.key === undefined ? 1 : 0;
+}
+
+/** A command's {@link Command.priority} (commands D14): the match decides, this breaks its ties. */
+function getPriority(entry: CommandMenuEntry) {
+    return entry.kind === 'navigation' ? 0 : (entry.command.priority ?? 0);
 }
 
 function getGroup(section: CommandSection): CommandMenuGroupKey {

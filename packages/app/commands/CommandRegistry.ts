@@ -5,8 +5,8 @@ import { computed, shallowRef } from 'vue';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
-import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
+import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
 /** What a component registers while it is shown: its actions, and what they act on. */
 export interface CommandSource {
@@ -41,8 +41,8 @@ const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
  * The app's actions (D9): every component registers the ones it offers while it is shown (`useCommands`), and
  * this one registry feeds the command menu (⌘K), the keys and the help sheet (`?`). It runs an action's key
  * itself: outside fields for a single key, also in a one-line field for a `Mod` key; never while the menu or the help
- * is open, except that the menu's own key closes it. Two actions on one key: the one whose section comes first
- * ({@link COMMAND_SECTIONS}) runs.
+ * is open, except that the menu's own key closes it. Two actions on one key: the first by
+ * {@link orderByKeyPrecedence} runs — the one whose place has the keyboard, else whose section comes first.
  */
 export type CommandRegistry = Resolved<typeof CommandRegistry>;
 export const CommandRegistry = defineService({
@@ -55,6 +55,7 @@ export const CommandRegistry = defineService({
         const removedRef = shallowRef<ReadonlySet<CommandContextPart>>(new Set());
 
         const commands = computed(() => sourcesRef.value.flatMap(source => source.commands));
+        const byPrecedence = computed(() => orderByKeyPrecedence(commands.value));
         const subject = computed(() => {
             const subjects = sourcesRef.value.flatMap(source => (source.subject ? [source.subject] : []));
             return subjects.find(candidate => candidate.kind === 'selection') ?? subjects[0] ?? null;
@@ -135,7 +136,7 @@ export const CommandRegistry = defineService({
         }
 
         /**
-         * The action a key runs now — what pressing it outside a field would run, the one whose section comes first —
+         * The action a key runs now — what pressing it outside a field would run, the first by key precedence —
          * for a button that does the same (the phone's New issue: a project's own in a project, else the app's).
          */
         function findByKey(key: string) {
@@ -220,23 +221,17 @@ export const CommandRegistry = defineService({
             }
         }
 
-        /** The first action, by section, that can run and `matches`. */
+        /** The first action, by {@link orderByKeyPrecedence}, that can run and `matches`. */
         function findCommand(matches: (command: Command) => boolean) {
-            for (const section of COMMAND_SECTIONS) {
-                for (const command of commands.value) {
-                    if (
-                        command.section === section &&
+            return (
+                byPrecedence.value.find(
+                    command =>
                         command.unavailable === undefined &&
                         (command.run !== undefined || command.options !== undefined) &&
                         matches(command) &&
-                        isEnabled(command)
-                    ) {
-                        return command;
-                    }
-                }
-            }
-
-            return null;
+                        isEnabled(command),
+                ) ?? null
+            );
         }
     },
 });

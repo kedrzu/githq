@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './KeyHelp.stories.jsx';
 
-const { Closed } = composeStories(stories);
+const { Closed, ListBesideItem } = composeStories(stories);
 
 test('? lists the keys the registry runs, by section; Escape closes it and leaves the item open', async () => {
     await Closed.run();
@@ -32,4 +32,16 @@ test('? lists the keys the registry runs, by section; Escape closes it and leave
     await userEvent.keyboard('{Escape}');
     await expect.element(help).not.toBeInTheDocument();
     await expect.element(page.getByTestId('item')).toHaveTextContent('open');
+});
+
+test("with a list and an item on one key, O runs the list's and ? lists only the list's", async () => {
+    await ListBesideItem.run();
+
+    await userEvent.keyboard('o');
+    await expect.element(page.getByTestId('ran')).toHaveTextContent('list');
+
+    await userEvent.keyboard('?');
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    await expect.element(help.getByRole('term').filter({ hasText: 'Open the row' })).toBeInTheDocument();
+    await expect.element(help.getByRole('term').filter({ hasText: 'Open the item' })).not.toBeInTheDocument();
 });

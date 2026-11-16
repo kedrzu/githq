@@ -37,6 +37,23 @@ test("the subject's actions are offered for their subject only, none once it is 
     ).toEqual(['app.sidebar']);
 });
 
+test('D14: of one group the higher priority is listed first; typing, the match decides and priority breaks ties', () => {
+    const grouping: Command = { id: 'view.grouping', title: 'Group by…', section: 'view' };
+    const archive: Command = { id: 'view.archive', title: 'Archive view', section: 'view', priority: 1 };
+    const remove: Command = { id: 'view.remove', title: 'Remove view', section: 'view', priority: 2 };
+    const commands = [grouping, archive, remove];
+
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['view.remove', 'view.archive', 'view.grouping']);
+    expect(
+        ids(buildCommandMenu({ query: 'view', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['view.remove', 'view.archive']);
+    expect(
+        ids(buildCommandMenu({ query: 'group', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['view.grouping']);
+});
+
 test('E4: a value of a submenu typed is offered directly, above its action; scattered letters are not', () => {
     const menu = buildCommandMenu({
         query: 'in prog',

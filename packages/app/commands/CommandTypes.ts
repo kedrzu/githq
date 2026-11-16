@@ -14,6 +14,20 @@ export type CommandSection = 'selection' | 'item' | 'view' | 'repository' | 'app
 export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'repository', 'app'];
 
 /**
+ * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel. Places only
+ * tell which keys collide and which command takes a key while two places are on screen; more are added as commands
+ * move onto definitions.
+ */
+export type CommandPlace = 'app' | 'list' | 'item';
+
+/**
+ * The places that can be on screen together, each pair's first keeping the keyboard (a list with an item open beside
+ * it: the list's `J`, `K` and `O` act on its row, `ListView.vue`). Hand-kept, acyclic: no place keeps it over one that
+ * keeps it over the first. `app` is never in it: it is with every place, and every place keeps the keyboard over it.
+ */
+export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [['list', 'item']];
+
+/**
  * What the actions act on, as the command menu's chip names it: the items selected together, or the item opened
  * (E1, E4). The selection wins when both are there.
  */
@@ -70,6 +84,13 @@ export interface Command extends CommandMarks {
     readonly id: string;
     readonly title: string;
     readonly section: CommandSection;
+    /**
+     * Where it is offered, set on a command bound from a definition (`bindCommand`): of two on one key, the one whose
+     * place keeps the keyboard runs (`orderByKeyPrecedence`). Without it the section alone decides.
+     */
+    readonly place?: CommandPlace;
+    /** How much it matters (commands D14): higher first in its group of the command menu, a tie-break while typing. Default `0`. */
+    readonly priority?: number;
     /** Other words it is found by ("close" for "Done"). */
     readonly keywords?: readonly string[];
     /**
