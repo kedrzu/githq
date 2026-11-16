@@ -133,26 +133,18 @@ proposal of the design agent, not confirmed)
 
 ```json
 {
-    "version": 1,
-    "repositories": [
-        {
-            "nameWithOwner": "kedrzu/githq",
-            "id": "R_kgDO…",
-            "list": { "layout": "board", "sort": "updated" }
-        }
-    ],
-    "projects": [
-        {
-            "id": "PVT_kw…",
-            "owner": "kedrzu",
-            "ownerKind": "user",
-            "number": 1,
-            "title": "Roadmap",
-            "rowField": "PVTF_…",
-            "views": { "PVTV_…": { "grouping": "status" } }
-        }
-    ],
-    "myWork": { "grouping": "repository" }
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "list": { "layout": "board", "sort": "updated" } }
+  ],
+  "projects": [
+    {
+      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap",
+      "rowField": "PVTF_…",
+      "views": { "PVTV_…": { "grouping": "status" } }
+    }
+  ],
+  "myWork": { "grouping": "repository" }
 }
 ```
 
@@ -181,33 +173,19 @@ repository; the rest is a proposal of the design agent, not confirmed)
 
 ```json
 {
-    "version": 1,
-    "repositories": [
-        {
-            "nameWithOwner": "kedrzu/githq",
-            "id": "R_kgDO…",
-            "tracking": true,
-            "list": { "layout": "board", "sort": "updated" }
-        },
-        {
-            "nameWithOwner": "acme/api",
-            "tracking": false,
-            "list": { "sort": "created" }
-        }
-    ],
-    "projects": [
-        {
-            "id": "PVT_kw…",
-            "owner": "kedrzu",
-            "ownerKind": "user",
-            "number": 1,
-            "title": "Roadmap",
-            "tracking": true,
-            "rowField": "PVTF_…",
-            "views": { "PVTV_…": { "grouping": "status" } }
-        }
-    ],
-    "myWork": { "grouping": "repository" }
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true, "list": { "layout": "board", "sort": "updated" } },
+    { "nameWithOwner": "acme/api", "tracking": false, "list": { "sort": "created" } }
+  ],
+  "projects": [
+    {
+      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true,
+      "rowField": "PVTF_…",
+      "views": { "PVTV_…": { "grouping": "status" } }
+    }
+  ],
+  "myWork": { "grouping": "repository" }
 }
 ```
 
@@ -237,21 +215,14 @@ design agent's proposal)
 
 ```json
 {
-    "version": 1,
-    "repositories": [
-        { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
-        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-    ],
-    "projects": [
-        {
-            "id": "PVT_kw…",
-            "owner": "kedrzu",
-            "ownerKind": "user",
-            "number": 1,
-            "title": "Roadmap",
-            "tracking": true
-        }
-    ]
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+  ],
+  "projects": [
+    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
+  ]
 }
 ```
 
@@ -278,21 +249,14 @@ design agent's proposal)
 
 ```json
 {
-    "version": 1,
-    "repositories": [
-        { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
-        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-    ],
-    "projects": [
-        {
-            "id": "PVT_kw…",
-            "owner": "kedrzu",
-            "ownerKind": "user",
-            "number": 1,
-            "title": "Roadmap",
-            "tracking": true
-        }
-    ]
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+  ],
+  "projects": [
+    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
+  ]
 }
 ```
 

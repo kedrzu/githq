@@ -242,26 +242,15 @@ design agent's proposal)
 
 ```json
 {
-    "version": 1,
-    "repositories": [
-        {
-            "nameWithOwner": "kedrzu/githq",
-            "id": "R_kgDO…",
-            "tracking": true,
-            "workflows": { "defaultBranch": true, "refs": ["v*"] }
-        },
-        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-    ],
-    "projects": [
-        {
-            "id": "PVT_kw…",
-            "owner": "kedrzu",
-            "ownerKind": "user",
-            "number": 1,
-            "title": "Roadmap",
-            "tracking": true
-        }
-    ]
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true,
+      "workflows": { "defaultBranch": true, "refs": ["v*"] } },
+    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+  ],
+  "projects": [
+    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
+  ]
 }
 ```
 
