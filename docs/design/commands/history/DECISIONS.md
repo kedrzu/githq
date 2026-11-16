@@ -67,3 +67,25 @@ of the definitions, which would otherwise need one command per number or a param
 
 - One rebindable command per number — nine entries in the settings nobody would change.
 - One command with a number parameter — a mechanism for a family that does not need rebinding.
+
+## D12
+
+Retired in part 2026-11-16: `<CommandButton>` replaced by a key helper; the rest holds in [D12](../DECISIONS.md#d12).
+
+**The shape in code: `defineAppCommand({ id, title, icon, key, places, configurable? })` in
+`commands/definitions/*.ts`, all re-exported from one index; `useCommand(definition, { run, when, unavailable,
+detail, options })` in the component that knows what it does; `<CommandButton :command>` draws a button's name, icon
+and key chip from the definition with the user's key applied. A definition holds a translation key, translated when
+shown.** (2026-11-16, design agent's proposal, not opposed by the owner)
+
+**Why.** Each part has one job from [D1](#d1): what a command is, what it does here, how it looks. A button reading
+its key from the definition replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not
+work. A definition is a module-level constant, which cannot call a component's `t()`, and UI text is never
+hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
+
+> **Checked 2026-11-16:** githq has one language, `APP_LANGUAGE = 'en'`
+> (`packages/app/i18n/AppLanguageContext.ts:6`), so following a change of language is not a reason here.
+
+**Rejected.**
+
+- Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.

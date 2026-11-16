@@ -44,3 +44,5 @@
 - Owner reported a bug: with nothing checked, "Open full screen" in a list's menu opens an unrelated PR. It is
   `list.fullScreen` (`packages/app/lists/ListView.vue:960`), acting on the list's selected row, which is kept by key
   even when not visible; its title does not name the row. Not part of this design; offered as a separate fix.
+- Owner: a key helper for buttons, not `<CommandButton>` (D12 amended, old form in history). First build step written
+  into README. Owner agreed to close the design and to a separate issue for the "Open full screen" bug.

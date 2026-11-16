@@ -101,8 +101,8 @@ command matches comes first and its importance only breaks ties. [Why it belongs
 A definition says what the command is: its id, title, icon, default key, the places it can be offered, how much it
 matters, and whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
 component that offers a command takes a definition and says what running it does there and when it can run. A
-button that runs a command is drawn from the definition, so its name, icon and key hint are the command's, with the
-key you chose. [The shape](DECISIONS.md#d12).
+button keeps its own label, which can depend on where it is, but reads its key hint from the definition, so it shows
+the key you chose. [The shape](DECISIONS.md#d12).
 
 ## Where your keys are kept
 
@@ -115,6 +115,13 @@ githq already calls these commands: the command menu, its documentation and the 
 would have been the obvious alternative, but in githq Actions means GitHub Actions, which has its own screens.
 `defineCommand` is already taken in the code by the dependency-injection library for something unrelated, so the
 function that defines one has a different name. [The naming](DECISIONS.md#d5).
+
+## What gets built first
+
+The module of definitions, `useCommand` and the key helper, with the registry's one listener reading definitions, and
+one command moved onto them end to end: "Open on GitHub", the one written about ten times today. The settings screen
+for keys comes once enough commands are on definitions to make the list worth showing; the rest move one by one,
+which is where their duplicates and key clashes get resolved.
 
 ## How far this goes
 
