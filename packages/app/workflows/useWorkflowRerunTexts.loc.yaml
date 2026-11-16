@@ -88,7 +88,5 @@ segmentServerError:
   en: '{action} failed · GitHub answered {status}'
 segmentAllowance:
   en: '{action} not sent · allowance used up'
-openOnGitHub:
-  en: Open on GitHub
 requestAccess:
   en: Request access on GitHub

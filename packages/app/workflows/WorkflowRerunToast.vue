@@ -44,12 +44,12 @@ const link = computed(() => {
 
 function getGitHubLink(nameWithOwner: string, target: WorkflowActionTarget) {
   if (target.kind === 'workflow') {
-    return { url: target.url, text: t(l.openOnGitHub), kbd: undefined };
+    return { url: target.url, text: t(openOnGitHub.title), kbd: undefined };
   }
 
   return {
     url: getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId: target.runId })),
-    text: t(l.openOnGitHub),
+    text: t(openOnGitHub.title),
     kbd: isWorkflowRunRoute(route) && Number(route.params.run) === target.runId ? keyOf(openOnGitHub) : undefined,
   };
 }
