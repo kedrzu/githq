@@ -1602,7 +1602,12 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   <ContextMenu :disabled="!$slots.contextMenu">
     <div
       ref="body"
-      :class="[css.listView, layout === 'board' && css.listView_board, swipeable && css.listView_swipeable]"
+      :class="[
+        css.listView,
+        layout === 'board' && css.listView_board,
+        !groupsArriving && groups.length === 0 && css.listView_empty,
+        swipeable && css.listView_swipeable,
+      ]"
       :data-route-scroll="scrollKey && `list:${scrollKey}`"
       :tabindex="layout === 'board' ? 0 : undefined"
       data-screen-keys-root
@@ -1868,6 +1873,14 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   align-items: flex-start;
   padding: $spacing-12 $spacing-16 $spacing-16;
   overflow-x: auto;
+}
+
+// Nothing listed: the owner's whole-screen note (`EmptyState`, `flex: 1`) fills the list's area and centres in it, on
+// the board too (first run and loading ES1, D19).
+.listView_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .listView_groupHeader {
