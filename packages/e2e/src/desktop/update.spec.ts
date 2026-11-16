@@ -147,6 +147,8 @@ test('a Development build goes to Stable only through the confirmation; Developm
     native,
 }) => {
     native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
 
     const menu = new CommandMenuHarness(page);
@@ -164,11 +166,13 @@ test('a Development build goes to Stable only through the confirmation; Developm
     await expect.poll(() => native.streamChanges).toEqual(['development']);
 });
 
-test('Settings has Updates in the desktop app: the seventh tab, on `7` and in the command menu', async ({
+test('Settings has Updates in the desktop app: the last tab, on `8` and in the command menu', async ({
     page,
     github,
     native,
 }) => {
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
@@ -181,7 +185,8 @@ test('Settings has Updates in the desktop app: the seventh tab, on `7` and in th
     const settings = new SettingsScreenHarness(page);
     await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
     await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '8');
-    await expect(page.getByText('githq 1.3.0', { exact: true })).toBeVisible();
+    // The version's line, not the changelog's fold of the same version.
+    await expect(page.locator('p').getByText('githq 1.3.0', { exact: true })).toBeVisible();
 
     await page.keyboard.press('7');
     await expect(settings.section('Account')).toHaveAttribute('aria-pressed', 'true');
@@ -198,6 +203,8 @@ test('U13: Switch to Stable opens the confirmation once; cancelling keeps the st
     native,
 }) => {
     native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
 
     const menu = new CommandMenuHarness(page);
@@ -240,6 +247,8 @@ test('an address asking to confirm with nothing to confirm loses it and switches
     github,
     native,
 }) => {
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
@@ -263,6 +272,8 @@ test('an address asking to confirm with nothing to confirm loses it and switches
 
 test('Windows offers no choice of stream in Settings', async ({ page, github, native }) => {
     native.updateState = { ...native.updateState, canChoose: false };
+    // Updates reads the changelog.
+    answerChangelog(github);
     await signInOnDesktop({ page, github, native });
     await expect.poll(() => native.isListening('update-state')).toBe(true);
 
