@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
+import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import FirstSignInFrame from '@/tracking/FirstSignInFrame.vue';
+
 import SavedSettingsOffer from './SavedSettingsOffer.vue';
 import type { SettingsDocument } from './sync/SettingsDocument.js';
 
@@ -34,7 +38,11 @@ const meta = {
         load: fn(() => Promise.resolve()),
         onDecline: fn(),
     },
-    decorators: [() => ({ template: '<div style="display: flex; min-height: 100vh"><story /></div>' })],
+    // The story frame is narrower than a phone's width: the computer's layout unless a story says otherwise.
+    decorators: [
+        () => ({ template: '<div style="display: flex; min-height: 100vh"><story /></div>' }),
+        withPhoneLayout(false),
+    ],
 } satisfies Meta<typeof SavedSettingsOffer>;
 
 export default meta;
@@ -43,3 +51,15 @@ type Story = StoryObj<typeof meta>;
 
 /** G11: settings saved on another device, offered in place of choosing what to track. */
 export const Offer: Story = {};
+
+/** Mobile MB134: on a phone, in the first sign-in's frame — one column, the two answers pinned at the bottom. */
+export const PhoneOffer: Story = {
+    decorators: [
+        () => ({
+            components: { FirstSignInFrame },
+            setup: () => ({ viewer: SAMPLE_VIEWER }),
+            template: '<FirstSignInFrame :viewer="viewer"><story /></FirstSignInFrame>',
+        }),
+        withPhoneLayout(true),
+    ],
+};

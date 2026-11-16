@@ -32,3 +32,11 @@ open:
   en: Open settings
 untrack:
   en: Untrack
+repositoriesDescriptionPhone:
+  en: githq keeps a full copy of these on this phone and syncs it in the background. Open one for its settings.
+projectsDescriptionPhone:
+  en: githq keeps every item of these, from any repository, on this phone and syncs it in the background. Open one for its settings.
+noRepositoriesDetailPhone:
+  en: My work still shows what concerns you, from any repository. Track a repository to keep all its issues and pull requests on this phone, other people's too.
+noProjectsDetailPhone:
+  en: My work still shows what concerns you, from any repository. Track a project to keep all its items on this phone, from any repository.

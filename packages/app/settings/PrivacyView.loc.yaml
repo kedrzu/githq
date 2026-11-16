@@ -4,3 +4,5 @@ usageStatisticsDescription:
   en: githq counts sign-ins and visits anonymously, so we know how many people use it. Nothing about your code, your repositories or who you are is ever sent.
 whatGithqCounts:
   en: What githq counts
+usage:
+  en: Usage

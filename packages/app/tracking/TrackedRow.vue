@@ -1,4 +1,4 @@
-<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`): its icon, name (a project's with its mono `#number`) and visibility tag, then, each after the one before, where its items come from (a project's), how many it holds and how it stands (`TrackedRowNote`); at the row's edge Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it and runs the keys. -->
+<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`): its icon, name (a project's with its mono `#number`) and visibility tag, then, each after the one before, where its items come from (a project's), how many it holds and how it stands (`TrackedRowNote`); at the row's edge Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it and runs the keys. On a phone (`phone`, mobile MB151, MB154) two lines a finger's height — the owner in grey before a repository's name, then what it says in one grey line — and the chevron, with no Untrack: the row only drills into its settings, where Stop tracking is. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -18,6 +18,8 @@ defineProps<{
   icon: LucideIcon;
   /** A repository's name (its owner is the group's), a project's title. */
   title: string;
+  /** On a phone, the owner before a repository's name, in grey. */
+  owner?: string;
   /** A project's number, after its title. */
   number?: number;
   /** "public", "private"; none while not known. */
@@ -30,6 +32,8 @@ defineProps<{
   /** What "synced 14s ago" is counted from. */
   now: number;
   selected?: boolean;
+  /** On a phone: two lines, no Untrack. */
+  phone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -40,7 +44,48 @@ const t = useTranslate();
 </script>
 
 <template>
-  <div :class="[css.trackedRow, selected && css.trackedRow_selected]">
+  <span
+    v-if="phone"
+    :class="css.trackedRow_phone"
+  >
+    <component
+      :is="icon"
+      :class="css.trackedRow_phoneIcon"
+      aria-hidden="true"
+    />
+    <span :class="css.trackedRow_phoneText">
+      <span :class="css.trackedRow_phoneTitle">
+        <span
+          v-if="owner"
+          :class="css.trackedRow_phoneOwner"
+          >{{ owner }}/</span
+        >{{ title
+        }}<span
+          v-if="number !== undefined"
+          :class="css.trackedRow_number"
+        >
+          #{{ number }}</span
+        >
+      </span>
+      <span :class="css.trackedRow_phoneMeta">
+        <template v-if="badge">{{ badge }} · </template>
+        <template v-if="source">{{ source }} · </template>
+        {{ count }} ·
+        <TrackedRowNote
+          :status="status"
+          :now="now"
+        />
+      </span>
+    </span>
+    <ChevronRight
+      :class="css.trackedRow_chevron"
+      aria-hidden="true"
+    />
+  </span>
+  <div
+    v-else
+    :class="[css.trackedRow, selected && css.trackedRow_selected]"
+  >
     <component
       :is="icon"
       :class="css.trackedRow_icon"
@@ -90,6 +135,51 @@ const t = useTranslate();
 </template>
 
 <style lang="scss" module="css">
+.trackedRow_phone {
+  display: flex;
+  gap: $spacing-12;
+  align-items: center;
+  min-height: 52px;
+  padding: $spacing-6 $spacing-16;
+}
+
+.trackedRow_phoneIcon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: $color-fg-3;
+}
+
+.trackedRow_phoneText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-2;
+  min-width: 0;
+}
+
+.trackedRow_phoneTitle {
+  overflow: hidden;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-medium;
+  color: $color-fg;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackedRow_phoneOwner {
+  font-weight: $font-weight-normal;
+  color: $color-fg-dim;
+}
+
+.trackedRow_phoneMeta {
+  overflow: hidden;
+  font-size: $font-size-md;
+  color: $color-fg-dim;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trackedRow {
   display: flex;
   gap: $spacing-10;

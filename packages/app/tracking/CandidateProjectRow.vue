@@ -1,4 +1,4 @@
-<!-- A project the project picker offers (T22, `Track / Project row`): its checkbox, the board icon, its title and `#number`, how many items it holds, and how recently it was updated. A tracked one shows a grey, fixed tick and "tracked" instead (`· tracked`). No "from …" column and no visibility tag: GitHub's lists give neither for a project not tracked (D25). -->
+<!-- A project the project picker offers (T22, `Track / Project row`): its checkbox, the board icon, its title and `#number`, how many items it holds, and how recently it was updated. A tracked one shows a grey, fixed tick and "tracked" instead (`· tracked`). No "from …" column and no visibility tag: GitHub's lists give neither for a project not tracked (D25). `touch` (a phone, mobile MB172): a row a finger's height, the phone's checkbox, the title on one line and how many items with "tracked" or how recently it was updated under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { SquareKanban } from 'lucide-vue-next';
@@ -14,6 +14,8 @@ defineProps<{
   now: number;
   /** Already tracked, so its tick is fixed and it can't be picked. */
   tracked?: boolean;
+  /** A phone's row (mobile MB172): two lines, a finger's height. */
+  touch?: boolean;
 }>();
 
 const selected = defineModel<boolean>({ required: true });
@@ -23,6 +25,28 @@ const t = useTranslate();
 
 <template>
   <div
+    v-if="touch"
+    :class="[css.candidateProjectRow_touch, tracked && css.candidateProjectRow_tracked]"
+    data-tracking-row
+  >
+    <Checkbox
+      :model-value="tracked || selected"
+      :readonly="tracked"
+      size="touch"
+      :class="css.candidateProjectRow_touchLabel"
+      @update:model-value="selected = $event"
+    >
+      <span :class="css.candidateProjectRow_lines">
+        <span :class="css.candidateProjectRow_title">{{ project.title }}</span>
+        <span :class="css.candidateProjectRow_metaLine">
+          {{ t(l.items, { count: project.itemCount }) }} ·
+          {{ tracked ? t(l.tracked) : t(l.updated, { age: formatAge(Date.parse(project.updatedAt), now) }) }}
+        </span>
+      </span>
+    </Checkbox>
+  </div>
+  <div
+    v-else
     :class="[css.candidateProjectRow, tracked && css.candidateProjectRow_tracked]"
     data-tracking-row
   >
@@ -122,7 +146,38 @@ const t = useTranslate();
   white-space: nowrap;
 }
 
+// A phone's row: two lines a finger's height, the screen's gutter at each side.
+.candidateProjectRow_touch {
+  display: flex;
+  align-items: center;
+  min-height: $touch-target-size + $spacing-12;
+  padding: $spacing-6 $spacing-16;
+
+  &:focus-within {
+    background: $color-sel;
+  }
+}
+
+.candidateProjectRow_touchLabel {
+  width: 100%;
+  min-width: 0;
+}
+
+.candidateProjectRow_lines {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  min-width: 0;
+  font-size: $font-size-lg;
+}
+
+.candidateProjectRow_metaLine {
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+}
+
 // A fixed tick, grey rather than the readonly checkbox's dimmed accent, with the title quieter.
+.candidateProjectRow_touch.candidateProjectRow_tracked,
 .candidateProjectRow.candidateProjectRow_tracked {
   [role='checkbox'] {
     color: $color-fg-3;

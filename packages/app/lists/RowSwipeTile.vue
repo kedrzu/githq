@@ -36,7 +36,7 @@ const { Button } = useButton();
 
 <style lang="scss" module="css">
 .rowSwipeTile {
-  @include focus-ring;
+  @include focus-ring(-2px);
 
   display: flex;
   flex-direction: column;
@@ -51,10 +51,6 @@ const { Button } = useButton();
   cursor: pointer;
   background: var(--row-swipe-tile-fill);
   border: none;
-
-  &:focus-visible {
-    outline-offset: -2px;
-  }
 }
 
 .rowSwipeTile_quiet {

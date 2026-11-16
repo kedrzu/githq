@@ -70,3 +70,6 @@ export const RefreshPaused: Story = {
         rateLimit: { resource: 'graphql', limit: 5000, remaining: 0, resetAt: new Date(SAMPLE_NOW + 18 * 60_000) },
     },
 };
+
+/** MB156: on a phone, one column of rows; an organisation hiding its private data in amber, with the request under it. */
+export const Phone: Story = { args: { phone: true } };

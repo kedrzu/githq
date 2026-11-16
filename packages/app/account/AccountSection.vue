@@ -1,4 +1,4 @@
-<!-- The Account section of Settings (G9), with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, in the web builds whether it opens githq links in the desktop app, how it refreshes, and signing out. -->
+<!-- The Account section of Settings (G9), with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, in the web builds whether it opens githq links in the desktop app, how it refreshes, and signing out. On a phone (`phone`) in its one column, without the switch of opening links in the desktop app, which a phone has none of. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, defineAsyncComponent, onMounted, shallowRef } from 'vue';
@@ -22,6 +22,11 @@ const OpenLinksSwitch = !__DESKTOP__ ? defineAsyncComponent(() => import('@/desk
 
 /** How often "last 14s ago" moves on. */
 const TICK_MS = 1000;
+
+defineProps<{
+  /** In a phone's Settings (mobile MB156): one column of rows, signing out asked once. */
+  phone?: boolean;
+}>();
 
 const auth = useService(AuthStore);
 const tracking = useService(TrackingStore);
@@ -92,12 +97,13 @@ async function loadOrganizations() {
     :rate-limit="rateLimits.get('graphql')"
     :now="now"
     :approval-url="getApprovalUrl(browser.origin)"
+    :phone="phone"
     @request-approval="approvals.record"
     @retry="loadOrganizations"
     @sign-out="auth.signOut()"
   >
     <template
-      v-if="OpenLinksSwitch"
+      v-if="OpenLinksSwitch && !phone"
       #browser
     >
       <component

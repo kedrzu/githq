@@ -160,3 +160,41 @@ searchPlaceholder:
   en: Search GitHub, owner/repository, or a project URL
 examples:
   en: e.g.
+subtitlePhone:
+  en: githq copies what you pick in full. What concerns you comes along anyway, from any repository.
+findLabel:
+  en: Find a repository or project
+findPlaceholder:
+  en: Find a repository or project
+segments:
+  en: Repositories or projects
+showAllShort:
+  en: Show all
+showAllOf:
+  en: Show all {count} of {owner}
+noProjectMatches:
+  en: No project matches “{filter}”
+summaryShort:
+  en: '{repositories}, {projects}'
+summaryDetailPhone:
+  plural: count
+  en:
+    zero: nothing to copy but what concerns you
+    one: 1 open issue or pull request
+    many: '{count} open issues and pull requests'
+matchesTicked:
+  plural: count
+  en:
+    zero: none of these matches ticked
+    one: 1 of these matches ticked
+    many: '{count} of these matches ticked'
+onlyMinePhone:
+  en: Only mine
+searchPlaceholderPhone:
+  en: 'Track one by name: owner/name'
+emptyDetailPhone:
+  en: My work still shows every issue and pull request that concerns you, anywhere on GitHub. To follow someone else's repository or project, type its name above.
+nothingPicked:
+  en: Nothing picked
+nothingPickedDetail:
+  en: My work fills in from what concerns you

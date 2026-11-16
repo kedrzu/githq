@@ -288,10 +288,7 @@ function describeStepTime(step: GitHubWorkflowStep) {
     background: $color-bg-2;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include focus-ring(-2px);
 }
 
 .workflowRunJobs_job_selected {

@@ -4,7 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './TrackedListView.stories.jsx';
 
-const { Repositories, Projects, BeforeListsRead, NothingTracked } = composeStories(stories);
+const { Repositories, Projects, BeforeListsRead, NothingTracked, RepositoriesPhone, NothingTrackedPhone } =
+    composeStories(stories);
 
 const group = (owner: string) => page.getByRole('list', { name: owner, exact: true });
 const row = (owner: string, name: string) => group(owner).getByRole('listitem').filter({ hasText: name });
@@ -240,4 +241,25 @@ test("on a wide screen a project row's source, count and sync follow its name 10
 
     const actions = sync.nextElementSibling?.nextElementSibling?.getBoundingClientRect();
     expect(actions?.right).toBeCloseTo(rowBox.right - 12, 0);
+});
+
+test('MB151: on a phone a row is one button drilling into its settings, with no Untrack; "Track more" adds on its owner', async () => {
+    const onOpen = vi.fn();
+    const onAdd = vi.fn();
+    await RepositoriesPhone.run({ args: { ...RepositoriesPhone.args, onOpen, onAdd } });
+
+    await expect.element(page.getByRole('button', { name: /^Untrack/u })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: /^mlaine\/tasklet/u }));
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ nameWithOwner: 'mlaine/tasklet' }));
+
+    await userEvent.click(page.getByRole('button', { name: 'Track more' }));
+    expect(onAdd).toHaveBeenCalledWith('fitloop');
+});
+
+test("MB162: nothing tracked on a phone, the note's button adds the first", async () => {
+    const onAdd = vi.fn();
+    await NothingTrackedPhone.run({ args: { ...NothingTrackedPhone.args, onAdd } });
+
+    await userEvent.click(page.getByRole('button', { name: 'Track repositories' }));
+    expect(onAdd).toHaveBeenCalled();
 });

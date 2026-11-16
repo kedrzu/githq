@@ -1,20 +1,23 @@
-<!-- The Account section of Settings (G9): who the user is signed in as, the organisations they belong to — each one hiding its private data from githq (D14) with a way to request approval, and when they did; one that no longer hides it "Approved" when its approval was requested from here, else "No restrictions" — what this browser holds and how it refreshes, and signing out, which says plainly that it deletes the copy kept here and changes nothing on GitHub. -->
+<!-- The Account section of Settings (G9): who the user is signed in as, the organisations they belong to — each one hiding its private data from githq (D14) with a way to request approval, and when they did; one that no longer hides it "Approved" when its approval was requested from here, else "No restrictions" — what this browser holds and how it refreshes, and signing out, which says plainly that it deletes the copy kept here and changes nothing on GitHub. On a phone (`phone`, mobile MB156, MB157) one column of rows: who, "Open profile on GitHub" (↗), the organisations — one hiding its private data in amber with "Request approval on GitHub" (↗) under it — the copy kept on this phone with how it refreshes and the allowance under it, and "Sign out and clear", which asks once in a sheet from below, saying what it deletes. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { ArrowUpRight, CircleCheck, Lock, LogOut } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { ArrowUpRight, Building2, CircleCheck, HardDrive, Lock, LogOut } from 'lucide-vue-next';
+import { computed, shallowRef } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
+import Dialog from '@/components/Dialog.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
+import PhoneSettingsGroup from '@/settings/PhoneSettingsGroup.vue';
+import PhoneSettingsRow from '@/settings/PhoneSettingsRow.vue';
 
 import * as l from './AccountView.loc.js';
 
@@ -61,6 +64,8 @@ const props = defineProps<{
   now: number;
   /** The link to GitHub's page where an organisation's approval is requested. */
   approvalUrl: string;
+  /** In a phone's Settings: one column of rows, signing out asked once. */
+  phone?: boolean;
 }>();
 
 defineSlots<{
@@ -78,6 +83,8 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const number = new Intl.NumberFormat(APP_LANGUAGE);
+/** On a phone, signing out is asked once (MB157). */
+const confirmingSignOut = shallowRef(false);
 
 const organizationCount = computed(() =>
   props.organizations.kind === 'read' ? props.organizations.organizations.length : null,
@@ -89,18 +96,18 @@ const whoText = computed(() =>
     : `${t(l.signedInWith)} · ${t(l.memberOf, { count: organizationCount.value })}`,
 );
 
-const copyText = computed(() => {
-  const { repositories, projects, items, bytes } = props.copy;
-  const parts = [
+/** What is tracked and how many items, without the bytes. */
+const copyContents = computed(() => {
+  const { repositories, projects, items } = props.copy;
+  return [
     `${t(l.copyRepositories, { count: repositories })}, ${t(l.copyProjects, { count: projects })}`,
     t(l.copyItems, { count: items, formatted: number.format(items) }),
-  ];
-  if (bytes !== null) {
-    parts.push(formatBytes(bytes));
-  }
-
-  return parts.join(' · ');
+  ].join(' · ');
 });
+
+const copyText = computed(() =>
+  props.copy.bytes === null ? copyContents.value : `${copyContents.value} · ${formatBytes(props.copy.bytes)}`,
+);
 
 const refreshText = computed(() => {
   const { refresh } = props;
@@ -129,6 +136,19 @@ const allowanceText = computed(() => {
     : t(l.allowanceUnknown);
 });
 
+function getStanding(organization: AccountOrganization) {
+  if (organization.hiddenPrivate) {
+    return t(l.hiddenPhone);
+  }
+
+  return t(isApproved(organization) ? l.approved : l.noRestrictions);
+}
+
+function signOut() {
+  confirmingSignOut.value = false;
+  emit('signOut');
+}
+
 /** Its approval was requested from here, and it no longer hides anything: approved, as far as githq can tell. */
 function isApproved(organization: AccountOrganization) {
   return !organization.hiddenPrivate && organization.requestedAt !== null;
@@ -136,7 +156,153 @@ function isApproved(organization: AccountOrganization) {
 </script>
 
 <template>
-  <div :class="css.accountView">
+  <div
+    v-if="phone"
+    :class="css.accountView_phone"
+  >
+    <section
+      :class="css.accountView_phoneWho"
+      :aria-label="viewer.login"
+    >
+      <Avatar
+        :name="viewer.login"
+        :src="viewer.avatarUrl"
+        size="xl"
+        decorative
+      />
+      <div :class="css.accountView_whoText">
+        <h2 :class="css.accountView_login">{{ viewer.login }}</h2>
+        <p :class="css.accountView_dim">{{ whoText }}</p>
+      </div>
+    </section>
+    <PhoneSettingsRow
+      :label="t(l.openProfile)"
+      :href="getGitHubUrl(viewer.login)"
+    />
+
+    <PhoneSettingsGroup :title="t(l.organizations)">
+      <p
+        v-if="organizations.kind === 'loading'"
+        :class="css.accountView_phoneNote"
+      >
+        {{ t(l.organizationsLoading) }}
+      </p>
+      <p
+        v-else-if="organizations.kind === 'failed'"
+        :class="css.accountView_phoneNote"
+      >
+        {{ t(l.organizationsFailed) }}
+        <Button
+          variant="link"
+          @click="emit('retry')"
+        >
+          {{ t(l.tryAgain) }}
+        </Button>
+      </p>
+      <p
+        v-else-if="organizations.organizations.length === 0"
+        :class="css.accountView_phoneNote"
+      >
+        {{ t(l.noOrganizations) }}
+      </p>
+      <ul
+        v-else
+        :class="css.accountView_phoneList"
+      >
+        <li
+          v-for="organization in organizations.organizations"
+          :key="organization.login"
+          tid="account-organization"
+        >
+          <PhoneSettingsRow
+            :icon="organization.hiddenPrivate ? Lock : Building2"
+            :label="organization.login"
+            :value="getStanding(organization)"
+            :tone="organization.hiddenPrivate ? 'amber' : isApproved(organization) ? 'good' : undefined"
+          />
+          <div
+            v-if="organization.hiddenPrivate"
+            :class="css.accountView_phoneHidden"
+          >
+            <p :class="css.accountView_dim">
+              {{ t(l.hiddenDetailPhone) }}
+              <template v-if="organization.requestedAt !== null">
+                {{ t(l.requestedOn, { date: formatShortDate(organization.requestedAt) }) }}
+              </template>
+            </p>
+            <Button
+              variant="secondary"
+              size="lg"
+              :icon="ArrowUpRight"
+              :link="approvalUrl"
+              target="_blank"
+              :aria-label="`${t(l.requestApprovalOnGitHub)}: ${organization.login}`"
+              :class="css.accountView_phoneButton"
+              @click="emit('requestApproval', organization.login)"
+            >
+              {{ t(l.requestApprovalOnGitHub) }}
+            </Button>
+          </div>
+        </li>
+      </ul>
+    </PhoneSettingsGroup>
+
+    <PhoneSettingsGroup :title="t(l.thisPhone)">
+      <PhoneSettingsRow
+        :icon="HardDrive"
+        :label="t(l.copy)"
+        :value="copy.bytes === null ? undefined : formatBytes(copy.bytes)"
+      />
+      <p
+        :class="css.accountView_phoneNote"
+        tid="account-copy"
+      >
+        {{ copyContents }}. {{ refreshText }}. {{ allowanceText }}.
+      </p>
+    </PhoneSettingsGroup>
+
+    <div :class="css.accountView_phoneSignOut">
+      <Button
+        variant="danger"
+        size="lg"
+        :class="css.accountView_phoneButton"
+        @click="confirmingSignOut = true"
+      >
+        {{ t(l.signOutAndClear) }}
+      </Button>
+    </div>
+
+    <Dialog
+      v-model:open="confirmingSignOut"
+      edge="bottom"
+      :title="t(l.signOutQuestion)"
+    >
+      <p :class="css.accountView_phoneSheetText">{{ t(l.signOutQuestionDetail, { copy: copyText }) }}</p>
+      <template #footer>
+        <div :class="css.accountView_phoneSheetActions">
+          <Button
+            variant="danger"
+            size="lg"
+            :class="css.accountView_phoneButton"
+            @click="signOut"
+          >
+            {{ t(l.signOutAndClear) }}
+          </Button>
+          <Button
+            size="lg"
+            :class="css.accountView_phoneButton"
+            @click="confirmingSignOut = false"
+          >
+            {{ t(l.cancel) }}
+          </Button>
+        </div>
+      </template>
+    </Dialog>
+  </div>
+  <div
+    v-else
+    :class="css.accountView"
+  >
     <div
       :class="css.accountView_body"
       data-route-scroll="settings-account"
@@ -318,6 +484,61 @@ function isApproved(organization: AccountOrganization) {
 </template>
 
 <style lang="scss" module="css">
+.accountView_phone {
+  display: flex;
+  flex-direction: column;
+}
+
+.accountView_phoneWho {
+  display: flex;
+  gap: $spacing-12;
+  align-items: center;
+  padding: $spacing-16 $spacing-16 $spacing-8;
+}
+
+.accountView_phoneList {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.accountView_phoneHidden {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+  padding: 0 $spacing-16 $spacing-8;
+}
+
+.accountView_phoneNote {
+  padding: $spacing-4 $spacing-16 0;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-fg-dim;
+}
+
+// A finger's height, the width of the screen's column.
+.accountView_phoneButton {
+  width: 100%;
+  min-height: $touch-target-size;
+}
+
+.accountView_phoneSignOut {
+  padding: $spacing-16;
+}
+
+.accountView_phoneSheetText {
+  font-size: $font-size-lg;
+  line-height: $line-height-normal;
+  color: $color-fg-2;
+}
+
+.accountView_phoneSheetActions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-8;
+}
+
 .accountView {
   display: flex;
   flex: 1;

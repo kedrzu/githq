@@ -1,4 +1,4 @@
-<!-- A section of a repository's or a project's settings (`Settings / Section`, T16, T17): under a rule, its name and what it changes on the left, its controls on the right. Sections stack, so a new setting is one more of these. -->
+<!-- A section of a repository's or a project's settings (`Settings / Section`, T16, T17): under a rule, its name and what it changes on the left, its controls on the right. Sections stack, so a new setting is one more of these. On a phone (`phone`) its name and what it changes above its controls, at a phone's margins. -->
 <script lang="ts" setup>
 import { useId } from 'vue';
 
@@ -6,6 +6,8 @@ defineProps<{
   title: string;
   /** What the section changes. */
   description: string;
+  /** On a phone: the name and text above the controls. */
+  phone?: boolean;
 }>();
 
 defineSlots<{
@@ -19,7 +21,7 @@ const titleId = useId();
 
 <template>
   <section
-    :class="css.settingsBlock"
+    :class="[css.settingsBlock, phone && css.settingsBlock_phone]"
     :aria-labelledby="titleId"
   >
     <div :class="css.settingsBlock_about">
@@ -43,6 +45,20 @@ const titleId = useId();
   gap: 40px;
   padding: 20px 0;
   border-top: 1px solid $color-border;
+}
+
+.settingsBlock.settingsBlock_phone {
+  flex-direction: column;
+  gap: $spacing-12;
+  padding: $spacing-16;
+
+  .settingsBlock_about {
+    width: auto;
+  }
+
+  .settingsBlock_content {
+    flex: none;
+  }
 }
 
 .settingsBlock_about {

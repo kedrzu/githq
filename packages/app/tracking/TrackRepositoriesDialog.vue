@@ -1,10 +1,11 @@
-<!-- Picking repositories to track (T18, D25): the first sign-in's chooser (G2) in a modal, as its picker: owners on the left with tracked / all, the filter (`/`) and sort above the list. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N repositories" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on an owner (a group's "Track more") or a search (`?q=`, from an untracked repository's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s. -->
+<!-- Picking repositories to track (T18, D25): the first sign-in's chooser (G2) in a modal, as its picker: owners on the left with tracked / all, the filter (`/`) and sort above the list. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N repositories" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on an owner (a group's "Track more") or a search (`?q=`, from an untracked repository's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s; on a phone a screen of its own, back naming Repositories (mobile D35). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref, shallowRef, watch } from 'vue';
 
 import { useNow } from '@/services/useNow.js';
+import * as sectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 
 import { ApprovalRequests } from './ApprovalRequests.js';
 import { PendingUntracks } from './PendingUntracks.js';
@@ -128,6 +129,7 @@ function getAdded() {
     v-model:open="open"
     v-model:filter="filter"
     :title="t(l.title)"
+    :parent="t(sectionLabels.repositories)"
     :description="t(l.description)"
     :width="880"
     :summary="t(l.summary, { count: picks.length, names: picks.join(', ') })"

@@ -57,6 +57,33 @@ export function readSettingsSection(tab: LocationQuery[string] | undefined): Set
 }
 
 /**
+ * The section an address's `?tab=` names on a phone (mobile D33), where `/settings` with none, or one not known, is the
+ * list of the sections: `null`.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readPhoneSettingsSection(tab: LocationQuery[string] | undefined): SettingsSection | null {
+    return SETTINGS_SECTIONS.find(section => section === tab) ?? null;
+}
+
+/**
+ * The address of a section of Settings on a phone (mobile D33): each its own `?tab=`, the first included, `/settings`
+ * alone being the list of the sections.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getPhoneSettingsPath(section: SettingsSection) {
+    return `${SETTINGS_PATH}?tab=${section}`;
+}
+
+/**
+ * The address of a section of Settings in the layout shown: on a phone its own `?tab=` (`getPhoneSettingsPath`), else
+ * `getSettingsPath`'s.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getLayoutSettingsPath(section: SettingsSection, phone: boolean) {
+    return phone ? getPhoneSettingsPath(section) : getSettingsPath(section);
+}
+
+/**
  * Whether the screen at `route` is one of Settings whose status bar says where the settings are saved (githq D26).
  * @__NO_SIDE_EFFECTS__
  */

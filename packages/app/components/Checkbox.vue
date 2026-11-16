@@ -1,11 +1,12 @@
-<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. `readonly` holds it still yet keeps the focus it has, where `disabled` drops it. Without a label of its own it is named by what `labelledby` points at (a list's row it checks). -->
+<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. `readonly` holds it still yet keeps the focus it has, where `disabled` drops it. Without a label of its own it is named by what `labelledby` points at (a list's row it checks). `size="touch"`: the phone's larger box beside a row a finger's height (mobile MB135). -->
 <script lang="ts" setup>
 import { useCheckbox } from '@nzyme/vue-forms/components/useCheckbox.jsx';
+import { defineProp } from '@nzyme/vue-utils/defineProp.js';
 import { Check, Minus } from 'lucide-vue-next';
 
 // nzyme's checkbox props: `modelValue`/`field`, `errors`, `required`, `disabled`, `readonly`, `name`,
-// `tabindex`, `indeterminate`; the label, or the id of what names it.
-defineProps({ ...useCheckbox.props, label: String, labelledby: String });
+// `tabindex`, `indeterminate`; the label, or the id of what names it; the phone's larger box.
+defineProps({ ...useCheckbox.props, label: String, labelledby: String, size: defineProp<'touch'>() });
 defineEmits(useCheckbox.emits);
 defineSlots<{
   /** A label richer than `label` ("kedrzu/**githq**"). */
@@ -17,7 +18,9 @@ const { Checkbox, field } = useCheckbox();
 
 <template>
   <!-- The label wraps the box, so it names the checkbox and a click on it toggles it. -->
-  <label :class="[css.checkbox, (disabled || readonly) && css.checkbox_disabled]">
+  <label
+    :class="[css.checkbox, (disabled || readonly) && css.checkbox_disabled, size === 'touch' && css.checkbox_touch]"
+  >
     <Checkbox
       :class="[css.checkbox_box, (field.value || indeterminate) && css.checkbox_box_on]"
       :aria-readonly="readonly || undefined"
@@ -99,5 +102,21 @@ const { Checkbox, field } = useCheckbox();
 
 .checkbox_label {
   min-width: 0;
+}
+
+// A phone's row (mobile MB135): a box a thumb finds, the label further from it.
+.checkbox_touch {
+  gap: $spacing-12;
+
+  .checkbox_box {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+  }
+
+  .checkbox_mark {
+    width: 14px;
+    height: 14px;
+  }
 }
 </style>
