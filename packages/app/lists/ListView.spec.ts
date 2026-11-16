@@ -1224,6 +1224,34 @@ test("O opens the selected row on GitHub, before an opened item's — never from
     expect(openInNewTab).toHaveBeenCalledTimes(1);
 });
 
+test("O on an issue still being created, with no page on GitHub yet, opens nothing and leaves the key to the opened item's", async () => {
+    const container = createListContainer();
+    const openInNewTab = vi.spyOn(container.resolve(Browser), 'openInNewTab');
+    const view = mount([['todo', ['a1', 'a2']]], 'list', {
+        container,
+        getUrl: id => (id === 'a2' ? '' : `https://github.com/acme/web/issues/${id}`),
+    });
+    const openItem = vi.fn();
+    onTestFinished(
+        container.resolve(CommandRegistry).register({
+            commands: [
+                bindCommand(
+                    openOnGitHub,
+                    { place: 'item', section: 'item', run: openItem },
+                    container.resolve(Translator),
+                ),
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('jj');
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+
+    await userEvent.keyboard('o');
+    expect(openInNewTab).not.toHaveBeenCalled();
+    expect(openItem).toHaveBeenCalledOnce();
+});
+
 /** An element put before the list for one step of a test, `prepare`d once it is in the page. */
 function withElement(tag: string, prepare: (element: HTMLElement) => void) {
     const element = document.createElement(tag);

@@ -1455,10 +1455,11 @@ function openSelectedOnGitHub() {
   }
 }
 
+/** The selected entry's page on GitHub; `null` with none, or none yet (an issue still being created has `''`). */
 function getSelectedUrl() {
   const key = selectedKey.value;
   const current = key === null ? undefined : placed.value.get(key);
-  return current ? props.getUrl(current.entry.value) : null;
+  return (current && props.getUrl(current.entry.value)) || null;
 }
 
 function scrollToSelected() {
