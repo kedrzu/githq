@@ -53,6 +53,17 @@ Opt-in CSS. The motion lives in styles, under `html[data-motion='on']` and `pref
 
 - Only opening animates. Everything closes at once. Focus and the layer stay with an overlay until it unmounts, so a
   closing animation would lose an Escape and delay focus's return; a toast and the rest unmount on close anyway.
+- Except a phone's sheet (amended 2026-11-16): the places panel and every sheet from below (`Dialog` with `edge` left
+  or bottom) slide in from fully off their edge and back out, 200 ms (`$motion-sheet`), their dim fading with them. The
+  owner found them appearing and vanishing too abruptly. On a touch screen there is as a rule no keyboard, so the lost
+  Escape and the late focus cost nothing; what remains is a tap elsewhere swallowed during those 200 ms (the modal
+  layer keeps `pointer-events: none` on the body), accepted. A tap on the sheet itself would still reach it (reka keeps
+  `pointer-events: auto` on it until it unmounts), so a closing sheet takes no pointer events. `Dialog` keeps its portal
+  in the page until the content has left it, or the closing animation would be cut off at once. The opening and closing
+  keyframes have different names, as `Presence` waits for a closing animation only when the name changes. The late
+  focus return must not undo a command that put the focus somewhere as the sheet closed (a log's search field), so
+  `Dialog` gives the focus back only when nothing outside the sheet holds it; other dialogs still leave the page at
+  once.
 - A `Reveal` is driven through `--reveal-duration` on `html` (0 off, 100 ms on, which `Reveal` stretches to 150 ms
   in total), so nzyme did not change.
 - List groups stay instant, because `ListView` finds rows with `querySelector`.
@@ -64,9 +75,9 @@ Opt-in CSS. The motion lives in styles, under `html[data-motion='on']` and `pref
 ## Consequences
 
 - The e2e suite runs with motion on, as users have it (`src/shell/motion.spec.ts` proves the animation, the instant
-  close, the switch and reduced motion). A spec that turned timing-dependent because of an animation is a bug to bring
+  close, a phone's sheets sliding out, the switch and reduced motion). A spec that turned timing-dependent because of an animation is a bug to bring
   back, not a wait to add.
 - A new overlay gets motion by including `@mixin motion` (or `motion-popper`) in its style, and needs nothing else.
-- Closing animations are out for good unless reka-ui's focus return and dismissal change; they would have to be
-  re-checked first.
+- Closing animations are out for good, a phone's sheet aside, unless reka-ui's focus return and dismissal change;
+  they would have to be re-checked first.
 - A layer that is not reka's would not be unmounted by `Presence` and has to take care of its own closing.
