@@ -44,3 +44,10 @@ Append-only. One line per decision, rejection or answer from the owner.
   differs from the desktop build (a target of its own or the desktop target deciding at run time).
 - 2026-11-16 — Owner accepted a fourth build target `mobile` (D7). README now has the build order and what is left
   for later; folded up to here. Next: rightsize, then propose closing.
+- 2026-11-16 — Rightsize (three passes). Dropped, the owner chose with the simpler version in front of them: keeping
+  the Device Flow on the desktop (D4); one native build with a run-time platform check (D7). Dropped by the design
+  agent: an `https` callback on iOS 17.4+ instead of the `githq://` bounce — the desktop needs the bounce anyway
+  (D4), so it would be a second mechanism, not a smaller one; PKCE — cheap and answers a real interception case.
+  Settled: the token exchange runs on the native side (recorded under D3). Put to the owner: the system browser
+  instead of iOS's sign-in sheet (no Swift plugin), and a 2FA account with its TOTP secret in the review notes
+  instead of the token link.

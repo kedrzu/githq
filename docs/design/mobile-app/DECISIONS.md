@@ -92,7 +92,8 @@ expire after 8 hours and every refresh goes through the Worker ([githq D1](../gi
 
 > **Checked 2026-11-15:** the token endpoint answers only the app's own origin, while refresh and revoke answer
 > every origin because the desktop webview calls them — `packages/worker/src/githubOAuth.ts:117-125,171`. The phone
-> app's origin is not githq.dev, so the exchange either runs on the native side or the endpoint opens to it.
+> app's origin is not githq.dev. The native side runs the exchange (design agent, stated to the owner 2026-11-15
+> without objection), so the endpoint's same-origin guard stays as it is.
 
 > **Checked 2026-11-15:** `ASWebAuthenticationSession` exists since iOS 12; an `https` callback
 > (`Callback.https(host:path:)`) only since iOS 17.4 —
