@@ -34,3 +34,13 @@
 - Owner: fixed screen keys are definitions with `configurable: false` and run through the registry (D11). The code
   shape (defineAppCommand / useCommand / CommandButton, translation key in the definition) recorded as D12, the
   agent's proposal unopposed. Folded into README. Next: rightsize before proposing to close.
+- Rightsize (three passes). Fixed in the record without asking: D12's reason for a translation key was a change of
+  language, but githq is English only; the real reason is that module-level definitions cannot call `t()`.
+- Owner on the rightsize items: flat places plus a hand-kept list of places on screen together, replacing nested
+  places, which misreported the list-and-item `O` clash as an override (D13, D6 retired); numbered families as one
+  definition each with a number, the binding naming what the number picks (D9 amended); D8's rule enforced by a test;
+  plain string id with a uniqueness test (D2 amended). CommandButton vs a key helper: owner did not follow; to explain.
+- Owner: a `priority` on the definition orders the command menu (D14; number default 0 is the agent's proposal).
+- Owner reported a bug: with nothing checked, "Open full screen" in a list's menu opens an unrelated PR. It is
+  `list.fullScreen` (`packages/app/lists/ListView.vue:960`), acting on the list's selected row, which is kept by key
+  even when not visible; its title does not name the row. Not part of this design; offered as a separate fix.

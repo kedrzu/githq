@@ -32,11 +32,13 @@ A place supplies only what depends on it: `run`, `when`, `unavailable`, `detail`
 
 ## D2
 
-**Every command is defined statically, with a typed id, and all definitions are exported from one module (split into
-files by area); a place can only bind a defined command.** (2026-11-16, owner)
+**Every command is defined statically and all definitions are exported from one module (split into files by area); a
+place can only bind a defined command. Its id is a plain string, unique across the definitions, checked by a test.**
+(2026-11-16, owner)
 
 **Why.** The list of all commands, the settings screen and conflict checks need every command to exist without the
-screen that offers it being mounted.
+screen that offers it being mounted. Places pass the definition object itself ([D12](#d12)), so nothing looks a command
+up by its id in code; the id's one job is the key the user's own keys are stored under ([D10](#d10)).
 
 > **Checked 2026-11-16:** githq's `CommandRegistry` (`packages/app/commands/CommandRegistry.ts:48`) only knows the
 > commands of mounted components (35 `useCommands` call sites). healed's doctor app (`packages/doctor-app/actions/`,
@@ -49,11 +51,13 @@ screen that offers it being mounted.
 - Commands created at mount, as today in githq and in healed — no full list, no conflict detection, no rebinding.
 - Definitions next to each feature with no collecting module — the full list then depends on what happens to be
   imported.
+- A typed union of all ids — no code writes an id as a string, so it checks nothing
+  ([history](history/DECISIONS.md#d2)).
 
 ## D3
 
 **A definition declares where the command can be offered, so key conflicts are found from the definitions alone,
-before a key is saved.** (2026-11-16, owner) How "where" is described: [D6](#d6).
+before a key is saved.** (2026-11-16, owner) How "where" is described: [D13](#d13).
 
 **Why.** A shared key is only a conflict between commands that can be active at once (`1` for a repository section
 and `1` for a My work filter never are; the sidebar's `Mod+B` and the review's file-list `Mod+B` are). The
@@ -96,27 +100,6 @@ and the code already say command. `defineCommand` is `@nzyme/ioc`'s singleton fu
 
 - "Action" — in githq Actions means GitHub Actions, which has its own screens and design (`docs/design/actions/`).
 
-## D6
-
-**"Where" is a place from a short fixed list (the app, a list, an open item, a review, a job log, the commit graph,
-the settings, …); places nest, and one place can sit in several others (an item open beside a list, or full
-screen). Two commands sharing a key conflict only if their places can be active together and neither contains the
-other. A command in a narrower place may take a key a wider one uses; the settings show it as "here, C does X
-instead of Y", not as a conflict. Places serve only conflict checks: which command gets a key at runtime is still
-decided by who has the keyboard.** (2026-11-16, owner)
-
-**Why.** The defaults already rely on narrower screens taking keys (the review's `Mod+B` over the sidebar's), and
-modes like a review or a job log are where single keys are worth most. Priority by nesting alone gets the list with
-an item open beside it wrong: the list keeps the keyboard there (`docs/design/githq/navigation.md`), so `J`, `K` and
-`O` act on the selected row though the item is the narrower place. Runtime focus already handles that today
-(`ListView.vue:58,757` strips `O` and `Enter` from the row's commands).
-
-**Rejected.**
-
-- A key unique along the whole path from the app to the narrowest place — every app-wide key would be unusable on
-  every screen, and the review would lose `Mod+B`.
-- Priority decided by nesting alone — wrong for a list with an item open beside it.
-
 ## D7
 
 **Creating an issue has no app-wide single key.** (2026-11-16, owner)
@@ -154,10 +137,12 @@ something else here, and a new app-wide letter is refused by the rule rather tha
 
 **Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
 filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
-rebindable.** (2026-11-16, owner)
+rebindable. Each family is one definition (`Go to view 1–9`) whose binding receives the number and may name what the
+number picks (`Go to "Backlog" view`).** (2026-11-16, owner)
 
-**Why.** Rebinding them makes no sense; the number is the position on screen. It also keeps numbered families out
-of the definitions, which would otherwise need one command per number or a parameter.
+**Why.** Rebinding them makes no sense; the number is the position on screen. They still run through the registry
+([D11](#d11)), so each family needs a definition; one with a number is one row in the list of keys rather than nine.
+The command menu shows the binding's name, since "view 3" says nothing.
 
 > **Checked 2026-11-16:** `REPOSITORY_SECTION_KEYS` (`repository/RepositorySection.ts:21`), `FILTER_KEYS`
 > (`myWork/MyWorkView.vue:153`), saved views (`projects/useProjectCommands.ts:71`), merge methods
@@ -166,7 +151,8 @@ of the definitions, which would otherwise need one command per number or a param
 **Rejected.**
 
 - One rebindable command per number — nine entries in the settings nobody would change.
-- One command with a number parameter — a mechanism for a family that does not need rebinding.
+- Numbered keys registered by the screen with no definition — the one exception to every command having one.
+- No definition for families at all ([history](history/DECISIONS.md#d9)) — they would stay outside the registry.
 
 ## D10
 
@@ -211,11 +197,48 @@ shown.** (2026-11-16, design agent's proposal, not opposed by the owner)
 
 **Why.** Each part has one job from [D1](#d1): what a command is, what it does here, how it looks. A button reading
 its key from the definition replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not
-work. A title translated when shown follows a change of language.
+work. A definition is a module-level constant, which cannot call a component's `t()`, and UI text is never
+hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
 
-> **Checked 2026-11-16:** healed translates an action's name once, at registration
-> (`packages/doctor-app/actions/ActionManager.ts:128-131`), so its palette keeps the old language after a switch.
+> **Checked 2026-11-16:** githq has one language, `APP_LANGUAGE = 'en'`
+> (`packages/app/i18n/AppLanguageContext.ts:6`), so following a change of language is not a reason here.
 
 **Rejected.**
 
 - Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
+
+## D13
+
+**"Where" is a place from a flat list: the whole app, or one kind of screen or panel (a list, an open item, a review,
+a job log, the commit graph, the settings, …). A short hand-kept list names the places that can be on screen together
+(a list with an item open beside it). Two commands sharing a key conflict if they share a place or their places are
+on that list. A screen's command may take a key of an app-wide command; the settings show it as "here, ⌘B does X
+instead of Y", not as a conflict. Places serve only these checks: which command gets a key at runtime is decided by
+what has the keyboard.** (2026-11-16, owner)
+
+**Why.** The defaults rely on a screen taking an app-wide key (the review's `Mod+B` over the sidebar's), and screens
+like a review are where single keys are worth most. Places that nest get the list with an item beside it wrong: the
+item is narrower, so its `O` would be shown as deliberately taking the list's, yet the list keeps the keyboard
+(`docs/design/githq/navigation.md`, `ListView.vue:58,757`), so the item's `O` never fires. That is a real conflict,
+and the flat list with pairs reports it as one.
+
+**Rejected.**
+
+- Places that nest, one place inside several parents, conflict when "active together and neither contains the
+  other" — calls the list-and-item clash a deliberate override, and needs data nesting does not hold
+  ([history](history/DECISIONS.md#d6)).
+- A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
+- Priority decided by nesting — wrong for a list with an item open beside it.
+
+## D14
+
+**A definition has a `priority` that orders the command menu: within each group, higher first, then the order
+registered; while typing, the match decides and priority breaks ties.** (2026-11-16, owner) Proposed: a number,
+default `0`.
+
+**Why.** The owner sees the grouping changes first in a list's menu, before what matters more. It belongs to the
+definition, like the title, since a command matters the same wherever it is offered.
+
+**Rejected.**
+
+- Order of registration alone — today's state; it puts whatever a component happens to register first on top.

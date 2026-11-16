@@ -50,24 +50,23 @@ why), the current value to show beside its name, and the choices of a picker it 
 ## Knowing which keys collide
 
 Rebinding needs to know whether two commands can be active at the same moment, since only then is a shared key a
-conflict. `1` picking a repository section and `1` picking a My work filter never meet; `C` for a new issue and
-`⌘B` for the sidebar and `⌘B` for a review's list of files do.
+conflict. `R` for commenting on an item and `R` for retrying in the settings never meet; `O` on the selected row of a
+list and `O` on the item open beside it do.
 
-So each definition also says where the command can be offered: one or more places from a short list such as the
-whole app, a list, an open item, a review or a job log. Places sit inside one another, and the same place can sit in
-more than one: an item opens beside a list or on its own, full screen. Two commands with the same key collide only if
-their places can be active at the same time without one containing the other, and githq can check that from the
-definitions alone, without any screen being open. [Why this is declared rather than
-discovered](DECISIONS.md#d3).
+So each definition also says where the command can be offered: the whole app, or one or more kinds of screen or
+panel from a short list, such as a list, an open item, a review or a job log. A second short list names the ones that
+can be on screen together, like a list with an item open beside it. Two commands with the same key collide if they
+share a place or their places appear together on that list, and githq can check that from the definitions alone,
+without any screen being open. [Why this is declared rather than discovered](DECISIONS.md#d3).
 
-A command in a narrower place may take a key that a wider one uses: in a review, `⌘B` shows the list of files rather
-than hiding the sidebar. The settings show this as "here, ⌘B does this instead of that" rather than as a conflict,
-because screens like a review are where single keys are worth most. [How places nest and when keys
-collide](DECISIONS.md#d6).
+A screen may take a key that an app-wide command uses: in a review, `⌘B` shows the list of files rather than hiding
+the sidebar. The settings show this as "here, ⌘B does this instead of that" rather than as a conflict, because
+screens like a review are where single keys are worth most. [How places are described and when keys
+collide](DECISIONS.md#d13).
 
 Places are only for that check. Which command gets a key while you work is decided by what has the keyboard: with an
-item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row though the item is the
-narrower place.
+item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row. That is also why `O` on both
+is a conflict and not one taking over from the other: the item's would never run.
 
 Keys that work across the whole app are few and never a bare letter by default: `⌘K`, `?`, `,` and `⌘B`. Letters
 belong to screens, so a screen's letter never takes anything app-wide. Creating an issue, for example, is in the
@@ -82,17 +81,25 @@ text field or a dialog form owns while it has focus are not. They are how a cont
 on the web, and are shown in the list of keys but cannot be changed. [Where the line is drawn](DECISIONS.md#d4).
 
 Neither can the numbers that pick the n-th thing on screen: a project's views on `1`–`9`, a repository's sections on
-`1`–`4`. The number is the position, so there is nothing to rebind. [Why](DECISIONS.md#d9).
+`1`–`4`. The number is the position, so there is nothing to rebind. Each such family is still one command, "Go to view
+1–9", and the screen names what each number picks, so the command menu says `Go to "Backlog" view`.
+[Why](DECISIONS.md#d9).
 
 Fixed does not mean handled somewhere else. The numbers, `J` and `K` with the arrows beside them, and the Escape
 that closes a panel are defined like every other command, only marked as not configurable, and run the same way, so
 the list of keys can never show one thing while another runs. Only the keys a control owns while it has focus, Enter
 in a field or Tab, stay with the control. [Why](DECISIONS.md#d11).
 
+## What comes first in the command menu
+
+Each command says how much it matters, and the command menu lists the more important ones first within each group.
+Today a list's menu opens on changing its grouping, which is rarely what you came for. While you type, how well a
+command matches comes first and its importance only breaks ties. [Why it belongs to the command](DECISIONS.md#d14).
+
 ## How it looks in code
 
-A definition says what the command is: its id, title, icon, default key and the places it can be offered, and
-whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
+A definition says what the command is: its id, title, icon, default key, the places it can be offered, how much it
+matters, and whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
 component that offers a command takes a definition and says what running it does there and when it can run. A
 button that runs a command is drawn from the definition, so its name, icon and key hint are the command's, with the
 key you chose. [The shape](DECISIONS.md#d12).

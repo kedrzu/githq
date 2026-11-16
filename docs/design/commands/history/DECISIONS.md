@@ -1,0 +1,69 @@
+# Retired decisions
+
+Each retired form under its original ID, oldest first. Never edited after it is written.
+
+## D2
+
+Retired in part 2026-11-16: the typed id union went; the rest holds in [D2](../DECISIONS.md#d2).
+
+**Every command is defined statically, with a typed id, and all definitions are exported from one module (split into
+files by area); a place can only bind a defined command.** (2026-11-16, owner)
+
+**Why.** The list of all commands, the settings screen and conflict checks need every command to exist without the
+screen that offers it being mounted.
+
+> **Checked 2026-11-16:** githq's `CommandRegistry` (`packages/app/commands/CommandRegistry.ts:48`) only knows the
+> commands of mounted components (35 `useCommands` call sites). healed's doctor app (`packages/doctor-app/actions/`,
+> added `c1b32c698`) splits a static `defineAction` constant from a `useAction(def, handler)` bound to a component's
+> lifetime, but registers the definition only when a handler mounts, so it too has no list of all actions and
+> resolves duplicate keys silently by usage rank (`ActionManager.ts:243`).
+
+**Rejected.**
+
+- Commands created at mount, as today in githq and in healed — no full list, no conflict detection, no rebinding.
+- Definitions next to each feature with no collecting module — the full list then depends on what happens to be
+  imported.
+
+## D6
+
+Retired 2026-11-16, replaced by [D13](../DECISIONS.md#d13).
+
+**"Where" is a place from a short fixed list (the app, a list, an open item, a review, a job log, the commit graph,
+the settings, …); places nest, and one place can sit in several others (an item open beside a list, or full
+screen). Two commands sharing a key conflict only if their places can be active together and neither contains the
+other. A command in a narrower place may take a key a wider one uses; the settings show it as "here, C does X
+instead of Y", not as a conflict. Places serve only conflict checks: which command gets a key at runtime is still
+decided by who has the keyboard.** (2026-11-16, owner)
+
+**Why.** The defaults already rely on narrower screens taking keys (the review's `Mod+B` over the sidebar's), and
+modes like a review or a job log are where single keys are worth most. Priority by nesting alone gets the list with
+an item open beside it wrong: the list keeps the keyboard there (`docs/design/githq/navigation.md`), so `J`, `K` and
+`O` act on the selected row though the item is the narrower place. Runtime focus already handles that today
+(`ListView.vue:58,757` strips `O` and `Enter` from the row's commands).
+
+**Rejected.**
+
+- A key unique along the whole path from the app to the narrowest place — every app-wide key would be unusable on
+  every screen, and the review would lose `Mod+B`.
+- Priority decided by nesting alone — wrong for a list with an item open beside it.
+
+## D9
+
+Retired in part 2026-11-16: numbered families are now one definition each with a number; the rest holds in
+[D9](../DECISIONS.md#d9).
+
+**Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
+filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
+rebindable.** (2026-11-16, owner)
+
+**Why.** Rebinding them makes no sense; the number is the position on screen. It also keeps numbered families out
+of the definitions, which would otherwise need one command per number or a parameter.
+
+> **Checked 2026-11-16:** `REPOSITORY_SECTION_KEYS` (`repository/RepositorySection.ts:21`), `FILTER_KEYS`
+> (`myWork/MyWorkView.vue:153`), saved views (`projects/useProjectCommands.ts:71`), merge methods
+> (`merge/MergePanel.vue:1579`).
+
+**Rejected.**
+
+- One rebindable command per number — nine entries in the settings nobody would change.
+- One command with a number parameter — a mechanism for a family that does not need rebinding.
