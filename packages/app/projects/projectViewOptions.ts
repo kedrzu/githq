@@ -52,6 +52,19 @@ const ITEM_PROPERTIES = [
 /** The order of a project when its view sets none: GitHub's own (manual) order of the items. */
 export const MANUAL_SORT = 'manual';
 
+/** The key "All items" (K9: `?all`) goes by beside the saved views' ids: its tab's, and its kept options'. */
+export const ALL_ITEMS_LIST = 'all';
+
+/**
+ * The list a project view's options are kept under on this device (`ListViewOptionsStore`): a saved view's id, or
+ * {@link ALL_ITEMS_LIST}.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getProjectViewListKey(projectId: string, viewKey: string) {
+    return `project:${projectId}:${viewKey}`;
+}
+
 /**
  * A saved view as githq's view options (D13): its layout (a roadmap as a list), its grouping — on a board the
  * column field, in a table the group-by field — its order, the fields it shows and its filter. A board without a field to

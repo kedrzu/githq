@@ -53,6 +53,8 @@ import { buildProjectList, getProjectEntryId } from './buildProjectList.js';
 import { compileProjectFilter } from './filter/compileProjectFilter.js';
 import type { CompiledProjectFilter } from './filter/compileProjectFilter.js';
 import { foldProjectGroups } from './foldProjectGroups.js';
+import { getProjectViewTabs } from './getProjectViewTabs.js';
+import type { ProjectFilterContext } from './getProjectViewTabs.js';
 import * as l from './ProjectPage.loc.js';
 import ProjectDraftDialog from './ProjectDraftDialog.vue';
 import { ProjectStore } from './ProjectStore.js';
@@ -63,10 +65,12 @@ import type { ProjectTab } from './ProjectView.vue';
 import { ProjectViewAnswers } from './ProjectViewAnswers.js';
 import type { ProjectGrouping, ProjectSortKey, ProjectViewOptions } from './projectViewOptions.js';
 import {
+  ALL_ITEMS_LIST,
   getColumnGrouping,
   getGroupingField,
   getProjectViewChoices,
   getProjectViewDefaults,
+  getProjectViewListKey,
   isColumnGrouping,
   MANUAL_SORT,
   parseProjectSort,
@@ -85,8 +89,6 @@ const NO_VIEW_OPTIONS: ProjectViewOptions = {
   properties: [],
   filter: '',
 };
-/** The options kept for "All items" (K9: `?all`), beside the saved views'. */
-const ALL_ITEMS_LIST = 'all';
 /** What the rows of a project not tracked show: it has no saved view or row field of its own to say (J4). */
 const UNTRACKED_PROPERTIES: readonly ItemProperty[] = ['status', 'size', 'labels', 'people', 'updated'];
 
@@ -198,7 +200,7 @@ const defaults = computed(() => {
   return showAll.value ? { ...saved, options: { ...saved.options, filter: '' } } : saved;
 });
 const options = useListViewOptions({
-  list: () => listKey(project.value?.id ?? '', showAll.value ? ALL_ITEMS_LIST : (view.value?.id ?? '')),
+  list: () => getProjectViewListKey(project.value?.id ?? '', showAll.value ? ALL_ITEMS_LIST : (view.value?.id ?? '')),
   defaults: () => defaults.value.options,
   choices: () =>
     project.value
@@ -251,6 +253,13 @@ const addableItems = computed((): CommandOption[] => {
 });
 /** The filter applied: the saved view's, unless cleared here or all items are shown. */
 const filter = computed(() => options.options.filter ?? '');
+/** What the project's filters are compiled with besides their text and its fields. */
+const filterContext = computed((): ProjectFilterContext => ({
+  viewerLogin: auth.viewer?.login ?? '',
+  today: today.value,
+  hasDrafts: entries.value.some(entry => entry.item.draft !== null),
+  hasDraftPullRequests: entries.value.some(entry => entry.content?.kind === 'pullRequest' && entry.content.isDraft),
+}));
 const compiled = computed(() => compileFilter(project.value?.fields ?? [], filter.value));
 const answered = computed(() => {
   const evaluated = compiled.value;
@@ -276,34 +285,19 @@ const groups = computed(() => {
   return current && selected.value ? foldGroups(current, selected.value, grouping.value) : null;
 });
 const itemCount = computed(() => entries.value.filter(entry => !entry.item.isArchived).length);
-const tabs = computed((): ProjectTab[] => {
-  const current = project.value;
-  if (!current) {
-    return [];
-  }
-
-  // The tab shown follows its options; the others by what this device keeps of them.
-  const saved = current.views.map((other): ProjectTab => {
-    const shown = !showAll.value && other.id === view.value?.id;
-    return {
-      key: other.id,
-      name: other.name,
-      to: getProjectPath(current, other.number),
-      current: shown,
-      modified: shown ? options.modified : listViewOptions.has(listKey(current.id, other.id)),
-      answered: shown ? answered.value !== null : compileFilter(current.fields, other.filter).kind === 'github',
-    };
-  });
-  const all: ProjectTab = {
-    key: ALL_ITEMS_LIST,
-    name: t(l.allItems),
-    to: { path: route.path, query: { all: null } },
-    current: true,
-    modified: options.modified,
-    answered: false,
-  };
-  return showAll.value ? [...saved, all] : saved;
-});
+// The tab shown follows its options; the others by what this device keeps of them.
+const tabs = computed((): ProjectTab[] =>
+  project.value
+    ? getProjectViewTabs({
+        project: project.value,
+        shownKey: showAll.value ? ALL_ITEMS_LIST : (view.value?.id ?? null),
+        shownState: { modified: options.modified, answered: answered.value !== null },
+        allItems: { name: t(l.allItems), to: { path: route.path, query: { all: null } } },
+        isKept: key => listViewOptions.has(key),
+        filterContext: filterContext.value,
+      })
+    : [],
+);
 /** "Show all items" where a filter keeps some out (K9): this view's options, no filter. */
 const allItemsTo = computed(() => (!showAll.value && filter.value ? { path: route.path, query: { all: null } } : null));
 const sorts = computed((): ListChoice[] => {
@@ -386,14 +380,7 @@ function countView(viewId: string) {
 
 /** A filter of the project's entries as the views read it, for the signed-in user today. */
 function compileFilter(fields: readonly ProjectField[], source: string | null) {
-  return compileProjectFilter({
-    filter: source || null,
-    fields,
-    viewerLogin: auth.viewer?.login ?? '',
-    today: today.value,
-    hasDrafts: hasDrafts(),
-    hasDraftPullRequests: hasDraftPullRequests(),
-  });
+  return compileProjectFilter({ ...filterContext.value, filter: source || null, fields });
 }
 
 /** The entries a compiled filter keeps: evaluated here, or as GitHub last answered it (K6); `null` until it has. */
@@ -418,18 +405,6 @@ function foldGroups(current: Project, matched: readonly ProjectEntry[], by: Proj
     stacks: stacks.value,
     describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
   });
-}
-
-function listKey(projectId: string, viewId: string) {
-  return `project:${projectId}:${viewId}`;
-}
-
-function hasDrafts() {
-  return entries.value.some(entry => entry.item.draft !== null);
-}
-
-function hasDraftPullRequests() {
-  return entries.value.some(entry => entry.content?.kind === 'pullRequest' && entry.content.isDraft);
 }
 
 function formatIteration(iteration: ProjectIteration) {

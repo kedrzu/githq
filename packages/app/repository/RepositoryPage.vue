@@ -42,6 +42,7 @@ import { WorkflowTabPlaces } from '@/workflows/WorkflowTabPlaces.js';
 
 import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
+import { getRepositorySectionCounts } from './getRepositorySectionCounts.js';
 import { isRepositoryStateArriving } from './isRepositoryStateArriving.js';
 import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
@@ -262,21 +263,14 @@ const workflowList = computed(() =>
     now: list.now,
   }),
 );
-/**
- * How many open items each section holds, for its tab; `null` while its download has yet to read them, as a partial total
- * would read as the whole, and with none held of one GitHub hides, as nothing would read as nothing there (first run and
- * loading D4, D6, D14).
- */
-const openCounts = computed((): Record<RepositoryItemSection, number | null> => {
-  const open = repositoryItems.value.filter(item => item.state === 'OPEN');
-  const syncState = tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value });
-  return { issues: countOf('issue'), pullRequests: countOf('pullRequest') };
-
-  function countOf(kind: Item['kind']) {
-    const count = open.filter(item => item.kind === kind).length;
-    return isRepositoryStateArriving(syncState, kind, 'open') || (syncState?.hidden && count === 0) ? null : count;
-  }
-});
+/** What its sections count, for their tabs. */
+const counts = computed(() =>
+  getRepositorySectionCounts({
+    items: repositoryItems.value,
+    sync: tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value }),
+    workflows: workflowList.value,
+  }),
+);
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
 const projectLinks = computed(() => {
@@ -452,7 +446,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-private="isPrivate"
     :tracked="trackedShown"
     :list="itemsShown ? shownList : null"
-    :open-counts="openCounts"
+    :open-counts="counts"
     :status="status"
     :cant-be-read="cantBeRead"
     :projects="itemsShown ? projectLinks.links : []"
@@ -463,7 +457,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
-    :workflow-count="trackedShown ? workflowList.count : null"
+    :workflow-count="trackedShown ? counts.workflows : null"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
