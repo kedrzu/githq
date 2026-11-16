@@ -61,6 +61,13 @@ An item is anything opened from a list: an issue, a pull request, a workflow.
 
 - **Only the open place is expanded:** a tracked repository shows its sections under its row, a tracked project its
   saved views ([git-client D25](../git-client/DECISIONS.md#d25)). Going to another place moves them there.
+- **The open place has keys:** a repository's sections on `1`–`4`, a project's first nine saved views on `1`–`9`, in
+  the order of its tabs; `[` and `]` go to the previous and next tab as shown, wrapping around at the ends. A tenth view
+  and later have no key, nor has "All items", which `[` `]` step through while it shows. Only the screen showing the
+  place registers them, so they never reach another place, and a place's menu shows them only for the open place
+  ([git-client D26](../git-client/DECISIONS.md#d26)). In a code review `[` `]` are the previous and next file.
+- **`⌘B` collapses or expands the sidebar** (`Ctrl+B` off a Mac), also from a one-line field but never from a text
+  being written. A screen that forces the rail keeps `⌘B` to itself: in a code review it hides the file list.
 - **The current sub-row stays marked while one of its items is open,** in the panel or full screen. An item full screen
   is in the list it was opened from while that list steps through it, else in its own repository's section of its kind;
   a list outside any place (My work) expands nothing.

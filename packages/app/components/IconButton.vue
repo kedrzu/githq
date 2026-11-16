@@ -14,7 +14,7 @@ export const IconButtonProps = {
   icon: defineProp<LucideIcon>(),
   /** What the button does ("Collapse sidebar"): its accessible name and tooltip. */
   label: defineProp<string>({ type: String, required: true }),
-  /** The button's key, shown in the tooltip ("["). Give it to `keyshortcuts` too. */
+  /** The button's key, shown in the tooltip (`Mod+B`). Give it to `keyshortcuts` too. */
   kbd: defineProp<string>(),
   /** The keys that press it, as `aria-keyshortcuts` writes them (`formatAriaKeyShortcuts`). */
   keyshortcuts: defineProp<string>(),

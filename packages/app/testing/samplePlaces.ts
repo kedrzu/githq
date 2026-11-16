@@ -42,6 +42,8 @@ export function sampleTrackedProject(
         to: `/orgs/${owner}/projects/${number}`,
         target: { kind: 'project', id: `PVT_${number}` },
         status,
+        // Every sample project has saved views (`sampleGetChildren`).
+        expandable: true,
     };
 }
 
@@ -58,6 +60,7 @@ export function sampleTrackedRepository(
         target: { kind: 'repository', nameWithOwner },
         status,
         isPrivate,
+        expandable: true,
     };
 }
 

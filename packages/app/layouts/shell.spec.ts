@@ -12,9 +12,11 @@ import { Browser } from '@/services/Browser.js';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
 import ItemPage from '@/item/ItemPage.vue';
+import { ProjectStore } from '@/projects/ProjectStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
+import { SAMPLE_PROJECT } from '@/testing/sampleProject.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import type { RepositorySection } from '@/repository/RepositorySection.js';
 import RepositoryView from '@/repository/RepositoryView.vue';
@@ -324,6 +326,21 @@ test("the open place's rows slide open in a Reveal with the animations on, and a
     tracking.setAnimations(false);
 
     await expect.poll(() => rows()?.parentElement?.tagName).toBe('LI');
+});
+
+test("on a phone, the places panel's repositories and projects with saved views open in place; a project without is a link", async () => {
+    const { tracking, container } = await open('phone');
+    tracking.track({ project: SAMPLE_PROJECT });
+    container.resolve(ProjectStore).setProject(SAMPLE_PROJECT);
+
+    await userEvent.click(page.getByRole('button', { name: 'Open places' }));
+    const places = page.getByRole('dialog', { name: 'Places' });
+    await expect.element(places.getByRole('button', { name: new RegExp(`^${WEB}`, 'u') })).toBeVisible();
+    await expect
+        .element(places.getByRole('button', { name: new RegExp(`^${SAMPLE_PROJECT.title}`, 'u') }))
+        .toBeVisible();
+    // Roadmap's copy has not arrived: no saved views to show.
+    await expect.element(places.getByRole('link', { name: new RegExp(`^${ROADMAP}`, 'u') })).toBeVisible();
 });
 
 function sidebarLink(name: string) {

@@ -552,3 +552,25 @@ the keys would do nothing, so they would lie.
 - Sub-rows as a plain indent, like My work's groups (CH70) — owner picked the thin guide line (CH71).
 - A marker on the collapsed sidebar for the open repository — the rail lists no repositories; there the header is the way
   around.
+
+## D26
+
+**A project's first nine saved views are on `1`–`9`, in the order of its tabs, as a repository's sections are on
+`1`–`4`; each view's tab names its key in its tooltip, as do the folded views menu and the open project's menu. `[` and
+`]` go to the previous and next section of the open repository, or saved view of the open project, as the tabs show
+them, wrapping around from the last to the first; the folded tabs menu ends in a hint saying so. These keys belong to the
+open place alone. Collapsing the sidebar moves from `[` to `⌘B`.** (2026-11-16, owner, on the keys as proposed,
+wrapping around like a browser's tabs: "These keyboard shortcuts are fine too. Collapsing the sidebar can go on
+Command+B". Screens D14–D17 of a project, CH82–CH84, R5)
+
+**Why.** A project's views are its sections, so the same keys reach them. One pair of keys steps through any place,
+however many tabs it has. `[` was the sidebar's, and a place's tabs are used far more often than the sidebar is
+collapsed; `⌘B` is the sidebar's key in VS Code and other editors, and code review already hides its file list with it,
+where the rail is forced and the sidebar's command stands down.
+
+**Rejected.**
+
+- `[` `]` stopping at the first and last section — a key at the end would do nothing, and the user has to know where
+  they are to know what it does.
+- Keys for a tenth view and later, or for "All items" — no single key is left, and "All items" is a tab only while it
+  shows.

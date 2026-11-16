@@ -170,7 +170,8 @@ test("from a held control the app's keys and a view's own run, those acting on a
     const { run } = mountScreen();
     await tabTo(toolbarButton().element());
 
-    await userEvent.keyboard('[[?c');
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    await userEvent.keyboard('?c');
     await userEvent.keyboard('{Shift>}V{/Shift}');
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await userEvent.keyboard('ae');
@@ -203,6 +204,19 @@ test('a field is never held: Escape and typing there stay its own', async () => 
 
     await userEvent.keyboard('{Escape}');
     await expect.element(field).toHaveFocus();
+});
+
+test('⌘B runs from a one-line field, never from a textarea, where the user writes', async () => {
+    const { run } = mountScreen();
+
+    await userEvent.click(page.getByRole('textbox', { name: 'A field' }));
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    expect(run.mock.calls.map(([id]) => id)).toEqual(['app.sidebar']);
+
+    run.mockClear();
+    await userEvent.click(page.getByRole('textbox', { name: 'A text' }));
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    expect(run).not.toHaveBeenCalled();
 });
 
 test('a dialog keeps its keys: Tab in it holds nothing, and Escape closes it at once', async () => {
@@ -273,6 +287,7 @@ function mountScreen() {
                 h(Sidebar, { viewer: SAMPLE_VIEWER }),
                 h('button', { type: 'button', 'data-toolbar': '', onClick: clicked }, 'Toolbar button'),
                 h('input', { 'aria-label': 'A field' }),
+                h('textarea', { 'aria-label': 'A text' }),
                 h(
                     ListView<string>,
                     {
@@ -328,7 +343,7 @@ function mountScreen() {
 
 /** One action of each kind whose key a held control runs or holds back. */
 const COMMANDS: readonly Command[] = [
-    { id: 'app.sidebar', title: 'Sidebar', section: 'app', key: '[' },
+    { id: 'app.sidebar', title: 'Sidebar', section: 'app', key: 'Mod+B' },
     { id: 'app.help', title: 'Help', section: 'app', key: '?' },
     { id: 'app.new', title: 'New issue', section: 'app', key: 'C' },
     { id: 'app.commandMenu', title: 'Command menu', section: 'app', key: 'Mod+K' },

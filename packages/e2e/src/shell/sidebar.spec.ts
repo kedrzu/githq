@@ -2,7 +2,7 @@ import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { signIn } from '../session.js';
 
-test('the sidebar collapses to the rail with its button and with [, and stays so across reloads', async ({
+test('the sidebar collapses to the rail with its button and with ⌘B, and stays so across reloads', async ({
     page,
     github,
 }) => {
@@ -18,13 +18,13 @@ test('the sidebar collapses to the rail with its button and with [, and stays so
     await page.reload();
     await expect(shell.expandButton).toBeVisible();
 
-    await page.keyboard.press('[');
+    await page.keyboard.press('ControlOrMeta+B');
     await expect(shell.collapseButton).toBeVisible();
     await expect(shell.expandButton).toBeHidden();
 
     await page.reload();
     await expect(shell.collapseButton).toBeVisible();
 
-    await page.keyboard.press('[');
+    await page.keyboard.press('ControlOrMeta+B');
     await expect(shell.expandButton).toBeVisible();
 });

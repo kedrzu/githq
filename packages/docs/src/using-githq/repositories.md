@@ -24,6 +24,8 @@ The sections are tabs beside the repository's name, each on a number key:
 |<kbd>3</kbd>|**Commits**|
 |<kbd>4</kbd>|**Workflows**, only in a repository you track|
 
+<kbd>[</kbd> and <kbd>]</kbd> go to the previous and next section, from the last back to the first.
+
 In a tracked repository, Issues and Pull requests show their count of open items, and Workflows the count of broken
 workflows.
 
