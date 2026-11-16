@@ -42,7 +42,6 @@ import type { OtherArrangement } from '@/item/useItemArrangement.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import type { MaxWidth } from '@/settings/sync/SettingsDocument.js';
-import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 
 import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
@@ -322,14 +321,13 @@ useCommands(() => [
     when: () => showsColumns.value && selectedIndex.value > 0,
     run: () => moveJob(-1),
   },
-  // Not from a button or a link, which do what they say.
   {
     id: 'workflowRun.openLog',
     title: t(l.hintOpenLog),
     section: 'view',
     key: 'Enter',
     menu: false,
-    when: () => atOverview.value && cursorJob.value !== null && !isActivatableTarget(document.activeElement),
+    when: () => atOverview.value && cursorJob.value !== null,
     run: () => openCursorJob(),
   },
   {
@@ -338,7 +336,7 @@ useCommands(() => [
     section: 'view',
     key: 'Enter',
     menu: false,
-    when: () => canRetry.value && !isActivatableTarget(document.activeElement),
+    when: () => canRetry.value,
     run: () => emit('retry'),
   },
   bindCommand(

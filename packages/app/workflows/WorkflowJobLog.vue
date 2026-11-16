@@ -308,14 +308,13 @@ useCommands(() => [
     when: () => matchTotal.value > 0,
     run: () => moveByMatch(-1),
   },
-  // Not from a button, which Enter presses.
   {
     id: 'workflowLog.matchEnter',
     title: showsOnlyMatches.value ? t(l.showInFullLog) : t(l.nextMatch),
     section: 'view',
     key: 'Enter',
     menu: false,
-    when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
+    when: () => matchTotal.value > 0,
     run: () => {
       if (showsOnlyMatches.value) {
         void showInFullLog();
@@ -399,7 +398,6 @@ useCommands(() => [
     menu: false,
     run: () => moveByError(-1),
   },
-  // Not from a button, which Space presses.
   {
     id: 'workflowLog.fold',
     title: t(l.fold),
@@ -407,7 +405,6 @@ useCommands(() => [
     actsOnRow: true,
     key: 'Space',
     menu: false,
-    when: () => !isActivatableTarget(window.document.activeElement),
     run: foldCursorStep,
   },
   {
@@ -456,7 +453,6 @@ useCommands(() => [
     menu: false,
     run: () => moveByHalfPage(-1),
   },
-  // Not from a button, which Enter presses.
   {
     id: 'workflowLog.wholeLine',
     title: t(l.showWholeLine),
@@ -464,7 +460,7 @@ useCommands(() => [
     actsOnRow: true,
     key: 'Enter',
     menu: false,
-    when: () => cursorLineCut.value && matchTotal.value === 0 && !isActivatableTarget(window.document.activeElement),
+    when: () => cursorLineCut.value && matchTotal.value === 0,
     run: () => {
       if (cursor.value !== null) {
         showWholeLine(cursor.value);

@@ -165,7 +165,7 @@ export interface Command extends CommandMarks {
      * Runs it — by its key; in the menu too unless it has a submenu, which the menu opens instead. Returning
      * `false` says it could not run here (the item view's picker is not shown): its key then opens the menu at its
      * submenu, as it does for an action with a submenu and no `run`. With neither `run` nor `options`, its key is the
-     * registering component's own (a commit graph's `j`): it is only listed in the help sheet.
+     * registering component's own: it is only listed in the help sheet.
      */
     readonly run?: () => boolean | void;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */

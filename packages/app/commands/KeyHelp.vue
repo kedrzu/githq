@@ -11,7 +11,6 @@ import Kbd from '@/components/Kbd.vue';
 import type { Command, CommandKeySheet } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { formatAriaKeyShortcuts } from './formatAriaKeyShortcuts.js';
-import { getRunKeys } from './getRunKeys.js';
 import * as l from './KeyHelp.loc.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
@@ -27,22 +26,12 @@ const open = defineModel<boolean>('open', { default: false });
 const t = useTranslate();
 const id = useId();
 
-/**
- * Actions that run by their key, on a key one before them (by the registry's own order) has, never get it. Those only
- * listed are their component's own, which never gets a key the registry runs (it runs before every component): an
- * opened item's `J` while the list beside it takes `J`.
- */
+/** Actions that run by their key, on a key one before them (by the registry's own order) has, never get it. */
 const listed = computed(() => {
-  const ordered = orderByKeyPrecedence(props.commands);
-  const run = new Set(ordered.flatMap(command => (command.run || command.options ? getRunKeys(command) : [])));
   const taken = new Set<string>();
-  return ordered.filter(command => {
+  return orderByKeyPrecedence(props.commands).filter(command => {
     if (command.key === undefined) {
       return false;
-    }
-
-    if (!command.run && !command.options) {
-      return !run.has(command.key);
     }
 
     const free = !taken.has(command.key);
