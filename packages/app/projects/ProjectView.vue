@@ -349,6 +349,8 @@ useCommands(() => [
   ...props.viewCommands.map(command => ({ ...command, menu: false })),
   {
     id: 'project.previousView',
+    // Keys and the help sheet only: in ⌘K it would only stand between the sections.
+    menu: false,
     title: t(l.previousView),
     section: 'view',
     key: TAB_STEP_KEYS.previous,
@@ -358,6 +360,7 @@ useCommands(() => [
   },
   {
     id: 'project.nextView',
+    menu: false,
     title: t(l.nextView),
     section: 'view',
     key: TAB_STEP_KEYS.next,

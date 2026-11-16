@@ -346,6 +346,8 @@ useCommands(() => [
   ...sections.value.map(getSectionCommand),
   {
     id: 'repository.previousSection',
+    // Keys and the help sheet only: in ⌘K it would only stand between the sections.
+    menu: false,
     title: t(l.previousSection),
     section: 'repository',
     key: TAB_STEP_KEYS.previous,
@@ -354,6 +356,7 @@ useCommands(() => [
   },
   {
     id: 'repository.nextSection',
+    menu: false,
     title: t(l.nextSection),
     section: 'repository',
     key: TAB_STEP_KEYS.next,
