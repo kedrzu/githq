@@ -6,6 +6,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
@@ -277,12 +279,12 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="phone.active ? undefined : Github"
         :link="pr.url"
-        kbd="O"
+        :kbd="keyOf(openOnGitHub)"
         target="_blank"
         rel="noopener noreferrer"
-        keyshortcuts="O"
+        :keyshortcuts="keyOf(openOnGitHub)"
       >
-        {{ t(l.openOnGitHub) }}
+        {{ t(openOnGitHub.title) }}
       </Button>
       <!-- On a phone the address of the review is handed off to github.com's changed files (mobile D3). -->
       <Button

@@ -2,9 +2,6 @@
 <script lang="ts">
 /** The key of "Try again" (D18), as where settings saving stopped. */
 const RETRY_KEY = 'R';
-
-/** The key of "Open on GitHub" (D18). */
-const OPEN_KEY = 'O';
 </script>
 
 <script lang="ts" setup>
@@ -15,7 +12,10 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CloudOff, EyeOff, Github, Pause, RotateCw, TriangleAlert } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { Browser } from '@/services/Browser.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -99,14 +99,11 @@ useCommands((): Command[] => {
     case 'hidden':
     case 'refused':
       return [
-        {
-          id: 'empty.openOnGitHub',
-          title: t(l.openOnGitHub),
-          section: 'view',
-          key: OPEN_KEY,
-          icon: Github,
-          run: () => browser.openInNewTab(cause.url),
-        },
+        bindCommand(
+          openOnGitHub,
+          { place: 'cantBeRead', section: 'view', run: () => browser.openInNewTab(cause.url) },
+          t,
+        ),
       ];
     default:
       return [];
@@ -157,13 +154,13 @@ async function tryAgain() {
         :variant="onScreen ? 'secondary' : 'outline'"
         size="sm"
         :icon="onScreen ? Github : undefined"
-        :kbd="onScreen ? OPEN_KEY : undefined"
-        :keyshortcuts="onScreen ? OPEN_KEY : undefined"
+        :kbd="onScreen ? keyOf(openOnGitHub) : undefined"
+        :keyshortcuts="onScreen ? keyOf(openOnGitHub) : undefined"
         :link="cause.url"
         target="_blank"
         rel="noopener noreferrer"
       >
-        {{ t(l.openOnGitHub) }}
+        {{ t(openOnGitHub.title) }}
       </Button>
     </template>
   </EmptyState>

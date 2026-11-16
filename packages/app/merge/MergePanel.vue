@@ -33,7 +33,9 @@ import {
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
@@ -203,11 +205,11 @@ interface Band {
   readonly link: BandLink | null;
 }
 
-/** A link out of the panel, with a key of its own. */
+/** A link out of the panel, with a key of its own unless the user took it away. */
 interface BandLink {
   readonly label: string;
   readonly url: string;
-  readonly key: string;
+  readonly key: string | undefined;
 }
 
 /** What `⌘↵` does where the stack speaks for its range. */
@@ -950,7 +952,10 @@ function endBand(): Band | null {
   const stop = stackStop.value;
   if (stop && props.record?.kind === 'refused') {
     const { number, url } = stop.at;
-    return { ...refusalBand(props.record.reason), link: { label: t(l.seeOnGitHub, { number }), url, key: 'O' } };
+    return {
+      ...refusalBand(props.record.reason),
+      link: { label: t(l.seeOnGitHub, { number }), url, key: keyOf(openOnGitHub) },
+    };
   }
 
   switch (record?.kind) {
@@ -960,7 +965,10 @@ function endBand(): Band | null {
       const said = refusedBand(record.reason);
       // Of a stack's merge, a key to the top of it, for what GitHub says there (SP61, SP62).
       return record.sent.going
-        ? { ...said, link: said.link ?? { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' } }
+        ? {
+            ...said,
+            link: said.link ?? { label: t(openOnGitHub.title), url: endPr.value.url, key: keyOf(openOnGitHub) },
+          }
         : said;
     }
     case 'headMoved': {
@@ -993,7 +1001,7 @@ function endBand(): Band | null {
       return { tone: 'danger', icon: CircleX, title, text: t(l.sentBeforeRules, { base }), link: null };
     }
     case 'unknown': {
-      const link = { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' };
+      const link = { label: t(openOnGitHub.title), url: endPr.value.url, key: keyOf(openOnGitHub) };
       if (record.refusal) {
         const said = refusalBand(record.refusal);
         return { ...said, link: said.link ?? link };
@@ -1143,7 +1151,7 @@ function getRangeSays(view: StackMergeView): StackSays | null {
       icon: Info,
       title: t(l.stackDissolve),
       text: t(l.stackDissolveDetail, { number: closed }),
-      link: { label: t(l.openOnGitHub), url: merge.open.at(-1)?.url ?? props.pr.url, key: 'O' },
+      link: { label: t(openOnGitHub.title), url: merge.open.at(-1)?.url ?? props.pr.url, key: keyOf(openOnGitHub) },
     };
     return { verdict: said, band: under, forward: block ? { kind: 'none', label: text } : { kind: 'merge' } };
   }
@@ -1638,7 +1646,7 @@ function onKeydown(event: KeyboardEvent) {
   ) {
     event.preventDefault();
     checksOpen.value = !checksOpen.value;
-  } else if (band.value?.link && matchesCommandKey(event, band.value.link.key)) {
+  } else if (band.value?.link?.key !== undefined && matchesCommandKey(event, band.value.link.key)) {
     event.preventDefault();
     emit('visit', band.value.link.url);
   }

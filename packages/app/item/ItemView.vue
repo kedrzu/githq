@@ -51,9 +51,11 @@ import {
 } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
@@ -458,7 +460,6 @@ const keys = useItemKeys({
   },
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
-  openOnGitHub: () => browser.openInNewTab(props.item.url),
   previous: () => emit('previous'),
   next: () => emit('next'),
 });
@@ -651,7 +652,7 @@ function getItemCommands(): Command[] {
   });
 
   commands.push(
-    keys.commands.openOnGitHub,
+    bindCommand(openOnGitHub, { place: 'item', section: 'item', run: () => browser.openInNewTab(item.url) }, t),
     {
       id: 'item.review',
       title: t(l.review),

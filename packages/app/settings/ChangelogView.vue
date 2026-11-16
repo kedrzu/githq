@@ -24,6 +24,9 @@ import { ArrowUpRight, Check, ChevronDown, ChevronRight, Info, TriangleAlert, Wi
 import { computed, reactive, ref, useId, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -108,16 +111,7 @@ const current = ref(-1);
 
 useCommands(() => [
   ...(hasGitHubLink.value
-    ? [
-        {
-          id: 'changelog.openOnGitHub',
-          title: gitHubLabel.value,
-          section: 'view' as const,
-          key: 'O',
-          icon: ArrowUpRight,
-          run: openOnGitHub,
-        },
-      ]
+    ? [bindCommand(openOnGitHub, { place: 'changelog', section: 'view', run: openGitHubLink }, t)]
     : []),
   ...(versions.value.length > 0
     ? [
@@ -197,7 +191,7 @@ function isOtherControlFocused() {
   );
 }
 
-function openOnGitHub() {
+function openGitHubLink() {
   emit('openOnGitHub', gitHubUrl.value);
 }
 
@@ -240,9 +234,9 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
         variant="secondary"
         size="sm"
         :icon="ArrowUpRight"
-        kbd="O"
-        keyshortcuts="O"
-        @click="openOnGitHub"
+        :kbd="keyOf(openOnGitHub)"
+        :keyshortcuts="keyOf(openOnGitHub)"
+        @click="openGitHubLink"
       >
         {{ gitHubLabel }}
       </Button>

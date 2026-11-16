@@ -23,8 +23,6 @@ noResult:
     many: The request was accepted, then {minutes} minutes passed with no result. It may still merge. Check on GitHub if you can't wait.
 noAnswer:
   en: GitHub didn't answer the request. It may still merge. Check on GitHub if you can't wait.
-openOnGitHub:
-  en: Open on GitHub
 newCommitArrived:
   en: A new commit arrived, so nothing was merged
 newCommitPushedBy:

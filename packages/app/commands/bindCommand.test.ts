@@ -75,3 +75,15 @@ test('a family gives a command on each number the binding takes, named by what i
         { id: 'list.view.2', key: '2', title: 'Go to "Board" view' },
     ]);
 });
+
+test("a place may offer it without its key, and add its own words to the definition's", () => {
+    const bound = bindCommand(OPEN, { place: 'list', section: 'view', keyed: false, keywords: ['acme/web'], run }, t);
+
+    expect(bound).toMatchObject({
+        id: 'list.open',
+        key: undefined,
+        otherKeys: undefined,
+        keywords: ['browser', 'acme/web'],
+    });
+    expect(bound).not.toHaveProperty('keyed');
+});

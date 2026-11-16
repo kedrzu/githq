@@ -55,7 +55,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
@@ -1219,14 +1221,7 @@ useCommands(() => [
     when: () => registry.menu !== null || !isLayerOpen(),
     run: back,
   },
-  {
-    id: 'review.openOnGitHub',
-    title: t(l.openOnGitHub),
-    section: 'view',
-    key: REVIEW_KEYS.openOnGitHub,
-    icon: Github,
-    run: () => browser.openInNewTab(githubUrl.value),
-  },
+  bindCommand(openOnGitHub, { place: 'review', section: 'view', run: () => browser.openInNewTab(githubUrl.value) }, t),
   // Only the diff's: the conversation and the file list scroll on their own.
   {
     id: 'review.lineDown',
@@ -2548,7 +2543,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>
@@ -2568,7 +2563,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>
@@ -2661,7 +2656,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>

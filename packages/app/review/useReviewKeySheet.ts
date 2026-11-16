@@ -1,8 +1,11 @@
+import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onScopeDispose } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 
 import { GAP_STEP } from './buildReviewRows.js';
 import * as l from './useReviewKeySheet.loc.js';
@@ -38,7 +41,6 @@ export const REVIEW_KEYS = {
     submit: 'Shift+S',
     fileList: 'Mod+B',
     conversation: 'Alt+Mod+B',
-    openOnGitHub: 'O',
     review: 'D',
     find: 'Mod+F',
     findNext: 'Mod+G',
@@ -115,7 +117,7 @@ export function useReviewKeySheet(): void {
             footer: [
                 { keys: [REVIEW_KEYS.fileList], label: t(l.fileList) },
                 { keys: [REVIEW_KEYS.conversation], label: t(l.conversation) },
-                { keys: [REVIEW_KEYS.openOnGitHub], label: t(l.openOnGitHub) },
+                { keys: filterNotNull([keyOf(openOnGitHub)]), label: t(openOnGitHub.title) },
                 { keys: [REVIEW_KEYS.review], label: t(l.review) },
             ],
         })),

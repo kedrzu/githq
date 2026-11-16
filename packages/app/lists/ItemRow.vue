@@ -15,6 +15,8 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
@@ -405,12 +407,12 @@ const nestedFact = computed(() => (shown.value.has('status') ? facts.checksCount
           size="sm"
           :link="item.url"
           :icon="ArrowUpRight"
-          kbd="O"
+          :kbd="keyOf(openOnGitHub)"
           target="_blank"
-          keyshortcuts="O"
+          :keyshortcuts="keyOf(openOnGitHub)"
           @click.stop
         >
-          {{ t(l.openOnGitHub) }}
+          {{ t(openOnGitHub.title) }}
         </Button>
         <PullRequestSize
           v-if="facts.size && shown.has('size')"

@@ -4,8 +4,6 @@ runTitle:
   en: 'Run #{number}'
 unknownTitle:
   en: Run {id}
-openOnGitHub:
-  en: Open on GitHub
 back:
   en: Back
 nextJob:

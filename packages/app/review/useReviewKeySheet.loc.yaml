@@ -48,8 +48,6 @@ fileList:
   en: File list
 conversation:
   en: Conversation
-openOnGitHub:
-  en: Open on GitHub
 review:
   en: Review, from an opened pull request
 find:

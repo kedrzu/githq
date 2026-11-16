@@ -14,18 +14,39 @@ export type CommandSection = 'selection' | 'item' | 'view' | 'repository' | 'app
 export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'repository', 'app'];
 
 /**
- * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel. Places only
- * tell which keys collide and which command takes a key while two places are on screen; more are added as commands
- * move onto definitions.
+ * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list, an
+ * opened item, a commit, workflow or workflow run opened as one, a repository's Workflows section, a review, the
+ * changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places
+ * only tell which keys collide and which command takes a key while two places are on screen; more are added as
+ * commands move onto definitions.
  */
-export type CommandPlace = 'app' | 'list' | 'item';
+export type CommandPlace =
+    | 'app'
+    | 'list'
+    | 'item'
+    | 'commit'
+    | 'workflow'
+    | 'workflowRun'
+    | 'workflows'
+    | 'review'
+    | 'changelog'
+    | 'cantBeRead'
+    | 'repository'
+    | 'project';
 
 /**
- * The places that can be on screen together, each pair's first keeping the keyboard (a list with an item open beside
- * it: the list's `J`, `K` and `O` act on its row, `ListView.vue`). Hand-kept, acyclic: no place keeps it over one that
- * keeps it over the first. `app` is never in it: it is with every place, and every place keeps the keyboard over it.
+ * The places that can be on screen together, each pair's first keeping the keyboard: a list with an item open beside
+ * it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); an item opened over a review, or beside a screen
+ * GitHub won't show; a workflow's run beside its repository's Workflows section, whose keys are then the run's.
+ * Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with every
+ * place, and every place keeps the keyboard over it.
  */
-export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [['list', 'item']];
+export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
+    ['list', 'item'],
+    ['item', 'review'],
+    ['item', 'cantBeRead'],
+    ['workflowRun', 'workflows'],
+];
 
 /**
  * What the actions act on, as the command menu's chip names it: the items selected together, or the item opened

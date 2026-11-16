@@ -5,7 +5,6 @@ export const COMMIT_DETAILS_KEYS = {
   firstParent: 'P',
   secondParent: 'Shift+P',
   pullRequest: 'Shift+Enter',
-  openOnGitHub: 'O',
 } as const;
 </script>
 
@@ -16,6 +15,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Copy, GitCommitHorizontal, GitPullRequest, Github, Info, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -215,12 +216,12 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
       />
       <IconButton
         :icon="Github"
-        :label="t(l.openOnGitHub)"
-        :kbd="COMMIT_DETAILS_KEYS.openOnGitHub"
+        :label="t(openOnGitHub.title)"
+        :kbd="keyOf(openOnGitHub)"
         :link="url"
         target="_blank"
         rel="noopener noreferrer"
-        :keyshortcuts="COMMIT_DETAILS_KEYS.openOnGitHub"
+        :keyshortcuts="keyOf(openOnGitHub)"
       />
       <IconButton
         :icon="X"

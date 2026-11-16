@@ -4,8 +4,6 @@ previous:
   en: Previous commit
 next:
   en: Next commit
-openOnGitHub:
-  en: Open on GitHub
 close:
   en: Close the details
 notLoaded:

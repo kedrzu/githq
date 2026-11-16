@@ -7,7 +7,6 @@ import {
     FileDiff,
     GitBranch,
     GitPullRequestClosed,
-    Github,
     Hash,
     Link,
     Maximize2,
@@ -21,7 +20,9 @@ import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import type { EditCommandsParams, StateOption } from '@/commands/useEditCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
@@ -124,19 +125,20 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
         const item = one.value;
         const own = section();
         const commands: Command[] = [
-            {
-                id: 'menu.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: own,
-                key: 'O',
-                icon: Github,
-                detail: item ? undefined : t(l.tabs, { count: selected.value.length }),
-                run: () => {
-                    for (const candidate of selected.value) {
-                        browser.openInNewTab(candidate.url);
-                    }
+            bindCommand(
+                openOnGitHub,
+                {
+                    place: 'item',
+                    section: own,
+                    detail: item ? undefined : t(l.tabs, { count: selected.value.length }),
+                    run: () => {
+                        for (const candidate of selected.value) {
+                            browser.openInNewTab(candidate.url);
+                        }
+                    },
                 },
-            },
+                t,
+            ),
             {
                 id: 'menu.copyLink',
                 title: item ? t(l.copyLink) : t(l.copyLinks),

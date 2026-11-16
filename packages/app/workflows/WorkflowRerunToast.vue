@@ -6,6 +6,8 @@ import { ArrowUpRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { Browser } from '@/services/Browser.js';
@@ -48,7 +50,7 @@ function getGitHubLink(nameWithOwner: string, target: WorkflowActionTarget) {
   return {
     url: getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId: target.runId })),
     text: t(l.openOnGitHub),
-    kbd: isWorkflowRunRoute(route) && Number(route.params.run) === target.runId ? 'O' : undefined,
+    kbd: isWorkflowRunRoute(route) && Number(route.params.run) === target.runId ? keyOf(openOnGitHub) : undefined,
   };
 }
 </script>

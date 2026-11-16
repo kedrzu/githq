@@ -8,8 +8,6 @@ open:
   en: Open the selected item
 openFullScreen:
   en: Open full screen
-openOnGitHub:
-  en: Open on GitHub
 check:
   en: Select for editing together
 checkNext:

@@ -13,6 +13,8 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -197,7 +199,8 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
     </div>
     <IconButton
       :icon="Github"
-      :label="t(l.openOnGitHub)"
+      :label="t(openOnGitHub.title)"
+      :kbd="keyOf(openOnGitHub)"
       :link="githubUrl"
       target="_blank"
       rel="noopener noreferrer"

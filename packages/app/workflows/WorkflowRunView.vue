@@ -2,6 +2,7 @@
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
+import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -24,7 +25,10 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -201,7 +205,7 @@ const message = computed((): RunMessage | null => {
         tone: 'muted',
         title: t(l.goneTitle),
         text: t(l.goneText, { id: props.runId, name: props.nameWithOwner }),
-        gitHubLabel: t(l.openOnGitHub),
+        gitHubLabel: t(openOnGitHub.title),
         retry: false,
       };
     case 'runFailed':
@@ -217,7 +221,7 @@ const message = computed((): RunMessage | null => {
             tone: 'warning',
             title: t(l.noJobsWaitingTitle),
             text: t(l.noJobsWaitingText),
-            gitHubLabel: t(l.openOnGitHub),
+            gitHubLabel: t(openOnGitHub.title),
             retry: false,
           }
         : {
@@ -225,7 +229,7 @@ const message = computed((): RunMessage | null => {
             tone: 'muted',
             title: t(l.noJobsTitle),
             text: t(l.noJobsText),
-            gitHubLabel: t(l.openOnGitHub),
+            gitHubLabel: t(openOnGitHub.title),
             retry: false,
           };
     default:
@@ -250,7 +254,7 @@ const hints = computed(() => [
         ? t(l.backTo, { workflow: props.model.run.workflowName })
         : t(l.back),
   },
-  { id: 'gitHub', keys: ['O'], label: t(l.hintGitHub) },
+  { id: 'gitHub', keys: filterNotNull([keyOf(openOnGitHub)]), label: t(l.hintGitHub) },
 ]);
 
 useCommands(() => [
@@ -338,14 +342,11 @@ useCommands(() => [
     when: () => canRetry.value && !isActivatableTarget(document.activeElement),
     run: () => emit('retry'),
   },
-  {
-    id: 'workflowRun.openOnGitHub',
-    title: t(l.openOnGitHub),
-    section: 'view',
-    key: 'O',
-    icon: Github,
-    run: () => emit('openOnGitHub', gitHubUrl.value),
-  },
+  bindCommand(
+    openOnGitHub,
+    { place: 'workflowRun', section: 'view', run: () => emit('openOnGitHub', gitHubUrl.value) },
+    t,
+  ),
   {
     id: 'workflowRun.copyLink',
     title: t(l.copyLink),
@@ -433,7 +434,7 @@ function getFailedMessage(heading: string, path: string, httpStatus: number | nu
     title: heading,
     text: httpStatus === null ? t(l.failedNoAnswerText) : t(l.failedText, { status: httpStatus }),
     detail: httpStatus === null ? t(l.failedNoAnswerDetail, { path }) : t(l.failedDetail, { path, status: httpStatus }),
-    gitHubLabel: t(l.openOnGitHub),
+    gitHubLabel: t(openOnGitHub.title),
     retry: true,
   };
 }
@@ -513,12 +514,12 @@ function getInvalidFileMessage(): RunMessage {
       />
       <IconButton
         :icon="Github"
-        :label="t(l.openOnGitHub)"
-        kbd="O"
+        :label="t(openOnGitHub.title)"
+        :kbd="keyOf(openOnGitHub)"
         :link="gitHubUrl"
         target="_blank"
         rel="noopener noreferrer"
-        keyshortcuts="O"
+        :keyshortcuts="keyOf(openOnGitHub)"
       />
       <IconButton
         :icon="X"
@@ -641,8 +642,8 @@ function getInvalidFileMessage(): RunMessage {
                 variant="secondary"
                 size="sm"
                 :icon="Github"
-                kbd="O"
-                keyshortcuts="O"
+                :kbd="keyOf(openOnGitHub)"
+                :keyshortcuts="keyOf(openOnGitHub)"
                 @click="emit('openOnGitHub', gitHubUrl)"
               >
                 {{ message.gitHubLabel }}

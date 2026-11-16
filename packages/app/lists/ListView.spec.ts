@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { Translator } from '@nzyme/i18n/Translator.js';
 import { assert } from '@nzyme/utils/assert.js';
 import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
@@ -9,7 +10,9 @@ import { DropdownMenuItem } from 'reka-ui';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { computed, createApp, defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
@@ -734,6 +737,8 @@ interface MountOptions {
     readonly canOpenOver?: (value: string) => boolean;
     /** Fills the `empty` slot with a whole-screen note, as a screen's owner does. */
     readonly empty?: boolean;
+    /** An entry's page on GitHub; none when not given. */
+    readonly getUrl?: (value: string) => string | null;
 }
 
 /** A merge panel opened: for which item, and what it runs once the merge is sent. */
@@ -1133,13 +1138,79 @@ test("Enter and O stay the list's: drawn in the context menu, never run through 
     expect(keyed.map(command => command.key)).not.toContain('O');
     // Still offered in the menu, with no key.
     expect(row.command('menu.open')).toBeDefined();
-    expect(row.command('menu.openOnGitHub')).toBeDefined();
+    expect(row.command('item.openOnGitHub')).toBeDefined();
 
     await userEvent.keyboard('o');
     expect(openInNewTab).not.toHaveBeenCalled();
     await userEvent.keyboard('{Enter}');
     expect(row.view.opened).toEqual(['p1']);
 });
+
+test("O opens the selected row on GitHub, before an opened item's — never from a field, inside data-no-commands, from a control Tab reached outside the list, or under a layer", async () => {
+    trackTabFocus();
+    const container = createListContainer();
+    const openInNewTab = vi.spyOn(container.resolve(Browser), 'openInNewTab');
+    const view = mount([['todo', ['a1', 'a2']]], 'list', {
+        container,
+        followOpened: true,
+        getUrl: id => `https://github.com/acme/web/issues/${id}`,
+    });
+    // The item open beside the list offers its own "Open on GitHub", as the item's view does.
+    const openItem = vi.fn();
+    const registry = container.resolve(CommandRegistry);
+    onTestFinished(
+        registry.register({
+            commands: [
+                bindCommand(
+                    openOnGitHub,
+                    { place: 'item', section: 'item', run: openItem },
+                    container.resolve(Translator),
+                ),
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('j{Enter}j');
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+
+    await userEvent.keyboard('o');
+    expect(openInNewTab).toHaveBeenCalledExactlyOnceWith('https://github.com/acme/web/issues/a2');
+    expect(openItem).not.toHaveBeenCalled();
+
+    for (const blocker of [
+        withElement('input', element => element.focus()),
+        withElement('div', element => {
+            element.dataset.noCommands = '';
+            element.tabIndex = -1;
+            element.focus();
+        }),
+        withElement('div', element => {
+            element.dataset.layer = '';
+        }),
+    ]) {
+        await userEvent.keyboard('o');
+        blocker.remove();
+    }
+
+    const control = withElement('button', () => {});
+    for (let tabs = 0; tabs < 40 && document.activeElement !== control; tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(control.hasAttribute('data-tab-focus')).toBe(true);
+    await userEvent.keyboard('o');
+    control.remove();
+    expect(openInNewTab).toHaveBeenCalledTimes(1);
+});
+
+/** An element put before the list for one step of a test, `prepare`d once it is in the page. */
+function withElement(tag: string, prepare: (element: HTMLElement) => void) {
+    const element = document.createElement(tag);
+    document.body.prepend(element);
+    onTestFinished(() => element.remove());
+    prepare(element);
+    return element;
+}
 
 test('the comment key opens the row, asking the opened item for its comment box', async () => {
     const row = await mountRow([['todo', ['i1']]], [sampleIssue('i1')]);
@@ -2092,6 +2163,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 openedId: openedId.value,
                 isEdited: options.edited && ((id: string) => options.edited?.has(id) ?? false),
                 canOpenOver: options.canOpenOver,
+                getUrl: options.getUrl,
                 onOpen: (id: string) => {
                     opened.push(id);
                     if (options.followOpened) {

@@ -1,9 +1,11 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Eye, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { Eye, EyeOff, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -88,13 +90,12 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
                     }
                 },
             },
-            openOnGitHub: {
-                id: 'project.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: 'view',
-                icon: Github,
-                run: () => browser.openInNewTab(url),
-            },
+            // Offered in menus only: `O` is what the keyboard is on, a row or an opened item, not the project.
+            openOnGitHub: bindCommand(
+                openOnGitHub,
+                { place: 'project', section: 'view', keyed: false, run: () => browser.openInNewTab(url) },
+                t,
+            ),
             copyLink: {
                 id: 'project.copyLink',
                 title: t(l.copyLink),

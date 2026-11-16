@@ -8,7 +8,10 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ChevronDown, ChevronRight, GitMerge } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
@@ -54,8 +57,11 @@ import RowSwipeActions from './RowSwipeActions.vue';
 import { useItemCommands } from './useItemCommands.js';
 import { useRowSwipe } from './useRowSwipe.js';
 
-/** A row's action keys the list handles itself, below: a context menu draws them, the registry must not run them. */
-const OWN_KEYS: ReadonlySet<string> = new Set(['Enter', 'O']);
+/**
+ * A row's action keys the list has itself — Enter below, "Open on GitHub" its own command: a context menu draws them,
+ * the registry must not run the row's.
+ */
+const OWN_KEYS: ReadonlySet<string | undefined> = new Set(['Enter', keyOf(openOnGitHub)]);
 
 /** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
 const ORDINARY_KEYS: ReadonlySet<string> = new Set(Object.values(PULL_REQUEST_COMMAND_KEYS));
@@ -691,12 +697,6 @@ onWindowEvent('keydown', event => {
       }
 
       return;
-    case 'o':
-      if (openSelectedOnGitHub()) {
-        event.preventDefault();
-      }
-
-      return;
     case 'Enter':
       // `⇧Enter` is never the list's Enter: it opens full screen (`list.fullScreen`), or is the opened item's own.
       if (!event.shiftKey && !isActivatableTarget(event.target)) {
@@ -970,7 +970,19 @@ function getKeyCommands(): Command[] {
         }
       },
     },
-    { id: 'list.openOnGitHub', title: t(l.openOnGitHub), section: 'view', key: 'O', menu: false },
+    // The row's in the menu is its context menu's (`getRowCommands`).
+    bindCommand(
+      openOnGitHub,
+      {
+        place: 'list',
+        section: 'view',
+        menu: false,
+        actsOnRow: true,
+        when: () => getSelectedUrl() !== null,
+        run: openSelectedOnGitHub,
+      },
+      t,
+    ),
     { id: 'list.check', title: t(l.check), section: 'view', key: 'X', menu: false },
     {
       id: 'list.checkNext',
@@ -1435,16 +1447,18 @@ function getFullScreenId() {
   return id === props.openedId ? null : id;
 }
 
-/** `o`; whether the selected entry has a page there. */
+/** "Open on GitHub" of the selected entry, when it has a page there. */
 function openSelectedOnGitHub() {
-  const key = selectedKey.value;
-  const current = key === null ? undefined : placed.value.get(key);
-  const url = current ? props.getUrl(current.entry.value) : null;
-  if (url) {
+  const url = getSelectedUrl();
+  if (url !== null) {
     browser.openInNewTab(url);
   }
+}
 
-  return !!url;
+function getSelectedUrl() {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  return current ? props.getUrl(current.entry.value) : null;
 }
 
 function scrollToSelected() {

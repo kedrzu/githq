@@ -6,6 +6,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -99,7 +102,7 @@ const emptyState = computed(() => {
             title: t(l.refusedTitle, { status: list.unavailable?.status ?? '' }),
             text: t(l.refusedText, { name: nameWithOwner }),
             detail: t(l.refusedDetail, { status: list.unavailable?.status ?? '' }),
-            action: { label: t(l.openOnGitHub), url: actionsUrl },
+            action: { label: t(openOnGitHub.title), url: actionsUrl },
           };
     case 'read':
       return list.groups.length === 0
@@ -108,7 +111,7 @@ const emptyState = computed(() => {
             title: t(l.noWorkflowsTitle),
             text: t(l.noWorkflowsText, { name: nameWithOwner }),
             detail: t(l.noWorkflowsDetail),
-            action: { label: t(l.openOnGitHub), url: actionsUrl },
+            action: { label: t(openOnGitHub.title), url: actionsUrl },
           }
         : null;
     default:
@@ -174,20 +177,22 @@ useCommands(() => [
     when: () => props.list.status === 'read' && props.list.groups.length > 0,
     run: () => emit('settings', selection.selectedRow?.standing?.kind === 'noAlerts'),
   },
-  {
-    id: 'workflows.openOnGitHub',
-    title: emptyState.value?.action?.label ?? t(l.openOnGitHub),
-    section: 'view',
-    key: 'O',
-    actsOnRow: true,
-    when: () => emptyState.value?.action != null,
-    run: () => {
-      const action = emptyState.value?.action;
-      if (action) {
-        emit('openOnGitHub', action.url);
-      }
+  bindCommand(
+    openOnGitHub,
+    {
+      place: 'workflows',
+      section: 'view',
+      actsOnRow: true,
+      when: () => emptyState.value?.action != null,
+      run: () => {
+        const action = emptyState.value?.action;
+        if (action) {
+          emit('openOnGitHub', action.url);
+        }
+      },
     },
-  },
+    t,
+  ),
 ]);
 
 // The workflow open in the panel is the selected row — also one the address opens as the page loads (a reload).
@@ -298,8 +303,8 @@ function describeGroup(group: RepositoryWorkflowGroup) {
             variant="secondary"
             size="sm"
             :icon="Github"
-            kbd="O"
-            keyshortcuts="O"
+            :kbd="keyOf(openOnGitHub)"
+            :keyshortcuts="keyOf(openOnGitHub)"
             @click="emit('openOnGitHub', emptyState.action.url)"
           >
             {{ emptyState.action.label }}

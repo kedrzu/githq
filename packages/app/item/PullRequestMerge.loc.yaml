@@ -13,8 +13,6 @@ files:
     many: '{count} files'
 branchInto:
   en: '{head} into {base}'
-openOnGitHub:
-  en: Open on GitHub
 reviewFiles:
   en: Review files
 cannotMerge:

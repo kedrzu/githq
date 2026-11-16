@@ -18,6 +18,8 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest, Play } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -184,7 +186,6 @@ const keys = useItemKeys({
   stepKeys: STEP_KEYS,
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
-  openOnGitHub: () => browser.openInNewTab(props.state.workflow.htmlUrl),
   previous: () => emit('previous'),
   next: () => emit('next'),
 });
@@ -236,7 +237,11 @@ useCommands(() => {
       },
     },
     commands.close,
-    commands.openOnGitHub,
+    bindCommand(
+      openOnGitHub,
+      { place: 'workflow', section: 'item', run: () => browser.openInNewTab(props.state.workflow.htmlUrl) },
+      t,
+    ),
     ...(commands.arrange ? [commands.arrange] : []),
   ];
 });

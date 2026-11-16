@@ -10,8 +10,6 @@ openLatestFailure:
   en: Open latest failure
 alertSettings:
   en: Alert settings
-openOnGitHub:
-  en: Open on GitHub
 openActionsSettings:
   en: Open Actions settings on GitHub
 broken:

@@ -20,6 +20,13 @@ export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends
  */
 export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit<Command, DefinedField> & {
     readonly title?: string;
+    /** Words of this place it is found by too (a repository's name), after the definition's own. */
+    readonly keywords?: readonly string[];
+    /**
+     * `false`: offered here without its key, in menus only — the key belongs to what the keyboard is on (a repository's
+     * "Open on GitHub", where `O` opens the selected row or the opened item).
+     */
+    readonly keyed?: false;
 } & CommandBindingPlace<TPlaces>;
 
 /** A family's binding: what its number does, or `null` where the screen has nothing at that number. */
@@ -85,15 +92,17 @@ function toCommand<TPlaces extends CommandPlaces>(
     t: Translator,
     bound: BoundKey,
 ): Command {
-    const place = binding.place ?? definition.places[0];
+    const { keyed, keywords, ...rest } = binding;
+    const place = rest.place ?? definition.places[0];
+    const ownKeywords = definition.keywords?.map(keyword => t(keyword)) ?? [];
     return {
-        ...binding,
+        ...rest,
         id: `${place}.${bound.id}`,
-        title: binding.title ?? t(definition.title),
+        title: rest.title ?? t(definition.title),
         icon: definition.icon,
-        key: bound.key,
-        otherKeys: definition.kind === 'command' ? definition.otherKeys : undefined,
-        keywords: definition.keywords?.map(keyword => t(keyword)),
+        key: keyed === false ? undefined : bound.key,
+        otherKeys: keyed === false || definition.kind === 'family' ? undefined : definition.otherKeys,
+        keywords: keywords || definition.keywords ? [...ownKeywords, ...(keywords ?? [])] : undefined,
         priority: definition.priority,
         place,
     };

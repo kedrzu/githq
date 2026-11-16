@@ -1,9 +1,11 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CloudDownload, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { CloudDownload, EyeOff, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -88,14 +90,18 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 icon: SquarePen,
                 run: () => composer.start({ repository: nameWithOwner, project: null, parent: null }),
             },
-            openOnGitHub: {
-                id: 'repository.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: 'repository',
-                icon: Github,
-                keywords: [nameWithOwner],
-                run: () => browser.openInNewTab(url),
-            },
+            // Offered in menus only: `O` is what the keyboard is on, a row or an opened item, not the repository.
+            openOnGitHub: bindCommand(
+                openOnGitHub,
+                {
+                    place: 'repository',
+                    section: 'repository',
+                    keyed: false,
+                    keywords: [nameWithOwner],
+                    run: () => browser.openInNewTab(url),
+                },
+                t,
+            ),
             copyLink: {
                 id: 'repository.copyLink',
                 title: t(l.copyLink),

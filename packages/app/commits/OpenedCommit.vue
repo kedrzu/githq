@@ -5,6 +5,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { parseItemUrl } from '@/item/itemRoutes.js';
@@ -88,7 +90,6 @@ const keys = useItemKeys({
   onEscape: () => store.takeEscape(),
   close: () => arranging.close(),
   arrange: arrangement => arranging.arrange(arrangement),
-  openOnGitHub: () => browser.openInNewTab(url.value),
   previous: () => arranging.step(-1),
   next: () => arranging.step(1),
 });
@@ -122,7 +123,7 @@ useCommands(() => {
       run: openPullRequest,
     },
     commands.close,
-    commands.openOnGitHub,
+    bindCommand(openOnGitHub, { place: 'commit', section: 'item', run: () => browser.openInNewTab(url.value) }, t),
     ...(commands.arrange ? [commands.arrange] : []),
   ];
 });

@@ -24,6 +24,7 @@ import {
 import { computed, ref } from 'vue';
 
 import type { Command, CommandParts } from '@/commands/CommandTypes.js';
+import { openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -493,7 +494,7 @@ function getSectionCount(value: RepositorySection) {
           </Button>
           <IconButton
             :icon="Github"
-            :label="t(l.openOnGitHub)"
+            :label="t(openOnGitHub.title)"
             :link="commitsUrl"
             target="_blank"
           />

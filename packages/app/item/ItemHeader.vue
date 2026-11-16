@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ChevronDown, ChevronUp, Github, X } from 'lucide-vue-next';
 
+import { openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import IconButton from '@/components/IconButton.vue';
 import PhoneBackButton from '@/shell/PhoneBackButton.vue';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -101,12 +103,12 @@ const phone = useService(PhoneLayout);
     />
     <IconButton
       :icon="Github"
-      :label="t(l.openOnGitHub)"
-      :kbd="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
+      :label="t(openOnGitHub.title)"
+      :kbd="keyOf(openOnGitHub)"
       :link="url"
       target="_blank"
       rel="noopener noreferrer"
-      :keyshortcuts="ITEM_ARRANGEMENT_KEYS.openOnGitHub"
+      :keyshortcuts="keyOf(openOnGitHub)"
     />
     <IconButton
       :icon="X"

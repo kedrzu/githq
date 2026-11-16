@@ -3,6 +3,7 @@ import { defineService } from '@nzyme/ioc/Service.js';
 import { computed, shallowRef } from 'vue';
 
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
+import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
 import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
@@ -241,9 +242,15 @@ export const CommandRegistry = defineService({
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
  * the items behind it), nor from an open menu, which would stay open over wherever the key went. A single key acting
  * on a subject doesn't run from what Tab focused outside the list (`data-tab-focus`): the keyboard isn't on the subject.
+ * A list's key doesn't run while a layer covers the screen (`isScreenCovered`), as its own listener's don't
+ * (`isScreenKey`).
  */
 function isFreeTarget(target: EventTarget | null, command: Command) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
+        return false;
+    }
+
+    if (command.place === 'list' && isScreenCovered()) {
         return false;
     }
 

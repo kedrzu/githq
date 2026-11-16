@@ -4,7 +4,7 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { Github, Maximize2, Minimize2 } from 'lucide-vue-next';
+import { Maximize2, Minimize2 } from 'lucide-vue-next';
 import { computed, onScopeDispose, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
@@ -27,7 +27,6 @@ import type { ItemWalkViewModel } from './useItemWalk.js';
 
 /** The keys of an opened item's moves, every kind's; the steps' are {@link ItemStepKeys}. */
 export const ITEM_ARRANGEMENT_KEYS = {
-    openOnGitHub: 'O',
     arrange: 'Shift+Enter',
     close: 'Escape',
 } as const;
@@ -60,7 +59,6 @@ export interface UseItemKeysOptions {
     onEscape?: () => boolean;
     close(): void;
     arrange(arrangement: ItemArrangement): void;
-    openOnGitHub(): void;
     previous(): void;
     next(): void;
 }
@@ -77,7 +75,6 @@ export interface ItemKeyCommands {
     readonly next: Command;
     readonly previous: Command;
     readonly close: Command;
-    readonly openOnGitHub: Command;
     /** `null` where there is no other arrangement to offer. */
     readonly arrange: Command | null;
 }
@@ -436,8 +433,9 @@ type HistoryMove = 'push' | 'replace';
  * own layers (`onEscape`), and a focused field, which gives the key up first — and the step keys step through the list
  * it was opened from (in a panel the list's own `j`/`k`, run first, move its selection instead, which the opened item
  * follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone). The commands — listed in the help
- * sheet, `⇧Enter` and `O` run by their keys — are for the view to register among its own; `⇧Enter` is not offered on
- * a page where the window has no room for the panel, and a kind may offer the other arrangement with no key.
+ * sheet, `⇧Enter` run by its key — are for the view to register among its own, with its own "Open on GitHub"
+ * (`openOnGitHub`); `⇧Enter` is not offered on a page where the window has no room for the panel, and a kind may offer
+ * the other arrangement with no key.
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
@@ -464,14 +462,6 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
                 section: 'item',
                 key: ITEM_ARRANGEMENT_KEYS.close,
                 menu: false,
-            },
-            openOnGitHub: {
-                id: 'item.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: 'item',
-                key: ITEM_ARRANGEMENT_KEYS.openOnGitHub,
-                icon: Github,
-                run: () => options.openOnGitHub(),
             },
             arrange: other && {
                 id: `item.arrange.${other.arrangement}`,

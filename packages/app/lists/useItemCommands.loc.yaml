@@ -2,8 +2,6 @@ open:
   en: Open
 openPage:
   en: Open full screen
-openOnGitHub:
-  en: Open on GitHub
 tabs:
   plural: count
   en:
