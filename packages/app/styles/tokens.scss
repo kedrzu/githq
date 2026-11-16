@@ -439,8 +439,12 @@ $landing-reveal-stagger: 80ms;
 }
 
 // The app's short animations (the switch in Settings → Display): quick, and only where something appears: focus and
-// the layer stay with an overlay until it leaves the page, so a closing animation would lose keys.
+// the layer stay with an overlay until it leaves the page, so a closing animation would lose keys. The exception is a
+// phone's sheet (`$motion-sheet`).
 $motion-open: 150ms;
+// A phone's sheet (`Dialog` with `edge` left or bottom) sliding in from its edge and back out, its overlay fading with
+// it. Closing animates too: on a touch screen there are no keys for it to lose.
+$motion-sheet: 200ms;
 // What an overlay slides in by, towards where it rests (`@keyframes motion-slide-in`, `main.scss`).
 $motion-slide-distance: 4px;
 
