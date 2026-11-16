@@ -69,16 +69,25 @@ Places are only for that check. Which command gets a key while you work is decid
 item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row though the item is the
 narrower place.
 
-That also means app-wide single keys are few. Creating an issue, for example, is in the command menu but has no
-letter of its own everywhere: githq is more than an issue tracker. [Why](DECISIONS.md#d7).
+Keys that work across the whole app are few and never a bare letter by default: `⌘K`, `?`, `,` and `⌘B`. Letters
+belong to screens, so a screen's letter never takes anything app-wide. Creating an issue, for example, is in the
+command menu but has no letter of its own everywhere: githq is more than an issue tracker.
+[Why no issue key](DECISIONS.md#d7), [the rule for app-wide keys](DECISIONS.md#d8).
 
 ## Keys that are not commands
 
 Moving through a list with `J` and `K`, checking a row with `X` or opening it on GitHub with `O` are commands like
 any other: they can be rebound and are listed with the rest. The arrow keys, Enter, Escape, Tab, and the keys a
 text field or a dialog form owns while it has focus are not. They are how a control behaves, the same everywhere
-on the web, and are shown in the list of keys but cannot be changed.
-[Where the line is drawn](DECISIONS.md#d4).
+on the web, and are shown in the list of keys but cannot be changed. [Where the line is drawn](DECISIONS.md#d4).
+
+Neither can the numbers that pick the n-th thing on screen: a project's views on `1`–`9`, a repository's sections on
+`1`–`4`. The number is the position, so there is nothing to rebind. [Why](DECISIONS.md#d9).
+
+## Where your keys are kept
+
+The keys you change are kept with the settings that can follow you between devices, so rebinding once is enough.
+With that switched off they stay in the browser, like every other setting. [Why](DECISIONS.md#d10).
 
 ## The name
 
@@ -86,12 +95,6 @@ githq already calls these commands: the command menu, its documentation and the 
 would have been the obvious alternative, but in githq Actions means GitHub Actions, which has its own screens.
 `defineCommand` is already taken in the code by the dependency-injection library for something unrelated, so the
 function that defines one has a different name. [The naming](DECISIONS.md#d5).
-
-## What is still open
-
-- Which keys the whole app may use at all: only keys with a modifier and symbols, or letters too.
-- Commands that come in numbered families: views on `1`–`9`, repository sections on `1`–`4`.
-- Where your own keys are kept: on this device, or with the settings that can follow you between devices.
 
 ## How far this goes
 

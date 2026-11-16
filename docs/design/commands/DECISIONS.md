@@ -131,3 +131,52 @@ not earn one letter on every screen. It stays in the command menu.
 **Rejected.**
 
 - `C` everywhere, as in issue trackers — overstates issues in an app that is also pull requests, reviews and Actions.
+
+## D8
+
+**Default keys of app-wide commands use no bare letter, only keys with a modifier and symbols (`Mod+K`, `?`, `,`,
+`Mod+B`); letters belong to screens. The rule binds the defaults, checked in the module of definitions; a user may
+bind a letter to an app-wide command.** (2026-11-16, owner)
+
+**Why.** A screen's letter then never takes anything app-wide, so the settings rarely have to say a key does
+something else here, and a new app-wide letter is refused by the rule rather than argued case by case
+([D7](#d7) was such a case).
+
+> **Checked 2026-11-16:** with `C` gone ([D7](#d7)), the app-wide keys are `APP_KEYS` =
+> `{ commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: 'Mod+B' }` (`packages/app/commands/CommandTypes.ts:32`).
+
+**Rejected.**
+
+- Judging each app-wide letter on its own — the case of `C` would recur.
+- Forbidding the user a letter on an app-wide command — their keys are theirs; the settings show where it is taken.
+
+## D9
+
+**Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
+filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
+rebindable.** (2026-11-16, owner)
+
+**Why.** Rebinding them makes no sense; the number is the position on screen. It also keeps numbered families out
+of the definitions, which would otherwise need one command per number or a parameter.
+
+> **Checked 2026-11-16:** `REPOSITORY_SECTION_KEYS` (`repository/RepositorySection.ts:21`), `FILTER_KEYS`
+> (`myWork/MyWorkView.vue:153`), saved views (`projects/useProjectCommands.ts:71`), merge methods
+> (`merge/MergePanel.vue:1579`).
+
+**Rejected.**
+
+- One rebindable command per number — nine entries in the settings nobody would change.
+- One command with a number parameter — a mechanism for a family that does not need rebinding.
+
+## D10
+
+**The user's keys are kept in the settings that follow you between devices (the settings document of
+[settings-sync](../settings-sync/DECISIONS.md#d7)).** (2026-11-16, owner) Proposed: only the keys a user changed are
+stored, by command id, so a new default reaches everyone who did not change that command.
+
+**Why.** Keys are a chosen preference that rarely changes, the kind settings-sync's rule syncs. With sync off they
+stay in the browser, as every synced setting does.
+
+**Rejected.**
+
+- Keys on each device — a user who rebinds would have to do it again on every computer.

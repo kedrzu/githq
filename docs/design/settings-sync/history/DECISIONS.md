@@ -46,15 +46,15 @@ request clicks.** (2026-11-01, owner, on the design agent's proposal)
 **Why.** A filter changes constantly and each synced change would be a commit, and it describes what the user is
 looking at now.
 
-|State|Where today (`packages/app/`)||
-|-|-|-|
-|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
-|Layout, grouping, sort, visible properties|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|synced|
-|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|synced|
-|Filter per list|same key as layout, `lists/useListViewOptions.ts:39-45`|local|
-|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
-|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
-|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
+| State                                      | Where today (`packages/app/`)                                         |        |
+| ------------------------------------------ | --------------------------------------------------------------------- | ------ |
+| Tracked repositories and projects          | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`         | synced |
+| Layout, grouping, sort, visible properties | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`         | synced |
+| Row field per project                      | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | synced |
+| Filter per list                            | same key as layout, `lists/useListViewOptions.ts:39-45`               | local  |
+| How items open (panel, modal, page)        | `githq.itemArrangement`, `services/LocalPreferences.ts:11`            | local  |
+| Sidebar collapsed, panel widths            | `services/LocalPreferences.ts:12-13`                                  | local  |
+| New issue drafts, approval request clicks  | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`  | local  |
 
 **Rejected.**
 
@@ -133,18 +133,26 @@ proposal of the design agent, not confirmed)
 
 ```json
 {
-  "version": 1,
-  "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "list": { "layout": "board", "sort": "updated" } }
-  ],
-  "projects": [
-    {
-      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap",
-      "rowField": "PVTF_…",
-      "views": { "PVTV_…": { "grouping": "status" } }
-    }
-  ],
-  "myWork": { "grouping": "repository" }
+    "version": 1,
+    "repositories": [
+        {
+            "nameWithOwner": "kedrzu/githq",
+            "id": "R_kgDO…",
+            "list": { "layout": "board", "sort": "updated" }
+        }
+    ],
+    "projects": [
+        {
+            "id": "PVT_kw…",
+            "owner": "kedrzu",
+            "ownerKind": "user",
+            "number": 1,
+            "title": "Roadmap",
+            "rowField": "PVTF_…",
+            "views": { "PVTV_…": { "grouping": "status" } }
+        }
+    ],
+    "myWork": { "grouping": "repository" }
 }
 ```
 
@@ -173,19 +181,33 @@ repository; the rest is a proposal of the design agent, not confirmed)
 
 ```json
 {
-  "version": 1,
-  "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true, "list": { "layout": "board", "sort": "updated" } },
-    { "nameWithOwner": "acme/api", "tracking": false, "list": { "sort": "created" } }
-  ],
-  "projects": [
-    {
-      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true,
-      "rowField": "PVTF_…",
-      "views": { "PVTV_…": { "grouping": "status" } }
-    }
-  ],
-  "myWork": { "grouping": "repository" }
+    "version": 1,
+    "repositories": [
+        {
+            "nameWithOwner": "kedrzu/githq",
+            "id": "R_kgDO…",
+            "tracking": true,
+            "list": { "layout": "board", "sort": "updated" }
+        },
+        {
+            "nameWithOwner": "acme/api",
+            "tracking": false,
+            "list": { "sort": "created" }
+        }
+    ],
+    "projects": [
+        {
+            "id": "PVT_kw…",
+            "owner": "kedrzu",
+            "ownerKind": "user",
+            "number": 1,
+            "title": "Roadmap",
+            "tracking": true,
+            "rowField": "PVTF_…",
+            "views": { "PVTV_…": { "grouping": "status" } }
+        }
+    ],
+    "myWork": { "grouping": "repository" }
 }
 ```
 
@@ -215,14 +237,21 @@ design agent's proposal)
 
 ```json
 {
-  "version": 1,
-  "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
-    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-  ],
-  "projects": [
-    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
-  ]
+    "version": 1,
+    "repositories": [
+        { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+    ],
+    "projects": [
+        {
+            "id": "PVT_kw…",
+            "owner": "kedrzu",
+            "ownerKind": "user",
+            "number": 1,
+            "title": "Roadmap",
+            "tracking": true
+        }
+    ]
 }
 ```
 
@@ -249,14 +278,21 @@ design agent's proposal)
 
 ```json
 {
-  "version": 1,
-  "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
-    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-  ],
-  "projects": [
-    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
-  ]
+    "version": 1,
+    "repositories": [
+        { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+    ],
+    "projects": [
+        {
+            "id": "PVT_kw…",
+            "owner": "kedrzu",
+            "ownerKind": "user",
+            "number": 1,
+            "title": "Roadmap",
+            "tracking": true
+        }
+    ]
 }
 ```
 

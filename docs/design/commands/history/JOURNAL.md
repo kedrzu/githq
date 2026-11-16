@@ -27,3 +27,7 @@
 - Owner: a narrower place may take a wider one's key (shown in settings, not a conflict); places only for conflict
   checks, runtime keyboard focus decides priority (D6). Owner: creating an issue gets no app-wide single key, githq is
   more than an issue tracker (D7). Folded into README. Raised: should app-wide commands use letters at all.
+- Owner: app-wide default keys use no bare letter (D8, rule on defaults only). Owner: numbered keys (views 1–9,
+  sections, filters, merge methods) are fixed, not rebindable (D9). Owner: user keys live in the synced settings
+  document (D10; storing only changed keys by id is the agent's proposal); settings-sync D7 updated. Folded into
+  README; the open list is now empty.

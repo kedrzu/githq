@@ -106,17 +106,17 @@ githq cannot delete the repository with the scopes it has.
   while the settings hold names of private repositories. There is no unique name or server-side lookup, so finding one
   means reading all the user's gists, and several can exist. A write cannot detect that another device wrote first.
 
-  > **Checked 2026-11-01:** "To read or write gists on a user's behalf, you need the gist OAuth scope and a token" —
-  > [Gists](https://docs.github.com/en/rest/gists/gists). Secret gists are listed "only … if the token has the gist
-  > scope" — [GitHub bounty note, 2015](https://bounty.github.com/2015/06/30/gist-api-authz.html), the only explicit
-  > statement found. "Secret gists aren't private… if someone you don't know discovers the URL, they'll also be able to
-  > see your gist." — [Creating gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists).
-  > `GET /gists` takes only `since`, `per_page` (max 100) and `page`; GraphQL `viewer.gists` filters only on `privacy`.
-  > "Conditional requests for unsafe methods, such as POST, PUT, PATCH, and DELETE are not supported unless otherwise
-  > noted" — [Best practices](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
+    > **Checked 2026-11-01:** "To read or write gists on a user's behalf, you need the gist OAuth scope and a token" —
+    > [Gists](https://docs.github.com/en/rest/gists/gists). Secret gists are listed "only … if the token has the gist
+    > scope" — [GitHub bounty note, 2015](https://bounty.github.com/2015/06/30/gist-api-authz.html), the only explicit
+    > statement found. "Secret gists aren't private… if someone you don't know discovers the URL, they'll also be able to
+    > see your gist." — [Creating gists](https://docs.github.com/en/get-started/writing-on-github/editing-and-sharing-content-with-gists/creating-gists).
+    > `GET /gists` takes only `since`, `per_page` (max 100) and `page`; GraphQL `viewer.gists` filters only on `privacy`.
+    > "Conditional requests for unsafe methods, such as POST, PUT, PATCH, and DELETE are not supported unless otherwise
+    > noted" — [Best practices](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
 
-  Would win if a repository created by the app were unacceptable to users. Choosing among several same-named gists goes
-  with it: with a fixed repository name, one account holds one set of settings.
+    Would win if a repository created by the app were unacceptable to users. Choosing among several same-named gists goes
+    with it: with a fixed repository name, one account holds one set of settings.
 
 ## D7
 
@@ -126,7 +126,7 @@ sizes, plus new issue drafts and approval request clicks.** (2026-11-01, owner; 
 design agent's reading) The repository layout synced here from 2026-11-02 went with the layout itself on 2026-11-16 ([git-client D25](../git-client/DECISIONS.md#d25)). Added
 since, as a chosen preference rather than a view detail: what a comment does by default
 ([code-review D34](../code-review/DECISIONS.md#d34)), whether the short UI animations play, and whether usage statistics are shared (default on), and
-how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)).
+how the branch and tag list is sorted, one order for Branches and one for Tags ([git-client D15](../git-client/DECISIONS.md#d15)), and the keys a user rebound ([commands D10](../commands/DECISIONS.md#d10)).
 
 **The rule (2026-11-14, owner):** "what changes often and is only an aspect of the current temporary view is saved only in
 local storage; what may be more portable between devices — a user preference — can be synced; e.g. the branch sort: it
@@ -135,19 +135,19 @@ depends on the user, who will rarely change it". So the unfolded folders of the 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
 
-|State|Where today (`packages/app/`)||
-|-|-|-|
-|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
-|How a code review's comment goes out|`reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
-|Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
-|Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
-|Ref list sort, per group|`refSort` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
-|Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
-|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
-|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
-|Ref list's unfolded folders|`githq.refFolders.<login>`, `commits/CommitRefFolders.ts`|local|
-|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
-|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
+| State                                              | Where today (`packages/app/`)                                                          |        |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- | ------ |
+| Tracked repositories and projects                  | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`                          | synced |
+| How a code review's comment goes out               | `reviewCommentChoice` at the root of the document, `settings/sync/SettingsDocument.ts` | synced |
+| Whether the short UI animations play               | `animations` at the root of the document, `settings/sync/SettingsDocument.ts`          | synced |
+| Whether usage statistics are shared                | `usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`     | synced |
+| Ref list sort, per group                           | `refSort` at the root of the document, `settings/sync/SettingsDocument.ts`             | synced |
+| Layout, grouping, sort, visible properties, filter | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`                          | local  |
+| Row field per project                              | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`                  | local  |
+| How items open (panel, modal, page)                | `githq.itemArrangement`, `services/LocalPreferences.ts:11`                             | local  |
+| Ref list's unfolded folders                        | `githq.refFolders.<login>`, `commits/CommitRefFolders.ts`                              | local  |
+| Sidebar collapsed, panel widths                    | `services/LocalPreferences.ts:12-13`                                                   | local  |
+| New issue drafts, approval request clicks          | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`                   | local  |
 
 No other per-user setting exists today (the app is dark only, `styles/tokens.scss:4`). The "modified locally" label on a project
 view stays true and stays as it is.
@@ -242,15 +242,26 @@ design agent's proposal)
 
 ```json
 {
-  "version": 1,
-  "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true,
-      "workflows": { "defaultBranch": true, "refs": ["v*"] } },
-    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
-  ],
-  "projects": [
-    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
-  ]
+    "version": 1,
+    "repositories": [
+        {
+            "nameWithOwner": "kedrzu/githq",
+            "id": "R_kgDO…",
+            "tracking": true,
+            "workflows": { "defaultBranch": true, "refs": ["v*"] }
+        },
+        { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+    ],
+    "projects": [
+        {
+            "id": "PVT_kw…",
+            "owner": "kedrzu",
+            "ownerKind": "user",
+            "number": 1,
+            "title": "Roadmap",
+            "tracking": true
+        }
+    ]
 }
 ```
 
