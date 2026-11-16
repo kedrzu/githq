@@ -34,6 +34,19 @@ export const Gallery: Story = {
                                 modelValue={false}
                             />
                         </StorySection>
+                        <StorySection title="A finger's size (a phone's settings)">
+                            <Switch
+                                label="Animations"
+                                size="touch"
+                                modelValue={on.value}
+                                onUpdate:modelValue={value => (on.value = value)}
+                            />
+                            <Switch
+                                label="Off, touch"
+                                size="touch"
+                                modelValue={false}
+                            />
+                        </StorySection>
                     </StoryPage>
                 );
             },

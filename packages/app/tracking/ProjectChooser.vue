@@ -1,7 +1,8 @@
-<!-- Picking projects to track (T22, D25; `TrackProjectsDialog`): the repository picker's layout (T18) for projects. Owners on the left with how many of their projects are tracked of all — an organisation that hasn't approved githq can't list its projects (G5) and says so in amber, "– / –"; the filter (`/`) and the sort (most recently updated first) above a note on what tracking a project brings in; the projects grouped by owner, the user's own first. A tracked project shows a grey, fixed tick and "tracked", and no key or group action changes it; an owner with all of them tracked folds to its header (Show). Closed projects wait behind "N closed projects hidden" (Show closed), unless a filter is typed. The model is only what is picked. Keys: J/K and ↑/↓ between the rows, Space picks, Shift+click or Shift+Space the shown rows from the last one clicked to this one, ⌘A in the filter all that match, ⌘↵ tracks. A filter naming a project nothing listed matches — its address, or `owner/number` — looks it up (latest wins) and offers it; ticked, it is handed on (`found`). -->
+<!-- Picking projects to track (T22, D25; `TrackProjectsDialog`): the repository picker's layout (T18) for projects. Owners on the left with how many of their projects are tracked of all — an organisation that hasn't approved githq can't list its projects (G5) and says so in amber, "– / –"; the filter (`/`) and the sort (most recently updated first) above a note on what tracking a project brings in; the projects grouped by owner, the user's own first. A tracked project shows a grey, fixed tick and "tracked", and no key or group action changes it; an owner with all of them tracked folds to its header (Show). Closed projects wait behind "N closed projects hidden" (Show closed), unless a filter is typed. The model is only what is picked. Keys: J/K and ↑/↓ between the rows, Space picks, Shift+click or Shift+Space the shown rows from the last one clicked to this one, ⌘A in the filter all that match, ⌘↵ tracks. A filter naming a project nothing listed matches — its address, or `owner/number` — looks it up (latest wins) and offers it; ticked, it is handed on (`found`). On a phone (`PhoneLayout.active`, mobile D35, MB172) one column: no owners on the left, the search a finger's height pinned at the top, no sort, the group actions text links in the accent and the rows a finger's height (`CandidateProjectRow` `touch`). -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ArrowDownWideNarrow, Building2, Info, Lock, User } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watch } from 'vue';
@@ -11,6 +12,7 @@ import Button from '@/components/Button.vue';
 import ChoiceList from '@/components/ChoiceList.vue';
 import type { ChoiceListOption } from '@/components/ChoiceList.vue';
 import SearchField from '@/components/SearchField.vue';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { useFilteredListKeys } from '@/utils/useFilteredListKeys.js';
@@ -90,6 +92,12 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const phoneLayout = useService(PhoneLayout);
+const phone = computed(() => phoneLayout.active);
+/** A phone's group action ("Select all", "Show"): a text link in the accent, a finger's height. */
+const groupActionLook = computed(() =>
+  phone.value ? ({ variant: 'link', tone: 'accent' } as const) : ({ variant: 'framed', size: 'sm' } as const),
+);
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
@@ -474,17 +482,19 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
 <template>
   <div
     ref="root"
-    :class="css.projectChooser"
+    :class="[css.projectChooser, phone && css.projectChooser_phone]"
     @click.capture="onClickCapture"
     @mousedown="onMousedown"
   >
-    <ChoiceList
-      v-if="candidates"
-      v-model="owner"
-      :label="t(l.owners)"
-      :options="ownerOptions"
-    />
-    <div v-else />
+    <template v-if="!phone">
+      <ChoiceList
+        v-if="candidates"
+        v-model="owner"
+        :label="t(l.owners)"
+        :options="ownerOptions"
+      />
+      <div v-else />
+    </template>
 
     <section
       :class="css.projectChooser_projects"
@@ -497,10 +507,13 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
           :class="css.projectChooser_filter"
           :label="t(l.filterLabel)"
           :placeholder="t(l.filterPlaceholder, { count: totalProjects })"
-          kbd="/"
+          :kbd="phone ? undefined : '/'"
           @keydown="onFilterKeydown"
         />
-        <span :class="css.projectChooser_sort">
+        <span
+          v-if="!phone"
+          :class="css.projectChooser_sort"
+        >
           <ArrowDownWideNarrow
             :class="css.projectChooser_sortIcon"
             aria-hidden="true"
@@ -549,16 +562,14 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
           <span :class="css.projectChooser_groupDetail">{{ groupDetail(group) }}</span>
           <Button
             v-if="group.folded"
-            variant="framed"
-            size="sm"
+            v-bind="groupActionLook"
             @click="unfoldedOwners = addTo(unfoldedOwners, group.login)"
           >
             {{ t(l.show) }}
           </Button>
           <Button
             v-else-if="group.choosable.length > 0"
-            variant="framed"
-            size="sm"
+            v-bind="groupActionLook"
             @click="toggleGroup(group)"
           >
             {{ isAllPicked(group) ? t(l.selectNone) : t(l.selectAll) }}
@@ -568,7 +579,7 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
         <HiddenOrganizationNotice
           v-if="group.hidden"
           :organization="group.login"
-          variant="banner"
+          :variant="phone ? 'stacked' : 'banner'"
           subject="projects"
           @explain="owner = group.login"
         />
@@ -579,6 +590,7 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
           :project="project"
           :now="now"
           :tracked="trackedIds.has(project.id)"
+          :touch="phone"
           :model-value="picked.has(project.id)"
           @update:model-value="setProject(project.id, $event)"
         />
@@ -622,6 +634,41 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
   // A row the keys move to stays clear of the filter over it.
   [data-tracking-row] [role='checkbox'] {
     scroll-margin-top: 56px;
+  }
+}
+
+// A phone: one column the width of the screen, the search pinned over the rows.
+.projectChooser.projectChooser_phone {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0;
+
+  .projectChooser_tools {
+    padding: $spacing-8 $spacing-16 $spacing-6;
+    background: $color-bg;
+  }
+
+  .projectChooser_filter {
+    --search-field-background: #{$color-bg-2};
+
+    min-height: $touch-target-size;
+    padding: $spacing-4 $spacing-6 $spacing-4 $spacing-12;
+    font-size: $font-size-phone-input;
+    border-radius: $radius-lg;
+  }
+
+  .projectChooser_note {
+    padding: $spacing-4 $spacing-16;
+    font-size: $font-size-sm;
+  }
+
+  .projectChooser_group {
+    align-items: center;
+    padding: $spacing-12 $spacing-16 $spacing-4;
+  }
+
+  .projectChooser_closed,
+  .projectChooser_text {
+    padding: $spacing-4 $spacing-16;
   }
 }
 

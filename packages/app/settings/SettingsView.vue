@@ -1,18 +1,6 @@
 <!-- The Settings screen (githq D26, `Settings / Sections column`): a column of the sections beside the page, as a repository's column layout has its own (`SegmentedTabs`, vertical). Each row has its icon, how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and its key, by its place in `SETTINGS_SECTIONS`, which switches to it while the screen is shown (the command menu goes to them as places). The page's header holds only the section's name; the section itself in the default slot, Changelog bringing a header of its own (`Changelog / Pane`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  BookMarked,
-  CircleArrowDown,
-  Cloud,
-  FileDiff,
-  PanelsTopLeft,
-  ScrollText,
-  Shield,
-  SquareKanban,
-  User,
-} from 'lucide-vue-next';
-import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
@@ -22,20 +10,9 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import { SETTINGS_SECTIONS } from './settingsRoutes.js';
+import { SETTINGS_SECTION_ICONS } from './settingsSectionIcons.js';
 import type { SettingsSection } from './settingsRoutes.js';
 import * as l from './SettingsView.loc.js';
-
-const SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon>> = {
-  repositories: BookMarked,
-  projects: SquareKanban,
-  display: PanelsTopLeft,
-  review: FileDiff,
-  privacy: Shield,
-  sync: Cloud,
-  account: User,
-  updates: CircleArrowDown,
-  changelog: ScrollText,
-};
 
 const props = defineProps<{
   /** How many repositories are tracked: the count on Repositories. */
@@ -59,7 +36,7 @@ const options = computed((): SegmentedTabsOption<SettingsSection>[] =>
   SETTINGS_SECTIONS.map((candidate, index) => ({
     value: candidate,
     label: t(sectionLabels[candidate]),
-    icon: SECTION_ICONS[candidate],
+    icon: SETTINGS_SECTION_ICONS[candidate],
     keyshortcuts: getKey(index),
     count: counts.value[candidate],
     attention: candidate === 'sync' && props.savingStopped ? t(l.savingStopped) : undefined,

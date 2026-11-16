@@ -4,7 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './SavingView.stories.js';
 
-const { Combining, CombiningNothingLost, Off, On, Stopped, TurnedOff, Unusable } = composeStories(stories);
+const { Combining, CombiningNothingLost, Off, On, Stopped, TurnedOff, Unusable, PhoneOff, PhoneOn } =
+    composeStories(stories);
 
 const CHOICE = 'Save my settings to my GitHub account';
 
@@ -142,5 +143,33 @@ test('stopped: why, R tries again, and turning off is still there', async () => 
     await userEvent.keyboard('r');
     expect(retry).toHaveBeenCalledOnce();
     await userEvent.click(page.getByRole('button', { name: 'Turn off' }));
+    expect(onTurnOff).toHaveBeenCalledOnce();
+});
+
+test('MB160: on a phone the choice is a switch, which asks GitHub first', async () => {
+    const turnOn = vi.fn(() => Promise.resolve());
+    await PhoneOff.run({ args: { ...PhoneOff.args, turnOn } });
+
+    const choice = page.getByRole('switch', { name: CHOICE });
+    await expect.element(choice).not.toBeChecked();
+    await userEvent.click(choice);
+    expect(turnOn).toHaveBeenCalledOnce();
+});
+
+test('MB161: on a phone, on, the rows say the repository, when it synced and what is saved; the switch turns it off', async () => {
+    const onTurnOff = vi.fn();
+    await PhoneOn.run({ args: { ...PhoneOn.args, onTurnOff } });
+
+    await expect
+        .element(page.getByRole('link', { name: 'mlaine/githq-settings' }))
+        .toHaveAttribute('href', 'https://github.com/mlaine/githq-settings');
+    await expect.element(page.getByText(/^15\srepositories,\s3\sprojects$/u)).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Repository settings on GitHub' }))
+        .toHaveAttribute('href', 'https://github.com/mlaine/githq-settings/settings');
+
+    const choice = page.getByRole('switch', { name: CHOICE });
+    await expect.element(choice).toBeChecked();
+    await userEvent.click(choice);
     expect(onTurnOff).toHaveBeenCalledOnce();
 });

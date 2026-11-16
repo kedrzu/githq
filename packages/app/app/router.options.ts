@@ -129,12 +129,13 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         meta: { auth: 'signedIn', firstSignIn: 'choose' },
     };
     // Settings, one screen (D15), its section in `?tab=`. The address tracking used to have settles on it, so an
-    // old link never hands off to github.com.
+    // old link never hands off to github.com. On a phone each of its screens draws its own top bar (`ownTopBar`), with
+    // back (mobile D33).
     yield {
         path: SETTINGS_PATH,
         name: 'settings',
         component: () => import('@/settings/SettingsPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell' },
+        meta: { auth: 'signedIn', layout: 'shell', ownTopBar: true },
     };
     yield {
         path: `${SETTINGS_PATH}/tracking`,
@@ -204,19 +205,19 @@ function* getRoutes(): Generator<RouteRecordRaw> {
     // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their
     // settings — so the same address opens them on github.com. The static last segment outranks the hand-off of a
     // repository's other pages (`/owner/name/:path`) and of `/orgs/…`, `/users/…`; one not tracked settles on its
-    // section of Settings (the page does, once the kept settings are read).
+    // section of Settings (the page does, once the kept settings are read). On a phone each draws its own top bar.
     yield {
         path: REPOSITORY_SETTINGS_PATH,
         name: 'repository-settings',
         component: () => import('@/settings/RepositorySettingsPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell' },
+        meta: { auth: 'signedIn', layout: 'shell', ownTopBar: true },
     };
     for (const [index, path] of PROJECT_SETTINGS_PATHS.entries()) {
         yield {
             path,
             name: index === 0 ? 'project-org-settings' : 'project-user-settings',
             component: () => import('@/settings/ProjectSettingsPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell' },
+            meta: { auth: 'signedIn', layout: 'shell', ownTopBar: true },
         };
     }
     // GitHub's sign-in address leads home — the landing page, or the app signed in — keeping where to go after

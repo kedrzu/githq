@@ -39,6 +39,8 @@ interface TrackedListArgs {
     readonly onUntrack: (row: unknown) => void;
     readonly onAdd: (owner?: string) => void;
     readonly loaded: boolean;
+    /** A phone's Settings (mobile D35). */
+    readonly phone?: boolean;
 }
 
 /** One owner's group. */
@@ -167,6 +169,7 @@ const meta = {
                                 groups={repositories.value}
                                 getKey={row => row.nameWithOwner}
                                 loaded={args.loaded}
+                                phone={args.phone}
                                 onOpen={args.onOpen}
                                 onUntrack={row => untrack(row.nameWithOwner, row)}
                                 onAdd={args.onAdd}
@@ -177,6 +180,7 @@ const meta = {
                                             {...row}
                                             now={NOW}
                                             selected={selected}
+                                            phone={args.phone}
                                             onUntrack={() => untrack(row.nameWithOwner, row)}
                                         />
                                     ),
@@ -188,6 +192,7 @@ const meta = {
                                 groups={projects.value}
                                 getKey={row => row.id}
                                 loaded={args.loaded}
+                                phone={args.phone}
                                 onOpen={args.onOpen}
                                 onUntrack={row => untrack(row.id, row)}
                                 onAdd={args.onAdd}
@@ -198,6 +203,7 @@ const meta = {
                                             {...row}
                                             now={NOW}
                                             selected={selected}
+                                            phone={args.phone}
                                             onUntrack={() => untrack(row.id, row)}
                                         />
                                     ),
@@ -243,3 +249,12 @@ export const BeforeListsRead: Story = {
 
 /** ES24: nothing tracked: the note and its button alone. */
 export const NothingTracked: Story = { args: { repositories: [], projects: [] } };
+
+/** MB151: on a phone, only what is tracked by owner, each row drilling into its settings; "Track more" per group. */
+export const RepositoriesPhone: Story = { args: { phone: true } };
+
+/** MB154: a phone's Projects. */
+export const ProjectsPhone: Story = { args: { kind: 'projects', phone: true } };
+
+/** MB162: nothing tracked on a phone: the note and "Track repositories" the width of the screen. */
+export const NothingTrackedPhone: Story = { args: { repositories: [], projects: [], phone: true } };

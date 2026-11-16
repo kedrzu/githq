@@ -12,7 +12,10 @@ import {
     SAMPLE_TRACKED,
     sampleCandidateRepository,
 } from '@/testing/sampleTracking.js';
+import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
+import FirstSignInFrame from './FirstSignInFrame.vue';
 import TrackingChooser from './TrackingChooser.vue';
 import type { TrackingCandidates } from './TrackingTypes.js';
 
@@ -38,6 +41,8 @@ const meta = {
     },
     // The choice is the story's own, so its checkboxes work; as tall as the window, scrolling like the page.
     render: args => renderChooser(args, false),
+    // The story frame is narrower than a phone's width: the computer's chooser unless a story says otherwise.
+    decorators: [withPhoneLayout(false)],
 } satisfies Meta<typeof TrackingChooser>;
 
 export default meta;
@@ -147,6 +152,74 @@ export const PickerNotRead: Story = {
 };
 
 /**
+ * Mobile MB135: on a phone, one column in the first sign-in's frame — the question, the search pinned at the top,
+ * Repositories and Projects as segments, the groups with their own Show all, rows a finger's height, the footer pinned
+ * at the bottom.
+ */
+export const PhoneChoose: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, false),
+};
+
+/** MB135's Projects segment: the user's own project ticked, the organisations' not. */
+export const PhoneProjects: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, false),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: /^Projects/ }));
+    },
+};
+
+/**
+ * MB136: acme-health hides its private repositories — its group says why, with the way to the sheet; the saving
+ * choice ends the list.
+ */
+export const PhoneHiddenOrganisation: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, true),
+    play: async ({ canvasElement }) => {
+        const notice = await within(canvasElement).findByText('acme-health hides its private repositories');
+        notice.scrollIntoView({ block: 'center' });
+    },
+};
+
+/** MB137: why, as a sheet from below — the three steps and Request approval on GitHub. */
+export const PhoneWhy: Story = {
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, true),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: /^Why, and how\sto\sask/u }));
+    },
+};
+
+/** MB138: a brand-new account on a phone — the field tracks one by name, and the footer goes on to My work. */
+export const PhoneNothingToPick: Story = {
+    args: { candidates: EMPTY_CANDIDATES, repositories: [], projects: [] },
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, false),
+};
+
+/**
+ * MB163: typing on a phone — the question folded away, the search at the top, the matches grouped by owner, the footer
+ * one line with Track these at its end and how many of the matches are ticked.
+ */
+export const PhoneTyping: Story = {
+    args: { filter: 'pay' },
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, false),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(await within(canvasElement).findByRole('textbox', { name: /^Find a\srepository/u }));
+    },
+};
+
+/** MB164: found on GitHub on a phone — none of the user's match "nuxt", GitHub's results under On GitHub, one ticked. */
+export const PhoneFoundOnGitHub: Story = {
+    args: FoundOnGitHub.args,
+    decorators: [withPhoneLayout(true)],
+    render: args => renderPhoneChooser(args, false),
+};
+
+/**
  * The picker with its own picks and filter, as its dialog keeps them; the next page of an organisation asked for arrives
  * at once — the rest of skyline-labs, with `skyline-labs/legacy-billing`.
  */
@@ -173,6 +246,58 @@ function renderPicker({ onLoadMore, ...args }: ChooserArgs) {
                         onLoadMore={loadMore}
                     />
                 </div>
+            );
+        },
+    });
+}
+
+/**
+ * The chooser on a phone, in the first sign-in's frame, with its own choice and filter; the next page of an
+ * organisation asked for arrives at once. With `saving`, the saving choice at the end of the list. The choice is told to
+ * the story's own listener too, so a spec reads what was chosen.
+ */
+function renderPhoneChooser({ onLoadMore, ...args }: ChooserArgs, saving: boolean) {
+    return defineComponent({
+        setup() {
+            const repositories = ref(args.repositories);
+            const projects = ref(args.projects);
+            const filter = ref(args.filter ?? '');
+            const candidates = shallowRef(args.candidates);
+            const save = ref(false);
+            function loadMore(owner: string) {
+                onLoadMore?.(owner);
+                candidates.value = candidates.value && readNextPage(candidates.value, owner);
+            }
+
+            return () => (
+                <FirstSignInFrame viewer={SAMPLE_VIEWER}>
+                    <TrackingChooser
+                        {...args}
+                        candidates={candidates.value}
+                        repositories={repositories.value}
+                        projects={projects.value}
+                        filter={filter.value}
+                        onUpdate:repositories={value => {
+                            repositories.value = value;
+                            args['onUpdate:repositories']?.(value);
+                        }}
+                        onUpdate:projects={value => (projects.value = value)}
+                        onUpdate:filter={value => (filter.value = value)}
+                        onLoadMore={loadMore}
+                        v-slots={
+                            saving
+                                ? {
+                                      saving: () => (
+                                          <SavingChoice
+                                              modelValue={save.value}
+                                              onUpdate:modelValue={value => (save.value = value)}
+                                          />
+                                      ),
+                                  }
+                                : {}
+                        }
+                    />
+                </FirstSignInFrame>
             );
         },
     });

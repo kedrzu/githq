@@ -484,12 +484,19 @@ $motion-slide-distance: 4px;
     }
 }
 
-// The focus ring for keyboard users only.
-@mixin focus-ring {
+// The focus ring for keyboard users only; a negative `$offset` draws it inside the element (`-2px`), where a scroller
+// or a row edge to edge across the screen would clip it outside.
+@mixin focus-ring($offset: 1px) {
     &:focus-visible {
-        outline: 2px solid $color-focus;
-        outline-offset: 1px;
+        @include focus-outline($offset);
     }
+}
+
+// The focus ring's outline alone, for a selector of its own: the element ringed for focus within it
+// (`&:has(… :focus-visible)`) or a pseudo-element drawing it (`&:focus-visible::after`).
+@mixin focus-outline($offset: 1px) {
+    outline: 2px solid $color-focus;
+    outline-offset: $offset;
 }
 
 // A project's card of fields under the item's properties — on an item (`ItemProjects`) and in the new issue form on a phone

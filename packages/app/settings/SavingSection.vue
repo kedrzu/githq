@@ -1,4 +1,4 @@
-<!-- The Sync settings section of Settings (settings-sync T3–T8), wired to `SettingsSync`: turning saving on — GitHub asked first, and a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped. Trying again after it stopped before this device ever saw the file, and finding one, shows that file for the same word. What combining would change is worked out from this device's settings as they are, and names, for each repository it untracks, how many items it keeps here. -->
+<!-- The Sync settings section of Settings (settings-sync T3–T8), wired to `SettingsSync`: turning saving on — GitHub asked first, and a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped. Trying again after it stopped before this device ever saw the file, and finding one, shows that file for the same word. On a phone in the screen's one column. What combining would change is worked out from this device's settings as they are, and names, for each repository it untracks, how many items it keeps here. -->
 <script lang="ts" setup>
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -25,6 +25,11 @@ type Connecting =
   | { readonly kind: 'idle' | 'busy' | 'unreachable' }
   | { readonly kind: 'found'; readonly found: FoundSettings }
   | { readonly kind: 'unusable'; readonly reason: StoppedReason };
+
+defineProps<{
+  /** In a phone's Settings: one column the width of the screen. */
+  phone?: boolean;
+}>();
 
 const sync = useService(SettingsSync);
 const tracking = useService(TrackingStore);
@@ -136,6 +141,7 @@ function reload() {
     :turn-on="turnOn"
     :combine="combine"
     :retry="retry"
+    :phone="phone"
     @cancel="connecting = { kind: 'idle' }"
     @turn-off="turnOff"
     @reload="reload"

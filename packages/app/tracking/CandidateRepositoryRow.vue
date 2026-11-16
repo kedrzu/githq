@@ -1,4 +1,4 @@
-<!-- A repository the tracking screens offer (G2, G4, G5, T18): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. In the picker (T18) a tracked one shows a grey, fixed tick and "tracked" instead of its activity; one GitHub's lists have not given shows only what is known of it — no tag when its privacy is unknown, no open count. -->
+<!-- A repository the tracking screens offer (G2, G4, G5, T18): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. In the picker (T18) a tracked one shows a grey, fixed tick and "tracked" instead of its activity; one GitHub's lists have not given shows only what is known of it — no tag when its privacy is unknown, no open count. `touch` (a phone, mobile MB135): a row a finger's height, the phone's checkbox, the name on one line and the tag, the open count and the activity under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
@@ -20,6 +20,8 @@ const props = defineProps<{
   now: number;
   /** The picker: already tracked, so its tick is fixed and it can't be picked. */
   tracked?: boolean;
+  /** A phone's row (mobile MB135): two lines, a finger's height. */
+  touch?: boolean;
 }>();
 
 const selected = defineModel<boolean>({ required: true });
@@ -33,6 +35,42 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
 
 <template>
   <div
+    v-if="touch"
+    :class="[css.candidateRepositoryRow_touch, tracked && css.candidateRepositoryRow_tracked]"
+    data-tracking-row
+  >
+    <Checkbox
+      :model-value="tracked || selected"
+      :readonly="tracked"
+      size="touch"
+      :class="css.candidateRepositoryRow_touchLabel"
+      @update:model-value="selected = $event"
+    >
+      <span :class="css.candidateRepositoryRow_lines">
+        <span :class="css.candidateRepositoryRow_text">
+          <span :class="css.candidateRepositoryRow_owner">{{ parts.owner }}/</span
+          ><span :class="css.candidateRepositoryRow_repo">{{ parts.name }}</span>
+        </span>
+        <span :class="css.candidateRepositoryRow_metaLine">
+          <span
+            v-if="repository.isPrivate !== null"
+            :class="css.candidateRepositoryRow_pill"
+            >{{ t(repository.isPrivate ? l.private : l.public) }}</span
+          >
+          <span v-if="candidate?.isArchived">{{ t(l.archived) }}</span>
+          <span v-if="candidate">{{ t(l.open, { count: candidate.openIssues + candidate.openPullRequests }) }}</span>
+          <span v-if="tracked">{{ t(l.tracked) }}</span>
+          <span
+            v-else-if="candidate"
+            :class="pushedAt !== null && now - pushedAt < RECENT_MS && css.candidateRepositoryRow_active_recent"
+            >{{ pushedAt === null ? t(l.neverPushed) : t(l.active, { age: formatAge(pushedAt, now) }) }}</span
+          >
+        </span>
+      </span>
+    </Checkbox>
+  </div>
+  <div
+    v-else
     :class="[css.candidateRepositoryRow, tracked && css.candidateRepositoryRow_tracked]"
     data-tracking-row
   >
@@ -167,7 +205,42 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
   color: $color-fg-2;
 }
 
+// A phone's row: two lines a finger's height, the screen's gutter at each side.
+.candidateRepositoryRow_touch {
+  display: flex;
+  align-items: center;
+  min-height: $touch-target-size + $spacing-12;
+  padding: $spacing-6 $spacing-16;
+
+  &:focus-within {
+    background: $color-sel;
+  }
+}
+
+.candidateRepositoryRow_touchLabel {
+  width: 100%;
+  min-width: 0;
+}
+
+.candidateRepositoryRow_lines {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  min-width: 0;
+  font-size: $font-size-lg;
+}
+
+.candidateRepositoryRow_metaLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-8;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+}
+
 // A fixed tick, grey rather than the readonly checkbox's dimmed accent, with the row's name quieter.
+.candidateRepositoryRow_touch.candidateRepositoryRow_tracked,
 .candidateRepositoryRow.candidateRepositoryRow_tracked {
   [role='checkbox'] {
     color: $color-fg-3;

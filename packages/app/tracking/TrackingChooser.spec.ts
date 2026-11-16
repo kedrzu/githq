@@ -20,6 +20,9 @@ const {
     PickerNotRead,
     PickerReading,
     PickerSearching,
+    PhoneChoose,
+    PhoneHiddenOrganisation,
+    PhoneTyping,
     SearchingGitHub,
 } = composeStories(stories);
 
@@ -267,6 +270,89 @@ test("on a wide screen a repository's open count follows its name and visibility
 
     expect(open.getBoundingClientRect().left - label.right).toBeCloseTo(10, 0);
     expect(open.getBoundingClientRect().right).toBeLessThan(rowEdge.right - 100);
+});
+
+test('on a phone the search stays pinned at the top while the list scrolls under it', async () => {
+    await PhoneChoose.run();
+    const search = page.getByRole('textbox', { name: 'Find a repository or project' });
+    await expect.element(search).toBeVisible();
+    const scroller = search.element().closest('main');
+    if (!scroller) {
+        throw new Error('The screen has no scroll.');
+    }
+
+    const first = page.getByRole('checkbox', { name: /^kedrzu\/githq / });
+    const firstTop = first.element().getBoundingClientRect().top;
+    scroller.scrollTop = 600;
+    await expect.poll(() => first.element().getBoundingClientRect().top).toBeLessThan(firstTop - 500);
+
+    // The question scrolled away; the field stays under the setup bar, above the rows.
+    const bar = scroller.previousElementSibling?.getBoundingClientRect();
+    const field = search.element().getBoundingClientRect();
+    expect(bar).toBeDefined();
+    expect(field.top).toBeGreaterThanOrEqual(bar?.bottom ?? 0);
+    expect(field.top).toBeLessThan((bar?.bottom ?? 0) + 40);
+    await expect.element(page.getByRole('heading', { name: 'Which of these do you work on?' })).not.toBeInViewport();
+});
+
+test('on a phone Track these tracks the rows ticked, a project from its segment too; no key hints are drawn', async () => {
+    const onTrack = vi.fn();
+    const onUpdateRepositories = vi.fn();
+    const onUpdateProjects = vi.fn();
+    await PhoneChoose.run({
+        args: {
+            ...PhoneChoose.args,
+            onTrack,
+            'onUpdate:repositories': onUpdateRepositories,
+            'onUpdate:projects': onUpdateProjects,
+        },
+    });
+
+    await userEvent.click(page.getByRole('checkbox', { name: /^kedrzu\/githq / }));
+    await userEvent.click(page.getByRole('checkbox', { name: /^skyline-labs\/portal / }));
+    await userEvent.click(page.getByRole('button', { name: /^Projects/ }));
+    await userEvent.click(page.getByRole('checkbox', { name: /^Platform Q4/ }));
+    const track = page.getByRole('button', { name: 'Track these' });
+    await expect.element(track).toHaveTextContent(/^Track these$/u);
+    await userEvent.click(track);
+
+    expect(onTrack).toHaveBeenCalledOnce();
+    const repositories = onUpdateRepositories.mock.lastCall?.[0];
+    expect(repositories).toContain('skyline-labs/api');
+    expect(repositories).not.toContain('kedrzu/githq');
+    expect(repositories).not.toContain('skyline-labs/portal');
+    expect(onUpdateProjects).toHaveBeenLastCalledWith(['PVT_kedrzu_1', 'PVT_skyline-labs_2']);
+    await expect.element(page.getByText(/^12 repositories and\s2\sprojects$/u)).toBeInTheDocument();
+});
+
+test('on a phone typing folds the question away; the footer is one line counting the matches ticked, with no key hints', async () => {
+    await PhoneTyping.run();
+
+    await expect.element(page.getByRole('heading', { name: 'Which of these do you work on?' })).not.toBeInTheDocument();
+    await expect.element(page.getByText(/^14 repositories,\s1\sproject$/u)).toBeInTheDocument();
+    await expect.element(page.getByText(/^none of\sthese matches ticked$/u)).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Only mine' })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Move', { exact: true })).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('checkbox', { name: /^skyline-labs\/payments / }));
+    await expect.element(page.getByText(/^1\sof\sthese matches ticked$/u)).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Projects/ })).toHaveTextContent('Projects0');
+});
+
+test('on a phone why an organisation hides its private repositories opens as a sheet from below', async () => {
+    const onRequestApproval = vi.fn();
+    await PhoneHiddenOrganisation.run({ args: { ...PhoneHiddenOrganisation.args, onRequestApproval } });
+
+    await userEvent.click(page.getByRole('button', { name: /^Why, and how\sto\sask/u }));
+    const sheet = page.getByRole('dialog', { name: 'acme-health hides its private data from githq' });
+    await expect.element(sheet).toBeVisible();
+    await expect.poll(() => Math.round(sheet.element().getBoundingClientRect().bottom)).toBe(window.innerHeight);
+    const link = sheet.getByRole('link', { name: 'Request approval on GitHub' });
+    await expect.element(link).toHaveAttribute('href', `${window.location.origin}/api/auth/approval`);
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(sheet).not.toBeInTheDocument();
+    expect(onRequestApproval).not.toHaveBeenCalled();
 });
 
 /** The rows of the repositories' column, in order, by the name after the owner. */

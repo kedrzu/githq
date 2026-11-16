@@ -211,7 +211,7 @@ function onClick(event: MouseEvent) {
 
 <style lang="scss" module="css">
 .reviewFileRow {
-  @include focus-ring;
+  @include focus-ring(-2px);
 
   display: flex;
   gap: $spacing-7;
@@ -228,10 +228,6 @@ function onClick(event: MouseEvent) {
 
   &:hover {
     background: $color-bg-2;
-  }
-
-  &:focus-visible {
-    outline-offset: -2px;
   }
 }
 

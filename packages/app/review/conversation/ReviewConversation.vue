@@ -401,17 +401,13 @@ async function showOlder(load: () => Promise<void>) {
 }
 
 .reviewConversation_scroller {
-  @include focus-ring;
+  @include focus-ring(-2px);
 
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   // What is being read is held here, when older comments come in above it.
   overflow-anchor: none;
-
-  &:focus-visible {
-    outline-offset: -2px;
-  }
 }
 
 // The cards 8 apart, as on the pull request's thread.

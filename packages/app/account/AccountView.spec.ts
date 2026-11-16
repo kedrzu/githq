@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './AccountView.stories.js';
 
-const { Account, Failed, NotRequested } = composeStories(stories);
+const { Account, Failed, NotRequested, Phone } = composeStories(stories);
 
 test('an organisation hiding its private data says so, with a link to request approval that is remembered', async () => {
     const onRequestApproval = vi.fn();
@@ -49,4 +49,29 @@ test('organisations GitHub could not be asked for can be asked for again', async
 
     await userEvent.click(page.getByRole('button', { name: 'Try again' }));
     expect(onRetry).toHaveBeenCalled();
+});
+
+test('MB156, MB157: on a phone signing out asks once in a sheet saying what it deletes, and Cancel signs nobody out', async () => {
+    const onSignOut = vi.fn();
+    await Phone.run({ args: { ...Phone.args, onSignOut } });
+
+    await expect.element(page.getByText(/^Private\sdata\shidden$/u)).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Request approval on GitHub: acme-health' }))
+        .toHaveAttribute('href', 'https://githq.test/api/auth/approval');
+
+    await userEvent.click(page.getByRole('button', { name: 'Sign out and clear' }));
+    const sheet = page.getByRole('dialog', { name: 'Sign out and clear this phone?' });
+    await expect.element(sheet.getByText(/15\srepositories,\s1\sproject/u)).toBeVisible();
+    await userEvent.click(sheet.getByRole('button', { name: 'Cancel' }));
+    await expect.element(sheet).not.toBeInTheDocument();
+    expect(onSignOut).not.toHaveBeenCalled();
+
+    await userEvent.click(page.getByRole('button', { name: 'Sign out and clear' }));
+    await userEvent.click(
+        page
+            .getByRole('dialog', { name: 'Sign out and clear this phone?' })
+            .getByRole('button', { name: 'Sign out and clear' }),
+    );
+    expect(onSignOut).toHaveBeenCalledOnce();
 });

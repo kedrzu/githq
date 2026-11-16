@@ -1,0 +1,24 @@
+tracking:
+  en: Tracking
+behaviour:
+  en: How githq behaves
+yours:
+  en: Your settings
+animationsOn:
+  en: Animations on
+animationsOff:
+  en: Animations off
+reviewSingle:
+  en: Send at once
+reviewDraft:
+  en: Draft review
+statisticsOn:
+  en: Statistics on
+statisticsOff:
+  en: Statistics off
+savingOn:
+  en: On
+savingOff:
+  en: Off
+savingStopped:
+  en: Stopped

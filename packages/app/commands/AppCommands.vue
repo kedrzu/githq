@@ -2,26 +2,17 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import {
-  BookMarked,
   BookOpen,
   CircleArrowDown,
   CircleHelp,
-  CircleUser,
   Clock,
-  CloudUpload,
   Command as CommandIcon,
-  FileDiff,
   GitBranch,
   LogOut,
-  PanelsTopLeft,
   RefreshCw,
   RotateCcw,
-  ScrollText,
   Settings,
-  Shield,
-  SquareKanban,
   SquarePen,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -48,6 +39,7 @@ import { Browser } from '@/services/Browser.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 import type { SettingsSection } from '@/settings/settingsRoutes.js';
 import { CONFIRM_STABLE_PATH, getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
+import { SETTINGS_SECTION_ICONS } from '@/settings/settingsSectionIcons.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -65,18 +57,6 @@ import KeyHelp from './KeyHelp.vue';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
-
-const SETTINGS_SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon>> = {
-  repositories: BookMarked,
-  projects: SquareKanban,
-  display: PanelsTopLeft,
-  review: FileDiff,
-  privacy: Shield,
-  sync: CloudUpload,
-  account: CircleUser,
-  updates: CircleArrowDown,
-  changelog: ScrollText,
-};
 
 const t = useTranslate();
 const registry = useService(CommandRegistry);

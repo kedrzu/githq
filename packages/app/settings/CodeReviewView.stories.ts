@@ -26,3 +26,6 @@ export const DraftReview: Story = { args: { modelValue: 'draft' } };
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 360px"><story /></div>' })],
 };
+
+/** MB159: on a phone, the same choice as plain rows under Comments. */
+export const Phone: Story = { args: { phone: true } };
