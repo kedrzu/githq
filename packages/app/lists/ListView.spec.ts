@@ -120,6 +120,27 @@ test('board: Enter or a click opens the card; while one is open, moving the sele
     await expect.poll(selectedCard).toBe('c2');
 });
 
+test('#339: an item selected elsewhere that this list does not show is out of the keys\' reach, and of "Open full screen"', async () => {
+    const view = mount(BOARD, 'board');
+    const registry = view.container.resolve(CommandRegistry);
+    const offered = () =>
+        registry.commands.some(command => command.id === 'list.fullScreen' && registry.isEnabled(command));
+    // The item opened last, in another list: the page selects it, and this list has no row of it.
+    view.selectedId.value = 'elsewhere';
+    await nextTick();
+
+    expect(offered()).toBe(false);
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}{Enter}x');
+    expect(view.fullScreen).toEqual([]);
+    expect(view.opened).toEqual([]);
+    expect(view.checkedIds.value).toEqual([]);
+
+    await userEvent.keyboard('j');
+    await expect.poll(offered).toBe(true);
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(view.fullScreen).toEqual(['a1']);
+});
+
 test("Enter on the opened item's row expands it, on another row opens that one; Shift+Enter opens a row not open full screen, never on the opened one's row", async () => {
     const view = mount(BOARD, 'board');
 
