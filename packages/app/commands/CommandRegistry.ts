@@ -2,10 +2,13 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { computed, shallowRef } from 'vue';
 
+import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
+import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
 import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
+import { getRunKeys } from './getRunKeys.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
@@ -207,11 +210,10 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            const command = findCommand(
-                candidate =>
-                    candidate.key !== undefined &&
-                    matchesCommandKey(event, candidate.key) &&
-                    isFreeTarget(event.target, candidate),
+            const command = findCommand(candidate =>
+                getRunKeys(candidate).some(
+                    key => matchesCommandKey(event, key) && isFreeTarget(event.target, candidate, key),
+                ),
             );
             if (command) {
                 event.preventDefault();
@@ -240,21 +242,27 @@ export const CommandRegistry = defineService({
 /**
  * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
- * the items behind it), nor from an open menu, which would stay open over wherever the key went. A single key acting
- * on a subject doesn't run from what Tab focused outside the list (`data-tab-focus`): the keyboard isn't on the subject.
- * A list's key doesn't run while a layer covers the screen (`isScreenCovered`), as its own listener's don't
- * (`isScreenKey`).
+ * the items behind it), nor from an open menu, which would stay open over wherever the key went. Enter and Space are a
+ * focused button's, link's or summary's own (commands D4). A single key acting on a subject doesn't run from what Tab
+ * focused outside the list (`data-tab-focus`): the keyboard isn't on the subject. A screen's key (one with a place but
+ * `app`) doesn't run while a layer covers the screen (`isScreenCovered`), and its Escape not while a picker, menu or
+ * tooltip is open (`isLayerOpen`): that Escape closes it.
  */
-function isFreeTarget(target: EventTarget | null, command: Command) {
+function isFreeTarget(target: EventTarget | null, command: Command, key: string) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 
-    if (command.place === 'list' && isScreenCovered()) {
+    const screen = command.place !== undefined && command.place !== 'app';
+    if (screen && (isScreenCovered() || (key === 'Escape' && isLayerOpen()))) {
         return false;
     }
 
-    if (command.key?.includes('Mod+')) {
+    if ((key === 'Enter' || key === 'Space') && isActivatableTarget(target)) {
+        return false;
+    }
+
+    if (key.includes('Mod+')) {
         return !(target instanceof Element && target.closest(WRITING) !== null);
     }
 

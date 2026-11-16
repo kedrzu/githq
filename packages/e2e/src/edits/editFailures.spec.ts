@@ -140,8 +140,8 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
     const view = help.getByRole('region', { name: 'This view' });
     const listKeys: readonly (readonly [string, readonly string[]])[] = [
-        ['Next item', ['J', 'ArrowDown']],
-        ['Previous item', ['K', 'ArrowUp']],
+        ['Next', ['J', 'ArrowDown']],
+        ['Previous', ['K', 'ArrowUp']],
         ['Select for editing together', ['X']],
         ['Select the next one too', ['Shift+J', 'Shift+ArrowDown']],
         ['Select the previous one too', ['Shift+K', 'Shift+ArrowUp']],
@@ -149,9 +149,12 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     ];
     for (const [title, keys] of listKeys) {
         // Each key as the help reads it out, beside its chips.
-        await expect(view.getByRole('term').filter({ hasText: title }).locator('+ dd')).toContainText(
-            new RegExp(keys.map(key => key.replace('+', '\\+')).join('.*'), 'u'),
-        );
+        await expect(
+            view
+                .getByRole('term')
+                .filter({ hasText: new RegExp(`^${title}$`, 'u') })
+                .locator('+ dd'),
+        ).toContainText(new RegExp(keys.map(key => key.replace('+', '\\+')).join('.*'), 'u'));
     }
 
     await expect(

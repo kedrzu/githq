@@ -14,15 +14,17 @@ export type CommandSection = 'selection' | 'item' | 'view' | 'repository' | 'app
 export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'repository', 'app'];
 
 /**
- * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list, an
- * opened item, a commit, workflow or workflow run opened as one, a repository's Workflows section, a review, the
- * changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places
- * only tell which keys collide and which command takes a key while two places are on screen; more are added as
- * commands move onto definitions.
+ * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list in
+ * either layout, a list shown as a board (the keys only the board has: its ←/→ are not the list layout's), an opened
+ * item, a commit, workflow or workflow run opened as one, a repository's Workflows section, a review, the changelog, a
+ * screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places tell which keys
+ * collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
+ * the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
 export type CommandPlace =
     | 'app'
     | 'list'
+    | 'board'
     | 'item'
     | 'commit'
     | 'workflow'
@@ -35,14 +37,15 @@ export type CommandPlace =
     | 'project';
 
 /**
- * The places that can be on screen together, each pair's first keeping the keyboard: a list with an item open beside
- * it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); an item opened over a review, or beside a screen
- * GitHub won't show; a workflow's run beside its repository's Workflows section, whose keys are then the run's.
- * Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with every
- * place, and every place keeps the keyboard over it.
+ * The places that can be on screen together, each pair's first keeping the keyboard: a list or a board with an item
+ * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); an item opened over a review, or beside
+ * a screen GitHub won't show; a workflow's run beside its repository's Workflows section, whose keys are then the
+ * run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with
+ * every place, and every place keeps the keyboard over it.
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
+    ['board', 'item'],
     ['item', 'review'],
     ['item', 'cantBeRead'],
     ['workflowRun', 'workflows'],
@@ -120,7 +123,10 @@ export interface Command extends CommandMarks {
      * one-line field.
      */
     readonly key?: string;
-    /** Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. */
+    /**
+     * Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. The registry runs a
+     * command by them only when it has a `place` (bound from a definition); others' are their component's own (`⌘F`).
+     */
     readonly otherKeys?: readonly string[];
     /** Dim text after the title: the current value ("In progress · Platform Q4"), "2 of 3 editable". */
     readonly detail?: string;
@@ -151,7 +157,7 @@ export interface Command extends CommandMarks {
      * Runs it — by its key; in the menu too unless it has a submenu, which the menu opens instead. Returning
      * `false` says it could not run here (the item view's picker is not shown): its key then opens the menu at its
      * submenu, as it does for an action with a submenu and no `run`. With neither `run` nor `options`, its key is the
-     * registering component's own (a list's `j`, seen before an opened item's): it is only listed in the help sheet.
+     * registering component's own (a commit graph's `j`): it is only listed in the help sheet.
      */
     readonly run?: () => boolean | void;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */

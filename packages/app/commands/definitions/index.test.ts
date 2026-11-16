@@ -32,9 +32,7 @@ test('D8: no app-wide command takes a letter or a digit by default, only modifie
 });
 
 test('D3: no two commands active together share a default key', () => {
-    expect(
-        findKeyConflicts(ALL).map(({ key, first, second }) => `${key}: ${first.id} and ${second.id}`),
-    ).toEqual([]);
+    expect(findKeyConflicts(ALL).map(({ key, first, second }) => `${key}: ${first.id} and ${second.id}`)).toEqual([]);
 });
 
 /** With `Mod`, `Alt` or `Control`, or a symbol on its own (`?`, `,`); `Shift` alone still types a letter. */

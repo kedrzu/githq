@@ -1,0 +1,28 @@
+next:
+  en: Next
+previous:
+  en: Previous
+open:
+  en: Open
+check:
+  en: Select for editing together
+checkNext:
+  en: Select the next one too
+checkPrevious:
+  en: Select the previous one too
+uncheck:
+  en: Clear the selection
+nextColumn:
+  en: Next column
+previousColumn:
+  en: Previous column
+moveToNextColumn:
+  en: Move to the next column
+moveToPreviousColumn:
+  en: Move to the previous column
+expandStack:
+  en: Expand the stack
+collapseStack:
+  en: Collapse the stack
+toggleStack:
+  en: Expand or collapse the stack

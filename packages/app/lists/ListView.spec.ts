@@ -12,6 +12,7 @@ import { computed, createApp, defineComponent, h, nextTick, ref, shallowRef } fr
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import KeyHelp from '@/commands/KeyHelp.vue';
 import { openOnGitHub } from '@/commands/definitions/index.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
@@ -617,6 +618,75 @@ test("with an item open beside it j/k, the arrows and Enter stay the list's: eac
     await expect.poll(selectedCard).toBe('a3');
     await userEvent.keyboard('k{Enter}');
     expect(view.opened.at(-1)).toBe('a2');
+});
+
+test("a key the list has nothing to do with is left to what is under it: Escape with nothing checked, x and Enter with nothing selected, ←/→ on a row no stack's", async () => {
+    const view = mount(STACKED, 'list');
+    const passed: string[] = [];
+    const listen = (event: KeyboardEvent) => {
+        if (!event.defaultPrevented) {
+            passed.push(event.key);
+        }
+    };
+    // After the registry's, as an opened item's own listener is.
+    window.addEventListener('keydown', listen);
+    onTestFinished(() => window.removeEventListener('keydown', listen));
+
+    await userEvent.keyboard('{Escape}x{Enter}');
+    expect(passed).toEqual(['Escape', 'x', 'Enter']);
+
+    await userEvent.keyboard('j{ArrowRight}{ArrowLeft}x{Escape}');
+    await expect.poll(selectedCard).toBe('a1');
+    expect(passed).toEqual(['Escape', 'x', 'Enter', 'ArrowRight', 'ArrowLeft']);
+    expect(view.checkedIds.value).toEqual([]);
+
+    // On a stack's entry → and ← are the list's.
+    await userEvent.keyboard('j{ArrowRight}{ArrowLeft}');
+    expect(passed).toHaveLength(5);
+});
+
+test("? lists each of the list's keys once, beside what runs: its own over an opened item's, which keeps Escape while nothing is checked", async () => {
+    const view = mount([['todo', ['a1', 'a2']]], 'list', { followOpened: true });
+    const registry = view.container.resolve(CommandRegistry);
+    // The opened item's own keys, run by its own listener and only listed, as the item view registers them.
+    onTestFinished(
+        registry.register({
+            commands: [
+                {
+                    id: 'item.next',
+                    title: 'Next item',
+                    section: 'item',
+                    key: 'J',
+                    otherKeys: ['ArrowDown'],
+                    menu: false,
+                },
+                { id: 'item.close', title: 'Close', section: 'item', key: 'Escape', menu: false },
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('j{Enter}');
+    await expect.poll(() => view.openedId.value).toBe('a1');
+    mountHelp(view.container);
+
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const keysOf = (title: string) =>
+        help
+            .getByRole('term')
+            .filter({ hasText: new RegExp(`^${title}$`, 'u') })
+            .elements()
+            .map(term => term.nextElementSibling?.textContent ?? '');
+    await expect.poll(() => keysOf('Next')).toEqual([expect.stringMatching(/J.*ArrowDown/u)]);
+    expect(keysOf('Previous')).toEqual([expect.stringMatching(/K.*ArrowUp/u)]);
+    expect(keysOf('Open')).toEqual([expect.stringContaining('Enter')]);
+    expect(keysOf('Select for editing together')).toHaveLength(1);
+    expect(keysOf('Next item')).toEqual([]);
+    expect(keysOf('Close')).toEqual([expect.stringContaining('Escape')]);
+    expect(keysOf('Clear the selection')).toEqual([]);
+
+    view.checkedIds.value = ['a1'];
+    await expect.poll(() => keysOf('Clear the selection')).toEqual([expect.stringContaining('Escape')]);
+    expect(keysOf('Close')).toEqual([]);
 });
 
 test('board: an item opened from outside selects its collapsed card; once expanded, the pull request inside it', async () => {
@@ -2279,6 +2349,25 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
 }
 
 /** The app's services a list reads: the local copy, of a signed-in user, kept in IndexedDB as the app keeps it. */
+/** The help sheet, open, over what can run now — as the app's shell shows it — beside a list mounted with `container`. */
+function mountHelp(container: VueContainer) {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const app = createApp({
+        setup: () => {
+            const registry = container.resolve(CommandRegistry);
+            return () =>
+                h(KeyHelp, { open: true, commands: registry.commands.filter(command => registry.isEnabled(command)) });
+        },
+    });
+    app.use(IocPlugin, { container });
+    app.mount(host);
+    onTestFinished(() => {
+        app.unmount();
+        host.remove();
+    });
+}
+
 function createListContainer(request?: BrowserShape['fetch']) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
