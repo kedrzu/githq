@@ -17959,24 +17959,57 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "brony",
-                                  "name": "icon square-kanban",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "square-kanban",
-                                  "library": "lucide",
-                                  "fill": "$accent"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "W0GlrP",
-                                  "name": "Platform Q4",
-                                  "fill": "$fg",
-                                  "content": "Platform Q4",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
+                                  "type": "frame",
+                                  "id": "Xyhm7",
+                                  "name": "Project menu trigger",
+                                  "cornerRadius": 5,
+                                  "gap": 6,
+                                  "padding": [
+                                    3,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "nZWSt",
+                                      "name": "Name",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "brony",
+                                          "name": "icon square-kanban",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "square-kanban",
+                                          "library": "lucide",
+                                          "fill": "$accent"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "W0GlrP",
+                                          "name": "Platform Q4",
+                                          "fill": "$fg",
+                                          "content": "Platform Q4",
+                                          "fontFamily": "$font",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "csuzE",
+                                      "name": "Chevron",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
@@ -20237,24 +20270,57 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "INfno",
-                                  "name": "icon square-kanban",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "square-kanban",
-                                  "library": "lucide",
-                                  "fill": "$accent"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Poglf",
-                                  "name": "Platform Q4",
-                                  "fill": "$fg",
-                                  "content": "Platform Q4",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
+                                  "type": "frame",
+                                  "id": "mGrbx",
+                                  "name": "Project menu trigger",
+                                  "cornerRadius": 5,
+                                  "gap": 6,
+                                  "padding": [
+                                    3,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "h9Xrf",
+                                      "name": "Name",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "INfno",
+                                          "name": "icon square-kanban",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "square-kanban",
+                                          "library": "lucide",
+                                          "fill": "$accent"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Poglf",
+                                          "name": "Platform Q4",
+                                          "fill": "$fg",
+                                          "content": "Platform Q4",
+                                          "fontFamily": "$font",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "UniGT",
+                                      "name": "Chevron",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
@@ -25418,7 +25484,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": 860,
-              "content": "The same rule on a repository, in three steps as room runs out: first the view options move into Display; then Display drops its label to an icon, keeping its name as a tooltip and for screen readers; last the tab group becomes one dropdown showing the current section. 1–4 switch sections whatever the header shows. A project's header does the same with its saved views (App · Project).",
+              "content": "The same rule on a repository, in four steps as room runs out: first the view options move into Display, the List / Board switch with them, while the state filter (Open) stays longest; then Display drops its label to an icon, keeping its name as a tooltip and for screen readers; then the tab group becomes one dropdown showing the current section; last the title is cut, ending in “…”, with the full name in its tooltip. 1–4 switch sections whatever the header shows. A project's header does the same with its saved views (App · Project).",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -25479,7 +25545,7 @@
                   "id": "WoEbx",
                   "name": "Desc",
                   "fill": "$fg-dim",
-                  "content": "Open, Group, Order and Properties move into Display, as on a project",
+                  "content": "Group, Order, Properties and the List / Board switch move into Display; the state filter, Open, stays longest",
                   "fontFamily": "$font",
                   "fontSize": 13,
                   "fontWeight": "normal"
@@ -25513,7 +25579,7 @@
                       "width": "fill_container",
                       "descendants": {
                         "SbJoh": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "fegPc": {
                           "enabled": false
@@ -25522,6 +25588,9 @@
                           "enabled": false
                         },
                         "Q6deWE": {
+                          "enabled": false
+                        },
+                        "HgDjc": {
                           "enabled": false
                         }
                       }
@@ -25633,7 +25702,7 @@
                       "width": "fill_container",
                       "descendants": {
                         "SbJoh": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "fegPc": {
                           "enabled": false
@@ -25642,6 +25711,9 @@
                           "enabled": false
                         },
                         "Q6deWE": {
+                          "enabled": false
+                        },
+                        "HgDjc": {
                           "enabled": false
                         },
                         "bW4eV/deogH": {
@@ -25779,7 +25851,7 @@
                           "enabled": true
                         },
                         "SbJoh": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "fegPc": {
                           "enabled": false
@@ -25788,6 +25860,9 @@
                           "enabled": false
                         },
                         "Q6deWE": {
+                          "enabled": false
+                        },
+                        "HgDjc": {
                           "enabled": false
                         },
                         "bW4eV/deogH": {
@@ -25908,7 +25983,7 @@
                           "enabled": true
                         },
                         "SbJoh": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "fegPc": {
                           "enabled": false
@@ -25917,6 +25992,9 @@
                           "enabled": false
                         },
                         "Q6deWE": {
+                          "enabled": false
+                        },
+                        "HgDjc": {
                           "enabled": false
                         },
                         "bW4eV/deogH": {
@@ -26077,6 +26155,247 @@
                           }
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "G8EsCW",
+          "name": "State · CH81 · 4 · The title cut",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "frame",
+              "id": "OpgEJ",
+              "name": "Caption",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Y00Q3A",
+                  "name": "Width",
+                  "fill": "$bg-3",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "X4XJr",
+                      "name": "w",
+                      "fill": "$fg-2",
+                      "content": "520 px pane",
+                      "fontFamily": "$mono",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "VrMuA",
+                  "name": "Label",
+                  "fill": "$fg",
+                  "content": "CH81 · 4 · The title cut",
+                  "fontFamily": "$font",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "WSz2T",
+                  "name": "Desc",
+                  "fill": "$fg-dim",
+                  "content": "last, the name is cut with “…”, the full name in its tooltip",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EdxoQ",
+              "name": "Stage",
+              "height": 150,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "l3TGwZ",
+                  "name": "Repository pane",
+                  "clip": true,
+                  "width": 520,
+                  "height": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 8,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "xqOW2",
+                      "type": "ref",
+                      "ref": "I3AnbD",
+                      "name": "Header",
+                      "width": "fill_container",
+                      "descendants": {
+                        "Gp4jb": {
+                          "content": "fitloop/we…"
+                        },
+                        "IQzza": {
+                          "enabled": false
+                        },
+                        "NR1gb": {
+                          "enabled": true
+                        },
+                        "NR1gb/LEhQE": {
+                          "icon": "git-commit-horizontal"
+                        },
+                        "NR1gb/K6QtMj": {
+                          "content": "Commits"
+                        },
+                        "NR1gb/uc4v4": {
+                          "enabled": false
+                        },
+                        "FPxDF": {
+                          "type": "frame",
+                          "id": "r54Rv",
+                          "name": "Right part",
+                          "fill": "$bg",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "R2woVx",
+                              "name": "Branches and tags",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "mw6hY",
+                                  "type": "ref",
+                                  "ref": "XJXsm",
+                                  "name": "Tool Branches and tags",
+                                  "descendants": {
+                                    "rgTry": {
+                                      "icon": "git-branch"
+                                    },
+                                    "deogH": {
+                                      "content": "Branches and tags"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "bFR3B",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd B",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "B"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "DZXQX",
+                              "type": "ref",
+                              "ref": "HtcJe",
+                              "name": "Open on GitHub",
+                              "descendants": {
+                                "ypRNu": {
+                                  "icon": "github"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "id": "dYgK6",
+                      "type": "ref",
+                      "ref": "EMjBX",
+                      "name": "Commit row 1",
+                      "width": "fill_container",
+                      "descendants": {
+                        "AzCf6": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "uvbtt",
+                      "type": "ref",
+                      "ref": "EMjBX",
+                      "name": "Commit row 2",
+                      "width": "fill_container",
+                      "descendants": {
+                        "RxUsy": {
+                          "content": "Show the class capacity on the booking card"
+                        },
+                        "S6abg": {
+                          "enabled": false
+                        },
+                        "IebtI": {
+                          "content": "Marta Lis"
+                        },
+                        "nCQzU": {
+                          "content": "5h"
+                        },
+                        "FV92i": {
+                          "content": "9b1e07d"
+                        }
+                      }
+                    },
+                    {
+                      "id": "I3FHQm",
+                      "type": "ref",
+                      "ref": "EMjBX",
+                      "name": "Commit row 3",
+                      "width": "fill_container",
+                      "descendants": {
+                        "RxUsy": {
+                          "content": "Merge branch 'main' into feat/waitlist"
+                        },
+                        "S6abg": {
+                          "enabled": false
+                        },
+                        "nCQzU": {
+                          "content": "1d"
+                        },
+                        "FV92i": {
+                          "content": "e44c2a8"
+                        }
+                      }
+                    },
+                    {
+                      "id": "n5gY5",
+                      "type": "ref",
+                      "ref": "TO1uL",
+                      "name": "Tooltip",
+                      "layoutPosition": "absolute",
+                      "x": 26,
+                      "y": 44,
+                      "descendants": {
+                        "tTbYz": {
+                          "content": "fitloop/webapp"
+                        },
+                        "BatY3": {
+                          "enabled": false
+                        }
+                      }
                     }
                   ]
                 }
@@ -33632,34 +33951,57 @@
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "KPSQH",
-                      "name": "icon book-marked",
-                      "width": 16,
-                      "height": 16,
-                      "icon": "book-marked",
-                      "library": "lucide",
-                      "fill": "$fg-2"
-                    },
-                    {
-                      "type": "text",
-                      "id": "SEsS1",
-                      "name": "Title",
-                      "fill": "$fg",
-                      "content": "vitejs/vite",
-                      "fontFamily": "$font",
-                      "fontSize": 14,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "text",
-                      "id": "aqX6z",
-                      "name": "Meta",
-                      "fill": "$fg-dim",
-                      "content": "public",
-                      "fontFamily": "$font",
-                      "fontSize": 12.5,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "au8VR",
+                      "name": "Repository menu trigger",
+                      "cornerRadius": 5,
+                      "gap": 6,
+                      "padding": [
+                        3,
+                        6
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "q9isd6",
+                          "name": "Name",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "KPSQH",
+                              "name": "Visibility",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "book-marked",
+                              "library": "lucide",
+                              "fill": "$fg-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SEsS1",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "vitejs/vite",
+                              "fontFamily": "$font",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Ui4qP",
+                          "name": "Chevron",
+                          "width": 13,
+                          "height": 13,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$fg-2"
+                        }
+                      ]
                     },
                     {
                       "id": "P1LEqf",
@@ -37998,34 +38340,57 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "c17Ma",
-                                  "name": "icon book-marked",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "book-marked",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "emHJn",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "vitejs/vite",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "QilpD",
-                                  "name": "Meta",
-                                  "fill": "$fg-dim",
-                                  "content": "public",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
+                                  "type": "frame",
+                                  "id": "kEWKd",
+                                  "name": "Repository menu trigger",
+                                  "cornerRadius": 5,
+                                  "gap": 6,
+                                  "padding": [
+                                    3,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "pHjKA",
+                                      "name": "Name",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "c17Ma",
+                                          "name": "Visibility",
+                                          "width": 16,
+                                          "height": 16,
+                                          "icon": "book-marked",
+                                          "library": "lucide",
+                                          "fill": "$fg-2"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "emHJn",
+                                          "name": "Title",
+                                          "fill": "$fg",
+                                          "content": "vitejs/vite",
+                                          "fontFamily": "$font",
+                                          "fontSize": 14,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "lpdRd",
+                                      "name": "Chevron",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -42870,9 +43235,6 @@
                               "descendants": {
                                 "SEsS1": {
                                   "content": "vitejs/vitee"
-                                },
-                                "aqX6z": {
-                                  "enabled": false
                                 },
                                 "vx8Vz": {
                                   "enabled": false
@@ -78904,16 +79266,6 @@
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "icon",
-                              "id": "rcv7r",
-                              "name": "icon square-kanban",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "square-kanban",
-                              "library": "lucide",
-                              "fill": "$accent"
-                            },
-                            {
                               "type": "frame",
                               "id": "n6zelJ",
                               "name": "Project menu trigger",
@@ -78929,14 +79281,33 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "VlGJJ",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Platform Q4",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
+                                  "type": "frame",
+                                  "id": "Of8mc",
+                                  "name": "Name",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rcv7r",
+                                      "name": "icon square-kanban",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "VlGJJ",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "Platform Q4",
+                                      "fontFamily": "$font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "icon",
@@ -445826,12 +446197,6 @@
                               "name": "Header",
                               "width": "fill_container",
                               "descendants": {
-                                "SEsS1": {
-                                  "content": "vitejs/vite"
-                                },
-                                "aqX6z": {
-                                  "enabled": false
-                                },
                                 "vx8Vz": {
                                   "enabled": false
                                 },

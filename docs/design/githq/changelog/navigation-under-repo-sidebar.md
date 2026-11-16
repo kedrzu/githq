@@ -245,3 +245,77 @@ components. They were restored from the saved file; nothing visible changed.
 - [ ] CH73's sidebar `o6Hqn` → `vZN70` and R4's sidebar `nwW6w` → `rj2Hl`: new instances of `Sidebar / expanded ·
   repository open`, Issues current again.
 - [ ] MB141's `Places` (`nvzXK`): its count overrides re-applied.
+
+## Round 3 · implementation
+
+Asked (`.context/navigation-under-repo-sidebar-brief-3.md`, not committed): bring the file in line with what the built
+code does. Forced by:
+
+- **The title cut.** Below about 540 px the header with its tabs folded and Display as an icon still didn't fit: on
+  Commits the `B` Branches and tags button and the GitHub link were covered. `ListToolbar` cuts the title as the last
+  step, ending in "…", the full name in its tooltip. New CH81.
+- **The untracked header.** `RepositoryView` passes the same title icon and title menu whether the repository is
+  tracked or not, so the untracked header has the book inside the title button and no "public", as round 2 left open.
+- **The project title.** `ProjectView` gives the title `SquareKanban` in the accent colour inside its button, which
+  opens the project's menu (R2). D12 showed the icon in the accent colour but not the button, so `Project pane / List`
+  and `Project pane / Board` get the trigger with its chevron, and every screen built from them shows it. The cloud
+  on a project's tab and sub-row was already amber; nothing changed there.
+- **The order in CH75–CH78.** `ListToolbar` keeps the filters longest, as before this feature, so the state ("Open")
+  stays on the toolbar and the List / Board switch moves into Display with the view options. The file showed it the
+  other way round.
+
+Picked by the agent, not by the brief:
+
+- CH81 sits after CH78 and before CH79, so the four steps read in order before the layering rule. Its pane is 520 px,
+  where the title shows "fitloop/we…". The rows under it are `Commit row` instances, not the pull request rows of
+  CH75–CH78.
+- J3 draws its own header rather than using `Repository / Header · not tracked`, so the same change was made on it by
+  hand.
+- R2's project title, drawn by hand, gets its icon inside the button too, so the screen about that button agrees with
+  D12.
+
+Left for the owner:
+
+- R1 (`Qj6qV`) still draws the lock outside the title button and the word "private"; R4 shows the current header.
+  The Commits screens (CH3, CH10–CH41, CH47, CH48, CH64, CH65) draw the header from before this feature by hand:
+  icon outside, "private", the old tabs.
+
+### App · Toolbar — view options fit, the rest go to Display (`xFD8r`)
+
+- [ ] New `State · CH81 · 4 · The title cut` (`G8EsCW`) after CH78, copied from CH77: "520 px pane", caption "CH81 ·
+  4 · The title cut" with the note "last, the name is cut with “…”, the full name in its tooltip" (`WSz2T`). Its
+  `Repository pane` (`l3TGwZ`, 520 px) holds a `Repository / Header` (`xqOW2`): title "fitloop/we…", the tabs as
+  `Tabs / dropdown` showing Commits (git-commit icon, no count), and the `Right part` replaced by `r54Rv`: `Repository
+  / Tool` Branches and tags (git-branch) with `Kbd` B, and `Button / icon` with the GitHub icon (`DZXQX`). Under it
+  three `Commit row` instances (`dYgK6`, `uvbtt`, `I3FHQm`) and the tooltip "fitloop/webapp" (`n5gY5`) under the
+  title.
+- [ ] CH75 (`fGToQ`), CH76 (`BZePB`), CH77 (`Y5qdaz`), CH78 (`Xl1Lc`): `Tool Open` (`SbJoh`) shown, `Layout switch`
+  (`HgDjc`) hidden; before, Open was hidden and the switch shown.
+- [ ] CH75 caption note (`WoEbx`): "Open, Group, Order and Properties move into Display, as on a project" → "Group,
+  Order, Properties and the List / Board switch move into Display; the state filter, Open, stays longest".
+- [ ] Lede (`I2JwTl`): three steps → four; names the switch moving with the view options, the state staying longest
+  and the title cut last.
+
+### The untracked repository's header
+
+- [ ] `Repository / Header · not tracked` (`tb2FD`): new `Repository menu trigger` (`au8VR`, radius 5, gap 6, padding
+  3/6) first, holding `Name` (`q9isd6`, gap 10) with the book icon (`KPSQH`, renamed `Visibility`, 16 px) and `Title`
+  (`SEsS1`), then a `Chevron` (`Ui4qP`, 13 px, `$fg-2`), as in `Repository / Header`. `Meta` "public" (`aqX6z`)
+  deleted. The "not tracked" chip and the read count stay after the title. J5 (through `Repository / Pane · not
+  tracked`), J6, J7, ES17 and E6 follow.
+- [ ] J7's header (`v0HUZ`): the title override "vitejs/vitee" dropped by the move, re-applied. Its and ES17's
+  (`ftc6r`) override hiding "public" went with the node; ES17's title override equalled the default.
+- [ ] J3's header (`YSzu1`): the same by hand: new `Repository menu trigger` (`kEWKd`) with `Name` (`pHjKA`) holding
+  the book (`c17Ma`, renamed `Visibility`) and the title (`emHJn`), and a `Chevron` (`lpdRd`). "public" (`QilpD`)
+  deleted.
+
+### The project's title button
+
+- [ ] `Project pane / List` (`MJtxW`), `Project header` (`N1Mv21`): new `Project menu trigger` (`Xyhm7`) first,
+  holding `Name` (`nZWSt`, gap 10) with the `square-kanban` icon (`brony`, `$accent`, 16 px) and the title (`W0GlrP`),
+  then a `Chevron` (`csuzE`). D4, D12, D13, E3, E5, E7–E10, U20, the settings E5, ES18 and ES20 follow.
+- [ ] `Project pane / Board` (`Wk5sR`), `Project header` (`xbe8s`): the same, `Project menu trigger` (`mGrbx`), `Name`
+  (`h9Xrf`) with `INfno` and `Poglf`, `Chevron` (`UniGT`). D5, ES19, ES30 and the landing's Feature 05 (desktop and
+  mobile) follow.
+- [ ] R2 (`ArCu8`), `Project menu trigger` (`n6zelJ`): new `Name` (`Of8mc`, gap 10) holding the icon (`rcv7r`), moved in
+  from before the button, and the title (`VlGJJ`).
