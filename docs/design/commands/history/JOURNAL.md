@@ -18,3 +18,9 @@
   while mounted, so no list of all actions and no conflict detection; no enabled/visible; untyped string ids.
 - Naming: "action" collides with GitHub Actions in githq; "command" is the app's existing word (command menu, D36,
   public docs) but `defineCommand` is taken by `@nzyme/ioc`. Raised with the owner, not settled.
+- Owner accepted all recommendations: a command is the unit a user rebinds, its title/icon/key in the definition
+  (D1); static typed definitions collected in one module (D2); definitions declare where they can be offered so
+  conflicts are found before saving (D3); J/K/X/O rebindable, arrows/Enter/Esc/Tab/field keys fixed (D4); keep
+  "command", define function not `defineCommand` (D5). README, DECISIONS written; all folded into the story.
+- Open: how "where a command can be offered" is described and whether a narrower command may shadow a wider one's
+  key; one command offered by two places at once; numbered families (1–9); where user keys are stored.
