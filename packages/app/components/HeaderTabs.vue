@@ -1,4 +1,4 @@
-<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link. `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked. -->
+<!-- The tabs beside a screen's title (`ListToolbar`'s `tabs`): a repository's sections, switched through a model, or a project's saved views, each a link — both drawn alike, one bordered group with the current tab filled and the counts dim (CH67, the List / Board switch's look). A section's tooltip says where it goes, with its key; a saved view's only when GitHub answers it or it was changed on this device. `compact`, when the header has no room for them side by side: one menu button showing the current tab (its icon, name, count and a chevron), opening a menu of every tab with its count and key, the current one checked. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
@@ -11,8 +11,10 @@ export interface HeaderTabsOption {
   readonly icon?: LucideIcon;
   /** How many it holds, dim after the label; `–` while that is not known yet. */
   readonly count?: number | string;
-  /** Its key ("1"), for `aria-keyshortcuts` and the compact form's menu; the caller handles the key. */
+  /** Its key ("1"), for `aria-keyshortcuts`, its tooltip and the compact form's menu; the caller handles the key. */
   readonly keyshortcuts?: string;
+  /** Its hint on hover and focus ("Go to issues"), its key after it. */
+  readonly tooltip?: string;
 }
 
 /** A tab that is a link (a project's saved view). */
@@ -59,6 +61,7 @@ import Menu from './Menu.vue';
 import MenuItem from './MenuItem.vue';
 import SegmentedTabs from './SegmentedTabs.vue';
 import type { SegmentedTabsOption } from './SegmentedTabs.vue';
+import Tooltip from './Tooltip.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -98,7 +101,17 @@ const entries = computed(() => {
   }));
 });
 const current = computed(() => entries.value.find(entry => entry.current));
-/** The side-by-side form of a model's tabs: their names, counts and keys, no icons. */
+/** The compact button's name: the group's, then what it shows ("Sections: Pull requests 15"). */
+const compactLabel = computed(() => {
+  const shown = current.value;
+  if (!shown) {
+    return props.tabs.label;
+  }
+
+  const tab = shown.count == null ? shown.label : `${shown.label} ${shown.count}`;
+  return t(l.compactLabel, { group: props.tabs.label, tab });
+});
+/** The side-by-side form of a model's tabs: their names, counts, keys and tooltips, no icons. */
 const segments = computed((): SegmentedTabsOption<string>[] =>
   props.tabs.kind === 'model'
     ? props.tabs.options.map(option => ({
@@ -106,6 +119,7 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
         label: option.label,
         count: option.count,
         keyshortcuts: option.keyshortcuts,
+        tooltip: option.tooltip,
       }))
     : [],
 );
@@ -122,6 +136,7 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
         variant="outline"
         size="sm"
         :icon="current?.icon"
+        :aria-label="compactLabel"
       >
         {{ current?.label ?? tabs.label }}
         <span
@@ -160,6 +175,7 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
   <SegmentedTabs
     v-else-if="tabs.kind === 'model'"
     :class="css.headerTabs"
+    variant="boxed"
     :model-value="tabs.value"
     :label="tabs.label"
     :options="segments"
@@ -170,73 +186,63 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
     :class="[css.headerTabs, css.headerTabs_links]"
     :aria-label="tabs.label"
   >
-    <RouterLink
+    <Tooltip
       v-for="link in tabs.links"
       :key="link.key"
-      :to="link.to"
-      :class="[css.headerTabs_link, link.current && css.headerTabs_link_current]"
-      :aria-current="link.current ? 'page' : undefined"
+      :disabled="!link.answered && !link.modified"
     >
-      <Cloud
-        v-if="link.answered"
-        :class="css.headerTabs_cloud"
-        role="img"
-        :aria-label="t(l.answeredByGitHub)"
-      />
-      {{ link.label }}
-      <span
-        v-if="link.modified"
-        :class="css.headerTabs_dot"
-        role="img"
-        :aria-label="t(l.modifiedLocally)"
-      />
-    </RouterLink>
+      <RouterLink
+        :to="link.to"
+        :class="css.headerTabs_link"
+        :aria-current="link.current ? 'page' : undefined"
+      >
+        <Cloud
+          v-if="link.answered"
+          :class="css.headerTabs_cloud"
+          role="img"
+          :aria-label="t(l.answeredByGitHub)"
+        />
+        {{ link.label }}
+        <span
+          v-if="link.modified"
+          :class="css.headerTabs_dot"
+          role="img"
+          :aria-label="t(l.modifiedLocally)"
+        />
+      </RouterLink>
+      <template #content>
+        <span v-if="link.answered">{{ t(l.answeredHint) }}</span>
+        <span v-if="link.modified">{{ t(l.modifiedHint) }}</span>
+      </template>
+    </Tooltip>
   </nav>
 </template>
 
 <style lang="scss" module="css">
 .headerTabs {
-  padding-left: $spacing-8;
+  margin-left: $spacing-8;
 }
 
 .headerTabs_links {
+  @include segmented-box;
+
   display: flex;
   flex: none;
-  gap: 2px;
   align-items: center;
 }
 
 .headerTabs_link {
-  @include focus-ring;
+  @include segmented-box-item;
 
-  display: inline-flex;
-  flex: none;
-  gap: 6px;
-  align-items: center;
-  height: 26px;
-  padding: 0 $spacing-10;
-  font-size: $font-size-sm;
-  color: $color-fg-2;
-  text-decoration: none;
-  white-space: nowrap;
-  border-radius: $radius-md;
-
-  &:hover {
-    color: $color-fg;
-    background: $color-bg-2;
+  &[aria-current='page'] {
+    @include segmented-box-item-current;
   }
-}
-
-.headerTabs_link_current {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
 }
 
 .headerTabs_cloud {
   width: 13px;
   height: 13px;
-  color: $color-purple;
+  color: $color-amber;
 }
 
 .headerTabs_dot {
@@ -247,9 +253,7 @@ const segments = computed((): SegmentedTabsOption<string>[] =>
 }
 
 .headerTabs_count {
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
+  @include segmented-count;
 }
 
 .headerTabs_chevron {

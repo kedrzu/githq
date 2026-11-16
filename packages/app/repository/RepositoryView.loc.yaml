@@ -158,3 +158,11 @@ workflows:
   en: Workflows
 filterByStateCommand:
   en: Filter by state…
+goToIssues:
+  en: Go to issues
+goToPullRequests:
+  en: Go to pull requests
+goToCommits:
+  en: Go to commits
+goToWorkflows:
+  en: Go to workflows

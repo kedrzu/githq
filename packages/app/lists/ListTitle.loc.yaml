@@ -1,2 +1,4 @@
 menuLabel:
   en: 'Actions of {title}'
+menuLabelWithDetail:
+  en: 'Actions of {title} ({detail})'

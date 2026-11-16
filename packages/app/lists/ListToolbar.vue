@@ -1,4 +1,4 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (the actions of the items selected together, its tabs — `tabs`, drawn by `HeaderTabs` —, what else it says), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As room runs out the header gives way in steps, measuring its left part (the title and all beside it, the tabs side by side and as one menu), what it ends with (`end`) and each control: first the options move into the display options, as many as fit staying on the toolbar, the filters longest; then "Display" drops its label for its icon; then the tabs become one menu button showing the current tab; last the title is cut to the room left. Its left part paints the header's background above the controls, which clip what doesn't fit, so before or between measurements a control is covered, never drawn under the title. The options moved go to the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (with its icon, `titleIcon`; a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (the actions of the items selected together, its tabs — `tabs`, drawn by `HeaderTabs` —, what else it says), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As room runs out the header gives way in steps, measuring its left part (the title and all beside it, the tabs side by side and as one menu), what it ends with (`end`) and each control: first the options move into the display options, as many as fit staying on the toolbar, the filters longest; then "Display" drops its label for its icon; then the tabs become one menu button showing the current tab; last the title is cut to the room left. Its left part paints the header's background above the controls, which clip what doesn't fit, so before or between measurements a control is covered, never drawn under the title. The options moved go to the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -18,6 +18,7 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import ListDisplayOptions from './ListDisplayOptions.vue';
 import ListOptionsSheet from './ListOptionsSheet.vue';
 import ListTitle from './ListTitle.vue';
+import type { ListTitleIcon } from './ListTitle.vue';
 import * as l from './ListToolbar.loc.js';
 import ListToolbarControl from './ListToolbarControl.vue';
 import type { ListToolbarMenuOption, ListToolbarOption } from './ListToolbarControl.vue';
@@ -26,6 +27,8 @@ import type { ListChoice, ListViewOptions } from './ListTypes.js';
 const props = withDefaults(
   defineProps<{
     title: string;
+    /** Before the title, inside its button: a repository's visibility, a project's board (CH72, D12). */
+    titleIcon?: ListTitleIcon | null;
     /** What the list can be grouped by; the menu's headings come from their `section`. */
     groupings: readonly ListChoice[];
     /** The orders the list offers. */
@@ -64,6 +67,7 @@ const props = withDefaults(
     listName: undefined,
     gitHubView: null,
     tabs: null,
+    titleIcon: null,
   },
 );
 
@@ -77,7 +81,7 @@ const emit = defineEmits<{
 const slots = defineSlots<{
   /** The entries of the menu the title opens (a repository's or a project's); without it the title is plain text. */
   titleMenu?(): unknown;
-  /** Beside the title: what it is, how many ("private · 142 open"). */
+  /** Beside the title: what it is, how many ("fitloop · 128 items", "not tracked"). */
   title?(): unknown;
   /**
    * The actions of the items selected together, after the title — on a phone drawing nothing, their commands the
@@ -503,6 +507,7 @@ function change(changes: Partial<ListViewOptions>) {
     >
       <ListTitle
         :title="title"
+        :icon="titleIcon"
         :cut="titleCut"
       >
         <template

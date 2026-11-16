@@ -137,12 +137,31 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
 
-    view.host.style.width = '440px';
+    view.host.style.width = '400px';
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).not.toBeInTheDocument();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
     const states = page.getByRole('dialog', { name: 'Display' }).getByRole('group', { name: 'State' });
     await userEvent.click(states.getByRole('button', { name: 'Open and closed' }));
     expect(view.state.value.issues).toBe('all');
+});
+
+test('CH72: the title leads with a lock or a book inside its button, read out as private or public, never written beside it', async () => {
+    mount({ withMenu: true });
+    const title = page.getByRole('button', { name: `Actions of ${SAMPLE_REPOSITORY} (private)` });
+    await expect.element(title).toBeVisible();
+    expect(title.element().querySelector('svg')).not.toBeNull();
+    await expect.element(page.getByText(/^(private|public)$/u)).not.toBeInTheDocument();
+    await userEvent.click(title);
+    await expect.element(page.getByText('The repository menu')).toBeVisible();
+});
+
+test('CH72: not tracked and public, the title has the book, named, and the "not tracked" chip beside it', async () => {
+    mount({ tracked: false, isPrivate: false });
+    const heading = page.getByRole('heading', { level: 1 });
+    await expect.element(heading.getByRole('img', { name: 'public' })).toBeVisible();
+    await expect.element(heading).toHaveTextContent(SAMPLE_REPOSITORY);
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect.element(page.getByText(/^(private|public)$/u)).not.toBeInTheDocument();
 });
 
 test('J5: not tracked, the same toolbar and list as tracked, with the chip and how much is read, no counts on the tabs and no offer to track', async () => {
@@ -583,6 +602,9 @@ interface MountOptions {
     readonly workflowCount?: number | 'unknown' | null;
     /** The options differ from the defaults. */
     readonly modified?: boolean;
+    readonly isPrivate?: boolean | null;
+    /** The title opens a menu (the page's `menu` slot). */
+    readonly withMenu?: boolean;
 }
 
 /**
@@ -600,6 +622,8 @@ function mount({
     section: firstSection = 'issues',
     workflowCount = null,
     modified = false,
+    isPrivate = true,
+    withMenu = false,
 }: MountOptions = {}) {
     const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
@@ -636,7 +660,7 @@ function mount({
                 RepositoryView,
                 {
                     nameWithOwner: SAMPLE_REPOSITORY,
-                    isPrivate: true,
+                    isPrivate,
                     tracked,
                     list: listed
                         ? buildRepositoryList({
@@ -685,6 +709,7 @@ function mount({
                 {
                     workflows: () => h('p', 'The workflows body'),
                     commits: () => h('p', 'The commit graph'),
+                    ...(withMenu ? { menu: () => h('p', 'The repository menu') } : {}),
                 },
             );
         },

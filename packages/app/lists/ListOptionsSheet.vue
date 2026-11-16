@@ -88,7 +88,7 @@ const sortOptions = computed(() => {
 watch(
   body,
   element => {
-    for (const chosen of element?.querySelectorAll('[data-state="on"]') ?? []) {
+    for (const chosen of element?.querySelectorAll('[aria-pressed="true"]') ?? []) {
       chosen.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   },

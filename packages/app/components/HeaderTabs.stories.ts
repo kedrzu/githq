@@ -13,10 +13,37 @@ const meta = {
             kind: 'model',
             label: 'Sections',
             options: [
-                { value: 'issues', label: 'Issues', icon: CircleDot, count: 0, keyshortcuts: '1' },
-                { value: 'pullRequests', label: 'Pull requests', icon: GitPullRequest, count: 15, keyshortcuts: '2' },
-                { value: 'commits', label: 'Commits', icon: GitCommitHorizontal, keyshortcuts: '3' },
-                { value: 'workflows', label: 'Workflows', icon: Workflow, count: '–', keyshortcuts: '4' },
+                {
+                    value: 'issues',
+                    label: 'Issues',
+                    icon: CircleDot,
+                    count: 0,
+                    keyshortcuts: '1',
+                    tooltip: 'Go to issues',
+                },
+                {
+                    value: 'pullRequests',
+                    label: 'Pull requests',
+                    icon: GitPullRequest,
+                    count: 15,
+                    keyshortcuts: '2',
+                    tooltip: 'Go to pull requests',
+                },
+                {
+                    value: 'commits',
+                    label: 'Commits',
+                    icon: GitCommitHorizontal,
+                    keyshortcuts: '3',
+                    tooltip: 'Go to commits',
+                },
+                {
+                    value: 'workflows',
+                    label: 'Workflows',
+                    icon: Workflow,
+                    count: '–',
+                    keyshortcuts: '4',
+                    tooltip: 'Go to workflows',
+                },
             ],
             value: 'pullRequests',
             choose: () => undefined,
@@ -28,13 +55,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** A repository's sections side by side, with their counts; Pull requests shown. */
+/** A repository's sections in one bordered group (CH67), with their counts; Pull requests shown, filled. */
 export const Sections: Story = {};
 
 /** Folded (CH77): one menu button showing the current section, its icon and count. */
 export const SectionsCompact: Story = { args: { compact: true } };
 
-/** A project's saved views, each a link: one GitHub answers carries a cloud, one changed here a dot. */
+/** A project's saved views, each a link, drawn as the sections are: one GitHub answers carries a cloud, one changed here a dot, each saying so in its tooltip. */
 export const SavedViews: Story = {
     args: {
         tabs: {
