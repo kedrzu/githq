@@ -18,13 +18,12 @@ export type SettingsSection =
     | 'review'
     | 'privacy'
     | 'sync'
-    | 'updates'
-    | 'changelog';
+    | 'updates';
 
 /**
- * The sections of Settings, in the order of its column, each one's key following from its place; each one's `?tab=`, but the first, which has none. Updates and
- * Changelog are the desktop app's (`__DESKTOP__`): on the web they aren't, so nothing offers them and their `?tab=` is
- * not known.
+ * The sections of Settings, in the order of its column, each one's key following from its place; each one's `?tab=`, but the first, which has none. Updates,
+ * with the changelog under it, is the desktop app's (`__DESKTOP__`): on the web it isn't, so nothing offers it and its
+ * `?tab=` is not known.
  */
 export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
     'repositories',
@@ -34,11 +33,11 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
     'privacy',
     'sync',
     'account',
-    ...(__DESKTOP__ ? (['updates', 'changelog'] as const) : []),
+    ...(__DESKTOP__ ? (['updates'] as const) : []),
 ];
 
 /** Sections about the settings' saving, or the app itself: the status bar doesn't say there where settings are saved. */
-const SECTIONS_NOT_SAYING_WHERE_SAVED: readonly SettingsSection[] = ['sync', 'account', 'updates', 'changelog'];
+const SECTIONS_NOT_SAYING_WHERE_SAVED: readonly SettingsSection[] = ['sync', 'account', 'updates'];
 
 /** The screens of Settings that aren't `/settings` itself: a tracked repository's and a tracked project's settings. */
 const TRACKED_SETTINGS_ROUTES: readonly unknown[] = [

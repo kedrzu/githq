@@ -17,7 +17,7 @@ import UpdatedToast from './UpdatedToast.vue';
 
 const toast = () => page.getByRole('region', { name: 'Notifications' }).getByRole('listitem');
 
-test('U23: says from which version to which, is told once, and What changed goes to the Changelog', async () => {
+test('U23: says from which version to which, is told once, and What changed goes to the changelog in Updates', async () => {
     const { update, router } = mount({ version: '0.2.0', previousVersion: '0.1.0' });
 
     await expect.element(toast()).toHaveTextContent('Updated to githq 0.2.0');
@@ -26,7 +26,7 @@ test('U23: says from which version to which, is told once, and What changed goes
 
     await userEvent.click(page.getByRole('button', { name: 'What changed' }));
 
-    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=changelog');
+    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=updates');
     await expect.element(toast()).not.toBeInTheDocument();
 });
 
@@ -39,7 +39,7 @@ test('U24: a Development build says the same, with ⌥W as its key', async () =>
     expect(command?.menu).toBeUndefined();
 
     command?.run?.();
-    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=changelog');
+    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=updates');
     expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
 });
 

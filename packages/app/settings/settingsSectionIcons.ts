@@ -5,7 +5,6 @@ import {
     CloudUpload,
     FileDiff,
     PanelsTopLeft,
-    ScrollText,
     Shield,
     SquareKanban,
 } from 'lucide-vue-next';
@@ -26,5 +25,4 @@ export const SETTINGS_SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon
     sync: CloudUpload,
     account: CircleUser,
     updates: CircleArrowDown,
-    changelog: ScrollText,
 };
