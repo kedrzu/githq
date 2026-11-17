@@ -68,6 +68,28 @@ of the definitions, which would otherwise need one command per number or a param
 - One rebindable command per number — nine entries in the settings nobody would change.
 - One command with a number parameter — a mechanism for a family that does not need rebinding.
 
+Retired in part 2026-11-17: the merge panel runs its method numbers itself; the rest holds in
+[D9](../DECISIONS.md#d9).
+
+**Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
+filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
+rebindable. Each family is one definition (`Go to view 1–9`) whose binding receives the number and may name what the
+number picks (`Go to "Backlog" view`).** (2026-11-16, owner)
+
+**Why.** Rebinding them makes no sense; the number is the position on screen. They still run through the registry
+([D11](#d11)), so each family needs a definition; one with a number is one row in the list of keys rather than nine.
+The command menu shows the binding's name, since "view 3" says nothing.
+
+> **Checked 2026-11-16:** `REPOSITORY_SECTION_KEYS` (`repository/RepositorySection.ts:21`), `FILTER_KEYS`
+> (`myWork/MyWorkView.vue:153`), saved views (`projects/useProjectCommands.ts:71`), merge methods
+> (`merge/MergePanel.vue:1579`).
+
+**Rejected.**
+
+- One rebindable command per number — nine entries in the settings nobody would change.
+- Numbered keys registered by the screen with no definition — the one exception to every command having one.
+- No definition for families at all ([history](history/DECISIONS.md#d9)) — they would stay outside the registry.
+
 ## D12
 
 Retired in part 2026-11-16: `<CommandButton>` replaced by a key helper; the rest holds in [D12](../DECISIONS.md#d12).

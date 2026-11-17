@@ -138,7 +138,9 @@ something else here, and a new app-wide letter is refused by the rule rather tha
 **Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
 filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
 rebindable. Each family is one definition (`Go to view 1–9`) whose binding receives the number and may name what the
-number picks (`Go to "Backlog" view`).** (2026-11-16, owner)
+number picks (`Go to "Backlog" view`). A dialog's numbers are the dialog's own keys ([D11](#d11)): the merge panel's
+methods read their keys from their family but the panel runs them.** (2026-11-16, owner; the merge panel 2026-11-17,
+owner)
 
 **Why.** Rebinding them makes no sense; the number is the position on screen. They still run through the registry
 ([D11](#d11)), so each family needs a definition; one with a number is one row in the list of keys rather than nine.
@@ -153,6 +155,8 @@ The command menu shows the binding's name, since "view 3" says nothing.
 - One rebindable command per number — nine entries in the settings nobody would change.
 - Numbered keys registered by the screen with no definition — the one exception to every command having one.
 - No definition for families at all ([history](history/DECISIONS.md#d9)) — they would stay outside the registry.
+- The merge panel's methods run by the registry — the registry runs nothing inside a dialog that keeps its keys, and
+  the panel's other keys (⌘↵, E, Y, C) stay its own anyway ([history](history/DECISIONS.md#d9)).
 
 ## D10
 
