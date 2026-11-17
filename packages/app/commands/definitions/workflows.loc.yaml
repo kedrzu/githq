@@ -1,0 +1,34 @@
+alertSettings:
+  en: Alert settings
+openLatestFailure:
+  en: Open latest failure
+runWorkflow:
+  en: Run workflow…
+dispatchKeyword:
+  en: dispatch
+actionsKeyword:
+  en: actions
+openStartedRun:
+  en: Open the run started
+toggleWorkflow:
+  en: Disable or enable workflow
+openWorkflowFile:
+  en: Open workflow file
+nextJob:
+  en: Next job
+previousJob:
+  en: Previous job
+openLog:
+  en: Open log
+tryAgain:
+  en: Try again
+openWorkflow:
+  en: Open workflow
+rerunFailedJobs:
+  en: Re-run failed jobs
+rerunAllJobs:
+  en: Re-run all jobs
+rerunJob:
+  en: Re-run job
+cancelRun:
+  en: Cancel run

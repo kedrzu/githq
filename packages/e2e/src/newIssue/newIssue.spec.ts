@@ -26,7 +26,7 @@ const BUG_FORM = [
     '      required: true',
 ].join('\n');
 
-test('C from my work, the repository chosen, ⌥A and Enter: the issue shows at once in my work as #…, then with GitHub’s number; its toast opens it', async ({
+test('New issue from my work, the repository chosen, ⌥A and Enter: the issue shows at once in my work as #…, then with GitHub’s number; its toast opens it', async ({
     page,
     github,
 }) => {
@@ -94,7 +94,7 @@ test('Create another from the toast opens the form again in the same repository 
     await expect(capture.root.getByRole('button', { name: 'bug', exact: true })).toBeVisible();
 });
 
-test('⌘Enter creates another in the same repository; the next C from my work chooses the repository, the last used on top (mobile D43)', async ({
+test('⌘Enter creates another in the same repository; the next New issue from my work chooses the repository, the last used on top (mobile D43)', async ({
     page,
     github,
 }) => {
@@ -206,6 +206,16 @@ test('"New issue" in a project’s column adds it there with that column’s Sta
         .poll(() => sample.world.findIssue(SAMPLE_REPOSITORY, 'Explain the board')?.projects)
         .toEqual({ [SAMPLE_PROJECT]: 'In Progress' });
     await expect(shell.failedEdits).toHaveCount(0);
+});
+
+test('C on a project’s screen starts a new issue in that project (H5)', async ({ page, github }) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_PROJECT).click();
+    await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
+    const capture = new NewIssueHarness(page);
+
+    await capture.openWithKey();
+    await expect(capture.root).toContainText(SAMPLE_PROJECT);
 });
 
 test('the capture keeps the keys to itself: on its buttons `j` moves nothing behind it, and Escape closes only the capture', async ({

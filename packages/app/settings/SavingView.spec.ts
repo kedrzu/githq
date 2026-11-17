@@ -98,7 +98,7 @@ test('a repository that cannot be used says why under the choice, still off', as
 
     await expect.element(page.getByRole('checkbox', { name: CHOICE })).not.toBeChecked();
     await expect.element(page.getByText('mlaine/githq-settings is public', { exact: false })).toBeVisible();
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(turnOn).toHaveBeenCalledOnce();
 });
 
@@ -140,7 +140,7 @@ test('stopped: why, R tries again, and turning off is still there', async () => 
 
     await expect.element(page.getByRole('heading', { name: 'Syncing stopped' })).toBeVisible();
     await expect.element(page.getByTestId('saving-synced')).toHaveTextContent('3 hours ago');
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).toHaveBeenCalledOnce();
     await userEvent.click(page.getByRole('button', { name: 'Turn off' }));
     expect(onTurnOff).toHaveBeenCalledOnce();

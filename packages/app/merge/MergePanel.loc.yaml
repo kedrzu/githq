@@ -23,8 +23,6 @@ noResult:
     many: The request was accepted, then {minutes} minutes passed with no result. It may still merge. Check on GitHub if you can't wait.
 noAnswer:
   en: GitHub didn't answer the request. It may still merge. Check on GitHub if you can't wait.
-openOnGitHub:
-  en: Open on GitHub
 newCommitArrived:
   en: A new commit arrived, so nothing was merged
 newCommitPushedBy:
@@ -298,8 +296,6 @@ setByQueue:
   en: set by the queue
 writtenByQueue:
   en: Written by the queue. Text can't be set here
-takeOutOfQueue:
-  en: Take out of queue
 queuePosition:
   en: Position
 queueState:
@@ -373,5 +369,3 @@ deleteBranch:
   en: Delete branch
 restoreBranch:
   en: Restore branch
-revert:
-  en: Revert

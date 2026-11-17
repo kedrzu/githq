@@ -9,6 +9,7 @@ export function installHistoryKeys() {
         return;
     }
 
+    // The browser's own keys, not a command (commands D11): the web build leaves them to the browser.
     window.addEventListener('keydown', event => {
         if (event.defaultPrevented || !event.metaKey || event.ctrlKey || event.altKey) {
             return;

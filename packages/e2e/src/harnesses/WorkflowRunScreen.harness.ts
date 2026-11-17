@@ -27,7 +27,7 @@ export class WorkflowRunScreenHarness {
         return this.root.getByRole('button', { name: 'Open full screen', exact: true });
     }
 
-    /** "Back to the panel" (`⇧Enter`), on the run's page while the panel fits. */
+    /** "Back to the panel" (also in ⌘K), on the run's page while the panel fits. */
     get backToPanel(): Locator {
         return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
     }

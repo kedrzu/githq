@@ -16,8 +16,6 @@ enable:
   en: Enable workflow
 enableDetail:
   en: GitHub starts its runs again
-openFile:
-  en: Open workflow file
 generated:
   en: GitHub generates it, with no file
 copyLink:

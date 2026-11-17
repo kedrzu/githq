@@ -9,8 +9,6 @@ import {
   Github,
   Ban,
   BookMarked,
-  ChevronLeft,
-  ChevronRight,
   CircleDashed,
   ListFilter,
   Lock,
@@ -23,14 +21,23 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import type { Command, CommandParts } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand, CommandMarks, CommandParts } from '@/commands/CommandTypes.js';
+import {
+  filterByState,
+  findRef,
+  goToSection,
+  nextTab,
+  openOnGitHub,
+  previousTab,
+} from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import FilteredOut from '@/components/FilteredOut.vue';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
-import { TAB_STEP_KEYS } from '@/components/HeaderTabs.vue';
 import IconButton from '@/components/IconButton.vue';
 import NothingThere from '@/components/NothingThere.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -68,12 +75,7 @@ import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
 import { REPOSITORY_STATES } from './buildRepositoryList.js';
-import {
-  isItemSection,
-  REPOSITORY_SECTION_ICONS,
-  REPOSITORY_SECTION_KEYS,
-  REPOSITORY_SECTIONS,
-} from './RepositorySection.js';
+import { isItemSection, REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from './RepositorySection.js';
 import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
@@ -234,7 +236,7 @@ const sectionTabs = computed((): HeaderTabsSet => ({
     value,
     label: t(l[value]),
     icon: REPOSITORY_SECTION_ICONS[value],
-    keyshortcuts: REPOSITORY_SECTION_KEYS[value],
+    keyshortcuts: keyOf(goToSection, REPOSITORY_SECTIONS.indexOf(value) + 1),
     tooltip: t(SECTION_TOOLTIPS[value]),
     count: getSectionCount(value),
   })),
@@ -281,7 +283,7 @@ const stateOption = computed((): ListToolbarOption => {
     label,
     icon: ListFilter,
     title: t(STATE_LABELS[state.value]),
-    commandTitle: t(l.filterByStateCommand),
+    command: filterByState,
     choices: REPOSITORY_STATES.map(value => ({ value, label: t(STATE_LABELS[value]), section: label })),
     value: state.value,
     choose: value => {
@@ -341,28 +343,26 @@ usePhonePart(() =>
     : null,
 );
 
-// `[` and `]` step through the sections as the tabs show them, wrapping around (CH82).
+// `1`–`4` go to the sections, `[` and `]` step through them as the tabs show them, wrapping around (CH82); in ⌘K the
+// steps would only stand between the sections.
 useCommands(() => [
-  ...sections.value.map(getSectionCommand),
-  {
-    id: 'repository.previousSection',
-    // Keys and the help sheet only: in ⌘K it would only stand between the sections.
-    menu: false,
-    title: t(l.previousSection),
-    section: 'repository',
-    key: TAB_STEP_KEYS.previous,
-    icon: ChevronLeft,
-    run: () => stepSection(-1),
-  },
-  {
-    id: 'repository.nextSection',
-    menu: false,
-    title: t(l.nextSection),
-    section: 'repository',
-    key: TAB_STEP_KEYS.next,
-    icon: ChevronRight,
-    run: () => stepSection(1),
-  },
+  ...bindSections(() => ({})),
+  bindCommand(
+    previousTab,
+    {
+      place: 'repository',
+      title: t(l.previousSection),
+      section: 'repository',
+      menu: false,
+      run: () => stepSection(-1),
+    },
+    t,
+  ),
+  bindCommand(
+    nextTab,
+    { place: 'repository', title: t(l.nextSection), section: 'repository', menu: false, run: () => stepSection(1) },
+    t,
+  ),
 ]);
 
 /**
@@ -375,17 +375,25 @@ function getReadPosition({ rowsShown }: ListEndProps) {
   return `${section.value}:${state.value}:${read}`;
 }
 
-function getSectionCommand(candidate: RepositorySection): Command {
-  return {
-    id: `repository.section.${candidate}`,
-    title: t(l[candidate]),
-    section: 'repository',
-    key: REPOSITORY_SECTION_KEYS[candidate],
-    icon: REPOSITORY_SECTION_ICONS[candidate],
-    run: () => {
-      section.value = candidate;
-    },
-  };
+/** Going to each section shown, on its number (`goToSection`), with the marks it has where it is listed. */
+function bindSections(getMarks: (candidate: RepositorySection) => CommandMarks): BoundCommand[] {
+  return bindCommand(
+    goToSection,
+    REPOSITORY_SECTIONS.map(candidate =>
+      sections.value.includes(candidate)
+        ? {
+            title: t(l[candidate]),
+            section: 'repository',
+            icon: REPOSITORY_SECTION_ICONS[candidate],
+            run: () => {
+              section.value = candidate;
+            },
+            ...getMarks(candidate),
+          }
+        : null,
+    ),
+    t,
+  );
 }
 
 /** Goes to the section before (`-1`) or after (`1`) the one shown, from the last to the first and back. */
@@ -398,20 +406,15 @@ function stepSection(step: number) {
 function getPhoneParts(): CommandParts {
   return {
     heading: props.nameWithOwner,
-    rows: sections.value.map(candidate => {
-      const command = getSectionCommand(candidate);
-      return {
-        kind: 'command',
-        command: isItemSection(candidate)
-          ? {
-              ...command,
-              count: props.tracked ? props.openCounts[candidate] : null,
-              current: candidate === section.value,
-            }
-          : { ...command, external: true },
-      };
-    }),
+    rows: bindSections(getPhoneMarks).map(command => ({ kind: 'command', command })),
   };
+}
+
+/** On a phone Issues and Pull requests say their open items and which is shown; Commits and Workflows leave for GitHub. */
+function getPhoneMarks(candidate: RepositorySection): CommandMarks {
+  return isItemSection(candidate)
+    ? { count: props.tracked ? props.openCounts[candidate] : null, current: candidate === section.value }
+    : { external: true };
 }
 
 function getSectionCount(value: RepositorySection) {
@@ -485,15 +488,15 @@ function getSectionCount(value: RepositorySection) {
             variant="ghost"
             size="sm"
             :icon="GitBranch"
-            kbd="B"
-            keyshortcuts="B"
+            :kbd="keyOf(findRef)"
+            :keyshortcuts="keyOf(findRef)"
             @click="emit('openRefList')"
           >
             {{ t(l.branchesAndTags) }}
           </Button>
           <IconButton
             :icon="Github"
-            :label="t(l.openOnGitHub)"
+            :label="t(openOnGitHub.title)"
             :link="commitsUrl"
             target="_blank"
           />

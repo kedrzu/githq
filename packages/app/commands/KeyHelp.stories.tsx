@@ -1,3 +1,4 @@
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
@@ -10,8 +11,11 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
-import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
-import type { Command, CommandKeySheet } from './CommandTypes.js';
+import { bindCommand } from './bindCommand.js';
+import { CommandRegistry } from './CommandRegistry.js';
+import type { CommandKeySheet } from './CommandTypes.js';
+import { defineAppCommand } from './defineAppCommand.js';
+import { help as helpCommand, newIssueInProject } from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
 import { useCommands } from './useCommands.js';
 
@@ -25,16 +29,9 @@ const Harness = defineComponent({
         setIndexedDbPersistence(useContainer());
         const registry = useService(CommandRegistry);
         const closed = ref('open');
+        const t = useTranslate();
 
-        useCommands(() => [
-            {
-                id: 'app.help',
-                title: 'Keyboard shortcuts',
-                section: 'app',
-                key: APP_KEYS.help,
-                run: () => registry.setHelpOpen(true),
-            },
-        ]);
+        useCommands(() => [bindCommand(helpCommand, { section: 'app', run: () => registry.setHelpOpen(true) }, t)]);
         registry.setHelpOpen(props.startOpen);
 
         return () => (
@@ -66,6 +63,40 @@ const Harness = defineComponent({
     },
 });
 
+/** Fixture definitions: the list's and the item's own `O`, so the item's comes first by section and loses by place. */
+const LIST_OPEN = defineAppCommand({ id: 'test.listOpen', title: () => 'Open the row', key: 'O', places: ['list'] });
+const ITEM_OPEN = defineAppCommand({ id: 'test.itemOpen', title: () => 'Open the item', key: 'O', places: ['item'] });
+
+/** A list with an item open beside it, both offering `O`: the list keeps the keyboard (commands D13). */
+const BesideHarness = defineComponent({
+    setup() {
+        const registry = useService(CommandRegistry);
+        const ran = ref('nothing');
+        const t = useTranslate();
+
+        useCommands(() => [
+            bindCommand(ITEM_OPEN, { section: 'item', run: () => openFrom('item') }, t),
+            bindCommand(LIST_OPEN, { section: 'view', actsOnRow: true, run: () => openFrom('list') }, t),
+            bindCommand(helpCommand, { section: 'app', run: () => registry.setHelpOpen(true) }, t),
+        ]);
+
+        return () => (
+            <div>
+                <p tid="ran">{ran.value}</p>
+                <KeyHelp
+                    open={registry.helpOpen}
+                    onUpdate:open={(open: boolean) => registry.setHelpOpen(open)}
+                    commands={registry.commands}
+                />
+            </div>
+        );
+
+        function openFrom(place: string) {
+            ran.value = place;
+        }
+    },
+});
+
 const meta = {
     component: Harness,
 } satisfies Meta<typeof Harness>;
@@ -80,14 +111,17 @@ export const OverOpenItem: Story = {};
 /** Closed: `?` opens it. */
 export const Closed: Story = { args: { startOpen: false } };
 
+/** A list's and an opened item's `O` together: the list's runs, and the help lists only it. */
+export const ListBesideItem: StoryObj<typeof BesideHarness> = {
+    render: () => ({ components: { BesideHarness }, template: '<BesideHarness />' }),
+};
+
 /** CR29: a screen's own sheet, in place of the actions that can run now: a row may speak of two keys, and it shows whatever can run. */
 export const ScreenSheet: StoryObj<typeof KeyHelp> = {
     render: () => ({
         components: { KeyHelp },
         setup: () => ({
-            commands: [
-                { id: 'newIssue', title: 'New issue', section: 'app', key: 'C', run: () => {} },
-            ] satisfies Command[],
+            commands: [bindCommand(newIssueInProject, { section: 'view', run: () => {} }, useTranslate())],
             sheet: {
                 title: 'Keys in a review',
                 columns: [
@@ -109,6 +143,6 @@ export const ScreenSheet: StoryObj<typeof KeyHelp> = {
         await expect(help.getByRole('region', { name: 'Moving' })).toBeVisible();
         await expect(help.getByText('Next and previous file')).toBeVisible();
         await expect(help.getByText('Conversation')).toBeVisible();
-        await expect(help.queryByText('New issue')).toBeNull();
+        await expect(help.queryByText('New issue in project')).toBeNull();
     },
 };

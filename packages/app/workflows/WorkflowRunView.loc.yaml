@@ -4,14 +4,8 @@ runTitle:
   en: 'Run #{number}'
 unknownTitle:
   en: Run {id}
-openOnGitHub:
-  en: Open on GitHub
 back:
   en: Back
-nextJob:
-  en: Next job
-previousJob:
-  en: Previous job
 tryAgain:
   en: Try again
 seeError:
@@ -50,8 +44,6 @@ noJobsTitle:
   en: This run has no jobs
 noJobsText:
   en: It finished without running any, so there's nothing to read here.
-rerunFailedJobs:
-  en: Re-run failed jobs
 rerunDetail:
   plural: count
   en:
@@ -71,8 +63,6 @@ resizePage:
   en: Resize the page
 resizeJobs:
   en: Resize the jobs
-rerunAllJobs:
-  en: Re-run all jobs
 jobCount:
   plural: count
   en:
@@ -82,11 +72,7 @@ rerunJob:
   en: Re-run job “{job}”
 rerunJobDetail:
   en: the job under the cursor
-cancelRun:
-  en: Cancel run
 cancelFinished:
   en: it has finished
 copyLink:
   en: Copy link to the run
-openWorkflow:
-  en: Open workflow

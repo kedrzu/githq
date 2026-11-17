@@ -13,13 +13,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import {
-  ArrowDown,
   ArrowDownToLine,
-  ArrowLeft,
-  ArrowUp,
   ArrowUpToLine,
-  ChevronsDown,
-  ChevronsUp,
   CircleAlert,
   CircleCheck,
   Equal,
@@ -27,26 +22,17 @@ import {
   EyeOff,
   FileSearch,
   FunnelX,
-  Search,
   ChevronDown,
-  ChevronsUpDown,
   ChevronUp,
   Columns2,
   FoldVertical,
-  GitPullRequest,
   Github,
   ListChecks,
-  ListFilter,
   MessageSquare,
-  MessageSquarePlus,
   Reply,
   RotateCw,
-  Send,
-  PanelLeft,
-  PanelRight,
   Pause,
   Rows2,
-  Trash2,
   UnfoldVertical,
 } from 'lucide-vue-next';
 import { computed, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch } from 'vue';
@@ -55,10 +41,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -89,7 +76,7 @@ import { Browser } from '@/services/Browser.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -97,8 +84,6 @@ import { formatList } from '@/utils/formatList.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import AnchoredList from './AnchoredList.vue';
@@ -164,7 +149,7 @@ import { findLinkedThread, parseThreadAnchor } from './threads/findLinkedThread.
 import { findOpenThreadFrom, findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
-import { REVIEW_KEYS, useReviewKeySheet } from './useReviewKeySheet.js';
+import { useReviewKeySheet } from './useReviewKeySheet.js';
 import { useReviewCursor } from './useReviewCursor.js';
 import { useReviewPosition } from './useReviewPosition.js';
 import type { ReviewArrival } from './useReviewPosition.js';
@@ -202,6 +187,8 @@ const NO_FILES: ReadonlySet<string> = new Set();
 /** A jump to a thread never lands higher than this under the top: the pinned header and a little air. */
 const THREAD_MIN_OFFSET = 46;
 const NO_TARGETS: readonly ReviewCommentTarget[] = [];
+/** Where the review's commands are offered, under the view's heading: an item opened over it keeps the keyboard. */
+const REVIEW_PLACE = { place: 'review', section: 'view' } as const;
 /** The stack's and the files' column: 300 px by default, dragged from 200 to 480 px (D24). */
 const FILE_LIST_WIDTH = { key: 'reviewFileList', default: 300, min: 200, max: 480 };
 /** The conversation's column at the right (CR121): 340 px by default and at least, dragged out to 720 px. */
@@ -594,16 +581,12 @@ const walkedThreads = computed(() => listWalkedThreads(rows.value));
 const lostViewedPaths = computed(() =>
   files.value?.lostViewedNotice ? allPaths.value.filter(path => lostViewed.value.has(path)) : [],
 );
-const otherStackPullRequests = computed((): PullRequestItem[] => {
-  const others: PullRequestItem[] = [];
-  for (const pip of stack.value?.pips ?? []) {
-    if (pip.kind !== 'missing' && pip.pullRequest.id !== opened.id) {
-      others.push(pip.pullRequest);
-    }
-  }
-
-  return others;
-});
+/** The stack's pull requests by their place in it, the one reviewed and those not read `null`: "Go to" the others. */
+const stackPullRequests = computed(() =>
+  (stack.value?.pips ?? []).map(pip =>
+    pip.kind !== 'missing' && pip.pullRequest.id !== opened.id ? pip.pullRequest : null,
+  ),
+);
 
 const nextNumber = computed(() => {
   const id = nextPullRequest.value;
@@ -889,19 +872,6 @@ onWindowEvent(
   { passive: true },
 );
 
-// ⌘F is a field's own inside one, the `/` filter's too, which a command's `Mod` key would run in: not one, then.
-onWindowEvent('keydown', event => {
-  if (
-    matchesCommandKey(event, REVIEW_KEYS.find) &&
-    !event.defaultPrevented &&
-    !isEditableTarget(event.target) &&
-    !isScreenCovered()
-  ) {
-    event.preventDefault();
-    void openFind();
-  }
-});
-
 onWindowEvent('pointerup', () => {
   const range = lineRange.value;
   if (range?.dragging) {
@@ -973,6 +943,7 @@ const actingPullRequest = computed(() =>
 );
 const pullRequestCommands = useItemCommands({
   ids: () => (actingPullRequest.value ? [actingPullRequest.value.id] : []),
+  place: 'review',
   section: () => 'item',
   open: () => {},
   // The merge panel opens over the review, which stays where it is once the merge is sent.
@@ -988,425 +959,353 @@ useCommands(
 );
 
 useCommands(() => [
-  {
-    id: 'review.nextPullRequest',
-    title: t(l.nextPullRequest),
-    section: 'view',
-    key: REVIEW_KEYS.nextPullRequest,
-    icon: ChevronDown,
-    when: () => nextPullRequest.value !== null,
-    run: () => stepPullRequest(nextPullRequest.value, 'K'),
-  },
-  {
-    id: 'review.previousPullRequest',
-    title: t(l.previousPullRequest),
-    section: 'view',
-    key: REVIEW_KEYS.previousPullRequest,
-    icon: ChevronUp,
-    when: () => previousPullRequest.value !== null,
-    run: () => stepPullRequest(previousPullRequest.value, 'J'),
-  },
-  ...otherStackPullRequests.value.map((pullRequest): Command => ({
-    id: `review.goTo.${pullRequest.id}`,
-    title: t(l.goToPullRequest, { number: pullRequest.number, title: pullRequest.title }),
-    section: 'view',
-    icon: GitPullRequest,
-    run: () => goToPullRequest(pullRequest),
-  })),
-  {
-    id: 'review.previousFile',
-    title: t(l.previousFile),
-    section: 'view',
-    key: REVIEW_KEYS.previousFile,
-    icon: ArrowUpToLine,
-    when: () => ordered.value.length > 0,
-    run: () => stepFile(-1),
-  },
-  {
-    id: 'review.nextFile',
-    title: t(l.nextFile),
-    section: 'view',
-    key: REVIEW_KEYS.nextFile,
-    icon: ArrowDownToLine,
-    when: () => ordered.value.length > 0,
-    run: () => stepFile(1),
-  },
-  {
-    id: 'review.nextThread',
-    title: t(l.nextThread),
-    section: 'view',
-    key: REVIEW_KEYS.nextThread,
-    icon: MessageSquare,
-    when: () => walkedThreads.value.length > 0,
-    run: () => stepThread(1),
-  },
-  {
-    id: 'review.previousThread',
-    title: t(l.previousThread),
-    section: 'view',
-    key: REVIEW_KEYS.previousThread,
-    icon: MessageSquare,
-    when: () => walkedThreads.value.length > 0,
-    run: () => stepThread(-1),
-  },
-  {
-    id: 'review.comment',
-    title: t(l.commentOnLine),
-    section: 'view',
-    key: REVIEW_KEYS.comment,
-    icon: MessageSquarePlus,
-    // Always here, or with no files it would fall to a new issue, which the menu still offers: with no line on screen it does nothing.
-    run: () => {
-      const range = lineRange.value;
-      const line = findCursorLine();
-      if (range) {
+  bindCommand(
+    definitions.next,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.nextPullRequest),
+      icon: ChevronDown,
+      // ↓/↑ are the diff's cursor.
+      otherKeys: false,
+      when: () => nextPullRequest.value !== null,
+      run: () => stepPullRequest(nextPullRequest.value, keyOf(definitions.previous)),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.previous,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.previousPullRequest),
+      icon: ChevronUp,
+      otherKeys: false,
+      when: () => previousPullRequest.value !== null,
+      run: () => stepPullRequest(previousPullRequest.value, keyOf(definitions.next)),
+    },
+    t,
+  ),
+  ...bindCommand(
+    definitions.goToStackPullRequest,
+    stackPullRequests.value.map(pullRequest =>
+      pullRequest
+        ? {
+            ...REVIEW_PLACE,
+            title: t(l.goToPullRequest, { number: pullRequest.number, title: pullRequest.title }),
+            run: () => goToPullRequest(pullRequest),
+          }
+        : null,
+    ),
+    t,
+  ),
+  bindCommand(
+    definitions.previousTab,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.previousFile),
+      icon: ArrowUpToLine,
+      when: () => ordered.value.length > 0,
+      run: () => stepFile(-1),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.nextTab,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.nextFile),
+      icon: ArrowDownToLine,
+      when: () => ordered.value.length > 0,
+      run: () => stepFile(1),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.nextThread,
+    { ...REVIEW_PLACE, when: () => walkedThreads.value.length > 0, run: () => stepThread(1) },
+    t,
+  ),
+  bindCommand(
+    definitions.previousThread,
+    { ...REVIEW_PLACE, when: () => walkedThreads.value.length > 0, run: () => stepThread(-1) },
+    t,
+  ),
+  bindCommand(
+    definitions.commentOnLine,
+    {
+      ...REVIEW_PLACE,
+      // Always here, so the key is never another's: with no line on screen it does nothing.
+      run: () => {
+        const range = lineRange.value;
+        const line = findCursorLine();
+        if (range) {
+          lineRange.value = null;
+          startRange(range);
+        } else if (line) {
+          startComment({ path: line.path, side: line.side, line: line.line, startLine: null, threadId: null });
+        }
+      },
+    },
+    t,
+  ),
+  // An item opened over the review keeps the keyboard, its `R` the comment box's (commands D13).
+  bindCommand(
+    definitions.comment,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.replyInThread),
+      icon: Reply,
+      when: () => findFocusedThread()?.placement.thread.viewerCanReply === true,
+      run: () => {
+        const row = findFocusedThread();
+        if (row) {
+          startReply(row);
+        }
+      },
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.rangeDown,
+    {
+      ...REVIEW_PLACE,
+      menu: false,
+      when: () => lineRange.value !== null || findCursorLine() !== null,
+      run: () => stepLineRange(1),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.rangeUp,
+    {
+      ...REVIEW_PLACE,
+      menu: false,
+      when: () => lineRange.value !== null || findCursorLine() !== null,
+      run: () => stepLineRange(-1),
+    },
+    t,
+  ),
+  // Escape after the box's own, one layer at a time: the range, the selection, find, the filter, then back.
+  bindCommand(
+    definitions.clearRange,
+    {
+      ...REVIEW_PLACE,
+      menu: false,
+      when: () => lineRange.value !== null,
+      run: () => {
         lineRange.value = null;
-        startRange(range);
-      } else if (line) {
-        startComment({ path: line.path, side: line.side, line: line.line, startLine: null, threadId: null });
-      }
+      },
     },
-  },
-  {
-    id: 'review.reply',
-    title: t(l.replyInThread),
-    section: 'view',
-    key: REVIEW_KEYS.reply,
-    icon: Reply,
-    when: () => findFocusedThread()?.placement.thread.viewerCanReply === true,
-    run: () => {
-      const row = findFocusedThread();
-      if (row) {
-        startReply(row);
-      }
+    t,
+  ),
+  // An item opened over the review keeps the keyboard, its `⇧S` its own draft's submit (commands D13).
+  bindCommand(
+    definitions.submitReview,
+    {
+      ...REVIEW_PLACE,
+      // With no draft a review of no comments, which names the head read: not before there is one (D33).
+      when: () => finish.value.kind !== 'sending' && (pendingReview.value !== null || files.value?.headRefOid != null),
+      run: () => {
+        submitOpen.value = true;
+      },
     },
-  },
-  {
-    id: 'review.rangeDown',
-    title: t(l.rangeDown),
-    section: 'view',
-    key: REVIEW_KEYS.rangeDown,
-    menu: false,
-    when: () => lineRange.value !== null || findCursorLine() !== null,
-    run: () => stepLineRange(1),
-  },
-  {
-    id: 'review.rangeUp',
-    title: t(l.rangeUp),
-    section: 'view',
-    key: REVIEW_KEYS.rangeUp,
-    menu: false,
-    when: () => lineRange.value !== null || findCursorLine() !== null,
-    run: () => stepLineRange(-1),
-  },
-  {
-    id: 'review.clearRange',
-    title: t(l.clearRange),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    when: () => lineRange.value !== null && !isLayerOpen(),
-    run: () => {
-      lineRange.value = null;
+    t,
+  ),
+  bindCommand(
+    definitions.discardReview,
+    {
+      ...REVIEW_PLACE,
+      when: () => pendingReview.value !== null && finish.value.kind !== 'sending',
+      run: () => {
+        discardOpen.value = true;
+      },
     },
-  },
-  {
-    id: 'review.submit',
-    title: t(l.submitReview),
-    section: 'view',
-    key: REVIEW_KEYS.submit,
-    icon: Send,
-    // With no draft a review of no comments, which names the head read: not before there is one (D33).
-    when: () => finish.value.kind !== 'sending' && (pendingReview.value !== null || files.value?.headRefOid != null),
-    run: () => {
-      submitOpen.value = true;
+    t,
+  ),
+  bindCommand(
+    definitions.toggleViewed,
+    {
+      ...REVIEW_PLACE,
+      title: (selected.value.size > 0 ? isSelectionViewed() : currentFile.value?.viewed === 'VIEWED')
+        ? t(l.markNotViewed)
+        : t(l.markViewed),
+      when: () => currentFile.value !== null || selected.value.size > 0,
+      run: () => {
+        if (selected.value.size > 0) {
+          markSelected();
+        } else if (currentFile.value) {
+          toggleViewed(currentFile.value.path);
+        }
+      },
     },
-  },
-  {
-    id: 'review.discard',
-    title: t(l.discardReview),
-    section: 'view',
-    icon: Trash2,
-    when: () => pendingReview.value !== null && finish.value.kind !== 'sending',
-    run: () => {
-      discardOpen.value = true;
+    t,
+  ),
+  bindCommand(
+    definitions.check,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.toggleSelected),
+      icon: ListChecks,
+      when: () => canSelect(),
+      run: () => {
+        if (currentPath.value !== null) {
+          toggleSelected(currentPath.value);
+        }
+      },
     },
-  },
-  {
-    id: 'review.toggleViewed',
-    title: (selected.value.size > 0 ? isSelectionViewed() : currentFile.value?.viewed === 'VIEWED')
-      ? t(l.markNotViewed)
-      : t(l.markViewed),
-    section: 'view',
-    key: REVIEW_KEYS.viewed,
-    icon: Eye,
-    when: () => currentFile.value !== null || selected.value.size > 0,
-    run: () => {
-      if (selected.value.size > 0) {
-        markSelected();
-      } else if (currentFile.value) {
-        toggleViewed(currentFile.value.path);
-      }
-    },
-  },
-  {
-    id: 'review.toggleSelected',
-    title: t(l.toggleSelected),
-    section: 'view',
-    key: REVIEW_KEYS.select,
-    icon: ListChecks,
-    when: () => canSelect(),
-    run: () => {
-      if (currentPath.value !== null) {
-        toggleSelected(currentPath.value);
-      }
-    },
-  },
-  {
-    id: 'review.selectNext',
-    title: t(l.selectNext),
-    section: 'view',
-    key: REVIEW_KEYS.selectNext,
-    when: () => canSelect(),
-    run: () => extendSelection(1),
-  },
-  {
-    id: 'review.selectPrevious',
-    title: t(l.selectPrevious),
-    section: 'view',
-    key: REVIEW_KEYS.selectPrevious,
-    when: () => canSelect(),
-    run: () => extendSelection(-1),
-  },
-  {
-    id: 'review.clearSelection',
-    title: t(l.clearSelection),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    when: () => selected.value.size > 0 && !isLayerOpen(),
-    run: clearSelection,
-  },
+    t,
+  ),
+  bindCommand(
+    definitions.selectNextFile,
+    { ...REVIEW_PLACE, when: () => canSelect(), run: () => extendSelection(1) },
+    t,
+  ),
+  bindCommand(
+    definitions.selectPreviousFile,
+    { ...REVIEW_PLACE, when: () => canSelect(), run: () => extendSelection(-1) },
+    t,
+  ),
+  bindCommand(
+    definitions.uncheck,
+    { ...REVIEW_PLACE, menu: false, when: () => selected.value.size > 0, run: clearSelection },
+    t,
+  ),
   // In the field the bar's own Esc closes it: no command runs from a field.
-  {
-    id: 'review.closeFind',
-    title: t(l.closeFind),
-    section: 'view',
-    key: REVIEW_KEYS.closeFind,
-    menu: false,
-    when: () => findOpen.value && !isLayerOpen(),
-    run: closeFind,
-  },
-  {
-    id: 'review.clearFilter',
-    title: t(l.clearFilter),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    when: () => filterPattern.value !== '' && !isLayerOpen(),
-    run: () => {
-      filterPattern.value = '';
+  bindCommand(definitions.closeFind, { ...REVIEW_PLACE, menu: false, when: () => findOpen.value, run: closeFind }, t),
+  bindCommand(
+    definitions.clearFilter,
+    {
+      ...REVIEW_PLACE,
+      menu: false,
+      when: () => filterPattern.value !== '',
+      run: () => {
+        filterPattern.value = '';
+      },
     },
-  },
-  // Last of what Esc does, the box's own, the range, the selection, find and the filter going first. Not with a layer open, whose Esc that is,
-  // though the menu, a layer itself, offers it.
-  {
-    id: 'review.back',
-    title: t(l.backToPullRequest),
-    section: 'view',
-    key: REVIEW_KEYS.back,
-    icon: ArrowLeft,
-    when: () => registry.menu !== null || !isLayerOpen(),
-    run: back,
-  },
-  {
-    id: 'review.openOnGitHub',
-    title: t(l.openOnGitHub),
-    section: 'view',
-    key: REVIEW_KEYS.openOnGitHub,
-    icon: Github,
-    run: () => browser.openInNewTab(githubUrl.value),
-  },
+    t,
+  ),
+  // Last of what Esc does; the menu offers it too.
+  bindCommand(definitions.back, { ...REVIEW_PLACE, title: t(l.backToPullRequest), run: back }, t),
+  bindCommand(definitions.openOnGitHub, { ...REVIEW_PLACE, run: () => browser.openInNewTab(githubUrl.value) }, t),
   // Only the diff's: the conversation and the file list scroll on their own.
-  {
-    id: 'review.lineDown',
-    title: t(l.lineDown),
-    section: 'view',
-    key: REVIEW_KEYS.lineDown,
-    icon: ArrowDown,
-    when: isDiffScrollable,
-    run: () => reviewCursor.move(1),
-  },
-  {
-    id: 'review.lineUp',
-    title: t(l.lineUp),
-    section: 'view',
-    key: REVIEW_KEYS.lineUp,
-    icon: ArrowUp,
-    when: isDiffScrollable,
-    run: () => reviewCursor.move(-1),
-  },
-  {
-    id: 'review.pageDown',
-    title: t(l.pageDown),
-    section: 'view',
-    key: REVIEW_KEYS.pageDown,
-    icon: ChevronsDown,
-    when: isDiffScrollable,
-    run: () => reviewCursor.page(1),
-  },
-  {
-    id: 'review.pageUp',
-    title: t(l.pageUp),
-    section: 'view',
-    key: REVIEW_KEYS.pageUp,
-    icon: ChevronsUp,
-    when: isDiffScrollable,
-    run: () => reviewCursor.page(-1),
-  },
-  {
-    id: 'review.find',
-    title: t(l.find),
-    section: 'view',
-    // ⌘F is the window's `keydown` handler's: a command's `Mod` key would run in the filter's field too.
-    otherKeys: [REVIEW_KEYS.find],
-    icon: Search,
-    run: () => void openFind(),
-  },
-  {
-    id: 'review.findNext',
-    title: t(l.findNext),
-    section: 'view',
-    key: REVIEW_KEYS.findNext,
-    icon: ArrowDown,
-    when: hasFindMatches,
-    run: () => stepFind(1),
-  },
-  {
-    id: 'review.findNextF3',
-    title: t(l.findNext),
-    section: 'view',
-    key: REVIEW_KEYS.findNextF3,
-    menu: false,
-    when: hasFindMatches,
-    run: () => stepFind(1),
-  },
-  {
-    id: 'review.findPrevious',
-    title: t(l.findPrevious),
-    section: 'view',
-    key: REVIEW_KEYS.findPrevious,
-    icon: ArrowUp,
-    when: hasFindMatches,
-    run: () => stepFind(-1),
-  },
-  {
-    id: 'review.findPreviousF3',
-    title: t(l.findPrevious),
-    section: 'view',
-    key: REVIEW_KEYS.findPreviousF3,
-    menu: false,
-    when: hasFindMatches,
-    run: () => stepFind(-1),
-  },
-  {
-    id: 'review.focusFilter',
-    title: t(l.focusFilter),
-    section: 'view',
-    key: REVIEW_KEYS.filter,
-    icon: ListFilter,
-    run: () => void focusFilter(),
-  },
-  {
-    id: 'review.toggleFileList',
-    title: fileListHidden.value ? t(l.showFileList) : t(l.hideFileList),
-    section: 'view',
-    key: REVIEW_KEYS.fileList,
-    icon: PanelLeft,
-    run: () => {
-      fileListHidden.value = !fileListHidden.value;
+  bindCommand(definitions.lineDown, { ...REVIEW_PLACE, when: isDiffScrollable, run: () => reviewCursor.move(1) }, t),
+  bindCommand(definitions.lineUp, { ...REVIEW_PLACE, when: isDiffScrollable, run: () => reviewCursor.move(-1) }, t),
+  bindCommand(definitions.pageDown, { ...REVIEW_PLACE, when: isDiffScrollable, run: () => reviewCursor.page(1) }, t),
+  bindCommand(definitions.pageUp, { ...REVIEW_PLACE, when: isDiffScrollable, run: () => reviewCursor.page(-1) }, t),
+  bindCommand(
+    definitions.find,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.find),
+      // ⌘F is a field's own inside one, the `/` filter's too, where the registry would run a `Mod` key; the find
+      // field's own takes it before.
+      when: () => registry.menu !== null || !isEditableTarget(document.activeElement),
+      run: () => void openFind(),
     },
-  },
-  {
-    id: 'review.toggleConversation',
-    title: conversationShown.value ? t(l.hideConversation) : t(l.showConversation),
-    section: 'view',
-    key: REVIEW_KEYS.conversation,
-    icon: PanelRight,
-    run: () => {
-      conversationShown.value = !conversationShown.value;
+    t,
+  ),
+  bindCommand(definitions.findNext, { ...REVIEW_PLACE, when: hasFindMatches, run: () => stepFind(1) }, t),
+  bindCommand(definitions.findPrevious, { ...REVIEW_PLACE, when: hasFindMatches, run: () => stepFind(-1) }, t),
+  bindCommand(definitions.focusFilter, { ...REVIEW_PLACE, run: () => void focusFilter() }, t),
+  bindCommand(
+    definitions.toggleFileList,
+    {
+      ...REVIEW_PLACE,
+      title: fileListHidden.value ? t(l.showFileList) : t(l.hideFileList),
+      run: () => {
+        fileListHidden.value = !fileListHidden.value;
+      },
     },
-  },
-  {
-    id: 'review.toggleLayout',
-    title: layout.value === 'split' ? t(l.showUnifiedDiff) : t(l.showSplitDiff),
-    section: 'view',
-    icon: layout.value === 'split' ? Rows2 : Columns2,
-    run: () => {
-      layout.value = layout.value === 'split' ? 'unified' : 'split';
+    t,
+  ),
+  bindCommand(
+    definitions.toggleConversation,
+    {
+      ...REVIEW_PLACE,
+      title: conversationShown.value ? t(l.hideConversation) : t(l.showConversation),
+      run: () => {
+        conversationShown.value = !conversationShown.value;
+      },
     },
-  },
-  {
-    id: 'review.toggleHideWhitespace',
-    title: hideWhitespace.value ? t(l.showWhitespaceChanges) : t(l.hideWhitespaceChanges),
-    section: 'view',
-    icon: Equal,
-    run: () => {
-      hideWhitespace.value = !hideWhitespace.value;
+    t,
+  ),
+  bindCommand(
+    definitions.toggleDiffLayout,
+    {
+      ...REVIEW_PLACE,
+      title: layout.value === 'split' ? t(l.showUnifiedDiff) : t(l.showSplitDiff),
+      icon: layout.value === 'split' ? Rows2 : Columns2,
+      run: () => {
+        layout.value = layout.value === 'split' ? 'unified' : 'split';
+      },
     },
-  },
-  {
-    id: 'review.toggleThreadsInCollapsed',
-    title: threadsInCollapsed.value ? t(l.hideCommentsInCollapsed) : t(l.showCommentsInCollapsed),
-    section: 'view',
-    icon: MessageSquare,
-    run: () => {
-      threadsInCollapsed.value = !threadsInCollapsed.value;
+    t,
+  ),
+  bindCommand(
+    definitions.toggleWhitespace,
+    {
+      ...REVIEW_PLACE,
+      title: hideWhitespace.value ? t(l.showWhitespaceChanges) : t(l.hideWhitespaceChanges),
+      run: () => {
+        hideWhitespace.value = !hideWhitespace.value;
+      },
     },
-  },
-  {
-    id: 'review.toggleHideViewed',
-    title: hideViewed.value ? t(l.showViewed) : t(l.hideViewedFiles),
-    section: 'view',
-    icon: hideViewed.value ? Eye : EyeOff,
-    // Hiding is the file list's setting: until the files are known there is nothing to set it on.
-    when: () => files.value !== null,
-    run: () => {
-      hideViewed.value = !hideViewed.value;
+    t,
+  ),
+  bindCommand(
+    definitions.toggleThreadsInCollapsed,
+    {
+      ...REVIEW_PLACE,
+      title: threadsInCollapsed.value ? t(l.hideCommentsInCollapsed) : t(l.showCommentsInCollapsed),
+      run: () => {
+        threadsInCollapsed.value = !threadsInCollapsed.value;
+      },
     },
-  },
-  {
-    id: 'review.toggleCollapsed',
-    title: isCurrentCollapsed() ? t(l.expandFile) : t(l.collapseFile),
-    section: 'view',
-    key: REVIEW_KEYS.collapse,
-    icon: isCurrentCollapsed() ? UnfoldVertical : FoldVertical,
-    // Space on a focused button is that button's, wherever else the key goes.
-    when: () => currentFile.value !== null && document.activeElement?.closest('button, a') == null,
-    run: () => {
-      if (currentFile.value) {
-        toggleCollapsed(currentFile.value.path);
-      }
+    t,
+  ),
+  bindCommand(
+    definitions.toggleHideViewed,
+    {
+      ...REVIEW_PLACE,
+      title: hideViewed.value ? t(l.showViewed) : t(l.hideViewedFiles),
+      icon: hideViewed.value ? Eye : EyeOff,
+      // Hiding is the file list's setting: until the files are known there is nothing to set it on.
+      when: () => files.value !== null,
+      run: () => {
+        hideViewed.value = !hideViewed.value;
+      },
     },
-  },
-  {
-    id: 'review.showHiddenLines',
-    title: t(l.showHiddenLines, { count: GAP_STEP }),
-    section: 'view',
-    key: REVIEW_KEYS.showHiddenLines,
-    icon: ChevronsUpDown,
-    when: () => findNearestGap() !== null,
-    run: () => expandNearestGap(false),
-  },
-  // No key: ⇧E is the pull request's Re-run failed checks, which the review keeps (D42).
-  {
-    id: 'review.showAllHiddenLines',
-    title: t(l.showAllHiddenLines),
-    section: 'view',
-    icon: ChevronsUpDown,
-    when: () => findNearestGap() !== null,
-    run: () => expandNearestGap(true),
-  },
+    t,
+  ),
+  bindCommand(
+    definitions.fold,
+    {
+      ...REVIEW_PLACE,
+      title: isCurrentCollapsed() ? t(l.expandFile) : t(l.collapseFile),
+      icon: isCurrentCollapsed() ? UnfoldVertical : FoldVertical,
+      when: () => currentFile.value !== null,
+      run: () => {
+        if (currentFile.value) {
+          toggleCollapsed(currentFile.value.path);
+        }
+      },
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.showHiddenLines,
+    {
+      ...REVIEW_PLACE,
+      title: t(l.showHiddenLines, { count: GAP_STEP }),
+      when: () => findNearestGap() !== null,
+      run: () => expandNearestGap(false),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.showAllHiddenLines,
+    { ...REVIEW_PLACE, when: () => findNearestGap() !== null, run: () => expandNearestGap(true) },
+    t,
+  ),
 ]);
 
 function isDiffScrollable() {
@@ -1416,7 +1315,7 @@ function isDiffScrollable() {
   );
 }
 
-function stepPullRequest(id: string | null, backKey: 'J' | 'K') {
+function stepPullRequest(id: string | null, backKey: string) {
   const item = id === null ? undefined : details.getItem(id);
   if (item) {
     navigation.noteReviewWalk({
@@ -2313,8 +2212,8 @@ function readAgain() {
       :github-url="githubUrl"
       :position="walkPosition"
       @back="back"
-      @previous="stepPullRequest(previousPullRequest, 'J')"
-      @next="stepPullRequest(nextPullRequest, 'K')"
+      @previous="stepPullRequest(previousPullRequest, keyOf(definitions.next))"
+      @next="stepPullRequest(nextPullRequest, keyOf(definitions.previous))"
     />
     <ReviewLostViewedBar
       v-if="lostViewedPaths.length > 0"
@@ -2436,7 +2335,7 @@ function readAgain() {
                   :next-number="nextNumber"
                   :sending="finish.kind === 'sending'"
                   @submit="submitOpen = true"
-                  @next="stepPullRequest(nextPullRequest, 'K')"
+                  @next="stepPullRequest(nextPullRequest, keyOf(definitions.previous))"
                 />
                 <ReviewDiffRow
                   v-else
@@ -2548,7 +2447,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>
@@ -2568,7 +2467,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>
@@ -2602,8 +2501,8 @@ function readAgain() {
                   <Button
                     size="sm"
                     variant="light"
-                    :kbd="REVIEW_KEYS.submit"
-                    :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+                    :kbd="keyOf(definitions.submitReview)"
+                    :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.submitReview))"
                     :busy="finish.kind === 'sending'"
                     @click="submitOpen = true"
                   >
@@ -2613,8 +2512,8 @@ function readAgain() {
                     v-if="nextNumber !== null"
                     variant="secondary"
                     size="sm"
-                    :kbd="REVIEW_KEYS.nextPullRequest"
-                    :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+                    :kbd="keyOf(definitions.next)"
+                    :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.next))"
                     @click="stepPullRequest(nextPullRequest, 'K')"
                   >
                     {{ t(allViewedLoc.next, { number: nextNumber }) }}
@@ -2651,7 +2550,7 @@ function readAgain() {
                   >
                     <MessageSquare aria-hidden="true" />
                     {{ t(l.conversation) }}
-                    <Kbd :keys="REVIEW_KEYS.conversation" />
+                    <Kbd :keys="keyOf(definitions.toggleConversation)" />
                   </Button>
                   <Button
                     variant="secondary"
@@ -2661,7 +2560,7 @@ function readAgain() {
                     rel="noopener noreferrer"
                   >
                     <Github aria-hidden="true" />
-                    {{ t(l.openOnGitHub) }}
+                    {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>
               </EmptyState>

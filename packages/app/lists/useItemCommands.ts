@@ -1,39 +1,22 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import {
-    CircleCheckBig,
-    CircleSlash,
-    FileDiff,
-    GitBranch,
-    GitPullRequestClosed,
-    Github,
-    Hash,
-    Link,
-    Maximize2,
-    MessageSquare,
-    PanelRight,
-    RotateCcw,
-    SquareKanban,
-} from 'lucide-vue-next';
+import { PanelRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
-import type { EditCommandsParams, StateOption } from '@/commands/useEditCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { comment, open as openItem, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import type { EditCommandsParams } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
-import {
-    IssueRoutes,
-    formatItemReference,
-    formatShortReference,
-    getItemPagePath,
-    getItemReference,
-} from '@/item/itemRoutes.js';
+import { IssueRoutes, formatItemReference, getItemPagePath, getItemReference } from '@/item/itemRoutes.js';
+import { useItemActionCommands } from '@/item/useItemActionCommands.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -49,6 +32,11 @@ import * as l from './useItemCommands.loc.js';
 export interface ItemCommandsParams {
     /** The items they act on; read every time they are built. */
     readonly ids: () => readonly string[];
+    /**
+     * Where their edits are offered: `item` for a list's row or items (the row stands for its item, its actions yield to
+     * the list's own), or the review of the one pull request.
+     */
+    readonly place: 'item' | 'review';
     /** Where they belong: the command menu offers `item` and `selection` only for a subject of that kind. */
     readonly section: () => EditCommandsParams['section'];
     /** Opens the one item they act on, as Enter opens it. */
@@ -62,7 +50,7 @@ export interface ItemCommandsParams {
  * writing about them, copying them, adding them to a project, and their edits. A repository's metadata is read only as a
  * submenu opens, so building them asks nothing of GitHub.
  */
-export function useItemCommands({ ids, section, open, merge }: ItemCommandsParams) {
+export function useItemCommands({ ids, place: editPlace, section, open, merge }: ItemCommandsParams) {
     const t = useTranslate();
     const auth = useService(AuthStore);
     const details = useService(ItemDetailStore);
@@ -74,6 +62,7 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
     const router = useRouter();
     const merging = injectContext(MergeContext, { optional: true });
     const editCommands = useEditCommands();
+    const actions = useItemActionCommands();
 
     // Through the detail too: a pull request opened by its address (its review) need not be in any list.
     const selected = computed(() => ids().flatMap(id => details.getItem(id) ?? []));
@@ -97,8 +86,9 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
 
     return { selected, one, repositoryNames, getOwnCommands, getEditCommands };
 
-    function getEditCommands(): Command[] {
+    function getEditCommands(): BoundCommand[] {
         return editCommands({
+            place: editPlace,
             section: section(),
             items: selected.value,
             metadata: metadata.value,
@@ -107,8 +97,6 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
             getPermissions: item => editor.getPermissions(item),
             places: places.value,
             now: clock.now(),
-            stateOptions: getStateOptions(),
-            stateTitle: getStateTitle(),
             edit,
             merge,
             pullRequestCommands: merging,
@@ -120,40 +108,36 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
     }
 
     /** Going to the items, writing about them, copying them, adding them to a project. */
-    function getOwnCommands(): Command[] {
+    function getOwnCommands(): BoundCommand[] {
         const item = one.value;
         const own = section();
-        const commands: Command[] = [
-            {
-                id: 'menu.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: own,
-                key: 'O',
-                icon: Github,
-                detail: item ? undefined : t(l.tabs, { count: selected.value.length }),
-                run: () => {
-                    for (const candidate of selected.value) {
-                        browser.openInNewTab(candidate.url);
-                    }
+        const commands: BoundCommand[] = [
+            bindCommand(
+                openOnGitHub,
+                {
+                    place: 'item',
+                    section: own,
+                    detail: item ? undefined : t(l.tabs, { count: selected.value.length }),
+                    run: () => {
+                        for (const candidate of selected.value) {
+                            browser.openInNewTab(candidate.url);
+                        }
+                    },
                 },
-            },
-            {
-                id: 'menu.copyLink',
-                title: item ? t(l.copyLink) : t(l.copyLinks),
-                section: own,
-                icon: Link,
-                run: () => copy(selected.value.map(candidate => candidate.url).join('\n')),
-            },
+                t,
+            ),
+            actions.copyLink(selected.value, own),
         ];
         if (selected.value.some(candidate => editor.getPermissions(candidate).addToProject)) {
-            commands.push({
-                id: 'menu.addToProject',
-                title: t(l.addToProject),
-                section: own,
-                icon: SquareKanban,
-                prepare: () => void repositories.ensureViewerProjects(),
-                options: () => ({ loading: repositories.viewerProjects === null, options: getProjectOptions() }),
-            });
+            commands.push(
+                actions.addToProject({
+                    section: own,
+                    items: selected.value,
+                    projects: () => repositories.viewerProjects,
+                    prepare: () => void repositories.ensureViewerProjects(),
+                    add: project => edit({ kind: 'addToProject', project }),
+                }),
+            );
         }
 
         if (!item || isPendingItem(item)) {
@@ -161,64 +145,36 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
         }
 
         commands.push(
-            { id: 'menu.open', title: t(l.open), section: own, key: 'Enter', icon: PanelRight, run: open },
-            {
-                id: 'menu.openPage',
-                title: t(l.openPage),
-                section: own,
-                icon: Maximize2,
-                run: () => void router.push(getPageLocation(item)),
-            },
+            bindCommand(openItem, { place: 'item', section: own, icon: PanelRight, run: open }, t),
+            bindCommand(
+                openFullScreen,
+                { place: 'item', section: own, run: () => void router.push(getPageLocation(item)) },
+                t,
+            ),
         );
         if (editor.getPermissions(item).comment) {
-            commands.push({
-                id: 'menu.comment',
-                title: t(l.comment),
-                section: own,
-                key: EDIT_KEYS.comment,
-                icon: MessageSquare,
-                run: () => {
-                    navigation.requestComment(item.id);
-                    open();
-                },
-            });
-        }
-
-        if (item.kind === 'issue') {
-            commands.push({
-                id: 'menu.copyReference',
-                title: t(l.copyReference),
-                section: own,
-                icon: Hash,
-                detail: formatShortReference(item),
-                run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
-            });
-        } else {
             commands.push(
-                {
-                    id: 'menu.openFiles',
-                    title: t(l.openFiles),
-                    section: own,
-                    key: 'Shift+O',
-                    icon: FileDiff,
-                    run: () => browser.openInNewTab(`${item.url}/files`),
-                },
-                {
-                    id: 'menu.copyBranch',
-                    title: t(l.copyBranch),
-                    section: own,
-                    icon: GitBranch,
-                    detail: item.headRefName,
-                    run: () => copy(item.headRefName),
-                },
+                bindCommand(
+                    comment,
+                    {
+                        place: 'item',
+                        section: own,
+                        run: () => {
+                            navigation.requestComment(item.id);
+                            open();
+                        },
+                    },
+                    t,
+                ),
             );
         }
 
+        commands.push(...actions.kindCommands(item, own));
         return commands;
     }
 
     /** What the submenu offers, and what the user may do there, read for every repository of the items as it opens. */
-    function readingMetadata(command: Command): Command {
+    function readingMetadata(command: BoundCommand): BoundCommand {
         if (!command.options) {
             return command;
         }
@@ -235,73 +191,6 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
         };
     }
 
-    /** Close the open ones — a pull request alone without a reason — or reopen them when all are closed. */
-    function getStateOptions(): StateOption[] {
-        const closable = selected.value.filter(item => editor.getPermissions(item).state);
-        if (closable.length === 0) {
-            return [];
-        }
-
-        if (closable.every(item => item.state !== 'OPEN')) {
-            return [{ key: 'reopen', text: t(l.reopen), icon: RotateCcw, request: { kind: 'reopen' } }];
-        }
-
-        if (one.value?.kind === 'pullRequest') {
-            return [
-                {
-                    key: 'close',
-                    text: t(l.closePullRequest),
-                    icon: GitPullRequestClosed,
-                    request: { kind: 'close', reason: 'COMPLETED' },
-                },
-            ];
-        }
-
-        return [
-            {
-                key: 'completed',
-                text: t(l.closeCompleted),
-                icon: CircleCheckBig,
-                request: { kind: 'close', reason: 'COMPLETED' },
-            },
-            {
-                key: 'notPlanned',
-                text: t(l.closeNotPlanned),
-                icon: CircleSlash,
-                request: { kind: 'close', reason: 'NOT_PLANNED' },
-            },
-        ];
-    }
-
-    function getStateTitle() {
-        const item = one.value;
-        if (selected.value.every(candidate => candidate.state !== 'OPEN')) {
-            return t(l.reopen);
-        }
-
-        if (!item) {
-            return t(l.closeItems, { count: selected.value.length });
-        }
-
-        return item.kind === 'issue' ? t(l.closeIssue) : t(l.closePullRequest);
-    }
-
-    /** The projects not every one of the items is in already. */
-    function getProjectOptions(): CommandOption[] {
-        return (repositories.viewerProjects ?? [])
-            .filter(
-                project =>
-                    !project.closed &&
-                    !selected.value.every(item => item.projects.some(place => place.projectId === project.id)),
-            )
-            .map(project => ({
-                value: project.id,
-                label: project.title,
-                detail: project.owner,
-                pick: () => edit({ kind: 'addToProject', project }),
-            }));
-    }
-
     /** Its page; the one open in the panel expanded from it, as the header's "Open full screen" does, so Escape comes back. */
     function getPageLocation(item: Item): RouteLocationRaw {
         const reference = getItemReference(item);
@@ -316,9 +205,5 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
 
     function edit(request: EditRequest) {
         void editor.edit(ids(), request);
-    }
-
-    function copy(text: string) {
-        void navigator.clipboard.writeText(text);
     }
 }

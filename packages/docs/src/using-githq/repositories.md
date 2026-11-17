@@ -44,7 +44,7 @@ Both sections are lists of the repository's items with GitHub's own properties.
 - **Group**: by **Milestone** (the default), **Assignee**, **Author**, **Status**, **Label**, **Issue type** (issues
   only) or **None**. A pull request's status is its stage, such as **Waiting for review**, **Needs work** or **Ready to
   merge**.
-- **Layout**: **List** or **Board**, switched with <kbd>Shift</kbd> <kbd>V</kbd>.
+- **Layout**: **List** or **Board**, also switched from the command menu.
 
 Each section keeps its own state, grouping, order, layout and properties, for this repository, on this device.
 
@@ -71,7 +71,8 @@ commits load as you scroll.
 |<kbd>Enter</kbd>|Open the commit's details|
 |<kbd>B</kbd>|Find a branch or tag|
 |<kbd>P</kbd> / <kbd>Shift</kbd> <kbd>P</kbd>|Go to the first or second parent|
-|<kbd>Shift</kbd> <kbd>Enter</kbd>|Open the commit's pull request|
+|<kbd>Shift</kbd> <kbd>O</kbd>|Open the commit's pull request|
+|<kbd>Shift</kbd> <kbd>Enter</kbd>|Open the commit full screen|
 |<kbd>O</kbd>|Open the commit on GitHub|
 |<kbd>Esc</kbd>|Close the details|
 
@@ -92,7 +93,7 @@ long it has been broken or passing.
 - A run opens on its own page in githq: its jobs beside the selected job's log. The log opens at the first error.
   <kbd>/</kbd> or <kbd>⌘</kbd> <kbd>F</kbd> searches the whole log, folded steps included.
 - **Re-run failed jobs** is in the command menu on a run's page.
-- <kbd>P</kbd> or **Alert settings** opens the repository's workflow alerts.
+- <kbd>Shift</kbd> <kbd>P</kbd> or **Alert settings** opens the repository's workflow alerts.
 
 **Broken workflows**, in the sidebar while any workflow is broken, gathers the broken workflows of every tracked
 repository: **New** for those broken in the last 24 hours, **Ongoing** for the rest.
@@ -118,8 +119,9 @@ difference and how to stop tracking.
 
 Click the repository's name on its screen, or right-click it in the sidebar, for its menu: its sections, **New issue**,
 **Open on GitHub**, **Copy link**, and while you track it **Settings** and **Stop tracking**. On any screen that belongs to the repository, the
-command menu offers the same under the repository's name, all but **New issue** (press <kbd>C</kbd> instead) and **Stop
-tracking**. There, the settings are called **Repository settings**.
+command menu offers the same under the repository's name, all but **New issue** (the
+command menu's own **New issue** starts one in the repository) and **Stop tracking**. There, the settings are called
+**Repository settings**.
 
 ## Repository settings
 

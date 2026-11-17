@@ -45,9 +45,45 @@ test('an item opened over the review has the keys: ⇧M merges it, not the pull 
     await expect(panel.root).toHaveAccessibleName('Merge acme/web#16');
 });
 
-/** Signs in with two pull requests the viewer may merge and opens the review of the first, acme/web#15. */
-async function openReview(page: Parameters<typeof openMyWork>[0], github: Parameters<typeof openMyWork>[1]) {
+test("an item opened over the review has ⇧S: it submits the item's draft review, not the one of the pull request reviewed", async ({
+    page,
+    github,
+}) => {
     const sample = createSampleMergeableWork();
+    const review = await openReview(page, github, sample);
+    sample.world.setPendingReview(sample.second, { comments: 1, minutesAgo: 5 });
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 16,
+        id: sample.second,
+        files: [],
+        threads: [
+            {
+                id: 'T_mine',
+                path: 'src/cache.ts',
+                line: 1,
+                comments: ['<p>Mine, not sent yet.</p>'],
+                pending: true,
+                author: 'octocat',
+            },
+        ],
+    });
+
+    await page.goto(`${REVIEW_ADDRESS}?pane=issue&issue=acme|web|16`);
+    const item = new ItemViewHarness(page);
+    await expect(item.title).toHaveText(SECOND_TITLE);
+    await expect(item.entry('Mine, not sent yet.')).toContainText(/^Your review\s*pending/u);
+
+    await page.keyboard.press('Shift+S');
+    await expect(review.submitDialog).toHaveAccessibleName('Submit your review of #16');
+});
+
+/** Signs in with two pull requests the viewer may merge and opens the review of the first, acme/web#15. */
+async function openReview(
+    page: Parameters<typeof openMyWork>[0],
+    github: Parameters<typeof openMyWork>[1],
+    sample = createSampleMergeableWork(),
+) {
     await openMyWork(page, github, sample.world);
     answerReview(github, {
         repository: 'acme/web',

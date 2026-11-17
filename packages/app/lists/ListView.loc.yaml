@@ -1,31 +1,5 @@
 countArriving:
   en: …
-next:
-  en: Next item
-previous:
-  en: Previous item
-open:
-  en: Open the selected item
-openFullScreen:
-  en: Open full screen
-openOnGitHub:
-  en: Open on GitHub
-check:
-  en: Select for editing together
-checkNext:
-  en: Select the next one too
-checkPrevious:
-  en: Select the previous one too
-uncheck:
-  en: Clear the selection
-nextColumn:
-  en: Next or previous column
-moveToColumn:
-  en: Move to the next or previous column
-toggleStack:
-  en: Expand or collapse a stack
-merge:
-  en: Merge…
 mergeStack:
   en: Merge all {count}
 mergeStackPart:

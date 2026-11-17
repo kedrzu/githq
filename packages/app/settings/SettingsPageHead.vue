@@ -1,17 +1,18 @@
-<!-- The head of a repository's or a project's settings (`Settings / Repository head`, T16, T17): "← Repositories › [icon] fitloop/webapp  private · tracked", and "Esc Back" at the end. The arrow and the section's name go back, and so does Escape — unless it is someone else's: typed into a field, or closing a picker, a menu or the command menu. -->
+<!-- The head of a repository's or a project's settings (`Settings / Repository head`, T16, T17): "← Repositories › [icon] fitloop/webapp  private · tracked", and "Esc Back" at the end. The arrow and the section's name go back, and so does Escape (`back`, run by the registry) — unless it is someone else's: typed into a field, or closing a picker, a menu or the command menu. -->
 <script lang="ts" setup>
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowLeft, ChevronRight } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { back } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
+import { useCommands } from '@/commands/useCommands.js';
 import Kbd from '@/components/Kbd.vue';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
 import * as l from './SettingsPageHead.loc.js';
 
-defineProps<{
+const props = defineProps<{
   /** The section of Settings it belongs to ("Repositories"). */
   parent: string;
   /** What it is (a lock for a private repository). */
@@ -29,14 +30,19 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 
-onWindowEvent('keydown', event => {
-  if (event.key !== 'Escape' || event.defaultPrevented || isEditableTarget(event.target) || isLayerOpen()) {
-    return;
-  }
-
-  event.preventDefault();
-  emit('back');
-});
+useCommands(() => [
+  bindCommand(
+    back,
+    {
+      place: 'settings',
+      title: t(l.backTo, { parent: props.parent }),
+      section: 'view',
+      menu: false,
+      run: () => emit('back'),
+    },
+    t,
+  ),
+]);
 </script>
 
 <template>
@@ -44,7 +50,7 @@ onWindowEvent('keydown', event => {
     <button
       type="button"
       :class="css.settingsPageHead_back"
-      aria-keyshortcuts="Escape"
+      :aria-keyshortcuts="keyOf(back)"
       @click="emit('back')"
     >
       <ArrowLeft
@@ -68,7 +74,7 @@ onWindowEvent('keydown', event => {
       :class="css.settingsPageHead_hint"
       aria-hidden="true"
     >
-      <Kbd keys="Escape" />{{ t(l.back) }}
+      <Kbd :keys="keyOf(back)" />{{ t(l.back) }}
     </span>
   </header>
 </template>

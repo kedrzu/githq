@@ -3,12 +3,15 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, ArrowUpRight, CircleDashed } from 'lucide-vue-next';
+import { ArrowUpRight, CircleDashed } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { openStartedRun } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { Browser } from '@/services/Browser.js';
@@ -20,24 +23,12 @@ import { WorkflowDispatch } from './WorkflowDispatch.js';
 import type { WorkflowDispatchFailure, WorkflowDispatchStarted } from './WorkflowDispatch.js';
 import * as l from './WorkflowDispatchToast.loc.js';
 
-/** The key of Open, while the toast is the newest. */
-const OPEN_KEY = 'Alt+O';
-
 const dispatches = useService(WorkflowDispatch);
 const browser = useService(Browser);
 const router = useRouter();
 const t = useTranslate();
 
-const commands = computed((): Command[] => [
-  {
-    id: 'workflows.openStarted',
-    title: t(l.openCommand),
-    section: 'app',
-    key: OPEN_KEY,
-    icon: ArrowRight,
-    run: openStarted,
-  },
-]);
+const commands = computed((): BoundCommand[] => [bindCommand(openStartedRun, { section: 'app', run: openStarted }, t)]);
 
 function getStartedTitle(started: WorkflowDispatchStarted) {
   const params = { workflow: started.workflowName, ref: started.ref };
@@ -120,8 +111,8 @@ function openStarted() {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? OPEN_KEY : undefined"
-        :keyshortcuts="active ? formatAriaKeyShortcuts(OPEN_KEY) : undefined"
+        :kbd="active ? keyOf(openStartedRun) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(openStartedRun)) : undefined"
         @click="openStarted"
       >
         {{ t(l.open) }}

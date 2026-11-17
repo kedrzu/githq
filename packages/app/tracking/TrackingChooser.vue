@@ -530,6 +530,8 @@ watch(
   { immediate: true },
 );
 
+// The picker's own keys, in its dialog or the first sign-in's, not commands (commands D11): the registry's yield to a
+// layer over the screen.
 onWindowEvent('keydown', event => {
   if (event.defaultPrevented) {
     return;

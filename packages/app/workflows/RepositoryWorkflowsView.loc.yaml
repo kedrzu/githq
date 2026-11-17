@@ -1,17 +1,5 @@
-next:
-  en: Next workflow
-previous:
-  en: Previous workflow
 open:
   en: Open workflow
-openFullScreen:
-  en: Open workflow full screen
-openLatestFailure:
-  en: Open latest failure
-alertSettings:
-  en: Alert settings
-openOnGitHub:
-  en: Open on GitHub
 openActionsSettings:
   en: Open Actions settings on GitHub
 broken:
@@ -23,7 +11,7 @@ pullRequestsOnlyNote:
 noAlerts:
   en: No alerts
 noAlertsNote:
-  en: failing only on branches and tags without alerts · P to change that
+  en: failing only on branches and tags without alerts · {key} to change that
 noAlertsOffNote:
   en: workflow alerts are off for this repository
 passing:

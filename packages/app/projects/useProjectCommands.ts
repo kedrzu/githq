@@ -1,9 +1,10 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Eye, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { copyLink, goToView, newIssue, openOnGitHub, trackedSettings, untrack } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -14,21 +15,31 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { ProjectStore } from './ProjectStore.js';
 import * as l from './useProjectCommands.loc.js';
 
-/** How many of a project's saved views have a key, `1` to `9`: a tenth and later have none. */
-const SAVED_VIEW_KEYS = 9;
-
-/** A project's actions, by the name after `project.`. */
+/** A project's actions, each bound from its definition. */
 export interface ProjectCommands {
     /**
-     * Going to each of its saved views (`view:<id>`), as the command menu's level under the project lists them; the first
-     * nine on `1`–`9`, which run only while the project is on screen — any other menu leaves them out.
+     * Going to each of its saved views (`goToView`), in its order, as the command menu's level under the project lists
+     * them; the first nine on `1`–`9` when `keyed` (they run only while the project is on screen).
      */
-    readonly savedViews: readonly Command[];
-    readonly newIssue: Command;
-    readonly openOnGitHub: Command;
-    readonly copyLink: Command;
-    readonly settings: Command;
-    readonly untrack: Command;
+    readonly savedViews: readonly SavedViewCommand[];
+    readonly newIssue: BoundCommand;
+    readonly openOnGitHub: BoundCommand;
+    readonly copyLink: BoundCommand;
+    readonly settings: BoundCommand;
+    readonly untrack: BoundCommand;
+}
+
+/** Going to a saved view, with the view it goes to: a view is picked by its id, not by where it stands. */
+export interface SavedViewCommand {
+    /** The view's node id. */
+    readonly viewId: string;
+    readonly command: BoundCommand;
+}
+
+/** How a project's actions are offered. */
+export interface ProjectCommandsOptions {
+    /** Its saved views carry their keys `1`–`9`: the project is on screen, where they run. Default `false`. */
+    readonly keyed?: boolean;
 }
 
 /** A project as its actions need it: its address, and its id once it is known (tracked). */
@@ -44,7 +55,10 @@ export interface ProjectCommandsTarget extends ProjectAddress {
  * level under a tracked project (D36) its saved views, a new issue, the page, the link and the settings; on a phone the
  * project's view offers its saved views first from the command line (mobile D17).
  */
-export function useProjectCommands(): (target: ProjectCommandsTarget) => ProjectCommands {
+export function useProjectCommands(): (
+    target: ProjectCommandsTarget,
+    options?: ProjectCommandsOptions,
+) => ProjectCommands {
     const t = useTranslate();
     const router = useRouter();
     const tracking = useService(TrackingStore);
@@ -53,7 +67,7 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
 
-    return target => {
+    return (target, options = {}) => {
         const path = getProjectPath(target);
         const url = `${GITHUB_ORIGIN}${path}`;
         const project = () => (target.id === null ? undefined : projects.get(target.id));
@@ -62,67 +76,82 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
             tracking.isTracked({ kind: 'project', id: target.id }) &&
             !pending.isPending({ kind: 'project', id: target.id });
         return {
-            savedViews: (project()?.views ?? []).map((view, index) => ({
-                id: `view:${view.id}`,
-                title: view.name,
-                detail: t(l.savedView),
-                icon: Eye,
-                section: 'view',
-                key: index < SAVED_VIEW_KEYS ? String(index + 1) : undefined,
-                run: () => void router.push(getProjectPath(target, view.number)),
-            })),
-            newIssue: {
-                id: 'project.newIssueHere',
-                title: t(l.newIssue),
-                section: 'view',
-                icon: SquarePen,
-                when: () => project()?.viewerCanUpdate ?? false,
-                run: () => {
-                    const current = project();
-                    if (current) {
-                        composer.start({
-                            repository: null,
-                            project: { projectId: current.id, title: current.title, values: [] },
-                            parent: null,
-                        });
-                    }
+            savedViews: getSavedViews(),
+            newIssue: bindCommand(
+                newIssue,
+                {
+                    place: 'project',
+                    section: 'view',
+                    when: () => project()?.viewerCanUpdate ?? false,
+                    run: () => {
+                        const current = project();
+                        if (current) {
+                            composer.start({
+                                repository: null,
+                                project: { projectId: current.id, title: current.title, values: [] },
+                                parent: null,
+                            });
+                        }
+                    },
                 },
-            },
-            openOnGitHub: {
-                id: 'project.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: 'view',
-                icon: Github,
-                run: () => browser.openInNewTab(url),
-            },
-            copyLink: {
-                id: 'project.copyLink',
-                title: t(l.copyLink),
-                section: 'view',
-                icon: Link,
-                run: () => void navigator.clipboard.writeText(url),
-            },
-            settings: {
-                id: 'project.settings',
-                title: t(l.settings),
-                section: 'view',
-                icon: Settings,
-                when: isListed,
-                run: () => void router.push(getProjectSettingsPath(target)),
-            },
-            untrack: {
-                id: 'project.untrack',
-                title: t(l.untrack),
-                section: 'view',
-                icon: EyeOff,
-                when: isListed,
-                run: () => {
-                    const tracked = tracking.projects.find(candidate => candidate.id === target.id);
-                    if (tracked) {
-                        pending.untrack({ kind: 'project', id: tracked.id }, tracked.title);
-                    }
+                t,
+            ),
+            // Offered in menus only: `O` is what the keyboard is on, a row or an opened item, not the project.
+            openOnGitHub: bindCommand(
+                openOnGitHub,
+                { place: 'project', section: 'view', keyed: false, run: () => browser.openInNewTab(url) },
+                t,
+            ),
+            copyLink: bindCommand(
+                copyLink,
+                { place: 'project', section: 'view', run: () => void navigator.clipboard.writeText(url) },
+                t,
+            ),
+            settings: bindCommand(
+                trackedSettings,
+                {
+                    place: 'project',
+                    section: 'view',
+                    when: isListed,
+                    run: () => void router.push(getProjectSettingsPath(target)),
                 },
-            },
+                t,
+            ),
+            untrack: bindCommand(
+                untrack,
+                {
+                    place: 'project',
+                    section: 'view',
+                    when: isListed,
+                    run: () => {
+                        const tracked = tracking.projects.find(candidate => candidate.id === target.id);
+                        if (tracked) {
+                            pending.untrack({ kind: 'project', id: tracked.id }, tracked.title);
+                        }
+                    },
+                },
+                t,
+            ),
         };
+
+        function getSavedViews(): SavedViewCommand[] {
+            const views = project()?.views ?? [];
+            const commands = bindCommand(
+                goToView,
+                views.map(view => ({
+                    title: view.name,
+                    detail: t(l.savedView),
+                    section: 'view',
+                    keyed: options.keyed ? undefined : false,
+                    run: () => void router.push(getProjectPath(target, view.number)),
+                })),
+                t,
+            );
+            // One command per view, in its order: no binding is null.
+            return views.flatMap((view, index) => {
+                const command = commands[index];
+                return command ? [{ viewId: view.id, command }] : [];
+            });
+        }
     };
 }

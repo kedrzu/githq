@@ -1,29 +1,34 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { GitBranch, GitPullRequestArrow, ListMinus, RefreshCw, Undo2 } from 'lucide-vue-next';
 
 import type { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
-import type { Command, CommandSection } from './CommandTypes.js';
+import { bindCommand } from './bindCommand.js';
+import type { BoundCommand, CommandSection } from './CommandTypes.js';
+import { branch, dequeue, rerunChecks, revert, updateBranch, updateBranchByRebase } from './definitions/index.js';
 import * as l from './usePullRequestCommands.loc.js';
 
-/** The keys of a pull request's ordinary commands (merging D16); `EDIT_KEYS` lists them with the rest. */
-export const PULL_REQUEST_COMMAND_KEYS = {
-    updateBranch: 'U',
-    updateBranchByRebase: 'Shift+U',
-    rerunChecks: 'Shift+E',
-    branch: 'Shift+D',
-    revert: 'Shift+Z',
-    dequeue: 'Shift+Q',
-} as const;
+/** The definitions of a pull request's ordinary commands, the ones {@link usePullRequestCommands} binds. */
+export const PULL_REQUEST_COMMANDS = [
+    updateBranch,
+    updateBranchByRebase,
+    rerunChecks,
+    branch,
+    revert,
+    dequeue,
+] as const;
 
 /** What {@link usePullRequestCommands} builds from. */
 export type PullRequestCommandSource = Pick<MergeContext, 'getCommands' | 'run'>;
 
+/** Where a pull request's ordinary commands are offered: a list's row, the opened item, a review. */
+export type PullRequestCommandPlace = (typeof updateBranch.places)[number];
+
 /** What {@link usePullRequestCommands} builds the actions of. */
 export interface PullRequestCommandsParams {
+    readonly place: PullRequestCommandPlace;
     readonly section: CommandSection;
     readonly pr: PullRequestItem;
     readonly source: PullRequestCommandSource;
@@ -38,10 +43,10 @@ export interface PullRequestCommandsParams {
  * The ordinary commands of one pull request as actions (merging D16, PM39), only those that apply: for the opened item,
  * the menus and a list's selected row alike, each running on the pull request named.
  */
-export function usePullRequestCommands(): (params: PullRequestCommandsParams) => Command[] {
+export function usePullRequestCommands(): (params: PullRequestCommandsParams) => BoundCommand[] {
     const t = useTranslate();
 
-    return ({ section, pr, source, checks }) => {
+    return ({ place, section, pr, source, checks }) => {
         const rerunnable = checks?.find(check => check.state === 'failing' && check.workflowRunId !== null);
         return source
             .getCommands(pr.id)
@@ -51,63 +56,27 @@ export function usePullRequestCommands(): (params: PullRequestCommandsParams) =>
                 switch (command.kind) {
                     case 'updateBranch':
                         return command.method === 'MERGE'
-                            ? {
-                                  id: `${section}.updateBranch`,
-                                  title: t(l.updateBranch),
-                                  section,
-                                  key: PULL_REQUEST_COMMAND_KEYS.updateBranch,
-                                  icon: GitPullRequestArrow,
-                                  detail: t(l.byMerge),
-                                  run,
-                              }
-                            : {
-                                  id: `${section}.updateBranchByRebase`,
-                                  title: t(l.updateBranchByRebase),
-                                  section,
-                                  key: PULL_REQUEST_COMMAND_KEYS.updateBranchByRebase,
-                                  icon: GitPullRequestArrow,
-                                  run,
-                              };
+                            ? bindCommand(updateBranch, { place, section, detail: t(l.byMerge), run }, t)
+                            : bindCommand(updateBranchByRebase, { place, section, run }, t);
                     case 'rerunFailedChecks':
-                        return {
-                            id: `${section}.rerunChecks`,
-                            title: t(l.rerunChecks),
-                            section,
-                            key: PULL_REQUEST_COMMAND_KEYS.rerunChecks,
-                            icon: RefreshCw,
-                            detail: rerunnable?.name,
-                            run,
-                        };
+                        return bindCommand(rerunChecks, { place, section, detail: rerunnable?.name, run }, t);
                     case 'deleteBranch':
                     case 'restoreBranch':
-                        return {
-                            id: `${section}.branch`,
-                            title: command.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch),
-                            section,
-                            key: PULL_REQUEST_COMMAND_KEYS.branch,
-                            icon: GitBranch,
-                            detail: pr.headRefName,
-                            run,
-                        };
+                        return bindCommand(
+                            branch,
+                            {
+                                place,
+                                section,
+                                title: command.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch),
+                                detail: pr.headRefName,
+                                run,
+                            },
+                            t,
+                        );
                     case 'revert':
-                        return {
-                            id: `${section}.revert`,
-                            title: t(l.revert),
-                            section,
-                            key: PULL_REQUEST_COMMAND_KEYS.revert,
-                            icon: Undo2,
-                            detail: t(l.revertDetail),
-                            run,
-                        };
+                        return bindCommand(revert, { place, section, detail: t(l.revertDetail), run }, t);
                     case 'dequeue':
-                        return {
-                            id: `${section}.dequeue`,
-                            title: t(l.takeOutOfQueue),
-                            section,
-                            key: PULL_REQUEST_COMMAND_KEYS.dequeue,
-                            icon: ListMinus,
-                            run,
-                        };
+                        return bindCommand(dequeue, { place, section, run }, t);
                     default:
                         return assertNever(command);
                 }

@@ -5,10 +5,12 @@ import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, shallowRef } from 'vue';
+import { createApp, defineComponent, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import Toaster from '@/components/Toaster.vue';
+import UpdateReadyToast from '@/desktop/UpdateReadyToast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import type { AppUpdateShape, UpdateNotice, UpdateOffer, UpdateState } from '@/services/AppUpdate.js';
@@ -188,6 +190,23 @@ test('"Restart to update" restarts into the update', async () => {
     await userEvent.keyboard('restart to update{Enter}');
 
     expect(update.restart).toHaveBeenCalledOnce();
+});
+
+test('⌥R restarts into the update while its toast shows, and still after "Later" dismissed it', async () => {
+    const update = createUpdate('1.4.0');
+    mount(update);
+    const toast = page.getByRole('region', { name: 'Notifications' }).getByRole('listitem');
+    await expect.element(toast.getByRole('button', { name: 'Restart' })).toHaveAttribute('aria-keyshortcuts', 'Alt+R');
+
+    await userEvent.keyboard('{Alt>}r{/Alt}');
+    expect(update.restart).toHaveBeenCalledOnce();
+
+    await userEvent.click(toast.getByRole('button', { name: 'Dismiss' }).first());
+    expect(update.later).toHaveBeenCalledOnce();
+    await expect.element(toast).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Alt>}r{/Alt}');
+    expect(update.restart).toHaveBeenCalledTimes(2);
 });
 
 test('"Check for updates" is found by typing in the desktop app, and is the only update command at rest on Windows', async () => {
@@ -440,7 +459,7 @@ test('W36: with the repository taken out of the menu, "Run workflow…" starts a
     await expect.element(page.getByRole('listbox', { name: 'acme/web' })).toBeInTheDocument();
 });
 
-test("New issue from a menu the repository was taken out of starts in none; `C` then starts in the screen's", async () => {
+test("New issue from a menu the repository was taken out of starts in none, the next menu's in the screen's; `C` starts none outside a project (D7)", async () => {
     const container = createAppContainer();
     const start = vi.spyOn(container.resolve(NewIssueComposer), 'start').mockImplementation(() => undefined);
     const router = render(container);
@@ -453,6 +472,10 @@ test("New issue from a menu the repository was taken out of starts in none; `C` 
     expect(start).toHaveBeenLastCalledWith({ repository: null, project: null, parent: null });
 
     await userEvent.keyboard('c');
+    expect(start).toHaveBeenCalledTimes(1);
+
+    await openMenu();
+    await userEvent.keyboard('new issue{Enter}');
     expect(start).toHaveBeenLastCalledWith({ repository: 'acme/web', project: null, parent: null });
 });
 
@@ -817,7 +840,10 @@ function render(container: VueContainer) {
     });
     const host = document.createElement('div');
     document.body.append(host);
-    const app = createApp(AppCommands);
+    // The update's toast beside them, as the shell has it: while it shows, its "Restart to update" is the menu's.
+    const app = createApp({
+        render: () => [h(AppCommands), h(Toaster, null, { default: () => h(UpdateReadyToast) })],
+    });
     app.use(IocPlugin, { container });
     app.use(router);
     app.mount(host);

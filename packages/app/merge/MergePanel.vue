@@ -33,9 +33,10 @@ import {
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
+import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -265,7 +266,11 @@ const offered = computed(() =>
 );
 const methods = computed(() => offered.value?.methods ?? []);
 const methodOptions = computed((): SegmentedTabsOption<PullRequestMergeMethod>[] =>
-  methods.value.map((choice, index) => ({ value: choice, label: methodName(choice), keyshortcuts: String(index + 1) })),
+  methods.value.map((choice, index) => ({
+    value: choice,
+    label: methodName(choice),
+    keyshortcuts: keyOf(definitions.chooseMergeMethod, index + 1),
+  })),
 );
 const method = ref<PullRequestMergeMethod | null>(initialMethod());
 const notice = ref<MethodNotice | null>(null);
@@ -950,7 +955,10 @@ function endBand(): Band | null {
   const stop = stackStop.value;
   if (stop && props.record?.kind === 'refused') {
     const { number, url } = stop.at;
-    return { ...refusalBand(props.record.reason), link: { label: t(l.seeOnGitHub, { number }), url, key: 'O' } };
+    return {
+      ...refusalBand(props.record.reason),
+      link: { label: t(l.seeOnGitHub, { number }), url, key: keyOf(definitions.openOnGitHub) },
+    };
   }
 
   switch (record?.kind) {
@@ -960,7 +968,14 @@ function endBand(): Band | null {
       const said = refusedBand(record.reason);
       // Of a stack's merge, a key to the top of it, for what GitHub says there (SP61, SP62).
       return record.sent.going
-        ? { ...said, link: said.link ?? { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' } }
+        ? {
+            ...said,
+            link: said.link ?? {
+              label: t(definitions.openOnGitHub.title),
+              url: endPr.value.url,
+              key: keyOf(definitions.openOnGitHub),
+            },
+          }
         : said;
     }
     case 'headMoved': {
@@ -993,7 +1008,11 @@ function endBand(): Band | null {
       return { tone: 'danger', icon: CircleX, title, text: t(l.sentBeforeRules, { base }), link: null };
     }
     case 'unknown': {
-      const link = { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' };
+      const link = {
+        label: t(definitions.openOnGitHub.title),
+        url: endPr.value.url,
+        key: keyOf(definitions.openOnGitHub),
+      };
       if (record.refusal) {
         const said = refusalBand(record.refusal);
         return { ...said, link: said.link ?? link };
@@ -1143,7 +1162,11 @@ function getRangeSays(view: StackMergeView): StackSays | null {
       icon: Info,
       title: t(l.stackDissolve),
       text: t(l.stackDissolveDetail, { number: closed }),
-      link: { label: t(l.openOnGitHub), url: merge.open.at(-1)?.url ?? props.pr.url, key: 'O' },
+      link: {
+        label: t(definitions.openOnGitHub.title),
+        url: merge.open.at(-1)?.url ?? props.pr.url,
+        key: keyOf(definitions.openOnGitHub),
+      },
     };
     return { verdict: said, band: under, forward: block ? { kind: 'none', label: text } : { kind: 'merge' } };
   }
@@ -1599,8 +1622,10 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  const index = ['1', '2', '3'].findIndex(key => matchesCommandKey(event, key));
-  const chosen = index === -1 ? undefined : methods.value[index];
+  const chosen = methods.value.find((_, index) => {
+    const key = keyOf(definitions.chooseMergeMethod, index + 1);
+    return key !== undefined && matchesCommandKey(event, key);
+  });
   if (chosen && choosable.value) {
     event.preventDefault();
     choose(chosen);
@@ -1610,19 +1635,19 @@ function onKeydown(event: KeyboardEvent) {
   } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
     event.preventDefault();
     emit('step', 'markReady');
-  } else if (canTakeOut.value && matchesCommandKey(event, EDIT_KEYS.dequeue)) {
+  } else if (canTakeOut.value && matchesCommandKey(event, keyOf(definitions.dequeue))) {
     event.preventDefault();
     takeOutOfQueue();
-  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranch)) {
+  } else if (canUpdate.value && matchesCommandKey(event, keyOf(definitions.updateBranch))) {
     event.preventDefault();
     update('MERGE');
-  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranchByRebase)) {
+  } else if (canUpdate.value && matchesCommandKey(event, keyOf(definitions.updateBranchByRebase))) {
     event.preventDefault();
     update('REBASE');
-  } else if (mergedBranch.value?.step && matchesCommandKey(event, EDIT_KEYS.branch)) {
+  } else if (mergedBranch.value?.step && matchesCommandKey(event, keyOf(definitions.branch))) {
     event.preventDefault();
     takeBranchStep();
-  } else if (canRevert.value && matchesCommandKey(event, EDIT_KEYS.revert)) {
+  } else if (canRevert.value && matchesCommandKey(event, keyOf(definitions.revert))) {
     event.preventDefault();
     revert();
   } else if (commitEmails.value && matchesCommandKey(event, 'Y')) {
@@ -1792,8 +1817,8 @@ function onOpenFocus(event: Event) {
               v-if="condition.updates && canUpdate"
               variant="ghost"
               size="sm"
-              :kbd="EDIT_KEYS.updateBranchByRebase"
-              :keyshortcuts="EDIT_KEYS.updateBranchByRebase"
+              :kbd="keyOf(definitions.updateBranchByRebase)"
+              :keyshortcuts="keyOf(definitions.updateBranchByRebase)"
               @click="update('REBASE')"
               >{{ t(l.updateByRebase) }}</Button
             >
@@ -1822,8 +1847,8 @@ function onOpenFocus(event: Event) {
             <Button
               v-if="mergedBranch.step"
               size="sm"
-              :kbd="EDIT_KEYS.branch"
-              :keyshortcuts="EDIT_KEYS.branch"
+              :kbd="keyOf(definitions.branch)"
+              :keyshortcuts="keyOf(definitions.branch)"
               :busy="advancing === mergedBranch.step"
               @click="takeBranchStep()"
               >{{ mergedBranch.label }}</Button
@@ -2179,11 +2204,11 @@ function onOpenFocus(event: Event) {
         <template v-if="canTakeOut">
           <Button
             v-if="allowed"
-            :kbd="EDIT_KEYS.dequeue"
-            :keyshortcuts="EDIT_KEYS.dequeue"
+            :kbd="keyOf(definitions.dequeue)"
+            :keyshortcuts="keyOf(definitions.dequeue)"
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
-            >{{ t(l.takeOutOfQueue) }}</Button
+            >{{ t(definitions.dequeue.title) }}</Button
           >
         </template>
         <template v-else-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
@@ -2198,11 +2223,11 @@ function onOpenFocus(event: Event) {
           <Button
             v-if="canRevert"
             variant="ghost"
-            :kbd="EDIT_KEYS.revert"
-            :keyshortcuts="EDIT_KEYS.revert"
+            :kbd="keyOf(definitions.revert)"
+            :keyshortcuts="keyOf(definitions.revert)"
             :busy="advancing === 'revert'"
             @click="revert()"
-            >{{ t(l.revert) }}</Button
+            >{{ t(definitions.revert.title) }}</Button
           >
         </template>
         <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'unknown'">

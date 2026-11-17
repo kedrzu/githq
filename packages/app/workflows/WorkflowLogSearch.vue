@@ -4,6 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Search } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, useTemplateRef } from 'vue';
 
+import { searchLog } from '@/commands/definitions/index.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -94,7 +95,8 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, 'Mod+F')) {
+  // The log's other key for its search (⌘F) selects what is typed here; `/` is typed.
+  if (searchLog.otherKeys?.some(key => matchesCommandKey(event, key))) {
     event.preventDefault();
     selectField();
     return;

@@ -3,6 +3,9 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { showTimes as showTimesCommand, wrapLines } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Kbd from '@/components/Kbd.vue';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
@@ -35,20 +38,8 @@ const wrap = preferences.logWrap;
 const showTimes = preferences.logTimes;
 
 useCommands(() => [
-  {
-    id: 'workflowLog.wrap',
-    title: t(l.wrapLines),
-    section: 'view',
-    key: 'W',
-    run: toggleWrap,
-  },
-  {
-    id: 'workflowLog.times',
-    title: t(l.showTimes),
-    section: 'view',
-    key: 'T',
-    run: toggleTimes,
-  },
+  bindCommand(wrapLines, { section: 'view', run: toggleWrap }, t),
+  bindCommand(showTimesCommand, { section: 'view', run: toggleTimes }, t),
 ]);
 
 function toggleWrap() {
@@ -87,7 +78,7 @@ function giveKeysBack(event: MouseEvent) {
       type="button"
       :class="[css.workflowLogToolbar_toggle, wrap && css.workflowLogToolbar_toggle_on]"
       :aria-pressed="wrap"
-      aria-keyshortcuts="W"
+      :aria-keyshortcuts="keyOf(wrapLines)"
       tid="workflow-log-wrap"
       @click="
         toggleWrap();
@@ -95,13 +86,13 @@ function giveKeysBack(event: MouseEvent) {
       "
     >
       {{ t(l.wrap) }}
-      <Kbd keys="W" />
+      <Kbd :keys="keyOf(wrapLines)" />
     </button>
     <button
       type="button"
       :class="[css.workflowLogToolbar_toggle, showTimes && css.workflowLogToolbar_toggle_on]"
       :aria-pressed="showTimes"
-      aria-keyshortcuts="T"
+      :aria-keyshortcuts="keyOf(showTimesCommand)"
       tid="workflow-log-times"
       @click="
         toggleTimes();
@@ -109,7 +100,7 @@ function giveKeysBack(event: MouseEvent) {
       "
     >
       {{ t(l.times) }}
-      <Kbd keys="T" />
+      <Kbd :keys="keyOf(showTimesCommand)" />
     </button>
   </div>
 </template>

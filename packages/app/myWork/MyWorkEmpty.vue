@@ -1,4 +1,4 @@
-<!-- What "my work", with all its groups shown, says when every group is in and a filter leaves nothing (K4, K5; first run and loading's `Empty / Nothing there`): a calm, good state that names what was checked, so "empty" can be trusted. With nothing at all, it offers the next useful keys — a new issue, the command menu to jump to a project (K4); with nothing needing the user, it points at the pull requests waiting on others, if any (K5). -->
+<!-- What "my work", with all its groups shown, says when every group is in and a filter leaves nothing (K4, K5; first run and loading's `Empty / Nothing there`): a calm, good state that names what was checked, so "empty" can be trusted. With nothing at all, it offers the next useful steps — a new issue, the command menu to jump to a project (K4); with nothing needing the user, it points at the pull requests waiting on others, if any (K5). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -7,8 +7,10 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CircleCheckBig, Coffee, Hourglass, Search, SquarePen } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { APP_KEYS, CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import NothingThere from '@/components/NothingThere.vue';
 
@@ -19,8 +21,8 @@ const props = defineProps<{
   filter: MyWorkFilter;
   /** How many of the user's pull requests wait on others — "Needs me" points there when there are any. */
   waitingCount: number;
-  /** The key that switches to "Waiting on others". */
-  waitingKey: string;
+  /** The key that switches to "Waiting on others" (`showFilter`'s). */
+  waitingKey?: string;
   /** How many repositories the user tracks: "nothing" names them, or GitHub as a whole without any. */
   trackedCount: number;
 }>();
@@ -33,8 +35,8 @@ const emit = defineEmits<{
 const t = useTranslate();
 const registry = useService(CommandRegistry);
 
-/** "New issue" from the app's commands, when it can run here. */
-const newIssue = computed(() => registry.commands.find(command => command.key === NEW_ISSUE_KEY) ?? null);
+/** "New issue" from the app's commands, when it can run here; with its key, should it have one. */
+const newIssue = computed(() => registry.findByDefinition(definitions.newIssue));
 
 const look = computed(
   (): { icon: LucideIcon; tone: 'good' | 'muted'; title: string; detail: string; fact?: string } => {
@@ -77,8 +79,8 @@ const look = computed(
         variant="secondary"
         size="sm"
         :icon="SquarePen"
-        :kbd="NEW_ISSUE_KEY"
-        :keyshortcuts="NEW_ISSUE_KEY"
+        :kbd="newIssue.key"
+        :keyshortcuts="newIssue.key"
         @click="newIssue && registry.run(newIssue)"
       >
         {{ t(l.newIssue) }}
@@ -87,8 +89,8 @@ const look = computed(
         variant="secondary"
         size="sm"
         :icon="Search"
-        :kbd="APP_KEYS.commandMenu"
-        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :kbd="keyOf(definitions.commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.commandMenu))"
         @click="registry.openMenu()"
       >
         {{ t(l.jumpToProject) }}

@@ -97,7 +97,7 @@ export type Freshness =
           readonly number: number;
           readonly viewed: number;
           readonly total: number;
-          readonly backTo: { readonly key: 'J' | 'K'; readonly number: number } | null;
+          readonly backTo: { readonly key: string; readonly number: number } | null;
       }
     | {
           readonly kind: 'landing';

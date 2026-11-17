@@ -1,10 +1,12 @@
 <!-- The Workflow alerts section of a repository's settings (actions T16, W7–W12, D5, D13, D14), a `SettingsBlock` with its card (`Workflow alerts / Card`): the default branch, as GitHub names it, with its switch; the patterns, each with what it matches of the refs githq has seen runs on and how many workflows are broken there; the add field, which turns into the editor; "No alerts from …" when nothing raises any; up to three other refs with recent runs that raise none; and, before the first read, that nothing can be matched yet. Each change is asked for as it is made (`change`), nothing while the user only looks. Keys while it is shown and no layer is open, never from a field: J/K and ↓/↑ move between the default branch and the patterns, Space switches the default branch, Enter edits a pattern in place and ⌫ removes it at once, A goes to the add field; in the editor Enter saves and Esc cancels — on the add field left empty, reached by the page's address, Esc goes back where the user came from (W13) —, and the list's key hints leave while it has the keys. Focused itself (`#workflow-alerts`), it selects the default branch. On a phone (`phone`) the section's text above the card and no key hints. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { BellOff, LoaderCircle, Pencil, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -13,7 +15,6 @@ import SettingsBlock from '@/settings/SettingsBlock.vue';
 import { REPOSITORY_SETTINGS_SECTIONS } from '@/tracking/trackingRoutes.js';
 import { formatList } from '@/utils/formatList.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import { buildWorkflowAlerts, previewPatternEdit } from './buildWorkflowAlerts.js';
@@ -88,6 +89,8 @@ const selection = useRowSelection({
       startEditing(row.pattern);
     }
   },
+  place: 'workflowAlerts',
+  openTitle: l.editSelected,
 });
 const addPreview = computed(() =>
   previewPatternEdit({ stored: props.stored, settings: props.settings, index: null, value: added.value }),
@@ -132,43 +135,51 @@ const hints = computed(() => {
   const actions =
     row?.kind === 'pattern'
       ? [
-          { keys: 'Enter', label: t(l.edit) },
-          { keys: 'Backspace', label: t(l.remove) },
+          { keys: keyOf(definitions.open), label: t(l.edit) },
+          { keys: keyOf(definitions.remove), label: t(l.remove) },
         ]
-      : [{ keys: 'Space', label: t(l.switch) }];
-  return [...actions, { keys: 'A', label: t(l.add) }];
+      : [{ keys: keyOf(definitions.toggleRow), label: t(l.switch) }];
+  return [...actions, { keys: keyOf(definitions.add), label: t(l.add) }];
 });
 
-useCommands(() => [
-  { id: 'workflowAlerts.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-  {
-    id: 'workflowAlerts.previous',
-    title: t(l.previous),
-    section: 'view',
-    key: 'K',
-    otherKeys: ['ArrowUp'],
-    menu: false,
-  },
-  // Space, Enter and ⌫ are run below, never from a button, which does what it says.
-  { id: 'workflowAlerts.switch', title: t(l.switchDefault), section: 'view', key: 'Space', menu: false },
-  { id: 'workflowAlerts.edit', title: t(l.editSelected), section: 'view', key: 'Enter', menu: false },
-  { id: 'workflowAlerts.remove', title: t(l.removeSelected), section: 'view', key: 'Backspace', menu: false },
-  { id: 'workflowAlerts.add', title: t(l.addPattern), section: 'view', key: 'A', run: () => addField.value?.focus() },
-]);
-
-onWindowEvent('keydown', event => {
-  const row = selection.selectedRow;
-  if (!row || !isScreenKey(event) || isActivatableTarget(event.target)) {
-    return;
-  }
-
-  if (event.key === ' ' && row.kind === 'default') {
-    event.preventDefault();
-    switchDefaultBranch(!props.settings.defaultBranch);
-  } else if (event.key === 'Backspace' && row.kind === 'pattern') {
-    event.preventDefault();
-    remove(row.pattern);
-  }
+// Space and ⌫ never from a button, which does what it says (Space the registry's rule, ⌫ the binding's).
+useCommands(() => {
+  const own = { section: 'view', menu: false, actsOnRow: true } as const;
+  return [
+    bindCommand(
+      definitions.toggleRow,
+      {
+        ...own,
+        title: t(l.switchDefault),
+        when: () => selection.selectedRow?.kind === 'default',
+        run: () => switchDefaultBranch(!props.settings.defaultBranch),
+      },
+      t,
+    ),
+    bindCommand(
+      definitions.remove,
+      {
+        ...own,
+        place: 'workflowAlerts',
+        title: t(l.removeSelected),
+        when: () => selection.selectedRow?.kind === 'pattern',
+        // Not from a pattern's own button: the focus there is not reactive, so it is asked as the key is pressed, not
+        // in `when`, which the help sheet caches.
+        run: () => {
+          const row = selection.selectedRow;
+          if (row?.kind === 'pattern' && !isActivatableTarget(document.activeElement)) {
+            remove(row.pattern);
+          }
+        },
+      },
+      t,
+    ),
+    bindCommand(
+      definitions.add,
+      { place: 'workflowAlerts', section: 'view', title: t(l.addPattern), run: () => addField.value?.focus() },
+      t,
+    ),
+  ];
 });
 
 function getPatternKey(pattern: string) {
@@ -377,13 +388,13 @@ function onPatternClick(event: MouseEvent, pattern: string) {
             <IconButton
               :icon="Pencil"
               :label="t(l.editPattern, { pattern: entry.pattern })"
-              kbd="Enter"
+              :kbd="keyOf(definitions.open)"
               @click="startEditing(entry.pattern)"
             />
             <IconButton
               :icon="X"
               :label="t(l.removePattern, { pattern: entry.pattern })"
-              kbd="Backspace"
+              :kbd="keyOf(definitions.remove)"
               @click="remove(entry.pattern)"
             />
           </span>
@@ -467,7 +478,9 @@ function onPatternClick(event: MouseEvent, pattern: string) {
         aria-hidden="true"
       >
         <template v-if="!fieldActive && !phone">
-          <span :class="css.workflowAlertsBlock_hint"><Kbd keys="J" /><Kbd keys="K" />{{ t(l.move) }}</span>
+          <span :class="css.workflowAlertsBlock_hint"
+            ><Kbd :keys="keyOf(definitions.next)" /><Kbd :keys="keyOf(definitions.previous)" />{{ t(l.move) }}</span
+          >
           <span
             v-for="hint in hints"
             :key="hint.keys"

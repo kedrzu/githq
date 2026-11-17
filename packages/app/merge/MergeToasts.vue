@@ -7,7 +7,10 @@ import { ArrowRight, ArrowUpRight, GitBranch, GitMerge, Undo2 } from 'lucide-vue
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { backToMerge as backToMergeCommand, mergedBranch } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import type { EditFailure } from '@/edits/EditQueue.js';
@@ -24,11 +27,6 @@ import type { MergeConfirmation, MergeRevert } from './MergePanelStore.js';
 import { MergePanelStore } from './MergePanelStore.js';
 import * as l from './MergeToasts.loc.js';
 import type { PullRequestCommand } from './MergeTypes.js';
-
-/** The key back to the merge panel of a refused merge: the toast's own, as `⇧M` is the selected row's (D15). */
-const BACK_KEY = 'Alt+M';
-/** The key deleting or restoring the branch of a merge confirmed: the toast's own, as `⇧D` is the selected row's (D15). */
-const BRANCH_KEY = 'Alt+D';
 
 const queue = useService(EditQueue);
 const store = useService(MergePanelStore);
@@ -47,33 +45,15 @@ const refusals = computed(() =>
   }),
 );
 
-function getRefusalCommands(failure: EditFailure, itemId: string): Command[] {
+function getRefusalCommands(failure: EditFailure, itemId: string): BoundCommand[] {
   return canGoBack(itemId)
-    ? [
-        {
-          id: 'merge.backToMerge',
-          title: t(l.backToMergeCommand),
-          section: 'app',
-          key: BACK_KEY,
-          menu: false,
-          run: () => backToMerge(failure, itemId),
-        },
-      ]
+    ? [bindCommand(backToMergeCommand, { section: 'app', menu: false, run: () => backToMerge(failure, itemId) }, t)]
     : [];
 }
 
-function getConfirmationCommands(confirmation: MergeConfirmation): Command[] {
+function getConfirmationCommands(confirmation: MergeConfirmation): BoundCommand[] {
   return getBranchCommand(confirmation)
-    ? [
-        {
-          id: 'merge.mergedBranch',
-          title: t(l.mergedBranchCommand),
-          section: 'app',
-          key: BRANCH_KEY,
-          menu: false,
-          run: () => runBranch(confirmation),
-        },
-      ]
+    ? [bindCommand(mergedBranch, { section: 'app', menu: false, run: () => runBranch(confirmation) }, t)]
     : [];
 }
 
@@ -162,8 +142,8 @@ function getLink(failure: EditFailure, itemId: string) {
           variant="secondary"
           size="sm"
           :icon="GitMerge"
-          :kbd="active ? BACK_KEY : undefined"
-          :keyshortcuts="active ? BACK_KEY : undefined"
+          :kbd="active ? keyOf(backToMergeCommand) : undefined"
+          :keyshortcuts="active ? keyOf(backToMergeCommand) : undefined"
           @click="backToMerge(failure, itemId)"
         >
           {{ t(l.backToMerge) }}
@@ -200,8 +180,8 @@ function getLink(failure: EditFailure, itemId: string) {
         variant="secondary"
         size="sm"
         :icon="GitBranch"
-        :kbd="active ? BRANCH_KEY : undefined"
-        :keyshortcuts="active ? BRANCH_KEY : undefined"
+        :kbd="active ? keyOf(mergedBranch) : undefined"
+        :keyshortcuts="active ? keyOf(mergedBranch) : undefined"
         @click="runBranch(confirmation)"
       >
         {{ getBranchCommand(confirmation)?.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}

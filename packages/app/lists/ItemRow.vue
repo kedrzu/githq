@@ -15,7 +15,8 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { merge, openOnGitHub } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
@@ -382,8 +383,8 @@ const nestedFact = computed(() => (shown.value.has('status') ? facts.checksCount
           variant="link"
           size="sm"
           :icon="GitMerge"
-          :kbd="EDIT_KEYS.merge"
-          :keyshortcuts="EDIT_KEYS.merge"
+          :kbd="keyOf(merge)"
+          :keyshortcuts="keyOf(merge)"
           @click.stop="merging?.open(item.id)"
         >
           {{ t(l.backToMerge) }}
@@ -393,8 +394,8 @@ const nestedFact = computed(() => (shown.value.has('status') ? facts.checksCount
           variant="link"
           size="sm"
           :icon="onQueueBranch ? ListPlus : GitMerge"
-          :kbd="EDIT_KEYS.merge"
-          :keyshortcuts="EDIT_KEYS.merge"
+          :kbd="keyOf(merge)"
+          :keyshortcuts="keyOf(merge)"
           @click.stop="merging?.open(item.id)"
         >
           {{ onQueueBranch ? t(l.addToQueue) : t(l.merge) }}
@@ -405,12 +406,12 @@ const nestedFact = computed(() => (shown.value.has('status') ? facts.checksCount
           size="sm"
           :link="item.url"
           :icon="ArrowUpRight"
-          kbd="O"
+          :kbd="keyOf(openOnGitHub)"
           target="_blank"
-          keyshortcuts="O"
+          :keyshortcuts="keyOf(openOnGitHub)"
           @click.stop
         >
-          {{ t(l.openOnGitHub) }}
+          {{ t(openOnGitHub.title) }}
         </Button>
         <PullRequestSize
           v-if="facts.size && shown.has('size')"

@@ -77,7 +77,6 @@ right-clicking a row.
 |-|-|
 |<kbd>⌘</kbd> <kbd>K</kbd>|Open the command menu|
 |<kbd>?</kbd>|Keyboard shortcuts|
-|<kbd>C</kbd>|New issue, in the repository or project you are in|
 |<kbd>,</kbd>|Settings|
 |<kbd>⌘</kbd> <kbd>B</kbd>|Collapse or expand the sidebar|
 

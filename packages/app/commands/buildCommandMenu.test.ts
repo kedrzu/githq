@@ -37,6 +37,20 @@ test("the subject's actions are offered for their subject only, none once it is 
     ).toEqual(['app.sidebar']);
 });
 
+test('D14: of one group the higher priority is listed first; typing, the match decides and priority breaks ties', () => {
+    const grouping: Command = { id: 'view.grouping', title: 'Group by…', section: 'view' };
+    const archive: Command = { id: 'view.archive', title: 'Archive view', section: 'view', priority: 1 };
+    const remove: Command = { id: 'view.remove', title: 'Remove view', section: 'view', priority: 2 };
+    const commands = [grouping, archive, remove];
+
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['view.remove', 'view.archive', 'view.grouping']);
+    expect(
+        ids(buildCommandMenu({ query: 'view', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['view.remove', 'view.archive']);
+});
+
 test('E4: a value of a submenu typed is offered directly, above its action; scattered letters are not', () => {
     const menu = buildCommandMenu({
         query: 'in prog',
@@ -283,7 +297,7 @@ test('an action whose `when` says no is not offered', () => {
 
 test("the repository's sections lead its group on its view, though the view registers them after its other lines", () => {
     const link: Command = { id: 'repository.copyLink', title: 'Copy link', section: 'repository' };
-    const section: Command = { id: 'repository.section.issues', title: 'Issues', section: 'repository', key: '1' };
+    const section: Command = { id: 'repository.goToSection.1', title: 'Issues', section: 'repository', key: '1' };
 
     expect(
         ids(
@@ -295,7 +309,7 @@ test("the repository's sections lead its group on its view, though the view regi
                 navigation: NOTHING,
             }),
         ),
-    ).toEqual(['repository.section.issues', 'repository.copyLink']);
+    ).toEqual(['repository.goToSection.1', 'repository.copyLink']);
 });
 
 function ids(groups: readonly CommandMenuGroup[]) {
@@ -695,8 +709,8 @@ test('a path walks from a command, a place or an untracked repository to the las
 });
 
 test("mobile D17: the place's parts lead the top while nothing is typed, out of their own groups; typing finds them as ever", () => {
-    const issues: Command = { id: 'repository.section.issues', title: 'Issues', section: 'repository', key: '1' };
-    const commits: Command = { id: 'repository.section.commits', title: 'Commits', section: 'repository', key: '3' };
+    const issues: Command = { id: 'repository.goToSection.1', title: 'Issues', section: 'repository', key: '1' };
+    const commits: Command = { id: 'repository.goToSection.3', title: 'Commits', section: 'repository', key: '3' };
     const copyLink: Command = { id: 'repository.copyLink', title: 'Copy link', section: 'repository' };
     const assigned = place('myWork:assigned', 'Assigned to me');
     const settings = place('settings', 'Settings');
@@ -717,13 +731,13 @@ test("mobile D17: the place's parts lead the top while nothing is typed, out of 
     const menu = build(params);
     expect(menu.map(group => group.key)).toEqual(['parts', 'repository', 'goTo', 'app']);
     expect(menu[0]?.entries.map(entry => entry.id)).toEqual([
-        'repository.section.commits',
-        'repository.section.issues',
+        'repository.goToSection.3',
+        'repository.goToSection.1',
         'place:myWork:assigned',
     ]);
     expect(ids(menu)).toEqual([
-        'repository.section.commits',
-        'repository.section.issues',
+        'repository.goToSection.3',
+        'repository.goToSection.1',
         'place:myWork:assigned',
         'repository.copyLink',
         'place:settings',

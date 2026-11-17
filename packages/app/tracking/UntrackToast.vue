@@ -2,10 +2,13 @@
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { EyeOff, Undo2 } from 'lucide-vue-next';
+import { EyeOff } from 'lucide-vue-next';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 
@@ -14,23 +17,16 @@ import type { PendingUntrack } from './PendingUntracks.js';
 import * as l from './UntrackToast.loc.js';
 import { getTrackedKey } from './utils/getTrackedKey.js';
 
-/** The key of "Undo", while the toast shows. */
-const UNDO_KEY = 'Mod+Z';
-
 const pending = useService(PendingUntracks);
 const t = useTranslate();
 
-function getCommands(entry: PendingUntrack): Command[] {
+function getCommands(entry: PendingUntrack): BoundCommand[] {
   return [
-    {
-      id: 'tracking.undoUntrack',
-      title: t(l.undoCommand),
-      section: 'app',
-      key: UNDO_KEY,
-      icon: Undo2,
-      menu: false,
-      run: () => pending.undo(entry.target),
-    },
+    bindCommand(
+      undo,
+      { place: 'app', title: t(l.undoCommand), section: 'app', menu: false, run: () => pending.undo(entry.target) },
+      t,
+    ),
   ];
 }
 
@@ -57,8 +53,8 @@ function onOpenChange(entry: PendingUntrack, open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? UNDO_KEY : undefined"
-        :keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
+        :kbd="active ? keyOf(undo) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="pending.undo(entry.target)"
       >
         {{ t(l.undo) }}

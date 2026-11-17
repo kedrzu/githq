@@ -16,12 +16,6 @@ emptyFact:
   en: 'git log → no commits yet'
 emptyDetail:
   en: '{name} is empty on GitHub. Commits show up after the first push.'
-next:
-  en: Next commit
-previous:
-  en: Previous commit
-findRef:
-  en: Find a branch or tag
 openCommit:
   en: Open the commit
 resizeGraph:

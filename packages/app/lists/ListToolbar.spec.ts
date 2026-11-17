@@ -8,6 +8,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { rowField } from '@/commands/definitions/index.js';
 import { SquareKanban } from 'lucide-vue-next';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { narrowToolbar } from '@/testing/narrowToolbar.js';
@@ -15,7 +16,7 @@ import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import ListToolbar from './ListToolbar.vue';
 import * as stories from './ListToolbar.stories.js';
 
-const { Phone, PlainTitle, Tabs, TabsAsMenu, TitleMenu } = composeStories(stories);
+const { Phone, PhoneInProject, PlainTitle, Tabs, TabsAsMenu, TitleMenu } = composeStories(stories);
 
 test('with a menu, the title is a button that opens it', async () => {
     await TitleMenu.run();
@@ -35,7 +36,7 @@ test('without a menu, the title is plain text', async () => {
     await expect.element(page.getByRole('button', { name: /Platform Q4/ })).not.toBeInTheDocument();
 });
 
-test('on a phone it is the top bar: the title alone, the options in a sheet without properties or layout, and New issue runs what C runs', async () => {
+test("on a phone it is the top bar: the title alone, the options in a sheet without properties or layout, and New issue starts the app's", async () => {
     await Phone.run();
 
     await expect.element(page.getByRole('heading', { name: 'Platform Q4' })).toBeVisible();
@@ -56,7 +57,14 @@ test('on a phone it is the top bar: the title alone, the options in a sheet with
     await expect.element(page.getByTestId('new-issue')).toHaveTextContent(/^Started$/);
 });
 
-test('a menu option with a command title is a command of its own: its choices are the submenu and picking one chooses it, "none" too', () => {
+test("on a phone in a project, New issue starts the project's own", async () => {
+    await PhoneInProject.run();
+
+    await userEvent.click(page.getByRole('button', { name: 'New issue in Platform Q4' }));
+    await expect.element(page.getByTestId('new-issue')).toHaveTextContent('Started in the project');
+});
+
+test('a menu option naming a command is that command: its choices are the submenu and picking one chooses it, "none" too', () => {
     const choose = vi.fn();
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -77,7 +85,7 @@ test('a menu option with a command title is a command of its own: its choices ar
                         label: 'Row field',
                         icon: SquareKanban,
                         title: 'Row field: Priority',
-                        commandTitle: 'Row field…',
+                        command: rowField,
                         choices: [
                             { value: 'F_priority', label: 'Priority' },
                             { value: 'none', label: 'None' },
@@ -106,9 +114,13 @@ test('a menu option with a command title is a command of its own: its choices ar
     });
 
     const commands = container.resolve(CommandRegistry).commands;
-    expect(commands.map(command => command.id)).toContain('view.rowField');
-    expect(commands.map(command => command.id)).not.toContain('view.plain');
-    const command = commands.find(candidate => candidate.id === 'view.rowField');
+    expect(commands.filter(command => command.options !== undefined).map(command => command.id)).toEqual([
+        'list.groupBy',
+        'list.orderBy',
+        'list.rowField',
+        'list.showProperties',
+    ]);
+    const command = commands.find(candidate => candidate.id === 'list.rowField');
     expect(command?.title).toBe('Row field…');
     expect(command?.detail).toBe('Priority');
     const submenu = command?.options?.().options;

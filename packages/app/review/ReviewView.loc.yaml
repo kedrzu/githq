@@ -18,8 +18,6 @@ pausedDetail:
   en: GitHub asked githq to wait. The files come in by themselves at {time}.
 tryAgain:
   en: Try again
-openOnGitHub:
-  en: Open on GitHub
 noChanges:
   en: Nothing to diff
 noChangesFact:
@@ -66,24 +64,12 @@ noMatchViewedHidden:
   en: Viewed files are hidden too.
 clearFilter:
   en: Clear the filter
-focusFilter:
-  en: Filter files
 toggleSelected:
   en: Select this file
-selectNext:
-  en: Select down to the next file
-selectPrevious:
-  en: Select up to the previous file
-clearSelection:
-  en: Clear the selection
 hideFileList:
   en: Hide the file list
 showFileList:
   en: Show the file list
-nextThread:
-  en: Next thread
-previousThread:
-  en: Previous thread
 conversation:
   en: Conversation
 showConversation:
@@ -96,34 +82,10 @@ nextPullRequest:
   en: Next pull request
 goToPullRequest:
   en: 'Go to #{number} {title}'
-commentOnLine:
-  en: Comment on the line
-submitReview:
-  en: Submit review
-discardReview:
-  en: Discard review
-replyInThread:
-  en: Reply to the thread
-rangeDown:
-  en: Choose lines for a comment, a line down
-rangeUp:
-  en: Choose lines for a comment, a line up
-clearRange:
-  en: Let go of the lines chosen for a comment
 backToPullRequest:
   en: Back to the pull request
-lineDown:
-  en: Move the cursor down
-lineUp:
-  en: Move the cursor up
-pageDown:
-  en: Move the cursor down a screen
-pageUp:
-  en: Move the cursor up a screen
 showHiddenLines:
   en: Show {count} more hidden lines
-showAllHiddenLines:
-  en: Show all hidden lines
 resizeFileList:
   en: Resize the file list
 resizeConversation:
@@ -132,9 +94,5 @@ resizeDiff:
   en: Resize the diff
 find:
   en: Find in the diff
-findNext:
-  en: Next match
-findPrevious:
-  en: Previous match
-closeFind:
-  en: Close find
+replyInThread:
+  en: Reply to the thread

@@ -66,7 +66,7 @@ test('⌘K sets the Status of two selected items at once, by typing the value', 
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['SetProjectFieldValue', 'SetProjectFieldValue']);
 });
 
-test('E1: the view’s options are actions — ⇧V shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
+test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
     page,
     github,
 }) => {
@@ -74,15 +74,10 @@ test('E1: the view’s options are actions — ⇧V shows it as a board, "Order 
     const menu = new CommandMenuHarness(page);
 
     await menu.open();
-    await expect(menu.option(/^Show as board/)).toBeVisible();
     await expect(menu.option(/^Group by…/)).toBeVisible();
-    await page.keyboard.press('Escape');
+    await menu.option(/^Show as board/).click();
     await expect(menu.root).toBeHidden();
-
-    await expect(async () => {
-        await page.keyboard.press('Shift+V');
-        await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
-    }).toPass();
+    await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 
     await menu.open();
     await menu.field.pressSequentially('> order');
@@ -96,6 +91,37 @@ test('E1: the view’s options are actions — ⇧V shows it as a board, "Order 
     await menu.open();
     await menu.field.pressSequentially('> order');
     await expect(menu.option(/^Order by…\s*Title/)).toBeVisible();
+});
+
+test('D14: a list\'s "This view" opens on what acts on the list and its row, its view options after them', async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_PROJECT).click();
+    const project = new ProjectScreenHarness(page);
+    await project.tab('Board').click();
+    await expect(project.rows('Todo')).toHaveCount(3);
+    // Away from the tabs, so the keys are the board's: a card selected, which "Open full screen" opens.
+    await project.group('Todo').click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press('j');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    // By what each line starts with, its key's hint aside (⇧ on a Mac, "Shift" elsewhere); a space may be a no-break one.
+    await expect(menu.group('This view').getByRole('option')).toHaveText(
+        [
+            `New issue in ${SAMPLE_PROJECT}`,
+            `Add existing issues to ${SAMPLE_PROJECT}…`,
+            'Open on GitHub',
+            'Open full screen',
+            'Show as list',
+            'Group by…',
+            'Order by…',
+            'Row field…',
+            'Show properties…',
+        ].map(title => new RegExp(`^${title.replaceAll(' ', '\\s')}`, 'u')),
+    );
 });
 
 test("⌘K on a tracked repository's view groups its sections, Open on GitHub, Copy link and Settings under its name, and a section runs as its tab", async ({

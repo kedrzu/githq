@@ -32,13 +32,12 @@ const sections = computed(() => {
     return [];
   }
 
-  const commands = projectCommands(tracked.value);
+  const commands = projectCommands(tracked.value, { keyed: props.current });
   // Under the project's title a view need not say it is one.
-  const views = commands.savedViews.map(command => ({
+  const views = commands.savedViews.map(({ viewId, command }) => ({
     ...command,
     detail: undefined,
-    key: props.current ? command.key : undefined,
-    current: command.id === `view:${props.shownView}`,
+    current: viewId === props.shownView,
   }));
   return [
     views,

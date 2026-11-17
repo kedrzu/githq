@@ -1,4 +1,6 @@
 import type { RepositoryBrowseSearchQuery } from '@githq/github/generated.gen.js';
+import type { Translator } from '@nzyme/i18n/Translator.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -32,8 +34,12 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import CommandMenu from './CommandMenu.vue';
-import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
-import type { Command, CommandFormField, CommandParts } from './CommandTypes.js';
+import { CommandRegistry } from './CommandRegistry.js';
+import { bindCommand } from './bindCommand.js';
+import type { CommandBinding } from './bindCommand.js';
+import type { BoundCommand, Command, CommandFormField, CommandParts, CommandPlace } from './CommandTypes.js';
+import { defineAppCommand } from './defineAppCommand.js';
+import { commandMenu, sidebar as sidebarCommand } from './definitions/index.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
@@ -157,55 +163,56 @@ const Harness = defineComponent({
         const asked = ref('Nothing asked');
         const went = ref('Nowhere');
         const sidebar = ref('expanded');
+        const t = useTranslate();
         const navigation = props.levels ? createLevelNavigation(say) : NAVIGATION;
 
         if (props.levels) {
-            useCommands(() => createLevelCommands(say));
+            useCommands(() => createLevelCommands(say, t));
         }
 
         if (props.workflows) {
-            useCommands(() => [createRunWorkflowCommand(say)]);
+            useCommands(() => [createRunWorkflowCommand(say, t)]);
         }
 
         if (props.repositoryWorkflows) {
-            useCommands(() => createRepositoryWorkflowCommands(say));
+            useCommands(() => createRepositoryWorkflowCommands(say, t));
         }
 
         useCommands(() => [
-            {
-                id: 'app.commandMenu',
-                title: 'Open the command menu',
-                section: 'app',
-                key: APP_KEYS.commandMenu,
-                menu: false,
-                run: () => registry.openMenu(),
-            },
-            {
-                id: 'app.sidebar',
-                title: 'Collapse sidebar',
-                section: 'app',
-                key: APP_KEYS.sidebar,
-                run: () => {
-                    sidebar.value = sidebar.value === 'expanded' ? 'collapsed' : 'expanded';
+            bindCommand(commandMenu, { section: 'app', menu: false, once: true, run: () => registry.openMenu() }, t),
+            bindCommand(
+                sidebarCommand,
+                {
+                    title: 'Collapse sidebar',
+                    section: 'app',
+                    run: () => {
+                        sidebar.value = sidebar.value === 'expanded' ? 'collapsed' : 'expanded';
+                    },
                 },
-            },
+                t,
+            ),
         ]);
         if (props.repository !== null) {
             useCommands(() => [
-                {
-                    id: 'repository.pullRequests',
-                    title: 'Pull requests',
-                    section: 'repository',
-                    run: () => {
-                        went.value = `/${props.repository}/pulls`;
+                bindStory(
+                    'pullRequests',
+                    'repository',
+                    {
+                        title: 'Pull requests',
+                        section: 'repository',
+                        run: () => {
+                            went.value = `/${props.repository}/pulls`;
+                        },
                     },
-                },
+                    t,
+                ),
             ]);
         }
         if (props.subject === 'selection') {
             useCommands(
                 () =>
                     editCommands({
+                        place: 'list',
                         section: 'selection',
                         items: SELECTED,
                         metadata: [SAMPLE_PORTAL_METADATA, MOBILE_METADATA],
@@ -219,19 +226,6 @@ const Harness = defineComponent({
                             }),
                         places: D1_ISSUE_DETAIL.projects.slice(0, 1),
                         now: SAMPLE_NOW,
-                        stateOptions: [
-                            {
-                                key: 'completed',
-                                text: 'Close as completed',
-                                request: { kind: 'close', reason: 'COMPLETED' },
-                            },
-                            {
-                                key: 'notPlanned',
-                                text: 'Close as not planned',
-                                request: { kind: 'close', reason: 'NOT_PLANNED' },
-                            },
-                        ],
-                        stateTitle: 'Close 3 items…',
                         edit: edit,
                         setField: (place, field, value) =>
                             edit({
@@ -247,9 +241,13 @@ const Harness = defineComponent({
 
         const { parts } = props;
         if (parts !== null) {
-            const shown = createParts(parts, path => {
-                went.value = path;
-            });
+            const shown = createParts(
+                parts,
+                path => {
+                    went.value = path;
+                },
+                t,
+            );
             useCommands(() => shown.registered);
             // What the list's screen gives the command line, whose chip the menu shows on a phone.
             phoneLayout.setPart(PHONE_PARTS[parts]);
@@ -530,19 +528,19 @@ const PHONE_PARTS: Readonly<Record<PhonePlace, PhonePart>> = {
 };
 
 /** The parts of a place as its screen gives them, and what the screen registers of them (a repository's sections). */
-function createParts(place: PhonePlace, go: (path: string) => void): { parts: CommandParts; registered: Command[] } {
+function createParts(place: PhonePlace, go: (path: string) => void, t: Translator): StoryParts {
     switch (place) {
         case 'repository': {
-            const issues = sectionCommand('issues', 'Issues', CircleDot, go);
-            const pullRequests = sectionCommand('pullRequests', 'Pull requests', GitPullRequest, go);
-            const commits = sectionCommand('commits', 'Commits', GitCommitHorizontal, go);
-            const workflows = sectionCommand('workflows', 'Workflows', Workflow, go);
-            const copyLink: Command = {
-                id: 'repository.copyLink',
-                title: 'Copy link',
-                section: 'repository',
-                icon: Link,
-            };
+            const issues = sectionCommand('issues', 'Issues', CircleDot, go, t);
+            const pullRequests = sectionCommand('pullRequests', 'Pull requests', GitPullRequest, go, t);
+            const commits = sectionCommand('commits', 'Commits', GitCommitHorizontal, go, t);
+            const workflows = sectionCommand('workflows', 'Workflows', Workflow, go, t);
+            const copyLink = bindStory(
+                'copyLink',
+                'repository',
+                { title: 'Copy link', section: 'repository', icon: Link },
+                t,
+            );
             return {
                 registered: [issues, pullRequests, commits, workflows, copyLink],
                 parts: {
@@ -610,19 +608,24 @@ function createParts(place: PhonePlace, go: (path: string) => void): { parts: Co
     }
 }
 
-function sectionCommand(id: string, title: string, icon: LucideIcon, go: (path: string) => void): Command {
-    return {
-        id: `repository.section.${id}`,
-        title,
-        section: 'repository',
-        icon,
-        run: () => go(`/fitloop/webapp/${id}`),
-    };
+function sectionCommand(
+    id: string,
+    title: string,
+    icon: LucideIcon,
+    go: (path: string) => void,
+    t: Translator,
+): BoundCommand {
+    return bindStory(
+        `section.${id}`,
+        'repository',
+        { title, section: 'repository', icon, run: () => go(`/fitloop/webapp/${id}`) },
+        t,
+    );
 }
 
 function viewCommand(id: string, title: string, count: number | null, go: (path: string) => void): Command {
     return {
-        id: `view:${id}`,
+        id: `project.goToView.${id}`,
         title,
         section: 'view',
         icon: Eye,
@@ -706,45 +709,53 @@ function createLevelNavigation(say: (text: string) => void): NavigationData {
     };
 }
 
-function createLevelCommands(say: (text: string) => void): Command[] {
+function createLevelCommands(say: (text: string) => void, t: Translator): BoundCommand[] {
     return [
-        {
-            id: 'app.appearance',
-            title: 'Appearance',
-            section: 'app',
-            children: () => [
-                {
-                    id: 'theme',
-                    title: 'Theme…',
-                    section: 'app',
-                    options: () => ({
-                        options: [
-                            { value: 'graphite', label: 'Graphite', pick: () => say('Graphite') },
-                            { value: 'paper', label: 'Paper', pick: () => say('Paper') },
-                        ],
-                    }),
-                },
-                {
-                    id: 'find',
-                    title: 'Find a theme…',
-                    section: 'app',
-                    search: text => say(`Searched "${text}"`),
-                    options: () => ({ options: [] }),
-                },
-            ],
-        },
-        {
-            id: 'app.follow',
-            title: 'Follow people…',
-            section: 'app',
-            options: () => ({
-                several: true,
-                options: [
-                    { value: 'ada', label: 'Ada', pick: () => say('Ada') },
-                    { value: 'grace', label: 'Grace', pick: () => say('Grace') },
+        bindStory(
+            'appearance',
+            'app',
+            {
+                title: 'Appearance',
+                section: 'app',
+                children: () => [
+                    {
+                        id: 'theme',
+                        title: 'Theme…',
+                        section: 'app',
+                        options: () => ({
+                            options: [
+                                { value: 'graphite', label: 'Graphite', pick: () => say('Graphite') },
+                                { value: 'paper', label: 'Paper', pick: () => say('Paper') },
+                            ],
+                        }),
+                    },
+                    {
+                        id: 'find',
+                        title: 'Find a theme…',
+                        section: 'app',
+                        search: text => say(`Searched "${text}"`),
+                        options: () => ({ options: [] }),
+                    },
                 ],
-            }),
-        },
+            },
+            t,
+        ),
+        bindStory(
+            'follow',
+            'app',
+            {
+                title: 'Follow people…',
+                section: 'app',
+                options: () => ({
+                    several: true,
+                    options: [
+                        { value: 'ada', label: 'Ada', pick: () => say('Ada') },
+                        { value: 'grace', label: 'Grace', pick: () => say('Grace') },
+                    ],
+                }),
+            },
+            t,
+        ),
     ];
 }
 
@@ -756,7 +767,7 @@ function levelRow(id: string, title: string, say: (text: string) => void): Comma
  * "Run workflow" (W36, W37) with Deploy — whose `version` input a `v1` ref doesn't have — and Release, which has no
  * `workflow_dispatch` trigger. Running says what it was given.
  */
-function createRunWorkflowCommand(say: (text: string) => void): Command {
+function createRunWorkflowCommand(say: (text: string) => void, t: Translator): BoundCommand {
     const hint = `Runs on GitHub as ${SAMPLE_VIEWER.login}`;
     const refField: CommandFormField = {
         kind: 'text',
@@ -767,109 +778,141 @@ function createRunWorkflowCommand(say: (text: string) => void): Command {
         required: true,
     };
     const version: CommandFormField = { kind: 'text', name: 'version', detail: 'string', hint: 'optional' };
-    return {
-        id: 'app.runWorkflow',
-        title: 'Run workflow',
-        section: 'app',
-        icon: Play,
-        children: () => [
-            {
-                id: 'deploy',
-                title: 'Deploy',
-                section: 'app',
-                form: values => ({
-                    heading: 'Ref and inputs',
-                    context: 'fitloop/webapp',
-                    submitLabel: 'Run',
-                    hint,
-                    fields: [
-                        refField,
-                        {
-                            kind: 'choice',
-                            name: 'environment',
-                            detail: 'choice',
-                            hint: 'default: staging',
-                            options: ['staging', 'production'],
-                            default: 'staging',
-                        },
-                        ...(values.ref === 'v1' ? [] : [version]),
-                        { kind: 'boolean', name: 'dry_run', detail: 'boolean', hint: 'default: true', default: true },
-                    ],
-                    submit: entered => say(`Deploy ${JSON.stringify(entered)}`),
-                }),
-            },
-            {
-                id: 'release',
-                title: 'Release',
-                section: 'app',
-                form: () => ({
-                    heading: 'Ref and inputs',
-                    context: 'fitloop/webapp',
-                    submitLabel: 'Run',
-                    hint,
-                    fields: [refField],
-                    message: 'This ref has no workflow_dispatch trigger',
-                    submit: entered => say(`Release ${JSON.stringify(entered)}`),
-                }),
-            },
-        ],
-    };
-}
-
-/** W48 and W36 (`repositoryWorkflows`): running says which workflow ran. */
-function createRepositoryWorkflowCommands(say: (text: string) => void): Command[] {
-    return [
+    return bindStory(
+        'runWorkflow',
+        'app',
         {
-            id: 'workflows.run',
-            title: 'Run workflow · CLA',
-            section: 'view',
-            icon: Play,
-            unavailable: 'CLA has no workflow_dispatch trigger',
-            hint: 'Enter picks another workflow',
-            run: () => say('CLA ran'),
-        },
-        {
-            id: 'app.runWorkflow',
-            title: 'Run workflow…',
+            title: 'Run workflow',
             section: 'app',
             icon: Play,
-            start: 'webapp',
-            placeholder: 'Pick a repository…',
-            levelHint: 'Run workflow · step 1 of 3',
             children: () => [
                 {
-                    id: 'webapp',
-                    title: 'fitloop/webapp',
+                    id: 'deploy',
+                    title: 'Deploy',
                     section: 'app',
-                    group: 'Tracked repositories',
-                    message: 'Reading the workflow files…',
-                    children: () => [],
+                    form: values => ({
+                        heading: 'Ref and inputs',
+                        context: 'fitloop/webapp',
+                        submitLabel: 'Run',
+                        hint,
+                        fields: [
+                            refField,
+                            {
+                                kind: 'choice',
+                                name: 'environment',
+                                detail: 'choice',
+                                hint: 'default: staging',
+                                options: ['staging', 'production'],
+                                default: 'staging',
+                            },
+                            ...(values.ref === 'v1' ? [] : [version]),
+                            {
+                                kind: 'boolean',
+                                name: 'dry_run',
+                                detail: 'boolean',
+                                hint: 'default: true',
+                                default: true,
+                            },
+                        ],
+                        submit: entered => say(`Deploy ${JSON.stringify(entered)}`),
+                    }),
                 },
                 {
-                    id: 'docs',
-                    title: 'fitloop/docs',
+                    id: 'release',
+                    title: 'Release',
                     section: 'app',
-                    group: 'Nothing to run',
-                    unavailable: 'no workflow with workflow_dispatch',
-                },
-                {
-                    id: 'api',
-                    title: 'fitloop/api',
-                    section: 'app',
-                    group: 'Tracked repositories',
-                    placeholder: 'Pick a workflow…',
-                    levelHint: 'Only workflows with workflow_dispatch · 1 of 2',
-                    children: () => [
-                        {
-                            id: 'deploy',
-                            title: 'Deploy',
-                            section: 'app',
-                            group: 'Workflows in fitloop/api you can run',
-                            run: () => say('api Deploy ran'),
-                        },
-                    ],
+                    form: () => ({
+                        heading: 'Ref and inputs',
+                        context: 'fitloop/webapp',
+                        submitLabel: 'Run',
+                        hint,
+                        fields: [refField],
+                        message: 'This ref has no workflow_dispatch trigger',
+                        submit: entered => say(`Release ${JSON.stringify(entered)}`),
+                    }),
                 },
             ],
         },
+        t,
+    );
+}
+
+/** W48 and W36 (`repositoryWorkflows`): running says which workflow ran. */
+function createRepositoryWorkflowCommands(say: (text: string) => void, t: Translator): BoundCommand[] {
+    return [
+        bindStory(
+            'runWorkflow',
+            'workflows',
+            {
+                title: 'Run workflow · CLA',
+                section: 'view',
+                icon: Play,
+                unavailable: 'CLA has no workflow_dispatch trigger',
+                hint: 'Enter picks another workflow',
+                run: () => say('CLA ran'),
+            },
+            t,
+        ),
+        bindStory(
+            'runWorkflow',
+            'app',
+            {
+                title: 'Run workflow…',
+                section: 'app',
+                icon: Play,
+                start: 'webapp',
+                placeholder: 'Pick a repository…',
+                levelHint: 'Run workflow · step 1 of 3',
+                children: () => [
+                    {
+                        id: 'webapp',
+                        title: 'fitloop/webapp',
+                        section: 'app',
+                        group: 'Tracked repositories',
+                        message: 'Reading the workflow files…',
+                        children: () => [],
+                    },
+                    {
+                        id: 'docs',
+                        title: 'fitloop/docs',
+                        section: 'app',
+                        group: 'Nothing to run',
+                        unavailable: 'no workflow with workflow_dispatch',
+                    },
+                    {
+                        id: 'api',
+                        title: 'fitloop/api',
+                        section: 'app',
+                        group: 'Tracked repositories',
+                        placeholder: 'Pick a workflow…',
+                        levelHint: 'Only workflows with workflow_dispatch · 1 of 2',
+                        children: () => [
+                            {
+                                id: 'deploy',
+                                title: 'Deploy',
+                                section: 'app',
+                                group: 'Workflows in fitloop/api you can run',
+                                run: () => say('api Deploy ran'),
+                            },
+                        ],
+                    },
+                ],
+            },
+            t,
+        ),
     ];
+}
+
+/** A binding of the story's own command: its title is the definition's too. */
+type StoryBinding = CommandBinding<readonly [CommandPlace]> & { readonly title: string };
+
+/** The parts of a place as its screen gives them, and what the screen registers of them. */
+interface StoryParts {
+    readonly parts: CommandParts;
+    readonly registered: readonly BoundCommand[];
+}
+
+/** A command of the story, on a definition of its own made for it: the registry takes only bound commands. */
+function bindStory(id: string, place: CommandPlace, binding: StoryBinding, t: Translator): BoundCommand {
+    return bindCommand(defineAppCommand({ id, title: () => binding.title, places: [place] }), binding, t);
 }

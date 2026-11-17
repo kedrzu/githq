@@ -357,11 +357,16 @@ Components: `Empty / Ghost workflow row`, `Empty / Ghost commit row`, `Empty / G
 
 ## D18
 
-**"Try again" on an empty state takes the key R, as it already does where settings saving stopped; "Open on GitHub"
-keeps O.** (2026-11-06, the build plan the owner approved)
+**"Try again" on an empty state takes Enter, one fixed command wherever a screen can try again; "Open on GitHub" keeps
+O.** (2026-11-06, the build plan the owner approved; Enter 2026-11-17, owner, in the commands design)
 
-**Why.** One key for one action across the app; R is the one already in use (`packages/app/settings/SavingStopped.vue`,
-`RETRY_KEY`).
+**Why.** One key for one action across the app. R clashed with an opened item's comment beside a screen GitHub won't
+show, and a workflow run already tried again on Enter ([commands](../commands/README.md), journal 2026-11-17).
+
+**Rejected.**
+
+- R, as where settings saving stopped — clashes with the comment key of an item open beside the screen
+  ([history](history/DECISIONS.md#d18)).
 
 ## D19
 

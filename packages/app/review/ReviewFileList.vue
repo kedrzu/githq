@@ -10,7 +10,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { EyeOff, Folder, FolderGit2, ListFilter, Regex } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
 
+import { toggleViewed, uncheck } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
 import SearchField from '@/components/SearchField.vue';
@@ -22,7 +24,6 @@ import ReviewFileRow from './ReviewFileRow.vue';
 import type { ReviewFile, ReviewFileCollapse, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import type { ReviewSubmoduleState } from './submodules/ReviewSubmodules.js';
 import ReviewToggle from './ReviewToggle.vue';
-import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   /** What shows: without the viewed files when those are hidden. */
@@ -299,8 +300,8 @@ function onFilterKeydown(event: KeyboardEvent) {
         <Button
           variant="light"
           size="sm"
-          :kbd="REVIEW_KEYS.viewed"
-          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
+          :kbd="keyOf(toggleViewed)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(toggleViewed))"
           @click="emit('markSelected')"
         >
           {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}
@@ -309,10 +310,10 @@ function onFilterKeydown(event: KeyboardEvent) {
           type="button"
           :class="css.reviewFileList_clear"
           :aria-label="t(l.clearSelection)"
-          aria-keyshortcuts="Escape"
+          :aria-keyshortcuts="formatAriaKeyShortcuts(keyOf(uncheck))"
           @click="emit('clearSelection')"
         >
-          <Kbd keys="Escape" />
+          <Kbd :keys="keyOf(uncheck)" />
         </button>
       </footer>
     </div>

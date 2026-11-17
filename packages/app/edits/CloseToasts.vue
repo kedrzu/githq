@@ -2,10 +2,13 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CircleCheckBig, Undo2 } from 'lucide-vue-next';
+import { CircleCheckBig } from 'lucide-vue-next';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -14,28 +17,21 @@ import * as l from './CloseToasts.loc.js';
 import { ItemEditor } from './ItemEditor.js';
 import type { UndoableClose } from './ItemEditor.js';
 
-/** The key of "Undo", while a toast shows. */
-const UNDO_KEY = 'Mod+Z';
-
 const editor = useService(ItemEditor);
 const navigation = useService(ItemNavigation);
 const t = useTranslate();
 
-function getCommands(close: UndoableClose): Command[] {
+function getCommands(close: UndoableClose): BoundCommand[] {
   return [
-    {
-      id: 'edits.undoClose',
-      title: t(l.undoCommand),
-      section: 'app',
-      key: UNDO_KEY,
-      icon: Undo2,
-      menu: false,
-      run: () => undo(close),
-    },
+    bindCommand(
+      undo,
+      { place: 'app', title: t(l.undoCommand), section: 'app', menu: false, run: () => undoClose(close) },
+      t,
+    ),
   ];
 }
 
-function undo({ id, targets }: UndoableClose) {
+function undoClose({ id, targets }: UndoableClose) {
   navigation.requestReturn({ ids: targets.map(target => target.itemId), settled: editor.undoClose(id) });
 }
 
@@ -68,9 +64,9 @@ function onOpenChange(close: UndoableClose, open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? UNDO_KEY : undefined"
-        :keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
-        @click="undo(close)"
+        :kbd="active ? keyOf(undo) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
+        @click="undoClose(close)"
       >
         {{ t(l.undo) }}
       </Button>

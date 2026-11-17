@@ -7,7 +7,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import BottomMenu from '@/components/BottomMenu.vue';
 import Button from '@/components/Button.vue';
 import DateField from '@/components/DateField.vue';
@@ -31,6 +32,7 @@ import type { ItemProject } from '@/store/ItemTypes.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
 import { isCurrentIteration } from '@/utils/isCurrentIteration.js';
 
+import { getAddableProjects } from './getAddableProjects.js';
 import * as l from './ItemProjects.loc.js';
 
 const props = defineProps<{
@@ -140,12 +142,13 @@ const cards = computed((): ProjectCard[] => {
   }));
 });
 
-const addable = computed((): PickerOption[] => {
-  const inProjects = new Set(props.projects.map(project => project.projectId));
-  return (props.viewerProjects ?? [])
-    .filter(project => !project.closed && !inProjects.has(project.id))
-    .map(project => ({ value: project.id, label: project.title, detail: project.owner }));
-});
+const addable = computed((): PickerOption[] =>
+  getAddableProjects(props.viewerProjects ?? [], [props.projects]).map(project => ({
+    value: project.id,
+    label: project.title,
+    detail: project.owner,
+  })),
+);
 
 defineExpose({
   /** Opens the editor of the first project's status, priority or iteration; `false` when it has none to edit. */
@@ -232,11 +235,11 @@ function getEditor(
 // The keys of the first project's status, priority and iteration.
 function getEditKey(field: ProjectField) {
   const role = getProjectFieldRole(field);
-  return role ? EDIT_KEYS[role] : undefined;
+  return role ? keyOf(definitions[role]) : undefined;
 }
 
 function openByRole(role: ProjectFieldRole) {
-  const line = cards.value[0]?.fields.find(field => field.kbd !== undefined && field.kbd === EDIT_KEYS[role]);
+  const line = cards.value[0]?.fields.find(field => field.kbd !== undefined && field.kbd === keyOf(definitions[role]));
   if (!line?.editor) {
     return false;
   }

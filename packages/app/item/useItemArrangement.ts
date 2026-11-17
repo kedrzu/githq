@@ -1,21 +1,19 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { Github, Maximize2, Minimize2 } from 'lucide-vue-next';
+import { Maximize2, Minimize2 } from 'lucide-vue-next';
 import { computed, onScopeDispose, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import type { GetExpandedLocationParams, OpenedItemKindRoutes } from './defineOpenedItemKind.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -25,13 +23,6 @@ import * as l from './useItemArrangement.loc.js';
 import { useItemWalk } from './useItemWalk.js';
 import type { ItemWalkViewModel } from './useItemWalk.js';
 
-/** The keys of an opened item's moves, every kind's; the steps' are {@link ItemStepKeys}. */
-export const ITEM_ARRANGEMENT_KEYS = {
-    openOnGitHub: 'O',
-    arrange: 'Shift+Enter',
-    close: 'Escape',
-} as const;
-
 /** The keys stepping through the list an item was opened from, in the app's key notation (`J`, `Shift+J`). */
 export interface ItemStepKeys {
     readonly previous: string;
@@ -40,46 +31,48 @@ export interface ItemStepKeys {
 
 /** Options of {@link useItemKeys}. */
 export interface UseItemKeysOptions {
+    /** What is opened, where its keys are offered (commands D13): a workflow steps by `⇧K`/`⇧J`, its runs having `K`/`J`. */
+    place: 'item' | 'commit' | 'workflow';
     arrangement: MaybeRefOrGetter<ItemArrangement>;
-    /** Left out, `K`/`J`. */
-    stepKeys?: ItemStepKeys;
     /**
      * `false` leaves the step keys to the screen beside the item, which moves through its list itself (the commit graph's
      * cursor, which the opened commit follows); left out, `true`.
      */
     steps?: MaybeRefOrGetter<boolean>;
     /**
-     * `false`: the other arrangement is offered with no key, `⇧Enter` being the kind's own (a commit's pull request);
-     * left out, `true`.
+     * Escape closes full screen, back to the panel, in place of closing the item: a page expanded from the panel while
+     * the window has room for it ({@link ItemArrangementViewModel.closesToPanel}).
      */
-    arrangeByKey?: boolean;
+    closesToPanel: MaybeRefOrGetter<boolean>;
     /**
-     * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already): `true`
-     * when it took the key.
+     * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already, a field
+     * keeps its own): `true` when it took the key.
      */
     onEscape?: () => boolean;
     close(): void;
     arrange(arrangement: ItemArrangement): void;
-    openOnGitHub(): void;
     previous(): void;
     next(): void;
 }
 
-/** The arrangement the header's button and `⇧Enter` move the item to. */
+/** The arrangement the header's button moves the item to. */
 export interface OtherArrangement {
     readonly arrangement: ItemArrangement;
     readonly title: string;
     readonly icon: LucideIcon;
+    /** The key doing the same here, for the button's hint: `⇧Enter` to the page, Escape back to the panel; else none. */
+    readonly key?: string;
 }
 
 /** The commands of an opened item's moves, for the view to list among its own in its order. */
 export interface ItemKeyCommands {
-    readonly next: Command;
-    readonly previous: Command;
-    readonly close: Command;
-    readonly openOnGitHub: Command;
-    /** `null` where there is no other arrangement to offer. */
-    readonly arrange: Command | null;
+    readonly next: BoundCommand;
+    readonly previous: BoundCommand;
+    readonly close: BoundCommand;
+    /** Escape back to the panel, offered in place of {@link close} where the item {@link UseItemKeysOptions.closesToPanel}. */
+    readonly closeFullScreen: BoundCommand;
+    /** `null` off the panel. */
+    readonly openFullScreen: BoundCommand | null;
 }
 
 /** What {@link useItemKeys} gives the view. */
@@ -89,8 +82,6 @@ export interface ItemKeysViewModel {
     readonly stepKeys: ItemStepKeys;
     readonly commands: ItemKeyCommands;
 }
-
-const DEFAULT_STEP_KEYS: ItemStepKeys = { previous: 'K', next: 'J' };
 
 /** Options of {@link useItemArrangement}. */
 export interface UseItemArrangementOptions<TReference> {
@@ -135,6 +126,11 @@ export interface ItemArrangementViewModel<TReference> {
     readonly walk: ItemWalkViewModel;
     /** What back on a phone says it returns to (mobile D20): the list's name, or with no list the parent's. */
     readonly backTitle: string;
+    /**
+     * On a computer, Escape on the item's page goes back to the panel ("Close full screen"): the page was expanded from
+     * it, and the window has room for it.
+     */
+    readonly closesToPanel: boolean;
     /** "Open full screen" and "Back to the panel". */
     arrange(arrangement: ItemArrangement): void;
     /** Escape, the close button, and back on a phone. */
@@ -152,7 +148,7 @@ export interface ItemArrangementViewModel<TReference> {
 /**
  * How an opened item of any kind moves (D9), the same for every kind: full screen adds the page to the history,
  * marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the
- * panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the
+ * panel" and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the
  * one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the
  * panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window
  * narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once
@@ -201,6 +197,11 @@ export function useItemArrangement<TReference>(
             : null;
     });
     const backTitle = computed(() => ownList.value?.title ?? parent.value.title);
+    const closesToPanel = computed(() => {
+        // Read again as the address changes: the history's state is not reactive.
+        void route.fullPath;
+        return !phone.active && expandedFrom() !== null && navigation.panelFits;
+    });
 
     // In the panel, a window narrowed until the panel no longer fits beside the screen moves the item to its page, in place
     // of the address — but not while `holdsPanel` says so: it moves once that lets go. Widening never brings it back. The
@@ -222,6 +223,7 @@ export function useItemArrangement<TReference>(
     return reactive<ItemArrangementViewModel<TReference>>({
         walk,
         backTitle,
+        closesToPanel,
         arrange,
         close,
         step,
@@ -376,7 +378,7 @@ export function useItemArrangement<TReference>(
             return;
         }
 
-        if (expandedFrom() !== null && navigation.panelFits) {
+        if (closesToPanel.value) {
             backToPanel();
             return;
         }
@@ -432,99 +434,112 @@ interface GoAgainOptions {
 type HistoryMove = 'push' | 'replace';
 
 /**
- * The keys of an opened item, every kind's: Escape closes it — after an open picker or menu (`isLayerOpen`), the view's
- * own layers (`onEscape`), and a focused field, which gives the key up first — and the step keys step through the list
- * it was opened from (in a panel the list's own `j`/`k`, run first, move its selection instead, which the opened item
- * follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone). The commands — listed in the help
- * sheet, `⇧Enter` and `O` run by their keys — are for the view to register among its own; `⇧Enter` is not offered on
- * a page where the window has no room for the panel, and a kind may offer the other arrangement with no key.
+ * The keys of an opened item, every kind's, bound from their definitions for the view to register among its own, with
+ * its own "Open on GitHub" (`openOnGitHub`): Escape closes it (`closeItem`), or on a page expanded from the panel while
+ * the window has room for it goes back to the panel (`closeFullScreen`) — either after an open picker or menu (the
+ * registry's `isLayerOpen`) and the view's own layers (`onEscape`); a field's Escape is the field's — the step keys step
+ * through the list it was opened from (in a panel the list's own `j`/`k`, its place keeping the keyboard, move its
+ * selection instead, which the opened item follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it
+ * alone), and in the panel `⇧Enter` opens it full screen (`openFullScreen`).
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
+    const { place } = options;
     const arrangement = makeRef(options.arrangement);
     const steps = makeRef(options.steps ?? true);
-    const stepKeys = options.stepKeys ?? DEFAULT_STEP_KEYS;
+    const closesToPanel = makeRef(options.closesToPanel);
+    const stepKeys: ItemStepKeys =
+        place === 'workflow'
+            ? { previous: keyOf(definitions.previousWorkflow), next: keyOf(definitions.nextWorkflow) }
+            : { previous: keyOf(definitions.previous), next: keyOf(definitions.next) };
 
-    const otherArrangement = useOtherArrangement(arrangement);
-    const commands = computed((): ItemKeyCommands => {
-        const other = otherArrangement.value;
-        return {
-            // Run by the listener below, listed in the help sheet.
-            next: { id: 'item.next', title: t(l.next), section: 'item', key: stepKeys.next, menu: false },
-            previous: {
-                id: 'item.previous',
-                title: t(l.previous),
-                section: 'item',
-                key: stepKeys.previous,
-                menu: false,
-            },
-            close: {
-                id: 'item.close',
-                title: t(l.close),
-                section: 'item',
-                key: ITEM_ARRANGEMENT_KEYS.close,
-                menu: false,
-            },
-            openOnGitHub: {
-                id: 'item.openOnGitHub',
-                title: t(l.openOnGitHub),
-                section: 'item',
-                key: ITEM_ARRANGEMENT_KEYS.openOnGitHub,
-                icon: Github,
-                run: () => options.openOnGitHub(),
-            },
-            arrange: other && {
-                id: `item.arrange.${other.arrangement}`,
-                title: other.title,
-                section: 'item',
-                key: options.arrangeByKey === false ? undefined : ITEM_ARRANGEMENT_KEYS.arrange,
-                icon: other.icon,
-                run: () => options.arrange(other.arrangement),
-            },
-        };
+    const arrangementTo = useOtherArrangement(arrangement);
+    const otherArrangement = computed((): OtherArrangement | null => {
+        const other = arrangementTo.value;
+        if (!other) {
+            return null;
+        }
+
+        if (other.arrangement === 'page') {
+            return { ...other, key: keyOf(definitions.openFullScreen) };
+        }
+
+        return closesToPanel.value ? { ...other, key: keyOf(definitions.closeFullScreen) } : other;
     });
-
-    onWindowEvent('keydown', event => {
-        // An open picker or menu takes Escape for itself.
-        if (event.key === 'Escape' && !event.defaultPrevented && !isLayerOpen()) {
-            // Here rather than in listeners of the layers' own, which would run after this one.
-            if (options.onEscape?.()) {
-                event.preventDefault();
-                return;
-            }
-
-            // A field gives the key up first: Escape in the comment box leaves it.
-            const { target } = event;
-            if (target instanceof HTMLElement && isEditableTarget(target)) {
-                target.blur();
-                return;
-            }
-
-            event.preventDefault();
-            options.close();
-            return;
-        }
-
-        if (!isScreenKey(event) || !steps.value) {
-            return;
-        }
-
-        if (matchesCommandKey(event, stepKeys.next)) {
-            event.preventDefault();
-            options.next();
-        } else if (matchesCommandKey(event, stepKeys.previous)) {
-            event.preventDefault();
-            options.previous();
-        }
-    });
+    const commands = computed((): ItemKeyCommands => ({
+        ...bindSteps(),
+        close: bindCommand(
+            definitions.closeItem,
+            {
+                place,
+                section: 'item',
+                menu: false,
+                when: () => !closesToPanel.value,
+                run: () => escape(() => options.close()),
+            },
+            t,
+        ),
+        closeFullScreen: bindCommand(
+            definitions.closeFullScreen,
+            {
+                place,
+                section: 'item',
+                // Its Escape runs the view's layers first, which a pick from the menu would run instead.
+                menu: false,
+                when: () => closesToPanel.value,
+                run: () => escape(() => options.arrange('panel')),
+            },
+            t,
+        ),
+        openFullScreen:
+            arrangement.value === 'panel'
+                ? bindCommand(
+                      definitions.openFullScreen,
+                      {
+                          place,
+                          section: 'item',
+                          run: () => options.arrange('page'),
+                      },
+                      t,
+                  )
+                : null,
+    }));
 
     return reactive<ItemKeysViewModel>({ otherArrangement, stepKeys, commands });
+
+    function bindSteps() {
+        const own = { section: 'item', menu: false, when: () => steps.value } as const;
+        if (place === 'workflow') {
+            return {
+                next: bindCommand(definitions.nextWorkflow, { ...own, run: () => options.next() }, t),
+                previous: bindCommand(definitions.previousWorkflow, { ...own, run: () => options.previous() }, t),
+            };
+        }
+
+        // ↓/↑ scroll the item.
+        const item = { ...own, place, otherKeys: false } as const;
+        return {
+            next: bindCommand(definitions.next, { ...item, title: t(l.next), run: () => options.next() }, t),
+            previous: bindCommand(
+                definitions.previous,
+                { ...item, title: t(l.previous), run: () => options.previous() },
+                t,
+            ),
+        };
+    }
+
+    /** The view's own layers take Escape first (here rather than in listeners of theirs, which would run after). */
+    function escape(then: () => void) {
+        if (!options.onEscape?.()) {
+            then();
+        }
+    }
 }
 
 /**
- * The arrangement an opened item in `arrangement` moves to — the header's button and `⇧Enter`: full screen from the
- * panel; back to the panel from a page while the window has room for it, else `null`. For a view with keys of its own
- * in place of {@link useItemKeys} (a workflow's run).
+ * The arrangement an opened item in `arrangement` moves to — the header's button: full screen from the panel; back to
+ * the panel from a page while the window has room for it, else `null`. For a view with keys of its own in place of
+ * {@link useItemKeys} (a workflow's run).
  */
 export function useOtherArrangement(arrangement: MaybeRefOrGetter<ItemArrangement>) {
     const t = useTranslate();

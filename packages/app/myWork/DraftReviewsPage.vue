@@ -2,18 +2,18 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Send } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { submitReview } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { formatItemReference, getItemReference, getReviewPath } from '@/item/itemRoutes.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import { ItemStore } from '@/store/ItemStore.js';
 
 import DraftReviewsView from './DraftReviewsView.vue';
@@ -30,25 +30,26 @@ const navigation = useService(ItemNavigation);
 const drafts = computed(() => getDraftReviews(items.all));
 
 useCommands(() => [
-  {
-    id: 'draftReviews.submit',
-    title: t(l.submit),
-    section: 'view',
-    key: REVIEW_KEYS.submit,
-    icon: Send,
-    actsOnRow: true,
-    when: () => list.selectedId !== null,
-    run: () => {
-      if (list.selectedId !== null) {
-        const item = items.get(list.selectedId);
-        if (item) {
-          navigation.noteReviewSubmit(formatItemReference(getItemReference(item)));
-        }
+  bindCommand(
+    submitReview,
+    {
+      place: 'draftReviews',
+      section: 'view',
+      actsOnRow: true,
+      when: () => list.selectedId !== null,
+      run: () => {
+        if (list.selectedId !== null) {
+          const item = items.get(list.selectedId);
+          if (item) {
+            navigation.noteReviewSubmit(formatItemReference(getItemReference(item)));
+          }
 
-        open(list.selectedId);
-      }
+          open(list.selectedId);
+        }
+      },
     },
-  },
+    t,
+  ),
 ]);
 
 function open(id: string) {

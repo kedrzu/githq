@@ -4,28 +4,25 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { RotateCw } from 'lucide-vue-next';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { loadNewVersion } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 
 import { NewVersion } from './NewVersion.js';
 import * as l from './NewVersionToast.loc.js';
 
-/** The key of Reload, while the toast is the newest. */
-const RELOAD_KEY = 'Alt+R';
-
 const version = useService(NewVersion);
 const t = useTranslate();
 
-const commands: Command[] = [
-  {
-    id: 'app.reloadToNewVersion',
-    title: t(l.reloadCommand),
-    section: 'app',
-    key: RELOAD_KEY,
-    icon: RotateCw,
-    run: () => version.reload(),
-  },
+const commands: BoundCommand[] = [
+  bindCommand(
+    loadNewVersion,
+    { place: 'app', title: t(l.reloadCommand), section: 'app', icon: RotateCw, run: () => version.reload() },
+    t,
+  ),
 ];
 
 function onOpenChange(open: boolean) {
@@ -50,8 +47,8 @@ function onOpenChange(open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? RELOAD_KEY : undefined"
-        :keyshortcuts="active ? RELOAD_KEY : undefined"
+        :kbd="active ? keyOf(loadNewVersion) : undefined"
+        :keyshortcuts="active ? keyOf(loadNewVersion) : undefined"
         @click="version.reload()"
       >
         {{ t(l.reload) }}

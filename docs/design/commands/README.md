@@ -64,11 +64,14 @@ the sidebar. The settings show this as "here, ⌘B does this instead of that" ra
 screens like a review are where single keys are worth most. [How places are described and when keys
 collide](DECISIONS.md#d13).
 
-Places are only for that check. Which command gets a key while you work is decided by what has the keyboard: with an
-item open beside a list, the list keeps it, so `J`, `K` and `O` act on the selected row. That is also why `O` on both
-is a conflict and not one taking over from the other: the item's would never run.
+The same list decides which command gets a key while you work, because it says what has the keyboard: each pair
+names the place that keeps it first. With an item open beside a list, the list keeps it, so `J`, `K` and `O` act on
+the selected row. That is also why two different commands on `O` there are a conflict and not one taking over from
+the other: the item's would never run. ["Open on GitHub" offered by both is one command, and the list's
+runs](DECISIONS.md#d13).
 
-Keys that work across the whole app are few and never a bare letter by default: `⌘K`, `?`, `,` and `⌘B`. Letters
+Keys that work across the whole app are few and never a bare letter by default: `⌘K`, `?`, `,` and `⌘B`, and a
+toast's actions on `⌥` (`⌥R` restarts to update, `⌥F` selects the items an edit failed on). Letters
 belong to screens, so a screen's letter never takes anything app-wide. Creating an issue, for example, is in the
 command menu but has no letter of its own everywhere: githq is more than an issue tracker.
 [Why no issue key](DECISIONS.md#d7), [the rule for app-wide keys](DECISIONS.md#d8).
@@ -88,7 +91,8 @@ Neither can the numbers that pick the n-th thing on screen: a project's views on
 Fixed does not mean handled somewhere else. The numbers, `J` and `K` with the arrows beside them, and the Escape
 that closes a panel are defined like every other command, only marked as not configurable, and run the same way, so
 the list of keys can never show one thing while another runs. Only the keys a control owns while it has focus, Enter
-in a field or Tab, stay with the control. [Why](DECISIONS.md#d11).
+in a field or Tab, stay with the control, and so do a dialog's keys: the merge panel runs its own, its method numbers
+read from their definition. [Why](DECISIONS.md#d11).
 
 ## What comes first in the command menu
 
@@ -99,10 +103,12 @@ command matches comes first and its importance only breaks ties. [Why it belongs
 ## How it looks in code
 
 A definition says what the command is: its id, title, icon, default key, the places it can be offered, how much it
-matters, and whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
-component that offers a command takes a definition and says what running it does there and when it can run. A
-button keeps its own label, which can depend on where it is, but reads its key hint from the definition, so it shows
-the key you chose. [The shape](DECISIONS.md#d12).
+matters, and whether its key can be changed. The definitions live in a few files by area and are exported from one
+index. A component that offers a command binds a definition, saying what running it does there and when it can run,
+and may name it for what it acts on there: the definition's "Remove" is "Untrack" in the tracked repositories, under
+the same key. Only bound commands can be registered, so nothing runs a key without a definition; the rows inside a
+submenu stay plain. The list of keys shows the definition's name. A button keeps its own label, which can depend on
+where it is, but reads its key hint from the definition, so it shows the key you chose. [The shape](DECISIONS.md#d12).
 
 ## Where your keys are kept
 
@@ -116,15 +122,8 @@ would have been the obvious alternative, but in githq Actions means GitHub Actio
 `defineCommand` is already taken in the code by the dependency-injection library for something unrelated, so the
 function that defines one has a different name. [The naming](DECISIONS.md#d5).
 
-## What gets built first
-
-The module of definitions, `useCommand` and the key helper, with the registry's one listener reading definitions, and
-one command moved onto them end to end: "Open on GitHub", the one written about ten times today. The settings screen
-for keys comes once enough commands are on definitions to make the list worth showing; the rest move one by one,
-which is where their duplicates and key clashes get resolved.
-
 ## How far this goes
 
-This design settles how commands are defined, offered, shown and rebound. Going through the existing commands to
-merge duplicates and resolve their key clashes is not part of it; that happens command by command when they are
-moved onto the definitions. Key sequences such as `G` then `I` are not part of it either.
+This design settles how commands are defined, offered, shown and rebound. Which existing commands are one and how
+their key clashes resolve is not decided here: it was settled command by command as each moved onto the definitions,
+the clashes by the owner (the [journal](history/JOURNAL.md)). Key sequences such as `G` then `I` are not part of it either.

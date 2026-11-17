@@ -9,7 +9,15 @@ import { onScopeDispose } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
-import type { Command, CommandForm, CommandFormField, CommandFormValues } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type {
+    BoundCommand,
+    Command,
+    CommandForm,
+    CommandFormField,
+    CommandFormValues,
+} from '@/commands/CommandTypes.js';
+import { runWorkflow } from '@/commands/definitions/index.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Clock } from '@/services/Clock.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -34,10 +42,8 @@ export interface RunWorkflowTarget {
     /** `owner/name`. */
     readonly nameWithOwner: string;
     readonly state: WorkflowState;
-    /** Its command's id: one per registration. */
-    readonly id: string;
-    /** How the menu names it: the workflow selected in the Workflows list, or the one open. */
-    readonly kind: 'selected' | 'open';
+    /** Where it is offered: the Workflows section, its selected workflow; an opened workflow, that one. */
+    readonly place: 'workflows' | 'workflow';
 }
 
 /** "Run workflow" as the command menu offers it (actions W36, W37, W46–W48). */
@@ -46,13 +52,13 @@ export interface RunWorkflowCommands {
      * "Run workflow · Deploy" for one workflow, straight to its form; disabled saying why for a workflow nobody can run by
      * hand; `null` where the user can't run workflows at all (no write access, an archived repository).
      */
-    forWorkflow(target: RunWorkflowTarget): Command | null;
+    forWorkflow(target: RunWorkflowTarget): BoundCommand | null;
     /**
      * "Run workflow…" for any workflow: the tracked repositories, each with how many workflows the user can run there, then
      * the workflows of the one picked, then the form. Inside a tracked repository it opens at that repository's
      * workflows, a step back showing the others.
      */
-    anyWorkflow(repository: string | null): Command;
+    anyWorkflow(repository: string | null): BoundCommand;
 }
 
 /** A ref typed in the form is read once typing pauses this long. */
@@ -113,7 +119,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
 
     return { forWorkflow, anyWorkflow };
 
-    function forWorkflow({ nameWithOwner, state, id, kind }: RunWorkflowTarget): Command | null {
+    function forWorkflow({ nameWithOwner, state, place }: RunWorkflowTarget): BoundCommand | null {
         const { workflow } = state;
         const target: WorkflowFileTarget = { nameWithOwner, path: workflow.path, ref: null };
         const read = state.generated ? null : files.get(target);
@@ -133,49 +139,52 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
         }
 
         const parse = read?.parse ?? null;
-        const where = kind === 'selected' ? t(l.selectedWorkflow) : t(l.openWorkflow);
+        const where = place === 'workflows' ? t(l.selectedWorkflow) : t(l.openWorkflow);
         const described = parse ? describeWorkflow(nameWithOwner, parse) : null;
-        return {
-            id,
-            title: t(l.runNamed, { workflow: workflow.name }),
-            section: 'view',
-            icon: Play,
-            keywords: [t(l.dispatchKeyword), t(l.actionsKeyword)],
-            detail: described ? `${where} — ${described}` : where,
-            hint: block ? t(l.pickAnother) : t(l.opensForm, { workflow: workflow.name }),
-            unavailable: block ? describeBlock(block, workflow) : undefined,
-            prepare: () => files.read(target),
-            form: values => getForm({ nameWithOwner, workflow, fallback: null }, values),
-        };
+        return bindCommand(
+            runWorkflow,
+            {
+                place,
+                title: t(l.runNamed, { workflow: workflow.name }),
+                section: 'view',
+                detail: described ? `${where} — ${described}` : where,
+                hint: block ? t(l.pickAnother) : t(l.opensForm, { workflow: workflow.name }),
+                unavailable: block ? describeBlock(block, workflow) : undefined,
+                prepare: () => files.read(target),
+                form: values => getForm({ nameWithOwner, workflow, fallback: null }, values),
+            },
+            t,
+        );
     }
 
-    function anyWorkflow(repository: string | null): Command {
+    function anyWorkflow(repository: string | null): BoundCommand {
         const tracked = tracking.repositories.map(entry => entry.nameWithOwner);
         const inRepository = repository !== null && tracked.includes(repository);
         const count = inRepository ? getRunnableCount(repository) : null;
-        return {
-            id: 'app.runWorkflow',
-            title: t(l.runWorkflow),
-            section: 'app',
-            icon: Play,
-            keywords: [t(l.dispatchKeyword), t(l.actionsKeyword)],
-            detail: inRepository
-                ? [t(l.inRepository, { repository }), count === null ? null : t(l.canRun, { count })]
-                      .filter(part => part !== null)
-                      .join(' · ')
-                : undefined,
-            start: inRepository ? getRepositoryRowId(repository) : undefined,
-            placeholder: t(l.pickRepository),
-            levelHint: t(l.firstStep),
-            prepare: () => {
-                for (const name of tracked) {
-                    void readRunnable(name);
-                }
+        return bindCommand(
+            runWorkflow,
+            {
+                place: 'app',
+                section: 'app',
+                detail: inRepository
+                    ? [t(l.inRepository, { repository }), count === null ? null : t(l.canRun, { count })]
+                          .filter(part => part !== null)
+                          .join(' · ')
+                    : undefined,
+                start: inRepository ? getRepositoryRowId(repository) : undefined,
+                placeholder: t(l.pickRepository),
+                levelHint: t(l.firstStep),
+                prepare: () => {
+                    for (const name of tracked) {
+                        void readRunnable(name);
+                    }
+                },
+                children: () => getRepositoryRows(tracked),
+                // Its repositories and workflows are found only through its own level: each one costs a read of GitHub.
+                foundAlone: () => [],
             },
-            children: () => getRepositoryRows(tracked),
-            // Its repositories and workflows are found only through its own level: each one costs a read of GitHub.
-            foundAlone: () => [],
-        };
+            t,
+        );
     }
 
     /** Reads what the user can run in the repository: its files once its metadata says they may run workflows there. */

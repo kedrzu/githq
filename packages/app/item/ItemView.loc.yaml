@@ -1,5 +1,3 @@
-item:
-  en: Item
 open:
   en: Open
 closedCompleted:
@@ -18,48 +16,12 @@ closedPullRequest:
   en: Closed
 openedBy:
   en: '{author} · opened {ago}'
-openedAgo:
-  en: opened {ago}
 deletedUser:
   en: ghost
 closes:
   en: Closes
-stateActions:
-  en: Close or reopen
-closeCompleted:
-  en: Close as completed
-closeNotPlanned:
-  en: Close as not planned
-closePullRequest:
-  en: Close pull request
-reopen:
-  en: Reopen
-readyForReview:
-  en: Mark ready for review
-convertToDraft:
-  en: Convert to draft
-comment:
-  en: Comment
-requestReviewers:
-  en: Request reviewers…
-addToProject:
-  en: Add to project…
-review:
-  en: Review files
-openFiles:
-  en: Open changed files on GitHub
-copyLink:
-  en: Copy link
-closeIssueCommand:
-  en: Close issue
-itemMenu:
-  en: Item actions
 itemMenuLabel:
   en: 'Actions of {reference}'
-copyReference:
-  en: Copy reference
-copyBranch:
-  en: Copy branch name
 resizeSummary:
   en: Resize the summary
 resizeItem:

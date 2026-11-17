@@ -1,0 +1,42 @@
+newIssue:
+  en: New issue
+createKeyword:
+  en: create
+newIssueInProject:
+  en: New issue in project
+addItemsToProject:
+  en: Add existing issues to project…
+backToMerge:
+  en: Back to the refused merge
+mergedBranch:
+  en: Delete or restore the merged branch
+undo:
+  en: Undo
+commandMenu:
+  en: Open the command menu
+help:
+  en: Keyboard shortcuts
+documentation:
+  en: Documentation
+docsKeyword:
+  en: docs
+helpKeyword:
+  en: help
+settings:
+  en: Settings
+sidebar:
+  en: Collapse or expand the sidebar
+searchRepositories:
+  en: Search repositories…
+openInDesktop:
+  en: Open in desktop app
+loadNewVersion:
+  en: Load the new version
+updateLater:
+  en: Update later
+whatChanged:
+  en: What changed
+openSyncSettings:
+  en: Open Sync settings
+selectFailed:
+  en: Select the items that failed

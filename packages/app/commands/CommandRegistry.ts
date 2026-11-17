@@ -2,15 +2,21 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { computed, shallowRef } from 'vue';
 
+import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
+import { isLayerOpen } from '@/utils/isLayerOpen.js';
+import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
-import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
-import { COMMAND_SECTIONS } from './CommandTypes.js';
+import type { BoundCommand, Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
+import type { AnyAppCommand } from './defineAppCommand.js';
+import { commandMenu } from './definitions/index.js';
+import { keyOf } from './keyOf.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
+import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
 /** What a component registers while it is shown: its actions, and what they act on. */
 export interface CommandSource {
-    readonly commands: readonly Command[];
+    readonly commands: readonly BoundCommand[];
     readonly subject: CommandSubject | null;
 }
 
@@ -28,12 +34,6 @@ export interface CommandMenuRequest {
 /** What the command menu names in its chips and the user may take out of it (⌫). */
 export type CommandContextPart = 'subject' | 'repository';
 
-/** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
-export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: 'Mod+B' } as const;
-
-/** The key of a new issue (H1): the app's, and a project's own where it starts in that project (H5). */
-export const NEW_ISSUE_KEY = 'C';
-
 /** Where writing happens: ⌘K there is the field's (a markdown editor's "insert link"), never the menu's. */
 const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
 
@@ -41,8 +41,8 @@ const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
  * The app's actions (D9): every component registers the ones it offers while it is shown (`useCommands`), and
  * this one registry feeds the command menu (⌘K), the keys and the help sheet (`?`). It runs an action's key
  * itself: outside fields for a single key, also in a one-line field for a `Mod` key; never while the menu or the help
- * is open, except that the menu's own key closes it. Two actions on one key: the one whose section comes first
- * ({@link COMMAND_SECTIONS}) runs.
+ * is open, except that the menu's own key closes it. Two actions on one key: the first by
+ * {@link orderByKeyPrecedence} runs — the one whose place has the keyboard, else whose section comes first.
  */
 export type CommandRegistry = Resolved<typeof CommandRegistry>;
 export const CommandRegistry = defineService({
@@ -55,6 +55,7 @@ export const CommandRegistry = defineService({
         const removedRef = shallowRef<ReadonlySet<CommandContextPart>>(new Set());
 
         const commands = computed(() => sourcesRef.value.flatMap(source => source.commands));
+        const byPrecedence = computed(() => orderByKeyPrecedence(commands.value));
         const subject = computed(() => {
             const subjects = sourcesRef.value.flatMap(source => (source.subject ? [source.subject] : []));
             return subjects.find(candidate => candidate.kind === 'selection') ?? subjects[0] ?? null;
@@ -62,7 +63,7 @@ export const CommandRegistry = defineService({
 
         return {
             /** Every action registered now; reactive. */
-            get commands(): readonly Command[] {
+            get commands(): readonly BoundCommand[] {
                 return commands.value;
             },
             /** What the actions act on: the selection, else the opened item; reactive. */
@@ -95,7 +96,7 @@ export const CommandRegistry = defineService({
             register,
             showKeySheet,
             isEnabled,
-            findByKey,
+            findByDefinition,
             run,
             openMenu,
             openParts,
@@ -135,11 +136,11 @@ export const CommandRegistry = defineService({
         }
 
         /**
-         * The action a key runs now — what pressing it outside a field would run, the one whose section comes first —
-         * for a button that does the same (the phone's New issue: a project's own in a project, else the app's).
+         * The action bound from `definition` if it can run now, for a button that runs it (the phone's New issue, My
+         * work's); of several places binding it, the first by {@link orderByKeyPrecedence}.
          */
-        function findByKey(key: string) {
-            return findCommand(command => command.key === key);
+        function findByDefinition(definition: AnyAppCommand) {
+            return findCommand(command => command.definition === definition);
         }
 
         /** Runs the action by its key — or, where it does not run itself, opens the menu at its submenu. */
@@ -192,7 +193,7 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            if (menuRef.value && matchesCommandKey(event, APP_KEYS.commandMenu)) {
+            if (menuRef.value && matchesCommandKey(event, keyOf(commandMenu))) {
                 event.preventDefault();
                 if (!event.repeat) {
                     closeMenu();
@@ -205,38 +206,30 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            const command = findCommand(
-                candidate =>
-                    candidate.key !== undefined &&
-                    matchesCommandKey(event, candidate.key) &&
-                    isFreeTarget(event.target, candidate),
+            const command = findCommand(candidate =>
+                [...(candidate.key === undefined ? [] : [candidate.key]), ...(candidate.otherKeys ?? [])].some(
+                    key => matchesCommandKey(event, key) && isFreeTarget(event.target, candidate, key),
+                ),
             );
             if (command) {
                 event.preventDefault();
-                // ⌘K held down opens or closes the menu once, rather than flickering it.
-                if (!event.repeat || command.key !== APP_KEYS.commandMenu) {
+                if (!event.repeat || !command.once) {
                     run(command);
                 }
             }
         }
 
-        /** The first action, by section, that can run and `matches`. */
-        function findCommand(matches: (command: Command) => boolean) {
-            for (const section of COMMAND_SECTIONS) {
-                for (const command of commands.value) {
-                    if (
-                        command.section === section &&
+        /** The first action, by {@link orderByKeyPrecedence}, that can run and `matches`. */
+        function findCommand(matches: (command: BoundCommand) => boolean) {
+            return (
+                byPrecedence.value.find(
+                    command =>
                         command.unavailable === undefined &&
                         (command.run !== undefined || command.options !== undefined) &&
                         matches(command) &&
-                        isEnabled(command)
-                    ) {
-                        return command;
-                    }
-                }
-            }
-
-            return null;
+                        isEnabled(command),
+                ) ?? null
+            );
         }
     },
 });
@@ -244,15 +237,27 @@ export const CommandRegistry = defineService({
 /**
  * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
- * the items behind it), nor from an open menu, which would stay open over wherever the key went. A single key acting
- * on a subject doesn't run from what Tab focused outside the list (`data-tab-focus`): the keyboard isn't on the subject.
+ * the items behind it), nor from an open menu, which would stay open over wherever the key went. Enter and Space are a
+ * focused button's, link's or summary's own (commands D4). A single key acting on a subject doesn't run from what Tab
+ * focused outside the list (`data-tab-focus`): the keyboard isn't on the subject. A screen's key (one with a place but
+ * `app`) doesn't run while a layer covers the screen (`isScreenCovered`), and its Escape not while a picker, menu or
+ * tooltip is open (`isLayerOpen`): that Escape closes it.
  */
-function isFreeTarget(target: EventTarget | null, command: Command) {
+function isFreeTarget(target: EventTarget | null, command: BoundCommand, key: string) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 
-    if (command.key?.includes('Mod+')) {
+    const screen = command.place !== 'app';
+    if (screen && (isScreenCovered() || (key === 'Escape' && isLayerOpen()))) {
+        return false;
+    }
+
+    if ((key === 'Enter' || key === 'Space') && isActivatableTarget(target)) {
+        return false;
+    }
+
+    if (key.includes('Mod+')) {
         return !(target instanceof Element && target.closest(WRITING) !== null);
     }
 

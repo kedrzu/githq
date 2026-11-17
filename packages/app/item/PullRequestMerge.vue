@@ -6,7 +6,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { branch, merge, openOnGitHub, review, updateBranch } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
@@ -233,8 +234,8 @@ function refusedAside(reason: EditFailureReason) {
         variant="secondary"
         size="sm"
         :icon="GitBranch"
-        :kbd="EDIT_KEYS.branch"
-        :keyshortcuts="EDIT_KEYS.branch"
+        :kbd="keyOf(branch)"
+        :keyshortcuts="keyOf(branch)"
         @click="emit('command', branchCommand)"
       >
         {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
@@ -244,11 +245,11 @@ function refusedAside(reason: EditFailureReason) {
         variant="secondary"
         size="sm"
         :icon="GitPullRequestArrow"
-        :kbd="EDIT_KEYS.updateBranch"
-        :keyshortcuts="EDIT_KEYS.updateBranch"
+        :kbd="keyOf(updateBranch)"
+        :keyshortcuts="keyOf(updateBranch)"
         @click="emit('command', updateCommand)"
       >
-        {{ t(l.updateBranch) }}
+        {{ t(updateBranch.title) }}
       </Button>
       <!-- A phone has no merge panel yet: the same pull request on github.com. -->
       <Button
@@ -266,8 +267,8 @@ function refusedAside(reason: EditFailureReason) {
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"
-        :kbd="EDIT_KEYS.merge"
-        :keyshortcuts="EDIT_KEYS.merge"
+        :kbd="keyOf(merge)"
+        :keyshortcuts="keyOf(merge)"
         @click="emit('merge')"
       >
         {{ mergeLabel }}
@@ -277,12 +278,12 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="phone.active ? undefined : Github"
         :link="pr.url"
-        kbd="O"
+        :kbd="keyOf(openOnGitHub)"
         target="_blank"
         rel="noopener noreferrer"
-        keyshortcuts="O"
+        :keyshortcuts="keyOf(openOnGitHub)"
       >
-        {{ t(l.openOnGitHub) }}
+        {{ t(openOnGitHub.title) }}
       </Button>
       <!-- On a phone the address of the review is handed off to github.com's changed files (mobile D3). -->
       <Button
@@ -290,10 +291,10 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="phone.active ? undefined : FileDiff"
         :link="reviewPath"
-        kbd="D"
-        keyshortcuts="D"
+        :kbd="keyOf(review)"
+        :keyshortcuts="keyOf(review)"
       >
-        {{ t(l.reviewFiles) }}<ExternalMark />
+        {{ t(review.title) }}<ExternalMark />
       </Button>
       <span
         v-if="note"

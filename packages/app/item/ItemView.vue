@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — and the reference heads the title instead, opening the item menu at the bottom (D45, `Menu`'s sheet). Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); `⇧Enter` opens full screen, never from a text field, and on a page expanded from the panel Escape goes back to it ("Close full screen") — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — and the reference heads the title instead, opening the item menu at the bottom (D45, `Menu`'s sheet). Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts">
 /**
  * From this width of an opened item below its header on a page, it stands in two columns: an issue's summary and
@@ -36,27 +36,18 @@ import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import {
-  CircleCheckBig,
-  CircleSlash,
-  GitPullRequestClosed,
-  ChevronDown,
-  FileDiff,
-  GitBranch,
-  Hash,
-  Link,
-  MessageSquare,
-  SquareKanban,
-  RotateCcw,
-} from 'lucide-vue-next';
+import { ChevronDown } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import { keyOf } from '@/commands/keyOf.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
+import { comment, itemMenu, openFullScreen, openOnGitHub, review } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
-import type { StateOption } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -109,6 +100,7 @@ import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
+import { useItemActionCommands } from './useItemActionCommands.js';
 import { useItemKeys } from './useItemArrangement.js';
 
 const props = withDefaults(
@@ -118,6 +110,8 @@ const props = withDefaults(
     /** Body, comments, checks, reviews and every project field; `null` while being read. */
     detail: ItemDetail | null;
     arrangement: ItemArrangement;
+    /** Escape goes back to the panel the page was expanded from (`ItemArrangementViewModel.closesToPanel`). */
+    closesToPanel?: boolean;
     /** Where the item is in the list it was opened from (1-based); `null` when it is not in one. */
     position?: { index: number; count: number } | null;
     /** The issues a pull request closes, those known. */
@@ -176,7 +170,7 @@ const emit = defineEmits<{
   close: [];
   previous: [];
   next: [];
-  /** "Open full screen" or "Back to the panel" (`⇧Enter`): the other arrangement is wanted. */
+  /** "Open full screen" (`⇧Enter`) or "Back to the panel" (Escape where the page was expanded from it): the other arrangement is wanted. */
   arrange: [arrangement: ItemArrangement];
   /** A linked item was picked. */
   open: [reference: ItemReference];
@@ -214,6 +208,7 @@ provideContext(KeyHintsContext, {
 const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
+const actions = useItemActionCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
 const dockedComposerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('dockedComposer');
 /** On a phone, the composer docked above the keyboard (mobile D51): grown from the command line's pill. */
@@ -314,7 +309,7 @@ const requiredCheckIds = computed(() =>
 const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
 const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.editing?.metadata, props.viewerCanEnableAutoMerge));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
-/** `owner/name#123`: what the item menu and the pickers name it by, and what "Copy reference" copies. */
+/** `owner/name#123`: what the item menu and the pickers name it by. */
 const referenceText = computed(() => `${props.item.repository.nameWithOwner}#${props.item.number}`);
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
@@ -361,71 +356,32 @@ const viewer = computed(() =>
 );
 /** Who opened the item and who commented on it, in the thread's order: whom `@` suggests first. */
 const threadPeople = computed(() =>
-  filterNotNull([props.item.author, ...(props.detail?.comments.nodes ?? []).map(comment => comment.author)]),
+  filterNotNull([props.item.author, ...(props.detail?.comments.nodes ?? []).map(node => node.author)]),
 );
 const reviewerOptions = computed(() =>
   permissions.value?.reviewers && props.editing?.metadata
     ? pickerOptions.assignees([props.editing.metadata], props.editing.viewerLogin)
     : null,
 );
-/** The state menu's entries the user may use, for the item as it is. */
-const stateActions = computed(() => {
-  const { item } = props;
-  const actions: StateOption[] = [];
-  if (permissions.value?.state) {
-    if (item.state === 'OPEN') {
-      if (item.kind === 'issue') {
-        actions.push(
-          {
-            key: 'completed',
-            text: t(l.closeCompleted),
-            icon: CircleCheckBig,
-            request: { kind: 'close', reason: 'COMPLETED' },
-          },
-          {
-            key: 'notPlanned',
-            text: t(l.closeNotPlanned),
-            icon: CircleSlash,
-            request: { kind: 'close', reason: 'NOT_PLANNED' },
-          },
-        );
-      } else {
-        actions.push({
-          key: 'close',
-          text: t(l.closePullRequest),
-          icon: GitPullRequestClosed,
-          request: { kind: 'close', reason: 'COMPLETED' },
-        });
-      }
-    } else if (!(item.kind === 'pullRequest' && item.merged)) {
-      actions.push({ key: 'reopen', text: t(l.reopen), icon: RotateCcw, request: { kind: 'reopen' } });
-    }
-  }
-
-  return actions;
-});
-
 const opened = computed(() => {
   const ago = formatTimeAgo(Date.parse(props.item.createdAt), props.now);
   const { author } = props.item;
   return { author, text: t(l.openedBy, { author: author?.login ?? t(l.deletedUser), ago }) };
 });
 
-/** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
-const ITEM_KEYS = {
-  openFiles: 'Shift+O',
-  review: 'D',
-  itemMenu: 'Mod+.',
-} as const;
+/** The key of the item menu, on its trigger and in its footer. */
+const itemMenuKey = keyOf(itemMenu);
+/** What a list's context menu offers that the item menu leaves out: GitHub has its button beside it, full screen its own. */
+const OUTSIDE_ITEM_MENU: ReadonlySet<AnyAppCommand> = new Set([openOnGitHub, openFullScreen]);
 
 /**
- * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
- * its button beside it.
+ * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub and full
+ * screen, which have their buttons in the header.
  */
 const itemMenuSections = computed(() =>
   itemMenuOpen.value
     ? getItemMenuSections(
-        [...getEditCommands(), ...getItemCommands()].filter(command => command.id !== 'item.openOnGitHub'),
+        [...getEditCommands(), ...getItemCommands()].filter(command => !OUTSIDE_ITEM_MENU.has(command.definition)),
         props.item.kind,
       )
     : [],
@@ -445,9 +401,11 @@ defineExpose({
 
 // Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from.
 const keys = useItemKeys({
+  place: 'item',
   arrangement: () => props.arrangement,
-  // Here rather than in a listener of the copy's own, which would run after the item's. Not a `data-layer` either: that
-  // would cover the screen and switch `J`/`K` off while the rows are dropped.
+  closesToPanel: () => props.closesToPanel,
+  // Part of the item's Escape rather than a command of the copy's own: one Escape in the help sheet. Not a `data-layer`
+  // either: that would cover the screen and switch `J`/`K` off while the rows are dropped.
   onEscape: () => {
     if (!stackDropped.value) {
       return false;
@@ -458,7 +416,6 @@ const keys = useItemKeys({
   },
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
-  openOnGitHub: () => browser.openInNewTab(props.item.url),
   previous: () => emit('previous'),
   next: () => emit('next'),
 });
@@ -518,6 +475,16 @@ function editFromDock(request: EditRequest) {
   composing.value = false;
 }
 
+/**
+ * Escape in the comment box leaves it, what is typed staying, and the item stays open: the key is the field's (commands
+ * D11), and its next Escape the item's.
+ */
+function leaveComposer(event: KeyboardEvent) {
+  if (event.target instanceof HTMLElement) {
+    event.target.blur();
+  }
+}
+
 /** Escape in the docked composer: back to the pill, the item stays. */
 function leaveDock(event: KeyboardEvent) {
   event.preventDefault();
@@ -529,13 +496,14 @@ function onContentScroll() {
   stackDropped.value = false;
 }
 
-function getEditCommands(): Command[] {
+function getEditCommands(): BoundCommand[] {
   const { editing, item } = props;
   if (!editing) {
     return [];
   }
 
   return editCommands({
+    place: 'item',
     section: 'item',
     items: [item],
     metadata: editing.metadata ? [editing.metadata] : [],
@@ -544,8 +512,6 @@ function getEditCommands(): Command[] {
     getPermissions: () => editing.permissions,
     places: (props.detail?.projects ?? []).filter(place => place.viewerCanUpdate),
     now: props.now,
-    stateOptions: stateActions.value,
-    stateTitle: getStateTitle(),
     edit,
     merge,
     mergeExternal: phone.active,
@@ -614,116 +580,68 @@ function quoteReply(body: string) {
   void focusComposer();
 }
 
-function getItemCommands(): Command[] {
+function getItemCommands(): BoundCommand[] {
   const { item, editing } = props;
-  const commands: Command[] = [
-    {
-      id: 'item.comment',
-      title: t(l.comment),
-      section: 'item',
-      key: EDIT_KEYS.comment,
-      icon: MessageSquare,
-      when: () => canComment.value,
-      run: () => void focusComposer(),
-    },
+  const commands: BoundCommand[] = [
+    bindCommand(
+      comment,
+      { place: 'item', section: 'item', when: () => canComment.value, run: () => void focusComposer() },
+      t,
+    ),
   ];
   if (permissions.value?.addToProject) {
-    commands.push({
-      id: 'item.addToProject',
-      title: t(l.addToProject),
-      section: 'item',
-      icon: SquareKanban,
-      prepare: () => emit('needProjects'),
-      options: () => ({ loading: editing?.viewerProjects == null, options: getProjectOptions() }),
-    });
+    commands.push(
+      actions.addToProject({
+        section: 'item',
+        items: [item],
+        projects: () => editing?.viewerProjects ?? null,
+        prepare: () => emit('needProjects'),
+        add: project => emit('edit', { kind: 'addToProject', project }),
+      }),
+    );
   }
 
-  // Its own keys (`useItemKeys` above), listed in the help sheet.
-  commands.push(keys.commands.next, keys.commands.previous, keys.commands.close, {
-    id: 'item.menu',
-    title: t(l.itemMenu),
-    section: 'item',
-    key: ITEM_KEYS.itemMenu,
-    menu: false,
-    run: () => {
-      itemMenuOpen.value = true;
-    },
-  });
-
+  // Its own keys (`useItemKeys` above).
   commands.push(
-    keys.commands.openOnGitHub,
-    {
-      id: 'item.review',
-      title: t(l.review),
-      section: 'item',
-      key: ITEM_KEYS.review,
-      icon: FileDiff,
-      // A phone has no code review yet: the review's address is handed off to github.com (mobile D3, D11).
-      external: phone.active,
-      when: () => pr.value !== null,
-      run: () => emit('review'),
-    },
-    {
-      id: 'item.openFiles',
-      title: t(l.openFiles),
-      section: 'item',
-      key: ITEM_KEYS.openFiles,
-      icon: FileDiff,
-      when: () => pr.value !== null,
-      run: () => browser.openInNewTab(`${item.url}/files`),
-    },
-    {
-      id: 'item.copyLink',
-      title: t(l.copyLink),
-      section: 'item',
-      icon: Link,
-      run: () => void navigator.clipboard.writeText(item.url),
-    },
-    {
-      id: 'item.copyReference',
-      title: t(l.copyReference),
-      section: 'item',
-      icon: Hash,
-      detail: formatShortReference(item),
-      run: () => void navigator.clipboard.writeText(referenceText.value),
-    },
-    {
-      id: 'item.copyBranch',
-      title: t(l.copyBranch),
-      section: 'item',
-      icon: GitBranch,
-      detail: pr.value?.headRefName,
-      when: () => pr.value !== null,
-      run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
-    },
+    keys.commands.next,
+    keys.commands.previous,
+    keys.commands.close,
+    bindCommand(
+      itemMenu,
+      {
+        section: 'item',
+        menu: false,
+        run: () => {
+          itemMenuOpen.value = true;
+        },
+      },
+      t,
+    ),
   );
 
-  if (keys.commands.arrange) {
-    commands.push(keys.commands.arrange);
+  commands.push(
+    bindCommand(openOnGitHub, { place: 'item', section: 'item', run: () => browser.openInNewTab(item.url) }, t),
+    bindCommand(
+      review,
+      {
+        section: 'item',
+        // A phone has no code review yet: the review's address is handed off to github.com (mobile D3, D11).
+        external: phone.active,
+        when: () => pr.value !== null,
+        run: () => emit('review'),
+      },
+      t,
+    ),
+    actions.copyLink([item], 'item'),
+    ...actions.kindCommands(item, 'item'),
+  );
+
+  commands.push(keys.commands.closeFullScreen);
+  if (keys.commands.openFullScreen) {
+    commands.push(keys.commands.openFullScreen);
   }
 
   return commands;
-}
-
-function getStateTitle() {
-  const { item } = props;
-  if (item.state !== 'OPEN') {
-    return t(l.reopen);
-  }
-
-  return item.kind === 'issue' ? t(l.closeIssueCommand) : t(l.closePullRequest);
-}
-
-function getProjectOptions(): CommandOption[] {
-  const inProjects = new Set(props.item.projects.map(project => project.projectId));
-  return (props.editing?.viewerProjects ?? [])
-    .filter(project => !project.closed && !inProjects.has(project.id))
-    .map(project => ({
-      value: project.id,
-      label: project.title,
-      detail: project.owner,
-      pick: () => emit('edit', { kind: 'addToProject', project }),
-    }));
 }
 </script>
 
@@ -747,7 +665,7 @@ function getProjectOptions(): CommandOption[] {
         <Menu
           v-model:open="itemMenuOpen"
           align="start"
-          :label="t(l.itemMenu)"
+          :label="t(itemMenu.title)"
           :context="referenceText"
         >
           <template #trigger>
@@ -755,7 +673,7 @@ function getProjectOptions(): CommandOption[] {
               type="button"
               :class="css.itemView_reference"
               :aria-label="t(l.itemMenuLabel, { reference: referenceText })"
-              :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(itemMenuKey)"
             >
               <component
                 :is="state.icon"
@@ -774,8 +692,8 @@ function getProjectOptions(): CommandOption[] {
           <MenuSeparator />
           <MenuLabel>
             <span :class="css.itemView_menuFooter">
-              {{ t(l.itemMenu) }}
-              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+              {{ t(itemMenu.title) }}
+              <MenuShortcut :shortcut="itemMenuKey" />
             </span>
           </MenuLabel>
         </Menu>
@@ -905,7 +823,7 @@ function getProjectOptions(): CommandOption[] {
                       <Menu
                         v-if="phone.active"
                         v-model:open="itemMenuOpen"
-                        :label="t(l.itemMenu)"
+                        :label="t(itemMenu.title)"
                         :context="referenceText"
                       >
                         <template #trigger>
@@ -1050,6 +968,7 @@ function getProjectOptions(): CommandOption[] {
                         :read-only="readOnly"
                         :people="threadPeople"
                         @edit="edit"
+                        @cancel="leaveComposer"
                       />
                     </template>
                   </ItemThread>

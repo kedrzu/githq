@@ -4,7 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ban, Coffee, EyeOff, Workflow } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
-import { useCommands } from '@/commands/useCommands.js';
+import { open as openCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
@@ -49,6 +50,8 @@ const selection = useRowSelection({
   selectFirst: true,
   chosenKey: selected,
   open: row => emit('open', row),
+  place: 'brokenWorkflows',
+  openTitle: l.openFailedRun,
 });
 /** "New" and "Ongoing", each while it has rows. */
 const brokenGroups = computed(() =>
@@ -108,12 +111,6 @@ const allGreenDetail = computed(() =>
   }),
 );
 
-useCommands(() => [
-  { id: 'workflows.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-  { id: 'workflows.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-  { id: 'workflows.open', title: t(l.openFailedRun), section: 'view', key: 'Enter', menu: false },
-]);
-
 // Arrived from the sidebar or the command menu, the keys are the screen's: Enter no longer follows the link pressed.
 onMounted(() => {
   root.value?.focus({ preventScroll: true });
@@ -154,7 +151,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         :class="css.brokenWorkflowsView_hint"
         aria-hidden="true"
       >
-        <Kbd keys="Enter" />
+        <Kbd :keys="keyOf(openCommand)" />
         {{ t(l.openFailedRun) }}
       </span>
     </header>

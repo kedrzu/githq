@@ -104,7 +104,7 @@ test('a value GitHub silently drops (D14) is undone, with its toast and "1 chang
     expect(sample.world.stateOf(sample.issue).assignees).toEqual(['octocat']);
 });
 
-test('a label added to three selected items, one of which GitHub refuses, says "1 of 3 failed", undoes only that one and ⇧F selects it alone', async ({
+test('a label added to three selected items, one of which GitHub refuses, says "1 of 3 failed", undoes only that one and ⌥F selects it alone', async ({
     page,
     github,
 }) => {
@@ -135,13 +135,13 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     expect(sample.world.stateOf(sample.thirdIssue).labels).toEqual(['bug']);
     expect(sample.world.stateOf(sample.secondIssue).labels).toEqual([]);
 
-    // The help sheet lists the list's own keys and ⇧F beside the rest; closing it leaves the selection.
+    // The help sheet lists the list's own keys and ⌥F beside the rest; closing it leaves the selection.
     await page.keyboard.press('?');
     const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
     const view = help.getByRole('region', { name: 'This view' });
     const listKeys: readonly (readonly [string, readonly string[]])[] = [
-        ['Next item', ['J', 'ArrowDown']],
-        ['Previous item', ['K', 'ArrowUp']],
+        ['Next', ['J', 'ArrowDown']],
+        ['Previous', ['K', 'ArrowUp']],
         ['Select for editing together', ['X']],
         ['Select the next one too', ['Shift+J', 'Shift+ArrowDown']],
         ['Select the previous one too', ['Shift+K', 'Shift+ArrowUp']],
@@ -149,9 +149,12 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     ];
     for (const [title, keys] of listKeys) {
         // Each key as the help reads it out, beside its chips.
-        await expect(view.getByRole('term').filter({ hasText: title }).locator('+ dd')).toContainText(
-            new RegExp(keys.map(key => key.replace('+', '\\+')).join('.*'), 'u'),
-        );
+        await expect(
+            view
+                .getByRole('term')
+                .filter({ hasText: new RegExp(`^${title}$`, 'u') })
+                .locator('+ dd'),
+        ).toContainText(new RegExp(keys.map(key => key.replace('+', '\\+')).join('.*'), 'u'));
     }
 
     await expect(
@@ -163,9 +166,9 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     await help.getByRole('button', { name: 'Close' }).click();
     await expect(help).toBeHidden();
 
-    // ⇧F selects the failed item alone, to try again or act on it.
+    // ⌥F selects the failed item alone, to try again or act on it.
     await expect(toast.getByRole('button', { name: 'Select the failed item' })).toBeVisible();
-    await page.keyboard.press('Shift+F');
+    await page.keyboard.press('Alt+KeyF');
     const selection = myWork.root.getByRole('toolbar', { name: 'Selected items' });
     await expect(selection).toContainText('1 selected');
     await expect(myWork.row('Flaky login test').getByRole('img', { name: 'Selected', exact: true })).toBeVisible();

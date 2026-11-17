@@ -18,7 +18,10 @@ import {
   watch,
 } from 'vue';
 
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -27,8 +30,6 @@ import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
-import { isScreenCovered } from '@/utils/isScreenCovered.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import {
   buildLogDocument,
@@ -111,6 +112,10 @@ interface LogPlace {
   readonly offset: number;
 }
 
+/** Where the log's commands are offered: it keeps the keyboard over the run's page and the section beside it. */
+const LOG_PLACE = { place: 'jobLog', section: 'view' } as const;
+/** The keys that move the log's cursor or act on its line: not from what Tab focused outside the log. */
+const ROW_KEYS = { ...LOG_PLACE, actsOnRow: true } as const;
 const LINE_HEIGHT = 18;
 const STEP_HEIGHT = 26;
 const GAP_HEIGHT = 24;
@@ -135,6 +140,7 @@ const TIME_FORMAT = new Intl.DateTimeFormat(APP_LANGUAGE, {
 
 const t = useTranslate();
 const preferences = useService(LocalPreferences);
+const registry = useService(CommandRegistry);
 const scroller = useTemplateRef<HTMLElement>('scroller');
 const list = useTemplateRef<HTMLElement>('list');
 const searchBar = useTemplateRef('searchBar');
@@ -281,205 +287,116 @@ const mapCursor = computed(() => {
 });
 
 useCommands(() => [
-  {
-    id: 'workflowLog.search',
-    title: t(l.search),
-    section: 'view',
-    key: '/',
-    // ⌘F is `onKeydown`'s: one command runs by one key.
-    otherKeys: ['Mod+F'],
-    run: () => void openSearch(),
-  },
-  {
-    id: 'workflowLog.nextMatch',
-    title: t(l.nextMatch),
-    section: 'view',
-    key: 'N',
-    menu: false,
-    when: () => matchTotal.value > 0,
-    run: () => moveByMatch(1),
-  },
-  {
-    id: 'workflowLog.previousMatch',
-    title: t(l.previousMatch),
-    section: 'view',
-    key: 'Shift+N',
-    menu: false,
-    when: () => matchTotal.value > 0,
-    run: () => moveByMatch(-1),
-  },
-  // Not from a button, which Enter presses.
-  {
-    id: 'workflowLog.matchEnter',
-    title: showsOnlyMatches.value ? t(l.showInFullLog) : t(l.nextMatch),
-    section: 'view',
-    key: 'Enter',
-    menu: false,
-    when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
-    run: () => {
-      if (showsOnlyMatches.value) {
-        void showInFullLog();
-      } else {
-        moveByMatch(1);
-      }
+  bindCommand(
+    definitions.searchLog,
+    {
+      ...LOG_PLACE,
+      // ⌘F is a field's own inside one (the search's selects what is typed), where the registry would run a `Mod` key.
+      when: () => registry.menu !== null || !isEditableTarget(window.document.activeElement),
+      run: () => void openSearch(),
     },
-  },
+    t,
+  ),
+  bindCommand(
+    definitions.nextMatch,
+    { ...LOG_PLACE, menu: false, when: () => matchTotal.value > 0, run: () => moveByMatch(1) },
+    t,
+  ),
+  bindCommand(
+    definitions.previousMatch,
+    { ...LOG_PLACE, menu: false, when: () => matchTotal.value > 0, run: () => moveByMatch(-1) },
+    t,
+  ),
+  bindCommand(
+    definitions.enterMatch,
+    {
+      ...LOG_PLACE,
+      title: showsOnlyMatches.value ? t(l.showInFullLog) : t(definitions.nextMatch.title),
+      menu: false,
+      when: () => matchTotal.value > 0,
+      run: () => {
+        if (showsOnlyMatches.value) {
+          void showInFullLog();
+        } else {
+          moveByMatch(1);
+        }
+      },
+    },
+    t,
+  ),
   // Not from a button, which Tab leaves for the next thing.
-  {
-    id: 'workflowLog.onlyMatches',
-    title: t(l.onlyMatches),
-    section: 'view',
-    key: 'Tab',
-    menu: false,
-    when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
-    run: () => void toggleOnlyMatches(),
-  },
-  {
-    id: 'workflowLog.closeSearch',
-    title: t(l.closeSearch),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    when: () => query.value !== null,
-    run: closeSearch,
-  },
-  {
-    id: 'workflowLog.nextLine',
-    title: t(l.nextLine),
-    section: 'view',
-    actsOnRow: true,
-    key: 'J',
-    otherKeys: ['ArrowDown'],
-    menu: false,
-    run: () => moveByLine(1),
-  },
-  {
-    id: 'workflowLog.previousLine',
-    title: t(l.previousLine),
-    section: 'view',
-    actsOnRow: true,
-    key: 'K',
-    otherKeys: ['ArrowUp'],
-    menu: false,
-    run: () => moveByLine(-1),
-  },
-  {
-    id: 'workflowLog.nextStep',
-    title: t(l.nextStep),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Shift+J',
-    menu: false,
-    run: () => moveByStep(1),
-  },
-  {
-    id: 'workflowLog.previousStep',
-    title: t(l.previousStep),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Shift+K',
-    menu: false,
-    run: () => moveByStep(-1),
-  },
-  {
-    id: 'workflowLog.nextError',
-    title: t(l.nextError),
-    section: 'view',
-    actsOnRow: true,
-    key: 'E',
-    menu: false,
-    run: () => moveByError(1),
-  },
-  {
-    id: 'workflowLog.previousError',
-    title: t(l.previousError),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Shift+E',
-    menu: false,
-    run: () => moveByError(-1),
-  },
-  // Not from a button, which Space presses.
-  {
-    id: 'workflowLog.fold',
-    title: t(l.fold),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Space',
-    menu: false,
-    when: () => !isActivatableTarget(window.document.activeElement),
-    run: foldCursorStep,
-  },
-  {
-    id: 'workflowLog.top',
-    title: t(l.top),
-    section: 'view',
-    actsOnRow: true,
-    key: 'G',
-    menu: false,
-    run: () => {
-      moveCursor(getNearestShownLine({ document: logDocument.value, index: 0, by: 1 }), 'nearest');
-      view.scrollTo(0);
+  bindCommand(
+    definitions.onlyMatches,
+    {
+      ...LOG_PLACE,
+      menu: false,
+      when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
+      run: () => void toggleOnlyMatches(),
     },
-  },
-  {
-    id: 'workflowLog.end',
-    title: t(l.end),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Shift+G',
-    menu: false,
-    run: () => {
-      moveCursor(
-        getNearestShownLine({ document: logDocument.value, index: props.log.lines.length - 1, by: -1 }),
-        'nearest',
-      );
-      view.scrollTo(view.totalHeight);
-      revealCursor();
+    t,
+  ),
+  // Before the run's step back (`jobLog` keeps the keyboard over `workflowRun`).
+  bindCommand(
+    definitions.closeFind,
+    { ...LOG_PLACE, title: t(l.closeSearch), menu: false, when: () => query.value !== null, run: closeSearch },
+    t,
+  ),
+  bindCommand(definitions.next, { ...ROW_KEYS, title: t(l.nextLine), menu: false, run: () => moveByLine(1) }, t),
+  bindCommand(
+    definitions.previous,
+    { ...ROW_KEYS, title: t(l.previousLine), menu: false, run: () => moveByLine(-1) },
+    t,
+  ),
+  bindCommand(definitions.nextStep, { ...ROW_KEYS, menu: false, run: () => moveByStep(1) }, t),
+  bindCommand(definitions.previousStep, { ...ROW_KEYS, menu: false, run: () => moveByStep(-1) }, t),
+  bindCommand(definitions.nextError, { ...ROW_KEYS, menu: false, run: () => moveByError(1) }, t),
+  bindCommand(definitions.previousError, { ...ROW_KEYS, menu: false, run: () => moveByError(-1) }, t),
+  bindCommand(definitions.fold, { ...ROW_KEYS, title: t(l.fold), menu: false, run: foldCursorStep }, t),
+  bindCommand(
+    definitions.logTop,
+    {
+      ...ROW_KEYS,
+      menu: false,
+      run: () => {
+        moveCursor(getNearestShownLine({ document: logDocument.value, index: 0, by: 1 }), 'nearest');
+        view.scrollTo(0);
+      },
     },
-  },
-  {
-    id: 'workflowLog.halfPageDown',
-    title: t(l.halfPageDown),
-    section: 'view',
-    actsOnRow: true,
-    key: 'D',
-    menu: false,
-    run: () => moveByHalfPage(1),
-  },
-  {
-    id: 'workflowLog.halfPageUp',
-    title: t(l.halfPageUp),
-    section: 'view',
-    actsOnRow: true,
-    key: 'U',
-    menu: false,
-    run: () => moveByHalfPage(-1),
-  },
-  // Not from a button, which Enter presses.
-  {
-    id: 'workflowLog.wholeLine',
-    title: t(l.showWholeLine),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Enter',
-    menu: false,
-    when: () => cursorLineCut.value && matchTotal.value === 0 && !isActivatableTarget(window.document.activeElement),
-    run: () => {
-      if (cursor.value !== null) {
-        showWholeLine(cursor.value);
-      }
+    t,
+  ),
+  bindCommand(
+    definitions.logEnd,
+    {
+      ...ROW_KEYS,
+      menu: false,
+      run: () => {
+        moveCursor(
+          getNearestShownLine({ document: logDocument.value, index: props.log.lines.length - 1, by: -1 }),
+          'nearest',
+        );
+        view.scrollTo(view.totalHeight);
+        revealCursor();
+      },
     },
-  },
-  {
-    id: 'workflowLog.copyLineLink',
-    title: t(l.copyLineLink),
-    section: 'view',
-    actsOnRow: true,
-    key: 'Y',
-    when: () => cursor.value !== null,
-    run: copyLineLink,
-  },
+    t,
+  ),
+  bindCommand(definitions.halfPageDown, { ...ROW_KEYS, menu: false, run: () => moveByHalfPage(1) }, t),
+  bindCommand(definitions.halfPageUp, { ...ROW_KEYS, menu: false, run: () => moveByHalfPage(-1) }, t),
+  bindCommand(
+    definitions.showWholeLine,
+    {
+      ...ROW_KEYS,
+      menu: false,
+      when: () => cursorLineCut.value && matchTotal.value === 0,
+      run: () => {
+        if (cursor.value !== null) {
+          showWholeLine(cursor.value);
+        }
+      },
+    },
+    t,
+  ),
+  bindCommand(definitions.copyLineLink, { ...ROW_KEYS, when: () => cursor.value !== null, run: copyLineLink }, t),
 ]);
 
 // The rows moved: what was kept for a selection is another row now. Not on the document, which each 200 on the jobs'
@@ -515,7 +432,6 @@ watch(
   { flush: 'sync' },
 );
 
-onWindowEvent('keydown', onKeydown);
 onWindowEvent('mouseup', stopSelecting);
 onMounted(() => {
   characterWidth.value = measureCharacterWidth();
@@ -1050,34 +966,6 @@ function onSelectionChange() {
   }
 }
 
-function onKeydown(event: KeyboardEvent) {
-  if (
-    matchesCommandKey(event, 'Mod+F') &&
-    !event.defaultPrevented &&
-    !isEditableTarget(event.target) &&
-    !isScreenCovered()
-  ) {
-    event.preventDefault();
-    void openSearch();
-    return;
-  }
-
-  if (!isScreenKey(event) || event.shiftKey) {
-    return;
-  }
-
-  switch (event.key) {
-    case 'ArrowDown':
-      event.preventDefault();
-      moveByLine(1);
-      break;
-    case 'ArrowUp':
-      event.preventDefault();
-      moveByLine(-1);
-      break;
-  }
-}
-
 function measureRows() {
   const rowElements = list.value?.children;
   if (!rowElements) {
@@ -1151,7 +1039,7 @@ function measureCharacterWidth() {
         tid="workflow-log-errors"
       >
         {{ t(l.errorPosition, { position: errorPosition, total: log.errors.length }) }}
-        <Kbd keys="E" />
+        <Kbd :keys="keyOf(definitions.nextError)" />
       </span>
       <span :class="css.workflowJobLog_search">
         <Button
@@ -1159,8 +1047,8 @@ function measureCharacterWidth() {
           size="sm"
           block
           :icon="Search"
-          kbd="/"
-          keyshortcuts="/"
+          :kbd="keyOf(definitions.searchLog)"
+          :keyshortcuts="keyOf(definitions.searchLog)"
           tid="workflow-log-open-search"
           @click="void openSearch()"
         >
@@ -1261,7 +1149,7 @@ function measureCharacterWidth() {
                     v-if="shown.text.hidden > 0"
                     type="button"
                     :class="css.workflowJobLog_cut"
-                    aria-keyshortcuts="Enter"
+                    :aria-keyshortcuts="keyOf(definitions.showWholeLine)"
                     tid="workflow-log-more"
                     @click="
                       showWholeLine(shown.index);
@@ -1271,7 +1159,7 @@ function measureCharacterWidth() {
                     {{ t(l.moreCharacters, { count: shown.text.hidden }) }}
                     <Kbd
                       v-if="shown.row === cursorRow && matchTotal === 0"
-                      keys="Enter"
+                      :keys="keyOf(definitions.showWholeLine)"
                       size="sm"
                     /></button
                 ></span>
@@ -1289,7 +1177,7 @@ function measureCharacterWidth() {
                     css.workflowJobLog_gapButton,
                     shown.row === cursorRow && css.workflowJobLog_gapButton_cursor,
                   ]"
-                  aria-keyshortcuts="Space"
+                  :aria-keyshortcuts="keyOf(definitions.fold)"
                   @click="
                     openGap(shown.first);
                     focusLog();

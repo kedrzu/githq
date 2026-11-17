@@ -1,0 +1,54 @@
+goToStackPullRequest:
+  en: Go to a pull request of the stack
+nextThread:
+  en: Next thread
+previousThread:
+  en: Previous thread
+commentOnLine:
+  en: Comment on the line
+rangeDown:
+  en: Choose lines for a comment, a line down
+rangeUp:
+  en: Choose lines for a comment, a line up
+clearRange:
+  en: Let go of the lines chosen for a comment
+toggleViewed:
+  en: Mark viewed or not viewed
+selectNextFile:
+  en: Select down to the next file
+selectPreviousFile:
+  en: Select up to the previous file
+clearFilter:
+  en: Clear the filter
+focusFilter:
+  en: Filter files
+lineDown:
+  en: Move the cursor down
+lineUp:
+  en: Move the cursor up
+pageDown:
+  en: Move the cursor down a screen
+pageUp:
+  en: Move the cursor up a screen
+toggleFileList:
+  en: Show or hide the file list
+toggleConversation:
+  en: Show or hide the conversation
+toggleDiffLayout:
+  en: Show split or unified diff
+toggleWhitespace:
+  en: Show or hide whitespace changes
+toggleThreadsInCollapsed:
+  en: Show or hide comments in collapsed files
+toggleHideViewed:
+  en: Show or hide viewed files
+showHiddenLines:
+  en: Show more hidden lines
+showAllHiddenLines:
+  en: Show all hidden lines
+find:
+  en: Find
+findNext:
+  en: Next match
+findPrevious:
+  en: Previous match

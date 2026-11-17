@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { AnyAppCommand } from './defineAppCommand.js';
 import type { NavigationPlace } from './searchNavigation.js';
 
 /**
@@ -12,6 +13,72 @@ export type CommandSection = 'selection' | 'item' | 'view' | 'repository' | 'app
 
 /** The sections from the one whose key wins to the one whose key yields. */
 export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'repository', 'app'];
+
+/**
+ * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list in
+ * either layout, a list shown as a board (the keys only the board has: its ←/→ are not the list layout's), an opened
+ * item, a commit, workflow (its runs too) or workflow run opened as one, a job's log on a run's page, a repository's
+ * commit graph, its Workflows section, the broken workflows, a repository's workflow alerts, the tracked repositories or
+ * projects, the draft reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a
+ * project as their menus offer them (their screens too: a new issue in a project, the tabs of both), Settings (its
+ * sections, a repository's or project's page in it, the rows its level in the command menu holds) and the sign-in
+ * screens (the desktop app's device code, the first sign-in's offer of saved settings), and the merge panel (its methods'
+ * numbers: the panel is a dialog, so its own listener runs them, commands D11). Places tell which
+ * keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer
+ * over the screen (`CommandRegistry`).
+ */
+export type CommandPlace =
+    | 'app'
+    | 'list'
+    | 'item'
+    | 'commit'
+    | 'workflow'
+    | 'workflowRun'
+    | 'jobLog'
+    | 'commits'
+    | 'workflows'
+    | 'brokenWorkflows'
+    | 'workflowAlerts'
+    | 'trackedList'
+    | 'draftReviews'
+    | 'review'
+    | 'changelog'
+    | 'cantBeRead'
+    | 'repository'
+    | 'project'
+    | 'settings'
+    | 'signIn'
+    | 'mergePanel';
+
+/**
+ * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
+ * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`), a repository's Workflows section too;
+ * an item open beside the draft reviews, whose `⇧S` is then the item's own, and their list, whose keys go first; the
+ * commit graph with a commit open beside it, and a repository's Workflows section with a workflow (their `J`/`K` move
+ * the cursor the panel follows); an item opened over a review, or beside a screen GitHub won't show; a workflow's run
+ * beside its repository's Workflows section, whose keys are then the run's; a job's log in the run's page, there too,
+ * whose keys go before both (its search's Escape before the run's step back, its `J`/`K` before the section's); in
+ * Settings the tracked repositories or projects, a repository's workflow alerts and the changelog, whose rows are where the
+ * keys are.
+ * Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with every
+ * place, and every place keeps the keyboard over it.
+ */
+export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
+    ['list', 'item'],
+    ['workflows', 'item'],
+    ['item', 'draftReviews'],
+    ['list', 'draftReviews'],
+    ['commits', 'commit'],
+    ['workflows', 'workflow'],
+    ['item', 'review'],
+    ['item', 'cantBeRead'],
+    ['workflowRun', 'workflows'],
+    ['jobLog', 'workflowRun'],
+    ['jobLog', 'workflows'],
+    ['trackedList', 'settings'],
+    ['workflowAlerts', 'settings'],
+    ['changelog', 'settings'],
+];
 
 /**
  * What the actions act on, as the command menu's chip names it: the items selected together, or the item opened
@@ -56,7 +123,10 @@ export interface CommandParts {
     readonly rows: readonly CommandPart[];
 }
 
-/** One of {@link CommandParts}: an action (`repository.section.issues`, a saved view's `view:<id>`) or a place (`myWork:assigned`). */
+/**
+ * One of {@link CommandParts}: an action (`repository.goToSection.1`, a saved view's `project.goToView.2`) or a place
+ * (`myWork:assigned`).
+ */
 export type CommandPart =
     | { readonly kind: 'command'; readonly command: Command }
     | { readonly kind: 'place'; readonly place: NavigationPlace };
@@ -70,6 +140,11 @@ export interface Command extends CommandMarks {
     readonly id: string;
     readonly title: string;
     readonly section: CommandSection;
+    /**
+     * How much it matters (commands D14): higher first in its group of the command menu, a tie-break while typing.
+     * Default `0`.
+     */
+    readonly priority?: number;
     /** Other words it is found by ("close" for "Done"). */
     readonly keywords?: readonly string[];
     /**
@@ -78,7 +153,10 @@ export interface Command extends CommandMarks {
      * one-line field.
      */
     readonly key?: string;
-    /** Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. */
+    /**
+     * Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet; the registry runs the
+     * command by them too.
+     */
     readonly otherKeys?: readonly string[];
     /** Dim text after the title: the current value ("In progress · Platform Q4"), "2 of 3 editable". */
     readonly detail?: string;
@@ -108,10 +186,15 @@ export interface Command extends CommandMarks {
     /**
      * Runs it — by its key; in the menu too unless it has a submenu, which the menu opens instead. Returning
      * `false` says it could not run here (the item view's picker is not shown): its key then opens the menu at its
-     * submenu, as it does for an action with a submenu and no `run`. With neither `run` nor `options`, its key is the
-     * registering component's own (a list's `j`, seen before an opened item's): it is only listed in the help sheet.
+     * submenu, as it does for an action with a submenu and no `run`. A registered command always does something: it
+     * runs, or opens its picker (`options`) or its level of the menu (`children`).
      */
     readonly run?: () => boolean | void;
+    /**
+     * Its key runs it on the first keydown of a press, not on the repeats of a key held down: a one-shot step (signing
+     * in, ⌘K opening the menu) that a held key must not take again and again.
+     */
+    readonly once?: true;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */
     readonly options?: () => CommandOptions;
     /** Called as its submenu or level is shown, coming back to it too: what it offers may still have to be read. */
@@ -152,6 +235,24 @@ export interface Command extends CommandMarks {
      * menu's step while it is open — a field taken away and given back, or the form left and opened again, keeps it.
      */
     readonly form?: (values: CommandFormValues) => CommandForm;
+}
+
+/**
+ * A {@link Command} bound from a definition (`bindCommand`): the only kind the registry takes (commands D2), so nothing
+ * runs by a key, or shows in the menu's top level and the help sheet, without a definition. The rows of a submenu
+ * (`children`, a place's {@link CommandParts}) stay plain commands: they have no keys and are never registered.
+ */
+export interface BoundCommand extends Command {
+    /**
+     * Where it is offered: of two on one key, the one whose place keeps the keyboard runs (`orderByKeyPrecedence`); a
+     * screen's key yields to a layer over the screen (`CommandRegistry`).
+     */
+    readonly place: CommandPlace;
+    /**
+     * The definition it was bound from: what a button that runs it finds it by (`CommandRegistry.findByDefinition`),
+     * never by its id (commands D2).
+     */
+    readonly definition: AnyAppCommand;
 }
 
 /** A value of a {@link CommandFormField}: `null` is a number field left empty. */

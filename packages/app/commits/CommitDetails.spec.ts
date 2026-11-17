@@ -66,7 +66,7 @@ test('CH18, CH55: what it says of a commit: author, when, sha, parent, refs, pul
     await expect.element(panel.getByRole('heading', { name: 'Refs' })).toBeVisible();
     await expect.element(panel.getByText('fix/booking-tz')).toBeVisible();
     const pullRequest = panel.getByRole('button', { name: /Pull request 1228/ });
-    await expect.element(pullRequest).toHaveAttribute('aria-keyshortcuts', 'Shift+Enter');
+    await expect.element(pullRequest).toHaveAttribute('aria-keyshortcuts', 'Shift+O');
     await expect.element(pullRequest).toHaveTextContent(/#1228\s*Pull request 1228\s*open/);
     await expect.element(panel.getByRole('img', { name: 'Open pull request' })).toBeVisible();
     await expect.element(panel.getByRole('img', { name: 'Checks failing' })).toBeVisible();

@@ -341,14 +341,14 @@ a window with no room for the panel opens it on its page, and the panel's width 
 behaves like a list: entering it opens nothing, a click, `↵`, a chosen ref or `P`/`⇧P` (to the first parent, `⇧P` the
 second of a merge) opens the commit, in place of any item open there, a workflow included; while a commit is open `J`/`K`
 move the graph's cursor and the panel follows, with no room for the panel they only move the cursor. An item opened
-elsewhere stays in the panel as the user moves between the repository's sections. `⇧↵` opens the commit's pull request
-as any item opens and `O` opens it on GitHub; "Open full screen" has no key for a commit, only the header's button and
-the command menu. On its page `K`/`J` step through the loaded commits. The details' content keeps the item view's reading
+elsewhere stays in the panel as the user moves between the repository's sections. `⇧O` opens the commit's pull request
+as any item opens and `O` opens it on GitHub; `⇧↵` opens the commit full screen, as on every opened item. On its page `K`/`J` step through the loaded commits. The details' content keeps the item view's reading
 width, aligned left, however wide the panel.** (2026-11-15, owner: a click on a commit showed nothing while a workflow
 was open in the panel — "commits should work by the same mechanism as the other item details"; the narrow window, `⇧↵`
-and the list behaviour by the owner the same day, on the agent's recommendation)
+and the list behaviour by the owner the same day, on the agent's recommendation; `⇧↵` full screen and `⇧O` the pull
+request 2026-11-17, owner, in the commands design)
 
-**The keys footer of the details goes: each key sits on the row it acts on** (`⇧↵` on the pull request, `P`/`⇧P` on the
+**The keys footer of the details goes: each key sits on the row it acts on** (`⇧O` on the pull request, `P`/`⇧P` on the
 parents). (2026-11-14, owner's layout CH55, [D13](#d13))
 
 **Why.** Two panels on one screen — the commit's beside the graph and the shared one — hid each other: a workflow left

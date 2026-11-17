@@ -6,7 +6,7 @@ import { computed, useId } from 'vue';
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import ChoiceCards from '@/components/ChoiceCards.vue';
 import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
+import { COMMENT_BOX_KEYS } from '@/review/writing/ReviewCommentBox.vue';
 
 import * as l from './CodeReviewView.loc.js';
 import PhoneSettingsGroup from './PhoneSettingsGroup.vue';
@@ -57,8 +57,8 @@ const options = computed((): ChoiceCardsOption<ReviewCommentChoice>[] => [
       <p :class="css.codeReviewView_description">
         {{
           t(l.commentsDescription, {
-            first: formatCommandKey(REVIEW_KEYS.sendFirst),
-            second: formatCommandKey(REVIEW_KEYS.sendSecond),
+            first: formatCommandKey(COMMENT_BOX_KEYS.sendFirst),
+            second: formatCommandKey(COMMENT_BOX_KEYS.sendSecond),
           })
         }}
       </p>

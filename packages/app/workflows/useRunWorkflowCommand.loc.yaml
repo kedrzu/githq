@@ -1,11 +1,5 @@
-runWorkflow:
-  en: Run workflow…
 runNamed:
   en: Run workflow · {workflow}
-dispatchKeyword:
-  en: dispatch
-actionsKeyword:
-  en: actions
 selectedWorkflow:
   en: the selected workflow
 openWorkflow:

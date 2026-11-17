@@ -1,10 +1,12 @@
-<!-- The commit an address opens, in its arrangement: in the shell's panel beside the repository's Commits section (`?pane=commit&commit=owner|name|<sha>`) or on its page (`/owner/name/commit/<sha>`), in any repository the user can see, tracked or not (git-client D11), shown in its details (`CommitDetails`) and moved as any opened item is (`useItemArrangement`): "Open full screen" and "Back to the panel" are its button and a command with no key — `⇧Enter` is the commit's pull request, opened as any item opens, by its address (a fork's commit answers with its upstream's) —, Escape goes back the way it came — the Commits section, or with no list behind it (opened by its address) up to it — after the graph's list of branches and tags lying over the graph leaves (`CommitGraphStore.takeEscape`), `P`/`⇧P` open its first or second parent in its place, replacing the address, and `O` opens it on GitHub. In the panel the graph beside it owns `K`/`J`, moving its cursor, which the panel follows; on the page they step through the list of commits it was opened from (`ItemNavigation.list`, by their keys, `CommitRoutes.formatKey`). A short sha in the address settles on the full oid once GitHub names it (`CommitGraphStore.resolveOid`), replacing the address. What it shows is read once it rests on a commit — 150 ms, so holding a key reads only where it stops; a panel that had no commit reads at once —: its details (with its pull request and CI state), its checks, and for a loaded row its state as the rows ask for it. Opened with no graph in memory (its page after a reload) it opens the repository's graph for the branches and tags pointing at it and whether it is loaded; the branch or tag chosen last in the graph's list says why the graph stayed when the commit is its (CH16). -->
+<!-- The commit an address opens, in its arrangement: in the shell's panel beside the repository's Commits section (`?pane=commit&commit=owner|name|<sha>`) or on its page (`/owner/name/commit/<sha>`), in any repository the user can see, tracked or not (git-client D11), shown in its details (`CommitDetails`) and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) and "Back to the panel" are its button and a command, as any opened item's, `⇧O` opens the commit's pull request in its place, as any item opens, by its address (a fork's commit answers with its upstream's), Escape goes back the way it came — the Commits section, or with no list behind it (opened by its address) up to it — after the graph's list of branches and tags lying over the graph leaves (`CommitGraphStore.takeEscape`), `P`/`⇧P` open its first or second parent in its place, replacing the address, and `O` opens it on GitHub. In the panel the graph beside it owns `K`/`J`, moving its cursor, which the panel follows; on the page they step through the list of commits it was opened from (`ItemNavigation.list`, by their keys, `CommitRoutes.formatKey`). A short sha in the address settles on the full oid once GitHub names it (`CommitGraphStore.resolveOid`), replacing the address. What it shows is read once it rests on a commit — 150 ms, so holding a key reads only where it stops; a panel that had no commit reads at once —: its details (with its pull request and CI state), its checks, and for a loaded row its state as the rows ask for it. Opened with no graph in memory (its page after a reload) it opens the repository's graph for the branches and tags pointing at it and whether it is loaded; the branch or tag chosen last in the graph's list says why the graph stayed when the commit is its (CH16). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { firstParent, openCommitPullRequest, openOnGitHub, secondParent } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { parseItemUrl } from '@/item/itemRoutes.js';
@@ -16,13 +18,12 @@ import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
 import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 
-import CommitDetails, { COMMIT_DETAILS_KEYS } from './CommitDetails.vue';
+import CommitDetails from './CommitDetails.vue';
 import { CommitGraphStore } from './CommitGraphStore.js';
 import { CommitRoutes, parseCommitKey } from './commitRoutes.js';
 import type { CommitReference } from './commitRoutes.js';
 import type { CommitParent } from './CommitTypes.js';
 import { groupCommitRefs } from './groupCommitRefs.js';
-import * as l from './OpenedCommit.loc.js';
 
 const props = defineProps<{
   reference: CommitReference;
@@ -80,15 +81,14 @@ const arranging = useItemArrangement({
   },
 });
 const keys = useItemKeys({
+  place: 'commit',
   arrangement: () => props.arrangement,
   // In the panel the graph beside it moves its cursor with them, and the panel follows.
   steps: () => props.arrangement === 'page',
-  // `⇧Enter` is its pull request's.
-  arrangeByKey: false,
+  closesToPanel: () => arranging.closesToPanel,
   onEscape: () => store.takeEscape(),
   close: () => arranging.close(),
   arrange: arrangement => arranging.arrange(arrangement),
-  openOnGitHub: () => browser.openInNewTab(url.value),
   previous: () => arranging.step(-1),
   next: () => arranging.step(1),
 });
@@ -96,34 +96,15 @@ const keys = useItemKeys({
 useCommands(() => {
   const { commands } = keys;
   return [
-    ...(props.arrangement === 'page' ? [commands.next, commands.previous] : []),
-    {
-      id: 'commit.firstParent',
-      title: t(l.firstParent),
-      section: 'item',
-      key: COMMIT_DETAILS_KEYS.firstParent,
-      menu: false,
-      run: () => openParent(0),
-    },
-    {
-      id: 'commit.secondParent',
-      title: t(l.secondParent),
-      section: 'item',
-      key: COMMIT_DETAILS_KEYS.secondParent,
-      menu: false,
-      run: () => openParent(1),
-    },
-    {
-      id: 'commit.pullRequest',
-      title: t(l.openPullRequest),
-      section: 'item',
-      key: COMMIT_DETAILS_KEYS.pullRequest,
-      menu: false,
-      run: openPullRequest,
-    },
+    commands.next,
+    commands.previous,
+    bindCommand(firstParent, { section: 'item', menu: false, run: () => openParent(0) }, t),
+    bindCommand(secondParent, { section: 'item', menu: false, run: () => openParent(1) }, t),
+    bindCommand(openCommitPullRequest, { section: 'item', menu: false, run: openPullRequest }, t),
     commands.close,
-    commands.openOnGitHub,
-    ...(commands.arrange ? [commands.arrange] : []),
+    bindCommand(openOnGitHub, { place: 'commit', section: 'item', run: () => browser.openInNewTab(url.value) }, t),
+    commands.closeFullScreen,
+    ...(commands.openFullScreen ? [commands.openFullScreen] : []),
   ];
 });
 

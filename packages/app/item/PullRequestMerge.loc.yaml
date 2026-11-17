@@ -1,5 +1,3 @@
-updateBranch:
-  en: Update branch
 checks:
   en: Checks
 reviews:
@@ -13,10 +11,6 @@ files:
     many: '{count} files'
 branchInto:
   en: '{head} into {base}'
-openOnGitHub:
-  en: Open on GitHub
-reviewFiles:
-  en: Review files
 cannotMerge:
   en: You can't merge in this repository
 waitingForGitHub:

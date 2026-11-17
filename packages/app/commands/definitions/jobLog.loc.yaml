@@ -1,0 +1,34 @@
+searchLog:
+  en: Search this job's whole log
+nextMatch:
+  en: Next match
+previousMatch:
+  en: Previous match
+enterMatch:
+  en: Next match, or show it in the full log
+onlyMatches:
+  en: 'In search: only the matching lines'
+nextStep:
+  en: Next step
+previousStep:
+  en: Previous step
+nextError:
+  en: Next error
+previousError:
+  en: Previous error
+logTop:
+  en: Top of the log
+logEnd:
+  en: End of the log
+halfPageDown:
+  en: Half a page down
+halfPageUp:
+  en: Half a page up
+showWholeLine:
+  en: Show the whole line
+copyLineLink:
+  en: Copy a link to the line
+wrapLines:
+  en: Wrap lines
+showTimes:
+  en: Show each line's time

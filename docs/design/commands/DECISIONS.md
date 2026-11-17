@@ -138,7 +138,9 @@ something else here, and a new app-wide letter is refused by the rule rather tha
 **Numbered keys that pick the n-th of what a screen shows (views `1`–`9`, repository sections `1`–`4`, My work
 filters `1`–`3`, merge methods `1`–`3`) are fixed, like the keys of [D4](#d4): shown in the list of keys, not
 rebindable. Each family is one definition (`Go to view 1–9`) whose binding receives the number and may name what the
-number picks (`Go to "Backlog" view`).** (2026-11-16, owner)
+number picks (`Go to "Backlog" view`). A dialog's numbers are the dialog's own keys ([D11](#d11)): the merge panel's
+methods read their keys from their family but the panel runs them.** (2026-11-16, owner; the merge panel 2026-11-17,
+owner)
 
 **Why.** Rebinding them makes no sense; the number is the position on screen. They still run through the registry
 ([D11](#d11)), so each family needs a definition; one with a number is one row in the list of keys rather than nine.
@@ -153,6 +155,8 @@ The command menu shows the binding's name, since "view 3" says nothing.
 - One rebindable command per number — nine entries in the settings nobody would change.
 - Numbered keys registered by the screen with no definition — the one exception to every command having one.
 - No definition for families at all ([history](history/DECISIONS.md#d9)) — they would stay outside the registry.
+- The merge panel's methods run by the registry — the registry runs nothing inside a dialog that keeps its keys, and
+  the panel's other keys (⌘↵, E, Y, C) stay its own anyway ([history](history/DECISIONS.md#d9)).
 
 ## D10
 
@@ -189,18 +193,23 @@ listeners and every help-only stub.
 
 ## D12
 
-**The shape in code: `defineAppCommand({ id, title, icon, key, places, priority?, configurable? })` in
-`commands/definitions/*.ts`, all re-exported from one index; `useCommand(definition, { run, when, unavailable,
-detail, title?, options })` in the component that knows what it does; buttons keep their own label and icon and take
-their key hint from a helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a
-translation key, translated when shown.** (2026-11-16, owner)
+**The shape in code: `defineAppCommand({ id, title, icon, key, otherKeys?, places, priority?, configurable? })` in
+`commands/definitions/*.ts`, all re-exported from one index; `bindCommand(definition, { run, when, unavailable,
+detail, title?, icon?, options }, t)` gives the command a place offers, as a plain value a context menu can show too,
+and `useCommands` registers a component's bound commands — only bound ones; buttons keep their own label and icon and take their key hint from a
+helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a translation key, translated
+when shown. Its title is the command's general name, the one the list of keys shows; a binding's `title` (and `icon`)
+may say what the command acts on there ("Untrack" for "Remove" in the tracked repositories) or which way a toggle goes
+("Show as board"), and names what a numbered family picks ([D9](#d9)).** (2026-11-16, owner; titles of a place
+2026-11-17, owner)
 
 **Why.** Each part has one job from [D1](#d1): what a command is, what it does here. A hint read through the helper
 replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not work, after a rebinding too.
 Buttons often carry a label that depends on where they are (the merge panel's button is named after the merge
-method), so the helper does not force the command's title on them. A binding's `title` names what a numbered family
-picks ([D9](#d9)). A definition is a module-level constant, which cannot call a component's `t()`, and UI text is
-never hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
+method), so the helper does not force the command's title on them. The command menu and the help sheet read better
+naming what the command does on this screen, while rebinding still goes by the definition, so one general name there
+is enough. A definition is a module-level constant, which cannot call a component's `t()`, and UI text is never
+hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
 
 > **Checked 2026-11-16:** githq has one language, `APP_LANGUAGE = 'en'`
 > (`packages/app/i18n/AppLanguageContext.ts:6`), so following a change of language is not a reason here.
@@ -210,21 +219,36 @@ never hardcoded (`translations` skill), so it holds the key and whatever shows i
 - Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
 - `<CommandButton :command>` drawing name, icon and key from the definition and running it on click — forces the
   command's title on buttons named for their place ([history](history/DECISIONS.md#d12)).
+- Only the definition's title, everywhere but a numbered family — "Remove" in the tracked repositories and "Show as
+  board or list" say less than the screen knows ([history](history/DECISIONS.md#d12)).
+- Splitting a definition wherever the words differ ("Untrack", "Remove pattern") — rebinding one would no longer move
+  the other, and a toggle's two directions would be two commands on one key.
 
 ## D13
 
 **"Where" is a place from a flat list: the whole app, or one kind of screen or panel (a list, an open item, a review,
 a job log, the commit graph, the settings, …). A short hand-kept list names the places that can be on screen together
-(a list with an item open beside it). Two commands sharing a key conflict if they share a place or their places are
-on that list. A screen's command may take a key of an app-wide command; the settings show it as "here, ⌘B does X
-instead of Y", not as a conflict. Places serve only these checks: which command gets a key at runtime is decided by
-what has the keyboard.** (2026-11-16, owner)
+(a list with an item open beside it), each pair ordered with the place that keeps the keyboard first. Two commands
+sharing a key conflict if they share a place or their places are on that list. A screen's command may take a key of an
+app-wide command; the settings show it as "here, ⌘B does X instead of Y", not as a conflict. At runtime, of commands
+that can run on one key, a screen's goes before the app's and the first place of a pair before the second: the same
+list says what has the keyboard.** (2026-11-16, owner; the ordered pairs deciding at runtime 2026-11-16, owner; fixed keys never conflicting 2026-11-17, owner)
 
 **Why.** The defaults rely on a screen taking an app-wide key (the review's `Mod+B` over the sidebar's), and screens
 like a review are where single keys are worth most. Places that nest get the list with an item beside it wrong: the
 item is narrower, so its `O` would be shown as deliberately taking the list's, yet the list keeps the keyboard
 (`docs/design/githq/navigation.md`, `ListView.vue:58,757`), so the item's `O` never fires. That is a real conflict,
-and the flat list with pairs reports it as one.
+and the flat list with pairs reports it as one. One definition offered in two places of a pair (the list's and the
+item's "Open on GitHub") is not a conflict, and the pair's order says which one runs. As `J`, `K`, `X` and the rest
+of the list's keys move into the registry, one rule kept as data, and checked by the same test as the conflicts,
+holds better than each screen choosing a section that happens to win. Two fixed keys never conflict: the check exists so that a key
+the user chooses cannot silence another command, nobody rebinds a fixed key, and fixed defaults are made together, a
+`when` deciding which runs (the list's Escape clears what is checked, then the item's closes it; the board's ←/→ step
+between columns where the list's expand a stack).
+
+> **Checked 2026-11-16:** before the registry ran these keys, the list kept them by handling them in its own window
+> listener, outside the registry's section order (`lists/ListView.vue:619`); the item's `O` was in the `item` section,
+> which that order puts before the list's `view`.
 
 **Rejected.**
 
@@ -233,6 +257,11 @@ and the flat list with pairs reports it as one.
   ([history](history/DECISIONS.md#d6)).
 - A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
 - Priority decided by nesting — wrong for a list with an item open beside it.
+- Fixed keys checked like any other, with an exception for Escape and the board as a place of its own to keep the
+  arrows apart — exceptions the check would keep growing ([history](history/DECISIONS.md#d13)).
+- Places serving only the conflict check, with the registry's section order deciding at runtime and the list's keys
+  given a section that wins — each screen would have to pick its section by which key should win, and the help sheet
+  would head the list's keys under that section ([history](history/DECISIONS.md#d13)).
 
 ## D14
 

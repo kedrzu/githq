@@ -217,8 +217,6 @@ selectFailed:
     many: Select the failed items
 subjectLabel:
   en: label “{label}”
-selectFailedCommand:
-  en: Select the items that failed
 failedAutoMergeOn:
   en: "Auto-merge wasn't turned on for {reference}"
 failedAutoMergeOff:

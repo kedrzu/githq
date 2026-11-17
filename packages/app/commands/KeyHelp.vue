@@ -8,14 +8,15 @@ import Dialog from '@/components/Dialog.vue';
 import DialogHead from '@/components/DialogHead.vue';
 import Kbd from '@/components/Kbd.vue';
 
-import type { Command, CommandKeySheet } from './CommandTypes.js';
+import type { BoundCommand, CommandKeySheet } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { formatAriaKeyShortcuts } from './formatAriaKeyShortcuts.js';
 import * as l from './KeyHelp.loc.js';
+import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
 const props = defineProps<{
   /** The actions that can run now. */
-  commands: readonly Command[];
+  commands: readonly BoundCommand[];
   /** The screen's own sheet, shown instead of them. */
   sheet?: CommandKeySheet | null;
 }>();
@@ -25,24 +26,18 @@ const open = defineModel<boolean>('open', { default: false });
 const t = useTranslate();
 const id = useId();
 
-/** Actions that run by their key, on a key an earlier one has, never get it. Those only listed are their component's own. */
+/** Actions that run by their key, on a key one before them (by the registry's own order) has, never get it. */
 const listed = computed(() => {
   const taken = new Set<string>();
-  return COMMAND_SECTIONS.flatMap(section =>
-    props.commands.filter(command => {
-      if (command.section !== section || command.key === undefined) {
-        return false;
-      }
+  return orderByKeyPrecedence(props.commands).filter(command => {
+    if (command.key === undefined) {
+      return false;
+    }
 
-      if (!command.run && !command.options) {
-        return true;
-      }
-
-      const free = !taken.has(command.key);
-      taken.add(command.key);
-      return free;
-    }),
-  );
+    const free = !taken.has(command.key);
+    taken.add(command.key);
+    return free;
+  });
 });
 const sections = computed(() =>
   COMMAND_SECTIONS.map(section => ({

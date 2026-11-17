@@ -28,7 +28,7 @@ test('offline and paused say when it resolves, with why in a chip, and offer not
     await expect.element(page.getByRole('button')).not.toBeInTheDocument();
 });
 
-test('R and the button try again, once at a time (D18)', async () => {
+test('Enter and the button try again, once at a time (D18)', async () => {
     let settle = () => {};
     const retry = vi.fn(
         () =>
@@ -39,10 +39,10 @@ test('R and the button try again, once at a time (D18)', async () => {
     await Failing.run({ args: { ...Failing.args, cause: { kind: 'failing', retry } } });
 
     const button = page.getByRole('button', { name: 'Try again' });
-    await expect.element(button).toHaveAttribute('aria-keyshortcuts', 'R');
-    await userEvent.keyboard('r');
+    await expect.element(button).toHaveAttribute('aria-keyshortcuts', 'Enter');
+    await userEvent.keyboard('{Enter}');
     await expect.element(button).toHaveAttribute('aria-busy', 'true');
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).toHaveBeenCalledOnce();
 
     settle();
@@ -57,7 +57,7 @@ test('in a group the button has no key: a list may have several', async () => {
 
     const button = page.getByRole('button', { name: 'Try again' });
     await expect.element(button).not.toHaveAttribute('aria-keyshortcuts');
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).not.toHaveBeenCalled();
     await userEvent.click(button);
     expect(retry).toHaveBeenCalledOnce();

@@ -9,8 +9,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Command } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { APP_KEYS } from '@/commands/CommandRegistry.js';
+import { commandMenu } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import IconButton from '@/components/IconButton.vue';
 
 import * as l from './PhoneCommandLine.loc.js';
@@ -36,7 +37,7 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-const keyshortcuts = formatAriaKeyShortcuts(APP_KEYS.commandMenu);
+const keyshortcuts = formatAriaKeyShortcuts(keyOf(commandMenu));
 const chip = computed((): PhonePart | null =>
   props.selected == null ? (props.part ?? null) : { label: t(l.selected, { count: props.selected }), count: null },
 );

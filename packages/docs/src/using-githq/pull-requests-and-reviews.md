@@ -12,7 +12,7 @@ beside the list; <kbd>Enter</kbd> again or <kbd>Shift</kbd> <kbd>Enter</kbd> ope
 [Open an item](./my-work.md#open-an-item).
 
 The header holds the way through the list you came from (<kbd>K</kbd> and <kbd>J</kbd>, with your place, such as
-`3 / 13`), the button that opens it full screen or brings it back to the panel (<kbd>Shift</kbd> <kbd>Enter</kbd>), **Open on GitHub** (<kbd>O</kbd>) and **Close**
+`3 / 13`), the button that opens it full screen (<kbd>Shift</kbd> <kbd>Enter</kbd>) or brings it back to the panel (<kbd>Esc</kbd>), **Open on GitHub** (<kbd>O</kbd>) and **Close**
 (<kbd>Esc</kbd>). The pull request's reference, such as `acme/portal #1187`, opens the item menu: every action you may
 take on it, each with its key. <kbd>⌘</kbd> <kbd>.</kbd> opens the same menu.
 

@@ -52,8 +52,10 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the web's code puts into a build: the toast of a newer deploy, which the desktop app, with its own updater,
- * never shows, and the links to the desktop app (`desktopLinks/`) — the hand-off of a page's link, its screen, the Settings
- * switch and the command. The production build must have all; the desktop build must have none (`checkDesktopBuild.ts`).
+ * never shows, and the links to the desktop app (`desktopLinks/`) — the hand-off of a page's link, its screen and the
+ * Settings switch. Not the command opening the screen there: its title is its definition's, and every build has every
+ * definition (commands D2); its binding has no text of its own. The production build must have all; the desktop build
+ * must have none (`checkDesktopBuild.ts`).
  */
 export const WEB_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'NewVersionToast', what: "the web's toast of a newer deploy" },
@@ -62,7 +64,6 @@ export const WEB_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'Open here instead', what: 'the text of the hand-off screen' },
     { text: 'OpenLinksSwitch', what: "Settings' switch to open links in the desktop app" },
     { text: 'Opens githq links', what: "the text of Settings' switch" },
-    { text: 'app.openInDesktop', what: 'the command to open the screen in the desktop app' },
 ];
 
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */

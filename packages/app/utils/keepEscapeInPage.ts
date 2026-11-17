@@ -11,6 +11,7 @@
  * @returns What stops it again.
  */
 export function keepEscapeInPage() {
+    // A guard of the platform's Escape, not a command (commands D11): it runs no screen's action.
     window.addEventListener('keydown', onKeydown, { capture: true });
     return () => window.removeEventListener('keydown', onKeydown, { capture: true });
 }

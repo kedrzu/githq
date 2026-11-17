@@ -13,6 +13,8 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { openOnGitHub, toggleConversation, toggleFileList } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -29,7 +31,6 @@ import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import ReviewToggle from './ReviewToggle.vue';
 import * as l from './ReviewToolbar.loc.js';
-import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   reference: ItemReference;
@@ -157,7 +158,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         <label :class="css.reviewToolbar_switch">
           {{ t(l.fileList) }}
           <span :class="css.reviewToolbar_switchEnd">
-            <Kbd :keys="REVIEW_KEYS.fileList" />
+            <Kbd :keys="keyOf(toggleFileList)" />
             <Switch
               v-model="fileListShown"
               :label="t(l.fileList)"
@@ -167,7 +168,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         <label :class="css.reviewToolbar_switch">
           {{ t(l.conversation) }}
           <span :class="css.reviewToolbar_switchEnd">
-            <Kbd :keys="REVIEW_KEYS.conversation" />
+            <Kbd :keys="keyOf(toggleConversation)" />
             <Switch
               v-model="conversationShown"
               :label="t(l.conversation)"
@@ -182,7 +183,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         :icon="PanelLeft"
         :label="t(l.fileList)"
         :pressed="fileListShown"
-        :kbd="REVIEW_KEYS.fileList"
+        :kbd="keyOf(toggleFileList)"
         panel
         @click="fileListShown = !fileListShown"
       />
@@ -190,14 +191,15 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         :icon="PanelRight"
         :label="t(l.conversation)"
         :pressed="conversationShown"
-        :kbd="REVIEW_KEYS.conversation"
+        :kbd="keyOf(toggleConversation)"
         panel
         @click="conversationShown = !conversationShown"
       />
     </div>
     <IconButton
       :icon="Github"
-      :label="t(l.openOnGitHub)"
+      :label="t(openOnGitHub.title)"
+      :kbd="keyOf(openOnGitHub)"
       :link="githubUrl"
       target="_blank"
       rel="noopener noreferrer"

@@ -1,7 +1,9 @@
-<!-- The bar under a repository's Workflows section's header (actions `Workflow / Alerts bar`, D5): which branches and tags raise alerts here — "Alerts on", the default branch as a chip with GitHub's name of it, the patterns in outlines, so a pattern never looks like the default branch — or, with nothing on, that failures here never mark the repository broken. "Alert settings" on the right, with P, opens the repository's settings on Workflow alerts. -->
+<!-- The bar under a repository's Workflows section's header (actions `Workflow / Alerts bar`, D5): which branches and tags raise alerts here — "Alerts on", the default branch as a chip with GitHub's name of it, the patterns in outlines, so a pattern never looks like the default branch — or, with nothing on, that failures here never mark the repository broken. "Alert settings" on the right, with its key (`alertSettings`), opens the repository's settings on Workflow alerts. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
+import { alertSettings } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 
 import type { RepositoryWorkflowAlerts } from './buildRepositoryWorkflows.js';
@@ -52,8 +54,8 @@ const t = useTranslate();
       :class="css.workflowAlertsBar_settings"
       variant="ghost"
       size="sm"
-      kbd="P"
-      keyshortcuts="P"
+      :kbd="keyOf(alertSettings)"
+      :keyshortcuts="keyOf(alertSettings)"
       @click="emit('settings')"
     >
       {{ t(l.settings) }}

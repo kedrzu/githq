@@ -46,3 +46,30 @@
   even when not visible; its title does not name the row. Not part of this design; offered as a separate fix.
 - Owner: a key helper for buttons, not `<CommandButton>` (D12 amended, old form in history). First build step written
   into README. Owner agreed to close the design and to a separate issue for the "Open full screen" bug.
+
+## 2026-11-16 (delivery, M1)
+
+- Built: the ordered pairs of places on screen together decide at runtime which command runs a shared key (the list's
+  `O` before the opened item's). Review flagged it against D13's "places serve only these checks"; owner chose to keep
+  it over section order (D13 rewritten, prior form in history).
+
+## 2026-11-17 (delivery, M2)
+
+- Owner: a place may name a command for what it acts on or which way it toggles; the definition keeps the general name
+  (D12 amended). Per command: ⌫ "Remove" in the settings lists is fixed; leaving full screen is "Close full screen" on
+  Escape, ⇧Enter only opens it; the list's layout toggle loses its key (⇧V), too niche.
+- Owner: a project keeps its own `C` for a new issue in it (H5); D7 takes only the app-wide one.
+- Owner: two fixed keys never conflict (D13 amended); the Escape exception and the board's own place go.
+
+## 2026-11-17 (delivery, M4)
+
+- Owner: the review's reply in a thread is the same command as the item's comment (R), named "Reply to the thread"
+  there.
+
+## 2026-11-17 (delivery, M5)
+
+- Owner: the merge panel's keys stay the dialog's (D11); its methods 1–3 become a numbered family it handles.
+- Owner, key clashes: select the failed items ⌥F (D8); ⇧Enter opens a commit full screen as everywhere, its pull
+  request on ⇧O; Try again is one fixed Enter command everywhere; restart to update ⌥R everywhere.
+- Owner: a focused code thread's J/K are the `next`/`previous` commands' keys, not the card's own; a rebinding moves
+  them there too.

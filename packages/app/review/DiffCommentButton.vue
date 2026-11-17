@@ -3,10 +3,11 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus } from 'lucide-vue-next';
 
+import { commentOnLine } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Tooltip from '@/components/Tooltip.vue';
 
 import * as l from './DiffCommentButton.loc.js';
-import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 defineProps<{
   /** The line it comments on, which its name and tooltip say. */
@@ -23,14 +24,14 @@ const t = useTranslate();
 <template>
   <Tooltip
     :text="t(l.commentOn, { line })"
-    :kbd="REVIEW_KEYS.comment"
+    :kbd="keyOf(commentOnLine)"
   >
     <button
       type="button"
       :class="css.diffCommentButton"
       tabindex="-1"
       :aria-label="t(l.commentOn, { line })"
-      :aria-keyshortcuts="REVIEW_KEYS.comment"
+      :aria-keyshortcuts="keyOf(commentOnLine)"
       @click="emit('gutter', $event)"
       @pointerdown="emit('gutter', $event)"
     >

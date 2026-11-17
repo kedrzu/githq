@@ -4,14 +4,16 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { ChevronDown, ChevronRight, GitMerge, Maximize2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
-import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand, CommandSubject } from '@/commands/CommandTypes.js';
+import * as definitions from '@/commands/definitions/index.js';
+import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
-import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
+import { PULL_REQUEST_COMMANDS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -30,9 +32,6 @@ import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
-import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { takeFocusOffControl } from '@/utils/takeFocusOffControl.js';
 
 import { ExpandedStacks } from './ExpandedStacks.js';
@@ -54,11 +53,19 @@ import RowSwipeActions from './RowSwipeActions.vue';
 import { useItemCommands } from './useItemCommands.js';
 import { useRowSwipe } from './useRowSwipe.js';
 
-/** A row's action keys the list handles itself, below: a context menu draws them, the registry must not run them. */
-const OWN_KEYS: ReadonlySet<string> = new Set(['Enter', 'O']);
+/**
+ * A row's action keys the list has itself — its "Open", "Open full screen" and "Open on GitHub". The list's own outrank
+ * the row's by place, but decline at times (`⇧Enter` on the opened item's row is the opened item's own): the row's must
+ * not run then, so the row's are registered without them. The context menu builds its own, keys and all.
+ */
+const OWN_KEYS: ReadonlySet<string> = new Set([
+  keyOf(definitions.open),
+  keyOf(definitions.openFullScreen),
+  keyOf(definitions.openOnGitHub),
+]);
 
-/** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
-const ORDINARY_KEYS: ReadonlySet<string> = new Set(Object.values(PULL_REQUEST_COMMAND_KEYS));
+/** A pull request's ordinary commands, which a stack's entry doesn't take (D11). */
+const ORDINARY: ReadonlySet<AnyAppCommand> = new Set(PULL_REQUEST_COMMANDS);
 
 const props = withDefaults(
   defineProps<{
@@ -286,7 +293,7 @@ const menuIds = shallowRef<readonly string[]>([]);
 /** The item the context menu's "Open" opens; `null` when it is for several. */
 const menuOpenId = ref<string | null>(null);
 /** The context menu's merge of a stack's entry right-clicked, whole (stacked PRs D11); `null` otherwise. */
-const menuMerge = shallowRef<Command | null>(null);
+const menuMerge = shallowRef<BoundCommand | null>(null);
 /** Merging, where the screen offers it (merging D9). */
 const merging = injectContext(MergeContext, { optional: true });
 const pullRequestCommands = usePullRequestCommands();
@@ -402,6 +409,7 @@ const cursorRow = computed(() => {
 const rowActions = slots.contextMenu
   ? useItemCommands({
       ids: () => cursorRow.value?.ids ?? [],
+      place: 'item',
       section: () => (cursorRow.value?.stack ? 'selection' : 'item'),
       open: () => {
         const id = currentOpenId();
@@ -609,109 +617,12 @@ if (merging) {
   });
 }
 
-// The list's keys are its own — handled below, before an opened item's — and listed in the help sheet; "Merge…" of
-// the selected row first, as the command menu offers it (PM39).
+// The list's keys, run by the registry before an opened item's own; "Merge…" of the selected row first, as the command
+// menu offers it (PM39).
 useCommands(
   () => [...getMergeCommands(), ...getRowCommands(), ...getKeyCommands()],
   () => rowSubject.value,
 );
-
-onWindowEvent('keydown', event => {
-  if (!isScreenKey(event)) {
-    return;
-  }
-
-  const board = props.layout === 'board';
-  if (event.shiftKey) {
-    switch (event.key) {
-      case 'ArrowDown':
-      case 'J':
-        event.preventDefault();
-        extend(1);
-        return;
-      case 'ArrowUp':
-      case 'K':
-        event.preventDefault();
-        extend(-1);
-        return;
-      case 'ArrowLeft':
-      case 'ArrowRight':
-        if (board) {
-          event.preventDefault();
-          moveSelected(event.key === 'ArrowLeft' ? -1 : 1);
-        }
-
-        return;
-    }
-  }
-
-  switch (event.key) {
-    case 'x':
-      if (toggleChecked()) {
-        event.preventDefault();
-      }
-
-      return;
-    case 'Escape':
-      // Before anything else Escape does: an opened item stays open. An open picker or menu takes it first. On a phone
-      // it leaves selecting, which empties the selection.
-      if (selecting.value && !isLayerOpen()) {
-        event.preventDefault();
-        phoneLayout.setSelecting(false);
-      } else if (checkedIds.value.length > 0 && !isLayerOpen()) {
-        event.preventDefault();
-        checkedIds.value = [];
-      }
-
-      return;
-    case 'j':
-    case 'ArrowDown':
-      event.preventDefault();
-      step(1);
-      return;
-    case 'k':
-    case 'ArrowUp':
-      event.preventDefault();
-      step(-1);
-      return;
-    case 'ArrowLeft':
-    case 'ArrowRight':
-      if (board) {
-        event.preventDefault();
-        stepColumn(event.key === 'ArrowLeft' ? -1 : 1);
-      } else if (expandSelected(event.key === 'ArrowRight')) {
-        event.preventDefault();
-      }
-
-      return;
-    case ' ':
-      // On the board ←/→ step between columns: Space expands or collapses the selected stack's card.
-      if (board && !isActivatableTarget(event.target) && toggleSelectedStack()) {
-        event.preventDefault();
-      }
-
-      return;
-    case 'o':
-      if (openSelectedOnGitHub()) {
-        event.preventDefault();
-      }
-
-      return;
-    case 'Enter':
-      // `⇧Enter` is never the list's Enter: it opens full screen (`list.fullScreen`), or is the opened item's own.
-      if (!event.shiftKey && !isActivatableTarget(event.target)) {
-        const id = currentOpenId();
-        if (id !== null) {
-          event.preventDefault();
-          if (id === props.openedId) {
-            emit('expand', id);
-          } else {
-            emit('open', id);
-          }
-        }
-      }
-  }
-});
 
 /**
  * `⇧M` "Merge…" (merging D9): of the selected row while nothing is checked, or of one pull request checked alone — the
@@ -719,7 +630,7 @@ onWindowEvent('keydown', event => {
  * whole stack (stacked PRs D11). The list owns both: once the merge is sent, the merged ones are unchecked and the
  * selection moves past them (PM32a, SP7).
  */
-function getMergeCommands(): Command[] {
+function getMergeCommands(): BoundCommand[] {
   if (!merging) {
     return [];
   }
@@ -727,21 +638,23 @@ function getMergeCommands(): Command[] {
   const selection = checkedIds.value.length > 0;
   const target = getMergeTarget();
   return [
-    {
-      id: selection ? 'selection.merge' : 'list.merge',
-      title: target ? getMergeTitle(target) : t(l.merge),
-      section: selection ? 'selection' : (rowSubject.value?.kind ?? 'view'),
-      key: EDIT_KEYS.merge,
-      icon: GitMerge,
-      actsOnRow: true,
-      when: () => getMergeTarget() !== null,
-      run: () => {
-        const current = getMergeTarget();
-        if (current) {
-          mergeFromList(current);
-        }
+    bindCommand(
+      definitions.merge,
+      {
+        place: 'list',
+        title: target ? getMergeTitle(target) : undefined,
+        section: selection ? 'selection' : (rowSubject.value?.kind ?? 'view'),
+        actsOnRow: true,
+        when: () => getMergeTarget() !== null,
+        run: () => {
+          const current = getMergeTarget();
+          if (current) {
+            mergeFromList(current);
+          }
+        },
       },
-    },
+      t,
+    ),
   ];
 }
 
@@ -749,7 +662,7 @@ function getMergeCommands(): Command[] {
  * What the cursor row's context menu offers, by the keys it draws but those the list handles itself; on a stack's entry
  * of a pull request's ordinary commands only `⇧Q`, which takes the stack out whole through its first one (D11).
  */
-function getRowCommands(): Command[] {
+function getRowCommands(): BoundCommand[] {
   if (!rowActions || !rowSubject.value) {
     return [];
   }
@@ -758,16 +671,16 @@ function getRowCommands(): Command[] {
     command.key !== undefined && OWN_KEYS.has(command.key) ? { ...command, key: undefined } : command,
   );
   return cursorRow.value?.stack
-    ? [...commands.filter(command => !ORDINARY_KEYS.has(command.key ?? '')), ...getStackDequeue()]
+    ? [...commands.filter(command => !ORDINARY.has(command.definition)), ...getStackDequeue()]
     : commands;
 }
 
 /** `⇧Q` of a stack's entry, through the first of its pull requests in the queue. */
-function getStackDequeue(): Command[] {
+function getStackDequeue(): BoundCommand[] {
   const queued = rowActions?.selected.value.find(item => item.kind === 'pullRequest' && item.mergeQueueEntry);
   return merging && queued?.kind === 'pullRequest'
-    ? pullRequestCommands({ section: 'selection', pr: queued, source: merging }).filter(
-        command => command.key === EDIT_KEYS.dequeue,
+    ? pullRequestCommands({ place: 'item', section: 'selection', pr: queued, source: merging }).filter(
+        command => command.definition === definitions.dequeue,
       )
     : [];
 }
@@ -790,7 +703,12 @@ function getMergeTarget(): MergeTarget | null {
     return props.openedId != null && current.walked.includes(props.openedId) ? null : getStackTarget(current);
   }
 
-  const [id] = current?.ids.length === 1 ? current.ids : [];
+  return current ? getRowTarget(current) : null;
+}
+
+/** The entry's one pull request, when the panel opens for it. */
+function getRowTarget(entry: Placed): MergeTarget | null {
+  const [id] = entry.ids.length === 1 ? entry.ids : [];
   return id !== undefined && merging?.canOpen(id) ? { id, entry: null } : null;
 }
 
@@ -819,7 +737,7 @@ function getMergeTitle(target: MergeTarget): string {
 
   const pr = items?.get(target.id);
   if (pr?.kind !== 'pullRequest') {
-    return t(l.merge);
+    return t(definitions.merge.title);
   }
 
   const autoMergeAllowed = isAutoMergeAllowed(repositories?.get(pr.repository.nameWithOwner) ?? null, null);
@@ -829,7 +747,7 @@ function getMergeTitle(target: MergeTarget): string {
 function getStackMergeTitle(description: StackDescription): string {
   switch (description.state.kind) {
     case 'merging':
-      return t(l.merge);
+      return t(definitions.merge.title);
     case 'queued':
       return t(l.inQueue);
     default:
@@ -845,7 +763,7 @@ function getStackMergeTitle(description: StackDescription): string {
       }
 
       if (going.length <= 1) {
-        return t(l.merge);
+        return t(definitions.merge.title);
       }
 
       return going.length === open.length
@@ -854,10 +772,10 @@ function getStackMergeTitle(description: StackDescription): string {
     case 'needsRebase':
       return t(l.rebaseOnGitHub);
     case 'held':
-      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(l.merge);
+      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(definitions.merge.title);
     case 'incomplete':
     case 'closed':
-      return t(l.merge);
+      return t(definitions.merge.title);
     default:
       return assertNever(block);
   }
@@ -949,79 +867,110 @@ function isAllMerged(key: string, merged: readonly string[]) {
   return placed.value.get(key)?.walked.every(id => merged.includes(id)) ?? false;
 }
 
-/** The list's keys as the help sheet lists them. */
-function getKeyCommands(): Command[] {
-  const commands: Command[] = [
-    { id: 'list.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-    { id: 'list.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-    { id: 'list.open', title: t(l.open), section: 'view', key: 'Enter', menu: false },
-    // On the opened item's row, `⇧Enter` is the opened item's own (back and forth between the panel and its page).
-    {
-      id: 'list.fullScreen',
-      title: t(l.openFullScreen),
-      section: 'view',
-      key: 'Shift+Enter',
-      icon: Maximize2,
-      // The row it opens, named in the menu: it may be scrolled out of view.
-      detail: rowSubject.value?.kind === 'item' ? rowSubject.value.title : undefined,
-      actsOnRow: true,
-      when: () => getFullScreenId() !== null,
-      run: () => {
-        const id = getFullScreenId();
-        if (id !== null) {
-          emit('fullScreen', id);
-        }
+/** The list's own keys (`menu: false`), each acting on its row: not from what Tab focused outside the list. */
+function getKeyCommands(): BoundCommand[] {
+  const own = { section: 'view', menu: false, actsOnRow: true } as const;
+  const commands: BoundCommand[] = [
+    bindCommand(definitions.next, { place: 'list', ...own, run: () => step(1) }, t),
+    bindCommand(definitions.previous, { place: 'list', ...own, run: () => step(-1) }, t),
+    bindCommand(
+      definitions.open,
+      {
+        place: 'list',
+        ...own,
+        when: () => currentOpenId() !== null,
+        run: () => {
+          const id = currentOpenId();
+          if (id === null) {
+            return;
+          }
+
+          if (id === props.openedId) {
+            emit('expand', id);
+          } else {
+            emit('open', id);
+          }
+        },
       },
-    },
-    { id: 'list.openOnGitHub', title: t(l.openOnGitHub), section: 'view', key: 'O', menu: false },
-    { id: 'list.check', title: t(l.check), section: 'view', key: 'X', menu: false },
-    {
-      id: 'list.checkNext',
-      title: t(l.checkNext),
-      section: 'view',
-      key: 'Shift+J',
-      otherKeys: ['Shift+ArrowDown'],
-      menu: false,
-    },
-    {
-      id: 'list.checkPrevious',
-      title: t(l.checkPrevious),
-      section: 'view',
-      key: 'Shift+K',
-      otherKeys: ['Shift+ArrowUp'],
-      menu: false,
-    },
-    { id: 'list.uncheck', title: t(l.uncheck), section: 'view', key: 'Escape', menu: false },
+      t,
+    ),
+    // On the opened item's row, `⇧Enter` is the opened item's own (back and forth between the panel and its page).
+    bindCommand(
+      definitions.openFullScreen,
+      {
+        place: 'list',
+        section: 'view',
+        // The row it opens, named in the menu: it may be scrolled out of view.
+        detail: rowSubject.value?.kind === 'item' ? rowSubject.value.title : undefined,
+        actsOnRow: true,
+        when: () => getFullScreenId() !== null,
+        run: () => {
+          const id = getFullScreenId();
+          if (id !== null) {
+            emit('fullScreen', id);
+          }
+        },
+      },
+      t,
+    ),
+    // The row's in the menu is its context menu's (`getRowCommands`).
+    bindCommand(
+      definitions.openOnGitHub,
+      { place: 'list', ...own, when: () => getSelectedUrl() !== null, run: openSelectedOnGitHub },
+      t,
+    ),
+    bindCommand(
+      definitions.check,
+      { place: 'list', ...own, when: () => currentIds().length > 0, run: () => toggleIds(currentIds()) },
+      t,
+    ),
+    bindCommand(definitions.checkNext, { ...own, run: () => extend(1) }, t),
+    bindCommand(definitions.checkPrevious, { ...own, run: () => extend(-1) }, t),
+    // Before the opened item's Escape, which closes it once nothing is left to clear. On a phone it leaves selecting,
+    // which empties the selection.
+    bindCommand(
+      definitions.uncheck,
+      {
+        place: 'list',
+        ...own,
+        when: () => selecting.value || checkedIds.value.length > 0,
+        run: () => {
+          if (selecting.value) {
+            phoneLayout.setSelecting(false);
+          } else {
+            checkedIds.value = [];
+          }
+        },
+      },
+      t,
+    ),
   ];
   if (props.layout === 'board') {
     commands.push(
-      {
-        id: 'list.nextColumn',
-        title: t(l.nextColumn),
-        section: 'view',
-        key: 'ArrowRight',
-        otherKeys: ['ArrowLeft'],
-        menu: false,
-      },
-      {
-        id: 'list.moveToColumn',
-        title: t(l.moveToColumn),
-        section: 'view',
-        key: 'Shift+ArrowRight',
-        otherKeys: ['Shift+ArrowLeft'],
-        menu: false,
-      },
+      bindCommand(definitions.nextColumn, { ...own, run: () => stepColumn(1) }, t),
+      bindCommand(definitions.previousColumn, { ...own, run: () => stepColumn(-1) }, t),
+      bindCommand(definitions.moveToNextColumn, { ...own, run: () => moveSelected(1) }, t),
+      bindCommand(definitions.moveToPreviousColumn, { ...own, run: () => moveSelected(-1) }, t),
+      // ←/→ step between columns there: Space expands or collapses the selected stack's card.
+      bindCommand(
+        definitions.toggleStackCard,
+        { ...own, when: () => getSelectedCardStack() !== null, run: toggleSelectedStack },
+        t,
+      ),
     );
-  }
-
-  if ([...placed.value.values()].some(current => getToggled(current) !== null)) {
-    commands.push({
-      id: 'list.toggleStack',
-      title: t(l.toggleStack),
-      section: 'view',
-      ...(props.layout === 'list' ? { key: 'ArrowRight', otherKeys: ['ArrowLeft'] } : { key: 'Space' }),
-      menu: false,
-    });
+  } else {
+    commands.push(
+      bindCommand(
+        definitions.expandStack,
+        { ...own, when: () => findStackToggle(true) !== null, run: () => findStackToggle(true)?.() },
+        t,
+      ),
+      bindCommand(
+        definitions.collapseStack,
+        { ...own, when: () => findStackToggle(false) !== null, run: () => findStackToggle(false)?.() },
+        t,
+      ),
+    );
   }
 
   return commands;
@@ -1153,20 +1102,6 @@ function moveSelected(by: 1 | -1) {
   }
 }
 
-/**
- * `x`: the selected entry's items in or out of the items edited together — a stack's entry all of them (D20). Whether
- * there were any.
- */
-function toggleChecked() {
-  const ids = currentIds();
-  if (ids.length === 0) {
-    return false;
-  }
-
-  toggleIds(ids);
-  return true;
-}
-
 /** A row tapped, or its checkbox, while selecting on a phone (mobile D28): its items in or out, as `x` on it. */
 function toggleEntry(key: string) {
   const ids = placed.value.get(key)?.ids ?? [];
@@ -1175,7 +1110,7 @@ function toggleEntry(key: string) {
   }
 }
 
-/** The items in, or out when all of them are in already. */
+/** `x`, a tap while selecting: the items in, or out when all of them are in already — a stack's entry all of them (D20). */
 function toggleIds(ids: readonly string[]) {
   const checked = checkedIds.value;
   setChecked(ids.every(id => checked.includes(id)) ? checked.filter(id => !ids.includes(id)) : [...checked, ...ids]);
@@ -1199,41 +1134,46 @@ function extendedIds() {
 }
 
 /**
- * `→` expands the selected stack's entry or header, `←` collapses it — or, on one of its rows, collapses it and selects
- * it. Whether it was a stack's to expand or collapse.
+ * What `→` (`expand`) or `←` does to the selected entry: expands or collapses its stack's entry or header — or, `←` on
+ * one of its rows, collapses it and selects it. `null` when it is no stack's to expand or collapse.
  */
-function expandSelected(expand: boolean) {
+function findStackToggle(expand: boolean): (() => void) | null {
   const key = selectedKey.value;
   const current = key === null ? undefined : placed.value.get(key);
   const toggled = current && getToggled(current);
   if (toggled) {
-    expandedStacks.set(toggled.id, expand);
-    return true;
+    return () => expandedStacks.set(toggled.id, expand);
   }
 
   const parent = current?.parent;
-  if (!expand && parent && current.memberOf) {
-    // Selected before it collapses, so the selection never sees its row go.
-    selectedKey.value = parent.key;
-    expandedStacks.set(current.memberOf.id, false);
-    void nextTick(scrollToSelected);
-    return true;
+  const memberOf = current?.memberOf;
+  if (!expand && parent && memberOf) {
+    return () => {
+      // Selected before it collapses, so the selection never sees its row go.
+      selectedKey.value = parent.key;
+      expandedStacks.set(memberOf.id, false);
+      void nextTick(scrollToSelected);
+    };
   }
 
-  return false;
+  return null;
 }
 
-/** Space on the board: expands or collapses the selected stack's card; whether it was one. */
+/** Space on the board: expands or collapses the selected stack's card. */
 function toggleSelectedStack() {
   const card = selectedCard.value;
-  const stack = card ? getToggled(card) : null;
+  const stack = getSelectedCardStack();
   if (card && stack) {
     // Selected before it collapses, so the selection never sees its pull request go.
     selectedKey.value = card.entry.key;
     toggleStack(stack);
   }
+}
 
-  return stack !== null;
+/** The stack the selected card expands and collapses; `null` when it is none's. */
+function getSelectedCardStack() {
+  const card = selectedCard.value;
+  return (card && getToggled(card)) ?? null;
 }
 
 function toggleStack(stack: ListStack) {
@@ -1435,16 +1375,19 @@ function getFullScreenId() {
   return id === props.openedId ? null : id;
 }
 
-/** `o`; whether the selected entry has a page there. */
+/** "Open on GitHub" of the selected entry, when it has a page there. */
 function openSelectedOnGitHub() {
-  const key = selectedKey.value;
-  const current = key === null ? undefined : placed.value.get(key);
-  const url = current ? props.getUrl(current.entry.value) : null;
-  if (url) {
+  const url = getSelectedUrl();
+  if (url !== null) {
     browser.openInNewTab(url);
   }
+}
 
-  return !!url;
+/** The selected entry's page on GitHub; `null` with none, or none yet (an issue still being created has `''`). */
+function getSelectedUrl() {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  return (current && props.getUrl(current.entry.value)) || null;
 }
 
 function scrollToSelected() {
@@ -1544,21 +1487,21 @@ function prepareContextMenu(event: MouseEvent) {
   go(key);
 }
 
-/** "Merge all 3" on a stack's entry: its whole stack, as `⇧M` on it (D11). */
-function getMenuMerge(current: Placed): Command | null {
-  const target = current.stack && merging ? getStackTarget(current) : null;
+/**
+ * The context menu's merge, the list's as `⇧M` is (merging D9): of the entry's one pull request, or "Merge all 3" on a
+ * stack's entry, its whole stack (D11).
+ */
+function getMenuMerge(current: Placed): BoundCommand | null {
+  const target = current.stack ? getStackTarget(current) : getRowTarget(current);
   if (!target) {
     return null;
   }
 
-  return {
-    id: 'menu.merge',
-    title: getMergeTitle(target),
-    section: 'selection',
-    key: EDIT_KEYS.merge,
-    icon: GitMerge,
-    run: () => mergeFromList(target),
-  };
+  return bindCommand(
+    definitions.merge,
+    { place: 'list', title: getMergeTitle(target), section: 'selection', run: () => mergeFromList(target) },
+    t,
+  );
 }
 
 function openFromMenu() {

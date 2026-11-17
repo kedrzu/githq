@@ -1,14 +1,4 @@
-<!-- A commit's details (git-client D13, D16, CH18, CH20, CH55): the commit opened as an item (`OpenedCommit`), filling the shell's panel beside the repository's Commits section or the commit's page. A toolbar the full width — the repository and short sha; previous and next (`K`, `J`), the other arrangement when it is given ("Open full screen", "Back to the panel": a button, its key being the pull request's), GitHub (`O`) and close (`Esc`) — over one scroll, the facts before the message, its content kept to the item's reading width at the left. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧↵`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says it is not in the graph's loaded history — with the age of the branch or tag chosen for it — and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). It shows and reports: its keys are its host's (`OpenedCommit`; in the panel `K`/`J` are the graph's, moving its cursor), each shown on the row it presses. -->
-<script lang="ts">
-/** The keys of the open details, in the app's notation; `J`/`K` step and `Esc` closes, as every opened item's. */
-export const COMMIT_DETAILS_KEYS = {
-  firstParent: 'P',
-  secondParent: 'Shift+P',
-  pullRequest: 'Shift+Enter',
-  openOnGitHub: 'O',
-} as const;
-</script>
-
+<!-- A commit's details (git-client D13, D16, CH18, CH20, CH55): the commit opened as an item (`OpenedCommit`), filling the shell's panel beside the repository's Commits section or the commit's page. A toolbar the full width — the repository and short sha; previous and next (`K`, `J`), the other arrangement when it is given ("Open full screen" on `⇧Enter`, "Back to the panel"), GitHub (`O`) and close (`Esc`) — over one scroll, the facts before the message, its content kept to the item's reading width at the left. Its headline; an author line (avatar, name, login, when it was committed, the short sha with a button copying the whole); a card of four titled groups — its pull request (`⇧O`), its checks (how many fail of how many, the failing ones by name, the passed folded into one row; the CI's rollup until they are read, and a link to them on GitHub when the read fails, D24), its parents (`P`, `⇧P`) and the branches and tags pointing at it; then its message (`CommitMessage`). A group not known yet holds an empty bar (CH58), one known to be empty says so in place (CH57). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says it is not in the graph's loaded history — with the age of the branch or tag chosen for it — and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). It shows and reports: its keys are its host's (`OpenedCommit`; in the panel `K`/`J` are the graph's, moving its cursor), each shown on the row it presses. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -16,6 +6,16 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Copy, GitCommitHorizontal, GitPullRequest, Github, Info, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import {
+  closeItem,
+  firstParent,
+  next,
+  openCommitPullRequest,
+  openOnGitHub,
+  previous,
+  secondParent,
+} from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -156,9 +156,9 @@ function copySha() {
 function getParentKey(index: number) {
   switch (index) {
     case 0:
-      return COMMIT_DETAILS_KEYS.firstParent;
+      return keyOf(firstParent);
     case 1:
-      return COMMIT_DETAILS_KEYS.secondParent;
+      return keyOf(secondParent);
     default:
       return null;
   }
@@ -193,40 +193,42 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
       <span :class="css.commitDetails_spacer" />
       <IconButton
         :label="t(l.previous)"
-        kbd="K"
-        keyshortcuts="K"
+        :kbd="keyOf(previous)"
+        :keyshortcuts="keyOf(previous)"
         @click="emit('step', -1)"
       >
-        <Kbd keys="K" />
+        <Kbd :keys="keyOf(previous)" />
       </IconButton>
       <IconButton
         :label="t(l.next)"
-        kbd="J"
-        keyshortcuts="J"
+        :kbd="keyOf(next)"
+        :keyshortcuts="keyOf(next)"
         @click="emit('step', 1)"
       >
-        <Kbd keys="J" />
+        <Kbd :keys="keyOf(next)" />
       </IconButton>
       <IconButton
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
+        :kbd="otherArrangement.key"
+        :keyshortcuts="otherArrangement.key"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton
         :icon="Github"
-        :label="t(l.openOnGitHub)"
-        :kbd="COMMIT_DETAILS_KEYS.openOnGitHub"
+        :label="t(openOnGitHub.title)"
+        :kbd="keyOf(openOnGitHub)"
         :link="url"
         target="_blank"
         rel="noopener noreferrer"
-        :keyshortcuts="COMMIT_DETAILS_KEYS.openOnGitHub"
+        :keyshortcuts="keyOf(openOnGitHub)"
       />
       <IconButton
         :icon="X"
         :label="t(l.close)"
-        kbd="Escape"
-        keyshortcuts="Escape"
+        :kbd="keyOf(closeItem)"
+        :keyshortcuts="keyOf(closeItem)"
         @click="emit('close')"
       />
     </header>
@@ -293,7 +295,7 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
               <h3 :class="css.commitDetails_title">{{ t(l.pullRequest) }}</h3>
               <Kbd
                 v-if="state?.pullRequest"
-                :keys="COMMIT_DETAILS_KEYS.pullRequest"
+                :keys="keyOf(openCommitPullRequest)"
               />
             </div>
             <span
@@ -306,7 +308,7 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
               v-else-if="state.pullRequest"
               type="button"
               :class="css.commitDetails_row"
-              :aria-keyshortcuts="COMMIT_DETAILS_KEYS.pullRequest"
+              :aria-keyshortcuts="keyOf(openCommitPullRequest)"
               @click="emit('openPullRequest')"
             >
               <span :class="css.commitDetails_number"

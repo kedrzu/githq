@@ -137,7 +137,7 @@ Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 |3. How a commit's details open|As an item, in the shared panel or on its page; a click, `↵`, a chosen ref or `P`/`⇧P` opens it, in place of an item open there; once open, `J`/`K` move the cursor and the panel follows: CH18; a merge: CH20; facts above the message in one scroll: CH55, checks passed with no pull request CH57, not known yet CH58; CH48 (under the graph) is superseded (D16, 2026-11-15)|
 |4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|
 |5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI right after it, author and age at the right, a faint stripe; a failure is a lane-coloured ring with a red centre and a red ✕: CH12, CH61; the selected and hovered row spans the graph column: CH54; the pull request as a chip: CH59 (D18)|
-|6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details again after `Esc`, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
+|6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details again after `Esc`, `P`/`⇧P` parents, `⇧O` pull request, `⇧↵` full screen, `O`, `Esc`: CH30 (keys as of commands, 2026-11-17); the walk CH22–CH29|
 |7. A Worktrees section in the list|No: a worktree is a row nested under its branch; one on a bare commit is in the graph only: CD2 (D21)|
 
 The repository view: CH1–CH3, CH67, CH72. The graph: few branches CH3, many CH10. The list: CH15–CH17, in folders CH53, sorted CH60. A

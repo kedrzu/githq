@@ -28,8 +28,8 @@ team shares on GitHub stays as it is.
 
 ### List and board
 
-**List** shows the items in groups, one under another. **Board** shows a column per group. <kbd>Shift</kbd> <kbd>V</kbd>
-switches between them.
+**List** shows the items in groups, one under another. **Board** shows a column per group. The command menu
+switches between them too.
 
 A board needs a field to make its columns from: a single-select field, such as Status, or an iteration field. A project
 with neither shows as a list and says so.

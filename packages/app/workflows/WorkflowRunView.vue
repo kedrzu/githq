@@ -1,4 +1,4 @@
-<!-- A workflow's run (actions W4a, W34), the same view on its page or in the panel beside a repository's Workflows section: the toolbar across it — the repository, the workflow (a link to its page, when known) and the run's number, the other arrangement ("Open full screen" from the panel, "Back to the panel" from the page while the panel fits: the button, `⇧Enter`, ⌘K), GitHub (`O`) and back (`Esc`) —, then, on the page in a centred box of the item page's width (D9, the same setting, its edges dragged), in the panel across its whole width, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
+<!-- A workflow's run (actions W4a, W34), the same view on its page or in the panel beside a repository's Workflows section: the toolbar across it — the repository, the workflow (a link to its page, when known) and the run's number, the other arrangement ("Open full screen" from the panel: the button, `⇧Enter`, ⌘K; "Back to the panel" from the page while the panel fits: the button, ⌘K), GitHub (`O`) and back (`Esc`) —, then, on the page in a centred box of the item page's width (D9, the same setting, its edges dragged), in the panel across its whole width, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
@@ -7,24 +7,23 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ChevronRight,
   CircleDot,
-  CircleStop,
   FileX,
   Ghost,
   Github,
   Hourglass,
-  Link,
   PackageOpen,
-  RefreshCw,
   RotateCw,
   Unplug,
-  Workflow,
   X,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -34,12 +33,11 @@ import Kbd from '@/components/Kbd.vue';
 import { useMaxWidth } from '@/components/useMaxWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
-import { ITEM_ARRANGEMENT_KEYS, useOtherArrangement } from '@/item/useItemArrangement.js';
+import { useOtherArrangement } from '@/item/useItemArrangement.js';
 import type { OtherArrangement } from '@/item/useItemArrangement.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import type { MaxWidth } from '@/settings/sync/SettingsDocument.js';
-import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 
 import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
@@ -108,7 +106,7 @@ const emit = defineEmits<{
   cancel: [];
   /** "Open workflow" in ⌘K: the caller goes to the run's workflow's page. */
   openWorkflow: [];
-  /** "Open full screen" or "Back to the panel": the header's button, `⇧Enter` or ⌘K. */
+  /** "Open full screen" (the header's button, `⇧Enter`, ⌘K) or "Back to the panel" (the button, ⌘K). */
   arrange: [arrangement: ItemArrangement];
   /** The user dragged the box's edges to this maximum: the caller keeps it. */
   resizePage: [width: MaxWidth];
@@ -125,6 +123,8 @@ interface RunMessage {
   readonly retry: boolean;
 }
 
+/** Where the run's commands are offered. */
+const RUN_PLACE = { place: 'workflowRun', section: 'view' } as const;
 /** The jobs' column: dragged from 200 to 480px. */
 const JOBS_WIDTH = { key: 'workflowRunJobs', default: 268, min: 200, max: 480 };
 /**
@@ -201,7 +201,7 @@ const message = computed((): RunMessage | null => {
         tone: 'muted',
         title: t(l.goneTitle),
         text: t(l.goneText, { id: props.runId, name: props.nameWithOwner }),
-        gitHubLabel: t(l.openOnGitHub),
+        gitHubLabel: t(definitions.openOnGitHub.title),
         retry: false,
       };
     case 'runFailed':
@@ -217,7 +217,7 @@ const message = computed((): RunMessage | null => {
             tone: 'warning',
             title: t(l.noJobsWaitingTitle),
             text: t(l.noJobsWaitingText),
-            gitHubLabel: t(l.openOnGitHub),
+            gitHubLabel: t(definitions.openOnGitHub.title),
             retry: false,
           }
         : {
@@ -225,7 +225,7 @@ const message = computed((): RunMessage | null => {
             tone: 'muted',
             title: t(l.noJobsTitle),
             text: t(l.noJobsText),
-            gitHubLabel: t(l.openOnGitHub),
+            gitHubLabel: t(definitions.openOnGitHub.title),
             retry: false,
           };
     default:
@@ -240,138 +240,116 @@ const selectedIndex = computed(() => {
   return job ? props.model.jobs.indexOf(job) : -1;
 });
 const hints = computed(() => [
-  { id: 'job', keys: ['Alt+J', 'Alt+K'], label: t(l.hintJob) },
-  { id: 'open', keys: ['Enter'], label: t(l.hintOpenLog) },
+  { id: 'job', keys: [keyOf(definitions.nextJob), keyOf(definitions.previousJob)], label: t(l.hintJob) },
+  { id: 'open', keys: [keyOf(definitions.openLog)], label: t(l.hintOpenLog) },
   {
     id: 'back',
-    keys: ['Escape'],
+    keys: [keyOf(definitions.back)],
     label:
       props.backToWorkflow && props.model.run?.workflowName
         ? t(l.backTo, { workflow: props.model.run.workflowName })
         : t(l.back),
   },
-  { id: 'gitHub', keys: ['O'], label: t(l.hintGitHub) },
+  { id: 'gitHub', keys: [keyOf(definitions.openOnGitHub)], label: t(l.hintGitHub) },
 ]);
 
 useCommands(() => [
   // In the item's section, as every opened item's: it wins over the list's own ⇧Enter beside the panel.
   ...(otherArrangement.value ? [getArrangeCommand(otherArrangement.value)] : []),
   // No key, here or anywhere: it starts something in the repository, so it is never one stray keystroke away (D10).
-  {
-    id: 'workflowRun.rerunFailedJobs',
-    title: t(l.rerunFailedJobs),
-    section: 'view',
-    icon: RefreshCw,
-    detail: t(l.rerunDetail, {
-      count: props.model.rerunnableJobs.length,
-      jobs: props.model.rerunnableJobs.map(job => job.name).join(', '),
-    }),
-    when: () => props.canRerun,
-    run: () => emit('rerun'),
-  },
-  // None of these have a key either (D10).
-  {
-    id: 'workflowRun.rerunAllJobs',
-    title: t(l.rerunAllJobs),
-    section: 'view',
-    icon: RefreshCw,
-    detail: props.model.jobs.length > 0 ? t(l.jobCount, { count: props.model.jobs.length }) : undefined,
-    when: () => props.canChangeRuns && finished.value,
-    run: () => emit('rerunAll'),
-  },
-  {
-    id: 'workflowRun.rerunJob',
-    title: t(l.rerunJob, { job: markedJob.value?.name ?? '' }),
-    section: 'view',
-    icon: RefreshCw,
-    detail: t(l.rerunJobDetail),
-    when: () => props.canChangeRuns && finished.value && markedJob.value?.status === 'completed',
-    run: () => {
-      if (markedJob.value) {
-        emit('rerunJob', markedJob.value);
-      }
+  bindCommand(
+    definitions.rerunFailedJobs,
+    {
+      ...RUN_PLACE,
+      detail: t(l.rerunDetail, {
+        count: props.model.rerunnableJobs.length,
+        jobs: props.model.rerunnableJobs.map(job => job.name).join(', '),
+      }),
+      when: () => props.canRerun,
+      run: () => emit('rerun'),
     },
-  },
-  {
-    id: 'workflowRun.cancel',
-    title: t(l.cancelRun),
-    section: 'view',
-    icon: CircleStop,
-    unavailable: finished.value ? t(l.cancelFinished) : undefined,
-    when: () => props.canChangeRuns && props.model.run !== null,
-    run: () => emit('cancel'),
-  },
-  {
-    id: 'workflowRun.nextJob',
-    title: t(l.nextJob),
-    section: 'view',
-    key: 'Alt+J',
-    menu: false,
-    when: () => showsColumns.value && selectedIndex.value < props.model.jobs.length - 1,
-    run: () => moveJob(1),
-  },
-  {
-    id: 'workflowRun.previousJob',
-    title: t(l.previousJob),
-    section: 'view',
-    key: 'Alt+K',
-    menu: false,
-    when: () => showsColumns.value && selectedIndex.value > 0,
-    run: () => moveJob(-1),
-  },
-  // Not from a button or a link, which do what they say.
-  {
-    id: 'workflowRun.openLog',
-    title: t(l.hintOpenLog),
-    section: 'view',
-    key: 'Enter',
-    menu: false,
-    when: () => atOverview.value && cursorJob.value !== null && !isActivatableTarget(document.activeElement),
-    run: () => openCursorJob(),
-  },
-  {
-    id: 'workflowRun.retry',
-    title: t(l.tryAgain),
-    section: 'view',
-    key: 'Enter',
-    menu: false,
-    when: () => canRetry.value && !isActivatableTarget(document.activeElement),
-    run: () => emit('retry'),
-  },
-  {
-    id: 'workflowRun.openOnGitHub',
-    title: t(l.openOnGitHub),
-    section: 'view',
-    key: 'O',
-    icon: Github,
-    run: () => emit('openOnGitHub', gitHubUrl.value),
-  },
-  {
-    id: 'workflowRun.copyLink',
-    title: t(l.copyLink),
-    section: 'view',
-    icon: Link,
-    run: () => void navigator.clipboard.writeText(runUrl.value),
-  },
-  {
-    id: 'workflowRun.openWorkflow',
-    title: t(l.openWorkflow),
-    section: 'view',
-    icon: Workflow,
-    detail: props.model.run?.workflowName ?? undefined,
-    when: () => Boolean(props.workflowPage),
-    run: () => emit('openWorkflow'),
-  },
-  {
-    id: 'workflowRun.back',
-    title: t(l.back),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    // With a log showing, the search closes first.
-    when: () => logQuery.value === null || props.logPane.kind !== 'ready',
-    run: () => emit('close'),
-  },
+    t,
+  ),
+  // None of these have a key either (D10).
+  bindCommand(
+    definitions.rerunAllJobs,
+    {
+      ...RUN_PLACE,
+      detail: props.model.jobs.length > 0 ? t(l.jobCount, { count: props.model.jobs.length }) : undefined,
+      when: () => props.canChangeRuns && finished.value,
+      run: () => emit('rerunAll'),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.rerunJob,
+    {
+      ...RUN_PLACE,
+      title: t(l.rerunJob, { job: markedJob.value?.name ?? '' }),
+      detail: t(l.rerunJobDetail),
+      when: () => props.canChangeRuns && finished.value && markedJob.value?.status === 'completed',
+      run: () => {
+        if (markedJob.value) {
+          emit('rerunJob', markedJob.value);
+        }
+      },
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.cancelRun,
+    {
+      ...RUN_PLACE,
+      unavailable: finished.value ? t(l.cancelFinished) : undefined,
+      when: () => props.canChangeRuns && props.model.run !== null,
+      run: () => emit('cancel'),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.nextJob,
+    {
+      ...RUN_PLACE,
+      menu: false,
+      when: () => showsColumns.value && selectedIndex.value < props.model.jobs.length - 1,
+      run: () => moveJob(1),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.previousJob,
+    { ...RUN_PLACE, menu: false, when: () => showsColumns.value && selectedIndex.value > 0, run: () => moveJob(-1) },
+    t,
+  ),
+  // The log's own Enter (`jobLog`) goes first; it is not there at the overview, nor in place of a log that failed.
+  bindCommand(
+    definitions.openLog,
+    { ...RUN_PLACE, menu: false, when: () => atOverview.value && cursorJob.value !== null, run: openCursorJob },
+    t,
+  ),
+  bindCommand(
+    definitions.tryAgain,
+    { ...RUN_PLACE, menu: false, when: () => canRetry.value, run: () => emit('retry') },
+    t,
+  ),
+  bindCommand(definitions.openOnGitHub, { ...RUN_PLACE, run: () => emit('openOnGitHub', gitHubUrl.value) }, t),
+  bindCommand(
+    definitions.copyLink,
+    { ...RUN_PLACE, title: t(l.copyLink), run: () => void navigator.clipboard.writeText(runUrl.value) },
+    t,
+  ),
+  bindCommand(
+    definitions.openWorkflow,
+    {
+      ...RUN_PLACE,
+      detail: props.model.run?.workflowName ?? undefined,
+      when: () => Boolean(props.workflowPage),
+      run: () => emit('openWorkflow'),
+    },
+    t,
+  ),
+  // After the log's search closes by Escape (`jobLog` keeps the keyboard over the run).
+  bindCommand(definitions.back, { ...RUN_PLACE, menu: false, run: () => emit('close') }, t),
 ]);
 
 let roomObserver: ResizeObserver | undefined;
@@ -389,15 +367,16 @@ onMounted(() => {
 });
 onBeforeUnmount(() => roomObserver?.disconnect());
 
-function getArrangeCommand(other: OtherArrangement): Command {
-  return {
-    id: `workflowRun.arrange.${other.arrangement}`,
-    title: other.title,
-    section: 'item',
-    key: ITEM_ARRANGEMENT_KEYS.arrange,
-    icon: other.icon,
-    run: () => emit('arrange', other.arrangement),
-  };
+/** "Open full screen" by `⇧Enter`; "Back to the panel" in ⌘K only, Escape being the run's own step back (`back`). */
+function getArrangeCommand(other: OtherArrangement): BoundCommand {
+  const run = () => emit('arrange', other.arrangement);
+  return other.arrangement === 'page'
+    ? bindCommand(definitions.openFullScreen, { place: 'workflowRun', section: 'item', run }, t)
+    : bindCommand(
+        definitions.closeFullScreen,
+        { place: 'workflowRun', section: 'item', title: other.title, icon: other.icon, keyed: false, run },
+        t,
+      );
 }
 
 function selectJob(job: GitHubWorkflowJob) {
@@ -433,7 +412,7 @@ function getFailedMessage(heading: string, path: string, httpStatus: number | nu
     title: heading,
     text: httpStatus === null ? t(l.failedNoAnswerText) : t(l.failedText, { status: httpStatus }),
     detail: httpStatus === null ? t(l.failedNoAnswerDetail, { path }) : t(l.failedDetail, { path, status: httpStatus }),
-    gitHubLabel: t(l.openOnGitHub),
+    gitHubLabel: t(definitions.openOnGitHub.title),
     retry: true,
   };
 }
@@ -507,24 +486,24 @@ function getInvalidFileMessage(): RunMessage {
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
-        :kbd="ITEM_ARRANGEMENT_KEYS.arrange"
-        :keyshortcuts="ITEM_ARRANGEMENT_KEYS.arrange"
+        :kbd="otherArrangement.arrangement === 'page' ? keyOf(definitions.openFullScreen) : undefined"
+        :keyshortcuts="otherArrangement.arrangement === 'page' ? keyOf(definitions.openFullScreen) : undefined"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton
         :icon="Github"
-        :label="t(l.openOnGitHub)"
-        kbd="O"
+        :label="t(definitions.openOnGitHub.title)"
+        :kbd="keyOf(definitions.openOnGitHub)"
         :link="gitHubUrl"
         target="_blank"
         rel="noopener noreferrer"
-        keyshortcuts="O"
+        :keyshortcuts="keyOf(definitions.openOnGitHub)"
       />
       <IconButton
         :icon="X"
         :label="t(l.back)"
-        kbd="Escape"
-        keyshortcuts="Escape"
+        :kbd="keyOf(definitions.back)"
+        :keyshortcuts="keyOf(definitions.back)"
         @click="emit('close')"
       />
     </header>
@@ -631,8 +610,8 @@ function getInvalidFileMessage(): RunMessage {
                 variant="secondary"
                 size="sm"
                 :icon="RotateCw"
-                kbd="Enter"
-                keyshortcuts="Enter"
+                :kbd="keyOf(definitions.tryAgain)"
+                :keyshortcuts="keyOf(definitions.tryAgain)"
                 @click="emit('retry')"
               >
                 {{ t(l.tryAgain) }}
@@ -641,8 +620,8 @@ function getInvalidFileMessage(): RunMessage {
                 variant="secondary"
                 size="sm"
                 :icon="Github"
-                kbd="O"
-                keyshortcuts="O"
+                :kbd="keyOf(definitions.openOnGitHub)"
+                :keyshortcuts="keyOf(definitions.openOnGitHub)"
                 @click="emit('openOnGitHub', gitHubUrl)"
               >
                 {{ message.gitHubLabel }}

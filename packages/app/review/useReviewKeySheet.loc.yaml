@@ -32,24 +32,16 @@ showHiddenLines:
   en: Show {count} more hidden lines
 filter:
   en: Filter by path
-comment:
-  en: Comment on the line
 range:
   en: Lines for a comment
-reply:
-  en: Reply to the thread
 send:
   en: Your default, and the other
-submit:
-  en: Submit review…
 suggest:
   en: Suggest a change
 fileList:
   en: File list
 conversation:
   en: Conversation
-openOnGitHub:
-  en: Open on GitHub
 review:
   en: Review, from an opened pull request
 find:
@@ -62,3 +54,5 @@ findStepsInField:
   en: The same, in the find field
 closeFind:
   en: Close the bar, in the field
+reply:
+  en: Reply to the thread

@@ -69,7 +69,7 @@ test('first run and loading D6, ES23: GitHub failing before any repository is re
     await expect(screen.root).toContainText(/so\sit\scan't\stell\swhat\sis\sbroken/u);
 
     world.install(github);
-    await page.keyboard.press('r');
+    await page.keyboard.press('Enter');
     await expect(screen.allGreen).toBeVisible();
     await expect(failing).toHaveCount(0);
 });
@@ -122,7 +122,7 @@ test('with nothing broken the sidebar has no entry; ⌘K "Broken workflows" open
     await expect(shell.brokenWorkflowsCount).toHaveText('0');
 });
 
-test('a release failing on a tag lights nothing by default; P from its row and "v*" in the repository’s settings make it broken, beside a pass on the default branch; with the default branch off and no patterns nothing alerts', async ({
+test('a release failing on a tag lights nothing by default; ⇧P from its row and "v*" in the repository’s settings make it broken, beside a pass on the default branch; with the default branch off and no patterns nothing alerts', async ({
     page,
     github,
 }) => {
@@ -142,18 +142,18 @@ test('a release failing on a tag lights nothing by default; P from its row and "
     await expect(repository.group('No alerts')).toContainText(/Release.*a\stag\swithout\salerts/u);
     await expect(shell.brokenWorkflows).toHaveCount(0);
 
-    // P on a row without alerts lands on the add field: "v*" is two keys away (W13, W11).
+    // ⇧P on a row without alerts lands on the add field: "v*" is two keys away (W13, W11).
     await expect(repository.workflow('Release')).toHaveAttribute('aria-current', 'true');
-    await page.keyboard.press('p');
+    await page.keyboard.press('Shift+P');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts-add`);
     const settings = new TrackedSettingsScreenHarness(page);
     await expect(settings.addPatternField).toBeFocused();
 
-    // Nothing typed, Esc goes back to the row at once; P lands on the field again.
+    // Nothing typed, Esc goes back to the row at once; ⇧P lands on the field again.
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.workflow('Release')).toHaveAttribute('aria-current', 'true');
-    await page.keyboard.press('p');
+    await page.keyboard.press('Shift+P');
     await expect(settings.addPatternField).toBeFocused();
 
     await page.keyboard.type('v*');

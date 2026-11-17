@@ -6,6 +6,8 @@ import { CircleSlash, FileX, Ghost, Github, Hourglass, RotateCw, ShieldX, Unplug
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -120,7 +122,7 @@ const message = computed((): LogMessage | null => {
         title: t(l.tooLargeTitle, { job: pane.job.name }),
         text: t(l.tooLargeText),
         detail: t(l.tooLargeDetail, { id: pane.job.id }),
-        gitHubLabel: t(l.openOnGitHub),
+        gitHubLabel: t(definitions.openOnGitHub.title),
       };
     case 'refused':
       return {
@@ -129,7 +131,7 @@ const message = computed((): LogMessage | null => {
         title: t(l.failedTitle, { job: pane.job.name }),
         text: t(l.refusedText),
         detail: t(l.refusedDetail, { id: pane.job.id }),
-        gitHubLabel: t(l.openOnGitHub),
+        gitHubLabel: t(definitions.openOnGitHub.title),
       };
     case 'neverRan':
       return {
@@ -138,7 +140,7 @@ const message = computed((): LogMessage | null => {
         title: t(l.neverRanTitle, { job: pane.job.name }),
         text: t(l.neverRanText),
         detail: t(l.neverRanDetail, { conclusion: getConclusion(pane) }),
-        gitHubLabel: t(l.openOnGitHub),
+        gitHubLabel: t(definitions.openOnGitHub.title),
       };
     default:
       return assertNever(pane);
@@ -148,22 +150,25 @@ const message = computed((): LogMessage | null => {
 const canRetry = computed(() => props.pane.kind === 'failed' || props.pane.kind === 'refused');
 const hints = computed((): readonly KeyHint[] => {
   const { pane } = props;
-  const job = { keys: ['Alt+J', 'Alt+K'], label: t(l.job) };
-  const gitHub = { keys: ['O'], label: t(l.gitHub) };
+  const job = { keys: [keyOf(definitions.nextJob), keyOf(definitions.previousJob)], label: t(l.job) };
+  const gitHub = { keys: [keyOf(definitions.openOnGitHub)], label: t(l.gitHub) };
   if (pane.kind !== 'ready') {
-    return canRetry.value ? [{ keys: ['Enter'], label: t(l.tryAgain) }, job, gitHub] : [job, gitHub];
+    return canRetry.value
+      ? [{ keys: [keyOf(definitions.tryAgain)], label: t(l.tryAgain) }, job, gitHub]
+      : [job, gitHub];
   }
 
-  const step = { keys: ['Shift+J', 'Shift+K'], label: t(l.step) };
-  const errors = pane.log.errors.length > 0 ? [{ keys: ['E'], label: t(l.error) }] : [];
+  const step = { keys: [keyOf(definitions.nextStep), keyOf(definitions.previousStep)], label: t(l.step) };
+  const errors = pane.log.errors.length > 0 ? [{ keys: [keyOf(definitions.nextError)], label: t(l.error) }] : [];
+  const lines = [keyOf(definitions.next), keyOf(definitions.previous)];
   if (query.value === null) {
     return [
-      { keys: ['J', 'K'], label: t(l.line) },
+      { keys: lines, label: t(l.line) },
       step,
       job,
       ...errors,
-      { keys: ['/'], label: t(l.search) },
-      { keys: ['Space'], label: t(l.fold) },
+      { keys: [keyOf(definitions.searchLog)], label: t(l.search) },
+      { keys: [keyOf(definitions.fold)], label: t(l.fold) },
       gitHub,
     ];
   }
@@ -179,21 +184,21 @@ const hints = computed((): readonly KeyHint[] => {
 
   if (inOnlyMatches) {
     return [
-      { keys: ['J', 'K'], label: t(l.match) },
-      { keys: ['Enter'], label: t(l.showInFullLog) },
-      { keys: ['Space'], label: t(l.openGap) },
+      { keys: lines, label: t(l.match) },
+      { keys: [keyOf(definitions.enterMatch)], label: t(l.showInFullLog) },
+      { keys: [keyOf(definitions.fold)], label: t(l.openGap) },
       job,
       gitHub,
     ];
   }
 
   return [
-    { keys: ['N'], label: t(l.nextMatch) },
-    { keys: ['Shift+N'], label: t(l.previousMatch) },
+    { keys: [keyOf(definitions.nextMatch)], label: t(l.nextMatch) },
+    { keys: [keyOf(definitions.previousMatch)], label: t(l.previousMatch) },
     ...errors,
     step,
     job,
-    { keys: ['Y'], label: t(l.copyLineLink) },
+    { keys: [keyOf(definitions.copyLineLink)], label: t(l.copyLineLink) },
     gitHub,
   ];
 });
@@ -237,7 +242,7 @@ function getGoneMessage(pane: Extract<WorkflowLogPane, { kind: 'gone' }>): LogMe
     title: t(l.goneTitle),
     text: failedStep ? `${t(l.goneFailedAt, { step: failedStep.name })} ${retention}` : retention,
     detail: t(l.goneDetail, { days }),
-    gitHubLabel: t(l.openOnGitHub),
+    gitHubLabel: t(definitions.openOnGitHub.title),
   };
 }
 
@@ -252,7 +257,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       httpStatus === null
         ? t(l.failedNoAnswerDetail, { id: job.id })
         : t(l.failedDetail, { id: job.id, status: httpStatus }),
-    gitHubLabel: t(l.openOnGitHub),
+    gitHubLabel: t(definitions.openOnGitHub.title),
   };
 }
 </script>
@@ -317,8 +322,8 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
             variant="secondary"
             size="sm"
             :icon="RotateCw"
-            kbd="Enter"
-            keyshortcuts="Enter"
+            :kbd="keyOf(definitions.tryAgain)"
+            :keyshortcuts="keyOf(definitions.tryAgain)"
             @click="emit('retry')"
           >
             {{ t(l.tryAgain) }}
@@ -327,8 +332,8 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
             variant="secondary"
             size="sm"
             :icon="Github"
-            kbd="O"
-            keyshortcuts="O"
+            :kbd="keyOf(definitions.openOnGitHub)"
+            :keyshortcuts="keyOf(definitions.openOnGitHub)"
             @click="emit('openOnGitHub')"
           >
             {{ message.gitHubLabel }}
@@ -359,7 +364,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
         v-if="!searchFieldFocused"
         :class="css.workflowRunLogPane_hint"
       >
-        <Kbd keys="?" />
+        <Kbd :keys="keyOf(definitions.help)" />
         {{ t(l.allKeys) }}
       </span>
     </div>

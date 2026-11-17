@@ -2,7 +2,7 @@ import type { RepositoryBrowseSearchQuery } from '@githq/github/generated.gen.js
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { BookMarked, Lock, Search } from 'lucide-vue-next';
+import { BookMarked, Lock } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -11,7 +11,9 @@ import type { Account } from '@/auth/AccountSession.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
 
-import type { Command, CommandOptions } from './CommandTypes.js';
+import { bindCommand } from './bindCommand.js';
+import type { BoundCommand, CommandOptions } from './CommandTypes.js';
+import { searchRepositories } from './definitions/index.js';
 import * as l from './useRepositorySearchCommand.loc.js';
 
 /** What the search answers with, without the union's other kinds of result. */
@@ -24,7 +26,7 @@ type FoundRepository = Extract<
  * "Search repositories…" (D34, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
  * its qualifiers work (`useGitHubSearch`); picking a repository goes to its screen.
  */
-export function useRepositorySearchCommand(): () => Command {
+export function useRepositorySearchCommand(): () => BoundCommand {
     const t = useTranslate();
     const accounts = useService(AccountSession);
     const repositoryTabs = useService(LastRepositoryTab);
@@ -32,17 +34,19 @@ export function useRepositorySearchCommand(): () => Command {
     const typed = ref('');
     const state = useGitHubSearch({ text: () => typed.value, ask: () => getAsk(accounts.current) });
 
-    return () => ({
-        id: 'app.searchRepositories',
-        title: t(l.title),
-        detail: t(l.detail),
-        section: 'app',
-        icon: Search,
-        options: getOptions,
-        search: text => {
-            typed.value = text.trim();
-        },
-    });
+    return () =>
+        bindCommand(
+            searchRepositories,
+            {
+                detail: t(l.detail),
+                section: 'app',
+                options: getOptions,
+                search: text => {
+                    typed.value = text.trim();
+                },
+            },
+            t,
+        );
 
     function getAsk(account: Account | null) {
         return account

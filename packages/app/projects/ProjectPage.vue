@@ -2,13 +2,15 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Plus, SquarePen } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
-import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { CommandOption } from '@/commands/CommandTypes.js';
+import { addItemsToProject, newIssueInProject } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -77,9 +79,6 @@ import {
 } from './projectViewOptions.js';
 import { selectProjectEntries } from './selectProjectEntries.js';
 import { useProjectCommands } from './useProjectCommands.js';
-
-/** "Add existing issues…": its submenu opens from the empty project too (K8). */
-const ADD_ITEMS_COMMAND = 'project.addItems';
 
 /** What a project without saved views is shown as. */
 const NO_VIEW_OPTIONS: ProjectViewOptions = {
@@ -154,26 +153,29 @@ const concerning = computed(() => {
     .toSorted(getItemComparator('updated'));
 });
 
-// In a project, a new issue is added to it (H5): its `C` comes before the app's. Items already on GitHub are
-// added from the local copy, several in a row (K8).
+// In a project, a new issue is added to it (H5), on its own `C`: the app's "New issue" has no key (commands D7). Items
+// already on GitHub are added from the local copy, several in a row (K8).
 useCommands(() =>
   project.value?.viewerCanUpdate
     ? [
-        {
-          id: 'project.newIssue',
-          title: t(l.newIssueInProject, { project: project.value.title }),
-          section: 'view',
-          key: NEW_ISSUE_KEY,
-          icon: SquarePen,
-          run: () => startNewIssue(null, null),
-        },
-        {
-          id: ADD_ITEMS_COMMAND,
-          title: t(l.addItemsToProject, { project: project.value.title }),
-          section: 'view',
-          icon: Plus,
-          options: () => ({ options: addableItems.value, several: true }),
-        },
+        bindCommand(
+          newIssueInProject,
+          {
+            section: 'view',
+            title: t(l.newIssueInProject, { project: project.value.title }),
+            run: () => startNewIssue(null, null),
+          },
+          t,
+        ),
+        bindCommand(
+          addItemsToProject,
+          {
+            section: 'view',
+            title: t(l.addItemsToProject, { project: project.value.title }),
+            options: () => ({ options: addableItems.value, several: true }),
+          },
+          t,
+        ),
       ]
     : [],
 );
@@ -188,7 +190,9 @@ useCommands(() => [
  * Going to each saved view, as the command menu's level under the project: run by their keys `1`–`9` while the project is
  * on screen (`ProjectView` registers them), and the phone's menu of the views (mobile D17).
  */
-const viewCommands = computed(() => projectCommands({ ...address.value, id: tracked.value?.id ?? null }).savedViews);
+const viewCommands = computed(
+  () => projectCommands({ ...address.value, id: tracked.value?.id ?? null }, { keyed: true }).savedViews,
+);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;
@@ -492,6 +496,14 @@ function move({ ids, to }: ListMove) {
 }
 
 /** The quick capture adding the issue to this project (H5) — with the value of the group it was started in. */
+/** The empty project's "Add existing issues…" (K8): the command menu at the action's submenu. */
+function openAddItems() {
+  const command = registry.findByDefinition(addItemsToProject);
+  if (command) {
+    registry.openMenu(command.id);
+  }
+}
+
 function startNewIssue(group: string | null, label: string | null) {
   const current = project.value;
   if (!current) {
@@ -606,13 +618,13 @@ function setRowField(fieldId: string | null) {
     @move="move"
     @add-draft="addDraft"
     @new-issue="startNewIssue"
-    @add-items="registry.openMenu(ADD_ITEMS_COMMAND)"
+    @add-items="openAddItems"
     @clear-filter="options.set({ filter: '' })"
   >
     <template #menu>
       <ProjectContextMenu
         :project-id="project.id"
-        :new-issue-key="NEW_ISSUE_KEY"
+        :new-issue-key="keyOf(newIssueInProject)"
         current
         :shown-view="showAll ? null : (view?.id ?? null)"
       />

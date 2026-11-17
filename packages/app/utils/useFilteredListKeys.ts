@@ -32,6 +32,7 @@ export interface FilteredListKeys {
 export function useFilteredListKeys(options: UseFilteredListKeysOptions): FilteredListKeys {
     const { rows, filter } = options;
 
+    // A control's own keys while the focus is in it, not commands (commands D11): the lists sit in dialogs too.
     onWindowEvent('keydown', event => {
         if (
             !event.defaultPrevented &&

@@ -47,11 +47,3 @@ backToPanel:
   en: Back to the panel
 backToList:
   en: Back to the list
-nextRun:
-  en: Next run
-previousRun:
-  en: Previous run
-openRun:
-  en: Open run
-openLatestFailure:
-  en: Open latest failure

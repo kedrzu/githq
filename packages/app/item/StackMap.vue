@@ -13,6 +13,8 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { Layers, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { next, previous } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import DraftDot from '@/lists/DraftDot.vue';
@@ -61,7 +63,7 @@ interface StackMapRow extends StackLook {
   readonly text: string | null;
   readonly current: boolean;
   /** The key that opens it from the opened one. */
-  readonly key: 'J' | 'K' | null;
+  readonly key: string | null;
 }
 
 const t = useTranslate();
@@ -87,16 +89,16 @@ function getRow(pip: StackPullRequestPip): StackMapRow {
   };
 }
 
-function getKey(id: string): 'J' | 'K' | null {
+function getKey(id: string) {
   if (id === props.currentId) {
     return null;
   }
 
   if (id === props.neighbours?.previous) {
-    return 'K';
+    return keyOf(previous);
   }
 
-  return id === props.neighbours?.next ? 'J' : null;
+  return id === props.neighbours?.next ? keyOf(next) : null;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { Translator } from '@nzyme/i18n/Translator.js';
 import { assert } from '@nzyme/utils/assert.js';
 import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
@@ -9,7 +10,10 @@ import { DropdownMenuItem } from 'reka-ui';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { computed, createApp, defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import KeyHelp from '@/commands/KeyHelp.vue';
+import { closeItem, next as nextDefinition, openOnGitHub } from '@/commands/definitions/index.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
@@ -124,7 +128,7 @@ test('#339: an item selected elsewhere that this list does not show is out of th
     const view = mount(BOARD, 'board');
     const registry = view.container.resolve(CommandRegistry);
     const offered = () =>
-        registry.commands.some(command => command.id === 'list.fullScreen' && registry.isEnabled(command));
+        registry.commands.some(command => command.id === 'list.openFullScreen' && registry.isEnabled(command));
     // The item opened last, in another list: the page selects it, and this list has no row of it.
     view.selectedId.value = 'elsewhere';
     await nextTick();
@@ -616,6 +620,85 @@ test("with an item open beside it j/k, the arrows and Enter stay the list's: eac
     expect(view.opened.at(-1)).toBe('a2');
 });
 
+test("a key the list has nothing to do with is left to what is under it: Escape with nothing checked, x and Enter with nothing selected, ←/→ on a row no stack's", async () => {
+    const view = mount(STACKED, 'list');
+    const passed: string[] = [];
+    const listen = (event: KeyboardEvent) => {
+        if (!event.defaultPrevented) {
+            passed.push(event.key);
+        }
+    };
+    // After the registry's, as a component's own listener is.
+    window.addEventListener('keydown', listen);
+    onTestFinished(() => window.removeEventListener('keydown', listen));
+
+    await userEvent.keyboard('{Escape}x{Enter}');
+    expect(passed).toEqual(['Escape', 'x', 'Enter']);
+
+    await userEvent.keyboard('j{ArrowRight}{ArrowLeft}x{Escape}');
+    await expect.poll(selectedCard).toBe('a1');
+    expect(passed).toEqual(['Escape', 'x', 'Enter', 'ArrowRight', 'ArrowLeft']);
+    expect(view.checkedIds.value).toEqual([]);
+
+    // On a stack's entry → and ← are the list's.
+    await userEvent.keyboard('j{ArrowRight}{ArrowLeft}');
+    expect(passed).toHaveLength(5);
+});
+
+test("an opened item's keys yield to the list's: J is the list's, Escape the item's close while nothing is checked, and ? lists each key once, beside what runs", async () => {
+    const view = mount([['todo', ['a1', 'a2']]], 'list', { followOpened: true });
+    const registry = view.container.resolve(CommandRegistry);
+    const t = view.container.resolve(Translator);
+    // The opened item's own keys, as the item view binds them (`useItemKeys`).
+    const step = vi.fn();
+    const close = vi.fn();
+    const item = { place: 'item', section: 'item', menu: false } as const;
+    onTestFinished(
+        registry.register({
+            commands: [
+                bindCommand(nextDefinition, { ...item, title: 'Next item', run: step }, t),
+                bindCommand(closeItem, { ...item, run: close }, t),
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('j{Enter}');
+    await expect.poll(() => view.openedId.value).toBe('a1');
+
+    view.checkedIds.value = ['a1'];
+    await userEvent.keyboard('{Escape}');
+    expect(view.checkedIds.value).toEqual([]);
+    expect(close).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Escape}');
+    expect(close).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a2');
+    expect(step).not.toHaveBeenCalled();
+    await userEvent.keyboard('k');
+    await expect.poll(selectedCard).toBe('a1');
+
+    mountHelp(view.container);
+
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const keysOf = (title: string) =>
+        help
+            .getByRole('term')
+            .filter({ hasText: new RegExp(`^${title}$`, 'u') })
+            .elements()
+            .map(term => term.nextElementSibling?.textContent ?? '');
+    await expect.poll(() => keysOf('Next')).toEqual([expect.stringMatching(/J.*ArrowDown/u)]);
+    expect(keysOf('Previous')).toEqual([expect.stringMatching(/K.*ArrowUp/u)]);
+    expect(keysOf('Open')).toEqual([expect.stringContaining('Enter')]);
+    expect(keysOf('Select for editing together')).toHaveLength(1);
+    expect(keysOf('Next item')).toEqual([]);
+    expect(keysOf('Close')).toEqual([expect.stringContaining('Escape')]);
+    expect(keysOf('Clear the selection')).toEqual([]);
+
+    view.checkedIds.value = ['a1'];
+    await expect.poll(() => keysOf('Clear the selection')).toEqual([expect.stringContaining('Escape')]);
+    expect(keysOf('Close')).toEqual([]);
+});
+
 test('board: an item opened from outside selects its collapsed card; once expanded, the pull request inside it', async () => {
     const view = mount(STACKED_BOARD, 'board');
 
@@ -755,6 +838,8 @@ interface MountOptions {
     readonly canOpenOver?: (value: string) => boolean;
     /** Fills the `empty` slot with a whole-screen note, as a screen's owner does. */
     readonly empty?: boolean;
+    /** An entry's page on GitHub; none when not given. */
+    readonly getUrl?: (value: string) => string | null;
 }
 
 /** A merge panel opened: for which item, and what it runs once the merge is sent. */
@@ -931,7 +1016,7 @@ test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected
     view.checkedIds.value = ['a2'];
     // Ahead of an opened item's, in the selection's section.
     await expect
-        .poll(() => registry.commands.some(command => command.id === 'selection.merge' && registry.isEnabled(command)))
+        .poll(() => registry.commands.some(command => command.id === 'list.merge' && registry.isEnabled(command)))
         .toBe(true);
 
     await userEvent.keyboard('{Shift>}M{/Shift}');
@@ -1104,7 +1189,7 @@ test("the cursor row: the chip names it and it has its context menu's actions; w
             label: 'web#1',
             title: 'Sign-in redirects',
         });
-    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'menu.copyLink', 'menu.comment']));
+    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'item.copyLink', 'item.comment']));
     expect(row.command('item.state')?.section).toBe('item');
 
     row.request.mockClear();
@@ -1143,7 +1228,7 @@ test('a key whose value needs choosing opens the command menu at its submenu; th
     expect(edit).toHaveBeenCalledWith(['i2'], { kind: 'close', reason: 'COMPLETED' });
 });
 
-test("Enter and O stay the list's: drawn in the context menu, never run through the registry", async () => {
+test("Enter, Shift+Enter and O stay the list's: drawn in the context menu, never run through the registry", async () => {
     const row = await mountRow([['todo', ['p1']]], [samplePullRequest('p1')]);
     const openInNewTab = vi.spyOn(row.view.container.resolve(Browser), 'openInNewTab');
     await userEvent.keyboard('j');
@@ -1152,9 +1237,10 @@ test("Enter and O stay the list's: drawn in the context menu, never run through 
     const keyed = row.registry.commands.filter(command => command.run && !command.id.startsWith('list.'));
     expect(keyed.map(command => command.key)).not.toContain('Enter');
     expect(keyed.map(command => command.key)).not.toContain('O');
+    expect(keyed.map(command => command.key)).not.toContain('Shift+Enter');
     // Still offered in the menu, with no key.
-    expect(row.command('menu.open')).toBeDefined();
-    expect(row.command('menu.openOnGitHub')).toBeDefined();
+    expect(row.command('item.open')).toBeDefined();
+    expect(row.command('item.openOnGitHub')).toBeDefined();
 
     await userEvent.keyboard('o');
     expect(openInNewTab).not.toHaveBeenCalled();
@@ -1162,10 +1248,104 @@ test("Enter and O stay the list's: drawn in the context menu, never run through 
     expect(row.view.opened).toEqual(['p1']);
 });
 
+test("O opens the selected row on GitHub, before an opened item's — never from a field, inside data-no-commands, from a control Tab reached outside the list, or under a layer", async () => {
+    trackTabFocus();
+    const container = createListContainer();
+    const openInNewTab = vi.spyOn(container.resolve(Browser), 'openInNewTab');
+    const view = mount([['todo', ['a1', 'a2']]], 'list', {
+        container,
+        followOpened: true,
+        getUrl: id => `https://github.com/acme/web/issues/${id}`,
+    });
+    // The item open beside the list offers its own "Open on GitHub", as the item's view does.
+    const openItem = vi.fn();
+    const registry = container.resolve(CommandRegistry);
+    onTestFinished(
+        registry.register({
+            commands: [
+                bindCommand(
+                    openOnGitHub,
+                    { place: 'item', section: 'item', run: openItem },
+                    container.resolve(Translator),
+                ),
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('j{Enter}j');
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+
+    await userEvent.keyboard('o');
+    expect(openInNewTab).toHaveBeenCalledExactlyOnceWith('https://github.com/acme/web/issues/a2');
+    expect(openItem).not.toHaveBeenCalled();
+
+    for (const blocker of [
+        withElement('input', element => element.focus()),
+        withElement('div', element => {
+            element.dataset.noCommands = '';
+            element.tabIndex = -1;
+            element.focus();
+        }),
+        withElement('div', element => {
+            element.dataset.layer = '';
+        }),
+    ]) {
+        await userEvent.keyboard('o');
+        blocker.remove();
+    }
+
+    const control = withElement('button', () => {});
+    for (let tabs = 0; tabs < 40 && document.activeElement !== control; tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(control.hasAttribute('data-tab-focus')).toBe(true);
+    await userEvent.keyboard('o');
+    control.remove();
+    expect(openInNewTab).toHaveBeenCalledTimes(1);
+});
+
+test("O on an issue still being created, with no page on GitHub yet, opens nothing and leaves the key to the opened item's", async () => {
+    const container = createListContainer();
+    const openInNewTab = vi.spyOn(container.resolve(Browser), 'openInNewTab');
+    const view = mount([['todo', ['a1', 'a2']]], 'list', {
+        container,
+        getUrl: id => (id === 'a2' ? '' : `https://github.com/acme/web/issues/${id}`),
+    });
+    const openItem = vi.fn();
+    onTestFinished(
+        container.resolve(CommandRegistry).register({
+            commands: [
+                bindCommand(
+                    openOnGitHub,
+                    { place: 'item', section: 'item', run: openItem },
+                    container.resolve(Translator),
+                ),
+            ],
+            subject: null,
+        }),
+    );
+    await userEvent.keyboard('jj');
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+
+    await userEvent.keyboard('o');
+    expect(openInNewTab).not.toHaveBeenCalled();
+    expect(openItem).toHaveBeenCalledOnce();
+});
+
+/** An element put before the list for one step of a test, `prepare`d once it is in the page. */
+function withElement(tag: string, prepare: (element: HTMLElement) => void) {
+    const element = document.createElement(tag);
+    document.body.prepend(element);
+    onTestFinished(() => element.remove());
+    prepare(element);
+    return element;
+}
+
 test('the comment key opens the row, asking the opened item for its comment box', async () => {
     const row = await mountRow([['todo', ['i1']]], [sampleIssue('i1')]);
     await userEvent.keyboard('j');
-    await expect.poll(() => row.command('menu.comment')).toBeDefined();
+    await expect.poll(() => row.command('item.comment')).toBeDefined();
 
     await userEvent.keyboard('r');
     expect(row.view.opened).toEqual(['i1']);
@@ -1234,9 +1414,9 @@ test("D20, D11: a stack's entry stands for all its pull requests; ⇧M is its wh
     expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
 
     await userEvent.keyboard('{Shift>}X{/Shift}');
-    expect(row.registry.menu?.commandId).toBe('selection.state');
+    expect(row.registry.menu?.commandId).toBe('item.state');
     row.registry.closeMenu();
-    row.command('selection.state')?.options?.().options[0]?.pick();
+    row.command('item.state')?.options?.().options[0]?.pick();
     expect(edit).toHaveBeenCalledWith(['p1', 'p2', 'p3'], expect.objectContaining({ kind: 'close' }));
 });
 
@@ -2113,6 +2293,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 openedId: openedId.value,
                 isEdited: options.edited && ((id: string) => options.edited?.has(id) ?? false),
                 canOpenOver: options.canOpenOver,
+                getUrl: options.getUrl,
                 onOpen: (id: string) => {
                     opened.push(id);
                     if (options.followOpened) {
@@ -2179,6 +2360,25 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
 }
 
 /** The app's services a list reads: the local copy, of a signed-in user, kept in IndexedDB as the app keeps it. */
+/** The help sheet, open, over what can run now — as the app's shell shows it — beside a list mounted with `container`. */
+function mountHelp(container: VueContainer) {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const app = createApp({
+        setup: () => {
+            const registry = container.resolve(CommandRegistry);
+            return () =>
+                h(KeyHelp, { open: true, commands: registry.commands.filter(command => registry.isEnabled(command)) });
+        },
+    });
+    app.use(IocPlugin, { container });
+    app.mount(host);
+    onTestFinished(() => {
+        app.unmount();
+        host.remove();
+    });
+}
+
 function createListContainer(request?: BrowserShape['fetch']) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);

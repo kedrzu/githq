@@ -2,6 +2,7 @@
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { AppCommand } from '@/commands/defineAppCommand.js';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 
 import type { ListChoice } from './ListTypes.js';
@@ -21,8 +22,8 @@ export type ListToolbarOption =
       readonly value: string;
       /** Dim text under it in the display options. */
       readonly detail?: string;
-      /** Also a command of the command menu (id `view.<key>`), with this title: its submenu is the choices. */
-      readonly commandTitle?: string;
+      /** Also this command of the command menu (a repository's state, a project's row field): its submenu is the choices. */
+      readonly command?: AppCommand<readonly ['list']>;
       readonly choose: (value: string) => void;
     }
   /** One choice out of a few, side by side (the layout). */

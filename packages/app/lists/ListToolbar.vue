@@ -1,12 +1,14 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (with its icon, `titleIcon`; a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (the actions of the items selected together, its tabs — `tabs`, drawn by `HeaderTabs` —, what else it says), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As room runs out the header gives way in steps, measuring its left part (the title and all beside it, the tabs side by side and as one menu), what it ends with (`end`) and each control: first the options move into the display options, as many as fit staying on the toolbar, the filters longest; then "Display" drops its label for its icon; then the tabs become one menu button showing the current tab; last the title is cut to the room left. Its left part paints the header's background above the controls, which clip what doesn't fit, so before or between measurements a control is covered, never drawn under the title. The options moved go to the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — what `C` runs there; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (with its icon, `titleIcon`; a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (the actions of the items selected together, its tabs — `tabs`, drawn by `HeaderTabs` —, what else it says), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As room runs out the header gives way in steps, measuring its left part (the title and all beside it, the tabs side by side and as one menu), what it ends with (`end`) and each control: first the options move into the display options, as many as fit staying on the toolbar, the filters longest; then "Display" drops its label for its icon; then the tabs become one menu button showing the current tab; last the title is cut to the room left. Its left part paints the header's background above the controls, which clip what doesn't fit, so before or between measurements a control is covered, never drawn under the title. The options moved go to the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that name a `command` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them — all after what acts on the list in its menu (commands D14). On a phone (mobile MB32) it is the phone's top bar (`PhoneTopBar`): the places button, the title, the options button opening the list's options as a sheet from below (`ListOptionsSheet`, mobile D36: the filters, the grouping and the order, changed in place, and the way back while changed) and New issue — a project's own in a project, else the app's; the title's menu and what the list puts beside the title (tabs, a selection's actions) leave it, the properties and the list's own options staying in the command menu, and no layout offered anywhere, a phone having no board (mobile D9). A list whose items can be selected together (`selection`) offers "Select items" in that sheet; while selecting (mobile D28, MB117) the top bar is × leaving it, "3 selected" and the options, and the selection's actions draw nothing, their commands the command menu's. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowDownUp, Columns3, LayoutGrid, List, ListChecks, Plus, RotateCcw, Rows3, X } from 'lucide-vue-next';
+import { ArrowDownUp, Columns3, LayoutGrid, List, ListChecks, Plus, Rows3, X } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
-import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import HeaderTabs from '@/components/HeaderTabs.vue';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
@@ -104,8 +106,10 @@ const t = useTranslate();
 const phone = useService(PhoneLayout);
 const registry = useService(CommandRegistry);
 
-/** What the phone's New issue runs: what `C` runs here — a project's own in a project, else the app's (H1, H5). */
-const newIssue = computed(() => registry.findByKey(NEW_ISSUE_KEY));
+/** What the phone's New issue runs: a project's own in a project, else the app's (H1, H5). */
+const newIssue = computed(
+  () => registry.findByDefinition(definitions.newIssueInProject) ?? registry.findByDefinition(definitions.newIssue),
+);
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
 /** The filters a phone's options sheet shows as rows of chips. */
@@ -289,93 +293,96 @@ function rank(key: string) {
   return index === -1 ? PRIORITY.length : index;
 }
 
-// E1: the view's options in the command menu too — the layout by its key.
+// E1: the view's options in the command menu too, after what acts on the list (D14).
 useCommands(() =>
   props.bare
     ? []
-    : ([
-        {
-          id: 'view.layout',
-          title: options.value.layout === 'list' ? t(l.showAsBoard) : t(l.showAsList),
-          section: 'view',
-          key: 'Shift+V',
-          icon: options.value.layout === 'list' ? Columns3 : List,
-          // A phone has no board (mobile D9).
-          when: () => !phone.active && (options.value.layout === 'board' || !props.boardDisabled),
-          run: () => change({ layout: options.value.layout === 'list' ? 'board' : 'list' }),
-        },
-        {
-          id: 'view.groupBy',
-          title: t(l.groupByCommand),
-          section: 'view',
-          detail: grouping.value?.label,
-          icon: Rows3,
-          options: () => ({
-            options: toCommandOptions(props.groupings, options.value.grouping, value => change({ grouping: value })),
-          }),
-        },
-        {
-          id: 'view.orderBy',
-          title: t(l.orderByCommand),
-          section: 'view',
-          detail: sortChoice.value?.label,
-          icon: ArrowDownUp,
-          options: () => ({
-            options: toCommandOptions(props.sorts, options.value.sort, value => change({ sort: value })),
-          }),
-        },
-        ...getOptionCommands(),
-        {
-          id: 'view.properties',
-          title: t(l.showPropertiesCommand),
-          section: 'view',
-          icon: ListChecks,
-          options: () => ({
-            several: true,
-            options: props.properties.map((choice): CommandOption => {
-              const chosen = options.value.properties.includes(choice.value);
-              return {
-                value: choice.value,
-                label: choice.label,
-                detail: choice.detail,
-                chosen,
-                pick: () =>
-                  change({
-                    properties: chosen
-                      ? options.value.properties.filter(property => property !== choice.value)
-                      : [...options.value.properties, choice.value],
-                  }),
-              };
+    : [
+        bindCommand(
+          definitions.toggleLayout,
+          {
+            section: 'view',
+            title: options.value.layout === 'list' ? t(l.showAsBoard) : t(l.showAsList),
+            icon: options.value.layout === 'list' ? Columns3 : List,
+            // A phone has no board (mobile D9).
+            when: () => !phone.active && (options.value.layout === 'board' || !props.boardDisabled),
+            run: () => change({ layout: options.value.layout === 'list' ? 'board' : 'list' }),
+          },
+          t,
+        ),
+        bindCommand(
+          definitions.groupBy,
+          {
+            section: 'view',
+            detail: grouping.value?.label,
+            options: () => ({
+              options: toCommandOptions(props.groupings, options.value.grouping, value => change({ grouping: value })),
             }),
-          }),
-        },
-        {
-          id: 'view.reset',
-          title: t(l.resetCommand),
-          section: 'view',
-          icon: RotateCcw,
-          when: () => props.modified,
-          run: () => emit('reset'),
-        },
-      ] satisfies Command[]),
+          },
+          t,
+        ),
+        bindCommand(
+          definitions.orderBy,
+          {
+            section: 'view',
+            detail: sortChoice.value?.label,
+            options: () => ({
+              options: toCommandOptions(props.sorts, options.value.sort, value => change({ sort: value })),
+            }),
+          },
+          t,
+        ),
+        ...getOptionCommands(),
+        bindCommand(
+          definitions.showProperties,
+          {
+            section: 'view',
+            options: () => ({
+              several: true,
+              options: props.properties.map((choice): CommandOption => {
+                const chosen = options.value.properties.includes(choice.value);
+                return {
+                  value: choice.value,
+                  label: choice.label,
+                  detail: choice.detail,
+                  chosen,
+                  pick: () =>
+                    change({
+                      properties: chosen
+                        ? options.value.properties.filter(property => property !== choice.value)
+                        : [...options.value.properties, choice.value],
+                    }),
+                };
+              }),
+            }),
+          },
+          t,
+        ),
+        bindCommand(
+          definitions.resetView,
+          { section: 'view', when: () => props.modified, run: () => emit('reset') },
+          t,
+        ),
+      ],
 );
 
 /** The filters' and the list's own menu options that name a command: a submenu of their choices. */
-function getOptionCommands(): Command[] {
-  return [...props.filters, ...props.extraOptions].flatMap((option): Command[] => {
-    if (option.kind !== 'menu' || !option.commandTitle) {
+function getOptionCommands(): BoundCommand[] {
+  return [...props.filters, ...props.extraOptions].flatMap((option): BoundCommand[] => {
+    if (option.kind !== 'menu' || !option.command) {
       return [];
     }
 
     return [
-      {
-        id: `view.${option.key}`,
-        title: option.commandTitle,
-        section: 'view',
-        detail: option.choices.find(choice => choice.value === option.value)?.label,
-        icon: option.icon,
-        options: () => ({ options: toCommandOptions(option.choices, option.value, option.choose) }),
-      },
+      bindCommand(
+        option.command,
+        {
+          section: 'view',
+          detail: option.choices.find(choice => choice.value === option.value)?.label,
+          options: () => ({ options: toCommandOptions(option.choices, option.value, option.choose) }),
+        },
+        t,
+      ),
     ];
   });
 }

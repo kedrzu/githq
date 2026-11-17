@@ -45,7 +45,10 @@ import {
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { cancelCombining, combineSettings, turnOffSync } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -60,9 +63,6 @@ import SavingChoice from './SavingChoice.vue';
 import SavingStopped from './SavingStopped.vue';
 import type { SettingsSaving } from './sync/SettingsSaving.js';
 import * as l from './SavingView.loc.js';
-
-/** The key of "Combine and turn on". */
-const COMBINE_KEY = 'Mod+Enter';
 
 /** One group of what combining changes (T6). */
 interface CombiningGroup {
@@ -198,14 +198,14 @@ const combiningGroups = computed((): CombiningGroup[] => {
 
 useCommands(() => {
   if (props.saving.state !== 'off') {
-    return [{ id: 'settings.saving.turnOff', title: t(l.turnOffTitle), section: 'view', run: turnOff }];
+    return [bindCommand(turnOffSync, { title: t(l.turnOffTitle), section: 'view', run: turnOff }, t)];
   }
 
   // What combining changes (T6) is shown only while saving is off.
   return props.connect.kind === 'found'
     ? [
-        { id: 'settings.saving.combine', title: t(l.combine), section: 'view', key: COMBINE_KEY, run: runCombine },
-        { id: 'settings.saving.cancel', title: t(l.cancel), section: 'view', key: 'Escape', run: cancel },
+        bindCommand(combineSettings, { section: 'view', once: true, run: runCombine }, t),
+        bindCommand(cancelCombining, { title: t(l.cancel), section: 'view', run: cancel }, t),
       ]
     : [];
 });
@@ -414,15 +414,15 @@ function turnOff() {
           <div :class="css.savingView_actions">
             <Button
               variant="primary"
-              :keyshortcuts="formatAriaKeyShortcuts(COMBINE_KEY)"
+              :keyshortcuts="formatAriaKeyShortcuts(keyOf(combineSettings))"
               :busy="combining"
               @click="combineAndTurnOn"
             >
               {{ t(l.combine) }}
             </Button>
             <Button
-              kbd="Escape"
-              keyshortcuts="Escape"
+              :kbd="keyOf(cancelCombining)"
+              :keyshortcuts="keyOf(cancelCombining)"
               :disabled="combining"
               @click="cancel"
             >

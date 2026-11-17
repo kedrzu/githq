@@ -773,6 +773,8 @@ test('W4b: ⌘F opens the bar, and is left alone in another field and under a la
 
     const other = document.createElement('input');
     document.body.append(other);
+    // A key goes to the field that has the focus.
+    other.focus();
     const inField = press();
     other.dispatchEvent(inField);
     expect(inField.defaultPrevented).toBe(false);

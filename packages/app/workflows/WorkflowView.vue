@@ -18,6 +18,9 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest, Play } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { closeItem, next, open, openLatestFailure, openOnGitHub, previous } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -94,8 +97,6 @@ const emit = defineEmits<{
 
 /** The details' column: 400 px by default, dragged from 320 to 640 px. */
 const DETAILS_WIDTH = { key: 'workflowDetails', default: 400, min: 320, max: 640 };
-/** The keys that step to the next or previous workflow: `j`/`k` are the runs'. */
-const STEP_KEYS = { previous: 'Shift+K', next: 'Shift+J' };
 
 const t = useTranslate();
 const browser = useService(Browser);
@@ -170,74 +171,55 @@ const standing = computed((): Standing => {
       return assertNever(state.state);
   }
 });
-const hints = computed(() => [
-  { id: 'run', keys: ['J', 'K'], label: t(l.hintRun) },
-  { id: 'workflow', keys: [STEP_KEYS.next, STEP_KEYS.previous], label: t(l.hintWorkflow) },
-  { id: 'open', keys: ['Enter'], label: t(l.hintOpenRun) },
-  ...(props.latestFailure ? [{ id: 'failure', keys: ['F'], label: t(l.hintLatestFailure) }] : []),
-  { id: 'escape', keys: ['Escape'], label: props.escapeTo === 'panel' ? t(l.backToPanel) : t(l.backToList) },
-]);
 
 // `⇧K`/`⇧J` step through the list it was opened from; Escape closes it.
 const keys = useItemKeys({
+  place: 'workflow',
   arrangement: () => props.arrangement,
-  stepKeys: STEP_KEYS,
+  closesToPanel: () => props.escapeTo === 'panel',
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
-  openOnGitHub: () => browser.openInNewTab(props.state.workflow.htmlUrl),
   previous: () => emit('previous'),
   next: () => emit('next'),
 });
+
+const hints = computed(() => [
+  { id: 'run', keys: [keyOf(next), keyOf(previous)], label: t(l.hintRun) },
+  { id: 'workflow', keys: [keys.stepKeys.next, keys.stepKeys.previous], label: t(l.hintWorkflow) },
+  { id: 'open', keys: [keyOf(open)], label: t(l.hintOpenRun) },
+  ...(props.latestFailure ? [{ id: 'failure', keys: [keyOf(openLatestFailure)], label: t(l.hintLatestFailure) }] : []),
+  { id: 'escape', keys: [keyOf(closeItem)], label: props.escapeTo === 'panel' ? t(l.backToPanel) : t(l.backToList) },
+]);
 
 useCommands(() => {
   const { commands } = keys;
   return [
     commands.next,
     commands.previous,
-    // Run by the runs' own selection (`WorkflowRuns`), listed in the help sheet.
-    {
-      id: 'workflow.nextRun',
-      title: t(l.nextRun),
-      section: 'item',
-      key: 'J',
-      otherKeys: ['ArrowDown'],
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
-    {
-      id: 'workflow.previousRun',
-      title: t(l.previousRun),
-      section: 'item',
-      key: 'K',
-      otherKeys: ['ArrowUp'],
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
-    {
-      id: 'workflow.openRun',
-      title: t(l.openRun),
-      section: 'item',
-      key: 'Enter',
-      menu: false,
-      when: () => page.value && showsRuns.value,
-    },
+    // `J`/`K` and Enter are the runs' own (`WorkflowRuns`), full screen.
     // In the panel the list beside it owns `F`, for the workflow under its cursor.
-    {
-      id: 'workflow.openLatestFailure',
-      title: t(l.openLatestFailure),
-      section: 'item',
-      key: 'F',
-      icon: CircleX,
-      when: () => page.value && props.latestFailure !== null,
-      run: () => {
-        if (props.latestFailure) {
-          emit('openRun', props.latestFailure);
-        }
+    bindCommand(
+      openLatestFailure,
+      {
+        place: 'workflow',
+        section: 'item',
+        when: () => page.value && props.latestFailure !== null,
+        run: () => {
+          if (props.latestFailure) {
+            emit('openRun', props.latestFailure);
+          }
+        },
       },
-    },
+      t,
+    ),
     commands.close,
-    commands.openOnGitHub,
-    ...(commands.arrange ? [commands.arrange] : []),
+    bindCommand(
+      openOnGitHub,
+      { place: 'workflow', section: 'item', run: () => browser.openInNewTab(props.state.workflow.htmlUrl) },
+      t,
+    ),
+    commands.closeFullScreen,
+    ...(commands.openFullScreen ? [commands.openFullScreen] : []),
   ];
 });
 

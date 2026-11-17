@@ -2,13 +2,14 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { onWindowResize } from '@nzyme/vue-utils/onWindowResize.js';
 import { CloudOff, Flag, GitCommitHorizontal, LoaderCircle, MoveHorizontal } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import CantBeRead from '@/components/CantBeRead.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -21,10 +22,7 @@ import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
-import { isLayerOpen } from '@/utils/isLayerOpen.js';
-import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
@@ -146,6 +144,8 @@ const cursor = useRowSelection({
   reveal: oid => reveal(commits.value.findIndex(commit => commit.oid === oid)),
   open: commit => openCommit(commit.oid),
   enabled: () => !otherItemOpened.value,
+  place: 'commits',
+  openTitle: l.openCommit,
 });
 /** The cursor is drawn on its row, unless the panel shows a commit it isn't on (CH16, CH41). */
 const cursorDrawn = computed(() => shownOid.value === null || shownOid.value === cursor.selectedKey);
@@ -323,18 +323,22 @@ watch(
 );
 
 useCommands(() => [
-  { id: 'commits.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
-  { id: 'commits.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-  {
-    id: 'commits.refList',
-    title: t(l.findRef),
-    section: 'view',
-    key: 'B',
-    menu: false,
-    when: () => !otherItemOpened.value && !isScreenCovered(),
-    run: () => void openRefList(),
-  },
-  { id: 'commits.open', title: t(l.openCommit), section: 'view', key: 'Enter', menu: false },
+  bindCommand(
+    definitions.findRef,
+    { section: 'view', menu: false, when: () => !otherItemOpened.value, run: () => void openRefList() },
+    t,
+  ),
+  // An item opened over the section has Esc: a commit gives it to the list over the graph first (below).
+  bindCommand(
+    definitions.closeRefList,
+    {
+      section: 'view',
+      menu: false,
+      when: () => refListOpened.value && !itemOpened.value,
+      run: () => refList.value?.leave(),
+    },
+    t,
+  ),
 ]);
 
 onWindowResize(() => {
@@ -349,18 +353,6 @@ const removeEscapeTaker = store.addEscapeTaker(() => {
 
   refList.value?.leave();
   return true;
-});
-
-onWindowEvent('keydown', event => {
-  // An item opened over the section has Esc: a commit gives it to the list over the graph first (above).
-  if (!isScreenKey(event) || itemOpened.value || event.key !== 'Escape' || isLayerOpen()) {
-    return;
-  }
-
-  if (refListOpened.value) {
-    event.preventDefault();
-    refList.value?.leave();
-  }
 });
 
 let observer: ResizeObserver | undefined;

@@ -1,16 +1,17 @@
 <!-- The toast of a comment box just discarded (D40, CR98), for the review's own `Toaster` at the foot of the diff, above the pending review's toolbar: what was discarded and its text quoted, clamped, for ten seconds; Restore (⌘Z while no text field has focus, where ⌘Z is the field's undo) brings it back, and Dismiss has no key, since Escape leaves the review. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Trash2, Undo2 } from 'lucide-vue-next';
+import { Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
-import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import * as l from './ReviewDiscardedToast.loc.js';
 import type { ReviewDiscardedComment } from './ReviewWriting.js';
 
@@ -34,17 +35,20 @@ const title = computed(() => {
 
   return startLine === null ? t(l.onLine, { line }) : t(l.onLines, { start: startLine, end: line });
 });
-const commands = computed((): Command[] => [
-  {
-    id: 'review.restoreComment',
-    title: t(l.restoreCommand),
-    section: 'view',
-    key: REVIEW_KEYS.restoreComment,
-    icon: Undo2,
-    menu: false,
-    when: () => !isEditableTarget(document.activeElement),
-    run: () => emit('restore'),
-  },
+const commands = computed(() => [
+  bindCommand(
+    undo,
+    {
+      place: 'review',
+      title: t(l.restoreCommand),
+      section: 'view',
+      menu: false,
+      // ⌘Z in a field is the field's undo.
+      when: () => !isEditableTarget(document.activeElement),
+      run: () => emit('restore'),
+    },
+    t,
+  ),
 ]);
 
 function onOpenChange(open: boolean) {
@@ -69,8 +73,8 @@ function onOpenChange(open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? REVIEW_KEYS.restoreComment : undefined"
-        :keyshortcuts="active ? formatAriaKeyShortcuts(REVIEW_KEYS.restoreComment) : undefined"
+        :kbd="active ? keyOf(undo) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="emit('restore')"
       >
         {{ t(l.restore) }}

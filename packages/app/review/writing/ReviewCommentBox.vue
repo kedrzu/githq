@@ -1,17 +1,26 @@
 <!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line and `⇧↑` gives back the last (CR73), and with text in it they select text as anywhere. Escape or Cancel closes an empty box; on one with text the editor's footer asks instead (D40, `· asks to discard`, CR97): "Discard what you wrote?", Keep writing (Escape) and Discard (Enter), as `MarkdownEditor` asks. Every other key typed stays in the field, and the keys it acts on there are announced on it. -->
+<script lang="ts">
+/**
+ * The keys the box takes while the cursor is in its text, its own (commands D11): `⌘↵` sends the default way, `⇧⌘↵` the
+ * other, `⌘G` puts in a suggestion.
+ */
+export const COMMENT_BOX_KEYS = { sendFirst: 'Mod+Enter', sendSecond: 'Mod+Shift+Enter', suggest: 'Mod+G' } as const;
+</script>
+
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { FileDiff, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
+import { rangeDown, rangeUp } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import MarkdownEditor from '@/components/MarkdownEditor.vue';
 import { isFocusStayingInside } from '@/utils/isFocusStayingInside.js';
 
-import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import { getCommentWays } from './getCommentWays.js';
 import * as l from './ReviewCommentBox.loc.js';
 import ReviewFailureNote from './ReviewFailureNote.vue';
@@ -79,9 +88,9 @@ const first = computed(() => ({ way: ways.value.first, label: getLabel(ways.valu
 const second = computed(() => ({ way: ways.value.second, label: getLabel(ways.value.second) }));
 const failureText = computed(() => (props.failure ? getFailureText(props.failure) : null));
 /** The two ways to send go from the text. */
-const fieldKeys = `${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`;
+const fieldKeys = `${formatAriaKeyShortcuts(COMMENT_BOX_KEYS.sendFirst)} ${formatAriaKeyShortcuts(COMMENT_BOX_KEYS.sendSecond)}`;
 const suggestTool = computed(() =>
-  props.suggestion ? { label: t(l.suggest), icon: FileDiff, keys: REVIEW_KEYS.suggest } : null,
+  props.suggestion ? { label: t(l.suggest), icon: FileDiff, keys: COMMENT_BOX_KEYS.suggest } : null,
 );
 
 onMounted(takeFocus);
@@ -168,10 +177,10 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
+  if (matchesCommandKey(event, COMMENT_BOX_KEYS.sendSecond)) {
     event.preventDefault();
     send(second.value.way);
-  } else if (matchesCommandKey(event, REVIEW_KEYS.suggest)) {
+  } else if (matchesCommandKey(event, COMMENT_BOX_KEYS.suggest)) {
     event.preventDefault();
     insertSuggestion();
   } else if (!isReply.value && text.value === '') {
@@ -184,11 +193,11 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 function getRangeStep(event: KeyboardEvent) {
-  if (matchesCommandKey(event, REVIEW_KEYS.rangeDown)) {
+  if (matchesCommandKey(event, keyOf(rangeDown))) {
     return 1;
   }
 
-  return matchesCommandKey(event, REVIEW_KEYS.rangeUp) ? -1 : null;
+  return matchesCommandKey(event, keyOf(rangeUp)) ? -1 : null;
 }
 </script>
 
@@ -252,8 +261,8 @@ function getRangeStep(event: KeyboardEvent) {
         <Button
           size="compact"
           :disabled="!hasText"
-          :kbd="REVIEW_KEYS.sendSecond"
-          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
+          :kbd="COMMENT_BOX_KEYS.sendSecond"
+          :keyshortcuts="formatAriaKeyShortcuts(COMMENT_BOX_KEYS.sendSecond)"
           @click="send(second.way)"
         >
           {{ second.label }}
@@ -262,8 +271,8 @@ function getRangeStep(event: KeyboardEvent) {
           size="compact"
           variant="primary"
           :disabled="!hasText"
-          :kbd="REVIEW_KEYS.sendFirst"
-          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
+          :kbd="COMMENT_BOX_KEYS.sendFirst"
+          :keyshortcuts="formatAriaKeyShortcuts(COMMENT_BOX_KEYS.sendFirst)"
           @click="send(first.way)"
         >
           {{ first.label }}

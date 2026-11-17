@@ -1,10 +1,13 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, ref } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { defineAppCommand } from '@/commands/defineAppCommand.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
@@ -16,6 +19,14 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { PendingUntracks } from './PendingUntracks.js';
 import { TrackingStore } from './TrackingStore.js';
 import TrackRepositoriesDialog from './TrackRepositoriesDialog.vue';
+
+/**
+ * The screen's keys behind the dialog (`A`, `1`, Backspace), each on a test definition. Offered app-wide, so a layer over
+ * the screen doesn't hold them back: only the dialog keeping its keys does.
+ */
+const SCREEN_KEYS = ['A', '1', 'Backspace'].map(key =>
+    defineAppCommand({ id: `screen.${key}`, title: () => key, key, places: ['app'] }),
+);
 
 /** How the dialog is opened. */
 interface OpenParams {
@@ -297,14 +308,11 @@ async function open(params: OpenParams & { screenKey?: () => void; waitForRows?:
     const app = createApp(
         defineComponent({
             setup() {
+                const t = useTranslate();
                 useCommands(() =>
-                    ['A', '1', 'Backspace'].map(key => ({
-                        id: `screen.${key}`,
-                        title: key,
-                        section: 'view',
-                        key,
-                        run: () => params.screenKey?.(),
-                    })),
+                    SCREEN_KEYS.map(definition =>
+                        bindCommand(definition, { section: 'view', run: () => params.screenKey?.() }, t),
+                    ),
                 );
                 return () =>
                     h(TrackRepositoriesDialog, {

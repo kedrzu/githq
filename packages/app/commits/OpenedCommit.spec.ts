@@ -48,11 +48,11 @@ test('P and ⇧P open a parent in place of the commit, replacing the address; Es
     await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe(COMMITS));
 });
 
-test("⇧↵ opens its pull request as any item opens: in the panel's place, Back returning to the commit; from its page, the pull request's page", async () => {
+test("⇧O opens its pull request as any item opens: in the panel's place, Back returning to the commit; from its page, the pull request's page", async () => {
     const { router } = await mountOpened([COMMITS, panelPath(OID)]);
     await expect.element(page.getByRole('button', { name: /#1228/ })).toBeVisible();
 
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await vi.waitFor(() =>
         expect(router.currentRoute.value.fullPath).toBe(`${COMMITS}?pane=issue&issue=acme|web|1228`),
     );
@@ -61,8 +61,16 @@ test("⇧↵ opens its pull request as any item opens: in the panel's place, Bac
 
     await router.push(`/acme/web/commit/${OID}`);
     await expect.element(page.getByRole('button', { name: /#1228/ })).toBeVisible();
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/acme/web/pull/1228'));
+});
+
+test('⇧↵ opens it full screen from the panel, as any opened item', async () => {
+    const { router } = await mountOpened([COMMITS, panelPath(OID)]);
+    await expect.element(page.getByRole('heading', { name: `Commit ${OID}` })).toBeVisible();
+
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await vi.waitFor(() => expect(router.currentRoute.value.path).toBe(`/acme/web/commit/${OID}`));
 });
 
 test("the graph's list lying over the graph takes Escape before the commit closes", async () => {

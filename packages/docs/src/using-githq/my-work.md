@@ -56,7 +56,7 @@ The toolbar sets how My work is shown:
   Grouped by status, the groups are **Needs me**, **Ready to merge**, **Waiting on others**, **Draft** and **Other**.
 - **Order**: newest first by default.
 - **Properties**: what each row shows.
-- **Layout**: a **List**, or a **Board** with a column per group. <kbd>Shift</kbd> <kbd>V</kbd> switches between them.
+- **Layout**: a **List**, or a **Board** with a column per group. The command menu switches between them too.
 
 These choices are saved on this device only. Nothing on the board moves between columns: a reason or an author isn't
 something you set.
@@ -68,7 +68,7 @@ click a row to open it. Press <kbd>O</kbd> to open the selected item on GitHub i
 
 An opened item shows in a panel beside the list, which stays in view. Press <kbd>Enter</kbd> again, or
 <kbd>Shift</kbd> <kbd>Enter</kbd>, to open it full screen, on its own page at the same address as on GitHub;
-<kbd>Shift</kbd> <kbd>Enter</kbd> or <kbd>Esc</kbd> brings it back to the panel. In a window too narrow for the list
+<kbd>Esc</kbd> brings it back to the panel. In a window too narrow for the list
 and the panel side by side, an item opens full screen straight away. The button beside **Open on GitHub** does the
 same.
 

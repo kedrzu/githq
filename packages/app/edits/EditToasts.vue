@@ -1,10 +1,13 @@
-<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment posted from code review's conversation that was not posted, back into its box unless it is there already (one from the item's thread stays there as its card, with no toast). A change of several items that failed for some selects those alone in the list (⇧F, on the newest toast). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment posted from code review's conversation that was not posted, back into its box unless it is there already (one from the item's thread stays there as its card, with no toast). A change of several items that failed for some selects those alone in the list (⌥F, on the newest toast). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Undo2 } from 'lucide-vue-next';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { selectFailed as selectFailedCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -19,9 +22,6 @@ import type { EditFailure } from './EditQueue.js';
 import { useEditTexts } from './useEditTexts.js';
 import * as l from './useEditTexts.loc.js';
 
-/** The key selecting the failed items of a change of several — the list has no ⇧F of its own. */
-const SELECT_FAILED_KEY = 'Shift+F';
-
 const queue = useService(EditQueue);
 const drafts = useService(CommentDrafts);
 const navigation = useService(ItemNavigation);
@@ -29,18 +29,9 @@ const browser = useService(Browser);
 const texts = useEditTexts();
 const t = useTranslate();
 
-function getCommands(failure: EditFailure): Command[] {
+function getCommands(failure: EditFailure): BoundCommand[] {
   return getFailedIds(failure).length > 0
-    ? [
-        {
-          id: 'edits.selectFailed',
-          title: t(l.selectFailedCommand),
-          section: 'app',
-          key: SELECT_FAILED_KEY,
-          menu: false,
-          run: () => selectFailed(failure),
-        },
-      ]
+    ? [bindCommand(selectFailedCommand, { section: 'app', menu: false, run: () => selectFailed(failure) }, t)]
     : [];
 }
 
@@ -120,8 +111,8 @@ function getLink(failure: EditFailure) {
           v-if="getFailedIds(failure).length > 0"
           variant="secondary"
           size="sm"
-          :kbd="active ? SELECT_FAILED_KEY : undefined"
-          :keyshortcuts="active ? SELECT_FAILED_KEY : undefined"
+          :kbd="active ? keyOf(selectFailedCommand) : undefined"
+          :keyshortcuts="active ? keyOf(selectFailedCommand) : undefined"
           @click="selectFailed(failure)"
         >
           {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}

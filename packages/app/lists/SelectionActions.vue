@@ -4,12 +4,15 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CircleCheckBig, CircleSlash, Milestone, Tag, UserPlus, X } from 'lucide-vue-next';
+import { CircleCheckBig, Milestone, Tag, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { getStateChoice } from '@/commands/getStateChoice.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Menu from '@/components/Menu.vue';
@@ -88,6 +91,8 @@ const loadingNote = computed(() => (metadata.value.length < repositoryNames.valu
 const canClose = computed(() =>
   selected.value.some(item => item.state === 'OPEN' && editor.getPermissions(item).state),
 );
+/** The close menu's entries, as the command menu offers them. */
+const stateChoice = computed(() => getStateChoice(selected.value, item => editor.getPermissions(item), t));
 const labels = computed(() => split(item => item.labels.map(label => label.name)));
 const assignees = computed(() => split(item => item.assignees.map(user => user.login)));
 const milestones = computed(() => split(item => (item.milestone ? [item.milestone.title] : [])));
@@ -117,11 +122,12 @@ watch(
 );
 
 // The selection's actions (E4): A/L/M and ⇧X open the toolbar's pickers and menu — before an opened item's,
-// which yield to them (the registry's section order) — and the command menu offers their values and the projects'
+// which yield to them (the list keeps the keyboard over the item beside it, commands D13) — and the command menu offers their values and the projects'
 // status, priority and iteration, made on every item that may take them.
 useCommands(
   () =>
     editCommands({
+      place: 'list',
       section: 'selection',
       items: selected.value,
       metadata: metadata.value,
@@ -131,13 +137,6 @@ useCommands(
       pullRequestCommands: merging,
       places: places.value,
       now: clock.now(),
-      stateOptions: canClose.value
-        ? [
-            { key: 'completed', text: t(l.closeCompleted), request: { kind: 'close', reason: 'COMPLETED' } },
-            { key: 'notPlanned', text: t(l.closeNotPlanned), request: { kind: 'close', reason: 'NOT_PLANNED' } },
-          ]
-        : [],
-      stateTitle: t(l.closeCommand, { count: props.ids.length }),
       edit: apply,
       setField: (place, field, value) =>
         apply({ kind: 'projectFieldInProject', projectId: place.projectId, fieldId: field.id, value }),
@@ -249,8 +248,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="UserPlus"
-          :kbd="EDIT_KEYS.assignees"
-          :keyshortcuts="EDIT_KEYS.assignees"
+          :kbd="keyOf(definitions.assignees)"
+          :keyshortcuts="keyOf(definitions.assignees)"
         >
           {{ t(l.assign) }}
         </Button>
@@ -273,8 +272,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="Tag"
-          :kbd="EDIT_KEYS.labels"
-          :keyshortcuts="EDIT_KEYS.labels"
+          :kbd="keyOf(definitions.labels)"
+          :keyshortcuts="keyOf(definitions.labels)"
         >
           {{ t(l.label) }}
         </Button>
@@ -295,8 +294,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="Milestone"
-          :kbd="EDIT_KEYS.milestone"
-          :keyshortcuts="EDIT_KEYS.milestone"
+          :kbd="keyOf(definitions.milestone)"
+          :keyshortcuts="keyOf(definitions.milestone)"
         >
           {{ t(l.milestone) }}
         </Button>
@@ -311,29 +310,25 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="CircleCheckBig"
-          :kbd="EDIT_KEYS.state"
-          :keyshortcuts="EDIT_KEYS.state"
+          :kbd="keyOf(definitions.state)"
+          :keyshortcuts="keyOf(definitions.state)"
         >
           {{ t(l.close) }}
         </Button>
       </template>
       <MenuItem
-        :icon="CircleCheckBig"
-        @select="apply({ kind: 'close', reason: 'COMPLETED' })"
+        v-for="option in stateChoice.options"
+        :key="option.key"
+        :icon="option.icon"
+        @select="apply(option.request)"
       >
-        {{ t(l.closeCompleted) }}
-      </MenuItem>
-      <MenuItem
-        :icon="CircleSlash"
-        @select="apply({ kind: 'close', reason: 'NOT_PLANNED' })"
-      >
-        {{ t(l.closeNotPlanned) }}
+        {{ option.text }}
       </MenuItem>
     </Menu>
     <IconButton
       :icon="X"
       :label="t(l.clear)"
-      kbd="Escape"
+      :kbd="keyOf(definitions.uncheck)"
       size="sm"
       @click="emit('clear')"
     />

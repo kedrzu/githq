@@ -4,7 +4,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronRight } from 'lucide-vue-next';
 
+import { remove } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 
 import * as l from './TrackedRow.loc.js';
@@ -12,7 +14,7 @@ import TrackedRowNote from './TrackedRowNote.vue';
 import type { TrackedStatus } from './TrackingTypes.js';
 
 /** The key of Untrack, on the selected row. */
-const UNTRACK_KEY = 'Backspace';
+const UNTRACK_KEY = keyOf(remove);
 
 defineProps<{
   icon: LucideIcon;

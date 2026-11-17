@@ -1,4 +1,4 @@
-<!-- The changelog, a block of Settings' Updates section under the version and the stream, in the desktop app only (desktop releases D17, D20, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests open in githq (`GitHubLinks`, as links to GitHub's HTML do). No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. Its title, the keys and that button are the block's head row; the Updates page scrolls it. -->
+<!-- The changelog, a block of Settings' Updates section under the version and the stream, in the desktop app only (desktop releases D17, D20, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (`J`/`K` or ↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests open in githq (`GitHubLinks`, as links to GitHub's HTML do). No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. Its title, the keys and that button are the block's head row; the Updates page scrolls it. -->
 <script lang="ts">
 /** What the section has to show. */
 export type ChangelogContent =
@@ -24,6 +24,9 @@ import { ArrowUpRight, Check, ChevronDown, ChevronRight, Info, TriangleAlert, Wi
 import { computed, reactive, ref, useId, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { fold, next, openOnGitHub, previous } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -49,6 +52,7 @@ const GROUP_TITLES = {
   performance: l.performance,
 } satisfies Record<ChangeGroupKind, unknown>;
 const DATES = new Intl.DateTimeFormat(APP_LANGUAGE, { dateStyle: 'long' });
+const CHANGELOG_PLACE = { place: 'changelog', section: 'view' } as const;
 
 const props = defineProps<{
   content: ChangelogContent;
@@ -105,46 +109,13 @@ const toggled = reactive(new Map<string, boolean>());
 const current = ref(-1);
 
 useCommands(() => [
-  ...(hasGitHubLink.value
-    ? [
-        {
-          id: 'changelog.openOnGitHub',
-          title: gitHubLabel.value,
-          section: 'view' as const,
-          key: 'O',
-          icon: ArrowUpRight,
-          run: openOnGitHub,
-        },
-      ]
-    : []),
+  ...(hasGitHubLink.value ? [bindCommand(openOnGitHub, { ...CHANGELOG_PLACE, run: openGitHubLink }, t)] : []),
+  // Space on a focused control, the version's head too, is that control's (`CommandRegistry`): the head opens or closes.
   ...(versions.value.length > 0
     ? [
-        {
-          id: 'changelog.next',
-          title: t(l.moveDown),
-          section: 'view' as const,
-          key: 'ArrowDown',
-          menu: false,
-          run: () => move(1),
-        },
-        {
-          id: 'changelog.previous',
-          title: t(l.moveUp),
-          section: 'view' as const,
-          key: 'ArrowUp',
-          menu: false,
-          run: () => move(-1),
-        },
-        {
-          id: 'changelog.toggle',
-          title: t(l.openOrClose),
-          section: 'view' as const,
-          key: 'Space',
-          menu: false,
-          // Space on another control is that control's.
-          when: () => !isOtherControlFocused(),
-          run: toggleCurrent,
-        },
+        bindCommand(next, { ...CHANGELOG_PLACE, title: t(l.moveDown), menu: false, run: () => move(1) }, t),
+        bindCommand(previous, { ...CHANGELOG_PLACE, title: t(l.moveUp), menu: false, run: () => move(-1) }, t),
+        bindCommand(fold, { ...CHANGELOG_PLACE, title: t(l.openOrClose), menu: false, run: toggleCurrent }, t),
       ]
     : []),
 ]);
@@ -171,9 +142,9 @@ function toggleCurrent() {
 }
 
 function move(by: number) {
-  const next = current.value === -1 ? 0 : current.value + by;
-  if (next >= 0 && next < versions.value.length) {
-    focusHead(next);
+  const index = current.value === -1 ? 0 : current.value + by;
+  if (index >= 0 && index < versions.value.length) {
+    focusHead(index);
   }
 }
 
@@ -186,16 +157,7 @@ function focusHead(index: number) {
   getHeads()[index]?.focus();
 }
 
-function isOtherControlFocused() {
-  const { activeElement } = document;
-  return (
-    activeElement instanceof HTMLElement &&
-    activeElement.matches('a, button') &&
-    !activeElement.matches('[data-changelog-head]')
-  );
-}
-
-function openOnGitHub() {
+function openGitHubLink() {
   emit('openOnGitHub', gitHubUrl.value);
 }
 
@@ -223,11 +185,11 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
     <div :class="css.changelogView_head">
       <h2 :class="css.changelogView_title">{{ t(l.title) }}</h2>
       <span :class="css.changelogView_hint">
-        <Kbd keys="ArrowUp ArrowDown" />
+        <Kbd :keys="`${keyOf(previous)} ${keyOf(next)}`" />
         {{ t(l.move) }}
       </span>
       <span :class="css.changelogView_hint">
-        <Kbd keys="Space" />
+        <Kbd :keys="keyOf(fold)" />
         {{ t(l.openOrClose) }}
       </span>
       <Button
@@ -235,9 +197,9 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
         variant="secondary"
         size="sm"
         :icon="ArrowUpRight"
-        kbd="O"
-        keyshortcuts="O"
-        @click="openOnGitHub"
+        :kbd="keyOf(openOnGitHub)"
+        :keyshortcuts="keyOf(openOnGitHub)"
+        @click="openGitHubLink"
       >
         {{ gitHubLabel }}
       </Button>

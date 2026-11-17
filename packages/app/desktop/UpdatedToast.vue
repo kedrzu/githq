@@ -2,11 +2,14 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CircleArrowDown, CircleArrowUp, ScrollText } from 'lucide-vue-next';
+import { CircleArrowDown, CircleArrowUp } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { whatChanged } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { AppUpdate, isOlderVersion } from '@/services/AppUpdate.js';
@@ -14,9 +17,6 @@ import type { VersionChange } from '@/services/AppUpdate.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 
 import * as l from './UpdatedToast.loc.js';
-
-/** The key of "What changed", while the toast offers it. */
-const WHAT_CHANGED_KEY = 'Alt+W';
 
 const update = useService(AppUpdate);
 const router = useRouter();
@@ -38,19 +38,8 @@ watch(
   { immediate: true },
 );
 
-const commands = computed((): Command[] =>
-  older.value
-    ? []
-    : [
-        {
-          id: 'updates.whatChanged',
-          title: t(l.whatChanged),
-          section: 'app',
-          key: WHAT_CHANGED_KEY,
-          icon: ScrollText,
-          run: openChangelog,
-        },
-      ],
+const commands = computed((): BoundCommand[] =>
+  older.value ? [] : [bindCommand(whatChanged, { section: 'app', run: openChangelog }, t)],
 );
 
 function openChangelog() {
@@ -83,8 +72,8 @@ function onOpenChange(open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? WHAT_CHANGED_KEY : undefined"
-        :keyshortcuts="active ? WHAT_CHANGED_KEY : undefined"
+        :kbd="active ? keyOf(whatChanged) : undefined"
+        :keyshortcuts="active ? keyOf(whatChanged) : undefined"
         @click="openChangelog"
       >
         {{ t(l.whatChanged) }}

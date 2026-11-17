@@ -98,8 +98,6 @@ clearFilters:
   en: Clear filters here
 emptyViewDetailNoFilter:
   en: “{view}” is a view defined on GitHub. No items match it right now.
-rowFieldCommand:
-  en: Row field…
 itemsOf:
   en: "{project}'s items"
 phoneViews:

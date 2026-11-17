@@ -1,10 +1,13 @@
-<!-- The Updates section of Settings, in the desktop app only (U3–U19): what is running and what it follows, Check for updates (`U`), one line saying what the updater is doing or how it last ended, whoever started it (D11), with Restart or Try again (`R`) when there is something to run, and the choice of stream where there is one (not on Windows, U12). Choosing Stable on a build with a prerelease part asks first (U13, D5), since that can install an older version; the radio follows the native side's stream, so it moves only once the switch has been made. Below them, the slot: the changelog (`ChangelogSection`, D20), in the same column and scroll. -->
+<!-- The Updates section of Settings, in the desktop app only (U3–U19): what is running and what it follows, Check for updates (`U`), one line saying what the updater is doing or how it last ended, whoever started it (D11), with Restart or Try again (`⌥R`, as in its toast) when there is something to run, and the choice of stream where there is one (not on Windows, U12). Choosing Stable on a build with a prerelease part asks first (U13, D5), since that can install an older version; the radio follows the native side's stream, so it moves only once the switch has been made. Below them, the slot: the changelog (`ChangelogSection`, D20), in the same column and scroll. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleArrowDown, Info, LoaderCircle, RefreshCw, TriangleAlert } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, useId, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { checkForUpdates, loadNewVersion } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ChoiceCards from '@/components/ChoiceCards.vue';
@@ -69,26 +72,24 @@ const stream = computed({
 });
 
 useCommands(() => [
-  {
-    id: 'updates.check',
-    title: t(l.checkForUpdates),
-    section: 'view',
-    key: 'U',
-    // The menu has its own, which runs anywhere in the app.
-    menu: false,
-    when: () => !resting.value,
-    run: () => emit('check'),
-  },
+  bindCommand(
+    checkForUpdates,
+    {
+      section: 'view',
+      // The menu has its own, which runs anywhere in the app.
+      menu: false,
+      when: () => !resting.value,
+      run: () => emit('check'),
+    },
+    t,
+  ),
   ...(status.value?.action
     ? [
-        {
-          id: 'updates.restart',
-          title: status.value.action,
-          section: 'view' as const,
-          key: 'R',
-          menu: false,
-          run: () => emit('restart'),
-        },
+        bindCommand(
+          loadNewVersion,
+          { place: 'settings', title: status.value.action, section: 'view', menu: false, run: () => emit('restart') },
+          t,
+        ),
       ]
     : []),
 ]);
@@ -279,8 +280,8 @@ function focusConfirmButton(event: Event) {
             <Button
               size="sm"
               :icon="RefreshCw"
-              kbd="U"
-              keyshortcuts="U"
+              :kbd="keyOf(checkForUpdates)"
+              :keyshortcuts="keyOf(checkForUpdates)"
               :disabled="resting"
               @click="emit('check')"
             >
@@ -317,8 +318,8 @@ function focusConfirmButton(event: Event) {
             <Button
               v-if="status.action"
               size="sm"
-              kbd="R"
-              keyshortcuts="R"
+              :kbd="keyOf(loadNewVersion)"
+              :keyshortcuts="keyOf(loadNewVersion)"
               @click="emit('restart')"
             >
               {{ status.action }}

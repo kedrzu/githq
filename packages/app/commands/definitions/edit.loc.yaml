@@ -1,0 +1,44 @@
+merge:
+  en: Merge…
+assignees:
+  en: Assign to…
+assigneesKeyword:
+  en: assignees
+labels:
+  en: Add or remove labels…
+labelsKeyword:
+  en: label
+milestone:
+  en: Set milestone…
+issueType:
+  en: Set issue type…
+status:
+  en: Set status…
+priority:
+  en: Set priority…
+iteration:
+  en: Set iteration…
+reviewers:
+  en: Request review…
+reviewersKeyword:
+  en: reviewers
+draft:
+  en: Ready for review or draft
+state:
+  en: Close or reopen
+comment:
+  en: Comment
+updateBranch:
+  en: Update branch
+updateBranchByRebase:
+  en: Update branch by rebase
+rerunChecks:
+  en: Re-run failed checks
+branch:
+  en: Delete or restore branch
+revert:
+  en: Revert
+chooseMergeMethod:
+  en: Choose merge method
+dequeue:
+  en: Take out of queue

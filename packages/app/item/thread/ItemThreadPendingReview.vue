@@ -1,13 +1,13 @@
 <!-- The viewer's own draft review on an item's thread (`Activity / Review · pending`, F14), last before the composer: an amber card, "Your review · pending" and when it was started, the threads it starts (`ItemThreadCodeThread`, their comments marked "Pending", no reply or resolve), and code review's own pending toolbar (`ReviewPendingToolbar`) at its foot: Discard review… and Submit review… (⇧S, also in the command menu) open code review's dialogs, and finish the draft through the same writing as code review (`ReviewWriting`), so a refusal shows here as it does there. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Send, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { discardReview, submitReview } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import CommentCard from '@/comments/CommentCard.vue';
 import ReviewPendingToolbar from '@/review/ReviewPendingToolbar.vue';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import type { PendingComment } from '@/review/writing/getPendingComments.js';
 import ReviewDiscardDialog from '@/review/writing/ReviewDiscardDialog.vue';
 import ReviewSubmitDialog from '@/review/writing/ReviewSubmitDialog.vue';
@@ -45,27 +45,30 @@ const submission = computed({
 });
 
 useCommands(() => [
-  {
-    id: 'item.submitReview',
-    title: t(l.submitReview),
-    section: 'item',
-    key: REVIEW_KEYS.submit,
-    icon: Send,
-    when: () => finish.value !== null && finish.value.kind !== 'sending',
-    run: () => {
-      submitOpen.value = true;
+  bindCommand(
+    submitReview,
+    {
+      place: 'item',
+      section: 'item',
+      when: () => finish.value !== null && finish.value.kind !== 'sending',
+      run: () => {
+        submitOpen.value = true;
+      },
     },
-  },
-  {
-    id: 'item.discardReview',
-    title: t(l.discardReview),
-    section: 'item',
-    icon: Trash2,
-    when: () => finish.value !== null && finish.value.kind !== 'sending' && props.entry.review !== null,
-    run: () => {
-      discardOpen.value = true;
+    t,
+  ),
+  bindCommand(
+    discardReview,
+    {
+      place: 'item',
+      section: 'item',
+      when: () => finish.value !== null && finish.value.kind !== 'sending' && props.entry.review !== null,
+      run: () => {
+        discardOpen.value = true;
+      },
     },
-  },
+    t,
+  ),
 ]);
 
 function submit() {

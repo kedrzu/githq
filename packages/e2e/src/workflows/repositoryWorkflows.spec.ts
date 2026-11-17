@@ -149,7 +149,7 @@ test('⇧Enter opens a workflow full screen straight, ⇧J steps to the next, an
     await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
 });
 
-test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the same row', async ({
+test('⇧P opens the repository’s settings on Workflow alerts, and Esc there comes back to the same row', async ({
     page,
     github,
 }) => {
@@ -164,7 +164,7 @@ test('P opens the repository’s settings on Workflow alerts, and Esc there come
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('j');
     await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
-    await page.keyboard.press('p');
+    await page.keyboard.press('Shift+P');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts`);
 
     await page.keyboard.press('Escape');

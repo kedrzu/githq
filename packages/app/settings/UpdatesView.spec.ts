@@ -172,25 +172,25 @@ for (const [name, story, action] of [
     ['U8: Restart', Ready, 'Restart'],
     ['a failed install: Try again', InstallFailed, 'Try again'],
 ] as const) {
-    test(`${name}, by button and by \`R\`, restarts`, async () => {
+    test(`${name}, by button and by \`⌥R\`, restarts`, async () => {
         const onRestart = vi.fn();
         await story.run({ args: { ...story.args, onRestart } });
 
         await userEvent.click(page.getByRole('button', { name: action }));
         expect(onRestart).toHaveBeenCalledTimes(1);
 
-        await userEvent.keyboard('r');
+        await userEvent.keyboard('{Alt>}r{/Alt}');
         expect(onRestart).toHaveBeenCalledTimes(2);
     });
 }
 
-test('with nothing to restart into there is no button and `R` does nothing', async () => {
+test('with nothing to restart into there is no button and `⌥R` does nothing', async () => {
     const onRestart = vi.fn();
     await Installing.run({ args: { ...Installing.args, onRestart } });
 
     await expect.element(page.getByRole('button', { name: 'Restart' })).not.toBeInTheDocument();
     await expect.element(page.getByText(matchText('Installing githq 0.2.1…'))).toBeVisible();
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Alt>}r{/Alt}');
     expect(onRestart).not.toHaveBeenCalled();
 });
 
