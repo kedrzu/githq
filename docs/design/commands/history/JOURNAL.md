@@ -60,3 +60,8 @@
   Escape, ⇧Enter only opens it; the list's layout toggle loses its key (⇧V), too niche.
 - Owner: a project keeps its own `C` for a new issue in it (H5); D7 takes only the app-wide one.
 - Owner: two fixed keys never conflict (D13 amended); the Escape exception and the board's own place go.
+
+## 2026-11-17 (delivery, M4)
+
+- Owner: the review's reply in a thread is the same command as the item's comment (R), named "Reply to the thread"
+  there.
