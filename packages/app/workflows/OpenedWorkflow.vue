@@ -5,7 +5,6 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { ArrowLeft, CirclePause, CirclePlay, FileCode, Link, SearchX } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { Command } from '@/commands/CommandTypes.js';
@@ -58,8 +57,6 @@ const runStore = useService(WorkflowRunStore);
 const browser = useService(Browser);
 const workflows = useService(WorkflowStore);
 const runWorkflowCommands = useRunWorkflowCommand();
-const route = useRoute();
-const router = useRouter();
 const now = useNow(TICK_MS);
 const openRun = useOpenWorkflowRun();
 
@@ -181,14 +178,6 @@ const selectedRun = computed({
   set: (runKey: string | null) => places.setRunSelected(WorkflowRoutes.formatKey(props.reference), runKey),
 });
 const referenceText = computed(() => `${opened.nameWithOwner} ${props.reference.file}`);
-/** Escape from full screen goes back to the panel when the page was expanded from it and the panel fits. */
-const escapeTo = computed(() => {
-  // Read again as the address changes: the history's state is not reactive.
-  void route.fullPath;
-  return WorkflowRoutes.getExpandedFrom(router.options.history.state) !== null && navigation.panelFits
-    ? 'panel'
-    : 'list';
-});
 
 function setEnabled(enabled: boolean) {
   if (opened.state) {
@@ -231,7 +220,7 @@ function readMore() {
     :tags="opened.tags"
     :group-by="tracking.workflowRunsGroupBy"
     :latest-failure="opened.latestFailure"
-    :escape-to="escapeTo"
+    :escape-to="arranging.closesToPanel ? 'panel' : 'list'"
     :offer-run="offerRun"
     :offer-toggle="toggle !== null"
     :can-change-runs="canChangeRuns"

@@ -4,7 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ChevronDown, ChevronUp, Github, X } from 'lucide-vue-next';
 
-import { closeItem, fullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import { closeItem, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import IconButton from '@/components/IconButton.vue';
 import PhoneBackButton from '@/shell/PhoneBackButton.vue';
@@ -96,8 +96,8 @@ const phone = useService(PhoneLayout);
       v-if="otherArrangement"
       :icon="otherArrangement.icon"
       :label="otherArrangement.title"
-      :kbd="keyOf(fullScreen)"
-      :keyshortcuts="keyOf(fullScreen)"
+      :kbd="otherArrangement.key"
+      :keyshortcuts="otherArrangement.key"
       @click="emit('arrange', otherArrangement.arrangement)"
     />
     <IconButton

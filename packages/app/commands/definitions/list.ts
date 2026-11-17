@@ -167,6 +167,7 @@ export const remove = defineAppCommand({
     title: l.remove,
     key: 'Backspace',
     places: ['trackedList', 'workflowAlerts'],
+    configurable: false,
 });
 
 /** Switches the selected row's switch, as Space on the switch itself does (the default branch's workflow alerts). */

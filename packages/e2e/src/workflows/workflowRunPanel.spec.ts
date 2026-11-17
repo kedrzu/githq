@@ -88,7 +88,7 @@ test('⇧Enter moves the run from the panel to its page; a job selected there, E
     await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toBeVisible();
 });
 
-test('"Back to the panel" on the run\'s page expanded from the panel comes back to the run in the panel', async ({
+test('"Back to the panel" on the run\'s page expanded from the panel comes back to the run in the panel; ⇧Enter there does not', async ({
     page,
     github,
 }) => {
@@ -97,6 +97,9 @@ test('"Back to the panel" on the run\'s page expanded from the panel comes back 
     const screen = new WorkflowRunScreenHarness(page);
 
     await screen.openFullScreen.click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/${failedId}`);
+    await expect(screen.backToPanel).toBeVisible();
+    await page.keyboard.press('Shift+Enter');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/${failedId}`);
 
     await screen.backToPanel.click();

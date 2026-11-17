@@ -88,6 +88,7 @@ const keys = useItemKeys({
   steps: () => props.arrangement === 'page',
   // `⇧Enter` is its pull request's.
   arrangeByKey: false,
+  closesToPanel: () => arranging.closesToPanel,
   onEscape: () => store.takeEscape(),
   close: () => arranging.close(),
   arrange: arrangement => arranging.arrange(arrangement),
@@ -126,7 +127,8 @@ useCommands(() => {
     },
     commands.close,
     bindCommand(openOnGitHub, { place: 'commit', section: 'item', run: () => browser.openInNewTab(url.value) }, t),
-    ...(commands.arrange ? [commands.arrange] : []),
+    commands.closeFullScreen,
+    ...(commands.openFullScreen ? [commands.openFullScreen] : []),
   ];
 });
 

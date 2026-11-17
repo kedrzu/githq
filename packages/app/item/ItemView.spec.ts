@@ -318,13 +318,42 @@ test('mobile D29: on a phone a stacked pull request has the strip under the top 
     await expect.element(page.getByRole('region', { name: 'The stack' })).toBeVisible();
 });
 
-test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {
+test('on a page not expanded from the panel, "Back to the panel" asks for it by click alone: Shift+Enter does nothing and Escape closes', async () => {
     await IssueOnPage.run();
+    const { onArrange, onClose } = IssueOnPage.args;
 
-    await userEvent.click(page.getByRole('button', { name: 'Back to the panel' }));
-    expect(IssueOnPage.args.onArrange).toHaveBeenLastCalledWith('panel');
+    const back = page.getByRole('button', { name: 'Back to the panel' });
+    await expect.element(back).not.toHaveAttribute('aria-keyshortcuts');
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
-    expect(IssueOnPage.args.onArrange).toHaveBeenCalledTimes(2);
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onArrange).not.toHaveBeenCalled();
+    await userEvent.click(back);
+    expect(onArrange).toHaveBeenLastCalledWith('panel');
+});
+
+test('on a page expanded from the panel, Escape closes full screen — after the dropped stack rows — and never closes the item', async () => {
+    // A page in one column, where the stack's bar drops the rows.
+    const args = { ...StackOfTenInPanel.args, arrangement: 'page', closesToPanel: true } as const;
+    await IssueOnNarrowPage.run({ args });
+    const { onArrange, onClose } = args;
+
+    await expect
+        .element(page.getByRole('button', { name: 'Back to the panel' }))
+        .toHaveAttribute('aria-keyshortcuts', 'Escape');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onArrange).not.toHaveBeenCalled();
+
+    await scrollRowsAway(getContentScroll());
+    await stackBarToggle().click();
+    await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'false');
+    expect(onArrange).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Escape}');
+    expect(onArrange).toHaveBeenLastCalledWith('panel');
+    expect(onClose).not.toHaveBeenCalled();
 });
 
 test('on a page in a window with no room for the panel, neither its button nor Shift+Enter is offered', async () => {

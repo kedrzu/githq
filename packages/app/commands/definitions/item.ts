@@ -1,4 +1,4 @@
-import { Github, Maximize2 } from 'lucide-vue-next';
+import { Github, Maximize2, Minimize2 } from 'lucide-vue-next';
 
 import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './item.loc.js';
@@ -29,8 +29,8 @@ export const openOnGitHub = defineAppCommand({
 });
 
 /**
- * Closes the opened item, commit or workflow — the panel's Escape: back to the list, or a page expanded from the panel
- * back to it (`useItemArrangement`), after the view's own layers over it (`useItemKeys`).
+ * Closes the opened item, commit or workflow — the panel's Escape: back to the list, or with none up to its parent —
+ * after the view's own layers over it (`useItemKeys`). Not offered where Escape closes full screen ({@link closeFullScreen}).
  */
 export const closeItem = defineAppCommand({
     id: 'closeItem',
@@ -41,16 +41,30 @@ export const closeItem = defineAppCommand({
 });
 
 /**
- * Moves an item between the panel and its page: a list's or a repository's Workflows section's row opened straight full
- * screen, the opened item, commit, workflow or run to its page, or — named so by its binding — back to the panel. One
- * command (commands D1): whoever moves it off `⇧Enter` moves it for all of them.
+ * Opens an item full screen: a list's or a repository's Workflows section's row straight on its page, the opened item,
+ * commit, workflow or run from the panel. One command (commands D1): whoever moves it off `⇧Enter` moves it for all of
+ * them. It only opens; Escape closes full screen ({@link closeFullScreen}).
  */
-export const fullScreen = defineAppCommand({
-    id: 'fullScreen',
-    title: l.fullScreen,
+export const openFullScreen = defineAppCommand({
+    id: 'openFullScreen',
+    title: l.openFullScreen,
     icon: Maximize2,
     key: 'Shift+Enter',
     places: ['list', 'workflows', 'item', 'commit', 'workflow', 'workflowRun'],
+});
+
+/**
+ * Back to the panel from an item's, commit's or workflow's page expanded from it, while the window has room for it —
+ * that page's Escape in place of {@link closeItem}, after the view's own layers (`useItemKeys`). A run's page offers it
+ * in the command menu only, its Escape being the run's own step back.
+ */
+export const closeFullScreen = defineAppCommand({
+    id: 'closeFullScreen',
+    title: l.closeFullScreen,
+    icon: Minimize2,
+    key: 'Escape',
+    places: ['item', 'commit', 'workflow', 'workflowRun'],
+    configurable: false,
 });
 
 /** An opened workflow to the next of the list it was opened from: `J` is its runs'. */

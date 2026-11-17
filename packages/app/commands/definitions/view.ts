@@ -9,12 +9,11 @@ import * as l from './view.loc.js';
  */
 const VIEW_OPTION_PRIORITY = -1;
 
-/** Shows the list as a board, or the board as a list (`ListToolbar`); its binding names the way it goes. */
+/** Shows the list as a board, or the board as a list (`ListToolbar`), with no key; its binding names the way it goes. */
 export const toggleLayout = defineAppCommand({
     id: 'toggleLayout',
     title: l.toggleLayout,
     icon: Columns3,
-    key: 'Shift+V',
     places: ['list'],
     priority: VIEW_OPTION_PRIORITY,
 });

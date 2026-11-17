@@ -2,8 +2,10 @@ openOnGitHub:
   en: Open on GitHub
 closeItem:
   en: Close
-fullScreen:
+openFullScreen:
   en: Open full screen
+closeFullScreen:
+  en: Close full screen
 nextWorkflow:
   en: Next workflow
 previousWorkflow:

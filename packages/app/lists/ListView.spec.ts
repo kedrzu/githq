@@ -128,7 +128,7 @@ test('#339: an item selected elsewhere that this list does not show is out of th
     const view = mount(BOARD, 'board');
     const registry = view.container.resolve(CommandRegistry);
     const offered = () =>
-        registry.commands.some(command => command.id === 'list.fullScreen' && registry.isEnabled(command));
+        registry.commands.some(command => command.id === 'list.openFullScreen' && registry.isEnabled(command));
     // The item opened last, in another list: the page selects it, and this list has no row of it.
     view.selectedId.value = 'elsewhere';
     await nextTick();

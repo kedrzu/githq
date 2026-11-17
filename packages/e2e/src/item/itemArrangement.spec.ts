@@ -9,9 +9,9 @@ import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTr
 import { getScrollTop } from '../utils/getScrollTop.js';
 import { scrollDown } from '../utils/scrollDown.js';
 
-// An item opens in the panel; Enter on its row again, "Open full screen" or ⇧Enter expand it to its page, and Escape,
-// "Back to the panel" or ⇧Enter step back to the panel (`OpenedItem.vue`). ⇧Enter on a row with nothing open opens
-// its item straight on its page, Escape closing it to the list.
+// An item opens in the panel; Enter on its row again, "Open full screen" or ⇧Enter expand it to its page, and Escape
+// ("Close full screen") or "Back to the panel" step back to the panel (`OpenedItem.vue`); ⇧Enter only opens. ⇧Enter on
+// a row with nothing open opens its item straight on its page, Escape closing it to the list.
 
 const ISSUE = 'Sign-in loops after the token expires';
 const PANEL = '/?pane=issue&issue=acme%7Cweb%7C12';
@@ -37,6 +37,20 @@ test('Enter on the open row expands the item to its page; Escape goes back to th
     await expect(item.backToPanelButton).toBeVisible();
     // The page of a 1280px window: two columns, their scroll at its top.
     await expect.poll(() => getScrollTop(item.columns)).toBe(0);
+
+    // The help lists Escape once, as what it does here.
+    await page.keyboard.press('?');
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    await expect(help.getByRole('definition').filter({ hasText: /^Escape/u })).toHaveCount(1);
+    await expect(
+        help
+            .getByRole('term')
+            .filter({ hasText: /^Close full screen$/u })
+            .locator('+ dd'),
+    ).toContainText('Escape');
+    await page.keyboard.press('Escape');
+    await expect(help).toBeHidden();
+    await expect(page).toHaveURL(PAGE);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(PANEL);
@@ -68,7 +82,7 @@ test('the open row\'s context menu "Open full screen" expands it as the header d
     await expect(item.title).toHaveText(ISSUE);
 });
 
-test('Shift+Enter toggles the panel and the page', async ({ page, github }) => {
+test('Shift+Enter opens the panel full screen and does not go back; Escape does', async ({ page, github }) => {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
 
@@ -76,7 +90,10 @@ test('Shift+Enter toggles the panel and the page', async ({ page, github }) => {
     await expect(item.fullScreenButton).toBeVisible();
     await page.keyboard.press('Shift+Enter');
     await expect(page).toHaveURL(PAGE);
+    await expect(item.backToPanelButton).toBeVisible();
     await page.keyboard.press('Shift+Enter');
+    await expect(page).toHaveURL(PAGE);
+    await page.keyboard.press('Escape');
     await expect(page).toHaveURL(PANEL);
     await expect(item.fullScreenButton).toBeVisible();
 });
@@ -138,7 +155,7 @@ test('a page opened by its address: "Back to the panel" puts the item in the pan
     await expect(item.root).toBeHidden();
 });
 
-test("Shift+Enter over a screen with no list: a commit's pull request goes from the panel to its page and back over the commit graph", async ({
+test("Shift+Enter over a screen with no list: a commit's pull request goes from the panel to its page, and Escape back over the commit graph", async ({
     page,
     github,
 }) => {
@@ -175,7 +192,7 @@ test("Shift+Enter over a screen with no list: a commit's pull request goes from 
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pull/4`);
     await expect(item.backToPanelButton).toBeVisible();
 
-    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.press('Escape');
     await expect(page).toHaveURL(panel);
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(item.fullScreenButton).toBeVisible();

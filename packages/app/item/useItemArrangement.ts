@@ -40,10 +40,15 @@ export interface UseItemKeysOptions {
      */
     steps?: MaybeRefOrGetter<boolean>;
     /**
-     * `false`: the other arrangement is offered with no key, `⇧Enter` being the kind's own (a commit's pull request);
-     * left out, `true`.
+     * `false`: full screen is offered with no key, `⇧Enter` being the kind's own (a commit's pull request); left out,
+     * `true`.
      */
     arrangeByKey?: boolean;
+    /**
+     * Escape closes full screen, back to the panel, in place of closing the item: a page expanded from the panel while
+     * the window has room for it ({@link ItemArrangementViewModel.closesToPanel}).
+     */
+    closesToPanel: MaybeRefOrGetter<boolean>;
     /**
      * Escape for the view's own layers, before it closes the item (an open picker or menu takes it already, a field
      * keeps its own): `true` when it took the key.
@@ -55,11 +60,13 @@ export interface UseItemKeysOptions {
     next(): void;
 }
 
-/** The arrangement the header's button and `⇧Enter` move the item to. */
+/** The arrangement the header's button moves the item to. */
 export interface OtherArrangement {
     readonly arrangement: ItemArrangement;
     readonly title: string;
     readonly icon: LucideIcon;
+    /** The key doing the same here, for the button's hint: `⇧Enter` to the page, Escape back to the panel; else none. */
+    readonly key?: string;
 }
 
 /** The commands of an opened item's moves, for the view to list among its own in its order. */
@@ -67,8 +74,10 @@ export interface ItemKeyCommands {
     readonly next: Command;
     readonly previous: Command;
     readonly close: Command;
-    /** `null` where there is no other arrangement to offer. */
-    readonly arrange: Command | null;
+    /** Escape back to the panel, offered in place of {@link close} where the item {@link UseItemKeysOptions.closesToPanel}. */
+    readonly closeFullScreen: Command;
+    /** `null` off the panel. */
+    readonly openFullScreen: Command | null;
 }
 
 /** What {@link useItemKeys} gives the view. */
@@ -122,6 +131,11 @@ export interface ItemArrangementViewModel<TReference> {
     readonly walk: ItemWalkViewModel;
     /** What back on a phone says it returns to (mobile D20): the list's name, or with no list the parent's. */
     readonly backTitle: string;
+    /**
+     * On a computer, Escape on the item's page goes back to the panel ("Close full screen"): the page was expanded from
+     * it, and the window has room for it.
+     */
+    readonly closesToPanel: boolean;
     /** "Open full screen" and "Back to the panel". */
     arrange(arrangement: ItemArrangement): void;
     /** Escape, the close button, and back on a phone. */
@@ -139,7 +153,7 @@ export interface ItemArrangementViewModel<TReference> {
 /**
  * How an opened item of any kind moves (D9), the same for every kind: full screen adds the page to the history,
  * marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the
- * panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the
+ * panel" and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the
  * one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the
  * panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window
  * narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once
@@ -188,6 +202,11 @@ export function useItemArrangement<TReference>(
             : null;
     });
     const backTitle = computed(() => ownList.value?.title ?? parent.value.title);
+    const closesToPanel = computed(() => {
+        // Read again as the address changes: the history's state is not reactive.
+        void route.fullPath;
+        return !phone.active && expandedFrom() !== null && navigation.panelFits;
+    });
 
     // In the panel, a window narrowed until the panel no longer fits beside the screen moves the item to its page, in place
     // of the address — but not while `holdsPanel` says so: it moves once that lets go. Widening never brings it back. The
@@ -209,6 +228,7 @@ export function useItemArrangement<TReference>(
     return reactive<ItemArrangementViewModel<TReference>>({
         walk,
         backTitle,
+        closesToPanel,
         arrange,
         close,
         step,
@@ -363,7 +383,7 @@ export function useItemArrangement<TReference>(
             return;
         }
 
-        if (expandedFrom() !== null && navigation.panelFits) {
+        if (closesToPanel.value) {
             backToPanel();
             return;
         }
@@ -420,45 +440,77 @@ type HistoryMove = 'push' | 'replace';
 
 /**
  * The keys of an opened item, every kind's, bound from their definitions for the view to register among its own, with
- * its own "Open on GitHub" (`openOnGitHub`): Escape closes it (`closeItem`) — after an open picker or menu (the registry's
- * `isLayerOpen`) and the view's own layers (`onEscape`); a field's Escape is the field's — the step keys step through
- * the list it was opened from (in a panel the list's own `j`/`k`, its place keeping the keyboard, move its selection
- * instead, which the opened item follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it alone),
- * and `⇧Enter` moves it to the other arrangement (`fullScreen`) — not offered on a page where the window has no room
- * for the panel, and a kind may offer it with no key.
+ * its own "Open on GitHub" (`openOnGitHub`): Escape closes it (`closeItem`), or on a page expanded from the panel while
+ * the window has room for it goes back to the panel (`closeFullScreen`) — either after an open picker or menu (the
+ * registry's `isLayerOpen`) and the view's own layers (`onEscape`); a field's Escape is the field's — the step keys step
+ * through the list it was opened from (in a panel the list's own `j`/`k`, its place keeping the keyboard, move its
+ * selection instead, which the opened item follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it
+ * alone), and in the panel `⇧Enter` opens it full screen (`openFullScreen`) — a kind may offer that with no key.
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
     const { place } = options;
     const arrangement = makeRef(options.arrangement);
     const steps = makeRef(options.steps ?? true);
+    const closesToPanel = makeRef(options.closesToPanel);
     const stepKeys: ItemStepKeys =
         place === 'workflow'
             ? { previous: keyOf(definitions.previousWorkflow), next: keyOf(definitions.nextWorkflow) }
             : { previous: keyOf(definitions.previous), next: keyOf(definitions.next) };
+    const arrangeByKey = options.arrangeByKey !== false;
 
-    const otherArrangement = useOtherArrangement(arrangement);
-    const commands = computed((): ItemKeyCommands => {
-        const other = otherArrangement.value;
-        return {
-            ...bindSteps(),
-            close: bindCommand(definitions.closeItem, { place, section: 'item', menu: false, run: close }, t),
-            arrange:
-                other &&
-                bindCommand(
-                    definitions.fullScreen,
-                    {
-                        place,
-                        section: 'item',
-                        title: other.title,
-                        icon: other.icon,
-                        keyed: options.arrangeByKey === false ? false : undefined,
-                        run: () => options.arrange(other.arrangement),
-                    },
-                    t,
-                ),
-        };
+    const arrangementTo = useOtherArrangement(arrangement);
+    const otherArrangement = computed((): OtherArrangement | null => {
+        const other = arrangementTo.value;
+        if (!other) {
+            return null;
+        }
+
+        if (other.arrangement === 'page') {
+            return arrangeByKey ? { ...other, key: keyOf(definitions.openFullScreen) } : other;
+        }
+
+        return closesToPanel.value ? { ...other, key: keyOf(definitions.closeFullScreen) } : other;
     });
+    const commands = computed((): ItemKeyCommands => ({
+        ...bindSteps(),
+        close: bindCommand(
+            definitions.closeItem,
+            {
+                place,
+                section: 'item',
+                menu: false,
+                when: () => !closesToPanel.value,
+                run: () => escape(() => options.close()),
+            },
+            t,
+        ),
+        closeFullScreen: bindCommand(
+            definitions.closeFullScreen,
+            {
+                place,
+                section: 'item',
+                // Its Escape runs the view's layers first, which a pick from the menu would run instead.
+                menu: false,
+                when: () => closesToPanel.value,
+                run: () => escape(() => options.arrange('panel')),
+            },
+            t,
+        ),
+        openFullScreen:
+            arrangement.value === 'panel'
+                ? bindCommand(
+                      definitions.openFullScreen,
+                      {
+                          place,
+                          section: 'item',
+                          keyed: arrangeByKey ? undefined : false,
+                          run: () => options.arrange('page'),
+                      },
+                      t,
+                  )
+                : null,
+    }));
 
     return reactive<ItemKeysViewModel>({ otherArrangement, stepKeys, commands });
 
@@ -484,17 +536,17 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     }
 
     /** The view's own layers take Escape first (here rather than in listeners of theirs, which would run after). */
-    function close() {
+    function escape(then: () => void) {
         if (!options.onEscape?.()) {
-            options.close();
+            then();
         }
     }
 }
 
 /**
- * The arrangement an opened item in `arrangement` moves to — the header's button and `⇧Enter`: full screen from the
- * panel; back to the panel from a page while the window has room for it, else `null`. For a view with keys of its own
- * in place of {@link useItemKeys} (a workflow's run).
+ * The arrangement an opened item in `arrangement` moves to — the header's button: full screen from the panel; back to
+ * the panel from a page while the window has room for it, else `null`. For a view with keys of its own in place of
+ * {@link useItemKeys} (a workflow's run).
  */
 export function useOtherArrangement(arrangement: MaybeRefOrGetter<ItemArrangement>) {
     const t = useTranslate();

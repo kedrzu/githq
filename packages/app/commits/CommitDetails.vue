@@ -212,6 +212,8 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
+        :kbd="otherArrangement.key"
+        :keyshortcuts="otherArrangement.key"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton

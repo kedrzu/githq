@@ -1,4 +1,4 @@
-<!-- A workflow's run (actions W4a, W34), the same view on its page or in the panel beside a repository's Workflows section: the toolbar across it — the repository, the workflow (a link to its page, when known) and the run's number, the other arrangement ("Open full screen" from the panel, "Back to the panel" from the page while the panel fits: the button, `⇧Enter`, ⌘K), GitHub (`O`) and back (`Esc`) —, then, on the page in a centred box of the item page's width (D9, the same setting, its edges dragged), in the panel across its whole width, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
+<!-- A workflow's run (actions W4a, W34), the same view on its page or in the panel beside a repository's Workflows section: the toolbar across it — the repository, the workflow (a link to its page, when known) and the run's number, the other arrangement ("Open full screen" from the panel: the button, `⇧Enter`, ⌘K; "Back to the panel" from the page while the panel fits: the button, ⌘K), GitHub (`O`) and back (`Esc`) —, then, on the page in a centred box of the item page's width (D9, the same setting, its edges dragged), in the panel across its whole width, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`) or, for a run opened with nothing failed, the run's overview (`WorkflowRunOverview`) with a key bar under it; the edge between them dragged from 200 to 480px, kept on this device (`ColumnSplit`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs (at the overview, the cursor on them), Enter tries a failed read again or, at the overview, opens the cursor's job's log, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k); so are, where the user may change the repository's runs, re-running all the jobs of a run that finished or the job under the cursor, and cancelling a run that goes, offered dimmed once it finished (W40). ⌘K also copies the run's link and opens its workflow. -->
 <script lang="ts" setup>
 import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
@@ -26,7 +26,7 @@ import { RouterLink } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { fullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import { closeFullScreen, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -110,7 +110,7 @@ const emit = defineEmits<{
   cancel: [];
   /** "Open workflow" in ⌘K: the caller goes to the run's workflow's page. */
   openWorkflow: [];
-  /** "Open full screen" or "Back to the panel": the header's button, `⇧Enter` or ⌘K. */
+  /** "Open full screen" (the header's button, `⇧Enter`, ⌘K) or "Back to the panel" (the button, ⌘K). */
   arrange: [arrangement: ItemArrangement];
   /** The user dragged the box's edges to this maximum: the caller keeps it. */
   resizePage: [width: MaxWidth];
@@ -387,18 +387,16 @@ onMounted(() => {
 });
 onBeforeUnmount(() => roomObserver?.disconnect());
 
+/** "Open full screen" by `⇧Enter`; "Back to the panel" in ⌘K only, Escape being the run's own step back (`back`). */
 function getArrangeCommand(other: OtherArrangement): Command {
-  return bindCommand(
-    fullScreen,
-    {
-      place: 'workflowRun',
-      section: 'item',
-      title: other.title,
-      icon: other.icon,
-      run: () => emit('arrange', other.arrangement),
-    },
-    t,
-  );
+  const run = () => emit('arrange', other.arrangement);
+  return other.arrangement === 'page'
+    ? bindCommand(openFullScreen, { place: 'workflowRun', section: 'item', run }, t)
+    : bindCommand(
+        closeFullScreen,
+        { place: 'workflowRun', section: 'item', title: other.title, icon: other.icon, keyed: false, run },
+        t,
+      );
 }
 
 function selectJob(job: GitHubWorkflowJob) {
@@ -508,8 +506,8 @@ function getInvalidFileMessage(): RunMessage {
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
-        :kbd="keyOf(fullScreen)"
-        :keyshortcuts="keyOf(fullScreen)"
+        :kbd="otherArrangement.arrangement === 'page' ? keyOf(openFullScreen) : undefined"
+        :keyshortcuts="otherArrangement.arrangement === 'page' ? keyOf(openFullScreen) : undefined"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton

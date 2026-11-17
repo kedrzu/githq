@@ -44,7 +44,7 @@ Both sections are lists of the repository's items with GitHub's own properties.
 - **Group**: by **Milestone** (the default), **Assignee**, **Author**, **Status**, **Label**, **Issue type** (issues
   only) or **None**. A pull request's status is its stage, such as **Waiting for review**, **Needs work** or **Ready to
   merge**.
-- **Layout**: **List** or **Board**, switched with <kbd>Shift</kbd> <kbd>V</kbd>.
+- **Layout**: **List** or **Board**, also switched from the command menu.
 
 Each section keeps its own state, grouping, order, layout and properties, for this repository, on this device.
 

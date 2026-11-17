@@ -16,8 +16,8 @@ export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends
 /**
  * What a place says of a defined command: what it does there and when it can (`run`, `when`, `unavailable`, `detail`,
  * a picker's `options`…), and the heading it sits under there (`section`). `title` only names what a family's number
- * picks (`Go to "Backlog" view`), or with `icon` the way a command goes here (`fullScreen` on a page: "Back to the
- * panel").
+ * picks (`Go to "Backlog" view`), what the command acts on here ("Untrack" for "Remove") or, with `icon`, the way a
+ * toggle goes here ("Show as board").
  */
 export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit<Command, DefinedField> & {
     readonly title?: string;

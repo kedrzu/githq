@@ -132,7 +132,7 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name: 'Open full screen', exact: true });
     }
 
-    /** "Back to the panel" (`⇧Enter`), on the item's page. */
+    /** "Back to the panel" (Escape when the page was expanded from the panel), on the item's page. */
     get backToPanelButton(): Locator {
         return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
     }

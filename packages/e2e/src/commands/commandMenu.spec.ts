@@ -66,7 +66,7 @@ test('⌘K sets the Status of two selected items at once, by typing the value', 
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['SetProjectFieldValue', 'SetProjectFieldValue']);
 });
 
-test('E1: the view’s options are actions — ⇧V shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
+test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
     page,
     github,
 }) => {
@@ -74,15 +74,10 @@ test('E1: the view’s options are actions — ⇧V shows it as a board, "Order 
     const menu = new CommandMenuHarness(page);
 
     await menu.open();
-    await expect(menu.option(/^Show as board/)).toBeVisible();
     await expect(menu.option(/^Group by…/)).toBeVisible();
-    await page.keyboard.press('Escape');
+    await menu.option(/^Show as board/).click();
     await expect(menu.root).toBeHidden();
-
-    await expect(async () => {
-        await page.keyboard.press('Shift+V');
-        await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
-    }).toPass();
+    await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 
     await menu.open();
     await menu.field.pressSequentially('> order');
@@ -118,7 +113,7 @@ test('D14: a list\'s "This view" opens on what acts on the list and its row, its
         `Add existing issues to ${SAMPLE_PROJECT}…`,
         `Open on GitHub${SAMPLE_PROJECT}`,
         'Open full screenDocument the setup',
-        'Show as listV',
+        'Show as list',
         'Group by…Status',
         "Order by…GitHub's order",
         'Row field…Status',

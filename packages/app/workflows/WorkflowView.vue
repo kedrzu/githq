@@ -176,6 +176,7 @@ const standing = computed((): Standing => {
 const keys = useItemKeys({
   place: 'workflow',
   arrangement: () => props.arrangement,
+  closesToPanel: () => props.escapeTo === 'panel',
   close: () => emit('close'),
   arrange: arrangement => emit('arrange', arrangement),
   previous: () => emit('previous'),
@@ -216,7 +217,8 @@ useCommands(() => {
       { place: 'workflow', section: 'item', run: () => browser.openInNewTab(props.state.workflow.htmlUrl) },
       t,
     ),
-    ...(commands.arrange ? [commands.arrange] : []),
+    commands.closeFullScreen,
+    ...(commands.openFullScreen ? [commands.openFullScreen] : []),
   ];
 });
 

@@ -70,9 +70,9 @@ test("signing out on the Account section deletes this browser's copy and signs o
     github,
 }) => {
     const sample = createSampleMyWork();
-    const { shell } = await openMyWork(page, github, sample.world);
+    const { shell, myWork } = await openMyWork(page, github, sample.world);
     // Kept for the account: how its lists are shown.
-    await page.keyboard.press('Shift+V');
+    await myWork.layout('Board').click();
     // Kept for the device: the sidebar folded.
     await shell.collapseButton.click();
     await expect.poll(() => readLocalDatabases(page)).toContain(`githq-${LOGIN}`);

@@ -883,7 +883,7 @@ function getKeyCommands(): Command[] {
     ),
     // On the opened item's row, `⇧Enter` is the opened item's own (back and forth between the panel and its page).
     bindCommand(
-      definitions.fullScreen,
+      definitions.openFullScreen,
       {
         place: 'list',
         section: 'view',

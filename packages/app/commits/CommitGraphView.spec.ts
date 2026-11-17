@@ -1377,7 +1377,7 @@ test("with the commit's pull request open, Shift+Enter is the item's (it expands
     const unregister = view.container.resolve(CommandRegistry).register({
         commands: [
             {
-                id: 'item.fullScreen',
+                id: 'item.openFullScreen',
                 title: 'Open full screen',
                 section: 'item',
                 place: 'item',
