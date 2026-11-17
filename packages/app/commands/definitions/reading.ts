@@ -14,25 +14,27 @@ export const closeFind = defineAppCommand({
 
 /**
  * Folds what the cursor is in to its header, or unfolds it: a review's file, a job log's step (among only a search's
- * matches, it opens the gap the cursor is on). The binding names which way it goes and gives its icon.
+ * matches, it opens the gap the cursor is on), a version of the changelog. The binding names which way it goes and gives
+ * its icon.
  */
 export const fold = defineAppCommand({
     id: 'fold',
     title: l.fold,
     icon: FoldVertical,
     key: 'Space',
-    places: ['review', 'jobLog'],
+    places: ['review', 'jobLog', 'changelog'],
 });
 
 /**
  * Leaves the screen for the one it was entered from (a review for its pull request, a workflow's run for its workflow or
- * list), once nothing on it is left to close by Escape first; the binding names where it goes.
+ * list, a tracked repository's or project's settings for their section of Settings), once nothing on it is left to close
+ * by Escape first; the binding names where it goes.
  */
 export const back = defineAppCommand({
     id: 'back',
     title: l.back,
     icon: ArrowLeft,
     key: 'Escape',
-    places: ['review', 'workflowRun'],
+    places: ['review', 'workflowRun', 'settings'],
     configurable: false,
 });

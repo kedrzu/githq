@@ -2,18 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import {
-  BookOpen,
-  CircleArrowDown,
-  CircleHelp,
-  Clock,
-  Command as CommandIcon,
-  GitBranch,
-  LogOut,
-  RefreshCw,
-  RotateCcw,
-  Settings,
-} from 'lucide-vue-next';
+import { RotateCcw } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -51,10 +40,23 @@ import { useRunWorkflowCommand } from '@/workflows/useRunWorkflowCommand.js';
 import * as l from './AppCommands.loc.js';
 import { bindCommand } from './bindCommand.js';
 import CommandMenu from './CommandMenu.vue';
-import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import { CommandRegistry } from './CommandRegistry.js';
 import type { Command } from './CommandTypes.js';
-import { newIssue } from './definitions/index.js';
+import {
+  checkForUpdates,
+  commandMenu,
+  documentation,
+  goToSettingsSection,
+  help,
+  loadNewVersion,
+  newIssue,
+  settings,
+  signOut,
+  switchStream,
+  updateLater,
+} from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
+import { keyOf } from './keyOf.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
@@ -133,44 +135,20 @@ const helpOpen = computed({
 });
 
 useCommands(() => [
-  {
-    id: 'app.commandMenu',
-    title: t(l.commandMenu),
-    section: 'app',
-    key: APP_KEYS.commandMenu,
-    icon: CommandIcon,
-    menu: false,
-    run: () => registry.openMenu(),
-  },
-  {
-    id: 'app.help',
-    title: t(l.help),
-    section: 'app',
-    key: APP_KEYS.help,
-    icon: CircleHelp,
-    run: () => registry.setHelpOpen(true),
-  },
-  {
-    id: 'app.documentation',
-    title: t(l.documentation),
-    section: 'app',
-    icon: BookOpen,
-    keywords: [t(l.docsKeyword), t(l.helpKeyword)],
-    run: () => browser.openInNewTab(DOCS_URL),
-  },
+  bindCommand(commandMenu, { section: 'app', menu: false, run: () => registry.openMenu() }, t),
+  bindCommand(help, { section: 'app', run: () => registry.setHelpOpen(true) }, t),
+  bindCommand(documentation, { section: 'app', run: () => browser.openInNewTab(DOCS_URL) }, t),
   bindCommand(newIssue, { place: 'app', section: 'app', run: startNewIssue }, t),
-  {
-    id: 'app.settings',
-    title: t(l.settings),
-    section: 'app',
-    key: APP_KEYS.settings,
-    icon: Settings,
-    // The key and the help sheet's line: the menu offers Settings as a place, under "Go to" (E5).
-    menu: false,
-    run: () => {
-      void router.push(SETTINGS_PATH);
+  bindCommand(
+    settings,
+    {
+      section: 'app',
+      // The key and the help sheet's line: the menu offers Settings as a place, under "Go to" (E5).
+      menu: false,
+      run: () => void router.push(SETTINGS_PATH),
     },
-  },
+    t,
+  ),
   repositorySearchCommand(),
   runWorkflowCommands.anyWorkflow(registry.repositoryRemoved ? null : contextRepository.value),
   ...(openInDesktopCommand ? [openInDesktopCommand()] : []),
@@ -205,26 +183,24 @@ function getUpdateCommands(): Command[] {
 
   const commands: Command[] = [];
   const { activity } = state;
-  if (activity.kind === 'ready') {
-    commands.push({
-      id: 'app.restartToUpdate',
-      title: t(l.restartToUpdate),
-      detail: t(l.updateVersion, { version: activity.version }),
-      section: 'app',
-      icon: CircleArrowDown,
-      run: () => update.restart(),
-    });
-  }
-
-  if (activity.kind === 'installFailed') {
-    commands.push({
-      id: 'app.retryInstall',
-      title: t(l.retryInstall),
-      detail: t(l.updateVersion, { version: activity.version }),
-      section: 'app',
-      icon: RotateCcw,
-      run: () => update.restart(),
-    });
+  if (activity.kind === 'ready' || activity.kind === 'installFailed') {
+    const failed = activity.kind === 'installFailed';
+    // Without its key: that is the toast's, while it is the newest (`UpdateReadyToast`).
+    commands.push(
+      bindCommand(
+        loadNewVersion,
+        {
+          place: 'app',
+          title: t(failed ? l.retryInstall : l.restartToUpdate),
+          detail: t(l.updateVersion, { version: activity.version }),
+          section: 'app',
+          icon: failed ? RotateCcw : undefined,
+          keyed: false,
+          run: () => update.restart(),
+        },
+        t,
+      ),
+    );
   }
 
   // "Later" dismisses the update's toast and nothing else, so it goes with the toast.
@@ -242,51 +218,35 @@ function getUpdateChildren(): Command[] {
     return [];
   }
 
-  const check: Command = {
-    id: 'app.checkForUpdates',
-    title: t(l.checkForUpdates),
-    section: 'app',
-    icon: RefreshCw,
-    run: () => update.check(),
-  };
+  // Without its key: that is the section's own, while it is shown (`UpdatesView`).
+  const check = bindCommand(checkForUpdates, { section: 'app', keyed: false, run: () => update.check() }, t);
   return state.canChoose ? [check, getSwitchCommand(state)] : [check];
 }
 
 /** To the stream not chosen. A Development build goes to Stable only through the confirmation in Settings (D5, U13). */
 function getSwitchCommand(state: UpdateState): Command {
-  if (state.stream === 'development') {
-    return {
-      id: 'app.switchToStable',
-      title: t(l.switchToStable),
+  const toStable = state.stream === 'development';
+  return bindCommand(
+    switchStream,
+    {
+      title: t(toStable ? l.switchToStable : l.switchToDevelopment),
       section: 'app',
-      icon: GitBranch,
       run: () => {
-        if (isPrereleaseVersion(state.version)) {
+        if (!toStable) {
+          update.setStream('development');
+        } else if (isPrereleaseVersion(state.version)) {
           void router.push(CONFIRM_STABLE_PATH);
         } else {
           update.setStream('stable');
         }
       },
-    };
-  }
-
-  return {
-    id: 'app.switchToDevelopment',
-    title: t(l.switchToDevelopment),
-    section: 'app',
-    icon: GitBranch,
-    run: () => update.setStream('development'),
-  };
+    },
+    t,
+  );
 }
 
 function getUpdateLaterCommand(): Command {
-  return {
-    id: 'app.updateLater',
-    title: t(l.updateLater),
-    section: 'app',
-    icon: Clock,
-    run: () => update.later(),
-  };
+  return bindCommand(updateLater, { section: 'app', run: () => update.later() }, t);
 }
 
 /**
@@ -321,9 +281,9 @@ function getPlaces(): NavigationPlace[] {
       group: 'goTo',
       kind: 'settings',
       title: t(l.settings),
-      key: APP_KEYS.settings,
+      key: keyOf(settings),
       path: SETTINGS_PATH,
-      children: () => SETTINGS_SECTIONS.map(getSettingsRow),
+      children: getSettingsRows,
     },
   ];
   if (getDraftReviews(items.all).length > 0) {
@@ -365,27 +325,32 @@ function getPlaces(): NavigationPlace[] {
   return places;
 }
 
-function getSettingsRow(section: SettingsSection): Command {
-  const row: Command = {
-    id: `settings.${section}`,
-    title: t(settingsSectionLabels[section]),
-    section: 'app',
-    icon: SETTINGS_SECTION_ICONS[section],
-    run: () => void router.push(getSettingsPath(section)),
-  };
+/** Settings' sections, with no keys: those run only on Settings itself (`SettingsView`). */
+function getSettingsRows(): Command[] {
+  const rows = bindCommand(
+    goToSettingsSection,
+    SETTINGS_SECTIONS.map(section => ({
+      title: t(settingsSectionLabels[section]),
+      section: 'app' as const,
+      icon: SETTINGS_SECTION_ICONS[section],
+      keyed: false as const,
+      run: () => void router.push(getSettingsPath(section)),
+    })),
+    t,
+  );
+  // One row per section, in its order: no binding is null.
+  return SETTINGS_SECTIONS.flatMap((section, index) => {
+    const row = rows[index];
+    return row ? [withSectionChildren(section, row)] : [];
+  });
+}
+
+function withSectionChildren(section: SettingsSection, row: Command): Command {
   switch (section) {
     case 'account':
       return {
         ...row,
-        children: () => [
-          {
-            id: 'app.signOut',
-            title: t(l.signOut),
-            section: 'app',
-            icon: LogOut,
-            run: () => auth.signOut(),
-          },
-        ],
+        children: () => [bindCommand(signOut, { section: 'app', run: () => auth.signOut() }, t)],
       };
     case 'updates':
       // Not on the state: it is `null` until the native side first tells it, and the section is there all the same.

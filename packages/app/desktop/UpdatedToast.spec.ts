@@ -7,6 +7,7 @@ import { createApp, defineComponent, h, nextTick, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { whatChanged } from '@/commands/definitions/index.js';
 import { TOAST_LASTS } from '@/components/Toast.vue';
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -34,13 +35,13 @@ test('U24: a Development build says the same, with ⌥W as its key', async () =>
     const { registry, router } = mount({ version: '0.3.0-dev.214', previousVersion: '0.3.0-dev.207' });
 
     await expect.element(toast()).toHaveTextContent('Updated to githq 0.3.0-dev.214');
-    const command = registry.commands.find(candidate => candidate.id === 'updates.whatChanged');
+    const command = registry.commands.find(candidate => candidate.definition === whatChanged);
     expect(command?.key).toBe('Alt+W');
     expect(command?.menu).toBeUndefined();
 
     command?.run?.();
     await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=updates');
-    expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === whatChanged)).toBe(false);
 });
 
 test('U25: going back to an older version says which runs and offers no list, no key and no command', async () => {
@@ -48,7 +49,7 @@ test('U25: going back to an older version says which runs and offers no list, no
 
     await expect.element(toast()).toHaveTextContent("You're on githq 0.2.0");
     await expect.element(page.getByRole('button', { name: 'What changed' })).not.toBeInTheDocument();
-    expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === whatChanged)).toBe(false);
 });
 
 test('dismissed, its command goes with it', async () => {
@@ -58,7 +59,7 @@ test('dismissed, its command goes with it', async () => {
     await userEvent.click(toast().getByRole('button', { name: 'Dismiss' }).first());
 
     await expect.element(toast()).not.toBeInTheDocument();
-    expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === whatChanged)).toBe(false);
 });
 
 test('brief: it goes by itself after 6 s, its command with it', async () => {
@@ -72,7 +73,7 @@ test('brief: it goes by itself after 6 s, its command with it', async () => {
     await nextTick();
 
     expect(toast().query()).toBeNull();
-    expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === whatChanged)).toBe(false);
 });
 
 test('nothing to tell, the first ever run among it, shows nothing', async () => {

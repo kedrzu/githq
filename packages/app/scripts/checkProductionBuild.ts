@@ -62,7 +62,7 @@ export const WEB_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'Open here instead', what: 'the text of the hand-off screen' },
     { text: 'OpenLinksSwitch', what: "Settings' switch to open links in the desktop app" },
     { text: 'Opens githq links', what: "the text of Settings' switch" },
-    { text: 'app.openInDesktop', what: 'the command to open the screen in the desktop app' },
+    { text: 'Open in desktop app', what: 'the command to open the screen in the desktop app' },
 ];
 
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */

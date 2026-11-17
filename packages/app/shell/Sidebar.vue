@@ -71,8 +71,9 @@ import { computed, ref, useTemplateRef } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
-import { APP_KEYS } from '@/commands/CommandRegistry.js';
+import { commandMenu, sidebar } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -281,8 +282,8 @@ function getProjectMark(title: string) {
           v-else
           :icon="PanelLeftClose"
           :label="t(l.collapse)"
-          :kbd="APP_KEYS.sidebar"
-          :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.sidebar)"
+          :kbd="keyOf(sidebar)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(sidebar))"
           @click="emit('toggle')"
         />
       </div>
@@ -293,8 +294,8 @@ function getProjectMark(title: string) {
         variant="field"
         block
         :icon="Search"
-        :kbd="APP_KEYS.commandMenu"
-        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :kbd="keyOf(commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(commandMenu))"
         @click="emit('search')"
       >
         {{ t(l.search) }}
@@ -491,16 +492,16 @@ function getProjectMark(title: string) {
         size="md"
         :icon="PanelLeftOpen"
         :label="t(l.expand)"
-        :kbd="APP_KEYS.sidebar"
-        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.sidebar)"
+        :kbd="keyOf(sidebar)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(sidebar))"
         @click="emit('toggle')"
       />
       <IconButton
         size="md"
         :icon="Search"
         :label="t(l.search)"
-        :kbd="APP_KEYS.commandMenu"
-        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :kbd="keyOf(commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(commandMenu))"
         @click="emit('search')"
       />
       <div :class="[css.sidebar_scroll, css.sidebar_scroll_rail]">

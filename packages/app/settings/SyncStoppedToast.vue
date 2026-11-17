@@ -8,7 +8,10 @@ import { Settings } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { openSyncSettings } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 
@@ -17,9 +20,6 @@ import { getUntoldStop } from './sync/SettingsSaving.js';
 import type { StoppedReason } from './sync/SettingsSaving.js';
 import { SettingsSync } from './sync/SettingsSync.js';
 import * as l from './SyncStoppedToast.loc.js';
-
-/** The key of "Open settings", while the toast shows. */
-const OPEN_KEY = 'Alt+S';
 
 const props = defineProps<{
   /** The signed-in user's login: the settings repository's owner. */
@@ -81,15 +81,7 @@ watch(
 );
 
 const commands = computed((): Command[] => [
-  {
-    id: 'settings.saving.open',
-    title: t(l.openSyncCommand),
-    section: 'app',
-    key: OPEN_KEY,
-    icon: Settings,
-    menu: false,
-    run: openSync,
-  },
+  bindCommand(openSyncSettings, { section: 'app', menu: false, run: openSync }, t),
 ]);
 
 function openSync() {
@@ -119,8 +111,8 @@ function onOpenChange(open: boolean) {
         variant="secondary"
         size="sm"
         :icon="Settings"
-        :kbd="active ? OPEN_KEY : undefined"
-        :keyshortcuts="active ? OPEN_KEY : undefined"
+        :kbd="active ? keyOf(openSyncSettings) : undefined"
+        :keyshortcuts="active ? keyOf(openSyncSettings) : undefined"
         @click="openSync"
       >
         {{ t(l.openSettings) }}

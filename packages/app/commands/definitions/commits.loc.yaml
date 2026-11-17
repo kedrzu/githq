@@ -2,3 +2,9 @@ findRef:
   en: Find a branch or tag
 closeRefList:
   en: Close the branches and tags
+firstParent:
+  en: First parent
+secondParent:
+  en: Second parent
+openCommitPullRequest:
+  en: Open its pull request

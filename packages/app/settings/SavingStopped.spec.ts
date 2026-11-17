@@ -37,7 +37,7 @@ test('a newer githq offers Reload', async () => {
     expect(onReload).toHaveBeenCalledOnce();
 });
 
-test('R and the button try again, once at a time', async () => {
+test('Enter and the button try again, once at a time', async () => {
     let settle = () => {};
     const retry = vi.fn(
         () =>
@@ -48,10 +48,10 @@ test('R and the button try again, once at a time', async () => {
     await Deleted.run({ args: { ...Deleted.args, retry } });
 
     const button = page.getByRole('button', { name: 'Try again' });
-    await expect.element(button).toHaveAttribute('aria-keyshortcuts', 'R');
-    await userEvent.keyboard('r');
+    await expect.element(button).toHaveAttribute('aria-keyshortcuts', 'Enter');
+    await userEvent.keyboard('{Enter}');
     await expect.element(button).toHaveAttribute('aria-busy', 'true');
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).toHaveBeenCalledOnce();
 
     settle();

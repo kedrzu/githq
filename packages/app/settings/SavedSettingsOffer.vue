@@ -2,21 +2,20 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { BookMarked, Lock, SquareKanban } from 'lucide-vue-next';
 import { computed, ref, useId } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { turnOnSavedSettings } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { keyOf } from '@/commands/keyOf.js';
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './SavedSettingsOffer.loc.js';
 import type { SettingsDocument } from './sync/SettingsDocument.js';
-
-/** The key of "Load these". */
-const LOAD_KEY = 'Mod+Enter';
 
 const props = defineProps<{
   /** The settings repository, `owner/githq-settings`. */
@@ -41,12 +40,13 @@ const loading = ref(false);
 const repositories = computed(() => props.document.repositories.filter(repository => repository.tracking));
 const projects = computed(() => props.document.projects.filter(project => project.tracking));
 
-onWindowEvent('keydown', event => {
-  if (!event.defaultPrevented && matchesCommandKey(event, LOAD_KEY)) {
-    event.preventDefault();
-    void loadOnce();
-  }
-});
+useCommands(() => [
+  bindCommand(
+    turnOnSavedSettings,
+    { place: 'signIn', title: t(l.load), section: 'view', menu: false, run: () => void loadOnce() },
+    t,
+  ),
+]);
 
 async function loadOnce() {
   if (loading.value) {
@@ -133,8 +133,8 @@ async function loadOnce() {
         <Button
           variant="primary"
           :size="phone.active ? 'lg' : undefined"
-          :kbd="LOAD_KEY"
-          :keyshortcuts="formatAriaKeyShortcuts(LOAD_KEY)"
+          :kbd="keyOf(turnOnSavedSettings)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(turnOnSavedSettings))"
           :busy="loading"
           @click="loadOnce"
         >

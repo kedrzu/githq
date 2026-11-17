@@ -40,11 +40,6 @@ export interface UseItemKeysOptions {
      */
     steps?: MaybeRefOrGetter<boolean>;
     /**
-     * `false`: full screen is offered with no key, `⇧Enter` being the kind's own (a commit's pull request); left out,
-     * `true`.
-     */
-    arrangeByKey?: boolean;
-    /**
      * Escape closes full screen, back to the panel, in place of closing the item: a page expanded from the panel while
      * the window has room for it ({@link ItemArrangementViewModel.closesToPanel}).
      */
@@ -445,7 +440,7 @@ type HistoryMove = 'push' | 'replace';
  * registry's `isLayerOpen`) and the view's own layers (`onEscape`); a field's Escape is the field's — the step keys step
  * through the list it was opened from (in a panel the list's own `j`/`k`, its place keeping the keyboard, move its
  * selection instead, which the opened item follows; or with {@link UseItemKeysOptions.steps} off, the screen beside it
- * alone), and in the panel `⇧Enter` opens it full screen (`openFullScreen`) — a kind may offer that with no key.
+ * alone), and in the panel `⇧Enter` opens it full screen (`openFullScreen`).
  */
 export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
     const t = useTranslate();
@@ -457,7 +452,6 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
         place === 'workflow'
             ? { previous: keyOf(definitions.previousWorkflow), next: keyOf(definitions.nextWorkflow) }
             : { previous: keyOf(definitions.previous), next: keyOf(definitions.next) };
-    const arrangeByKey = options.arrangeByKey !== false;
 
     const arrangementTo = useOtherArrangement(arrangement);
     const otherArrangement = computed((): OtherArrangement | null => {
@@ -467,7 +461,7 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
         }
 
         if (other.arrangement === 'page') {
-            return arrangeByKey ? { ...other, key: keyOf(definitions.openFullScreen) } : other;
+            return { ...other, key: keyOf(definitions.openFullScreen) };
         }
 
         return closesToPanel.value ? { ...other, key: keyOf(definitions.closeFullScreen) } : other;
@@ -504,7 +498,6 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
                       {
                           place,
                           section: 'item',
-                          keyed: arrangeByKey ? undefined : false,
                           run: () => options.arrange('page'),
                       },
                       t,

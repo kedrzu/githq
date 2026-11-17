@@ -90,12 +90,16 @@ export const openLog = defineAppCommand({
     configurable: false,
 });
 
-/** Reads again what a run's page failed to read: the run, its jobs or a job's log. */
+/**
+ * Reads or writes again what failed: a run's page its run, jobs or a job's log; a screen GitHub failed to show
+ * (`CantBeRead`); syncing the settings that stopped (Sync settings). Enter, fixed: on a focused button or link Enter is
+ * its own.
+ */
 export const tryAgain = defineAppCommand({
     id: 'tryAgain',
     title: l.tryAgain,
     key: 'Enter',
-    places: ['workflowRun'],
+    places: ['workflowRun', 'cantBeRead', 'settings'],
     configurable: false,
 });
 

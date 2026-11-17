@@ -1,11 +1,10 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { EyeOff, Settings } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { copyLink, goToView, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
+import { copyLink, goToView, newIssue, openOnGitHub, trackedSettings, untrack } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -16,7 +15,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { ProjectStore } from './ProjectStore.js';
 import * as l from './useProjectCommands.loc.js';
 
-/** A project's actions, by the name after `project.`. */
+/** A project's actions, each bound from its definition. */
 export interface ProjectCommands {
     /**
      * Going to each of its saved views (`goToView`), in its order, as the command menu's level under the project lists
@@ -108,27 +107,31 @@ export function useProjectCommands(): (
                 { place: 'project', section: 'view', run: () => void navigator.clipboard.writeText(url) },
                 t,
             ),
-            settings: {
-                id: 'project.settings',
-                title: t(l.settings),
-                section: 'view',
-                icon: Settings,
-                when: isListed,
-                run: () => void router.push(getProjectSettingsPath(target)),
-            },
-            untrack: {
-                id: 'project.untrack',
-                title: t(l.untrack),
-                section: 'view',
-                icon: EyeOff,
-                when: isListed,
-                run: () => {
-                    const tracked = tracking.projects.find(candidate => candidate.id === target.id);
-                    if (tracked) {
-                        pending.untrack({ kind: 'project', id: tracked.id }, tracked.title);
-                    }
+            settings: bindCommand(
+                trackedSettings,
+                {
+                    place: 'project',
+                    section: 'view',
+                    when: isListed,
+                    run: () => void router.push(getProjectSettingsPath(target)),
                 },
-            },
+                t,
+            ),
+            untrack: bindCommand(
+                untrack,
+                {
+                    place: 'project',
+                    section: 'view',
+                    when: isListed,
+                    run: () => {
+                        const tracked = tracking.projects.find(candidate => candidate.id === target.id);
+                        if (tracked) {
+                            pending.untrack({ kind: 'project', id: tracked.id }, tracked.title);
+                        }
+                    },
+                },
+                t,
+            ),
         };
 
         function getSavedViews(): SavedViewCommand[] {

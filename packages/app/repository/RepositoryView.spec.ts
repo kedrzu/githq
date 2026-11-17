@@ -488,7 +488,7 @@ test('ES17: not tracked, GitHub failing with nothing held leaves the name, the c
     await expect.element(page.getByText(`githq couldn't read ${SAMPLE_REPOSITORY}.`, { exact: false })).toBeVisible();
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).toHaveBeenCalledTimes(1);
 });
 

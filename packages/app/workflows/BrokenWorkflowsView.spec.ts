@@ -46,7 +46,7 @@ test('ES23: GitHub failing with no repository read says so instead of ghosts; R 
         .toBeVisible();
     await expect.element(page.getByText(matchText('4 repositories'))).toBeVisible();
 
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     expect(retry).toHaveBeenCalledTimes(1);
 });
 

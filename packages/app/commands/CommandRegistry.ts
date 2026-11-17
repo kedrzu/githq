@@ -9,7 +9,9 @@ import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
 import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import type { AnyAppCommand } from './defineAppCommand.js';
+import { commandMenu } from './definitions/index.js';
 import { getRunKeys } from './getRunKeys.js';
+import { keyOf } from './keyOf.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
@@ -32,9 +34,6 @@ export interface CommandMenuRequest {
 
 /** What the command menu names in its chips and the user may take out of it (⌫). */
 export type CommandContextPart = 'subject' | 'repository';
-
-/** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
-export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: 'Mod+B' } as const;
 
 /** Where writing happens: ⌘K there is the field's (a markdown editor's "insert link"), never the menu's. */
 const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
@@ -195,7 +194,7 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            if (menuRef.value && matchesCommandKey(event, APP_KEYS.commandMenu)) {
+            if (menuRef.value && matchesCommandKey(event, keyOf(commandMenu))) {
                 event.preventDefault();
                 if (!event.repeat) {
                     closeMenu();
@@ -216,7 +215,7 @@ export const CommandRegistry = defineService({
             if (command) {
                 event.preventDefault();
                 // ⌘K held down opens or closes the menu once, rather than flickering it.
-                if (!event.repeat || command.key !== APP_KEYS.commandMenu) {
+                if (!event.repeat || command.key !== keyOf(commandMenu)) {
                     run(command);
                 }
             }

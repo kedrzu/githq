@@ -25,10 +25,9 @@ import { computed, ref } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
-import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import type { CommandPart, CommandParts } from '@/commands/CommandTypes.js';
 import { bindCommand } from '@/commands/bindCommand.js';
-import { newIssueInProject, nextTab, previousTab, rowField } from '@/commands/definitions/index.js';
+import { commandMenu, newIssueInProject, nextTab, previousTab, rowField } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -585,8 +584,8 @@ function hasItemView(entry: ProjectEntry) {
             variant="secondary"
             size="sm"
             :icon="Plus"
-            :kbd="APP_KEYS.commandMenu"
-            :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+            :kbd="keyOf(commandMenu)"
+            :keyshortcuts="formatAriaKeyShortcuts(keyOf(commandMenu))"
             @click="emit('addItems')"
           >
             {{ t(l.addExistingIssues) }}

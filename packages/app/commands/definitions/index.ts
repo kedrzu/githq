@@ -6,6 +6,8 @@ export * from './jobLog.js';
 export * from './list.js';
 export * from './reading.js';
 export * from './review.js';
+export * from './settings.js';
 export * from './tabs.js';
+export * from './tracking.js';
 export * from './view.js';
 export * from './workflows.js';

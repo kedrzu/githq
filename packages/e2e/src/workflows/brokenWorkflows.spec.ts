@@ -69,7 +69,7 @@ test('first run and loading D6, ES23: GitHub failing before any repository is re
     await expect(screen.root).toContainText(/so\sit\scan't\stell\swhat\sis\sbroken/u);
 
     world.install(github);
-    await page.keyboard.press('r');
+    await page.keyboard.press('Enter');
     await expect(screen.allGreen).toBeVisible();
     await expect(failing).toHaveCount(0);
 });

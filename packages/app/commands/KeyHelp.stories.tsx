@@ -10,10 +10,12 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
-import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import { CommandRegistry } from './CommandRegistry.js';
 import type { Command, CommandKeySheet } from './CommandTypes.js';
 import { defineAppCommand } from './defineAppCommand.js';
+import { help as helpCommand } from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
+import { keyOf } from './keyOf.js';
 import { useCommand } from './useCommand.js';
 import { useCommands } from './useCommands.js';
 
@@ -33,7 +35,7 @@ const Harness = defineComponent({
                 id: 'app.help',
                 title: 'Keyboard shortcuts',
                 section: 'app',
-                key: APP_KEYS.help,
+                key: keyOf(helpCommand),
                 run: () => registry.setHelpOpen(true),
             },
         ]);
@@ -85,7 +87,7 @@ const BesideHarness = defineComponent({
                 id: 'app.help',
                 title: 'Keyboard shortcuts',
                 section: 'app',
-                key: APP_KEYS.help,
+                key: keyOf(helpCommand),
                 run: () => registry.setHelpOpen(true),
             },
         ]);

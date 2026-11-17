@@ -32,8 +32,10 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
 
 import CommandMenu from './CommandMenu.vue';
-import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import { CommandRegistry } from './CommandRegistry.js';
 import type { Command, CommandFormField, CommandParts } from './CommandTypes.js';
+import { commandMenu, sidebar as sidebarCommand } from './definitions/index.js';
+import { keyOf } from './keyOf.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
@@ -176,7 +178,7 @@ const Harness = defineComponent({
                 id: 'app.commandMenu',
                 title: 'Open the command menu',
                 section: 'app',
-                key: APP_KEYS.commandMenu,
+                key: keyOf(commandMenu),
                 menu: false,
                 run: () => registry.openMenu(),
             },
@@ -184,7 +186,7 @@ const Harness = defineComponent({
                 id: 'app.sidebar',
                 title: 'Collapse sidebar',
                 section: 'app',
-                key: APP_KEYS.sidebar,
+                key: keyOf(sidebarCommand),
                 run: () => {
                     sidebar.value = sidebar.value === 'expanded' ? 'collapsed' : 'expanded';
                 },

@@ -9,7 +9,8 @@ import { provideContext } from '@nzyme/vue-utils/context.js';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
-import { APP_KEYS } from '@/commands/CommandRegistry.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { sidebar as sidebarCommand } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import ResizeHandle from '@/components/ResizeHandle.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
@@ -163,15 +164,17 @@ watch(
 // ⌘B collapses or expands the sidebar, also from a one-line field but never where the user writes (a textarea); a
 // forced rail doesn't toggle, leaving ⌘B to the screen that forces it (code review's file list).
 useCommands(() => [
-  {
-    id: 'app.sidebar',
-    title: collapsed.value ? t(l.expandSidebar) : t(l.collapseSidebar),
-    section: 'app',
-    key: APP_KEYS.sidebar,
-    icon: collapsed.value ? PanelLeftOpen : PanelLeftClose,
-    when: () => !props.railForced && !props.phone,
-    run: toggle,
-  },
+  bindCommand(
+    sidebarCommand,
+    {
+      title: collapsed.value ? t(l.expandSidebar) : t(l.collapseSidebar),
+      section: 'app',
+      icon: collapsed.value ? PanelLeftOpen : PanelLeftClose,
+      when: () => !props.railForced && !props.phone,
+      run: toggle,
+    },
+    t,
+  ),
 ]);
 
 function toggle() {

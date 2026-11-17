@@ -5,15 +5,15 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleArrowDown, RotateCcw, TriangleAlert } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { loadNewVersion } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { AppUpdate } from '@/services/AppUpdate.js';
 
 import * as l from './UpdateReadyToast.loc.js';
-
-/** The key of Restart and Try again, while the toast is the newest. */
-const RESTART_KEY = 'Alt+R';
 
 const update = useService(AppUpdate);
 const t = useTranslate();
@@ -25,15 +25,18 @@ const current = computed(() => update.state?.version ?? '');
 // Only the key: the command menu has "Restart to update" and "Try again to install the update" of its own
 // (`AppCommands.vue`).
 const commands = computed((): Command[] => [
-  {
-    id: 'updates.restart',
-    title: t(failed.value ? l.retryInstall : l.restartToUpdate),
-    section: 'app',
-    key: RESTART_KEY,
-    icon: failed.value ? RotateCcw : CircleArrowDown,
-    menu: false,
-    run: () => update.restart(),
-  },
+  bindCommand(
+    loadNewVersion,
+    {
+      place: 'app',
+      title: t(failed.value ? l.retryInstall : l.restartToUpdate),
+      section: 'app',
+      icon: failed.value ? RotateCcw : CircleArrowDown,
+      menu: false,
+      run: () => update.restart(),
+    },
+    t,
+  ),
 ]);
 
 function onOpenChange(open: boolean) {
@@ -59,8 +62,8 @@ function onOpenChange(open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? RESTART_KEY : undefined"
-        :keyshortcuts="active ? RESTART_KEY : undefined"
+        :kbd="active ? keyOf(loadNewVersion) : undefined"
+        :keyshortcuts="active ? keyOf(loadNewVersion) : undefined"
         @click="update.restart()"
       >
         {{ t(failed ? l.tryAgain : l.restart) }}

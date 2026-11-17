@@ -6,6 +6,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { loadNewVersion } from '@/commands/definitions/index.js';
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
@@ -43,7 +44,7 @@ test('dismissed, it goes with its key and does not reload', async () => {
 
     await expect.element(toast()).not.toBeInTheDocument();
     expect(version.out).toBe(false);
-    expect(registry.commands.some(candidate => candidate.id === 'app.reloadToNewVersion')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === loadNewVersion)).toBe(false);
     expect(reload).not.toHaveBeenCalled();
 });
 

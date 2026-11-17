@@ -4,6 +4,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { goToSettingsSection } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
@@ -37,28 +40,26 @@ const options = computed((): SegmentedTabsOption<SettingsSection>[] =>
     value: candidate,
     label: t(sectionLabels[candidate]),
     icon: SETTINGS_SECTION_ICONS[candidate],
-    keyshortcuts: getKey(index),
+    keyshortcuts: keyOf(goToSettingsSection, index + 1),
     count: counts.value[candidate],
     attention: candidate === 'sync' && props.savingStopped ? t(l.savingStopped) : undefined,
   })),
 );
 
 useCommands(() =>
-  SETTINGS_SECTIONS.map((candidate, index) => ({
-    id: `settings.section.${candidate}`,
-    title: t(sectionLabels[candidate]),
-    section: 'view',
-    key: getKey(index),
-    menu: false,
-    run: () => {
-      section.value = candidate;
-    },
-  })),
+  bindCommand(
+    goToSettingsSection,
+    SETTINGS_SECTIONS.map(candidate => ({
+      title: t(sectionLabels[candidate]),
+      section: 'view' as const,
+      menu: false,
+      run: () => {
+        section.value = candidate;
+      },
+    })),
+    t,
+  ),
 );
-
-function getKey(index: number) {
-  return String(index + 1);
-}
 </script>
 
 <template>

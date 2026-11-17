@@ -1,0 +1,18 @@
+goToSettingsSection:
+  en: Go to section 1–8
+checkForUpdates:
+  en: Check for updates
+switchStream:
+  en: Switch the update stream
+signOut:
+  en: Sign out
+turnOnSavedSettings:
+  en: Use the settings saved to GitHub
+cancelCombining:
+  en: Cancel
+turnOffSync:
+  en: Turn off syncing settings
+signIn:
+  en: Sign in with GitHub
+cancelSignIn:
+  en: Cancel signing in

@@ -1,21 +1,7 @@
-commandMenu:
-  en: Open the command menu
-help:
-  en: Keyboard shortcuts
-documentation:
-  en: Documentation
-docsKeyword:
-  en: docs
-helpKeyword:
-  en: help
 settings:
   en: Settings
 repositorySettings:
   en: Repository settings
-signOut:
-  en: Sign out
-checkForUpdates:
-  en: Check for updates
 switchToStable:
   en: Switch to Stable
 switchToDevelopment:
@@ -26,8 +12,6 @@ retryInstall:
   en: Try again to install the update
 updateVersion:
   en: githq {version}
-updateLater:
-  en: Update later
 brokenWorkflows:
   en: Broken workflows
 draftReviews:

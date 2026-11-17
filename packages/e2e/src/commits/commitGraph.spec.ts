@@ -111,7 +111,8 @@ test('first run and loading D6, D12, ES22: GitHub failing, then offline, with no
     await expect(failing).toBeVisible();
 
     sample.world.install(github);
-    await page.keyboard.press('r');
+    // Enter would be the sidebar's link, which has the focus since it was clicked: the button tries again.
+    await graph.root.getByRole('button', { name: 'Try again' }).click();
     await expect(graph.row('Initial commit')).toBeAttached();
     await expect(failing).toHaveCount(0);
 
@@ -213,7 +214,7 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     expect((after?.x ?? 0) - (before?.x ?? 0)).toBe((Number(every) - 2) * 12);
 });
 
-test('git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens the commit in the panel with the list staying; B goes to the filter and it stays; P and J move the cursor with it, Shift+Enter opens its pull request in its place, Back returns to it, O opens GitHub and Esc closes in order', async ({
+test('git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens the commit in the panel with the list staying; B goes to the filter and it stays; P and J move the cursor with it, Shift+O opens its pull request in its place, Back returns to it, O opens GitHub and Esc closes in order', async ({
     page,
     github,
 }) => {
@@ -280,7 +281,7 @@ test('git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
 
     // The pull request in the commit's place, added to the history: Back comes back to the commit.
     const item = new ItemViewHarness(page);
-    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.press('Shift+O');
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(graph.details).toHaveCount(0);
     await page.goBack();

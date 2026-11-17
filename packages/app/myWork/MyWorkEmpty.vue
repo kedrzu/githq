@@ -7,9 +7,10 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CircleCheckBig, Coffee, Hourglass, Search, SquarePen } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { APP_KEYS, CommandRegistry } from '@/commands/CommandRegistry.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import NothingThere from '@/components/NothingThere.vue';
 
@@ -88,8 +89,8 @@ const look = computed(
         variant="secondary"
         size="sm"
         :icon="Search"
-        :kbd="APP_KEYS.commandMenu"
-        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :kbd="keyOf(definitions.commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.commandMenu))"
         @click="registry.openMenu()"
       >
         {{ t(l.jumpToProject) }}

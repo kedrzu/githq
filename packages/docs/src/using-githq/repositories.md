@@ -71,7 +71,8 @@ commits load as you scroll.
 |<kbd>Enter</kbd>|Open the commit's details|
 |<kbd>B</kbd>|Find a branch or tag|
 |<kbd>P</kbd> / <kbd>Shift</kbd> <kbd>P</kbd>|Go to the first or second parent|
-|<kbd>Shift</kbd> <kbd>Enter</kbd>|Open the commit's pull request|
+|<kbd>Shift</kbd> <kbd>O</kbd>|Open the commit's pull request|
+|<kbd>Shift</kbd> <kbd>Enter</kbd>|Open the commit full screen|
 |<kbd>O</kbd>|Open the commit on GitHub|
 |<kbd>Esc</kbd>|Close the details|
 

@@ -1,11 +1,18 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CloudDownload, EyeOff, Settings } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { copyLink, goToSection, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
+import {
+    copyLink,
+    goToSection,
+    newIssue,
+    openOnGitHub,
+    track,
+    trackedSettings,
+    untrack,
+} from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -16,7 +23,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from './RepositorySection.js';
 import * as l from './useRepositoryCommands.loc.js';
 
-/** A repository's actions, by the name after `repository.`. */
+/** A repository's actions, each bound from its definition. */
 export interface RepositoryCommands {
     /** Going to each of its sections (`goToSection`), in the order of the tabs. */
     readonly sections: readonly Command[];
@@ -101,38 +108,43 @@ export function useRepositoryCommands(): (
                 { place: 'repository', section: 'repository', run: () => void navigator.clipboard.writeText(url) },
                 t,
             ),
-            settings: {
-                id: 'repository.settings',
-                title: t(l.settings),
-                section: 'repository',
-                icon: Settings,
-                when: isListed,
-                run: () => void router.push(getRepositorySettingsPath(nameWithOwner)),
-            },
-            track: {
-                id: 'repository.track',
-                title: t(l.track),
-                detail: t(l.trackDetail),
-                section: 'repository',
-                icon: CloudDownload,
-                // On its way out it reads as not tracked already: tracking it again is Undo.
-                when: () => !isListed(),
-                run: () => {
-                    if (pending.isPending(target)) {
-                        pending.undo(target);
-                    } else {
-                        void tracker.track(nameWithOwner);
-                    }
+            settings: bindCommand(
+                trackedSettings,
+                {
+                    place: 'repository',
+                    section: 'repository',
+                    when: isListed,
+                    run: () => void router.push(getRepositorySettingsPath(nameWithOwner)),
                 },
-            },
-            untrack: {
-                id: 'repository.untrack',
-                title: t(l.untrack),
-                section: 'repository',
-                icon: EyeOff,
-                when: isListed,
-                run: () => pending.untrack(target, nameWithOwner),
-            },
+                t,
+            ),
+            track: bindCommand(
+                track,
+                {
+                    detail: t(l.trackDetail),
+                    section: 'repository',
+                    // On its way out it reads as not tracked already: tracking it again is Undo.
+                    when: () => !isListed(),
+                    run: () => {
+                        if (pending.isPending(target)) {
+                            pending.undo(target);
+                        } else {
+                            void tracker.track(nameWithOwner);
+                        }
+                    },
+                },
+                t,
+            ),
+            untrack: bindCommand(
+                untrack,
+                {
+                    place: 'repository',
+                    section: 'repository',
+                    when: isListed,
+                    run: () => pending.untrack(target, nameWithOwner),
+                },
+                t,
+            ),
         };
     };
 }

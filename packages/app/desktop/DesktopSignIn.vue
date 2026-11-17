@@ -2,7 +2,6 @@
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import {
   BookLock,
   CircleAlert,
@@ -16,11 +15,13 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, useId } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { cancelSignIn, signIn } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Wordmark from '@/components/Wordmark.vue';
 import { WINDOW_CONTROLS_OVERLAID } from '@/shell/windowControls.js';
-import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
-import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 
 import * as l from './DesktopSignIn.loc.js';
 import type { DeviceSignInState } from './DeviceSignIn.js';
@@ -73,23 +74,40 @@ const minutes = computed(() =>
 const explainerOpen = ref(false);
 const showExplainer = computed(() => !notice.value || explainerOpen.value);
 
-onWindowEvent('keydown', event => {
-  if (event.repeat || !isSingleKeyShortcut(event)) {
-    return;
-  }
+// Enter anywhere on the page runs the main action — but on a button or a link, whose own it is (`CommandRegistry`); Esc
+// abandons the code, also while it is being asked for.
+useCommands(() => [
+  bindCommand(
+    signIn,
+    {
+      title: getMainActionTitle(),
+      section: 'view',
+      when: () => props.state.kind !== 'requesting',
+      run: runMainAction,
+    },
+    t,
+  ),
+  bindCommand(
+    cancelSignIn,
+    {
+      section: 'view',
+      when: () => props.state.kind === 'waiting' || props.state.kind === 'requesting',
+      run: () => emit('cancel'),
+    },
+    t,
+  ),
+]);
 
-  // Esc abandons the code — also while it is being asked for.
-  if (event.key === 'Escape' && (props.state.kind === 'waiting' || props.state.kind === 'requesting')) {
-    event.preventDefault();
-    emit('cancel');
+function getMainActionTitle() {
+  switch (props.state.kind) {
+    case 'waiting':
+      return t(l.copyAndOpen);
+    case 'failed':
+      return t(l.newCode);
+    default:
+      return t(l.signIn);
   }
-
-  // Enter anywhere on the page runs the main action — except where Enter already means something (a field, a button, a link).
-  if (event.key === 'Enter' && !isActivatableTarget(event.target)) {
-    event.preventDefault();
-    runMainAction();
-  }
-});
+}
 
 /** Enter: the main action of the screen shown. */
 function runMainAction() {
@@ -141,16 +159,16 @@ function runMainAction() {
                 variant="light"
                 size="lg"
                 :icon="Copy"
-                kbd="Enter"
-                keyshortcuts="Enter"
+                :kbd="keyOf(signIn)"
+                :keyshortcuts="keyOf(signIn)"
                 @click="emit('open')"
               >
                 {{ t(l.copyAndOpen) }}
               </Button>
               <Button
                 size="lg"
-                kbd="Escape"
-                keyshortcuts="Escape"
+                :kbd="keyOf(cancelSignIn)"
+                :keyshortcuts="keyOf(cancelSignIn)"
                 @click="emit('cancel')"
               >
                 {{ t(l.cancel) }}
@@ -193,8 +211,8 @@ function runMainAction() {
               variant="light"
               size="lg"
               :icon="state.kind === 'failed' ? RotateCw : Github"
-              kbd="Enter"
-              keyshortcuts="Enter"
+              :kbd="keyOf(signIn)"
+              :keyshortcuts="keyOf(signIn)"
               :busy="state.kind === 'requesting'"
               @click="emit('start')"
             >

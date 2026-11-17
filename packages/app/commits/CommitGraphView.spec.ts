@@ -511,7 +511,7 @@ test('ES22: GitHub failing with nothing to draw says so, stays up while asked ag
     failing = false;
     const answer = createPromise();
     held = answer.promise;
-    await userEvent.keyboard('r');
+    await userEvent.keyboard('{Enter}');
     // Asked again, the note stays and no skeleton comes between.
     await expect.element(page.getByRole('button', { name: /Try again/u })).toHaveAttribute('aria-busy', 'true');
     await expect.element(heading).toBeVisible();
@@ -1336,7 +1336,7 @@ test("Enter with a ref's commit open moves on to the cursor's commit", async () 
     expect(document.activeElement).toBe(view.scroller());
 });
 
-test("D16, CH29: Shift+Enter opens the pull request in the commit's place, the keys are the item's meanwhile, and Back comes back to the commit", async () => {
+test("D16, CH29: Shift+O opens the pull request in the commit's place, the keys are the item's meanwhile, and Back comes back to the commit", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount(sampleWebappHistory());
@@ -1344,7 +1344,7 @@ test("D16, CH29: Shift+Enter opens the pull request in the commit's place, the k
     await userEvent.keyboard('kk{Enter}');
     await expect.element(details().getByRole('button', { name: /Pull request 1231/ })).toBeVisible();
 
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await expect
         .poll(() => view.router.currentRoute.value.query)
         .toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
@@ -1360,36 +1360,36 @@ test("D16, CH29: Shift+Enter opens the pull request in the commit's place, the k
     expect(cursor()?.textContent).toContain('feat: preview a class');
 });
 
-test("with the commit's pull request open, Shift+Enter is the item's (it expands the item to full screen), never the details' again", async () => {
+test("with the commit's pull request open, Shift+O is the item's (it opens its files), never the details' again", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount(sampleWebappHistory());
     await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
     await userEvent.keyboard('kk{Enter}');
     await expect.element(details().getByRole('button', { name: /Pull request 1231/ })).toBeVisible();
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await expect
         .poll(() => view.router.currentRoute.value.query)
         .toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
 
-    // The opened item's arrangement command (`ItemView`), as the panel registers it.
-    const expand = vi.fn();
+    // The opened pull request's "Open files" (`ItemView`), as the panel registers it.
+    const openFiles = vi.fn();
     const unregister = view.container.resolve(CommandRegistry).register({
         commands: [
             {
-                id: 'item.openFullScreen',
-                title: 'Open full screen',
+                id: 'item.openFiles',
+                title: 'Open files',
                 section: 'item',
                 place: 'item',
-                key: 'Shift+Enter',
-                run: expand,
+                key: 'Shift+O',
+                run: openFiles,
             },
         ],
         subject: null,
     });
     onTestFinished(unregister);
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
-    expect(expand).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('{Shift>}o{/Shift}');
+    expect(openFiles).toHaveBeenCalledTimes(1);
     expect(view.router.currentRoute.value.query).toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
     await expect.element(details()).not.toBeInTheDocument();
 });
@@ -1412,7 +1412,7 @@ test("a fork's commit opens its upstream's pull request, by its address", async 
     await userEvent.keyboard('{Enter}');
     await expect.element(details().getByRole('button', { name: /From the fork/ })).toBeVisible();
 
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await expect
         .poll(() => view.router.currentRoute.value.query)
         .toMatchObject({ pane: 'issue', issue: 'upstream|web|1203' });
@@ -1487,7 +1487,7 @@ test("D16: a tooltip up takes none of the commit's keys", async () => {
     await userEvent.keyboard('{Shift>}p{/Shift}');
     await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
     await expect.poll(() => view.store.getState(REPOSITORY, sha('c1'))?.pullRequest?.number).toBe(7);
-    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await userEvent.keyboard('{Shift>}o{/Shift}');
     await expect.poll(() => view.router.currentRoute.value.query).toMatchObject({ pane: 'issue', issue: 'acme|web|7' });
 });
 

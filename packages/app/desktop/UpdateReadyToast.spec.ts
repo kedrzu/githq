@@ -6,6 +6,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { loadNewVersion } from '@/commands/definitions/index.js';
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
@@ -38,7 +39,7 @@ test('Dismiss is "Later": the toast and its key go', async () => {
 
     expect(update.later).toHaveBeenCalledOnce();
     await expect.element(toast()).not.toBeInTheDocument();
-    expect(registry.commands.some(candidate => candidate.id === 'updates.restart')).toBe(false);
+    expect(registry.commands.some(candidate => candidate.definition === loadNewVersion)).toBe(false);
     expect(update.restart).not.toHaveBeenCalled();
 });
 

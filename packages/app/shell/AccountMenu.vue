@@ -7,7 +7,8 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
-import { APP_KEYS } from '@/commands/CommandRegistry.js';
+import { settings } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -101,7 +102,7 @@ function openSettings() {
       <MenuLabel>{{ t(l.signedInAs, { login: viewer.login }) }}</MenuLabel>
       <MenuItem
         :icon="Settings"
-        :shortcut="settingsSyncStopped ? undefined : APP_KEYS.settings"
+        :shortcut="settingsSyncStopped ? undefined : keyOf(settings)"
         @select="openSettings"
       >
         {{ t(l.settings) }}

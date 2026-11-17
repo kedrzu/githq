@@ -1,9 +1,4 @@
-<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none, and on a screen say why in a mono chip (`api.github.com → unreachable`, `retry after 14:20`); GitHub failing offers "Try again" (R), hidden or gone, or GitHub refusing to list a tracked copy's changes — in words of its own, close to the status bar's, as the repository is shown — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
-<script lang="ts">
-/** The key of "Try again" (D18), as where settings saving stopped. */
-const RETRY_KEY = 'R';
-</script>
-
+<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none, and on a screen say why in a mono chip (`api.github.com → unreachable`, `retry after 14:20`); GitHub failing offers "Try again" (Enter, `tryAgain`), hidden or gone, or GitHub refusing to list a tracked copy's changes — in words of its own, close to the status bar's, as the repository is shown — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -14,7 +9,7 @@ import { computed, ref } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { openOnGitHub, tryAgain as tryAgainCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { Browser } from '@/services/Browser.js';
@@ -95,17 +90,8 @@ useCommands((): Command[] => {
 
   switch (cause.kind) {
     case 'failing':
-      // The screen's: an item opened beside it keeps the keyboard, its `R` the comment box's (commands D13).
-      return [
-        {
-          id: 'empty.retry',
-          title: t(l.tryAgain),
-          section: 'view',
-          place: 'cantBeRead',
-          key: RETRY_KEY,
-          run: () => void tryAgain(),
-        },
-      ];
+      // The screen's: an item opened beside it keeps the keyboard, its Enter the item's (commands D13).
+      return [bindCommand(tryAgainCommand, { place: 'cantBeRead', section: 'view', run: () => void tryAgain() }, t)];
     case 'hidden':
     case 'refused':
       return [
@@ -152,8 +138,8 @@ async function tryAgain() {
         :variant="onScreen ? 'secondary' : 'outline'"
         size="sm"
         :icon="onScreen ? RotateCw : undefined"
-        :kbd="onScreen ? RETRY_KEY : undefined"
-        :keyshortcuts="onScreen ? RETRY_KEY : undefined"
+        :kbd="onScreen ? keyOf(tryAgainCommand) : undefined"
+        :keyshortcuts="onScreen ? keyOf(tryAgainCommand) : undefined"
         :busy="retrying"
         @click="tryAgain"
       >

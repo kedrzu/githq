@@ -20,7 +20,9 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * item, a commit, workflow (its runs too) or workflow run opened as one, a job's log on a run's page, a repository's
  * commit graph, its Workflows section, the broken workflows, a repository's workflow alerts, the tracked repositories or
  * projects, the draft reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a
- * project as their menus offer them (their screens too: a new issue in a project, the tabs of both). Places tell which
+ * project as their menus offer them (their screens too: a new issue in a project, the tabs of both), Settings (its
+ * sections, a repository's or project's page in it, the rows its level in the command menu holds) and the sign-in
+ * screens (the desktop app's device code, the first sign-in's offer of saved settings). Places tell which
  * keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer
  * over the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
@@ -42,7 +44,9 @@ export type CommandPlace =
     | 'changelog'
     | 'cantBeRead'
     | 'repository'
-    | 'project';
+    | 'project'
+    | 'settings'
+    | 'signIn';
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
@@ -51,7 +55,9 @@ export type CommandPlace =
  * commit graph with a commit open beside it, and a repository's Workflows section with a workflow (their `J`/`K` move
  * the cursor the panel follows); an item opened over a review, or beside a screen GitHub won't show; a workflow's run
  * beside its repository's Workflows section, whose keys are then the run's; a job's log in the run's page, there too,
- * whose keys go before both (its search's Escape before the run's step back, its `J`/`K` before the section's).
+ * whose keys go before both (its search's Escape before the run's step back, its `J`/`K` before the section's); in
+ * Settings the tracked repositories or projects, a repository's workflow alerts and the changelog, whose rows are where the
+ * keys are.
  * Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with every
  * place, and every place keeps the keyboard over it.
  */
@@ -67,6 +73,9 @@ export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: C
     ['workflowRun', 'workflows'],
     ['jobLog', 'workflowRun'],
     ['jobLog', 'workflows'],
+    ['trackedList', 'settings'],
+    ['workflowAlerts', 'settings'],
+    ['changelog', 'settings'],
 ];
 
 /**
