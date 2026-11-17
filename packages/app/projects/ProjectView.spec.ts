@@ -7,7 +7,6 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -32,6 +31,7 @@ import type { ProjectEntry, ProjectView as SavedView } from './ProjectTypes.js';
 import ProjectView from './ProjectView.vue';
 import type { ProjectTab } from './ProjectView.vue';
 import type { ProjectViewOptions } from './projectViewOptions.js';
+import type { SavedViewCommand } from './useProjectCommands.js';
 
 test('the saved views are tabs: the one shown is current, one changed here is marked, one GitHub answers has a cloud', async () => {
     mount(SAMPLE_VIEW_SPRINT, { modifiedViews: [2] });
@@ -51,12 +51,15 @@ test('the saved views are tabs: the one shown is current, one changed here is ma
 
 test('a saved view runs on its key while the view is shown, and its tab, still a link to its address, says the key', async () => {
     const opened: string[] = [];
-    const viewCommands = SAMPLE_PROJECT.views.map((saved, index): Command => ({
-        id: `view:${saved.id}`,
-        title: saved.name,
-        section: 'view',
-        key: String(index + 1),
-        run: () => void opened.push(saved.name),
+    const viewCommands = SAMPLE_PROJECT.views.map((saved, index): SavedViewCommand => ({
+        viewId: saved.id,
+        command: {
+            id: `project.goToView.${index + 1}`,
+            title: saved.name,
+            section: 'view',
+            key: String(index + 1),
+            run: () => void opened.push(saved.name),
+        },
     }));
     mount(SAMPLE_VIEW_SPRINT, { viewCommands });
     const tabs = page.getByRole('navigation', { name: 'Saved views' });
@@ -340,7 +343,7 @@ interface MountOptions {
     /** The items checked, whose actions the selection slot draws. */
     readonly checkedIds?: readonly string[];
     /** Going to each saved view, as the page passes them. */
-    readonly viewCommands?: readonly Command[];
+    readonly viewCommands?: readonly SavedViewCommand[];
     /** "All items" shown, its tab after the saved views (K9). */
     readonly allItems?: boolean;
 }

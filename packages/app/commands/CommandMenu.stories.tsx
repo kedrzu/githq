@@ -623,7 +623,7 @@ function sectionCommand(id: string, title: string, icon: LucideIcon, go: (path: 
 
 function viewCommand(id: string, title: string, count: number | null, go: (path: string) => void): Command {
     return {
-        id: `view:${id}`,
+        id: `project.goToView.${id}`,
         title,
         section: 'view',
         icon: Eye,

@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { copyLink, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
+import { copyLink, goToSection, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -13,21 +13,25 @@ import { RepositoryTracker } from '@/tracking/RepositoryTracker.js';
 import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
-import { REPOSITORY_SECTION_ICONS } from './RepositorySection.js';
+import { REPOSITORY_SECTION_ICONS, REPOSITORY_SECTIONS } from './RepositorySection.js';
 import * as l from './useRepositoryCommands.loc.js';
 
 /** A repository's actions, by the name after `repository.`. */
 export interface RepositoryCommands {
-    readonly issues: Command;
-    readonly pullRequests: Command;
-    readonly commits: Command;
-    readonly workflows: Command;
+    /** Going to each of its sections (`goToSection`), in the order of the tabs. */
+    readonly sections: readonly Command[];
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
     readonly settings: Command;
     readonly track: Command;
     readonly untrack: Command;
+}
+
+/** How {@link useRepositoryCommands} offers a repository's actions. */
+export interface RepositoryCommandsOptions {
+    /** Its sections carry their keys `1`–`4`: the repository is on screen, where they run. Default `false`. */
+    readonly keyed?: boolean;
 }
 
 /**
@@ -40,7 +44,10 @@ export interface RepositoryCommands {
  * repository the screen belongs to and the level under any repository (D36), both with tracking it last (D34) and without
  * no longer tracking it (D32); the group, unlike the level, has no new issue (the app's "New issue" starts one there).
  */
-export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
+export function useRepositoryCommands(): (
+    nameWithOwner: string,
+    options?: RepositoryCommandsOptions,
+) => RepositoryCommands {
     const t = useTranslate();
     const router = useRouter();
     const tracking = useService(TrackingStore);
@@ -49,40 +56,30 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
 
-    return nameWithOwner => {
+    return (nameWithOwner, options = {}) => {
         const url = `${GITHUB_ORIGIN}/${nameWithOwner}`;
         const target = { kind: 'repository', nameWithOwner } as const;
         const isListed = () => tracking.isTracked(target) && !pending.isPending(target);
         return {
-            issues: {
-                id: 'repository.issues',
-                title: t(l.issues),
-                section: 'repository',
-                icon: REPOSITORY_SECTION_ICONS.issues,
-                run: () => void router.push(getRepositoryPath(nameWithOwner, 'issues')),
-            },
-            pullRequests: {
-                id: 'repository.pullRequests',
-                title: t(l.pullRequests),
-                section: 'repository',
-                icon: REPOSITORY_SECTION_ICONS.pullRequests,
-                run: () => void router.push(getRepositoryPath(nameWithOwner, 'pullRequests')),
-            },
-            commits: {
-                id: 'repository.commits',
-                title: t(l.commits),
-                section: 'repository',
-                icon: REPOSITORY_SECTION_ICONS.commits,
-                run: () => void router.push(getRepositoryPath(nameWithOwner, 'commits')),
-            },
-            workflows: {
-                id: 'repository.workflows',
-                title: t(l.workflows),
-                section: 'repository',
-                icon: REPOSITORY_SECTION_ICONS.workflows,
-                when: isListed,
-                run: () => void router.push(getRepositoryPath(nameWithOwner, 'workflows')),
-            },
+            sections: bindCommand(
+                goToSection,
+                number => {
+                    const section = REPOSITORY_SECTIONS[number - 1];
+                    return section === undefined
+                        ? null
+                        : {
+                              place: 'repository',
+                              title: t(l[section]),
+                              section: 'repository',
+                              icon: REPOSITORY_SECTION_ICONS[section],
+                              keyed: options.keyed ? undefined : false,
+                              // An untracked repository's workflows are not read (actions D4).
+                              when: section === 'workflows' ? isListed : undefined,
+                              run: () => void router.push(getRepositoryPath(nameWithOwner, section)),
+                          };
+                },
+                t,
+            ),
             newIssue: bindCommand(
                 newIssue,
                 {

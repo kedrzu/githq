@@ -5,7 +5,6 @@ import { computed } from 'vue';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 
-import { REPOSITORY_SECTION_KEYS } from './RepositorySection.js';
 import { useRepositoryCommands } from './useRepositoryCommands.js';
 
 const props = defineProps<{
@@ -18,15 +17,9 @@ const props = defineProps<{
 const repositoryCommands = useRepositoryCommands();
 
 const sections = computed(() => {
-  const commands = repositoryCommands(props.nameWithOwner);
-  const sectionCommands = [
-    { ...commands.issues, key: props.current ? REPOSITORY_SECTION_KEYS.issues : undefined },
-    { ...commands.pullRequests, key: props.current ? REPOSITORY_SECTION_KEYS.pullRequests : undefined },
-    { ...commands.commits, key: props.current ? REPOSITORY_SECTION_KEYS.commits : undefined },
-    { ...commands.workflows, key: props.current ? REPOSITORY_SECTION_KEYS.workflows : undefined },
-  ];
+  const commands = repositoryCommands(props.nameWithOwner, { keyed: props.current });
   return [
-    sectionCommands,
+    commands.sections,
     [commands.newIssue],
     [commands.openOnGitHub, commands.copyLink, commands.settings],
     [commands.untrack],

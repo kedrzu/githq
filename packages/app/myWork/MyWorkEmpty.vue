@@ -20,8 +20,8 @@ const props = defineProps<{
   filter: MyWorkFilter;
   /** How many of the user's pull requests wait on others — "Needs me" points there when there are any. */
   waitingCount: number;
-  /** The key that switches to "Waiting on others". */
-  waitingKey: string;
+  /** The key that switches to "Waiting on others" (`showFilter`'s). */
+  waitingKey?: string;
   /** How many repositories the user tracks: "nothing" names them, or GitHub as a whole without any. */
   trackedCount: number;
 }>();

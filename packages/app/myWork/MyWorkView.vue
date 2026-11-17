@@ -12,11 +12,13 @@ import {
   GitPullRequestDraft,
   Hourglass,
   LayoutList,
-  ListFilter,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import type { CommandPart, CommandParts } from '@/commands/CommandTypes.js';
+import { showFilter } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -150,7 +152,6 @@ const layout = useShownLayout(() => options.value.layout);
 
 /** The key of the group of repositories the user doesn't track; no repository's `owner/name` can take it. */
 const OTHER_REPOSITORIES = 'otherRepositories';
-const FILTER_KEYS: Readonly<Record<MyWorkFilter, string>> = { all: '1', needsMe: '2', waitingOnOthers: '3' };
 const STATUS_ICONS: Readonly<Record<MyWorkStatus, LucideIcon>> = {
   needsMe: CircleAlert,
   readyToMerge: CircleCheck,
@@ -164,7 +165,7 @@ const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
   MY_WORK_FILTERS.map(candidate => ({
     value: candidate,
     label: t(l[candidate]),
-    keyshortcuts: FILTER_KEYS[candidate],
+    keyshortcuts: getFilterKey(candidate),
     count: phone.active && arrived.value ? countOf(props.work.filterCounts[candidate]) : undefined,
   })),
 );
@@ -261,20 +262,31 @@ usePhonePart(() => ({
   parts: getPhoneParts,
 }));
 
-// `1`–`3` switch the filters; the command menu offers them too.
+// `1`–`3` switch the filters, in the order of their tabs; the command menu offers them too.
 useCommands(() =>
-  MY_WORK_FILTERS.map(candidate => ({
-    id: `myWork.filter.${candidate}`,
-    title: t(l.showFilter, { filter: t(l[candidate]) }),
-    section: 'view',
-    key: FILTER_KEYS[candidate],
-    icon: ListFilter,
-    when: () => filter.value !== candidate,
-    run: () => {
-      filter.value = candidate;
+  bindCommand(
+    showFilter,
+    number => {
+      const candidate = MY_WORK_FILTERS[number - 1];
+      return candidate === undefined
+        ? null
+        : {
+            title: t(l.showFilter, { filter: t(l[candidate]) }),
+            section: 'view',
+            when: () => filter.value !== candidate,
+            run: () => {
+              filter.value = candidate;
+            },
+          };
     },
-  })),
+    t,
+  ),
 );
+
+/** The key of a filter: its number among the tabs (`showFilter`). */
+function getFilterKey(candidate: MyWorkFilter) {
+  return keyOf(showFilter, MY_WORK_FILTERS.indexOf(candidate) + 1);
+}
 
 function getPhoneParts(): CommandParts {
   const { counts } = props.work;
@@ -592,7 +604,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           v-else
           :filter="filter"
           :waiting-count="waitingCount"
-          :waiting-key="FILTER_KEYS.waitingOnOthers"
+          :waiting-key="getFilterKey('waitingOnOthers')"
           :tracked-count="trackedRepositories.length"
           @show-waiting="filter = 'waitingOnOthers'"
         />

@@ -19,7 +19,7 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
  * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, the draft
  * reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus
- * offer them (a project's screen too, for a new issue in it). Places tell which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
+ * offer them (their screens too: a new issue in a project, the tabs of both), My work (its filters). Places tell which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
  * the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
 export type CommandPlace =
@@ -39,7 +39,8 @@ export type CommandPlace =
     | 'changelog'
     | 'cantBeRead'
     | 'repository'
-    | 'project';
+    | 'project'
+    | 'myWork';
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
@@ -101,7 +102,7 @@ export interface CommandParts {
     readonly rows: readonly CommandPart[];
 }
 
-/** One of {@link CommandParts}: an action (`repository.section.issues`, a saved view's `view:<id>`) or a place (`myWork:assigned`). */
+/** One of {@link CommandParts}: an action (`repository.goToSection.1`, a saved view's `project.goToView.2`) or a place (`myWork:assigned`). */
 export type CommandPart =
     | { readonly kind: 'command'; readonly command: Command }
     | { readonly kind: 'place'; readonly place: NavigationPlace };

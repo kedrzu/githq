@@ -20,16 +20,15 @@ import {
   Tag,
   User,
   BookMarked,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
-import type { Command, CommandPart, CommandParts } from '@/commands/CommandTypes.js';
-import { newIssueInProject, rowField } from '@/commands/definitions/index.js';
+import type { CommandPart, CommandParts } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import { newIssueInProject, nextTab, previousTab, rowField } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -38,7 +37,6 @@ import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
-import { TAB_STEP_KEYS } from '@/components/HeaderTabs.vue';
 import FilteredOut from '@/components/FilteredOut.vue';
 import { countListRows } from '@/lists/countListRows.js';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -76,6 +74,7 @@ import type { Project, ProjectEntry, ProjectView } from './ProjectTypes.js';
 import * as l from './ProjectView.loc.js';
 import type { ProjectGrouping, ProjectViewOptions } from './projectViewOptions.js';
 import { getGroupingField, isItemProperty, MANUAL_SORT, parseProjectSort } from './projectViewOptions.js';
+import type { SavedViewCommand } from './useProjectCommands.js';
 
 /** A saved view — or "All items" (K9) — as its tab shows it. */
 export interface ProjectTab {
@@ -139,7 +138,7 @@ const props = withDefaults(
      * nine on `1`–`9`: run by their keys while the view is shown, their keys on the tabs, and the phone's menu of the
      * views lists them first (mobile D17).
      */
-    viewCommands?: readonly Command[];
+    viewCommands?: readonly SavedViewCommand[];
     /**
      * How many items another saved view (by its tab's key) lists, for the phone's menu of the views; `null` while that is
      * not known. Asked only as the menu draws.
@@ -348,28 +347,32 @@ const sortSummary = computed(() => {
 // already (`AppCommands`), so they are not offered in it a second time. `[` and `]` step through the tabs as shown,
 // "All items" too while it is one, wrapping around (D17).
 useCommands(() => [
-  ...props.viewCommands.map(command => ({ ...command, menu: false })),
-  {
-    id: 'project.previousView',
-    // Keys and the help sheet only: in ⌘K it would only stand between the sections.
-    menu: false,
-    title: t(l.previousView),
-    section: 'view',
-    key: TAB_STEP_KEYS.previous,
-    icon: ChevronLeft,
-    when: () => props.tabs.length > 1,
-    run: () => stepView(-1),
-  },
-  {
-    id: 'project.nextView',
-    menu: false,
-    title: t(l.nextView),
-    section: 'view',
-    key: TAB_STEP_KEYS.next,
-    icon: ChevronRight,
-    when: () => props.tabs.length > 1,
-    run: () => stepView(1),
-  },
+  ...props.viewCommands.map(({ command }) => ({ ...command, menu: false })),
+  // Keys and the help sheet only: in ⌘K they would only stand between the views.
+  bindCommand(
+    previousTab,
+    {
+      place: 'project',
+      title: t(l.previousView),
+      section: 'view',
+      menu: false,
+      when: () => props.tabs.length > 1,
+      run: () => stepView(-1),
+    },
+    t,
+  ),
+  bindCommand(
+    nextTab,
+    {
+      place: 'project',
+      title: t(l.nextView),
+      section: 'view',
+      menu: false,
+      when: () => props.tabs.length > 1,
+      run: () => stepView(1),
+    },
+    t,
+  ),
 ]);
 
 // On a phone the command line names the tab shown with how many the view lists, left out while they arrive, with a dot
@@ -391,8 +394,8 @@ usePhonePart(() => {
 function getPhoneParts(): CommandParts {
   return {
     heading: t(l.phoneViews, { project: props.project.title }),
-    rows: props.viewCommands.flatMap((command): CommandPart[] => {
-      const tab = props.tabs.find(candidate => `view:${candidate.key}` === command.id);
+    rows: props.viewCommands.flatMap(({ viewId, command }): CommandPart[] => {
+      const tab = props.tabs.find(candidate => candidate.key === viewId);
       if (!tab) {
         return [];
       }
@@ -417,7 +420,7 @@ function stepView(step: number) {
 
 /** The command going to a saved view, by its tab's key; none for "All items". */
 function getViewCommand(key: string) {
-  return props.viewCommands.find(command => command.id === `view:${key}`);
+  return props.viewCommands.find(({ viewId }) => viewId === key)?.command;
 }
 
 function addDraft(title: string, group: string | null) {

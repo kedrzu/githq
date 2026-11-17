@@ -76,6 +76,31 @@ test('a family gives a command on each number the binding takes, named by what i
     ]);
 });
 
+test("a family's numbers past its last are offered without a key while the binding gives them", () => {
+    const views = defineAppCommand({
+        id: 'view',
+        title: () => 'Go to view 1–2',
+        numbers: { first: 1, last: 2 },
+        places: ['list'],
+    });
+    const names = ['Backlog', 'Board', 'Roadmap'];
+
+    const commands = bindCommand(
+        views,
+        number => {
+            const name = names[number - 1];
+            return name === undefined ? null : { section: 'view', title: name, run };
+        },
+        t,
+    );
+
+    expect(commands.map(({ id, key }) => ({ id, key }))).toEqual([
+        { id: 'list.view.1', key: '1' },
+        { id: 'list.view.2', key: '2' },
+        { id: 'list.view.3', key: undefined },
+    ]);
+});
+
 test("a place may offer it without its key, and add its own words to the definition's", () => {
     const bound = bindCommand(OPEN, { place: 'list', section: 'view', keyed: false, keywords: ['acme/web'], run }, t);
 

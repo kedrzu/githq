@@ -35,7 +35,10 @@ export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit
     readonly otherKeys?: false;
 } & CommandBindingPlace<TPlaces>;
 
-/** A family's binding: what its number does, or `null` where the screen has nothing at that number. */
+/**
+ * A family's binding: what its number does, or `null` where the screen has nothing at that number. Past the family's
+ * last number it is asked on until it gives `null`, so it must end there (a project's saved views run out).
+ */
 export type CommandFamilyBinding<TPlaces extends CommandPlaces = CommandPlaces> = (
     number: number,
 ) => CommandBinding<TPlaces> | null;
@@ -54,7 +57,8 @@ export function bindCommand<const TPlaces extends CommandPlaces>(
 ): Command;
 /**
  * The registry's commands for a numbered family: one per number the binding gives, on that number's key, its id
- * `<place>.<id>.<number>`.
+ * `<place>.<id>.<number>`. Numbers past the family's last are offered too, with no key, while the binding gives them: a
+ * project's tenth saved view is still gone to from the menus.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -76,14 +80,15 @@ export function bindCommand<const TPlaces extends CommandPlaces>(
 
     assert(typeof binding === 'function', 'A command is bound by an object, a family by a function.');
     const commands: Command[] = [];
-    for (let number = definition.numbers.first; number <= definition.numbers.last; number++) {
+    for (let number = definition.numbers.first; ; number++) {
         const bound = binding(number);
         if (bound) {
-            commands.push(toCommand(definition, bound, t, { id: `${definition.id}.${number}`, key: `${number}` }));
+            const key = keyOf(definition, number);
+            commands.push(toCommand(definition, bound, t, { id: `${definition.id}.${number}`, key }));
+        } else if (number >= definition.numbers.last) {
+            return commands;
         }
     }
-
-    return commands;
 }
 
 /** What tells a family's numbers apart. */

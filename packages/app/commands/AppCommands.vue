@@ -185,10 +185,8 @@ useCommands(() => {
   }
 
   const commands = repositoryCommands(name);
-  const sections =
-    route.name === 'repository' ? [] : [commands.issues, commands.pullRequests, commands.commits, commands.workflows];
   return [
-    ...sections,
+    ...(route.name === 'repository' ? [] : commands.sections),
     { ...commands.openOnGitHub, detail: name },
     commands.copyLink,
     // "Settings" alone stays the app's: a repository is in context nearly always.
@@ -404,17 +402,14 @@ function getProjectChildren(project: TrackedProject): Command[] {
 
 /** A project's saved views without their keys, which run only on the project's own screen. */
 function getSavedViews(project: TrackedProject): Command[] {
-  return projectCommands(project).savedViews.map(command => ({ ...command, key: undefined }));
+  return projectCommands(project).savedViews.map(({ command }) => ({ ...command, key: undefined }));
 }
 
 /** A repository's level, tracked or not: `when` of each row says which it is offered. Track last, as in its group (D34). */
 function repositoryChildren(nameWithOwner: string): Command[] {
   const commands = repositoryCommands(nameWithOwner);
   return [
-    commands.issues,
-    commands.pullRequests,
-    commands.commits,
-    commands.workflows,
+    ...commands.sections,
     commands.newIssue,
     commands.openOnGitHub,
     commands.copyLink,

@@ -1,11 +1,11 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Eye, EyeOff, Settings } from 'lucide-vue-next';
+import { EyeOff, Settings } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { copyLink, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
+import { copyLink, goToView, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -16,21 +16,25 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { ProjectStore } from './ProjectStore.js';
 import * as l from './useProjectCommands.loc.js';
 
-/** How many of a project's saved views have a key, `1` to `9`: a tenth and later have none. */
-const SAVED_VIEW_KEYS = 9;
-
 /** A project's actions, by the name after `project.`. */
 export interface ProjectCommands {
     /**
-     * Going to each of its saved views (`view:<id>`), as the command menu's level under the project lists them; the first
-     * nine on `1`–`9`, which run only while the project is on screen — any other menu leaves them out.
+     * Going to each of its saved views (`goToView`), in its order, as the command menu's level under the project lists
+     * them; the first nine on `1`–`9`, which run only while the project is on screen — any other menu leaves them out.
      */
-    readonly savedViews: readonly Command[];
+    readonly savedViews: readonly SavedViewCommand[];
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
     readonly settings: Command;
     readonly untrack: Command;
+}
+
+/** Going to a saved view, with the view it goes to: a view is picked by its id, not by where it stands. */
+export interface SavedViewCommand {
+    /** The view's node id. */
+    readonly viewId: string;
+    readonly command: Command;
 }
 
 /** A project as its actions need it: its address, and its id once it is known (tracked). */
@@ -64,15 +68,7 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
             tracking.isTracked({ kind: 'project', id: target.id }) &&
             !pending.isPending({ kind: 'project', id: target.id });
         return {
-            savedViews: (project()?.views ?? []).map((view, index) => ({
-                id: `view:${view.id}`,
-                title: view.name,
-                detail: t(l.savedView),
-                icon: Eye,
-                section: 'view',
-                key: index < SAVED_VIEW_KEYS ? String(index + 1) : undefined,
-                run: () => void router.push(getProjectPath(target, view.number)),
-            })),
+            savedViews: getSavedViews(),
             newIssue: bindCommand(
                 newIssue,
                 {
@@ -125,5 +121,29 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
                 },
             },
         };
+
+        function getSavedViews(): SavedViewCommand[] {
+            const views = project()?.views ?? [];
+            const commands = bindCommand(
+                goToView,
+                number => {
+                    const view = views[number - 1];
+                    return view === undefined
+                        ? null
+                        : {
+                              title: view.name,
+                              detail: t(l.savedView),
+                              section: 'view',
+                              run: () => void router.push(getProjectPath(target, view.number)),
+                          };
+                },
+                t,
+            );
+            // One command per view, in its order: the binding gives every view one.
+            return views.flatMap((view, index) => {
+                const command = commands[index];
+                return command ? [{ viewId: view.id, command }] : [];
+            });
+        }
     };
 }

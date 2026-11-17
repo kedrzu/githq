@@ -3,9 +3,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
 
-/** The keys that step to the previous and the next tab, wrapping around: a repository's sections, a project's saved views. */
-export const TAB_STEP_KEYS = { previous: '[', next: ']' } as const;
-
 /** A tab switched through a model (a repository's section). */
 export interface HeaderTabsOption {
   readonly value: string;
@@ -47,7 +44,7 @@ export type HeaderTabsSet =
       readonly options: readonly HeaderTabsOption[];
       readonly value: string;
       readonly choose: (value: string) => void;
-      /** The compact form's hint for {@link TAB_STEP_KEYS} ("Previous / next section"); the caller handles the keys. */
+      /** The compact form's hint for `previousTab` and `nextTab` ("Previous / next section"); the caller binds them. */
       readonly stepHint?: string;
     }
   | {
@@ -55,7 +52,7 @@ export type HeaderTabsSet =
       /** The group's accessible name ("Saved views"). */
       readonly label: string;
       readonly links: readonly HeaderTabsLink[];
-      /** The compact form's hint for {@link TAB_STEP_KEYS} ("Previous / next view"); the caller handles the keys. */
+      /** The compact form's hint for `previousTab` and `nextTab` ("Previous / next view"); the caller binds them. */
       readonly stepHint?: string;
     };
 </script>
@@ -66,6 +63,8 @@ import { Check, ChevronDown, Cloud } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
+import { nextTab, previousTab } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 
 import Button from './Button.vue';
@@ -170,11 +169,11 @@ function getStep(event: KeyboardEvent) {
     return 0;
   }
 
-  if (matchesCommandKey(event, TAB_STEP_KEYS.previous)) {
+  if (matchesCommandKey(event, keyOf(previousTab))) {
     return -1;
   }
 
-  return matchesCommandKey(event, TAB_STEP_KEYS.next) ? 1 : 0;
+  return matchesCommandKey(event, keyOf(nextTab)) ? 1 : 0;
 }
 </script>
 
@@ -232,8 +231,8 @@ function getStep(event: KeyboardEvent) {
       <MenuLabel>
         <span :class="css.headerTabs_stepHint">
           <span :class="css.headerTabs_stepKeys">
-            <Kbd :keys="TAB_STEP_KEYS.previous" />
-            <Kbd :keys="TAB_STEP_KEYS.next" />
+            <Kbd :keys="keyOf(previousTab)" />
+            <Kbd :keys="keyOf(nextTab)" />
           </span>
           {{ tabs.stepHint }}
         </span>
