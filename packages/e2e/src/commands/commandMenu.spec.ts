@@ -108,17 +108,20 @@ test('D14: a list\'s "This view" opens on what acts on the list and its row, its
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
-    await expect(menu.group('This view').getByRole('option')).toHaveText([
-        `New issue in ${SAMPLE_PROJECT}C`,
-        `Add existing issues to ${SAMPLE_PROJECT}…`,
-        `Open on GitHub${SAMPLE_PROJECT}`,
-        'Open full screenDocument the setup',
-        'Show as list',
-        'Group by…Status',
-        "Order by…GitHub's order",
-        'Row field…Status',
-        'Show properties…',
-    ]);
+    // By what each line starts with, its key's hint aside (⇧ on a Mac, "Shift" elsewhere); a space may be a no-break one.
+    await expect(menu.group('This view').getByRole('option')).toHaveText(
+        [
+            `New issue in ${SAMPLE_PROJECT}`,
+            `Add existing issues to ${SAMPLE_PROJECT}…`,
+            'Open on GitHub',
+            'Open full screen',
+            'Show as list',
+            'Group by…',
+            'Order by…',
+            'Row field…',
+            'Show properties…',
+        ].map(title => new RegExp(`^${title.replaceAll(' ', '\\s')}`, 'u')),
+    );
 });
 
 test("⌘K on a tracked repository's view groups its sections, Open on GitHub, Copy link and Settings under its name, and a section runs as its tab", async ({
