@@ -25,7 +25,7 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * screens (the desktop app's device code, the first sign-in's offer of saved settings), and the merge panel (its methods'
  * numbers: the panel is a dialog, so its own listener runs them, commands D11). Places tell which
  * keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer
- * over the screen (`CommandRegistry`); more are added as commands move onto definitions.
+ * over the screen (`CommandRegistry`).
  */
 export type CommandPlace =
     | 'app'

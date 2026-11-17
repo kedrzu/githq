@@ -17,7 +17,7 @@ import type { CommandKeySheet } from './CommandTypes.js';
 import { defineAppCommand } from './defineAppCommand.js';
 import { help as helpCommand, newIssueInProject } from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
-import { useCommand } from './useCommand.js';
+import { useCommands } from './useCommands.js';
 
 /** The help over an opened item: its keys, and the app's `?` that opens it. Closing the item is written out. */
 const Harness = defineComponent({
@@ -29,8 +29,9 @@ const Harness = defineComponent({
         setIndexedDbPersistence(useContainer());
         const registry = useService(CommandRegistry);
         const closed = ref('open');
+        const t = useTranslate();
 
-        useCommand(helpCommand, () => ({ section: 'app', run: () => registry.setHelpOpen(true) }));
+        useCommands(() => [bindCommand(helpCommand, { section: 'app', run: () => registry.setHelpOpen(true) }, t)]);
         registry.setHelpOpen(props.startOpen);
 
         return () => (
@@ -71,10 +72,13 @@ const BesideHarness = defineComponent({
     setup() {
         const registry = useService(CommandRegistry);
         const ran = ref('nothing');
+        const t = useTranslate();
 
-        useCommand(ITEM_OPEN, () => ({ section: 'item', run: () => openFrom('item') }));
-        useCommand(LIST_OPEN, () => ({ section: 'view', actsOnRow: true, run: () => openFrom('list') }));
-        useCommand(helpCommand, () => ({ section: 'app', run: () => registry.setHelpOpen(true) }));
+        useCommands(() => [
+            bindCommand(ITEM_OPEN, { section: 'item', run: () => openFrom('item') }, t),
+            bindCommand(LIST_OPEN, { section: 'view', actsOnRow: true, run: () => openFrom('list') }, t),
+            bindCommand(helpCommand, { section: 'app', run: () => registry.setHelpOpen(true) }, t),
+        ]);
 
         return () => (
             <div>

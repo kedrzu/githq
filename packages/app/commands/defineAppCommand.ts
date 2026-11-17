@@ -91,7 +91,7 @@ export interface AppCommandFamilyOptions<TPlaces extends CommandPlaces> {
 
 /**
  * Defines a command once (commands D12), in `commands/definitions/<area>.ts`, exported from its index: a place offers
- * it by binding it (`bindCommand`, `useCommand`). Not `defineCommand`, `@nzyme/ioc`'s (D5).
+ * it by binding it (`bindCommand`). Not `defineCommand`, `@nzyme/ioc`'s (D5).
  *
  * @__NO_SIDE_EFFECTS__
  */

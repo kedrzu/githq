@@ -1,5 +1,3 @@
-item:
-  en: Item
 open:
   en: Open
 closedCompleted:
@@ -18,20 +16,10 @@ closedPullRequest:
   en: Closed
 openedBy:
   en: '{author} · opened {ago}'
-openedAgo:
-  en: opened {ago}
 deletedUser:
   en: ghost
 closes:
   en: Closes
-stateActions:
-  en: Close or reopen
-readyForReview:
-  en: Mark ready for review
-convertToDraft:
-  en: Convert to draft
-requestReviewers:
-  en: Request reviewers…
 itemMenuLabel:
   en: 'Actions of {reference}'
 resizeSummary:
