@@ -192,7 +192,7 @@ listeners and every help-only stub.
 **The shape in code: `defineAppCommand({ id, title, icon, key, otherKeys?, places, priority?, configurable? })` in
 `commands/definitions/*.ts`, all re-exported from one index; `bindCommand(definition, { run, when, unavailable,
 detail, title?, icon?, options }, t)` gives the command a place offers, as a plain value a context menu can show too,
-and `useCommand` registers one from a component; buttons keep their own label and icon and take their key hint from a
+and `useCommands` registers a component's bound commands — only bound ones; buttons keep their own label and icon and take their key hint from a
 helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a translation key, translated
 when shown. Its title is the command's general name, the one the list of keys shows; a binding's `title` (and `icon`)
 may say what the command acts on there ("Untrack" for "Remove" in the tracked repositories) or which way a toggle goes
