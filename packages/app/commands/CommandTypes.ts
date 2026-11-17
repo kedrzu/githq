@@ -46,7 +46,8 @@ export type CommandPlace =
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
- * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); the commit graph with a commit open
+ * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`), a repository's Workflows section too;
+ * an item open beside the draft reviews, whose `⇧S` is then the item's own (the list's keys being `list`'s); the commit graph with a commit open
  * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
  * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
  * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the
@@ -54,6 +55,8 @@ export type CommandPlace =
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
+    ['workflows', 'item'],
+    ['item', 'draftReviews'],
     ['commits', 'commit'],
     ['workflows', 'workflow'],
     ['item', 'review'],

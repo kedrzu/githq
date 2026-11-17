@@ -35,6 +35,30 @@ test('any screen place takes a key before the app, whatever the sections', () =>
     expect(ids(orderByKeyPrecedence([app, item]))).toEqual(['item', 'app']);
 });
 
+test("an item open beside a repository's Workflows section leaves it J; beside the draft reviews it keeps ⇧S", () => {
+    const workflows: Command = { id: 'workflows', title: 'Next', section: 'view', place: 'workflows', key: 'J', run };
+    const itemNext: Command = { id: 'itemNext', title: 'Next', section: 'item', place: 'item', key: 'J', run };
+    const drafts: Command = {
+        id: 'drafts',
+        title: 'Submit',
+        section: 'view',
+        place: 'draftReviews',
+        key: 'Shift+S',
+        run,
+    };
+    const itemSubmit: Command = {
+        id: 'itemSubmit',
+        title: 'Submit',
+        section: 'item',
+        place: 'item',
+        key: 'Shift+S',
+        run,
+    };
+
+    expect(ids(orderByKeyPrecedence([itemNext, workflows]))).toEqual(['workflows', 'itemNext']);
+    expect(ids(orderByKeyPrecedence([drafts, itemSubmit]))).toEqual(['itemSubmit', 'drafts']);
+});
+
 function ids(commands: readonly Command[]) {
     return commands.map(command => command.id);
 }

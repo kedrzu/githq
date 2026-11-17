@@ -10,6 +10,7 @@ import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplat
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
+import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { PULL_REQUEST_COMMANDS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
@@ -62,8 +63,8 @@ const OWN_KEYS: ReadonlySet<string> = new Set([
   keyOf(definitions.openOnGitHub),
 ]);
 
-/** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
-const ORDINARY_KEYS: ReadonlySet<string> = new Set(PULL_REQUEST_COMMANDS.map(definition => keyOf(definition)));
+/** A pull request's ordinary commands, which a stack's entry doesn't take (D11). */
+const ORDINARY: ReadonlySet<AnyAppCommand> = new Set(PULL_REQUEST_COMMANDS);
 
 const props = withDefaults(
   defineProps<{
@@ -669,7 +670,10 @@ function getRowCommands(): Command[] {
     command.key !== undefined && OWN_KEYS.has(command.key) ? { ...command, key: undefined } : command,
   );
   return cursorRow.value?.stack
-    ? [...commands.filter(command => !ORDINARY_KEYS.has(command.key ?? '')), ...getStackDequeue()]
+    ? [
+        ...commands.filter(command => command.definition === undefined || !ORDINARY.has(command.definition)),
+        ...getStackDequeue(),
+      ]
     : commands;
 }
 
@@ -678,7 +682,7 @@ function getStackDequeue(): Command[] {
   const queued = rowActions?.selected.value.find(item => item.kind === 'pullRequest' && item.mergeQueueEntry);
   return merging && queued?.kind === 'pullRequest'
     ? pullRequestCommands({ place: 'item', section: 'selection', pr: queued, source: merging }).filter(
-        command => command.key === keyOf(definitions.dequeue),
+        command => command.definition === definitions.dequeue,
       )
     : [];
 }
