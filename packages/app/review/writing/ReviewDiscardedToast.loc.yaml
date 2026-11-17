@@ -8,3 +8,5 @@ quoted:
   en: “{text}”
 restore:
   en: Restore
+restoreCommand:
+  en: Restore the discarded comment

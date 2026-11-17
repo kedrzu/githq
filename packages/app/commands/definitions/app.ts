@@ -1,4 +1,4 @@
-import { SquarePen } from 'lucide-vue-next';
+import { SquarePen, Undo2 } from 'lucide-vue-next';
 
 import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './app.loc.js';
@@ -41,4 +41,17 @@ export const mergedBranch = defineAppCommand({
     title: l.mergedBranch,
     key: 'Alt+D',
     places: ['app'],
+});
+
+/**
+ * Takes back what a toast says was just done, while it shows: a close or an untrack in the shell's toasts (`app`), a
+ * discarded comment in a review's (`review`), whose ⌘Z goes first there (commands D13). The binding names what it takes
+ * back.
+ */
+export const undo = defineAppCommand({
+    id: 'undo',
+    title: l.undo,
+    icon: Undo2,
+    key: 'Mod+Z',
+    places: ['app', 'review'],
 });

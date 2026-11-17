@@ -4,14 +4,15 @@ import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './jobLog.loc.js';
 
 /**
- * Opens the search of a job's whole log (actions W4b), or puts the cursor back in its field. `/` beside the shared
- * {@link find}'s `⌘F`, which opens it too: the browser's own find can't see the lines not drawn.
+ * Opens the search of a job's whole log (actions W4b), or puts the cursor back in its field. `⌘F` too: the browser's
+ * own find can't see the lines not drawn. The search's field selects what is typed by that key (`WorkflowLogSearch`).
  */
 export const searchLog = defineAppCommand({
     id: 'searchLog',
     title: l.searchLog,
     icon: Search,
     key: '/',
+    otherKeys: ['Mod+F'],
     places: ['jobLog'],
 });
 

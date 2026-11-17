@@ -40,8 +40,9 @@ export const showFilter = defineAppCommand({
 
 /**
  * Steps to the tab before the one shown, wrapping around: a repository's sections, a project's saved views; a review's
- * previous file. One command for all, so rebinding moves all; a symbol, not a control's own key (D4), so it can be rebound. The binding names
- * what it steps through ("Previous section"); keys and the help sheet only, as in ⌘K it would stand between the tabs.
+ * previous file. One command for all, so rebinding moves all; a symbol, not a control's own key (D4), so it can be
+ * rebound. The binding names what it steps through ("Previous section"); keys and the help sheet only, as in ⌘K it
+ * would stand between the tabs.
  */
 export const previousTab = defineAppCommand({
     id: 'previousTab',

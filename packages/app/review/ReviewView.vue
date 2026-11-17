@@ -1196,8 +1196,6 @@ useCommands(() => [
     {
       ...REVIEW_PLACE,
       title: t(l.find),
-      // `/` filters the files here.
-      otherKeys: false,
       // ⌘F is a field's own inside one, the `/` filter's too, where the registry would run a `Mod` key; the find
       // field's own takes it before.
       when: () => registry.menu !== null || !isEditableTarget(document.activeElement),

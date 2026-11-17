@@ -8,3 +8,5 @@ backToMerge:
   en: Back to the refused merge
 mergedBranch:
   en: Delete or restore the merged branch
+undo:
+  en: Undo

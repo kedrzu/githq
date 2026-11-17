@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { restoreComment } from '@/commands/definitions/index.js';
+import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -37,8 +37,10 @@ const title = computed(() => {
 });
 const commands = computed(() => [
   bindCommand(
-    restoreComment,
+    undo,
     {
+      place: 'review',
+      title: t(l.restoreCommand),
       section: 'view',
       menu: false,
       // ⌘Z in a field is the field's undo.
@@ -71,8 +73,8 @@ function onOpenChange(open: boolean) {
       <Button
         variant="secondary"
         size="sm"
-        :kbd="active ? keyOf(restoreComment) : undefined"
-        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(restoreComment)) : undefined"
+        :kbd="active ? keyOf(undo) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="emit('restore')"
       >
         {{ t(l.restore) }}

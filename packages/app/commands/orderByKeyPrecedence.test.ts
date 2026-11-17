@@ -1,8 +1,18 @@
+import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { Translator } from '@nzyme/i18n/Translator.js';
+import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { expect, test } from 'bun:test';
 
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+
+import { bindCommand } from './bindCommand.js';
 import type { Command } from './CommandTypes.js';
+import { undo } from './definitions/index.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
+const container = createContainer();
+container.set(LanguageContext, () => APP_LANGUAGE);
+const t = container.resolve(Translator);
 const run = () => undefined;
 
 test('without places the sections decide, and of one section the one registered first', () => {
@@ -57,6 +67,17 @@ test("an item open beside a repository's Workflows section leaves it J; beside t
 
     expect(ids(orderByKeyPrecedence([itemNext, workflows]))).toEqual(['workflows', 'itemNext']);
     expect(ids(orderByKeyPrecedence([drafts, itemSubmit]))).toEqual(['itemSubmit', 'drafts']);
+});
+
+test("⌘Z in a review restores the discarded comment, not a shell toast's Undo shown with it", () => {
+    const undoClose = bindCommand(undo, { place: 'app', title: 'Undo close', section: 'app', menu: false, run }, t);
+    const restore = bindCommand(
+        undo,
+        { place: 'review', title: 'Restore the discarded comment', section: 'view', menu: false, run },
+        t,
+    );
+
+    expect(ids(orderByKeyPrecedence([undoClose, restore]))).toEqual(['review.undo', 'app.undo']);
 });
 
 function ids(commands: readonly Command[]) {

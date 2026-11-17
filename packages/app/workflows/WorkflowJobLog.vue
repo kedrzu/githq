@@ -19,6 +19,7 @@ import {
 } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -139,6 +140,7 @@ const TIME_FORMAT = new Intl.DateTimeFormat(APP_LANGUAGE, {
 
 const t = useTranslate();
 const preferences = useService(LocalPreferences);
+const registry = useService(CommandRegistry);
 const scroller = useTemplateRef<HTMLElement>('scroller');
 const list = useTemplateRef<HTMLElement>('list');
 const searchBar = useTemplateRef('searchBar');
@@ -285,16 +287,12 @@ const mapCursor = computed(() => {
 });
 
 useCommands(() => [
-  bindCommand(definitions.searchLog, { ...LOG_PLACE, run: () => void openSearch() }, t),
-  // The browser's own find can't see the lines not drawn. Not from a field, whose ⌘F is its own (the search's selects
-  // what is typed).
   bindCommand(
-    definitions.find,
+    definitions.searchLog,
     {
       ...LOG_PLACE,
-      title: t(definitions.searchLog.title),
-      menu: false,
-      when: () => !isEditableTarget(window.document.activeElement),
+      // ⌘F is a field's own inside one (the search's selects what is typed), where the registry would run a `Mod` key.
+      when: () => registry.menu !== null || !isEditableTarget(window.document.activeElement),
       run: () => void openSearch(),
     },
     t,

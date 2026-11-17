@@ -4,7 +4,9 @@ import { defineComponent, onScopeDispose, ref } from 'vue';
 
 import { StoryPage } from '@/.storybook/StoryLayout.jsx';
 import type { Command } from '@/commands/CommandTypes.js';
+import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 
 import Button from './Button.vue';
 import TextField from './TextField.vue';
@@ -153,8 +155,6 @@ interface StackArgs {
     untrackOpen: boolean;
 }
 
-const UNDO_KEY = 'Mod+Z';
-
 /**
  * Two toasts on one key (⌘Z): the newest, at the bottom, takes the keys and shows them; the older one's buttons still
  * click. "Stopped tracking" comes first in the markup, so opening it later shows arrival beats markup.
@@ -218,8 +218,8 @@ export const Stack: StoryObj<StackArgs> = {
                         <Button
                             variant="secondary"
                             size="sm"
-                            kbd={active ? UNDO_KEY : undefined}
-                            keyshortcuts={active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined}
+                            kbd={active ? keyOf(undo) : undefined}
+                            keyshortcuts={active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined}
                             onClick={() => undone.value.push(what)}
                         >
                             Undo
@@ -231,5 +231,5 @@ export const Stack: StoryObj<StackArgs> = {
 };
 
 function command(id: string, run: () => void): Command {
-    return { id, title: 'Undo', section: 'app', key: UNDO_KEY, icon: Undo2, menu: false, run };
+    return { id, title: 'Undo', section: 'app', key: keyOf(undo), icon: Undo2, menu: false, run };
 }

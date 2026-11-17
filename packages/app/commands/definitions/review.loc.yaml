@@ -46,5 +46,9 @@ showHiddenLines:
   en: Show more hidden lines
 showAllHiddenLines:
   en: Show all hidden lines
-restoreComment:
-  en: Restore the discarded comment
+find:
+  en: Find
+findNext:
+  en: Next match
+findPrevious:
+  en: Previous match
