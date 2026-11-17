@@ -52,3 +52,10 @@
 - Built: the ordered pairs of places on screen together decide at runtime which command runs a shared key (the list's
   `O` before the opened item's). Review flagged it against D13's "places serve only these checks"; owner chose to keep
   it over section order (D13 rewritten, prior form in history).
+
+## 2026-11-17 (delivery, M2)
+
+- Owner: a place may name a command for what it acts on or which way it toggles; the definition keeps the general name
+  (D12 amended). Per command: ⌫ "Remove" in the settings lists is fixed; leaving full screen is "Close full screen" on
+  Escape, ⇧Enter only opens it; the list's layout toggle loses its key (⇧V), too niche.
+- Owner: a project keeps its own `C` for a new issue in it (H5); D7 takes only the app-wide one.

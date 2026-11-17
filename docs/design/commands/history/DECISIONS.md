@@ -90,6 +90,31 @@ hardcoded (`translations` skill), so it holds the key and whatever shows it tran
 
 - Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
 
+Retired in part 2026-11-17: a binding may now name what the command acts on there or which way it toggles; the
+rest holds in [D12](../DECISIONS.md#d12).
+
+**The shape in code: `defineAppCommand({ id, title, icon, key, places, priority?, configurable? })` in
+`commands/definitions/*.ts`, all re-exported from one index; `useCommand(definition, { run, when, unavailable,
+detail, title?, options })` in the component that knows what it does; buttons keep their own label and icon and take
+their key hint from a helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a
+translation key, translated when shown.** (2026-11-16, owner)
+
+**Why.** Each part has one job from [D1](#d1): what a command is, what it does here. A hint read through the helper
+replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not work, after a rebinding too.
+Buttons often carry a label that depends on where they are (the merge panel's button is named after the merge
+method), so the helper does not force the command's title on them. A binding's `title` names what a numbered family
+picks ([D9](#d9)). A definition is a module-level constant, which cannot call a component's `t()`, and UI text is
+never hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
+
+> **Checked 2026-11-16:** githq has one language, `APP_LANGUAGE = 'en'`
+> (`packages/app/i18n/AppLanguageContext.ts:6`), so following a change of language is not a reason here.
+
+**Rejected.**
+
+- Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
+- `<CommandButton :command>` drawing name, icon and key from the definition and running it on click — forces the
+  command's title on buttons named for their place ([history](history/DECISIONS.md#d12)).
+
 ## D13
 
 Retired in part 2026-11-16: places now also decide which command runs a shared key; the rest holds in

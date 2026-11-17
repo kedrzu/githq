@@ -102,8 +102,9 @@ command matches comes first and its importance only breaks ties. [Why it belongs
 
 A definition says what the command is: its id, title, icon, default key, the places it can be offered, how much it
 matters, and whether its key can be changed. The definitions live in a few files by area and are exported from one index. A
-component that offers a command takes a definition and says what running it does there and when it can run. A
-button keeps its own label, which can depend on where it is, but reads its key hint from the definition, so it shows
+component that offers a command takes a definition and says what running it does there and when it can run, and may
+name it for what it acts on there: the definition's "Remove" is "Untrack" in the tracked repositories, under the same
+key. The list of keys shows the definition's name. A button keeps its own label, which can depend on where it is, but reads its key hint from the definition, so it shows
 the key you chose. [The shape](DECISIONS.md#d12).
 
 ## Where your keys are kept

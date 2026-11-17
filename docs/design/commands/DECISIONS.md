@@ -189,18 +189,23 @@ listeners and every help-only stub.
 
 ## D12
 
-**The shape in code: `defineAppCommand({ id, title, icon, key, places, priority?, configurable? })` in
-`commands/definitions/*.ts`, all re-exported from one index; `useCommand(definition, { run, when, unavailable,
-detail, title?, options })` in the component that knows what it does; buttons keep their own label and icon and take
-their key hint from a helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a
-translation key, translated when shown.** (2026-11-16, owner)
+**The shape in code: `defineAppCommand({ id, title, icon, key, otherKeys?, places, priority?, configurable? })` in
+`commands/definitions/*.ts`, all re-exported from one index; `bindCommand(definition, { run, when, unavailable,
+detail, title?, icon?, options }, t)` gives the command a place offers, as a plain value a context menu can show too,
+and `useCommand` registers one from a component; buttons keep their own label and icon and take their key hint from a
+helper, `:kbd="keyOf(definition)"`, which applies the user's key. A definition holds a translation key, translated
+when shown. Its title is the command's general name, the one the list of keys shows; a binding's `title` (and `icon`)
+may say what the command acts on there ("Untrack" for "Remove" in the tracked repositories) or which way a toggle goes
+("Show as board"), and names what a numbered family picks ([D9](#d9)).** (2026-11-16, owner; titles of a place
+2026-11-17, owner)
 
 **Why.** Each part has one job from [D1](#d1): what a command is, what it does here. A hint read through the helper
 replaces the ~150 hand-typed `kbd=` hints, so a hint cannot show a key that does not work, after a rebinding too.
 Buttons often carry a label that depends on where they are (the merge panel's button is named after the merge
-method), so the helper does not force the command's title on them. A binding's `title` names what a numbered family
-picks ([D9](#d9)). A definition is a module-level constant, which cannot call a component's `t()`, and UI text is
-never hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
+method), so the helper does not force the command's title on them. The command menu and the help sheet read better
+naming what the command does on this screen, while rebinding still goes by the definition, so one general name there
+is enough. A definition is a module-level constant, which cannot call a component's `t()`, and UI text is never
+hardcoded (`translations` skill), so it holds the key and whatever shows it translates.
 
 > **Checked 2026-11-16:** githq has one language, `APP_LANGUAGE = 'en'`
 > (`packages/app/i18n/AppLanguageContext.ts:6`), so following a change of language is not a reason here.
@@ -210,6 +215,10 @@ never hardcoded (`translations` skill), so it holds the key and whatever shows i
 - Hints typed on each button (`kbd="O"`) — today's state; they drift from the key that runs.
 - `<CommandButton :command>` drawing name, icon and key from the definition and running it on click — forces the
   command's title on buttons named for their place ([history](history/DECISIONS.md#d12)).
+- Only the definition's title, everywhere but a numbered family — "Remove" in the tracked repositories and "Show as
+  board or list" say less than the screen knows ([history](history/DECISIONS.md#d12)).
+- Splitting a definition wherever the words differ ("Untrack", "Remove pattern") — rebinding one would no longer move
+  the other, and a toggle's two directions would be two commands on one key.
 
 ## D13
 
