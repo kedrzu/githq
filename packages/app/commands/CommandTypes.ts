@@ -46,11 +46,12 @@ export type CommandPlace =
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
  * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`), a repository's Workflows section too;
- * an item open beside the draft reviews, whose `⇧S` is then the item's own, and their list, whose keys go first; the commit graph with a commit open
- * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
- * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
- * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the
- * first. `app` is never in it: it is with every place, and every place keeps the keyboard over it.
+ * an item open beside the draft reviews, whose `⇧S` is then the item's own, and their list, whose keys go first; the
+ * commit graph with a commit open beside it, and a repository's Workflows section with a workflow (their `J`/`K` move
+ * the cursor the panel follows); an item opened over a review, or beside a screen GitHub won't show; a workflow's run
+ * beside its repository's Workflows section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over
+ * one that keeps it over the first. `app` is never in it: it is with every place, and every place keeps the keyboard
+ * over it.
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
