@@ -400,9 +400,9 @@ function getProjectChildren(project: TrackedProject): Command[] {
   return [...getSavedViews(project), commands.newIssue, commands.openOnGitHub, commands.copyLink, commands.settings];
 }
 
-/** A project's saved views without their keys, which run only on the project's own screen. */
+/** A project's saved views, without their keys: those run only on the project's own screen. */
 function getSavedViews(project: TrackedProject): Command[] {
-  return projectCommands(project).savedViews.map(({ command }) => ({ ...command, key: undefined }));
+  return projectCommands(project).savedViews.map(({ command }) => command);
 }
 
 /** A repository's level, tracked or not: `when` of each row says which it is offered. Track last, as in its group (D34). */

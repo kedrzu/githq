@@ -26,13 +26,16 @@ export const goToView = defineAppCommand({
     places: ['project'],
 });
 
-/** Shows My work's n-th filter (All, Needs me, Waiting on others; commands D9); the binding names it. */
+/**
+ * Shows My work's n-th filter (All, Needs me, Waiting on others; commands D9); the binding names it. Of `list`, the
+ * place of My work's other keys (`ListView`), so a list key on a digit would conflict with it.
+ */
 export const showFilter = defineAppCommand({
     id: 'showFilter',
     title: l.showFilter,
     icon: ListFilter,
     numbers: { first: 1, last: 3 },
-    places: ['myWork'],
+    places: ['list'],
 });
 
 /**

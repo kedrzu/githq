@@ -52,46 +52,40 @@ test("one place is the binding's to leave out; the defaults are priority 0 and a
     expect(bindCommand(sidebar, { section: 'app', run }, t)).toMatchObject({ id: 'app.sidebar', place: 'app' });
 });
 
-test('a family gives a command on each number the binding takes, named by what it picks', () => {
+test('a family gives a command on each number a binding is given for, named by what it picks; null leaves the number out', () => {
     const views = defineAppCommand({
         id: 'view',
         title: () => 'Go to view 1–9',
         numbers: { first: 1, last: 9 },
         places: ['list'],
     });
-    const names = ['Backlog', 'Board'];
 
     const commands = bindCommand(
         views,
-        number => {
-            const name = names[number - 1];
-            return name === undefined ? null : { section: 'view', title: `Go to "${name}" view`, run };
-        },
+        ['Backlog', null, 'Board'].map(name =>
+            name === null ? null : { section: 'view', title: `Go to "${name}" view`, run },
+        ),
         t,
     );
 
     expect(views.configurable).toBe(false);
     expect(commands.map(({ id, key, title }) => ({ id, key, title }))).toEqual([
         { id: 'list.view.1', key: '1', title: 'Go to "Backlog" view' },
-        { id: 'list.view.2', key: '2', title: 'Go to "Board" view' },
+        { id: 'list.view.3', key: '3', title: 'Go to "Board" view' },
     ]);
 });
 
-test("a family's numbers past its last are offered without a key while the binding gives them", () => {
+test("a family's numbers past its last are offered without a key", () => {
     const views = defineAppCommand({
         id: 'view',
         title: () => 'Go to view 1–2',
         numbers: { first: 1, last: 2 },
         places: ['list'],
     });
-    const names = ['Backlog', 'Board', 'Roadmap'];
 
     const commands = bindCommand(
         views,
-        number => {
-            const name = names[number - 1];
-            return name === undefined ? null : { section: 'view', title: name, run };
-        },
+        ['Backlog', 'Board', 'Roadmap'].map(name => ({ section: 'view', title: name, run })),
         t,
     );
 

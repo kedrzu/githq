@@ -36,13 +36,19 @@ export type CommandBinding<TPlaces extends CommandPlaces = CommandPlaces> = Omit
 } & CommandBindingPlace<TPlaces>;
 
 /**
- * A family's binding: what its number does, or `null` where the screen has nothing at that number. Past the family's
- * last number it is asked on until it gives `null`, so it must end there (a project's saved views run out).
+ * The registry's commands for a numbered family: one per binding, the n-th binding on the family's n-th number (from
+ * `numbers.first`) and its key, its id `<place>.<id>.<number>`. A `null` binding leaves its number out (a section the
+ * screen doesn't show) and gives no command, so the result holds only those bound, in order. Numbers past the family's
+ * last are offered with no key: a project's tenth saved view is still gone to from the menus. Declared before the single
+ * command's overload, so bindings a caller builds with `map` keep their literal types (`section: 'view'`).
+ *
+ * @__NO_SIDE_EFFECTS__
  */
-export type CommandFamilyBinding<TPlaces extends CommandPlaces = CommandPlaces> = (
-    number: number,
-) => CommandBinding<TPlaces> | null;
-
+export function bindCommand<const TPlaces extends CommandPlaces>(
+    definition: AppCommandFamily<TPlaces>,
+    bindings: readonly (CommandBinding<TPlaces> | null)[],
+    t: Translator,
+): Command[];
 /**
  * The registry's command for a definition offered with this binding — a plain {@link Command}, so a context menu can
  * show it too. Its id is `<place>.<id>`, so one definition offered in two places at once (a list and the item beside
@@ -55,46 +61,36 @@ export function bindCommand<const TPlaces extends CommandPlaces>(
     binding: CommandBinding<TPlaces>,
     t: Translator,
 ): Command;
-/**
- * The registry's commands for a numbered family: one per number the binding gives, on that number's key, its id
- * `<place>.<id>.<number>`. Numbers past the family's last are offered too, with no key, while the binding gives them: a
- * project's tenth saved view is still gone to from the menus.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function bindCommand<const TPlaces extends CommandPlaces>(
-    definition: AppCommandFamily<TPlaces>,
-    binding: CommandFamilyBinding<TPlaces>,
-    t: Translator,
-): Command[];
 /** @__NO_SIDE_EFFECTS__ */
 export function bindCommand<const TPlaces extends CommandPlaces>(
     definition: AppCommand<TPlaces> | AppCommandFamily<TPlaces>,
-    binding: CommandBinding<TPlaces> | CommandFamilyBinding<TPlaces>,
+    binding: CommandBinding<TPlaces> | readonly (CommandBinding<TPlaces> | null)[],
     t: Translator,
 ): Command | Command[] {
     if (definition.kind === 'command') {
-        assert(typeof binding !== 'function', 'A command is bound by an object, a family by a function.');
+        assert(!isBindingList(binding), 'A command is bound by an object, a family by an array.');
         return toCommand(definition, binding, t, { id: definition.id, key: keyOf(definition) });
     }
 
-    assert(typeof binding === 'function', 'A command is bound by an object, a family by a function.');
-    const commands: Command[] = [];
-    for (let number = definition.numbers.first; ; number++) {
-        const bound = binding(number);
-        if (bound) {
-            const key = keyOf(definition, number);
-            commands.push(toCommand(definition, bound, t, { id: `${definition.id}.${number}`, key }));
-        } else if (number >= definition.numbers.last) {
-            return commands;
-        }
-    }
+    assert(isBindingList(binding), 'A command is bound by an object, a family by an array.');
+    return binding.flatMap((bound, index) => {
+        const number = definition.numbers.first + index;
+        return bound
+            ? [toCommand(definition, bound, t, { id: `${definition.id}.${number}`, key: keyOf(definition, number) })]
+            : [];
+    });
 }
 
 /** What tells a family's numbers apart. */
 interface BoundKey {
     readonly id: string;
     readonly key: string | undefined;
+}
+
+function isBindingList<TPlaces extends CommandPlaces>(
+    binding: CommandBinding<TPlaces> | readonly (CommandBinding<TPlaces> | null)[],
+): binding is readonly (CommandBinding<TPlaces> | null)[] {
+    return Array.isArray(binding);
 }
 
 function toCommand<TPlaces extends CommandPlaces>(

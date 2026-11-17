@@ -20,7 +20,7 @@ import * as l from './useProjectCommands.loc.js';
 export interface ProjectCommands {
     /**
      * Going to each of its saved views (`goToView`), in its order, as the command menu's level under the project lists
-     * them; the first nine on `1`–`9`, which run only while the project is on screen — any other menu leaves them out.
+     * them; the first nine on `1`–`9` when `keyed` (they run only while the project is on screen).
      */
     readonly savedViews: readonly SavedViewCommand[];
     readonly newIssue: Command;
@@ -37,6 +37,12 @@ export interface SavedViewCommand {
     readonly command: Command;
 }
 
+/** How a project's actions are offered. */
+export interface ProjectCommandsOptions {
+    /** Its saved views carry their keys `1`–`9`: the project is on screen, where they run. Default `false`. */
+    readonly keyed?: boolean;
+}
+
 /** A project as its actions need it: its address, and its id once it is known (tracked). */
 export interface ProjectCommandsTarget extends ProjectAddress {
     readonly id: string | null;
@@ -50,7 +56,10 @@ export interface ProjectCommandsTarget extends ProjectAddress {
  * level under a tracked project (D36) its saved views, a new issue, the page, the link and the settings; on a phone the
  * project's view offers its saved views first from the command line (mobile D17).
  */
-export function useProjectCommands(): (target: ProjectCommandsTarget) => ProjectCommands {
+export function useProjectCommands(): (
+    target: ProjectCommandsTarget,
+    options?: ProjectCommandsOptions,
+) => ProjectCommands {
     const t = useTranslate();
     const router = useRouter();
     const tracking = useService(TrackingStore);
@@ -59,7 +68,7 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
 
-    return target => {
+    return (target, options = {}) => {
         const path = getProjectPath(target);
         const url = `${GITHUB_ORIGIN}${path}`;
         const project = () => (target.id === null ? undefined : projects.get(target.id));
@@ -126,20 +135,16 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
             const views = project()?.views ?? [];
             const commands = bindCommand(
                 goToView,
-                number => {
-                    const view = views[number - 1];
-                    return view === undefined
-                        ? null
-                        : {
-                              title: view.name,
-                              detail: t(l.savedView),
-                              section: 'view',
-                              run: () => void router.push(getProjectPath(target, view.number)),
-                          };
-                },
+                views.map(view => ({
+                    title: view.name,
+                    detail: t(l.savedView),
+                    section: 'view',
+                    keyed: options.keyed ? undefined : false,
+                    run: () => void router.push(getProjectPath(target, view.number)),
+                })),
                 t,
             );
-            // One command per view, in its order: the binding gives every view one.
+            // One command per view, in its order: no binding is null.
             return views.flatMap((view, index) => {
                 const command = commands[index];
                 return command ? [{ viewId: view.id, command }] : [];

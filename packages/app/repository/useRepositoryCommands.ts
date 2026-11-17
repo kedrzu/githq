@@ -63,21 +63,16 @@ export function useRepositoryCommands(): (
         return {
             sections: bindCommand(
                 goToSection,
-                number => {
-                    const section = REPOSITORY_SECTIONS[number - 1];
-                    return section === undefined
-                        ? null
-                        : {
-                              place: 'repository',
-                              title: t(l[section]),
-                              section: 'repository',
-                              icon: REPOSITORY_SECTION_ICONS[section],
-                              keyed: options.keyed ? undefined : false,
-                              // An untracked repository's workflows are not read (actions D4).
-                              when: section === 'workflows' ? isListed : undefined,
-                              run: () => void router.push(getRepositoryPath(nameWithOwner, section)),
-                          };
-                },
+                REPOSITORY_SECTIONS.map(section => ({
+                    place: 'repository',
+                    title: t(l[section]),
+                    section: 'repository',
+                    icon: REPOSITORY_SECTION_ICONS[section],
+                    keyed: options.keyed ? undefined : false,
+                    // An untracked repository's workflows are not read (actions D4).
+                    when: section === 'workflows' ? isListed : undefined,
+                    run: () => void router.push(getRepositoryPath(nameWithOwner, section)),
+                })),
                 t,
             ),
             newIssue: bindCommand(

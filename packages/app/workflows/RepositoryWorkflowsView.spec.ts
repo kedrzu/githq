@@ -2,6 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import * as stories from './RepositoryWorkflowsView.stories.js';
@@ -41,7 +42,9 @@ test('W13: every workflow is a row, in Broken, Pull requests only, No alerts, Pa
         .toHaveTextContent(like('never counts.*CLA.*pull requests.*1 of the last 3 failed'));
     await expect
         .element(group('No alerts'))
-        .toHaveTextContent(like('failing only on branches and tags without alerts · P to change that'));
+        .toHaveTextContent(
+            `failing only on branches and tags without alerts · ${formatCommandKey('Shift+P')} to change that`,
+        );
     await expect
         .element(group('No alerts'))
         .toHaveTextContent(like('Release.*v0\\.1\\.0-rc\\.3.*Failed on v0\\.1\\.0-rc\\.3, a tag without alerts'));
@@ -86,7 +89,7 @@ test('W3c: rows not read yet have no verdict and no green, and what is known is 
     );
 });
 
-test('J/K move from the first row; Enter and a click open the workflow, ⇧Enter full screen, F its latest failure on any ref — nothing without one; "Alert settings" and P ask for the settings — on the add field from a row without alerts', async () => {
+test('J/K move from the first row; Enter and a click open the workflow, ⇧Enter full screen, F its latest failure on any ref — nothing without one; "Alert settings" and ⇧P ask for the settings — on the add field from a row without alerts —, P being an opened item’s priority', async () => {
     const open = vi.fn();
     const fullScreen = vi.fn();
     const openRun = vi.fn();
@@ -120,12 +123,16 @@ test('J/K move from the first row; Enter and a click open the workflow, ⇧Enter
 
     await userEvent.click(bar().getByRole('button', { name: /Alert settings/ }));
     expect(settings).toHaveBeenLastCalledWith(false);
+    // P is left to an item open beside the section (its priority).
     await userEvent.keyboard('p');
+    expect(settings).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('{Shift>}p{/Shift}');
+    expect(settings).toHaveBeenCalledTimes(2);
     expect(settings).toHaveBeenLastCalledWith(false);
 
     // Release fails only on a tag without alerts (W13).
     await userEvent.click(page.getByRole('button', { name: 'Release', exact: true }));
-    await userEvent.keyboard('p');
+    await userEvent.keyboard('{Shift>}p{/Shift}');
     expect(settings).toHaveBeenLastCalledWith(true);
 });
 

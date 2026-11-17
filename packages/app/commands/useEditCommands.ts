@@ -26,13 +26,6 @@ import { useProjectFieldOptions } from './useProjectFieldOptions.js';
 import type { PullRequestCommandPlace, PullRequestCommandSource } from './usePullRequestCommands.js';
 import { usePullRequestCommands } from './usePullRequestCommands.js';
 
-/** The definitions of a project's fields' edits, by the field's role: their keys are the item view's hints too. */
-export const PROJECT_FIELD_COMMANDS: Readonly<Record<ProjectFieldRole, AppCommand<EditPlaces, string>>> = {
-    status: definitions.status,
-    priority: definitions.priority,
-    iteration: definitions.iteration,
-};
-
 /** The places an edit is offered in (`definitions/edit.ts`). */
 type EditPlaces = typeof definitions.merge.places;
 
@@ -264,7 +257,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         }
 
         return bindCommand(
-            PROJECT_FIELD_COMMANDS[role],
+            definitions[role],
             {
                 place: params.place,
                 section: params.section,

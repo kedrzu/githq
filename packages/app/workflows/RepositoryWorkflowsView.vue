@@ -1,4 +1,4 @@
-<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, W35, D7, D15): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). Before the first read, ghost workflow rows stand in their place (`WorkflowsArriving`, first run and loading D17). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved; with a workflow open in the panel the selection is that workflow's row, and moving it opens the next one in its place —, Enter or a click opens the workflow, the one open expands to full screen; ⇧Enter opens it full screen straight (the open one's is the item's own key); F opens its latest failed run on any ref, nothing without one; P opens the repository's alert settings. With a run open in the panel the selection is its workflow's row and J/K, ↓/↑, Enter, ⇧Enter and F are the run's; a click on a row opens that workflow in the run's place. -->
+<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, W35, D7, D15): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). Before the first read, ghost workflow rows stand in their place (`WorkflowsArriving`, first run and loading D17). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved; with a workflow open in the panel the selection is that workflow's row, and moving it opens the next one in its place —, Enter or a click opens the workflow, the one open expands to full screen; ⇧Enter opens it full screen straight (the open one's is the item's own key); F opens its latest failed run on any ref, nothing without one; ⇧P (`alertSettings`) opens the repository's alert settings — not P, which with an item open beside the section is the item's priority. With a run open in the panel the selection is its workflow's row and J/K, ↓/↑, Enter, ⇧Enter and F are the run's; a click on a row opens that workflow in the run's place. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -7,7 +7,8 @@ import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import { alertSettings, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -52,7 +53,7 @@ const emit = defineEmits<{
   /** F or "Open latest failure": the caller opens the selected workflow's latest failed run. */
   openRun: [run: GitHubWorkflowRun];
   /**
-   * P or "Alert settings": the caller opens the repository's settings on Workflow alerts — on its add field when P is
+   * ⇧P or "Alert settings": the caller opens the repository's settings on Workflow alerts — on its add field when ⇧P is
    * pressed on a workflow failing only where nothing raises alerts (W13).
    */
   settings: [addPattern: boolean];
@@ -153,15 +154,16 @@ useCommands(() => [
       }
     },
   },
-  {
-    id: 'workflows.alertSettings',
-    title: t(l.alertSettings),
-    section: 'view',
-    key: 'P',
-    actsOnRow: true,
-    when: () => props.list.status === 'read' && props.list.groups.length > 0,
-    run: () => emit('settings', selection.selectedRow?.standing?.kind === 'noAlerts'),
-  },
+  bindCommand(
+    alertSettings,
+    {
+      section: 'view',
+      actsOnRow: true,
+      when: () => props.list.status === 'read' && props.list.groups.length > 0,
+      run: () => emit('settings', selection.selectedRow?.standing?.kind === 'noAlerts'),
+    },
+    t,
+  ),
   bindCommand(
     openOnGitHub,
     {
@@ -238,7 +240,12 @@ function describeGroup(group: RepositoryWorkflowGroup) {
     case 'pullRequestsOnly':
       return { label: t(l.pullRequestsOnly), note: t(l.pullRequestsOnlyNote) };
     case 'noAlerts':
-      return { label: t(l.noAlerts), note: t(props.list.alertsOff ? l.noAlertsOffNote : l.noAlertsNote) };
+      return {
+        label: t(l.noAlerts),
+        note: props.list.alertsOff
+          ? t(l.noAlertsOffNote)
+          : t(l.noAlertsNote, { key: formatCommandKey(keyOf(alertSettings)) }),
+      };
     case 'passing':
       return { label: t(l.passing), note: soFar };
     case 'notKnown':

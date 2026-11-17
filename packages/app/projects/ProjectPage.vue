@@ -192,7 +192,9 @@ useCommands(() => [
  * Going to each saved view, as the command menu's level under the project: run by their keys `1`–`9` while the project is
  * on screen (`ProjectView` registers them), and the phone's menu of the views (mobile D17).
  */
-const viewCommands = computed(() => projectCommands({ ...address.value, id: tracked.value?.id ?? null }).savedViews);
+const viewCommands = computed(
+  () => projectCommands({ ...address.value, id: tracked.value?.id ?? null }, { keyed: true }).savedViews,
+);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;

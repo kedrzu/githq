@@ -266,19 +266,14 @@ usePhonePart(() => ({
 useCommands(() =>
   bindCommand(
     showFilter,
-    number => {
-      const candidate = MY_WORK_FILTERS[number - 1];
-      return candidate === undefined
-        ? null
-        : {
-            title: t(l.showFilter, { filter: t(l[candidate]) }),
-            section: 'view',
-            when: () => filter.value !== candidate,
-            run: () => {
-              filter.value = candidate;
-            },
-          };
-    },
+    MY_WORK_FILTERS.map(candidate => ({
+      title: t(l.showFilter, { filter: t(l[candidate]) }),
+      section: 'view',
+      when: () => filter.value !== candidate,
+      run: () => {
+        filter.value = candidate;
+      },
+    })),
     t,
   ),
 );

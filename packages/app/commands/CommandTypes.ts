@@ -20,7 +20,7 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
  * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, the draft
  * reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus
- * offer them (their screens too: a new issue in a project, the tabs of both), My work (its filters). Places tell
+ * offer them (their screens too: a new issue in a project, the tabs of both). Places tell
  * which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a
  * layer over the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
@@ -41,13 +41,12 @@ export type CommandPlace =
     | 'changelog'
     | 'cantBeRead'
     | 'repository'
-    | 'project'
-    | 'myWork';
+    | 'project';
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
  * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`), a repository's Workflows section too;
- * an item open beside the draft reviews, whose `⇧S` is then the item's own (the list's keys being `list`'s); the commit graph with a commit open
+ * an item open beside the draft reviews, whose `⇧S` is then the item's own, and their list, whose keys go first; the commit graph with a commit open
  * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
  * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
  * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the
@@ -57,6 +56,7 @@ export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: C
     ['list', 'item'],
     ['workflows', 'item'],
     ['item', 'draftReviews'],
+    ['list', 'draftReviews'],
     ['commits', 'commit'],
     ['workflows', 'workflow'],
     ['item', 'review'],

@@ -92,7 +92,7 @@ long it has been broken or passing.
 - A run opens on its own page in githq: its jobs beside the selected job's log. The log opens at the first error.
   <kbd>/</kbd> or <kbd>⌘</kbd> <kbd>F</kbd> searches the whole log, folded steps included.
 - **Re-run failed jobs** is in the command menu on a run's page.
-- <kbd>P</kbd> or **Alert settings** opens the repository's workflow alerts.
+- <kbd>Shift</kbd> <kbd>P</kbd> or **Alert settings** opens the repository's workflow alerts.
 
 **Broken workflows**, in the sidebar while any workflow is broken, gathers the broken workflows of every tracked
 repository: **New** for those broken in the last 24 hours, **Ongoing** for the rest.

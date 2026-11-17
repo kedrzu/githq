@@ -379,22 +379,19 @@ function getReadPosition({ rowsShown }: ListEndProps) {
 function bindSections(getMarks: (candidate: RepositorySection) => CommandMarks): Command[] {
   return bindCommand(
     goToSection,
-    number => {
-      const candidate = REPOSITORY_SECTIONS[number - 1];
-      if (candidate === undefined || !sections.value.includes(candidate)) {
-        return null;
-      }
-
-      return {
-        title: t(l[candidate]),
-        section: 'repository',
-        icon: REPOSITORY_SECTION_ICONS[candidate],
-        run: () => {
-          section.value = candidate;
-        },
-        ...getMarks(candidate),
-      };
-    },
+    REPOSITORY_SECTIONS.map(candidate =>
+      sections.value.includes(candidate)
+        ? {
+            title: t(l[candidate]),
+            section: 'repository',
+            icon: REPOSITORY_SECTION_ICONS[candidate],
+            run: () => {
+              section.value = candidate;
+            },
+            ...getMarks(candidate),
+          }
+        : null,
+    ),
     t,
   );
 }
