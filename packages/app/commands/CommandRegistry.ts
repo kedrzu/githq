@@ -10,7 +10,6 @@ import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import type { BoundCommand, Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import type { AnyAppCommand } from './defineAppCommand.js';
 import { commandMenu } from './definitions/index.js';
-import { getRunKeys } from './getRunKeys.js';
 import { keyOf } from './keyOf.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
@@ -208,7 +207,7 @@ export const CommandRegistry = defineService({
             }
 
             const command = findCommand(candidate =>
-                getRunKeys(candidate).some(
+                [...(candidate.key === undefined ? [] : [candidate.key]), ...(candidate.otherKeys ?? [])].some(
                     key => matchesCommandKey(event, key) && isFreeTarget(event.target, candidate, key),
                 ),
             );

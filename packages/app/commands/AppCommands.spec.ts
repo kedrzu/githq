@@ -192,6 +192,23 @@ test('"Restart to update" restarts into the update', async () => {
     expect(update.restart).toHaveBeenCalledOnce();
 });
 
+test('⌥R restarts into the update while its toast shows, and still after "Later" dismissed it', async () => {
+    const update = createUpdate('1.4.0');
+    mount(update);
+    const toast = page.getByRole('region', { name: 'Notifications' }).getByRole('listitem');
+    await expect.element(toast.getByRole('button', { name: 'Restart' })).toHaveAttribute('aria-keyshortcuts', 'Alt+R');
+
+    await userEvent.keyboard('{Alt>}r{/Alt}');
+    expect(update.restart).toHaveBeenCalledOnce();
+
+    await userEvent.click(toast.getByRole('button', { name: 'Dismiss' }).first());
+    expect(update.later).toHaveBeenCalledOnce();
+    await expect.element(toast).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Alt>}r{/Alt}');
+    expect(update.restart).toHaveBeenCalledTimes(2);
+});
+
 test('"Check for updates" is found by typing in the desktop app, and is the only update command at rest on Windows', async () => {
     const update = createFakeUpdate({ canChoose: false });
     mount(update);

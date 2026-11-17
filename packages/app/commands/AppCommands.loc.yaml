@@ -1,5 +1,3 @@
-settings:
-  en: Settings
 repositorySettings:
   en: Repository settings
 switchToStable:
@@ -16,7 +14,5 @@ brokenWorkflows:
   en: Broken workflows
 draftReviews:
   en: Draft reviews
-checkForUpdates:
-  en: Check for updates
 signOut:
   en: Sign out

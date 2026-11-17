@@ -95,9 +95,9 @@ export const openInDesktop = defineAppCommand({
 
 /**
  * Moves to the new version githq has: on the web a reload to the one deployed, in the desktop app a restart into the
- * update downloaded, or another try at installing it. One command (commands D1): the toast offering it runs it by its
- * key, the command menu offers it without, Settings' Updates section by the key too. The binding names what it does
- * there.
+ * update downloaded, or another try at installing it. One command (commands D1): on the web the toast offering it runs it
+ * by its key; in the desktop app the shell offers it on its key while the update waits, whether or not its toast shows
+ * (`AppCommands`), and Settings' Updates section, which outranks it there. The binding names what it does there.
  */
 export const loadNewVersion = defineAppCommand({
     id: 'loadNewVersion',

@@ -25,7 +25,7 @@ export const Offline: Story = {};
 /** Paused, GitHub having asked githq to wait: no action, it comes in at the time. */
 export const Paused: Story = { args: { cause: { kind: 'paused', until: UNTIL } } };
 
-/** GitHub failing: "Try again" (R). */
+/** GitHub failing: "Try again" (Enter). */
 export const Failing: Story = { args: { cause: { kind: 'failing', retry: fn(() => Promise.resolve()) } } };
 
 /** No access or gone: "Open on GitHub" (O). */
