@@ -2202,7 +2202,7 @@ function onOpenFocus(event: Event) {
             :keyshortcuts="keyOf(definitions.dequeue)"
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
-            >{{ t(l.takeOutOfQueue) }}</Button
+            >{{ t(definitions.dequeue.title) }}</Button
           >
         </template>
         <template v-else-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
@@ -2221,7 +2221,7 @@ function onOpenFocus(event: Event) {
             :keyshortcuts="keyOf(definitions.revert)"
             :busy="advancing === 'revert'"
             @click="revert()"
-            >{{ t(l.revert) }}</Button
+            >{{ t(definitions.revert.title) }}</Button
           >
         </template>
         <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'unknown'">

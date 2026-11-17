@@ -42,8 +42,6 @@ requestReviewers:
   en: Request reviewers…
 closeIssueCommand:
   en: Close issue
-itemMenu:
-  en: Item actions
 itemMenuLabel:
   en: 'Actions of {reference}'
 resizeSummary:

@@ -763,7 +763,7 @@ function getProjectOptions(): CommandOption[] {
         <Menu
           v-model:open="itemMenuOpen"
           align="start"
-          :label="t(l.itemMenu)"
+          :label="t(itemMenu.title)"
           :context="referenceText"
         >
           <template #trigger>
@@ -790,7 +790,7 @@ function getProjectOptions(): CommandOption[] {
           <MenuSeparator />
           <MenuLabel>
             <span :class="css.itemView_menuFooter">
-              {{ t(l.itemMenu) }}
+              {{ t(itemMenu.title) }}
               <MenuShortcut :shortcut="itemMenuKey" />
             </span>
           </MenuLabel>
@@ -921,7 +921,7 @@ function getProjectOptions(): CommandOption[] {
                       <Menu
                         v-if="phone.active"
                         v-model:open="itemMenuOpen"
-                        :label="t(l.itemMenu)"
+                        :label="t(itemMenu.title)"
                         :context="referenceText"
                       >
                         <template #trigger>

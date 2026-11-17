@@ -249,7 +249,7 @@ function refusedAside(reason: EditFailureReason) {
         :keyshortcuts="keyOf(updateBranch)"
         @click="emit('command', updateCommand)"
       >
-        {{ t(l.updateBranch) }}
+        {{ t(updateBranch.title) }}
       </Button>
       <!-- A phone has no merge panel yet: the same pull request on github.com. -->
       <Button
@@ -294,7 +294,7 @@ function refusedAside(reason: EditFailureReason) {
         :kbd="keyOf(review)"
         :keyshortcuts="keyOf(review)"
       >
-        {{ t(l.reviewFiles) }}<ExternalMark />
+        {{ t(review.title) }}<ExternalMark />
       </Button>
       <span
         v-if="note"

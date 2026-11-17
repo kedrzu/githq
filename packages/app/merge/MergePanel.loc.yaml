@@ -296,8 +296,6 @@ setByQueue:
   en: set by the queue
 writtenByQueue:
   en: Written by the queue. Text can't be set here
-takeOutOfQueue:
-  en: Take out of queue
 queuePosition:
   en: Position
 queueState:
@@ -371,5 +369,3 @@ deleteBranch:
   en: Delete branch
 restoreBranch:
   en: Restore branch
-revert:
-  en: Revert
