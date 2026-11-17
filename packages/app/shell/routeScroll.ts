@@ -8,8 +8,8 @@ import { START_LOCATION } from 'vue-router';
  * of it): a navigation that changes what it shows opens it at the top, Back and
  * Forward bring back where it was in that entry of the history, and a container still showing the same thing stays
  * where it is — a list under an item opened over it. A fragment (`#issuecomment-1`) names an element inside a container,
- * which the navigation scrolls into sight there once it is on screen, unless Back or Forward return the containers to
- * where they were — and keeps there while what is above it is still coming (`holdAnchor`). The window keeps Nuxt's behaviour, for the pages that scroll it (the landing page, `/download`):
+ * which the navigation scrolls into sight there once it is on screen — from the top of the card it is part of
+ * (`data-route-scroll-frame`) while it still fits — unless Back or Forward return the containers to where they were — and keeps there while what is above it is still coming (`holdAnchor`). The window keeps Nuxt's behaviour, for the pages that scroll it (the landing page, `/download`):
  * its fragment counts only for an element outside every container.
  */
 export async function scrollToRoute(
@@ -63,6 +63,8 @@ export function onRoutePageShown() {
 }
 
 const ATTRIBUTE = 'data-route-scroll';
+/** Marks a card whose top a fragment naming an element inside it brings into view (`scrollToElement`). */
+const FRAME_ATTRIBUTE = 'data-route-scroll-frame';
 /** How long the element a fragment names is held with nothing above it moving, nor anything busy, before it is let go. */
 const HOLD_SETTLED_MS = 500;
 /** How long it is held at most, whatever is still coming. */
@@ -246,14 +248,27 @@ function holdAnchor(id: string, container: HTMLElement) {
 }
 
 /**
- * Leaves above the element what CSS asks of a scroll into view: the container's `scroll-padding-top` and the element's
- * own `scroll-margin-top`, as `scrollIntoView` would.
+ * Brings the element to the top of the container, or the card it is part of (`data-route-scroll-frame`, a code thread
+ * around its comment) while the element still fits in view below the card's top: what the card shows above the
+ * element (its file, its code) is not cut off. Leaves above it what CSS asks of a scroll into view: the container's
+ * `scroll-padding-top` and the element's own `scroll-margin-top`, as `scrollIntoView` would.
  */
 function scrollToElement(container: HTMLElement, element: Element) {
-    const room =
-        (Number.parseFloat(getComputedStyle(container).scrollPaddingTop) || 0) +
-        (Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0);
-    container.scrollTop += element.getBoundingClientRect().top - container.getBoundingClientRect().top - room;
+    const style = getComputedStyle(container);
+    const paddingTop = Number.parseFloat(style.scrollPaddingTop) || 0;
+    const room = container.clientHeight - paddingTop - (Number.parseFloat(style.scrollPaddingBottom) || 0);
+    const frame = element.parentElement?.closest(`[${FRAME_ATTRIBUTE}]`);
+    const target =
+        frame && container.contains(frame) && element.getBoundingClientRect().bottom - getTop(frame) <= room
+            ? frame
+            : element;
+
+    container.scrollTop += getTop(target) - container.getBoundingClientRect().top - paddingTop;
+}
+
+/** Where the element's top is on screen, its `scroll-margin-top` above it counted in. */
+function getTop(element: Element) {
+    return element.getBoundingClientRect().top - (Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0);
 }
 
 function scrollTo(element: HTMLElement, position: RouteScrollPosition | undefined) {
