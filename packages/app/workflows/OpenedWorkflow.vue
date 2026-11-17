@@ -3,11 +3,13 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
-import { ArrowLeft, CirclePause, CirclePlay, FileCode, Link, SearchX } from 'lucide-vue-next';
+import { ArrowLeft, CirclePause, CirclePlay, SearchX } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { Command } from '@/commands/CommandTypes.js';
+import { copyLink, openWorkflowFile, toggleWorkflow } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
@@ -43,8 +45,6 @@ const props = defineProps<{
 
 /** How often the ages ("2h") move on. */
 const TICK_MS = 30_000;
-/** "Run workflow · Deploy" for the workflow open: what its Run workflow… button opens the command menu at. */
-const RUN_COMMAND = 'workflow.run';
 
 const t = useTranslate();
 const history = useService(WorkflowRunHistory);
@@ -106,6 +106,13 @@ const toggle = computed(() => {
   return state === 'active' ? 'disable' : 'enable';
 });
 
+/** "Run workflow · Deploy" for the workflow open: what its Run workflow… button opens the command menu at too. */
+const runCommand = computed(() =>
+  opened.state
+    ? runWorkflowCommands.forWorkflow({ nameWithOwner: opened.nameWithOwner, state: opened.state, place: 'workflow' })
+    : null,
+);
+
 // None of these has a key: turning a workflow off is never one stray keystroke away (D10).
 useCommands(() => {
   const { state } = opened;
@@ -114,48 +121,51 @@ useCommands(() => {
   }
 
   const { workflow } = state;
-  const run = runWorkflowCommands.forWorkflow({
-    nameWithOwner: opened.nameWithOwner,
-    state,
-    id: RUN_COMMAND,
-    kind: 'open',
-  });
   const defaultBranch = workflows.get(opened.nameWithOwner)?.defaultBranch ?? null;
-  const commands: Command[] = run ? [run] : [];
+  const commands: Command[] = runCommand.value ? [runCommand.value] : [];
   if (toggle.value) {
     const enabling = toggle.value === 'enable';
-    commands.push({
-      id: `workflow.${toggle.value}`,
-      title: enabling ? t(l.enable) : t(l.disable),
-      section: 'view',
-      icon: enabling ? CirclePlay : CirclePause,
-      detail: enabling ? t(l.enableDetail) : t(l.disableDetail),
-      run: () => setEnabled(enabling),
-    });
+    commands.push(
+      bindCommand(
+        toggleWorkflow,
+        {
+          section: 'view',
+          title: enabling ? t(l.enable) : t(l.disable),
+          icon: enabling ? CirclePlay : CirclePause,
+          detail: enabling ? t(l.enableDetail) : t(l.disableDetail),
+          run: () => setEnabled(enabling),
+        },
+        t,
+      ),
+    );
   }
 
   commands.push(
-    {
-      id: 'workflow.openFile',
-      title: t(l.openFile),
-      section: 'view',
-      icon: FileCode,
-      detail: workflow.path,
-      unavailable: state.generated ? t(l.generated) : undefined,
-      run: () =>
-        browser.openInNewTab(
-          defaultBranch === null
-            ? workflow.htmlUrl
-            : getGitHubUrl(encodeURI(`${opened.nameWithOwner}/blob/${defaultBranch}/${workflow.path}`)),
-        ),
-    },
-    {
-      id: 'workflow.copyLink',
-      title: t(l.copyLink),
-      section: 'view',
-      icon: Link,
-      run: () => void navigator.clipboard.writeText(workflow.htmlUrl),
-    },
+    bindCommand(
+      openWorkflowFile,
+      {
+        section: 'view',
+        detail: workflow.path,
+        unavailable: state.generated ? t(l.generated) : undefined,
+        run: () =>
+          browser.openInNewTab(
+            defaultBranch === null
+              ? workflow.htmlUrl
+              : getGitHubUrl(encodeURI(`${opened.nameWithOwner}/blob/${defaultBranch}/${workflow.path}`)),
+          ),
+      },
+      t,
+    ),
+    bindCommand(
+      copyLink,
+      {
+        place: 'workflow',
+        section: 'view',
+        title: t(l.copyLink),
+        run: () => void navigator.clipboard.writeText(workflow.htmlUrl),
+      },
+      t,
+    ),
   );
   return commands;
 });
@@ -233,7 +243,7 @@ function readMore() {
     @filter="setFilters"
     @read-more="readMore"
     @group-by="tracking.setWorkflowRunsGroupBy($event)"
-    @run-workflow="registry.openMenu(RUN_COMMAND)"
+    @run-workflow="registry.openMenu(runCommand?.id ?? null)"
     @rerun-all="runStore.rerunAll(getRunTarget($event))"
     @cancel="runStore.cancel(getRunTarget($event))"
   />

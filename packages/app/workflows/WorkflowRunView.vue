@@ -7,17 +7,13 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ChevronRight,
   CircleDot,
-  CircleStop,
   FileX,
   Ghost,
   Github,
   Hourglass,
-  Link,
   PackageOpen,
-  RefreshCw,
   RotateCw,
   Unplug,
-  Workflow,
   X,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -26,7 +22,7 @@ import { RouterLink } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { closeFullScreen, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -127,6 +123,8 @@ interface RunMessage {
   readonly retry: boolean;
 }
 
+/** Where the run's commands are offered. */
+const RUN_PLACE = { place: 'workflowRun', section: 'view' } as const;
 /** The jobs' column: dragged from 200 to 480px. */
 const JOBS_WIDTH = { key: 'workflowRunJobs', default: 268, min: 200, max: 480 };
 /**
@@ -203,7 +201,7 @@ const message = computed((): RunMessage | null => {
         tone: 'muted',
         title: t(l.goneTitle),
         text: t(l.goneText, { id: props.runId, name: props.nameWithOwner }),
-        gitHubLabel: t(openOnGitHub.title),
+        gitHubLabel: t(definitions.openOnGitHub.title),
         retry: false,
       };
     case 'runFailed':
@@ -219,7 +217,7 @@ const message = computed((): RunMessage | null => {
             tone: 'warning',
             title: t(l.noJobsWaitingTitle),
             text: t(l.noJobsWaitingText),
-            gitHubLabel: t(openOnGitHub.title),
+            gitHubLabel: t(definitions.openOnGitHub.title),
             retry: false,
           }
         : {
@@ -227,7 +225,7 @@ const message = computed((): RunMessage | null => {
             tone: 'muted',
             title: t(l.noJobsTitle),
             text: t(l.noJobsText),
-            gitHubLabel: t(openOnGitHub.title),
+            gitHubLabel: t(definitions.openOnGitHub.title),
             retry: false,
           };
     default:
@@ -242,134 +240,116 @@ const selectedIndex = computed(() => {
   return job ? props.model.jobs.indexOf(job) : -1;
 });
 const hints = computed(() => [
-  { id: 'job', keys: ['Alt+J', 'Alt+K'], label: t(l.hintJob) },
-  { id: 'open', keys: ['Enter'], label: t(l.hintOpenLog) },
+  { id: 'job', keys: [keyOf(definitions.nextJob), keyOf(definitions.previousJob)], label: t(l.hintJob) },
+  { id: 'open', keys: [keyOf(definitions.openLog)], label: t(l.hintOpenLog) },
   {
     id: 'back',
-    keys: ['Escape'],
+    keys: [keyOf(definitions.back)],
     label:
       props.backToWorkflow && props.model.run?.workflowName
         ? t(l.backTo, { workflow: props.model.run.workflowName })
         : t(l.back),
   },
-  { id: 'gitHub', keys: [keyOf(openOnGitHub)], label: t(l.hintGitHub) },
+  { id: 'gitHub', keys: [keyOf(definitions.openOnGitHub)], label: t(l.hintGitHub) },
 ]);
 
 useCommands(() => [
   // In the item's section, as every opened item's: it wins over the list's own ⇧Enter beside the panel.
   ...(otherArrangement.value ? [getArrangeCommand(otherArrangement.value)] : []),
   // No key, here or anywhere: it starts something in the repository, so it is never one stray keystroke away (D10).
-  {
-    id: 'workflowRun.rerunFailedJobs',
-    title: t(l.rerunFailedJobs),
-    section: 'view',
-    icon: RefreshCw,
-    detail: t(l.rerunDetail, {
-      count: props.model.rerunnableJobs.length,
-      jobs: props.model.rerunnableJobs.map(job => job.name).join(', '),
-    }),
-    when: () => props.canRerun,
-    run: () => emit('rerun'),
-  },
-  // None of these have a key either (D10).
-  {
-    id: 'workflowRun.rerunAllJobs',
-    title: t(l.rerunAllJobs),
-    section: 'view',
-    icon: RefreshCw,
-    detail: props.model.jobs.length > 0 ? t(l.jobCount, { count: props.model.jobs.length }) : undefined,
-    when: () => props.canChangeRuns && finished.value,
-    run: () => emit('rerunAll'),
-  },
-  {
-    id: 'workflowRun.rerunJob',
-    title: t(l.rerunJob, { job: markedJob.value?.name ?? '' }),
-    section: 'view',
-    icon: RefreshCw,
-    detail: t(l.rerunJobDetail),
-    when: () => props.canChangeRuns && finished.value && markedJob.value?.status === 'completed',
-    run: () => {
-      if (markedJob.value) {
-        emit('rerunJob', markedJob.value);
-      }
-    },
-  },
-  {
-    id: 'workflowRun.cancel',
-    title: t(l.cancelRun),
-    section: 'view',
-    icon: CircleStop,
-    unavailable: finished.value ? t(l.cancelFinished) : undefined,
-    when: () => props.canChangeRuns && props.model.run !== null,
-    run: () => emit('cancel'),
-  },
-  {
-    id: 'workflowRun.nextJob',
-    title: t(l.nextJob),
-    section: 'view',
-    key: 'Alt+J',
-    menu: false,
-    when: () => showsColumns.value && selectedIndex.value < props.model.jobs.length - 1,
-    run: () => moveJob(1),
-  },
-  {
-    id: 'workflowRun.previousJob',
-    title: t(l.previousJob),
-    section: 'view',
-    key: 'Alt+K',
-    menu: false,
-    when: () => showsColumns.value && selectedIndex.value > 0,
-    run: () => moveJob(-1),
-  },
-  {
-    id: 'workflowRun.openLog',
-    title: t(l.hintOpenLog),
-    section: 'view',
-    key: 'Enter',
-    menu: false,
-    when: () => atOverview.value && cursorJob.value !== null,
-    run: () => openCursorJob(),
-  },
-  {
-    id: 'workflowRun.retry',
-    title: t(l.tryAgain),
-    section: 'view',
-    key: 'Enter',
-    menu: false,
-    when: () => canRetry.value,
-    run: () => emit('retry'),
-  },
   bindCommand(
-    openOnGitHub,
-    { place: 'workflowRun', section: 'view', run: () => emit('openOnGitHub', gitHubUrl.value) },
+    definitions.rerunFailedJobs,
+    {
+      ...RUN_PLACE,
+      detail: t(l.rerunDetail, {
+        count: props.model.rerunnableJobs.length,
+        jobs: props.model.rerunnableJobs.map(job => job.name).join(', '),
+      }),
+      when: () => props.canRerun,
+      run: () => emit('rerun'),
+    },
     t,
   ),
-  {
-    id: 'workflowRun.copyLink',
-    title: t(l.copyLink),
-    section: 'view',
-    icon: Link,
-    run: () => void navigator.clipboard.writeText(runUrl.value),
-  },
-  {
-    id: 'workflowRun.openWorkflow',
-    title: t(l.openWorkflow),
-    section: 'view',
-    icon: Workflow,
-    detail: props.model.run?.workflowName ?? undefined,
-    when: () => Boolean(props.workflowPage),
-    run: () => emit('openWorkflow'),
-  },
-  {
-    id: 'workflowRun.back',
-    title: t(l.back),
-    section: 'view',
-    key: 'Escape',
-    menu: false,
-    // With a log showing, the search closes first.
-    when: () => logQuery.value === null || props.logPane.kind !== 'ready',
-    run: () => emit('close'),
-  },
+  // None of these have a key either (D10).
+  bindCommand(
+    definitions.rerunAllJobs,
+    {
+      ...RUN_PLACE,
+      detail: props.model.jobs.length > 0 ? t(l.jobCount, { count: props.model.jobs.length }) : undefined,
+      when: () => props.canChangeRuns && finished.value,
+      run: () => emit('rerunAll'),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.rerunJob,
+    {
+      ...RUN_PLACE,
+      title: t(l.rerunJob, { job: markedJob.value?.name ?? '' }),
+      detail: t(l.rerunJobDetail),
+      when: () => props.canChangeRuns && finished.value && markedJob.value?.status === 'completed',
+      run: () => {
+        if (markedJob.value) {
+          emit('rerunJob', markedJob.value);
+        }
+      },
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.cancelRun,
+    {
+      ...RUN_PLACE,
+      unavailable: finished.value ? t(l.cancelFinished) : undefined,
+      when: () => props.canChangeRuns && props.model.run !== null,
+      run: () => emit('cancel'),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.nextJob,
+    {
+      ...RUN_PLACE,
+      menu: false,
+      when: () => showsColumns.value && selectedIndex.value < props.model.jobs.length - 1,
+      run: () => moveJob(1),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.previousJob,
+    { ...RUN_PLACE, menu: false, when: () => showsColumns.value && selectedIndex.value > 0, run: () => moveJob(-1) },
+    t,
+  ),
+  // The log's own Enter (`jobLog`) goes first; it is not there at the overview, nor in place of a log that failed.
+  bindCommand(
+    definitions.openLog,
+    { ...RUN_PLACE, menu: false, when: () => atOverview.value && cursorJob.value !== null, run: openCursorJob },
+    t,
+  ),
+  bindCommand(
+    definitions.tryAgain,
+    { ...RUN_PLACE, menu: false, when: () => canRetry.value, run: () => emit('retry') },
+    t,
+  ),
+  bindCommand(definitions.openOnGitHub, { ...RUN_PLACE, run: () => emit('openOnGitHub', gitHubUrl.value) }, t),
+  bindCommand(
+    definitions.copyLink,
+    { ...RUN_PLACE, title: t(l.copyLink), run: () => void navigator.clipboard.writeText(runUrl.value) },
+    t,
+  ),
+  bindCommand(
+    definitions.openWorkflow,
+    {
+      ...RUN_PLACE,
+      detail: props.model.run?.workflowName ?? undefined,
+      when: () => Boolean(props.workflowPage),
+      run: () => emit('openWorkflow'),
+    },
+    t,
+  ),
+  // After the log's search closes by Escape (`jobLog` keeps the keyboard over the run).
+  bindCommand(definitions.back, { ...RUN_PLACE, menu: false, run: () => emit('close') }, t),
 ]);
 
 let roomObserver: ResizeObserver | undefined;
@@ -391,9 +371,9 @@ onBeforeUnmount(() => roomObserver?.disconnect());
 function getArrangeCommand(other: OtherArrangement): Command {
   const run = () => emit('arrange', other.arrangement);
   return other.arrangement === 'page'
-    ? bindCommand(openFullScreen, { place: 'workflowRun', section: 'item', run }, t)
+    ? bindCommand(definitions.openFullScreen, { place: 'workflowRun', section: 'item', run }, t)
     : bindCommand(
-        closeFullScreen,
+        definitions.closeFullScreen,
         { place: 'workflowRun', section: 'item', title: other.title, icon: other.icon, keyed: false, run },
         t,
       );
@@ -432,7 +412,7 @@ function getFailedMessage(heading: string, path: string, httpStatus: number | nu
     title: heading,
     text: httpStatus === null ? t(l.failedNoAnswerText) : t(l.failedText, { status: httpStatus }),
     detail: httpStatus === null ? t(l.failedNoAnswerDetail, { path }) : t(l.failedDetail, { path, status: httpStatus }),
-    gitHubLabel: t(openOnGitHub.title),
+    gitHubLabel: t(definitions.openOnGitHub.title),
     retry: true,
   };
 }
@@ -506,24 +486,24 @@ function getInvalidFileMessage(): RunMessage {
         v-if="otherArrangement"
         :icon="otherArrangement.icon"
         :label="otherArrangement.title"
-        :kbd="otherArrangement.arrangement === 'page' ? keyOf(openFullScreen) : undefined"
-        :keyshortcuts="otherArrangement.arrangement === 'page' ? keyOf(openFullScreen) : undefined"
+        :kbd="otherArrangement.arrangement === 'page' ? keyOf(definitions.openFullScreen) : undefined"
+        :keyshortcuts="otherArrangement.arrangement === 'page' ? keyOf(definitions.openFullScreen) : undefined"
         @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton
         :icon="Github"
-        :label="t(openOnGitHub.title)"
-        :kbd="keyOf(openOnGitHub)"
+        :label="t(definitions.openOnGitHub.title)"
+        :kbd="keyOf(definitions.openOnGitHub)"
         :link="gitHubUrl"
         target="_blank"
         rel="noopener noreferrer"
-        :keyshortcuts="keyOf(openOnGitHub)"
+        :keyshortcuts="keyOf(definitions.openOnGitHub)"
       />
       <IconButton
         :icon="X"
         :label="t(l.back)"
-        kbd="Escape"
-        keyshortcuts="Escape"
+        :kbd="keyOf(definitions.back)"
+        :keyshortcuts="keyOf(definitions.back)"
         @click="emit('close')"
       />
     </header>
@@ -630,8 +610,8 @@ function getInvalidFileMessage(): RunMessage {
                 variant="secondary"
                 size="sm"
                 :icon="RotateCw"
-                kbd="Enter"
-                keyshortcuts="Enter"
+                :kbd="keyOf(definitions.tryAgain)"
+                :keyshortcuts="keyOf(definitions.tryAgain)"
                 @click="emit('retry')"
               >
                 {{ t(l.tryAgain) }}
@@ -640,8 +620,8 @@ function getInvalidFileMessage(): RunMessage {
                 variant="secondary"
                 size="sm"
                 :icon="Github"
-                :kbd="keyOf(openOnGitHub)"
-                :keyshortcuts="keyOf(openOnGitHub)"
+                :kbd="keyOf(definitions.openOnGitHub)"
+                :keyshortcuts="keyOf(definitions.openOnGitHub)"
                 @click="emit('openOnGitHub', gitHubUrl)"
               >
                 {{ message.gitHubLabel }}

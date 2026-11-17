@@ -12,11 +12,9 @@ import {
   CircleCheck,
   CircleDashed,
   CircleSlash,
-  CircleStop,
   CircleX,
   GitBranch,
   LoaderCircle,
-  RefreshCw,
   Rows3,
   TriangleAlert,
   User,
@@ -24,6 +22,8 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { cancelRun, rerunAllJobs } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Menu from '@/components/Menu.vue';
@@ -179,27 +179,16 @@ useCommands(() => {
     return [];
   }
 
-  const detail = t(l.runNumber, { number: run.runNumber });
+  const binding = {
+    place: 'workflow',
+    section: 'view',
+    actsOnRow: true,
+    detail: t(l.runNumber, { number: run.runNumber }),
+  } as const;
   return [
     run.status === 'completed'
-      ? {
-          id: 'workflow.rerunAllJobs',
-          title: t(l.rerunAllJobs),
-          section: 'view',
-          actsOnRow: true,
-          icon: RefreshCw,
-          detail,
-          run: () => emit('rerunAll', run),
-        }
-      : {
-          id: 'workflow.cancelRun',
-          title: t(l.cancelRun),
-          section: 'view',
-          actsOnRow: true,
-          icon: CircleStop,
-          detail,
-          run: () => emit('cancel', run),
-        },
+      ? bindCommand(rerunAllJobs, { ...binding, run: () => emit('rerunAll', run) }, t)
+      : bindCommand(cancelRun, { ...binding, run: () => emit('cancel', run) }, t),
   ];
 });
 

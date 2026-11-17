@@ -17,12 +17,12 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
 /**
  * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list in
  * either layout, a list shown as a board (the keys only the board has: its ←/→ are not the list layout's), an opened
- * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
- * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, the draft
- * reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus
- * offer them (their screens too: a new issue in a project, the tabs of both). Places tell
- * which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a
- * layer over the screen (`CommandRegistry`); more are added as commands move onto definitions.
+ * item, a commit, workflow (its runs too) or workflow run opened as one, a job's log on a run's page, a repository's
+ * commit graph, its Workflows section, the broken workflows, a repository's workflow alerts, the tracked repositories or
+ * projects, the draft reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a
+ * project as their menus offer them (their screens too: a new issue in a project, the tabs of both). Places tell which
+ * keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer
+ * over the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
 export type CommandPlace =
     | 'app'
@@ -31,6 +31,7 @@ export type CommandPlace =
     | 'commit'
     | 'workflow'
     | 'workflowRun'
+    | 'jobLog'
     | 'commits'
     | 'workflows'
     | 'brokenWorkflows'
@@ -49,9 +50,10 @@ export type CommandPlace =
  * an item open beside the draft reviews, whose `⇧S` is then the item's own, and their list, whose keys go first; the
  * commit graph with a commit open beside it, and a repository's Workflows section with a workflow (their `J`/`K` move
  * the cursor the panel follows); an item opened over a review, or beside a screen GitHub won't show; a workflow's run
- * beside its repository's Workflows section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over
- * one that keeps it over the first. `app` is never in it: it is with every place, and every place keeps the keyboard
- * over it.
+ * beside its repository's Workflows section, whose keys are then the run's; a job's log in the run's page, there too,
+ * whose keys go before both (its search's Escape before the run's step back, its `J`/`K` before the section's).
+ * Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with every
+ * place, and every place keeps the keyboard over it.
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
@@ -63,6 +65,8 @@ export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: C
     ['item', 'review'],
     ['item', 'cantBeRead'],
     ['workflowRun', 'workflows'],
+    ['jobLog', 'workflowRun'],
+    ['jobLog', 'workflows'],
 ];
 
 /**

@@ -19,7 +19,7 @@ import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest, Play }
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { closeItem, next, open, openOnGitHub, previous } from '@/commands/definitions/index.js';
+import { closeItem, next, open, openLatestFailure, openOnGitHub, previous } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -187,7 +187,7 @@ const hints = computed(() => [
   { id: 'run', keys: [keyOf(next), keyOf(previous)], label: t(l.hintRun) },
   { id: 'workflow', keys: [keys.stepKeys.next, keys.stepKeys.previous], label: t(l.hintWorkflow) },
   { id: 'open', keys: [keyOf(open)], label: t(l.hintOpenRun) },
-  ...(props.latestFailure ? [{ id: 'failure', keys: ['F'], label: t(l.hintLatestFailure) }] : []),
+  ...(props.latestFailure ? [{ id: 'failure', keys: [keyOf(openLatestFailure)], label: t(l.hintLatestFailure) }] : []),
   { id: 'escape', keys: [keyOf(closeItem)], label: props.escapeTo === 'panel' ? t(l.backToPanel) : t(l.backToList) },
 ]);
 
@@ -198,19 +198,20 @@ useCommands(() => {
     commands.previous,
     // `J`/`K` and Enter are the runs' own (`WorkflowRuns`), full screen.
     // In the panel the list beside it owns `F`, for the workflow under its cursor.
-    {
-      id: 'workflow.openLatestFailure',
-      title: t(l.openLatestFailure),
-      section: 'item',
-      key: 'F',
-      icon: CircleX,
-      when: () => page.value && props.latestFailure !== null,
-      run: () => {
-        if (props.latestFailure) {
-          emit('openRun', props.latestFailure);
-        }
+    bindCommand(
+      openLatestFailure,
+      {
+        place: 'workflow',
+        section: 'item',
+        when: () => page.value && props.latestFailure !== null,
+        run: () => {
+          if (props.latestFailure) {
+            emit('openRun', props.latestFailure);
+          }
+        },
       },
-    },
+      t,
+    ),
     commands.close,
     bindCommand(
       openOnGitHub,

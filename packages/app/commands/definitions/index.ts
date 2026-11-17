@@ -2,6 +2,7 @@ export * from './app.js';
 export * from './commits.js';
 export * from './edit.js';
 export * from './item.js';
+export * from './jobLog.js';
 export * from './list.js';
 export * from './reading.js';
 export * from './review.js';

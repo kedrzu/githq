@@ -18,26 +18,26 @@ const ROW_PLACES = [
 
 /**
  * Moves the cursor of what is listed one step down; an opened item, or a commit on its page, to the next of the list it
- * was opened from (`useItemKeys`); a review to the next pull request of that list.
+ * was opened from (`useItemKeys`); a review to the next pull request of that list; a job log's cursor to the next line.
  */
 export const next = defineAppCommand({
     id: 'next',
     title: l.next,
     key: 'J',
     otherKeys: ['ArrowDown'],
-    places: [...ROW_PLACES, 'item', 'commit', 'review'],
+    places: [...ROW_PLACES, 'item', 'commit', 'review', 'jobLog'],
 });
 
 /**
  * Moves the cursor of what is listed one step up; an opened item, or a commit on its page, to the previous one; a review
- * to the previous pull request.
+ * to the previous pull request; a job log's cursor to the previous line.
  */
 export const previous = defineAppCommand({
     id: 'previous',
     title: l.previous,
     key: 'K',
     otherKeys: ['ArrowUp'],
-    places: [...ROW_PLACES, 'item', 'commit', 'review'],
+    places: [...ROW_PLACES, 'item', 'commit', 'review', 'jobLog'],
 });
 
 /**

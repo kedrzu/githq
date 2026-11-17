@@ -1,7 +1,5 @@
 open:
   en: Open workflow
-openLatestFailure:
-  en: Open latest failure
 openActionsSettings:
   en: Open Actions settings on GitHub
 broken:

@@ -130,13 +130,13 @@ export const addToProject = defineAppCommand({
 
 /**
  * Copies the address on github.com of what it is offered for: the items (one per line, its binding then saying "Copy
- * links"), or the repository or project a menu is about.
+ * links"), the opened workflow or run, or the repository or project a menu is about.
  */
 export const copyLink = defineAppCommand({
     id: 'copyLink',
     title: l.copyLink,
     icon: Link,
-    places: ['item', 'repository', 'project'],
+    places: ['item', 'workflow', 'workflowRun', 'repository', 'project'],
 });
 
 /** Copies an issue's reference, `owner/name#number`. */

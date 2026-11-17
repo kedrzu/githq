@@ -821,7 +821,7 @@ function createRunWorkflowCommand(say: (text: string) => void): Command {
 function createRepositoryWorkflowCommands(say: (text: string) => void): Command[] {
     return [
         {
-            id: 'workflows.run',
+            id: 'workflows.runWorkflow',
             title: 'Run workflow · CLA',
             section: 'view',
             icon: Play,

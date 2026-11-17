@@ -110,8 +110,7 @@ useCommands(() => {
       ? runWorkflowCommands.forWorkflow({
           nameWithOwner: props.nameWithOwner,
           state: row.workflow,
-          id: 'workflows.run',
-          kind: 'selected',
+          place: 'workflows',
         })
       : null;
   return command ? [command] : [];

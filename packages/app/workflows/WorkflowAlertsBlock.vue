@@ -478,7 +478,9 @@ function onPatternClick(event: MouseEvent, pattern: string) {
         aria-hidden="true"
       >
         <template v-if="!fieldActive && !phone">
-          <span :class="css.workflowAlertsBlock_hint"><Kbd keys="J" /><Kbd keys="K" />{{ t(l.move) }}</span>
+          <span :class="css.workflowAlertsBlock_hint"
+            ><Kbd :keys="keyOf(definitions.next)" /><Kbd :keys="keyOf(definitions.previous)" />{{ t(l.move) }}</span
+          >
           <span
             v-for="hint in hints"
             :key="hint.keys"

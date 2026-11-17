@@ -12,8 +12,6 @@ off:
   en: 'off'
 open:
   en: Open
-openCommand:
-  en: Open the run started
 titleNoPermission:
   en: "{workflow} wasn't run: no permission"
 titleNotFound:

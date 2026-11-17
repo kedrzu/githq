@@ -7,7 +7,7 @@ import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { alertSettings, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import { alertSettings, openFullScreen, openLatestFailure, openOnGitHub } from '@/commands/definitions/index.js';
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -140,20 +140,22 @@ useCommands(() => [
     },
     t,
   ),
-  {
-    id: 'workflows.latestFailure',
-    title: t(l.openLatestFailure),
-    section: 'view',
-    key: 'F',
-    actsOnRow: true,
-    when: () => !props.runOpen && selection.selectedRow?.latestFailure != null,
-    run: () => {
-      const run = selection.selectedRow?.latestFailure;
-      if (run) {
-        emit('openRun', run);
-      }
+  bindCommand(
+    openLatestFailure,
+    {
+      place: 'workflows',
+      section: 'view',
+      actsOnRow: true,
+      when: () => !props.runOpen && selection.selectedRow?.latestFailure != null,
+      run: () => {
+        const run = selection.selectedRow?.latestFailure;
+        if (run) {
+          emit('openRun', run);
+        }
+      },
     },
-  },
+    t,
+  ),
   bindCommand(
     alertSettings,
     {

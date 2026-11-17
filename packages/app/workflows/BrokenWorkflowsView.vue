@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ban, Coffee, EyeOff, Workflow } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
+import { open as openCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
@@ -149,7 +151,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         :class="css.brokenWorkflowsView_hint"
         aria-hidden="true"
       >
-        <Kbd keys="Enter" />
+        <Kbd :keys="keyOf(openCommand)" />
         {{ t(l.openFailedRun) }}
       </span>
     </header>
