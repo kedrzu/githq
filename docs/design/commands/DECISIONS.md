@@ -228,7 +228,7 @@ a job log, the commit graph, the settings, …). A short hand-kept list names th
 sharing a key conflict if they share a place or their places are on that list. A screen's command may take a key of an
 app-wide command; the settings show it as "here, ⌘B does X instead of Y", not as a conflict. At runtime, of commands
 that can run on one key, a screen's goes before the app's and the first place of a pair before the second: the same
-list says what has the keyboard.** (2026-11-16, owner; the ordered pairs deciding at runtime 2026-11-16, owner)
+list says what has the keyboard.** (2026-11-16, owner; the ordered pairs deciding at runtime 2026-11-16, owner; fixed keys never conflicting 2026-11-17, owner)
 
 **Why.** The defaults rely on a screen taking an app-wide key (the review's `Mod+B` over the sidebar's), and screens
 like a review are where single keys are worth most. Places that nest get the list with an item beside it wrong: the
@@ -237,7 +237,10 @@ item is narrower, so its `O` would be shown as deliberately taking the list's, y
 and the flat list with pairs reports it as one. One definition offered in two places of a pair (the list's and the
 item's "Open on GitHub") is not a conflict, and the pair's order says which one runs. As `J`, `K`, `X` and the rest
 of the list's keys move into the registry, one rule kept as data, and checked by the same test as the conflicts,
-holds better than each screen choosing a section that happens to win.
+holds better than each screen choosing a section that happens to win. Two fixed keys never conflict: the check exists so that a key
+the user chooses cannot silence another command, nobody rebinds a fixed key, and fixed defaults are made together, a
+`when` deciding which runs (the list's Escape clears what is checked, then the item's closes it; the board's ←/→ step
+between columns where the list's expand a stack).
 
 > **Checked 2026-11-16:** before the registry ran these keys, the list kept them by handling them in its own window
 > listener, outside the registry's section order (`lists/ListView.vue:619`); the item's `O` was in the `item` section,
@@ -250,6 +253,8 @@ holds better than each screen choosing a section that happens to win.
   ([history](history/DECISIONS.md#d6)).
 - A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
 - Priority decided by nesting — wrong for a list with an item open beside it.
+- Fixed keys checked like any other, with an exception for Escape and the board as a place of its own to keep the
+  arrows apart — exceptions the check would keep growing ([history](history/DECISIONS.md#d13)).
 - Places serving only the conflict check, with the registry's section order deciding at runtime and the list's keys
   given a section that wins — each screen would have to pick its section by which key should win, and the help sheet
   would head the list's keys under that section ([history](history/DECISIONS.md#d13)).

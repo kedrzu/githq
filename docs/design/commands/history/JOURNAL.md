@@ -59,3 +59,4 @@
   (D12 amended). Per command: ⌫ "Remove" in the settings lists is fixed; leaving full screen is "Close full screen" on
   Escape, ⇧Enter only opens it; the list's layout toggle loses its key (⇧V), too niche.
 - Owner: a project keeps its own `C` for a new issue in it (H5); D7 takes only the app-wide one.
+- Owner: two fixed keys never conflict (D13 amended); the Escape exception and the board's own place go.

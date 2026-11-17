@@ -140,3 +140,37 @@ and the flat list with pairs reports it as one.
   ([history](history/DECISIONS.md#d6)).
 - A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
 - Priority decided by nesting — wrong for a list with an item open beside it.
+
+Retired in part 2026-11-17: two fixed keys no longer conflict; the rest holds in [D13](../DECISIONS.md#d13).
+
+**"Where" is a place from a flat list: the whole app, or one kind of screen or panel (a list, an open item, a review,
+a job log, the commit graph, the settings, …). A short hand-kept list names the places that can be on screen together
+(a list with an item open beside it), each pair ordered with the place that keeps the keyboard first. Two commands
+sharing a key conflict if they share a place or their places are on that list. A screen's command may take a key of an
+app-wide command; the settings show it as "here, ⌘B does X instead of Y", not as a conflict. At runtime, of commands
+that can run on one key, a screen's goes before the app's and the first place of a pair before the second: the same
+list says what has the keyboard.** (2026-11-16, owner; the ordered pairs deciding at runtime 2026-11-16, owner)
+
+**Why.** The defaults rely on a screen taking an app-wide key (the review's `Mod+B` over the sidebar's), and screens
+like a review are where single keys are worth most. Places that nest get the list with an item beside it wrong: the
+item is narrower, so its `O` would be shown as deliberately taking the list's, yet the list keeps the keyboard
+(`docs/design/githq/navigation.md`, `ListView.vue:58,757`), so the item's `O` never fires. That is a real conflict,
+and the flat list with pairs reports it as one. One definition offered in two places of a pair (the list's and the
+item's "Open on GitHub") is not a conflict, and the pair's order says which one runs. As `J`, `K`, `X` and the rest
+of the list's keys move into the registry, one rule kept as data, and checked by the same test as the conflicts,
+holds better than each screen choosing a section that happens to win.
+
+> **Checked 2026-11-16:** before the registry ran these keys, the list kept them by handling them in its own window
+> listener, outside the registry's section order (`lists/ListView.vue:619`); the item's `O` was in the `item` section,
+> which that order puts before the list's `view`.
+
+**Rejected.**
+
+- Places that nest, one place inside several parents, conflict when "active together and neither contains the
+  other" — calls the list-and-item clash a deliberate override, and needs data nesting does not hold
+  ([history](history/DECISIONS.md#d6)).
+- A key unique along the whole path from the app to the narrowest place — the review would lose `Mod+B`.
+- Priority decided by nesting — wrong for a list with an item open beside it.
+- Places serving only the conflict check, with the registry's section order deciding at runtime and the list's keys
+  given a section that wins — each screen would have to pick its section by which key should win, and the help sheet
+  would head the list's keys under that section ([history](history/DECISIONS.md#d13)).

@@ -25,7 +25,6 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
 export type CommandPlace =
     | 'app'
     | 'list'
-    | 'board'
     | 'item'
     | 'commit'
     | 'workflow'
@@ -42,7 +41,7 @@ export type CommandPlace =
     | 'project';
 
 /**
- * The places that can be on screen together, each pair's first keeping the keyboard: a list or a board with an item
+ * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
  * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); the commit graph with a commit open
  * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
  * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
@@ -51,7 +50,6 @@ export type CommandPlace =
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
-    ['board', 'item'],
     ['commits', 'commit'],
     ['workflows', 'workflow'],
     ['item', 'review'],

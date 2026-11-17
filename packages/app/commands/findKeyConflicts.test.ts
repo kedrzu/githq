@@ -41,7 +41,7 @@ test("a family's numbers are its keys", () => {
     expect(findKeyConflicts([views, third])).toEqual([{ key: '3', first: views, second: third }]);
 });
 
-test('two fixed Escapes step back one layer each and are no conflict; a configurable one on Escape is', () => {
+test('two fixed definitions are no conflict, whatever their key; a configurable one on the same key is', () => {
     const uncheck = defineAppCommand({ id: 'uncheck', title, key: 'Escape', places: ['list'], configurable: false });
     const close = defineAppCommand({ id: 'close', title, key: 'Escape', places: ['item'], configurable: false });
     const custom = defineAppCommand({ id: 'custom', title, key: 'Escape', places: ['item'] });

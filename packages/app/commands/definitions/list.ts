@@ -89,7 +89,7 @@ export const nextColumn = defineAppCommand({
     id: 'nextColumn',
     title: l.nextColumn,
     key: 'ArrowRight',
-    places: ['board'],
+    places: ['list'],
     configurable: false,
 });
 
@@ -98,7 +98,7 @@ export const previousColumn = defineAppCommand({
     id: 'previousColumn',
     title: l.previousColumn,
     key: 'ArrowLeft',
-    places: ['board'],
+    places: ['list'],
     configurable: false,
 });
 
@@ -107,7 +107,7 @@ export const moveToNextColumn = defineAppCommand({
     id: 'moveToNextColumn',
     title: l.moveToNextColumn,
     key: 'Shift+ArrowRight',
-    places: ['board'],
+    places: ['list'],
     configurable: false,
 });
 
@@ -116,7 +116,7 @@ export const moveToPreviousColumn = defineAppCommand({
     id: 'moveToPreviousColumn',
     title: l.moveToPreviousColumn,
     key: 'Shift+ArrowLeft',
-    places: ['board'],
+    places: ['list'],
     configurable: false,
 });
 
@@ -143,7 +143,7 @@ export const toggleStackCard = defineAppCommand({
     id: 'toggleStackCard',
     title: l.toggleStack,
     key: 'Space',
-    places: ['board'],
+    places: ['list'],
     configurable: false,
 });
 
