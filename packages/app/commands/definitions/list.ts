@@ -39,13 +39,14 @@ export const previous = defineAppCommand({
 
 /**
  * Opens what the cursor is on: a list's row beside the list, or — on the opened one's row — on its page; a commit, a
- * workflow, a run, a tracked repository's settings; edits an alert pattern in place.
+ * workflow, a run, a tracked repository's settings; edits an alert pattern in place. A row's context menu offers it as
+ * the item's (`item`), the key staying the list's.
  */
 export const open = defineAppCommand({
     id: 'open',
     title: l.open,
     key: 'Enter',
-    places: ROW_PLACES,
+    places: [...ROW_PLACES, 'item'],
     configurable: false,
 });
 

@@ -118,8 +118,9 @@ difference and how to stop tracking.
 
 Click the repository's name on its screen, or right-click it in the sidebar, for its menu: its sections, **New issue**,
 **Open on GitHub**, **Copy link**, and while you track it **Settings** and **Stop tracking**. On any screen that belongs to the repository, the
-command menu offers the same under the repository's name, all but **New issue** (press <kbd>C</kbd> instead) and **Stop
-tracking**. There, the settings are called **Repository settings**.
+command menu offers the same under the repository's name, all but **New issue** (the
+command menu's own **New issue** starts one in the repository) and **Stop tracking**. There, the settings are called
+**Repository settings**.
 
 ## Repository settings
 

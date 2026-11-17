@@ -8,14 +8,14 @@ import type { Item } from '@/store/ItemTypes.js';
  */
 const LAYOUT: Readonly<Record<Item['kind'], readonly (readonly string[])[]>> = {
     issue: [
-        ['open', 'openPage', 'openOnGitHub'],
+        ['open', 'openFullScreen', 'openOnGitHub'],
         ['status', 'priority', 'iteration', 'addToProject'],
         ['assignees', 'labels', 'milestone', 'issueType'],
         ['comment', 'copyLink', 'copyReference'],
         ['state'],
     ],
     pullRequest: [
-        ['open', 'openPage', 'review', 'openOnGitHub', 'openFiles'],
+        ['open', 'openFullScreen', 'review', 'openOnGitHub', 'openFiles'],
         ['merge', 'updateBranch', 'updateBranchByRebase', 'rerunChecks', 'branch', 'revert', 'dequeue'],
         ['reviewers', 'draft'],
         ['assignees', 'labels', 'milestone', 'status', 'priority', 'iteration', 'addToProject'],

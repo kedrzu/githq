@@ -36,25 +36,26 @@ import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import {
-  CircleCheckBig,
-  CircleSlash,
-  GitPullRequestClosed,
-  ChevronDown,
-  FileDiff,
-  GitBranch,
-  Hash,
-  Link,
-  SquareKanban,
-  RotateCcw,
-} from 'lucide-vue-next';
+import { CircleCheckBig, CircleSlash, GitPullRequestClosed, ChevronDown, RotateCcw } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
-import { comment, openOnGitHub } from '@/commands/definitions/index.js';
+import {
+  addToProject,
+  comment,
+  copyBranch,
+  copyLink,
+  copyReference,
+  itemMenu,
+  openFiles,
+  openFullScreen,
+  openOnGitHub,
+  review,
+} from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
@@ -414,21 +415,19 @@ const opened = computed(() => {
   return { author, text: t(l.openedBy, { author: author?.login ?? t(l.deletedUser), ago }) };
 });
 
-/** The keys of the item's own actions not on definitions yet. */
-const ITEM_KEYS = {
-  openFiles: 'Shift+O',
-  review: 'D',
-  itemMenu: 'Mod+.',
-} as const;
+/** The key of the item menu, on its trigger and in its footer. */
+const itemMenuKey = keyOf(itemMenu);
+/** What a list's context menu offers that the item menu leaves out: GitHub has its button beside it, full screen its own. */
+const OUTSIDE_ITEM_MENU: ReadonlySet<string> = new Set([`item.${openOnGitHub.id}`, `item.${openFullScreen.id}`]);
 
 /**
- * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
- * its button beside it.
+ * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub and full
+ * screen, which have their buttons in the header.
  */
 const itemMenuSections = computed(() =>
   itemMenuOpen.value
     ? getItemMenuSections(
-        [...getEditCommands(), ...getItemCommands()].filter(command => command.id !== 'item.openOnGitHub'),
+        [...getEditCommands(), ...getItemCommands()].filter(command => !OUTSIDE_ITEM_MENU.has(command.id)),
         props.item.kind,
       )
     : [],
@@ -639,74 +638,79 @@ function getItemCommands(): Command[] {
     ),
   ];
   if (permissions.value?.addToProject) {
-    commands.push({
-      id: 'item.addToProject',
-      title: t(l.addToProject),
-      section: 'item',
-      icon: SquareKanban,
-      prepare: () => emit('needProjects'),
-      options: () => ({ loading: editing?.viewerProjects == null, options: getProjectOptions() }),
-    });
+    commands.push(
+      bindCommand(
+        addToProject,
+        {
+          section: 'item',
+          prepare: () => emit('needProjects'),
+          options: () => ({ loading: editing?.viewerProjects == null, options: getProjectOptions() }),
+        },
+        t,
+      ),
+    );
   }
 
   // Its own keys (`useItemKeys` above).
-  commands.push(keys.commands.next, keys.commands.previous, keys.commands.close, {
-    id: 'item.menu',
-    title: t(l.itemMenu),
-    section: 'item',
-    key: ITEM_KEYS.itemMenu,
-    menu: false,
-    run: () => {
-      itemMenuOpen.value = true;
-    },
-  });
+  commands.push(
+    keys.commands.next,
+    keys.commands.previous,
+    keys.commands.close,
+    bindCommand(
+      itemMenu,
+      {
+        section: 'item',
+        menu: false,
+        run: () => {
+          itemMenuOpen.value = true;
+        },
+      },
+      t,
+    ),
+  );
 
   commands.push(
     bindCommand(openOnGitHub, { place: 'item', section: 'item', run: () => browser.openInNewTab(item.url) }, t),
-    {
-      id: 'item.review',
-      title: t(l.review),
-      section: 'item',
-      key: ITEM_KEYS.review,
-      icon: FileDiff,
-      // A phone has no code review yet: the review's address is handed off to github.com (mobile D3, D11).
-      external: phone.active,
-      when: () => pr.value !== null,
-      run: () => emit('review'),
-    },
-    {
-      id: 'item.openFiles',
-      title: t(l.openFiles),
-      section: 'item',
-      key: ITEM_KEYS.openFiles,
-      icon: FileDiff,
-      when: () => pr.value !== null,
-      run: () => browser.openInNewTab(`${item.url}/files`),
-    },
-    {
-      id: 'item.copyLink',
-      title: t(l.copyLink),
-      section: 'item',
-      icon: Link,
-      run: () => void navigator.clipboard.writeText(item.url),
-    },
-    {
-      id: 'item.copyReference',
-      title: t(l.copyReference),
-      section: 'item',
-      icon: Hash,
-      detail: formatShortReference(item),
-      run: () => void navigator.clipboard.writeText(referenceText.value),
-    },
-    {
-      id: 'item.copyBranch',
-      title: t(l.copyBranch),
-      section: 'item',
-      icon: GitBranch,
-      detail: pr.value?.headRefName,
-      when: () => pr.value !== null,
-      run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
-    },
+    bindCommand(
+      review,
+      {
+        section: 'item',
+        // A phone has no code review yet: the review's address is handed off to github.com (mobile D3, D11).
+        external: phone.active,
+        when: () => pr.value !== null,
+        run: () => emit('review'),
+      },
+      t,
+    ),
+    bindCommand(
+      openFiles,
+      { section: 'item', when: () => pr.value !== null, run: () => browser.openInNewTab(`${item.url}/files`) },
+      t,
+    ),
+    bindCommand(
+      copyLink,
+      { place: 'item', section: 'item', run: () => void navigator.clipboard.writeText(item.url) },
+      t,
+    ),
+    bindCommand(
+      copyReference,
+      {
+        section: 'item',
+        detail: formatShortReference(item),
+        run: () => void navigator.clipboard.writeText(referenceText.value),
+      },
+      t,
+    ),
+    bindCommand(
+      copyBranch,
+      {
+        section: 'item',
+        detail: pr.value?.headRefName,
+        when: () => pr.value !== null,
+        run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
+      },
+      t,
+    ),
   );
 
   commands.push(keys.commands.closeFullScreen);
@@ -767,7 +771,7 @@ function getProjectOptions(): CommandOption[] {
               type="button"
               :class="css.itemView_reference"
               :aria-label="t(l.itemMenuLabel, { reference: referenceText })"
-              :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(itemMenuKey)"
             >
               <component
                 :is="state.icon"
@@ -787,7 +791,7 @@ function getProjectOptions(): CommandOption[] {
           <MenuLabel>
             <span :class="css.itemView_menuFooter">
               {{ t(l.itemMenu) }}
-              <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+              <MenuShortcut :shortcut="itemMenuKey" />
             </span>
           </MenuLabel>
         </Menu>

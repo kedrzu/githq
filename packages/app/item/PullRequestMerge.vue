@@ -6,7 +6,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { branch, merge, openOnGitHub, updateBranch } from '@/commands/definitions/index.js';
+import { branch, merge, openOnGitHub, review, updateBranch } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
@@ -291,8 +291,8 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="phone.active ? undefined : FileDiff"
         :link="reviewPath"
-        kbd="D"
-        keyshortcuts="D"
+        :kbd="keyOf(review)"
+        :keyshortcuts="keyOf(review)"
       >
         {{ t(l.reviewFiles) }}<ExternalMark />
       </Button>

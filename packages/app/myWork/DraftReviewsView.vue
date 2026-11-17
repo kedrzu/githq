@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck, PencilLine } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { submitReview } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -13,7 +15,6 @@ import ItemRow from '@/lists/ItemRow.vue';
 import type { ListContextMenuProps, ListGroup, ListedItems } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 
 import * as l from './DraftReviewsView.loc.js';
 
@@ -119,7 +120,7 @@ const groups = computed((): ListGroup<Item>[] =>
         <p :class="css.draftReviewsView_hint">
           <Kbd keys="Enter" />
           {{ t(l.openReview) }}
-          <Kbd :keys="REVIEW_KEYS.submit" />
+          <Kbd :keys="keyOf(submitReview)" />
           {{ t(l.submit) }}
         </p>
       </template>

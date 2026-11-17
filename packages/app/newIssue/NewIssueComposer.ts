@@ -138,7 +138,7 @@ const EMPTY_DRAFT: NewIssueDraft = {
 
 /**
  * The quick capture of a new issue (H1, D20): whether it is open, what it was started from and what is written in
- * it. Closing it keeps the draft, one per repository — the next `C` there brings it back, and so does reopening
+ * it. Closing it keeps the draft, one per repository — the next new issue there brings it back, and so does reopening
  * the app: the repository, title and body are kept in this browser per user until sent (forgotten on sign-out). Creating goes through the
  * edit engine; a creation GitHub refuses opens the capture again with everything as it was and the reason (H9) —
  * or, over what is being written meanwhile, waits beside it to be restored. An issue's text is kept until GitHub

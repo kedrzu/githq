@@ -16,7 +16,7 @@ import { narrowToolbar } from '@/testing/narrowToolbar.js';
 import ListToolbar from './ListToolbar.vue';
 import * as stories from './ListToolbar.stories.js';
 
-const { Phone, PlainTitle, Tabs, TabsAsMenu, TitleMenu } = composeStories(stories);
+const { Phone, PhoneInProject, PlainTitle, Tabs, TabsAsMenu, TitleMenu } = composeStories(stories);
 
 test('with a menu, the title is a button that opens it', async () => {
     await TitleMenu.run();
@@ -36,7 +36,7 @@ test('without a menu, the title is plain text', async () => {
     await expect.element(page.getByRole('button', { name: /Platform Q4/ })).not.toBeInTheDocument();
 });
 
-test('on a phone it is the top bar: the title alone, the options in a sheet without properties or layout, and New issue runs what C runs', async () => {
+test("on a phone it is the top bar: the title alone, the options in a sheet without properties or layout, and New issue starts the app's", async () => {
     await Phone.run();
 
     await expect.element(page.getByRole('heading', { name: 'Platform Q4' })).toBeVisible();
@@ -55,6 +55,13 @@ test('on a phone it is the top bar: the title alone, the options in a sheet with
     await expect.element(page.getByTestId('new-issue')).toHaveTextContent('Not started');
     await userEvent.click(page.getByRole('button', { name: 'New issue' }));
     await expect.element(page.getByTestId('new-issue')).toHaveTextContent(/^Started$/);
+});
+
+test("on a phone in a project, New issue starts the project's own", async () => {
+    await PhoneInProject.run();
+
+    await userEvent.click(page.getByRole('button', { name: 'New issue in Platform Q4' }));
+    await expect.element(page.getByTestId('new-issue')).toHaveTextContent('Started in the project');
 });
 
 test('a menu option naming a command is that command: its choices are the submenu and picking one chooses it, "none" too', () => {

@@ -10,3 +10,21 @@ nextWorkflow:
   en: Next workflow
 previousWorkflow:
   en: Previous workflow
+itemMenu:
+  en: Item actions
+review:
+  en: Review files
+openFiles:
+  en: Open changed files on GitHub
+addToProject:
+  en: Add to project…
+copyLink:
+  en: Copy link
+copyReference:
+  en: Copy reference
+copyBranch:
+  en: Copy branch name
+submitReview:
+  en: Submit review…
+discardReview:
+  en: Discard review…

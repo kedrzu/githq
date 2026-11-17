@@ -3,7 +3,8 @@ import { CircleDot, GitCommitHorizontal, GitPullRequest, ListFilter, Workflow } 
 import { userEvent, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
-import { NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import { useCommands } from '@/commands/useCommands.js';
 import MenuItem from '@/components/MenuItem.vue';
@@ -47,7 +48,7 @@ export const TitleMenu: Story = {
 
 /**
  * On a phone (mobile MB32): the phone's top bar — the places button, the title, the display options as one icon and New
- * issue, which runs what `C` runs; the title's menu and what the list puts beside the title are not drawn.
+ * issue, the app's; the title's menu and what the list puts beside the title are not drawn.
  */
 export const Phone: Story = {
     decorators: [withPhoneLayout(true), withNewIssue()],
@@ -57,6 +58,14 @@ export const Phone: Story = {
                 titleMenu: () => h(MenuItem, () => 'Open on GitHub'),
                 default: () => h('span', 'Beside the title'),
             }),
+    }),
+};
+
+/** On a phone in a project: New issue is the project's own, not the app's. */
+export const PhoneInProject: Story = {
+    decorators: [withPhoneLayout(true), withNewIssue({ inProject: true })],
+    render: args => ({
+        setup: () => () => h(ListToolbar, args),
     }),
 };
 
@@ -132,25 +141,46 @@ function withWidth(width: number): Decorator {
     };
 }
 
-/** The app's New issue, on `C` as `AppCommands` offers it; under the story a line says whether it ran (`tid="new-issue"`). */
-function withNewIssue(): Decorator {
+/** What {@link withNewIssue} registers besides the app's New issue. */
+interface WithNewIssueOptions {
+    /** A project's own too, on its key, as its page registers it. */
+    readonly inProject?: boolean;
+}
+
+/**
+ * The app's New issue, as `AppCommands` offers it, and a project's own with `inProject`; under the story a line says
+ * which ran (`tid="new-issue"`).
+ */
+function withNewIssue({ inProject = false }: WithNewIssueOptions = {}): Decorator {
     return story => {
         const Story = story();
         return defineComponent({
             setup() {
-                const started = shallowRef(false);
+                const started = shallowRef<string | null>(null);
                 useCommands(() => [
                     {
-                        id: 'app.newIssue',
+                        id: `app.${definitions.newIssue.id}`,
                         title: 'New issue',
                         section: 'app',
-                        key: NEW_ISSUE_KEY,
                         run: () => {
-                            started.value = true;
+                            started.value = 'Started';
                         },
                     },
+                    ...(inProject
+                        ? [
+                              {
+                                  id: `project.${definitions.newIssueInProject.id}`,
+                                  title: 'New issue in Platform Q4',
+                                  section: 'view' as const,
+                                  key: keyOf(definitions.newIssueInProject),
+                                  run: () => {
+                                      started.value = 'Started in the project';
+                                  },
+                              },
+                          ]
+                        : []),
                 ]);
-                return () => [h(Story), h('p', { tid: 'new-issue' }, started.value ? 'Started' : 'Not started')];
+                return () => [h(Story), h('p', { tid: 'new-issue' }, started.value ?? 'Not started')];
             },
         });
     };

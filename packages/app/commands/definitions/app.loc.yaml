@@ -1,0 +1,10 @@
+newIssue:
+  en: New issue
+createKeyword:
+  en: create
+newIssueInProject:
+  en: New issue in project
+backToMerge:
+  en: Back to the refused merge
+mergedBranch:
+  en: Delete or restore the merged branch

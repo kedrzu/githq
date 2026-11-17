@@ -35,9 +35,6 @@ export type CommandContextPart = 'subject' | 'repository';
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
 export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: 'Mod+B' } as const;
 
-/** The key of a new issue (H1): the app's, and a project's own where it starts in that project (H5). */
-export const NEW_ISSUE_KEY = 'C';
-
 /** Where writing happens: ⌘K there is the field's (a markdown editor's "insert link"), never the menu's. */
 const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
 
@@ -100,7 +97,7 @@ export const CommandRegistry = defineService({
             register,
             showKeySheet,
             isEnabled,
-            findByKey,
+            findById,
             run,
             openMenu,
             openParts,
@@ -140,11 +137,11 @@ export const CommandRegistry = defineService({
         }
 
         /**
-         * The action a key runs now — what pressing it outside a field would run, the first by key precedence —
-         * for a button that does the same (the phone's New issue: a project's own in a project, else the app's).
+         * The action registered under `id` (`project.newIssueInProject`) if it can run now, for a button that runs it
+         * (the phone's New issue, My work's).
          */
-        function findByKey(key: string) {
-            return findCommand(command => command.key === key);
+        function findById(id: string) {
+            return findCommand(command => command.id === id);
         }
 
         /** Runs the action by its key — or, where it does not run itself, opens the menu at its submenu. */

@@ -1189,7 +1189,7 @@ test("the cursor row: the chip names it and it has its context menu's actions; w
             label: 'web#1',
             title: 'Sign-in redirects',
         });
-    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'menu.copyLink', 'item.comment']));
+    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'item.copyLink', 'item.comment']));
     expect(row.command('item.state')?.section).toBe('item');
 
     row.request.mockClear();
@@ -1228,7 +1228,7 @@ test('a key whose value needs choosing opens the command menu at its submenu; th
     expect(edit).toHaveBeenCalledWith(['i2'], { kind: 'close', reason: 'COMPLETED' });
 });
 
-test("Enter and O stay the list's: drawn in the context menu, never run through the registry", async () => {
+test("Enter, Shift+Enter and O stay the list's: drawn in the context menu, never run through the registry", async () => {
     const row = await mountRow([['todo', ['p1']]], [samplePullRequest('p1')]);
     const openInNewTab = vi.spyOn(row.view.container.resolve(Browser), 'openInNewTab');
     await userEvent.keyboard('j');
@@ -1237,8 +1237,9 @@ test("Enter and O stay the list's: drawn in the context menu, never run through 
     const keyed = row.registry.commands.filter(command => command.run && !command.id.startsWith('list.'));
     expect(keyed.map(command => command.key)).not.toContain('Enter');
     expect(keyed.map(command => command.key)).not.toContain('O');
+    expect(keyed.map(command => command.key)).not.toContain('Shift+Enter');
     // Still offered in the menu, with no key.
-    expect(row.command('menu.open')).toBeDefined();
+    expect(row.command('item.open')).toBeDefined();
     expect(row.command('item.openOnGitHub')).toBeDefined();
 
     await userEvent.keyboard('o');

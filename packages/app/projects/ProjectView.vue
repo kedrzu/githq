@@ -27,10 +27,11 @@ import { computed, ref } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
-import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
+import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import type { Command, CommandPart, CommandParts } from '@/commands/CommandTypes.js';
-import { rowField } from '@/commands/definitions/index.js';
+import { newIssueInProject, rowField } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
@@ -591,8 +592,8 @@ function hasItemView(entry: ProjectEntry) {
             variant="secondary"
             size="sm"
             :icon="SquarePen"
-            :kbd="NEW_ISSUE_KEY"
-            :keyshortcuts="NEW_ISSUE_KEY"
+            :kbd="keyOf(newIssueInProject)"
+            :keyshortcuts="keyOf(newIssueInProject)"
             @click="emit('newIssue', null, null)"
           >
             {{ t(l.newIssue) }}

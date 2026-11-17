@@ -440,7 +440,7 @@ test('W36: with the repository taken out of the menu, "Run workflow…" starts a
     await expect.element(page.getByRole('listbox', { name: 'acme/web' })).toBeInTheDocument();
 });
 
-test("New issue from a menu the repository was taken out of starts in none; `C` then starts in the screen's", async () => {
+test("New issue from a menu the repository was taken out of starts in none, the next menu's in the screen's; `C` starts none outside a project (D7)", async () => {
     const container = createAppContainer();
     const start = vi.spyOn(container.resolve(NewIssueComposer), 'start').mockImplementation(() => undefined);
     const router = render(container);
@@ -453,6 +453,10 @@ test("New issue from a menu the repository was taken out of starts in none; `C` 
     expect(start).toHaveBeenLastCalledWith({ repository: null, project: null, parent: null });
 
     await userEvent.keyboard('c');
+    expect(start).toHaveBeenCalledTimes(1);
+
+    await openMenu();
+    await userEvent.keyboard('new issue{Enter}');
     expect(start).toHaveBeenLastCalledWith({ repository: 'acme/web', project: null, parent: null });
 });
 

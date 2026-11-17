@@ -1,11 +1,11 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CloudDownload, EyeOff, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { CloudDownload, EyeOff, Settings } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { copyLink, newIssue, openOnGitHub } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -38,7 +38,7 @@ export interface RepositoryCommands {
  * on its way out, when it is Undo). All are of the `repository` section. The sidebar's menu of a
  * repository offers them by name, all but tracking it. In the command menu `AppCommands` makes of them the group of the
  * repository the screen belongs to and the level under any repository (D36), both with tracking it last (D34) and without
- * no longer tracking it (D32); the group, unlike the level, has no new issue (`C` starts one there).
+ * no longer tracking it (D32); the group, unlike the level, has no new issue (the app's "New issue" starts one there).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
     const t = useTranslate();
@@ -83,13 +83,15 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 when: isListed,
                 run: () => void router.push(getRepositoryPath(nameWithOwner, 'workflows')),
             },
-            newIssue: {
-                id: 'repository.newIssue',
-                title: t(l.newIssue),
-                section: 'repository',
-                icon: SquarePen,
-                run: () => composer.start({ repository: nameWithOwner, project: null, parent: null }),
-            },
+            newIssue: bindCommand(
+                newIssue,
+                {
+                    place: 'repository',
+                    section: 'repository',
+                    run: () => composer.start({ repository: nameWithOwner, project: null, parent: null }),
+                },
+                t,
+            ),
             // Offered in menus only: `O` is what the keyboard is on, a row or an opened item, not the repository.
             openOnGitHub: bindCommand(
                 openOnGitHub,
@@ -102,13 +104,11 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 },
                 t,
             ),
-            copyLink: {
-                id: 'repository.copyLink',
-                title: t(l.copyLink),
-                section: 'repository',
-                icon: Link,
-                run: () => void navigator.clipboard.writeText(url),
-            },
+            copyLink: bindCommand(
+                copyLink,
+                { place: 'repository', section: 'repository', run: () => void navigator.clipboard.writeText(url) },
+                t,
+            ),
             settings: {
                 id: 'repository.settings',
                 title: t(l.settings),

@@ -123,7 +123,7 @@ test('"Needs me" with nothing for me points at what waits on others', async ({ p
     await expect(myWork.rows('My pull requests')).toHaveText([/Retry polls on network errors/]);
 });
 
-test('nothing on my plate (K4) says what was checked and offers the next keys: a new issue, the command menu', async ({
+test('nothing on my plate (K4) says what was checked and offers a new issue and the command menu', async ({
     page,
     github,
 }) => {
@@ -131,7 +131,8 @@ test('nothing on my plate (K4) says what was checked and offers the next keys: a
 
     await expect(myWork.root.getByRole('heading', { name: 'Inbox zero. Savour it.' })).toBeVisible();
     await expect(myWork.root).toContainText('0 reviews · 0 pulls · 0 issues · 0 mentions');
-    await expect(myWork.root.getByRole('button', { name: 'New issue' })).toHaveAttribute('aria-keyshortcuts', 'C');
+    // Not a project: New issue has no key here (commands D7).
+    await expect(myWork.root.getByRole('button', { name: 'New issue' })).not.toHaveAttribute('aria-keyshortcuts');
     await myWork.root.getByRole('button', { name: 'Jump to a project' }).click();
     await expect(new CommandMenuHarness(page).root).toBeVisible();
     await page.keyboard.press('Escape');

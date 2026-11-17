@@ -53,10 +53,14 @@ import { useItemCommands } from './useItemCommands.js';
 import { useRowSwipe } from './useRowSwipe.js';
 
 /**
- * A row's action keys the list has itself — its "Open" and "Open on GitHub": a context menu draws them, the registry must
- * not run the row's (its `item` section would come before the list's `view`).
+ * A row's action keys the list has itself — its "Open", "Open full screen" and "Open on GitHub": a context menu draws
+ * them, the registry must not run the row's (its `item` section would come before the list's `view`).
  */
-const OWN_KEYS: ReadonlySet<string> = new Set([keyOf(definitions.open), keyOf(definitions.openOnGitHub)]);
+const OWN_KEYS: ReadonlySet<string> = new Set([
+  keyOf(definitions.open),
+  keyOf(definitions.openFullScreen),
+  keyOf(definitions.openOnGitHub),
+]);
 
 /** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
 const ORDINARY_KEYS: ReadonlySet<string> = new Set(

@@ -1,4 +1,15 @@
-import { Github, Maximize2, Minimize2 } from 'lucide-vue-next';
+import {
+    FileDiff,
+    GitBranch,
+    Github,
+    Hash,
+    Link,
+    Maximize2,
+    Minimize2,
+    Send,
+    SquareKanban,
+    Trash2,
+} from 'lucide-vue-next';
 
 import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './item.loc.js';
@@ -81,4 +92,85 @@ export const previousWorkflow = defineAppCommand({
     title: l.previousWorkflow,
     key: 'Shift+K',
     places: ['workflow'],
+});
+
+/** The opened item's own menu (M1–M2), under its reference in the header; run by its key, never offered in ⌘K. */
+export const itemMenu = defineAppCommand({
+    id: 'itemMenu',
+    title: l.itemMenu,
+    key: 'Mod+.',
+    places: ['item'],
+});
+
+/** A pull request's code review, in the app; on a phone, which has none yet, its files on github.com (mobile D11). */
+export const review = defineAppCommand({
+    id: 'review',
+    title: l.review,
+    icon: FileDiff,
+    key: 'D',
+    places: ['item'],
+});
+
+/** A pull request's changed files on github.com, in a new tab: the opened one, or a list's row. */
+export const openFiles = defineAppCommand({
+    id: 'openFiles',
+    title: l.openFiles,
+    icon: FileDiff,
+    key: 'Shift+O',
+    places: ['item'],
+});
+
+/** Adds the items to one of the viewer's projects: a picker of those not every one of them is in already. */
+export const addToProject = defineAppCommand({
+    id: 'addToProject',
+    title: l.addToProject,
+    icon: SquareKanban,
+    places: ['item'],
+});
+
+/**
+ * Copies the address on github.com of what it is offered for: the items (one per line, its binding then saying "Copy
+ * links"), or the repository or project a menu is about.
+ */
+export const copyLink = defineAppCommand({
+    id: 'copyLink',
+    title: l.copyLink,
+    icon: Link,
+    places: ['item', 'repository', 'project'],
+});
+
+/** Copies an issue's reference, `owner/name#number`. */
+export const copyReference = defineAppCommand({
+    id: 'copyReference',
+    title: l.copyReference,
+    icon: Hash,
+    places: ['item'],
+});
+
+/** Copies a pull request's branch name. */
+export const copyBranch = defineAppCommand({
+    id: 'copyBranch',
+    title: l.copyBranch,
+    icon: GitBranch,
+    places: ['item'],
+});
+
+/**
+ * The viewer's draft review submitted: its dialog, on the opened pull request's thread, or — from the draft reviews — the
+ * selected row's review opened at it.
+ */
+export const submitReview = defineAppCommand({
+    id: 'submitReview',
+    title: l.submitReview,
+    icon: Send,
+    key: 'Shift+S',
+    places: ['item', 'draftReviews'],
+});
+
+/** The viewer's draft review on the opened pull request thrown away, after its dialog asks. */
+export const discardReview = defineAppCommand({
+    id: 'discardReview',
+    title: l.discardReview,
+    icon: Trash2,
+    places: ['item'],
 });

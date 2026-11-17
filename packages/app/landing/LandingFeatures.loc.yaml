@@ -44,8 +44,8 @@ keyboardKeys:
   en: Shortcuts
 keyCommandMenu:
   en: Command menu
-keyNewIssue:
-  en: New issue
+keyReviewFiles:
+  en: Review files
 keySetStatus:
   en: Set status
 keyAssignee:

@@ -1,3 +1,4 @@
+export * from './app.js';
 export * from './commits.js';
 export * from './edit.js';
 export * from './item.js';

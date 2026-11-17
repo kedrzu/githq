@@ -25,7 +25,7 @@ const t = useTranslate();
 // feature starts to reveal, in ms — ⌘K as the command menu opens, then S.
 const keys = [
   { key: 'K', command: true, action: l.keyCommandMenu, pressAt: 480 },
-  { key: 'C', command: false, action: l.keyNewIssue },
+  { key: 'D', command: false, action: l.keyReviewFiles },
   { key: 'S', command: false, action: l.keySetStatus, pressAt: 1100 },
   { key: 'A', command: false, action: l.keyAssignee },
   { key: 'L', command: false, action: l.keyLabels },

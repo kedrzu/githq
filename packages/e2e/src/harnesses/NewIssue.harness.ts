@@ -1,6 +1,8 @@
 import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+import { CommandMenuHarness } from './CommandMenu.harness.js';
+
 /**
  * Playwright harness for the quick capture of a new issue (`NewIssueDialog.vue`, H1–H9): the repository chip and
  * its chooser, the title and the body, the chips, the templates, and what it says when a repository won't take
@@ -44,8 +46,14 @@ export class NewIssueHarness {
         return this.root.getByRole('listbox', { name: 'Issue templates' });
     }
 
-    /** Opens it with `C` — again until it shows: a key pressed while the screen still loads is lost. */
+    /** Opens it with "New issue" from the command menu, which has no key of its own (commands D7). */
     async open(): Promise<void> {
+        await new CommandMenuHarness(this.page).run('New issue');
+        await expect(this.root).toBeVisible();
+    }
+
+    /** Opens it with `C`, a project's own (H5) — again until it shows: a key pressed while the screen still loads is lost. */
+    async openWithKey(): Promise<void> {
         await expect(async () => {
             await this.page.keyboard.press('c');
             await expect(this.root).toBeVisible({ timeout: 1000 });

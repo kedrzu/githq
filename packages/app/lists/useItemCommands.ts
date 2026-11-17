@@ -1,19 +1,7 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import {
-    CircleCheckBig,
-    CircleSlash,
-    FileDiff,
-    GitBranch,
-    GitPullRequestClosed,
-    Hash,
-    Link,
-    Maximize2,
-    PanelRight,
-    RotateCcw,
-    SquareKanban,
-} from 'lucide-vue-next';
+import { CircleCheckBig, CircleSlash, GitPullRequestClosed, PanelRight, RotateCcw } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
@@ -21,7 +9,17 @@ import { useRouter } from 'vue-router';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
-import { comment, openOnGitHub } from '@/commands/definitions/index.js';
+import {
+    addToProject,
+    comment,
+    copyBranch,
+    copyLink,
+    copyReference,
+    open as openItem,
+    openFiles,
+    openFullScreen,
+    openOnGitHub,
+} from '@/commands/definitions/index.js';
 import type { EditCommandsParams, StateOption } from '@/commands/useEditCommands.js';
 import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
@@ -144,23 +142,33 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
                 },
                 t,
             ),
-            {
-                id: 'menu.copyLink',
-                title: item ? t(l.copyLink) : t(l.copyLinks),
-                section: own,
-                icon: Link,
-                run: () => copy(selected.value.map(candidate => candidate.url).join('\n')),
-            },
+            bindCommand(
+                copyLink,
+                {
+                    place: 'item',
+                    section: own,
+                    title: item ? undefined : t(l.copyLinks),
+                    run: () => copy(selected.value.map(candidate => candidate.url).join('\n')),
+                },
+                t,
+            ),
         ];
         if (selected.value.some(candidate => editor.getPermissions(candidate).addToProject)) {
-            commands.push({
-                id: 'menu.addToProject',
-                title: t(l.addToProject),
-                section: own,
-                icon: SquareKanban,
-                prepare: () => void repositories.ensureViewerProjects(),
-                options: () => ({ loading: repositories.viewerProjects === null, options: getProjectOptions() }),
-            });
+            commands.push(
+                bindCommand(
+                    addToProject,
+                    {
+                        place: 'item',
+                        section: own,
+                        prepare: () => void repositories.ensureViewerProjects(),
+                        options: () => ({
+                            loading: repositories.viewerProjects === null,
+                            options: getProjectOptions(),
+                        }),
+                    },
+                    t,
+                ),
+            );
         }
 
         if (!item || isPendingItem(item)) {
@@ -168,14 +176,12 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
         }
 
         commands.push(
-            { id: 'menu.open', title: t(l.open), section: own, key: 'Enter', icon: PanelRight, run: open },
-            {
-                id: 'menu.openPage',
-                title: t(l.openPage),
-                section: own,
-                icon: Maximize2,
-                run: () => void router.push(getPageLocation(item)),
-            },
+            bindCommand(openItem, { place: 'item', section: own, icon: PanelRight, run: open }, t),
+            bindCommand(
+                openFullScreen,
+                { place: 'item', section: own, run: () => void router.push(getPageLocation(item)) },
+                t,
+            ),
         );
         if (editor.getPermissions(item).comment) {
             commands.push(
@@ -195,32 +201,30 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
         }
 
         if (item.kind === 'issue') {
-            commands.push({
-                id: 'menu.copyReference',
-                title: t(l.copyReference),
-                section: own,
-                icon: Hash,
-                detail: formatShortReference(item),
-                run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
-            });
+            commands.push(
+                bindCommand(
+                    copyReference,
+                    {
+                        place: 'item',
+                        section: own,
+                        detail: formatShortReference(item),
+                        run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
+                    },
+                    t,
+                ),
+            );
         } else {
             commands.push(
-                {
-                    id: 'menu.openFiles',
-                    title: t(l.openFiles),
-                    section: own,
-                    key: 'Shift+O',
-                    icon: FileDiff,
-                    run: () => browser.openInNewTab(`${item.url}/files`),
-                },
-                {
-                    id: 'menu.copyBranch',
-                    title: t(l.copyBranch),
-                    section: own,
-                    icon: GitBranch,
-                    detail: item.headRefName,
-                    run: () => copy(item.headRefName),
-                },
+                bindCommand(
+                    openFiles,
+                    { place: 'item', section: own, run: () => browser.openInNewTab(`${item.url}/files`) },
+                    t,
+                ),
+                bindCommand(
+                    copyBranch,
+                    { place: 'item', section: own, detail: item.headRefName, run: () => copy(item.headRefName) },
+                    t,
+                ),
             );
         }
 

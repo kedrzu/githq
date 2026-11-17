@@ -17,9 +17,9 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * Where a defined command can be offered (commands D13): the whole app, or one kind of screen or panel — a list in
  * either layout, a list shown as a board (the keys only the board has: its ←/→ are not the list layout's), an opened
  * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
- * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, a review, the
- * changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus offer them. Places tell which keys
- * collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
+ * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, the draft
+ * reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus
+ * offer them (a project's screen too, for a new issue in it). Places tell which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
  * the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
 export type CommandPlace =
@@ -34,6 +34,7 @@ export type CommandPlace =
     | 'brokenWorkflows'
     | 'workflowAlerts'
     | 'trackedList'
+    | 'draftReviews'
     | 'review'
     | 'changelog'
     | 'cantBeRead'
