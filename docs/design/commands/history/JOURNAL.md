@@ -71,3 +71,5 @@
 - Owner: the merge panel's keys stay the dialog's (D11); its methods 1–3 become a numbered family it handles.
 - Owner, key clashes: select the failed items ⌥F (D8); ⇧Enter opens a commit full screen as everywhere, its pull
   request on ⇧O; Try again is one fixed Enter command everywhere; restart to update ⌥R everywhere.
+- Owner: a focused code thread's J/K are the `next`/`previous` commands' keys, not the card's own; a rebinding moves
+  them there too.

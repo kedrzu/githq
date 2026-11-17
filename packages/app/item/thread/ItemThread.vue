@@ -4,7 +4,11 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
-import { comment as commentCommand } from '@/commands/definitions/index.js';
+import {
+  comment as commentCommand,
+  next as nextCommand,
+  previous as previousCommand,
+} from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
@@ -527,9 +531,10 @@ function findThreadCard(threadId: string) {
 }
 
 /**
- * On a code thread (F5): `j`/`k` move to the next and previous one, staying at the first and the last — a focused
- * card's own keys (commands D11) —, and the `comment` command's key (`R`, a thread's reply being that command) opens its
- * reply editor. Taken here, before the screen's own keys — the item's and its list's — which they are anywhere else.
+ * On a code thread (F5): the `next` and `previous` commands' keys (`J`/`K`) move to the next and previous one, staying
+ * at the first and the last, and the `comment` command's (`R`, a thread's reply being that command) opens its reply
+ * editor — the same commands' keys, so a rebinding moves them here too. Taken here, before the screen's own keys — the
+ * item's and its list's — which they are anywhere else.
  */
 function onKeydown(event: KeyboardEvent) {
   const { target } = event;
@@ -538,9 +543,14 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (event.key === 'j' || event.key === 'k') {
+  const step = matchesCommandKey(event, keyOf(nextCommand))
+    ? 1
+    : matchesCommandKey(event, keyOf(previousCommand))
+      ? -1
+      : 0;
+  if (step !== 0) {
     event.preventDefault();
-    moveToThread(card, event.key === 'j' ? 1 : -1);
+    moveToThread(card, step);
   } else if (matchesCommandKey(event, keyOf(commentCommand))) {
     const threadId = card.dataset.codeThread ?? '';
     const thread = (props.reviewThreads ?? []).find(({ id }) => id === threadId);
