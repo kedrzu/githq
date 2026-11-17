@@ -192,7 +192,7 @@ test('a link to a comment of a pull request keeps it in view while the review th
     expect(await getScrollTop(item.columns)).toBe(scrolled);
 });
 
-test('a link to a comment on the code opens its resolved thread once the threads are in, in view and marked; one to a review its card', async ({
+test('a link to a comment on the code opens its resolved thread once the threads are in, in view and marked, its card from the top; one to a review its card', async ({
     page,
     github,
 }) => {
@@ -206,6 +206,15 @@ test('a link to a comment on the code opens its resolved thread once the threads
         minutesAgo: 60,
     });
     world.comment(sample.pullRequest, { author: 'hubot', body: 'A remark after the review', minutesAgo: 5 });
+    // Enough below the last thread for its card to be scrolled to the top.
+    for (let index = 0; index < 6; index++) {
+        world.comment(sample.pullRequest, {
+            author: 'hubot',
+            body: `Later remark ${index}`,
+            minutesAgo: 4 - index / 10,
+        });
+    }
+
     await openMyWork(page, github, world);
     const review = answerReview(github, {
         repository: 'acme/web',
@@ -231,6 +240,10 @@ test('a link to a comment on the code opens its resolved thread once the threads
     release();
     await expect(linked).toHaveId('discussion_T_7_1');
     await expect(linked).toBeInViewport();
+    // Not the comment against the top with its thread's file and code cut off above it: the card from its top.
+    await expect
+        .poll(() => getRoomAbovePadding(item.root.locator('[data-code-thread]:has(#discussion_T_7_1)')))
+        .toBe(0);
 
     // From another page: an address differing only in its fragment would be a navigation within the page.
     await page.goto('/');
@@ -290,5 +303,19 @@ function getRoomAbove(element: Locator) {
         }
 
         return container ? Math.round(node.getBoundingClientRect().top - container.getBoundingClientRect().top) : null;
+    });
+}
+
+/** How far below its scrolling container's `scroll-padding-top` the element's top is: 0 when a scroll put it there. */
+function getRoomAbovePadding(element: Locator) {
+    return element.evaluate(node => {
+        const container = node.closest<HTMLElement>('[data-route-scroll]');
+        if (!container) {
+            return null;
+        }
+
+        const padding = Number.parseFloat(getComputedStyle(container).scrollPaddingTop) || 0;
+        // `|| 0`: not `-0`, which `toBe(0)` tells apart.
+        return Math.round(node.getBoundingClientRect().top - container.getBoundingClientRect().top - padding) || 0;
     });
 }
