@@ -18,7 +18,7 @@ import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import { bindCommand } from './bindCommand.js';
-import type { Command, CommandOption } from './CommandTypes.js';
+import type { BoundCommand, CommandOption } from './CommandTypes.js';
 import type { AppCommand } from './defineAppCommand.js';
 import * as definitions from './definitions/index.js';
 import * as l from './useEditCommands.loc.js';
@@ -115,7 +115,7 @@ type ItemPermission = 'assignees' | 'labels' | 'milestone' | 'issueType';
  * A value every item has is marked and taken away when picked again; one only some of them have is half-marked,
  * "1 of 3", and given to all of them when picked.
  */
-export function useEditCommands(): (params: EditCommandsParams) => Command[] {
+export function useEditCommands(): (params: EditCommandsParams) => BoundCommand[] {
     const t = useTranslate();
     const pickerOptions = usePickerOptions();
     const fieldOptions = useProjectFieldOptions();
@@ -146,7 +146,11 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             stateCommand(params),
         ].filter(command => command !== null);
 
-    function toggleCommand(params: EditCommandsParams, kind: 'assignees' | 'labels', spec: ToggleCommandSpec): Command {
+    function toggleCommand(
+        params: EditCommandsParams,
+        kind: 'assignees' | 'labels',
+        spec: ToggleCommandSpec,
+    ): BoundCommand {
         const total = params.items.length;
         const counts = new Map<string, number>();
         for (const item of params.items) {
@@ -189,7 +193,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         };
     }
 
-    function milestoneCommand(params: EditCommandsParams): Command {
+    function milestoneCommand(params: EditCommandsParams): BoundCommand {
         const one = params.items.length === 1 ? params.items[0] : undefined;
         const current = one?.milestone?.title ?? null;
         const command = base(params, 'milestone', definitions.milestone);
@@ -217,7 +221,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     }
 
     /** Issues only, of repositories that have types. */
-    function issueTypeCommand(params: EditCommandsParams): Command | null {
+    function issueTypeCommand(params: EditCommandsParams): BoundCommand | null {
         const issues = params.items.flatMap(item => (item.kind === 'issue' ? [item] : []));
         const offered = params.metadata.some(repository => repository.issueTypes.length > 0);
         if (issues.length < params.items.length || (!offered && !params.loading)) {
@@ -250,7 +254,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         };
     }
 
-    function fieldCommand(params: EditCommandsParams, role: ProjectFieldRole): Command | null {
+    function fieldCommand(params: EditCommandsParams, role: ProjectFieldRole): BoundCommand | null {
         const places = params.places.filter(place => place.fields.some(field => getProjectFieldRole(field) === role));
         if (places.length === 0) {
             return null;
@@ -282,7 +286,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
      * Who is asked to review one pull request: those asked and waiting marked, those who reviewed with what they
      * said — picking them asks again. Never its author. Its key opens the item view's own picker where it is shown.
      */
-    function reviewersCommand(params: EditCommandsParams): Command | null {
+    function reviewersCommand(params: EditCommandsParams): BoundCommand | null {
         const pr = getOnePullRequest(params);
         if (!pr) {
             return null;
@@ -324,7 +328,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
      * a time. Its title is the way forward the panel leads to, as the standing's button says (PM38): "Update branch",
      * "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…".
      */
-    function mergeCommand(params: EditCommandsParams): Command | null {
+    function mergeCommand(params: EditCommandsParams): BoundCommand | null {
         const pr = getOnePullRequest(params);
         const { merge } = params;
         if (!pr || !merge || !params.getPermissions(pr).mergePanel) {
@@ -346,7 +350,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         );
     }
 
-    function ordinaryCommands(params: EditCommandsParams): Command[] {
+    function ordinaryCommands(params: EditCommandsParams): BoundCommand[] {
         const pr = getOnePullRequest(params);
         const source = params.pullRequestCommands;
         return pr && source
@@ -355,7 +359,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     }
 
     /** One open pull request: back to a draft, or a draft ready for review. */
-    function draftCommand(params: EditCommandsParams): Command | null {
+    function draftCommand(params: EditCommandsParams): BoundCommand | null {
         const pr = getOnePullRequest(params);
         if (!pr || !params.getPermissions(pr).draft) {
             return null;
@@ -374,7 +378,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         );
     }
 
-    function stateCommand(params: EditCommandsParams): Command | null {
+    function stateCommand(params: EditCommandsParams): BoundCommand | null {
         const { stateOptions } = params;
         const [first] = stateOptions;
         if (!first) {
@@ -415,7 +419,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
      * An item property's action: offered where at least one of the items may take it, its key running the inline
      * picker even where none may — the item view then says why (K1b).
      */
-    function base(params: EditCommandsParams, kind: ItemPermission, definition: AppCommand<EditPlaces>): Command {
+    function base(params: EditCommandsParams, kind: ItemPermission, definition: AppCommand<EditPlaces>): BoundCommand {
         const editable = countEditable(params, kind);
         return bindCommand(
             definition,

@@ -6,7 +6,7 @@ import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import { bindCommand } from './bindCommand.js';
-import type { Command, CommandSection } from './CommandTypes.js';
+import type { BoundCommand, CommandSection } from './CommandTypes.js';
 import { branch, dequeue, rerunChecks, revert, updateBranch, updateBranchByRebase } from './definitions/index.js';
 import * as l from './usePullRequestCommands.loc.js';
 
@@ -43,7 +43,7 @@ export interface PullRequestCommandsParams {
  * The ordinary commands of one pull request as actions (merging D16, PM39), only those that apply: for the opened item,
  * the menus and a list's selected row alike, each running on the pull request named.
  */
-export function usePullRequestCommands(): (params: PullRequestCommandsParams) => Command[] {
+export function usePullRequestCommands(): (params: PullRequestCommandsParams) => BoundCommand[] {
     const t = useTranslate();
 
     return ({ place, section, pr, source, checks }) => {

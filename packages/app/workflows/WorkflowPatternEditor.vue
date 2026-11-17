@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleMinus, Plus } from 'lucide-vue-next';
 import { computed, onMounted, ref, useTemplateRef } from 'vue';
 
+import { add } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Kbd from '@/components/Kbd.vue';
 import { formatList } from '@/utils/formatList.js';
 
@@ -153,7 +155,7 @@ function onKeydown(event: KeyboardEvent) {
       </template>
       <Kbd
         v-else
-        keys="A"
+        :keys="keyOf(add)"
       />
     </label>
 

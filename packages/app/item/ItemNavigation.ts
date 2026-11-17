@@ -23,7 +23,7 @@ export interface ReviewWalk {
     /** The number of the pull request left. */
     readonly from: number;
     /** The key that goes back. */
-    readonly back: 'J' | 'K';
+    readonly back: string;
 }
 
 /** Items a list is asked to select alone — the failed ones of a change of several (K2). */

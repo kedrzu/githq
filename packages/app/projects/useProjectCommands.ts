@@ -3,7 +3,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { copyLink, goToView, newIssue, openOnGitHub, trackedSettings, untrack } from '@/commands/definitions/index.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
@@ -22,18 +22,18 @@ export interface ProjectCommands {
      * them; the first nine on `1`–`9` when `keyed` (they run only while the project is on screen).
      */
     readonly savedViews: readonly SavedViewCommand[];
-    readonly newIssue: Command;
-    readonly openOnGitHub: Command;
-    readonly copyLink: Command;
-    readonly settings: Command;
-    readonly untrack: Command;
+    readonly newIssue: BoundCommand;
+    readonly openOnGitHub: BoundCommand;
+    readonly copyLink: BoundCommand;
+    readonly settings: BoundCommand;
+    readonly untrack: BoundCommand;
 }
 
 /** Going to a saved view, with the view it goes to: a view is picked by its id, not by where it stands. */
 export interface SavedViewCommand {
     /** The view's node id. */
     readonly viewId: string;
-    readonly command: Command;
+    readonly command: BoundCommand;
 }
 
 /** How a project's actions are offered. */

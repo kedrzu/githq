@@ -192,6 +192,19 @@ export const revert = defineAppCommand({
     places: EDIT_PLACES,
 });
 
+/**
+ * Chooses the n-th merge method the merge panel lists, of merge, squash and rebase those the repository allows (commands
+ * D9). The panel keeps its keys while it is open (commands D11): its own listener runs them and reads them here, as its
+ * hints do; nothing binds the family.
+ */
+export const chooseMergeMethod = defineAppCommand({
+    id: 'chooseMergeMethod',
+    title: l.chooseMergeMethod,
+    icon: GitMerge,
+    numbers: { first: 1, last: 3 },
+    places: ['mergePanel'],
+});
+
 /** A pull request taken out of the merge queue. */
 export const dequeue = defineAppCommand({
     id: 'dequeue',

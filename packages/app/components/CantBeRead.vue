@@ -8,7 +8,7 @@ import { CloudOff, EyeOff, Github, Pause, RotateCw, TriangleAlert } from 'lucide
 import { computed, ref } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { openOnGitHub, tryAgain as tryAgainCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -82,7 +82,7 @@ const look = computed((): { icon: LucideIcon; title: string; detail: string; not
 
 const onScreen = computed(() => props.place === 'screen');
 
-useCommands((): Command[] => {
+useCommands((): BoundCommand[] => {
   const { cause } = props;
   if (!onScreen.value) {
     return [];

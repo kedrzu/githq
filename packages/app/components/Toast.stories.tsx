@@ -1,9 +1,10 @@
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ArrowUpRight, CircleCheckBig, EyeOff, Undo2 } from 'lucide-vue-next';
+import { ArrowUpRight, CircleCheckBig, EyeOff } from 'lucide-vue-next';
 import { defineComponent, onScopeDispose, ref } from 'vue';
 
 import { StoryPage } from '@/.storybook/StoryLayout.jsx';
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
 import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
@@ -167,12 +168,9 @@ export const Stack: StoryObj<StackArgs> = {
                 const untrackOpen = ref(args.untrackOpen);
                 const closeOpen = ref(true);
                 const undone = ref<string[]>([]);
-                const untrackCommands: readonly Command[] = [
-                    command('story.undoUntrack', () => undone.value.push('untrack')),
-                ];
-                const closeCommands: readonly Command[] = [
-                    command('story.undoClose', () => undone.value.push('close')),
-                ];
+                const t = useTranslate();
+                const untrackCommands = [undoCommand(() => undone.value.push('untrack'))];
+                const closeCommands = [undoCommand(() => undone.value.push('close'))];
 
                 return () => (
                     <StoryPage>
@@ -213,6 +211,10 @@ export const Stack: StoryObj<StackArgs> = {
                     </StoryPage>
                 );
 
+                function undoCommand(run: () => void) {
+                    return bindCommand(undo, { place: 'app', section: 'app', menu: false, run }, t);
+                }
+
                 function undoButton(active: boolean, what: string) {
                     return (
                         <Button
@@ -229,7 +231,3 @@ export const Stack: StoryObj<StackArgs> = {
             },
         }),
 };
-
-function command(id: string, run: () => void): Command {
-    return { id, title: 'Undo', section: 'app', key: keyOf(undo), icon: Undo2, menu: false, run };
-}

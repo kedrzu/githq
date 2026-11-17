@@ -41,7 +41,7 @@ import * as l from './AppCommands.loc.js';
 import { bindCommand } from './bindCommand.js';
 import CommandMenu from './CommandMenu.vue';
 import { CommandRegistry } from './CommandRegistry.js';
-import type { Command } from './CommandTypes.js';
+import type { BoundCommand, Command } from './CommandTypes.js';
 import {
   checkForUpdates,
   commandMenu,
@@ -175,13 +175,13 @@ useCommands(() => {
 });
 
 /** What the updater proposes now, each only while it can run (D18) — only ever in the desktop app (`AppUpdate`). */
-function getUpdateCommands(): Command[] {
+function getUpdateCommands(): BoundCommand[] {
   const { state, offer } = update;
   if (state === null) {
     return [];
   }
 
-  const commands: Command[] = [];
+  const commands: BoundCommand[] = [];
   const { activity } = state;
   if (activity.kind === 'ready' || activity.kind === 'installFailed') {
     const failed = activity.kind === 'installFailed';
@@ -212,7 +212,7 @@ function getUpdateCommands(): Command[] {
 }
 
 /** What the Updates section holds, once the native side has told its state. */
-function getUpdateChildren(): Command[] {
+function getUpdateChildren(): BoundCommand[] {
   const { state } = update;
   if (state === null) {
     return [];
@@ -224,7 +224,7 @@ function getUpdateChildren(): Command[] {
 }
 
 /** To the stream not chosen. A Development build goes to Stable only through the confirmation in Settings (D5, U13). */
-function getSwitchCommand(state: UpdateState): Command {
+function getSwitchCommand(state: UpdateState): BoundCommand {
   const toStable = state.stream === 'development';
   return bindCommand(
     switchStream,
@@ -245,7 +245,7 @@ function getSwitchCommand(state: UpdateState): Command {
   );
 }
 
-function getUpdateLaterCommand(): Command {
+function getUpdateLaterCommand(): BoundCommand {
   return bindCommand(updateLater, { section: 'app', run: () => update.later() }, t);
 }
 

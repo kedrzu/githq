@@ -5,7 +5,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Undo2 } from 'lucide-vue-next';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { selectFailed as selectFailedCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -29,7 +29,7 @@ const browser = useService(Browser);
 const texts = useEditTexts();
 const t = useTranslate();
 
-function getCommands(failure: EditFailure): Command[] {
+function getCommands(failure: EditFailure): BoundCommand[] {
   return getFailedIds(failure).length > 0
     ? [bindCommand(selectFailedCommand, { section: 'app', menu: false, run: () => selectFailed(failure) }, t)]
     : [];

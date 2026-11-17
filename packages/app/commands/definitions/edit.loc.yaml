@@ -38,5 +38,7 @@ branch:
   en: Delete or restore branch
 revert:
   en: Revert
+chooseMergeMethod:
+  en: Choose merge method
 dequeue:
   en: Take out of queue

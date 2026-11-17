@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
 import {
     addToProject,
     comment,
@@ -100,7 +100,7 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
 
     return { selected, one, repositoryNames, getOwnCommands, getEditCommands };
 
-    function getEditCommands(): Command[] {
+    function getEditCommands(): BoundCommand[] {
         return editCommands({
             place: editPlace,
             section: section(),
@@ -124,10 +124,10 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
     }
 
     /** Going to the items, writing about them, copying them, adding them to a project. */
-    function getOwnCommands(): Command[] {
+    function getOwnCommands(): BoundCommand[] {
         const item = one.value;
         const own = section();
-        const commands: Command[] = [
+        const commands: BoundCommand[] = [
             bindCommand(
                 openOnGitHub,
                 {
@@ -232,7 +232,7 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
     }
 
     /** What the submenu offers, and what the user may do there, read for every repository of the items as it opens. */
-    function readingMetadata(command: Command): Command {
+    function readingMetadata(command: BoundCommand): BoundCommand {
         if (!command.options) {
             return command;
         }

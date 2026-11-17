@@ -3,7 +3,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import {
     copyLink,
     goToSection,
@@ -26,13 +26,13 @@ import * as l from './useRepositoryCommands.loc.js';
 /** A repository's actions, each bound from its definition. */
 export interface RepositoryCommands {
     /** Going to each of its sections (`goToSection`), in the order of the tabs. */
-    readonly sections: readonly Command[];
-    readonly newIssue: Command;
-    readonly openOnGitHub: Command;
-    readonly copyLink: Command;
-    readonly settings: Command;
-    readonly track: Command;
-    readonly untrack: Command;
+    readonly sections: readonly BoundCommand[];
+    readonly newIssue: BoundCommand;
+    readonly openOnGitHub: BoundCommand;
+    readonly copyLink: BoundCommand;
+    readonly settings: BoundCommand;
+    readonly track: BoundCommand;
+    readonly untrack: BoundCommand;
 }
 
 /** How {@link useRepositoryCommands} offers a repository's actions. */

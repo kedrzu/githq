@@ -1,13 +1,16 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { Translator } from '@nzyme/i18n/Translator.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
-import { expect, test } from 'bun:test';
+import { expect, expectTypeOf, test } from 'bun:test';
 import { Github } from 'lucide-vue-next';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
 import { bindCommand } from './bindCommand.js';
+import type { CommandSource } from './CommandRegistry.js';
+import type { Command } from './CommandTypes.js';
 import { defineAppCommand } from './defineAppCommand.js';
+import type { useCommands } from './useCommands.js';
 
 const container = createContainer();
 container.set(LanguageContext, () => APP_LANGUAGE);
@@ -120,4 +123,14 @@ test('a place may offer it by its key alone, without its other keys', () => {
     const bound = bindCommand(next, { section: 'item', otherKeys: false, run }, t);
     expect(bound).toMatchObject({ key: 'J', otherKeys: undefined });
     expect(bindCommand(next, { section: 'item', run }, t)).toMatchObject({ key: 'J', otherKeys: ['ArrowDown'] });
+});
+
+test('D2: only a command bound from a definition can be registered, never one written by hand', () => {
+    type Registered = CommandSource['commands'][number];
+    type Offered = ReturnType<Parameters<typeof useCommands>[0]>[number];
+
+    expectTypeOf<Command>().not.toExtend<Registered>();
+    expectTypeOf<Command>().not.toExtend<Offered>();
+    expectTypeOf(bindCommand(OPEN, { place: 'list', section: 'view', run }, t)).toExtend<Registered>();
+    expectTypeOf(bindCommand(OPEN, { place: 'list', section: 'view', run }, t)).toExtend<Offered>();
 });

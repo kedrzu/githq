@@ -10,7 +10,13 @@ import { onScopeDispose } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command, CommandForm, CommandFormField, CommandFormValues } from '@/commands/CommandTypes.js';
+import type {
+    BoundCommand,
+    Command,
+    CommandForm,
+    CommandFormField,
+    CommandFormValues,
+} from '@/commands/CommandTypes.js';
 import { runWorkflow } from '@/commands/definitions/index.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Clock } from '@/services/Clock.js';
@@ -46,13 +52,13 @@ export interface RunWorkflowCommands {
      * "Run workflow · Deploy" for one workflow, straight to its form; disabled saying why for a workflow nobody can run by
      * hand; `null` where the user can't run workflows at all (no write access, an archived repository).
      */
-    forWorkflow(target: RunWorkflowTarget): Command | null;
+    forWorkflow(target: RunWorkflowTarget): BoundCommand | null;
     /**
      * "Run workflow…" for any workflow: the tracked repositories, each with how many workflows the user can run there, then
      * the workflows of the one picked, then the form. Inside a tracked repository it opens at that repository's
      * workflows, a step back showing the others.
      */
-    anyWorkflow(repository: string | null): Command;
+    anyWorkflow(repository: string | null): BoundCommand;
 }
 
 /** A ref typed in the form is read once typing pauses this long. */
@@ -113,7 +119,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
 
     return { forWorkflow, anyWorkflow };
 
-    function forWorkflow({ nameWithOwner, state, place }: RunWorkflowTarget): Command | null {
+    function forWorkflow({ nameWithOwner, state, place }: RunWorkflowTarget): BoundCommand | null {
         const { workflow } = state;
         const target: WorkflowFileTarget = { nameWithOwner, path: workflow.path, ref: null };
         const read = state.generated ? null : files.get(target);
@@ -151,7 +157,7 @@ export function useRunWorkflowCommand(): RunWorkflowCommands {
         );
     }
 
-    function anyWorkflow(repository: string | null): Command {
+    function anyWorkflow(repository: string | null): BoundCommand {
         const tracked = tracking.repositories.map(entry => entry.nameWithOwner);
         const inRepository = repository !== null && tracked.includes(repository);
         const count = inRepository ? getRunnableCount(repository) : null;

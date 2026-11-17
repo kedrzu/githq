@@ -21,7 +21,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef }
 import { RouterLink } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -368,7 +368,7 @@ onMounted(() => {
 onBeforeUnmount(() => roomObserver?.disconnect());
 
 /** "Open full screen" by `⇧Enter`; "Back to the panel" in ⌘K only, Escape being the run's own step back (`back`). */
-function getArrangeCommand(other: OtherArrangement): Command {
+function getArrangeCommand(other: OtherArrangement): BoundCommand {
   const run = () => emit('arrange', other.arrangement);
   return other.arrangement === 'page'
     ? bindCommand(definitions.openFullScreen, { place: 'workflowRun', section: 'item', run }, t)

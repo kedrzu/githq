@@ -8,7 +8,7 @@ import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
+import type { BoundCommand, CommandSubject } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
 import { keyOf } from '@/commands/keyOf.js';
@@ -292,7 +292,7 @@ const menuIds = shallowRef<readonly string[]>([]);
 /** The item the context menu's "Open" opens; `null` when it is for several. */
 const menuOpenId = ref<string | null>(null);
 /** The context menu's merge of a stack's entry right-clicked, whole (stacked PRs D11); `null` otherwise. */
-const menuMerge = shallowRef<Command | null>(null);
+const menuMerge = shallowRef<BoundCommand | null>(null);
 /** Merging, where the screen offers it (merging D9). */
 const merging = injectContext(MergeContext, { optional: true });
 const pullRequestCommands = usePullRequestCommands();
@@ -629,7 +629,7 @@ useCommands(
  * whole stack (stacked PRs D11). The list owns both: once the merge is sent, the merged ones are unchecked and the
  * selection moves past them (PM32a, SP7).
  */
-function getMergeCommands(): Command[] {
+function getMergeCommands(): BoundCommand[] {
   if (!merging) {
     return [];
   }
@@ -661,7 +661,7 @@ function getMergeCommands(): Command[] {
  * What the cursor row's context menu offers, by the keys it draws but those the list handles itself; on a stack's entry
  * of a pull request's ordinary commands only `⇧Q`, which takes the stack out whole through its first one (D11).
  */
-function getRowCommands(): Command[] {
+function getRowCommands(): BoundCommand[] {
   if (!rowActions || !rowSubject.value) {
     return [];
   }
@@ -670,15 +670,12 @@ function getRowCommands(): Command[] {
     command.key !== undefined && OWN_KEYS.has(command.key) ? { ...command, key: undefined } : command,
   );
   return cursorRow.value?.stack
-    ? [
-        ...commands.filter(command => command.definition === undefined || !ORDINARY.has(command.definition)),
-        ...getStackDequeue(),
-      ]
+    ? [...commands.filter(command => !ORDINARY.has(command.definition)), ...getStackDequeue()]
     : commands;
 }
 
 /** `⇧Q` of a stack's entry, through the first of its pull requests in the queue. */
-function getStackDequeue(): Command[] {
+function getStackDequeue(): BoundCommand[] {
   const queued = rowActions?.selected.value.find(item => item.kind === 'pullRequest' && item.mergeQueueEntry);
   return merging && queued?.kind === 'pullRequest'
     ? pullRequestCommands({ place: 'item', section: 'selection', pr: queued, source: merging }).filter(
@@ -870,9 +867,9 @@ function isAllMerged(key: string, merged: readonly string[]) {
 }
 
 /** The list's own keys (`menu: false`), each acting on its row: not from what Tab focused outside the list. */
-function getKeyCommands(): Command[] {
+function getKeyCommands(): BoundCommand[] {
   const own = { section: 'view', menu: false, actsOnRow: true } as const;
-  const commands: Command[] = [
+  const commands: BoundCommand[] = [
     bindCommand(definitions.next, { place: 'list', ...own, run: () => step(1) }, t),
     bindCommand(definitions.previous, { place: 'list', ...own, run: () => step(-1) }, t),
     bindCommand(
@@ -1493,7 +1490,7 @@ function prepareContextMenu(event: MouseEvent) {
  * The context menu's merge, the list's as `⇧M` is (merging D9): of the entry's one pull request, or "Merge all 3" on a
  * stack's entry, its whole stack (D11).
  */
-function getMenuMerge(current: Placed): Command | null {
+function getMenuMerge(current: Placed): BoundCommand | null {
   const target = current.stack ? getStackTarget(current) : getRowTarget(current);
   if (!target) {
     return null;

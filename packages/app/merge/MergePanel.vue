@@ -266,7 +266,11 @@ const offered = computed(() =>
 );
 const methods = computed(() => offered.value?.methods ?? []);
 const methodOptions = computed((): SegmentedTabsOption<PullRequestMergeMethod>[] =>
-  methods.value.map((choice, index) => ({ value: choice, label: methodName(choice), keyshortcuts: String(index + 1) })),
+  methods.value.map((choice, index) => ({
+    value: choice,
+    label: methodName(choice),
+    keyshortcuts: keyOf(definitions.chooseMergeMethod, index + 1),
+  })),
 );
 const method = ref<PullRequestMergeMethod | null>(initialMethod());
 const notice = ref<MethodNotice | null>(null);
@@ -1618,8 +1622,10 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  const index = ['1', '2', '3'].findIndex(key => matchesCommandKey(event, key));
-  const chosen = index === -1 ? undefined : methods.value[index];
+  const chosen = methods.value.find((_, index) => {
+    const key = keyOf(definitions.chooseMergeMethod, index + 1);
+    return key !== undefined && matchesCommandKey(event, key);
+  });
   if (chosen && choosable.value) {
     event.preventDefault();
     choose(chosen);

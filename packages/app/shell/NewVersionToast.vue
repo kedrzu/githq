@@ -5,7 +5,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { RotateCw } from 'lucide-vue-next';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { loadNewVersion } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -17,7 +17,7 @@ import * as l from './NewVersionToast.loc.js';
 const version = useService(NewVersion);
 const t = useTranslate();
 
-const commands: Command[] = [
+const commands: BoundCommand[] = [
   bindCommand(
     loadNewVersion,
     { place: 'app', title: t(l.reloadCommand), section: 'app', icon: RotateCw, run: () => version.reload() },

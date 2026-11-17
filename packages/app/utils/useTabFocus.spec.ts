@@ -1,5 +1,6 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { assert } from '@nzyme/utils/assert.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
@@ -7,7 +8,10 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import { bindCommand } from '@/commands/bindCommand.js';
+import type { CommandPlace, CommandSection } from '@/commands/CommandTypes.js';
+import type { AppCommand } from '@/commands/defineAppCommand.js';
+import { defineAppCommand } from '@/commands/defineAppCommand.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Dialog from '@/components/Dialog.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -281,7 +285,12 @@ function mountScreen() {
     const app = createApp({
         setup() {
             useTabFocus();
-            useCommands(() => COMMANDS.map(command => ({ ...command, run: () => run(command.id) })));
+            const t = useTranslate();
+            useCommands(() =>
+                COMMANDS.map(({ definition, section, actsOnRow }) =>
+                    bindCommand(definition, { section, actsOnRow, run: () => run(definition.id) }, t),
+                ),
+            );
 
             return () => [
                 h(Sidebar, { viewer: SAMPLE_VIEWER }),
@@ -341,14 +350,25 @@ function mountScreen() {
     return { router, checkedIds, dialogOpen, opened, clicked, run };
 }
 
-/** One action of each kind whose key a held control runs or holds back. */
-const COMMANDS: readonly Command[] = [
-    { id: 'app.sidebar', title: 'Sidebar', section: 'app', key: 'Mod+B' },
-    { id: 'app.help', title: 'Help', section: 'app', key: '?' },
-    { id: 'app.new', title: 'New issue', section: 'app', key: 'C' },
-    { id: 'app.commandMenu', title: 'Command menu', section: 'app', key: 'Mod+K' },
-    { id: 'view.layout', title: 'Layout', section: 'view', key: 'Shift+V' },
-    { id: 'selection.assign', title: 'Assign', section: 'selection', key: 'A' },
-    { id: 'item.edit', title: 'Edit', section: 'item', key: 'E' },
-    { id: 'list.rowAction', title: 'Row action', section: 'view', key: 'U', actsOnRow: true },
+/** One action of each kind whose key a held control runs or holds back, each on a test definition. */
+const COMMANDS: readonly TestCommand[] = [
+    testCommand('app.sidebar', 'Mod+B', 'app', 'app'),
+    testCommand('app.help', '?', 'app', 'app'),
+    testCommand('app.new', 'C', 'app', 'app'),
+    testCommand('app.commandMenu', 'Mod+K', 'app', 'app'),
+    testCommand('view.layout', 'Shift+V', 'list', 'view'),
+    testCommand('selection.assign', 'A', 'list', 'selection'),
+    testCommand('item.edit', 'E', 'list', 'item'),
+    { ...testCommand('list.rowAction', 'U', 'list', 'view'), actsOnRow: true },
 ];
+
+/** A test definition, and the section and row it is bound with. */
+interface TestCommand {
+    readonly definition: AppCommand<readonly [CommandPlace]>;
+    readonly section: CommandSection;
+    readonly actsOnRow?: boolean;
+}
+
+function testCommand(id: string, key: string, place: CommandPlace, section: CommandSection): TestCommand {
+    return { definition: defineAppCommand({ id, title: () => id, key, places: [place] }), section };
+}

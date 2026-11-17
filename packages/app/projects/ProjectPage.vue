@@ -2,7 +2,6 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Plus } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -10,7 +9,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { CommandOption } from '@/commands/CommandTypes.js';
-import { newIssueInProject } from '@/commands/definitions/index.js';
+import { addItemsToProject, newIssueInProject } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -80,9 +79,6 @@ import {
 } from './projectViewOptions.js';
 import { selectProjectEntries } from './selectProjectEntries.js';
 import { useProjectCommands } from './useProjectCommands.js';
-
-/** "Add existing issues…": its submenu opens from the empty project too (K8). */
-const ADD_ITEMS_COMMAND = 'project.addItems';
 
 /** What a project without saved views is shown as. */
 const NO_VIEW_OPTIONS: ProjectViewOptions = {
@@ -171,13 +167,15 @@ useCommands(() =>
           },
           t,
         ),
-        {
-          id: ADD_ITEMS_COMMAND,
-          title: t(l.addItemsToProject, { project: project.value.title }),
-          section: 'view',
-          icon: Plus,
-          options: () => ({ options: addableItems.value, several: true }),
-        },
+        bindCommand(
+          addItemsToProject,
+          {
+            section: 'view',
+            title: t(l.addItemsToProject, { project: project.value.title }),
+            options: () => ({ options: addableItems.value, several: true }),
+          },
+          t,
+        ),
       ]
     : [],
 );
@@ -498,6 +496,14 @@ function move({ ids, to }: ListMove) {
 }
 
 /** The quick capture adding the issue to this project (H5) — with the value of the group it was started in. */
+/** The empty project's "Add existing issues…" (K8): the command menu at the action's submenu. */
+function openAddItems() {
+  const command = registry.findByDefinition(addItemsToProject);
+  if (command) {
+    registry.openMenu(command.id);
+  }
+}
+
 function startNewIssue(group: string | null, label: string | null) {
   const current = project.value;
   if (!current) {
@@ -612,7 +618,7 @@ function setRowField(fieldId: string | null) {
     @move="move"
     @add-draft="addDraft"
     @new-issue="startNewIssue"
-    @add-items="registry.openMenu(ADD_ITEMS_COMMAND)"
+    @add-items="openAddItems"
     @clear-filter="options.set({ filter: '' })"
   >
     <template #menu>

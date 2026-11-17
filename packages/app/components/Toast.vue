@@ -25,7 +25,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { ToastDescription, ToastRoot, ToastTitle } from 'reka-ui';
 import { computed, onUnmounted, ref, watch } from 'vue';
 
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
@@ -57,7 +57,7 @@ const props = withDefaults(
      * Its actions for the command registry. Their keys work only while it is the newest open toast — its buttons show
      * them only then (`#actions`' `active`); an older toast keeps just those offered in the command menu, keyless.
      */
-    commands?: readonly Command[];
+    commands?: readonly BoundCommand[];
     /**
      * Whether the newest toast takes Escape, shown on its Dismiss. Off where the screen's Escape must still work with
      * the toast up: Dismiss then has no key, and Escape never closes it.

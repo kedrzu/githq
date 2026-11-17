@@ -968,7 +968,7 @@ useCommands(() => [
       // ↓/↑ are the diff's cursor.
       otherKeys: false,
       when: () => nextPullRequest.value !== null,
-      run: () => stepPullRequest(nextPullRequest.value, 'K'),
+      run: () => stepPullRequest(nextPullRequest.value, keyOf(definitions.previous)),
     },
     t,
   ),
@@ -980,7 +980,7 @@ useCommands(() => [
       icon: ChevronUp,
       otherKeys: false,
       when: () => previousPullRequest.value !== null,
-      run: () => stepPullRequest(previousPullRequest.value, 'J'),
+      run: () => stepPullRequest(previousPullRequest.value, keyOf(definitions.next)),
     },
     t,
   ),
@@ -1315,7 +1315,7 @@ function isDiffScrollable() {
   );
 }
 
-function stepPullRequest(id: string | null, backKey: 'J' | 'K') {
+function stepPullRequest(id: string | null, backKey: string) {
   const item = id === null ? undefined : details.getItem(id);
   if (item) {
     navigation.noteReviewWalk({
@@ -2212,8 +2212,8 @@ function readAgain() {
       :github-url="githubUrl"
       :position="walkPosition"
       @back="back"
-      @previous="stepPullRequest(previousPullRequest, 'J')"
-      @next="stepPullRequest(nextPullRequest, 'K')"
+      @previous="stepPullRequest(previousPullRequest, keyOf(definitions.next))"
+      @next="stepPullRequest(nextPullRequest, keyOf(definitions.previous))"
     />
     <ReviewLostViewedBar
       v-if="lostViewedPaths.length > 0"
@@ -2335,7 +2335,7 @@ function readAgain() {
                   :next-number="nextNumber"
                   :sending="finish.kind === 'sending'"
                   @submit="submitOpen = true"
-                  @next="stepPullRequest(nextPullRequest, 'K')"
+                  @next="stepPullRequest(nextPullRequest, keyOf(definitions.previous))"
                 />
                 <ReviewDiffRow
                   v-else

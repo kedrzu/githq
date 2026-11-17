@@ -1,12 +1,10 @@
-import type { Command } from './CommandTypes.js';
+import type { BoundCommand } from './CommandTypes.js';
 
 /**
- * The keys the registry runs an action by: its `key`, and its other keys once it is bound from a definition (an
- * unplaced action's other keys are its component's own, only listed).
+ * The keys the registry runs an action by: its `key` and its other keys.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRunKeys(command: Command): readonly string[] {
-    const keys = command.key === undefined ? [] : [command.key];
-    return command.place === undefined ? keys : [...keys, ...(command.otherKeys ?? [])];
+export function getRunKeys(command: BoundCommand): readonly string[] {
+    return [...(command.key === undefined ? [] : [command.key]), ...(command.otherKeys ?? [])];
 }

@@ -12,7 +12,7 @@ import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
 
 import { bindCommand } from './bindCommand.js';
-import type { Command, CommandOptions } from './CommandTypes.js';
+import type { BoundCommand, CommandOptions } from './CommandTypes.js';
 import { searchRepositories } from './definitions/index.js';
 import * as l from './useRepositorySearchCommand.loc.js';
 
@@ -26,7 +26,7 @@ type FoundRepository = Extract<
  * "Search repositories…" (D34, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
  * its qualifiers work (`useGitHubSearch`); picking a repository goes to its screen.
  */
-export function useRepositorySearchCommand(): () => Command {
+export function useRepositorySearchCommand(): () => BoundCommand {
     const t = useTranslate();
     const accounts = useService(AccountSession);
     const repositoryTabs = useService(LastRepositoryTab);

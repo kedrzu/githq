@@ -6,7 +6,8 @@ import { expect, test } from 'bun:test';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
 import { bindCommand } from './bindCommand.js';
-import type { Command } from './CommandTypes.js';
+import type { BoundCommand, CommandPlace, CommandSection } from './CommandTypes.js';
+import { defineAppCommand } from './defineAppCommand.js';
 import { undo } from './definitions/index.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
@@ -15,58 +16,44 @@ container.set(LanguageContext, () => APP_LANGUAGE);
 const t = container.resolve(Translator);
 const run = () => undefined;
 
-test('without places the sections decide, and of one section the one registered first', () => {
-    const app: Command = { id: 'app', title: 'App', section: 'app', key: 'O', run };
-    const view: Command = { id: 'view', title: 'View', section: 'view', key: 'O', run };
-    const item: Command = { id: 'item', title: 'Item', section: 'item', key: 'O', run };
-    const otherItem: Command = { id: 'otherItem', title: 'Other item', section: 'item', key: 'O', run };
-    const selection: Command = { id: 'selection', title: 'Selection', section: 'selection', key: 'O', run };
+test('of one place the sections decide, and of one section the one registered first', () => {
+    const app = command('app', 'list', 'app');
+    const view = command('view', 'list', 'view');
+    const item = command('item', 'list', 'item');
+    const otherItem = command('otherItem', 'list', 'item');
+    const selection = command('selection', 'list', 'selection');
 
     expect(ids(orderByKeyPrecedence([app, view, item, otherItem, selection]))).toEqual([
-        'selection',
-        'item',
-        'otherItem',
-        'view',
-        'app',
+        'list.selection',
+        'list.item',
+        'list.otherItem',
+        'list.view',
+        'list.app',
     ]);
 });
 
 test("the keeper of places on screen together takes the key, whatever the other's section", () => {
-    const item: Command = { id: 'item', title: 'Item', section: 'item', place: 'item', key: 'O', run };
-    const list: Command = { id: 'list', title: 'List', section: 'view', place: 'list', key: 'O', run };
-
-    expect(ids(orderByKeyPrecedence([item, list]))).toEqual(['list', 'item']);
+    expect(ids(orderByKeyPrecedence([command('item', 'item', 'item'), command('list', 'list', 'view')]))).toEqual([
+        'list.list',
+        'item.item',
+    ]);
 });
 
 test('any screen place takes a key before the app, whatever the sections', () => {
-    const app: Command = { id: 'app', title: 'App', section: 'selection', place: 'app', key: 'Mod+B', run };
-    const item: Command = { id: 'item', title: 'Item', section: 'app', place: 'item', key: 'Mod+B', run };
-
-    expect(ids(orderByKeyPrecedence([app, item]))).toEqual(['item', 'app']);
+    expect(ids(orderByKeyPrecedence([command('app', 'app', 'selection'), command('item', 'item', 'app')]))).toEqual([
+        'item.item',
+        'app.app',
+    ]);
 });
 
 test("an item open beside a repository's Workflows section leaves it J; beside the draft reviews it keeps ⇧S", () => {
-    const workflows: Command = { id: 'workflows', title: 'Next', section: 'view', place: 'workflows', key: 'J', run };
-    const itemNext: Command = { id: 'itemNext', title: 'Next', section: 'item', place: 'item', key: 'J', run };
-    const drafts: Command = {
-        id: 'drafts',
-        title: 'Submit',
-        section: 'view',
-        place: 'draftReviews',
-        key: 'Shift+S',
-        run,
-    };
-    const itemSubmit: Command = {
-        id: 'itemSubmit',
-        title: 'Submit',
-        section: 'item',
-        place: 'item',
-        key: 'Shift+S',
-        run,
-    };
+    const workflows = command('next', 'workflows', 'view');
+    const itemNext = command('next', 'item', 'item');
+    const drafts = command('submit', 'draftReviews', 'view');
+    const itemSubmit = command('submit', 'item', 'item');
 
-    expect(ids(orderByKeyPrecedence([itemNext, workflows]))).toEqual(['workflows', 'itemNext']);
-    expect(ids(orderByKeyPrecedence([drafts, itemSubmit]))).toEqual(['itemSubmit', 'drafts']);
+    expect(ids(orderByKeyPrecedence([itemNext, workflows]))).toEqual(['workflows.next', 'item.next']);
+    expect(ids(orderByKeyPrecedence([drafts, itemSubmit]))).toEqual(['item.submit', 'draftReviews.submit']);
 });
 
 test("⌘Z in a review restores the discarded comment, not a shell toast's Undo shown with it", () => {
@@ -80,6 +67,12 @@ test("⌘Z in a review restores the discarded comment, not a shell toast's Undo 
     expect(ids(orderByKeyPrecedence([undoClose, restore]))).toEqual(['review.undo', 'app.undo']);
 });
 
-function ids(commands: readonly Command[]) {
-    return commands.map(command => command.id);
+function ids(commands: readonly BoundCommand[]) {
+    return commands.map(bound => bound.id);
+}
+
+/** A command on a test definition offered in `place`: all of them on one key. */
+function command(id: string, place: CommandPlace, section: CommandSection) {
+    const definition = defineAppCommand({ id, title: () => id, key: 'O', places: [place] });
+    return bindCommand(definition, { section, run }, t);
 }

@@ -364,7 +364,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
         v-if="!searchFieldFocused"
         :class="css.workflowRunLogPane_hint"
       >
-        <Kbd keys="?" />
+        <Kbd :keys="keyOf(definitions.help)" />
         {{ t(l.allKeys) }}
       </span>
     </div>

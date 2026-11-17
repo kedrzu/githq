@@ -9,7 +9,7 @@ import { computed, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { openSyncSettings } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -80,7 +80,7 @@ watch(
   { immediate: true },
 );
 
-const commands = computed((): Command[] => [
+const commands = computed((): BoundCommand[] => [
   bindCommand(openSyncSettings, { section: 'app', menu: false, run: openSync }, t),
 ]);
 

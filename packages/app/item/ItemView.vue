@@ -43,7 +43,7 @@ import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
 import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
 import {
   addToProject,
@@ -428,9 +428,7 @@ const OUTSIDE_ITEM_MENU: ReadonlySet<AnyAppCommand> = new Set([openOnGitHub, ope
 const itemMenuSections = computed(() =>
   itemMenuOpen.value
     ? getItemMenuSections(
-        [...getEditCommands(), ...getItemCommands()].filter(
-          command => !(command.definition && OUTSIDE_ITEM_MENU.has(command.definition)),
-        ),
+        [...getEditCommands(), ...getItemCommands()].filter(command => !OUTSIDE_ITEM_MENU.has(command.definition)),
         props.item.kind,
       )
     : [],
@@ -545,7 +543,7 @@ function onContentScroll() {
   stackDropped.value = false;
 }
 
-function getEditCommands(): Command[] {
+function getEditCommands(): BoundCommand[] {
   const { editing, item } = props;
   if (!editing) {
     return [];
@@ -631,9 +629,9 @@ function quoteReply(body: string) {
   void focusComposer();
 }
 
-function getItemCommands(): Command[] {
+function getItemCommands(): BoundCommand[] {
   const { item, editing } = props;
-  const commands: Command[] = [
+  const commands: BoundCommand[] = [
     bindCommand(
       comment,
       { place: 'item', section: 'item', when: () => canComment.value, run: () => void focusComposer() },

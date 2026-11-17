@@ -1,3 +1,4 @@
+import { Translator } from '@nzyme/i18n/Translator.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { assertValue } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
@@ -9,7 +10,9 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router';
 
 import { VIEWER_KEY } from '@/auth/AuthStore.js';
 import { TOKEN_KEY } from '@/auth/TokenVault.js';
+import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { openFiles } from '@/commands/definitions/index.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemList } from '@/item/ItemNavigation.js';
 import { Browser } from '@/services/Browser.js';
@@ -1373,23 +1376,14 @@ test("with the commit's pull request open, Shift+O is the item's (it opens its f
         .toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
 
     // The opened pull request's "Open files" (`ItemView`), as the panel registers it.
-    const openFiles = vi.fn();
+    const openFilesRan = vi.fn();
     const unregister = view.container.resolve(CommandRegistry).register({
-        commands: [
-            {
-                id: 'item.openFiles',
-                title: 'Open files',
-                section: 'item',
-                place: 'item',
-                key: 'Shift+O',
-                run: openFiles,
-            },
-        ],
+        commands: [bindCommand(openFiles, { section: 'item', run: openFilesRan }, view.container.resolve(Translator))],
         subject: null,
     });
     onTestFinished(unregister);
     await userEvent.keyboard('{Shift>}o{/Shift}');
-    expect(openFiles).toHaveBeenCalledTimes(1);
+    expect(openFilesRan).toHaveBeenCalledTimes(1);
     expect(view.router.currentRoute.value.query).toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
     await expect.element(details()).not.toBeInTheDocument();
 });

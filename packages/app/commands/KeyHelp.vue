@@ -8,7 +8,7 @@ import Dialog from '@/components/Dialog.vue';
 import DialogHead from '@/components/DialogHead.vue';
 import Kbd from '@/components/Kbd.vue';
 
-import type { Command, CommandKeySheet } from './CommandTypes.js';
+import type { BoundCommand, CommandKeySheet } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { formatAriaKeyShortcuts } from './formatAriaKeyShortcuts.js';
 import * as l from './KeyHelp.loc.js';
@@ -16,7 +16,7 @@ import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
 const props = defineProps<{
   /** The actions that can run now. */
-  commands: readonly Command[];
+  commands: readonly BoundCommand[];
   /** The screen's own sheet, shown instead of them. */
   sheet?: CommandKeySheet | null;
 }>();

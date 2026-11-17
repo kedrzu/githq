@@ -8,7 +8,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { openStartedRun } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
@@ -28,7 +28,7 @@ const browser = useService(Browser);
 const router = useRouter();
 const t = useTranslate();
 
-const commands = computed((): Command[] => [bindCommand(openStartedRun, { section: 'app', run: openStarted }, t)]);
+const commands = computed((): BoundCommand[] => [bindCommand(openStartedRun, { section: 'app', run: openStarted }, t)]);
 
 function getStartedTitle(started: WorkflowDispatchStarted) {
   const params = { workflow: started.workflowName, ref: started.ref };

@@ -1,10 +1,11 @@
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { CircleDot, GitCommitHorizontal, GitPullRequest, ListFilter, Workflow } from 'lucide-vue-next';
 import { userEvent, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
 import * as definitions from '@/commands/definitions/index.js';
-import { keyOf } from '@/commands/keyOf.js';
 import type { HeaderTabsSet } from '@/components/HeaderTabs.vue';
 import { useCommands } from '@/commands/useCommands.js';
 import MenuItem from '@/components/MenuItem.vue';
@@ -157,28 +158,32 @@ function withNewIssue({ inProject = false }: WithNewIssueOptions = {}): Decorato
         return defineComponent({
             setup() {
                 const started = shallowRef<string | null>(null);
+                const t = useTranslate();
                 useCommands(() => [
-                    {
-                        id: 'newIssue',
-                        definition: definitions.newIssue,
-                        title: 'New issue',
-                        section: 'app',
-                        run: () => {
-                            started.value = 'Started';
+                    bindCommand(
+                        definitions.newIssue,
+                        {
+                            place: 'app',
+                            section: 'app',
+                            run: () => {
+                                started.value = 'Started';
+                            },
                         },
-                    },
+                        t,
+                    ),
                     ...(inProject
                         ? [
-                              {
-                                  id: 'newIssueInProject',
-                                  definition: definitions.newIssueInProject,
-                                  title: 'New issue in Platform Q4',
-                                  section: 'view' as const,
-                                  key: keyOf(definitions.newIssueInProject),
-                                  run: () => {
-                                      started.value = 'Started in the project';
+                              bindCommand(
+                                  definitions.newIssueInProject,
+                                  {
+                                      title: 'New issue in Platform Q4',
+                                      section: 'view',
+                                      run: () => {
+                                          started.value = 'Started in the project';
+                                      },
                                   },
-                              },
+                                  t,
+                              ),
                           ]
                         : []),
                 ]);

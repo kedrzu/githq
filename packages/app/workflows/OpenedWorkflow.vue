@@ -8,7 +8,7 @@ import { computed, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { copyLink, openWorkflowFile, toggleWorkflow } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -122,7 +122,7 @@ useCommands(() => {
 
   const { workflow } = state;
   const defaultBranch = workflows.get(opened.nameWithOwner)?.defaultBranch ?? null;
-  const commands: Command[] = runCommand.value ? [runCommand.value] : [];
+  const commands: BoundCommand[] = runCommand.value ? [runCommand.value] : [];
   if (toggle.value) {
     const enabling = toggle.value === 'enable';
     commands.push(

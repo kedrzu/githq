@@ -7,7 +7,7 @@ import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
-import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
+import type { BoundCommand, Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import type { AnyAppCommand } from './defineAppCommand.js';
 import { commandMenu } from './definitions/index.js';
 import { getRunKeys } from './getRunKeys.js';
@@ -17,7 +17,7 @@ import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
 
 /** What a component registers while it is shown: its actions, and what they act on. */
 export interface CommandSource {
-    readonly commands: readonly Command[];
+    readonly commands: readonly BoundCommand[];
     readonly subject: CommandSubject | null;
 }
 
@@ -64,7 +64,7 @@ export const CommandRegistry = defineService({
 
         return {
             /** Every action registered now; reactive. */
-            get commands(): readonly Command[] {
+            get commands(): readonly BoundCommand[] {
                 return commands.value;
             },
             /** What the actions act on: the selection, else the opened item; reactive. */
@@ -222,7 +222,7 @@ export const CommandRegistry = defineService({
         }
 
         /** The first action, by {@link orderByKeyPrecedence}, that can run and `matches`. */
-        function findCommand(matches: (command: Command) => boolean) {
+        function findCommand(matches: (command: BoundCommand) => boolean) {
             return (
                 byPrecedence.value.find(
                     command =>
@@ -245,12 +245,12 @@ export const CommandRegistry = defineService({
  * `app`) doesn't run while a layer covers the screen (`isScreenCovered`), and its Escape not while a picker, menu or
  * tooltip is open (`isLayerOpen`): that Escape closes it.
  */
-function isFreeTarget(target: EventTarget | null, command: Command, key: string) {
+function isFreeTarget(target: EventTarget | null, command: BoundCommand, key: string) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 
-    const screen = command.place !== undefined && command.place !== 'app';
+    const screen = command.place !== 'app';
     if (screen && (isScreenCovered() || (key === 'Escape' && isLayerOpen()))) {
         return false;
     }

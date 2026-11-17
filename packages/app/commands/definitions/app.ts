@@ -6,6 +6,7 @@ import {
     Clock,
     Command as CommandIcon,
     PanelLeft,
+    Plus,
     ScrollText,
     Search,
     Settings,
@@ -149,6 +150,17 @@ export const newIssueInProject = defineAppCommand({
     title: l.newIssueInProject,
     icon: SquarePen,
     key: 'C',
+    places: ['project'],
+});
+
+/**
+ * Items already on GitHub added to the project on screen from the local copy, several in a row (K8), its binding
+ * naming the project; the empty project opens its submenu too. In menus only.
+ */
+export const addItemsToProject = defineAppCommand({
+    id: 'addItemsToProject',
+    title: l.addItemsToProject,
+    icon: Plus,
     places: ['project'],
 });
 

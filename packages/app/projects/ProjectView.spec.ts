@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { Translator } from '@nzyme/i18n/Translator.js';
 import { assertValue } from '@nzyme/utils/assert.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
@@ -7,6 +8,8 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import { goToView } from '@/commands/definitions/index.js';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -51,15 +54,21 @@ test('the saved views are tabs: the one shown is current, one changed here is ma
 
 test('a saved view runs on its key while the view is shown, and its tab, still a link to its address, says the key', async () => {
     const opened: string[] = [];
-    const viewCommands = SAMPLE_PROJECT.views.map((saved, index): SavedViewCommand => ({
-        viewId: saved.id,
-        command: {
-            id: `project.goToView.${index + 1}`,
+    const container = createContainer();
+    container.set(LanguageContext, () => APP_LANGUAGE);
+    const t = container.resolve(Translator);
+    const commands = bindCommand(
+        goToView,
+        SAMPLE_PROJECT.views.map(saved => ({
             title: saved.name,
             section: 'view',
-            key: String(index + 1),
             run: () => void opened.push(saved.name),
-        },
+        })),
+        t,
+    );
+    const viewCommands = commands.map((command, index): SavedViewCommand => ({
+        viewId: SAMPLE_PROJECT.views[index]!.id,
+        command,
     }));
     mount(SAMPLE_VIEW_SPRINT, { viewCommands });
     const tabs = page.getByRole('navigation', { name: 'Saved views' });

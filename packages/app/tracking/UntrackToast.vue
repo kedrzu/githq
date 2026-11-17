@@ -5,7 +5,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { EyeOff } from 'lucide-vue-next';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
@@ -20,7 +20,7 @@ import { getTrackedKey } from './utils/getTrackedKey.js';
 const pending = useService(PendingUntracks);
 const t = useTranslate();
 
-function getCommands(entry: PendingUntrack): Command[] {
+function getCommands(entry: PendingUntrack): BoundCommand[] {
   return [
     bindCommand(
       undo,

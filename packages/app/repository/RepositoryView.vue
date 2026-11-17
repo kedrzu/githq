@@ -22,7 +22,7 @@ import {
 import { computed, ref } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command, CommandMarks, CommandParts } from '@/commands/CommandTypes.js';
+import type { BoundCommand, CommandMarks, CommandParts } from '@/commands/CommandTypes.js';
 import {
   filterByState,
   findRef,
@@ -376,7 +376,7 @@ function getReadPosition({ rowsShown }: ListEndProps) {
 }
 
 /** Going to each section shown, on its number (`goToSection`), with the marks it has where it is listed. */
-function bindSections(getMarks: (candidate: RepositorySection) => CommandMarks): Command[] {
+function bindSections(getMarks: (candidate: RepositorySection) => CommandMarks): BoundCommand[] {
   return bindCommand(
     goToSection,
     REPOSITORY_SECTIONS.map(candidate =>

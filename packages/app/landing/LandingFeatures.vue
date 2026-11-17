@@ -1,6 +1,7 @@
 <!-- The landing page's features after the opening three (githq.pen "Landing — githq.dev", Feature 04–07): Code review, Instant — with the toast of an edit saved to GitHub —, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides, first on the left. As a feature first scrolls into view, Instant's toast slides up after its screenshot, and Keyboard presses ⌘K — the command menu opens — then S. The footer's "Keyboard" lands here. -->
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
+import type { Translation } from '@nzyme/i18n-core/Translation.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowLeftRight,
@@ -15,22 +16,43 @@ import {
   Zap,
 } from 'lucide-vue-next';
 
+import { assignees, commandMenu, labels, openOnGitHub, review, status } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
+
 import * as l from './LandingFeatures.loc.js';
 import LandingFeature from './LandingFeature.vue';
 import { LandingSectionId } from './landingLinks.js';
 
+/** A key of "Keyboard" and what it does. */
+interface LandingKey {
+  readonly key: string;
+  /** ⌘ before the key. */
+  readonly command: boolean;
+  readonly action: Translation;
+  readonly pressAt?: number;
+}
+
 const t = useTranslate();
 
-// "Keyboard"'s keys, two to a row; `command` puts ⌘ before the key. `pressAt`: when the key is pressed after the
+// "Keyboard"'s keys, two to a row, read from the commands they run. `pressAt`: when the key is pressed after the
 // feature starts to reveal, in ms — ⌘K as the command menu opens, then S.
-const keys = [
-  { key: 'K', command: true, action: l.keyCommandMenu, pressAt: 480 },
-  { key: 'D', command: false, action: l.keyReviewFiles },
-  { key: 'S', command: false, action: l.keySetStatus, pressAt: 1100 },
-  { key: 'A', command: false, action: l.keyAssignee },
-  { key: 'L', command: false, action: l.keyLabels },
-  { key: 'O', command: false, action: l.keyOpenOnGitHub },
+const keys: readonly LandingKey[] = [
+  { ...toKeycap(keyOf(commandMenu)), action: l.keyCommandMenu, pressAt: 480 },
+  { ...toKeycap(keyOf(review)), action: l.keyReviewFiles },
+  { ...toKeycap(keyOf(status)), action: l.keySetStatus, pressAt: 1100 },
+  { ...toKeycap(keyOf(assignees)), action: l.keyAssignee },
+  { ...toKeycap(keyOf(labels)), action: l.keyLabels },
+  { ...toKeycap(keyOf(openOnGitHub)), action: l.keyOpenOnGitHub },
 ];
+
+/**
+ * A key as its keycap draws it: the key, with ⌘ before it (`command`) for `Mod`. The landing is the same on every
+ * platform, so `Mod` is always the Mac's ⌘; none of its keys has another modifier.
+ */
+function toKeycap(key: string) {
+  const parts = key.split('+');
+  return { key: parts.at(-1) ?? key, command: parts.includes('Mod') };
+}
 </script>
 
 <template>

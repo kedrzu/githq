@@ -6,7 +6,7 @@ import { CircleArrowDown, RotateCcw, TriangleAlert } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { loadNewVersion } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -24,7 +24,7 @@ const current = computed(() => update.state?.version ?? '');
 
 // Only the key: the command menu has "Restart to update" and "Try again to install the update" of its own
 // (`AppCommands.vue`).
-const commands = computed((): Command[] => [
+const commands = computed((): BoundCommand[] => [
   bindCommand(
     loadNewVersion,
     {

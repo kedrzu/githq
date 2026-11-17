@@ -8,7 +8,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { backToMerge as backToMergeCommand, mergedBranch } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
@@ -45,13 +45,13 @@ const refusals = computed(() =>
   }),
 );
 
-function getRefusalCommands(failure: EditFailure, itemId: string): Command[] {
+function getRefusalCommands(failure: EditFailure, itemId: string): BoundCommand[] {
   return canGoBack(itemId)
     ? [bindCommand(backToMergeCommand, { section: 'app', menu: false, run: () => backToMerge(failure, itemId) }, t)]
     : [];
 }
 
-function getConfirmationCommands(confirmation: MergeConfirmation): Command[] {
+function getConfirmationCommands(confirmation: MergeConfirmation): BoundCommand[] {
   return getBranchCommand(confirmation)
     ? [bindCommand(mergedBranch, { section: 'app', menu: false, run: () => runBranch(confirmation) }, t)]
     : [];

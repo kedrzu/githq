@@ -1,12 +1,12 @@
 import type { Translator } from '@nzyme/i18n/Translator.js';
 import { assert } from '@nzyme/utils/assert.js';
 
-import type { Command } from './CommandTypes.js';
+import type { BoundCommand, Command } from './CommandTypes.js';
 import type { AppCommand, AppCommandFamily, CommandPlaces } from './defineAppCommand.js';
 import { keyOf } from './keyOf.js';
 
 /** The fields of a {@link Command} that come from its definition, never from a place (commands D1). */
-type DefinedField = 'id' | 'title' | 'key' | 'otherKeys' | 'keywords' | 'priority' | 'place' | 'definition';
+type DefinedField = 'id' | 'title' | 'key' | 'otherKeys' | 'keywords' | 'priority';
 
 /** Which of its places a binding offers a definition in: named when the definition has several. */
 export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends readonly [infer TPlace]
@@ -48,10 +48,10 @@ export function bindCommand<const TPlaces extends CommandPlaces>(
     definition: AppCommandFamily<TPlaces>,
     bindings: readonly (CommandBinding<TPlaces> | null)[],
     t: Translator,
-): Command[];
+): BoundCommand[];
 /**
- * The registry's command for a definition offered with this binding — a plain {@link Command}, so a context menu can
- * show it too. Its id is `<place>.<id>`, so one definition offered in two places at once (a list and the item beside
+ * The registry's command for a definition offered with this binding — a plain value, so a context menu can show it
+ * too. Its id is `<place>.<id>`, so one definition offered in two places at once (a list and the item beside
  * it) gives two commands.
  *
  * @__NO_SIDE_EFFECTS__
@@ -60,13 +60,13 @@ export function bindCommand<const TPlaces extends CommandPlaces>(
     definition: AppCommand<TPlaces>,
     binding: CommandBinding<TPlaces>,
     t: Translator,
-): Command;
+): BoundCommand;
 /** @__NO_SIDE_EFFECTS__ */
 export function bindCommand<const TPlaces extends CommandPlaces>(
     definition: AppCommand<TPlaces> | AppCommandFamily<TPlaces>,
     binding: CommandBinding<TPlaces> | readonly (CommandBinding<TPlaces> | null)[],
     t: Translator,
-): Command | Command[] {
+): BoundCommand | BoundCommand[] {
     if (definition.kind === 'command') {
         assert(!isBindingList(binding), 'A command is bound by an object, a family by an array.');
         return toCommand(definition, binding, t, { id: definition.id, key: keyOf(definition) });
@@ -98,7 +98,7 @@ function toCommand<TPlaces extends CommandPlaces>(
     binding: CommandBinding<TPlaces>,
     t: Translator,
     bound: BoundKey,
-): Command {
+): BoundCommand {
     const { keyed, keywords, otherKeys, ...rest } = binding;
     const place = rest.place ?? definition.places[0];
     const ownKeywords = definition.keywords?.map(keyword => t(keyword)) ?? [];

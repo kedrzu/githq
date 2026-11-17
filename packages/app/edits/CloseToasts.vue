@@ -5,7 +5,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleCheckBig } from 'lucide-vue-next';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { undo } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
@@ -21,7 +21,7 @@ const editor = useService(ItemEditor);
 const navigation = useService(ItemNavigation);
 const t = useTranslate();
 
-function getCommands(close: UndoableClose): Command[] {
+function getCommands(close: UndoableClose): BoundCommand[] {
   return [
     bindCommand(
       undo,

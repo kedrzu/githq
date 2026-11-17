@@ -7,7 +7,7 @@ import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
-import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import HeaderTabs from '@/components/HeaderTabs.vue';
@@ -367,8 +367,8 @@ useCommands(() =>
 );
 
 /** The filters' and the list's own menu options that name a command: a submenu of their choices. */
-function getOptionCommands(): Command[] {
-  return [...props.filters, ...props.extraOptions].flatMap((option): Command[] => {
+function getOptionCommands(): BoundCommand[] {
+  return [...props.filters, ...props.extraOptions].flatMap((option): BoundCommand[] => {
     if (option.kind !== 'menu' || !option.command) {
       return [];
     }

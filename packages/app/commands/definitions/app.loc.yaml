@@ -4,6 +4,8 @@ createKeyword:
   en: create
 newIssueInProject:
   en: New issue in project
+addItemsToProject:
+  en: Add existing issues to project…
 backToMerge:
   en: Back to the refused merge
 mergedBranch:

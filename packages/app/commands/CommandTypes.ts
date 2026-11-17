@@ -22,7 +22,8 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * projects, the draft reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a
  * project as their menus offer them (their screens too: a new issue in a project, the tabs of both), Settings (its
  * sections, a repository's or project's page in it, the rows its level in the command menu holds) and the sign-in
- * screens (the desktop app's device code, the first sign-in's offer of saved settings). Places tell which
+ * screens (the desktop app's device code, the first sign-in's offer of saved settings), and the merge panel (its methods'
+ * numbers: the panel is a dialog, so its own listener runs them, commands D11). Places tell which
  * keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer
  * over the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
@@ -46,7 +47,8 @@ export type CommandPlace =
     | 'repository'
     | 'project'
     | 'settings'
-    | 'signIn';
+    | 'signIn'
+    | 'mergePanel';
 
 /**
  * The places that can be on screen together, each pair's first keeping the keyboard: a list (or board) with an item
@@ -139,16 +141,6 @@ export interface Command extends CommandMarks {
     readonly title: string;
     readonly section: CommandSection;
     /**
-     * Where it is offered, set on a command bound from a definition (`bindCommand`): of two on one key, the one whose
-     * place keeps the keyboard runs (`orderByKeyPrecedence`). Without it the section alone decides.
-     */
-    readonly place?: CommandPlace;
-    /**
-     * The definition it was bound from (`bindCommand`): what a button that runs it finds it by
-     * (`CommandRegistry.findByDefinition`), never by its id (commands D2).
-     */
-    readonly definition?: AnyAppCommand;
-    /**
      * How much it matters (commands D14): higher first in its group of the command menu, a tie-break while typing.
      * Default `0`.
      */
@@ -162,8 +154,8 @@ export interface Command extends CommandMarks {
      */
     readonly key?: string;
     /**
-     * Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. The registry runs a
-     * command by them only when it has a `place` (bound from a definition); others' are their component's own (`⌘F`).
+     * Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet; the registry runs the
+     * command by them too.
      */
     readonly otherKeys?: readonly string[];
     /** Dim text after the title: the current value ("In progress · Platform Q4"), "2 of 3 editable". */
@@ -238,6 +230,24 @@ export interface Command extends CommandMarks {
      * menu's step while it is open — a field taken away and given back, or the form left and opened again, keeps it.
      */
     readonly form?: (values: CommandFormValues) => CommandForm;
+}
+
+/**
+ * A {@link Command} bound from a definition (`bindCommand`): the only kind the registry takes (commands D2), so nothing
+ * runs by a key, or shows in the menu's top level and the help sheet, without a definition. The rows of a submenu
+ * (`children`, a place's {@link CommandParts}) stay plain commands: they have no keys and are never registered.
+ */
+export interface BoundCommand extends Command {
+    /**
+     * Where it is offered: of two on one key, the one whose place keeps the keyboard runs (`orderByKeyPrecedence`); a
+     * screen's key yields to a layer over the screen (`CommandRegistry`).
+     */
+    readonly place: CommandPlace;
+    /**
+     * The definition it was bound from: what a button that runs it finds it by (`CommandRegistry.findByDefinition`),
+     * never by its id (commands D2).
+     */
+    readonly definition: AnyAppCommand;
 }
 
 /** A value of a {@link CommandFormField}: `null` is a number field left empty. */

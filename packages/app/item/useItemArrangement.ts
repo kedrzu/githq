@@ -10,7 +10,7 @@ import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { Command } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -66,13 +66,13 @@ export interface OtherArrangement {
 
 /** The commands of an opened item's moves, for the view to list among its own in its order. */
 export interface ItemKeyCommands {
-    readonly next: Command;
-    readonly previous: Command;
-    readonly close: Command;
+    readonly next: BoundCommand;
+    readonly previous: BoundCommand;
+    readonly close: BoundCommand;
     /** Escape back to the panel, offered in place of {@link close} where the item {@link UseItemKeysOptions.closesToPanel}. */
-    readonly closeFullScreen: Command;
+    readonly closeFullScreen: BoundCommand;
     /** `null` off the panel. */
-    readonly openFullScreen: Command | null;
+    readonly openFullScreen: BoundCommand | null;
 }
 
 /** What {@link useItemKeys} gives the view. */
