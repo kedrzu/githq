@@ -45,7 +45,6 @@ import {
   GitBranch,
   Hash,
   Link,
-  MessageSquare,
   SquareKanban,
   RotateCcw,
 } from 'lucide-vue-next';
@@ -55,9 +54,9 @@ import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { comment, openOnGitHub } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
@@ -365,7 +364,7 @@ const viewer = computed(() =>
 );
 /** Who opened the item and who commented on it, in the thread's order: whom `@` suggests first. */
 const threadPeople = computed(() =>
-  filterNotNull([props.item.author, ...(props.detail?.comments.nodes ?? []).map(comment => comment.author)]),
+  filterNotNull([props.item.author, ...(props.detail?.comments.nodes ?? []).map(node => node.author)]),
 );
 const reviewerOptions = computed(() =>
   permissions.value?.reviewers && props.editing?.metadata
@@ -415,7 +414,7 @@ const opened = computed(() => {
   return { author, text: t(l.openedBy, { author: author?.login ?? t(l.deletedUser), ago }) };
 });
 
-/** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
+/** The keys of the item's own actions not on definitions yet. */
 const ITEM_KEYS = {
   openFiles: 'Shift+O',
   review: 'D',
@@ -551,6 +550,7 @@ function getEditCommands(): Command[] {
   }
 
   return editCommands({
+    place: 'item',
     section: 'item',
     items: [item],
     metadata: editing.metadata ? [editing.metadata] : [],
@@ -632,15 +632,11 @@ function quoteReply(body: string) {
 function getItemCommands(): Command[] {
   const { item, editing } = props;
   const commands: Command[] = [
-    {
-      id: 'item.comment',
-      title: t(l.comment),
-      section: 'item',
-      key: EDIT_KEYS.comment,
-      icon: MessageSquare,
-      when: () => canComment.value,
-      run: () => void focusComposer(),
-    },
+    bindCommand(
+      comment,
+      { place: 'item', section: 'item', when: () => canComment.value, run: () => void focusComposer() },
+      t,
+    ),
   ];
   if (permissions.value?.addToProject) {
     commands.push({

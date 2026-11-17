@@ -6,7 +6,8 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { Hourglass, UserPlus, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { reviewers } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import Picker from '@/components/Picker.vue';
@@ -135,8 +136,8 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
             tone="accent"
             size="sm"
             :icon="UserPlus"
-            :kbd="EDIT_KEYS.reviewers"
-            :keyshortcuts="EDIT_KEYS.reviewers"
+            :kbd="keyOf(reviewers)"
+            :keyshortcuts="keyOf(reviewers)"
           >
             {{ t(l.request) }}
           </Button>

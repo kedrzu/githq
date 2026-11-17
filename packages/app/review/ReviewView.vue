@@ -975,6 +975,7 @@ const actingPullRequest = computed(() =>
 );
 const pullRequestCommands = useItemCommands({
   ids: () => (actingPullRequest.value ? [actingPullRequest.value.id] : []),
+  place: 'review',
   section: () => 'item',
   open: () => {},
   // The merge panel opens over the review, which stays where it is once the merge is sent.
@@ -1073,6 +1074,8 @@ useCommands(() => [
     id: 'review.reply',
     title: t(l.replyInThread),
     section: 'view',
+    // The review's: an item opened over it keeps the keyboard, its `R` the comment box's (commands D13).
+    place: 'review',
     key: REVIEW_KEYS.reply,
     icon: Reply,
     when: () => findFocusedThread()?.placement.thread.viewerCanReply === true,

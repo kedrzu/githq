@@ -1,7 +1,5 @@
 countArriving:
   en: …
-merge:
-  en: Merge…
 mergeStack:
   en: Merge all {count}
 mergeStackPart:

@@ -6,9 +6,8 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { branch, merge, openOnGitHub, updateBranch } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
@@ -235,8 +234,8 @@ function refusedAside(reason: EditFailureReason) {
         variant="secondary"
         size="sm"
         :icon="GitBranch"
-        :kbd="EDIT_KEYS.branch"
-        :keyshortcuts="EDIT_KEYS.branch"
+        :kbd="keyOf(branch)"
+        :keyshortcuts="keyOf(branch)"
         @click="emit('command', branchCommand)"
       >
         {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
@@ -246,8 +245,8 @@ function refusedAside(reason: EditFailureReason) {
         variant="secondary"
         size="sm"
         :icon="GitPullRequestArrow"
-        :kbd="EDIT_KEYS.updateBranch"
-        :keyshortcuts="EDIT_KEYS.updateBranch"
+        :kbd="keyOf(updateBranch)"
+        :keyshortcuts="keyOf(updateBranch)"
         @click="emit('command', updateCommand)"
       >
         {{ t(l.updateBranch) }}
@@ -268,8 +267,8 @@ function refusedAside(reason: EditFailureReason) {
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"
-        :kbd="EDIT_KEYS.merge"
-        :keyshortcuts="EDIT_KEYS.merge"
+        :kbd="keyOf(merge)"
+        :keyshortcuts="keyOf(merge)"
         @click="emit('merge')"
       >
         {{ mergeLabel }}

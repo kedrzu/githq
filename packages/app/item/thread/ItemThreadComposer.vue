@@ -13,7 +13,8 @@ import {
 import { computed, useTemplateRef } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { state } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import MarkdownEditor from '@/components/MarkdownEditor.vue';
@@ -146,8 +147,8 @@ function close(reason: CloseReason) {
           v-if="stateAction === 'close' && item.kind === 'issue'"
           :class="css.itemThreadComposer_completed"
           :icon="CircleCheck"
-          :kbd="EDIT_KEYS.state"
-          :keyshortcuts="EDIT_KEYS.state"
+          :kbd="keyOf(state)"
+          :keyshortcuts="keyOf(state)"
           :menu-label="t(l.moreWaysToClose)"
           :menu-title="typed ? t(l.closeWithComment) : t(l.closeIssue)"
           :menu-context="`${item.repository.nameWithOwner}#${item.number}`"
@@ -175,8 +176,8 @@ function close(reason: CloseReason) {
           :class="css.itemThreadComposer_closed"
           size="compact"
           :icon="GitPullRequestClosed"
-          :kbd="EDIT_KEYS.state"
-          :keyshortcuts="EDIT_KEYS.state"
+          :kbd="keyOf(state)"
+          :keyshortcuts="keyOf(state)"
           @click="close('COMPLETED')"
         >
           {{ typed ? t(l.closeWithComment) : t(l.closePullRequest) }}
@@ -186,8 +187,8 @@ function close(reason: CloseReason) {
           :class="css.itemThreadComposer_open"
           size="compact"
           :icon="item.kind === 'issue' ? CircleDot : GitPullRequest"
-          :kbd="EDIT_KEYS.state"
-          :keyshortcuts="EDIT_KEYS.state"
+          :kbd="keyOf(state)"
+          :keyshortcuts="keyOf(state)"
           @click="emit('edit', { kind: 'reopen' })"
         >
           {{ item.kind === 'issue' ? t(l.reopenIssue) : t(l.reopenPullRequest) }}

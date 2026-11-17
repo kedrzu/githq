@@ -4,7 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
-import { ChevronDown, ChevronRight, GitMerge } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
@@ -12,8 +12,7 @@ import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
-import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
+import { usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -60,7 +59,16 @@ import { useRowSwipe } from './useRowSwipe.js';
 const OWN_KEYS: ReadonlySet<string> = new Set([keyOf(definitions.open), keyOf(definitions.openOnGitHub)]);
 
 /** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
-const ORDINARY_KEYS: ReadonlySet<string> = new Set(Object.values(PULL_REQUEST_COMMAND_KEYS));
+const ORDINARY_KEYS: ReadonlySet<string> = new Set(
+  [
+    definitions.updateBranch,
+    definitions.updateBranchByRebase,
+    definitions.rerunChecks,
+    definitions.branch,
+    definitions.revert,
+    definitions.dequeue,
+  ].map(definition => keyOf(definition)),
+);
 
 const props = withDefaults(
   defineProps<{
@@ -404,6 +412,7 @@ const cursorRow = computed(() => {
 const rowActions = slots.contextMenu
   ? useItemCommands({
       ids: () => cursorRow.value?.ids ?? [],
+      place: 'item',
       section: () => (cursorRow.value?.stack ? 'selection' : 'item'),
       open: () => {
         const id = currentOpenId();
@@ -632,21 +641,23 @@ function getMergeCommands(): Command[] {
   const selection = checkedIds.value.length > 0;
   const target = getMergeTarget();
   return [
-    {
-      id: selection ? 'selection.merge' : 'list.merge',
-      title: target ? getMergeTitle(target) : t(l.merge),
-      section: selection ? 'selection' : (rowSubject.value?.kind ?? 'view'),
-      key: EDIT_KEYS.merge,
-      icon: GitMerge,
-      actsOnRow: true,
-      when: () => getMergeTarget() !== null,
-      run: () => {
-        const current = getMergeTarget();
-        if (current) {
-          mergeFromList(current);
-        }
+    bindCommand(
+      definitions.merge,
+      {
+        place: 'list',
+        title: target ? getMergeTitle(target) : undefined,
+        section: selection ? 'selection' : (rowSubject.value?.kind ?? 'view'),
+        actsOnRow: true,
+        when: () => getMergeTarget() !== null,
+        run: () => {
+          const current = getMergeTarget();
+          if (current) {
+            mergeFromList(current);
+          }
+        },
       },
-    },
+      t,
+    ),
   ];
 }
 
@@ -671,8 +682,8 @@ function getRowCommands(): Command[] {
 function getStackDequeue(): Command[] {
   const queued = rowActions?.selected.value.find(item => item.kind === 'pullRequest' && item.mergeQueueEntry);
   return merging && queued?.kind === 'pullRequest'
-    ? pullRequestCommands({ section: 'selection', pr: queued, source: merging }).filter(
-        command => command.key === EDIT_KEYS.dequeue,
+    ? pullRequestCommands({ place: 'item', section: 'selection', pr: queued, source: merging }).filter(
+        command => command.key === keyOf(definitions.dequeue),
       )
     : [];
 }
@@ -695,7 +706,12 @@ function getMergeTarget(): MergeTarget | null {
     return props.openedId != null && current.walked.includes(props.openedId) ? null : getStackTarget(current);
   }
 
-  const [id] = current?.ids.length === 1 ? current.ids : [];
+  return current ? getRowTarget(current) : null;
+}
+
+/** The entry's one pull request, when the panel opens for it. */
+function getRowTarget(entry: Placed): MergeTarget | null {
+  const [id] = entry.ids.length === 1 ? entry.ids : [];
   return id !== undefined && merging?.canOpen(id) ? { id, entry: null } : null;
 }
 
@@ -724,7 +740,7 @@ function getMergeTitle(target: MergeTarget): string {
 
   const pr = items?.get(target.id);
   if (pr?.kind !== 'pullRequest') {
-    return t(l.merge);
+    return t(definitions.merge.title);
   }
 
   const autoMergeAllowed = isAutoMergeAllowed(repositories?.get(pr.repository.nameWithOwner) ?? null, null);
@@ -734,7 +750,7 @@ function getMergeTitle(target: MergeTarget): string {
 function getStackMergeTitle(description: StackDescription): string {
   switch (description.state.kind) {
     case 'merging':
-      return t(l.merge);
+      return t(definitions.merge.title);
     case 'queued':
       return t(l.inQueue);
     default:
@@ -750,7 +766,7 @@ function getStackMergeTitle(description: StackDescription): string {
       }
 
       if (going.length <= 1) {
-        return t(l.merge);
+        return t(definitions.merge.title);
       }
 
       return going.length === open.length
@@ -759,10 +775,10 @@ function getStackMergeTitle(description: StackDescription): string {
     case 'needsRebase':
       return t(l.rebaseOnGitHub);
     case 'held':
-      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(l.merge);
+      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(definitions.merge.title);
     case 'incomplete':
     case 'closed':
-      return t(l.merge);
+      return t(definitions.merge.title);
     default:
       return assertNever(block);
   }
@@ -1473,21 +1489,21 @@ function prepareContextMenu(event: MouseEvent) {
   go(key);
 }
 
-/** "Merge all 3" on a stack's entry: its whole stack, as `⇧M` on it (D11). */
+/**
+ * The context menu's merge, the list's as `⇧M` is (merging D9): of the entry's one pull request, or "Merge all 3" on a
+ * stack's entry, its whole stack (D11).
+ */
 function getMenuMerge(current: Placed): Command | null {
-  const target = current.stack && merging ? getStackTarget(current) : null;
+  const target = current.stack ? getStackTarget(current) : getRowTarget(current);
   if (!target) {
     return null;
   }
 
-  return {
-    id: 'menu.merge',
-    title: getMergeTitle(target),
-    section: 'selection',
-    key: EDIT_KEYS.merge,
-    icon: GitMerge,
-    run: () => mergeFromList(target),
-  };
+  return bindCommand(
+    definitions.merge,
+    { place: 'list', title: getMergeTitle(target), section: 'selection', run: () => mergeFromList(target) },
+    t,
+  );
 }
 
 function openFromMenu() {

@@ -4,7 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Lock, Milestone } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
@@ -143,7 +144,7 @@ function open(issue: LinkedIssue) {
   >
     <PropertyRow
       :label="t(l.assignees)"
-      :kbd="permissions?.assignees ? EDIT_KEYS.assignees : undefined"
+      :kbd="permissions?.assignees ? keyOf(definitions.assignees) : undefined"
     >
       <Picker
         v-if="permissions?.assignees"
@@ -166,7 +167,7 @@ function open(issue: LinkedIssue) {
                 value: item.assignees.map(user => user.login).join(', ') || t(l.noOne),
               })
             "
-            :keyshortcuts="EDIT_KEYS.assignees"
+            :keyshortcuts="keyOf(definitions.assignees)"
           >
             <template v-if="item.assignees.length > 0">
               <span
@@ -214,7 +215,7 @@ function open(issue: LinkedIssue) {
     </PropertyRow>
     <PropertyRow
       :label="t(l.labels)"
-      :kbd="permissions?.labels ? EDIT_KEYS.labels : undefined"
+      :kbd="permissions?.labels ? keyOf(definitions.labels) : undefined"
     >
       <Picker
         v-if="permissions?.labels"
@@ -237,7 +238,7 @@ function open(issue: LinkedIssue) {
                 value: item.labels.map(label => label.name).join(', ') || t(l.none),
               })
             "
-            :keyshortcuts="EDIT_KEYS.labels"
+            :keyshortcuts="keyOf(definitions.labels)"
           >
             <template v-if="item.labels.length > 0">
               <LabelPill
@@ -271,7 +272,7 @@ function open(issue: LinkedIssue) {
     </PropertyRow>
     <PropertyRow
       :label="t(l.milestone)"
-      :kbd="permissions?.milestone ? EDIT_KEYS.milestone : undefined"
+      :kbd="permissions?.milestone ? keyOf(definitions.milestone) : undefined"
     >
       <Picker
         v-if="permissions?.milestone"
@@ -289,7 +290,7 @@ function open(issue: LinkedIssue) {
         <template #trigger>
           <PropertyValueButton
             :label="t(l.valueLabel, { property: t(l.milestone), value: item.milestone?.title ?? t(l.none) })"
-            :keyshortcuts="EDIT_KEYS.milestone"
+            :keyshortcuts="keyOf(definitions.milestone)"
           >
             <span
               v-if="item.milestone"

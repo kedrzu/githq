@@ -206,6 +206,7 @@ const Harness = defineComponent({
             useCommands(
                 () =>
                     editCommands({
+                        place: 'list',
                         section: 'selection',
                         items: SELECTED,
                         metadata: [SAMPLE_PORTAL_METADATA, MOBILE_METADATA],

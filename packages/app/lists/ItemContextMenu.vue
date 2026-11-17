@@ -2,7 +2,6 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Info } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
@@ -12,7 +11,6 @@ import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { getItemMenuSections } from '@/item/getItemMenuSections.js';
-import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 
@@ -23,7 +21,10 @@ const props = withDefaults(
   defineProps<{
     /** The items it acts on: the one right-clicked, or those selected together. */
     ids: readonly string[];
-    /** On a stack's entry, the list's merge of its whole stack (stacked PRs D11): offered after going to them. */
+    /**
+     * The list's merge (merging D9): of the one pull request, among its ordinary commands; of a stack's entry, its whole
+     * stack (stacked PRs D11), offered after going to them.
+     */
     merge?: Command | null;
   }>(),
   { merge: null },
@@ -37,13 +38,11 @@ const emit = defineEmits<{
 const t = useTranslate();
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
-/** The list's: once the merge is sent, it moves on to the next row (PM32a). */
-const merging = injectContext(MergeContext, { optional: true });
 const { selected, one, repositoryNames, getOwnCommands, getEditCommands } = useItemCommands({
   ids: () => props.ids,
+  place: 'item',
   section: () => 'selection',
   open: () => emit('open'),
-  merge: merging ? pr => merging.open(pr.id) : undefined,
 });
 
 const heading = computed(() => {
@@ -61,11 +60,14 @@ const heading = computed(() => {
 });
 
 const sections = computed(() => {
-  const [opening = [], ...rest] = getItemMenuSections(
-    [...getOwnCommands(), ...getEditCommands()],
-    one.value?.kind ?? 'issue',
-  );
-  return props.merge ? [opening, [props.merge], ...rest] : [opening, ...rest];
+  const commands = [...getOwnCommands(), ...getEditCommands()];
+  const { merge } = props;
+  if (merge && one.value?.kind === 'pullRequest') {
+    return getItemMenuSections([...commands, merge], 'pullRequest');
+  }
+
+  const [opening = [], ...rest] = getItemMenuSections(commands, one.value?.kind ?? 'issue');
+  return merge ? [opening, [merge], ...rest] : [opening, ...rest];
 });
 
 /** What the user may not do here, said once: the one item's repository gives them too low a role. */

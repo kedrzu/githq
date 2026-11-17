@@ -34,6 +34,7 @@ const t = useTranslate();
 const editor = useService(ItemEditor);
 const { one, getEditCommands } = useItemCommands({
   ids: () => props.ids,
+  place: 'item',
   section: () => 'item',
   // None of the three opens the item.
   open: () => undefined,

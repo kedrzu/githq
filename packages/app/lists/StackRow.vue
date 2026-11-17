@@ -6,7 +6,8 @@ import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Check, GitBranch, GitMerge, Layers, ListPlus, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { merge } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
@@ -283,8 +284,8 @@ const phoneRepository = computed(() =>
           variant="link"
           size="sm"
           :icon="mergeIcon"
-          :kbd="EDIT_KEYS.merge"
-          :keyshortcuts="EDIT_KEYS.merge"
+          :kbd="keyOf(merge)"
+          :keyshortcuts="keyOf(merge)"
           @click.stop="merging?.open(mergeId, { wholeStack: true })"
         >
           {{ mergeLabel }}

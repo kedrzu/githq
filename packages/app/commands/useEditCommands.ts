@@ -1,20 +1,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import {
-    CalendarRange,
-    CircleCheckBig,
-    CircleDashed,
-    GitMerge,
-    GitPullRequest,
-    GitPullRequestDraft,
-    Milestone,
-    Shapes,
-    SignalHigh,
-    Tag,
-    UserCheck,
-    UserPlus,
-} from 'lucide-vue-next';
+import { GitPullRequest, GitPullRequestDraft } from 'lucide-vue-next';
 
 import type { PickerOption } from '@/components/Picker.vue';
 import type { EditRequest, ProjectFieldInput } from '@/edits/EditTypes.js';
@@ -30,31 +17,24 @@ import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
+import { bindCommand } from './bindCommand.js';
 import type { Command, CommandOption } from './CommandTypes.js';
+import type { AppCommand } from './defineAppCommand.js';
+import * as definitions from './definitions/index.js';
 import * as l from './useEditCommands.loc.js';
 import { useProjectFieldOptions } from './useProjectFieldOptions.js';
-import type { PullRequestCommandSource } from './usePullRequestCommands.js';
-import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from './usePullRequestCommands.js';
+import type { PullRequestCommandPlace, PullRequestCommandSource } from './usePullRequestCommands.js';
+import { usePullRequestCommands } from './usePullRequestCommands.js';
 
-/**
- * The keys of the edits of an opened item and of the selection (M3, E1, E4) — the only place they are written, but for
- * a pull request's ordinary commands, which come with their actions: the actions run by them, and the item view, the
- * selection's toolbar and the item menus draw them from here.
- */
-export const EDIT_KEYS = {
-    assignees: 'A',
-    labels: 'L',
-    milestone: 'M',
-    issueType: 'T',
-    status: 'S',
-    priority: 'P',
-    iteration: 'I',
-    state: 'Shift+X',
-    reviewers: 'Shift+R',
-    comment: 'R',
-    merge: 'Shift+M',
-    ...PULL_REQUEST_COMMAND_KEYS,
-} as const;
+/** The definitions of a project's fields' edits, by the field's role: their keys are the item view's hints too. */
+export const PROJECT_FIELD_COMMANDS: Readonly<Record<ProjectFieldRole, AppCommand<EditPlaces, string>>> = {
+    status: definitions.status,
+    priority: definitions.priority,
+    iteration: definitions.iteration,
+};
+
+/** The places an edit is offered in (`definitions/edit.ts`). */
+type EditPlaces = typeof definitions.merge.places;
 
 /** An edit with an action of its own here. */
 export type EditCommandKind =
@@ -76,6 +56,8 @@ export interface StateOption {
 
 /** What {@link useEditCommands} builds the actions from; read every time they are. */
 export interface EditCommandsParams {
+    /** `list` for the items checked, `item` for the opened one or a list's row (`useItemCommands`), or a review. */
+    readonly place: PullRequestCommandPlace;
     readonly section: 'item' | 'selection';
     /** The items edited: the opened one, or the selection. */
     readonly items: readonly Item[];
@@ -152,24 +134,20 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             mergeCommand(params),
             ...ordinaryCommands(params),
             toggleCommand(params, 'assignees', {
-                title: t(l.assign),
-                icon: UserPlus,
-                keywords: [t(l.assignees)],
+                definition: definitions.assignees,
                 options: () => pickerOptions.assignees(params.metadata, params.viewerLogin),
                 current: item => item.assignees.map(user => user.login),
             }),
             toggleCommand(params, 'labels', {
-                title: t(l.labels),
-                icon: Tag,
-                keywords: [t(l.label)],
+                definition: definitions.labels,
                 options: () => pickerOptions.labels(params.metadata),
                 current: item => item.labels.map(label => label.name),
             }),
             milestoneCommand(params),
             issueTypeCommand(params),
-            fieldCommand(params, 'status', t(l.setStatus), CircleDashed),
-            fieldCommand(params, 'priority', t(l.setPriority), SignalHigh),
-            fieldCommand(params, 'iteration', t(l.setIteration), CalendarRange),
+            fieldCommand(params, 'status'),
+            fieldCommand(params, 'priority'),
+            fieldCommand(params, 'iteration'),
             reviewersCommand(params),
             draftCommand(params),
             stateCommand(params),
@@ -184,7 +162,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             }
         }
 
-        const command = base(params, kind, spec.title, spec.icon);
+        const command = base(params, kind, spec.definition);
         return {
             ...command,
             detail:
@@ -195,7 +173,6 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
                         .toSorted((a, b) => a.localeCompare(b))
                         .join(', '),
                 ),
-            keywords: spec.keywords,
             options: () => ({
                 loading: params.loading,
                 note: note(params, kind),
@@ -222,7 +199,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     function milestoneCommand(params: EditCommandsParams): Command {
         const one = params.items.length === 1 ? params.items[0] : undefined;
         const current = one?.milestone?.title ?? null;
-        const command = base(params, 'milestone', t(l.setMilestone), Milestone);
+        const command = base(params, 'milestone', definitions.milestone);
         return {
             ...command,
             detail: current ?? command.detail ?? summarize(params, item => item.milestone?.title ?? ''),
@@ -256,7 +233,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
         const one = issues.length === 1 ? issues[0] : undefined;
         const current = one?.issueType?.name ?? null;
-        const command = base(params, 'issueType', t(l.setIssueType), Shapes);
+        const command = base(params, 'issueType', definitions.issueType);
         return {
             ...command,
             detail: current ?? command.detail,
@@ -280,35 +257,32 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         };
     }
 
-    function fieldCommand(
-        params: EditCommandsParams,
-        role: ProjectFieldRole,
-        title: string,
-        icon: LucideIcon,
-    ): Command | null {
+    function fieldCommand(params: EditCommandsParams, role: ProjectFieldRole): Command | null {
         const places = params.places.filter(place => place.fields.some(field => getProjectFieldRole(field) === role));
         if (places.length === 0) {
             return null;
         }
 
-        return {
-            id: `${params.section}.${role}`,
-            title,
-            section: params.section,
-            key: EDIT_KEYS[role],
-            icon,
-            detail: params.items.length === 1 ? describePlace(places[0], role) : summarizeField(params, places, role),
-            run: () => params.inline?.[role]?.() ?? false,
-            options: () => ({
-                options: fieldOptions({
-                    places,
-                    role,
-                    now: params.now,
-                    showChosen: params.items.length === 1,
-                    pick: (place, field, value) => params.setField(place, field, value),
+        return bindCommand(
+            PROJECT_FIELD_COMMANDS[role],
+            {
+                place: params.place,
+                section: params.section,
+                detail:
+                    params.items.length === 1 ? describePlace(places[0], role) : summarizeField(params, places, role),
+                run: () => params.inline?.[role]?.() ?? false,
+                options: () => ({
+                    options: fieldOptions({
+                        places,
+                        role,
+                        now: params.now,
+                        showChosen: params.items.length === 1,
+                        pick: (place, field, value) => params.setField(place, field, value),
+                    }),
                 }),
-            }),
-        };
+            },
+            t,
+        );
     }
 
     /**
@@ -323,32 +297,32 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
         const allowed = params.getPermissions(pr).reviewers;
         const asked = new Set(pr.reviewRequests.flatMap(request => (request.kind === 'user' ? [request.login] : [])));
-        return {
-            id: `${params.section}.reviewers`,
-            title: t(l.requestReview),
-            section: params.section,
-            key: EDIT_KEYS.reviewers,
-            icon: UserCheck,
-            keywords: [t(l.reviewers)],
-            menu: allowed,
-            run: () => params.inline?.reviewers?.() === true || !allowed,
-            options: () => ({
-                loading: params.loading,
-                options: pickerOptions
-                    .assignees(params.metadata, params.viewerLogin)
-                    .filter(option => option.value !== pr.author?.login)
-                    .map((option): CommandOption => {
-                        const review = pr.latestReviews.find(candidate => candidate.author === option.value);
-                        const waiting = asked.has(option.value);
-                        return {
-                            ...option,
-                            detail: describeReview(waiting, review?.state) ?? option.detail,
-                            chosen: waiting,
-                            pick: () => params.edit({ kind: 'requestReviewers', logins: [option.value] }),
-                        };
-                    }),
-            }),
-        };
+        return bindCommand(
+            definitions.reviewers,
+            {
+                place: params.place,
+                section: params.section,
+                menu: allowed,
+                run: () => params.inline?.reviewers?.() === true || !allowed,
+                options: () => ({
+                    loading: params.loading,
+                    options: pickerOptions
+                        .assignees(params.metadata, params.viewerLogin)
+                        .filter(option => option.value !== pr.author?.login)
+                        .map((option): CommandOption => {
+                            const review = pr.latestReviews.find(candidate => candidate.author === option.value);
+                            const waiting = asked.has(option.value);
+                            return {
+                                ...option,
+                                detail: describeReview(waiting, review?.state) ?? option.detail,
+                                chosen: waiting,
+                                pick: () => params.edit({ kind: 'requestReviewers', logins: [option.value] }),
+                            };
+                        }),
+                }),
+            },
+            t,
+        );
     }
 
     /**
@@ -366,21 +340,25 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
         const settings = params.metadata.find(entry => entry.nameWithOwner === pr.repository.nameWithOwner);
         const autoMergeAllowed = isAutoMergeAllowed(settings, params.viewerCanEnableAutoMerge);
-        return {
-            id: `${params.section}.merge`,
-            title: getVerdict({ pr, checks: params.mergeChecks ?? null, autoMergeAllowed }).forwardTitle,
-            section: params.section,
-            key: EDIT_KEYS.merge,
-            icon: GitMerge,
-            external: params.mergeExternal,
-            run: () => merge(pr),
-        };
+        return bindCommand(
+            definitions.merge,
+            {
+                place: params.place,
+                title: getVerdict({ pr, checks: params.mergeChecks ?? null, autoMergeAllowed }).forwardTitle,
+                section: params.section,
+                external: params.mergeExternal,
+                run: () => merge(pr),
+            },
+            t,
+        );
     }
 
     function ordinaryCommands(params: EditCommandsParams): Command[] {
         const pr = getOnePullRequest(params);
         const source = params.pullRequestCommands;
-        return pr && source ? pullRequestCommands({ section: params.section, pr, source, checks: params.checks }) : [];
+        return pr && source
+            ? pullRequestCommands({ place: params.place, section: params.section, pr, source, checks: params.checks })
+            : [];
     }
 
     /** One open pull request: back to a draft, or a draft ready for review. */
@@ -390,13 +368,17 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             return null;
         }
 
-        return {
-            id: `${params.section}.draft`,
-            title: pr.isDraft ? t(l.readyForReview) : t(l.convertToDraft),
-            section: params.section,
-            icon: pr.isDraft ? GitPullRequest : GitPullRequestDraft,
-            run: () => params.edit({ kind: 'draft', draft: !pr.isDraft }),
-        };
+        return bindCommand(
+            definitions.draft,
+            {
+                place: params.place,
+                title: pr.isDraft ? t(l.readyForReview) : t(l.convertToDraft),
+                section: params.section,
+                icon: pr.isDraft ? GitPullRequest : GitPullRequestDraft,
+                run: () => params.edit({ kind: 'draft', draft: !pr.isDraft }),
+            },
+            t,
+        );
     }
 
     function stateCommand(params: EditCommandsParams): Command | null {
@@ -406,51 +388,54 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             return null;
         }
 
-        const command = {
-            id: `${params.section}.state`,
-            title: params.stateTitle,
-            section: params.section,
-            key: EDIT_KEYS.state,
-        };
+        const where = { place: params.place, title: params.stateTitle, section: params.section };
 
         // Nothing to choose between (a pull request has no reason to close for, reopening is one thing): it just runs.
         if (stateOptions.length === 1) {
-            return { ...command, icon: first.icon ?? CircleCheckBig, run: () => params.edit(first.request) };
+            return bindCommand(
+                definitions.state,
+                { ...where, icon: first.icon, run: () => params.edit(first.request) },
+                t,
+            );
         }
 
-        return {
-            ...command,
-            icon: CircleCheckBig,
-            keywords: stateOptions.map(option => option.text),
-            run: () => params.inline?.state?.() ?? false,
-            options: () => ({
-                options: stateOptions.map(option => ({
-                    value: option.key,
-                    label: option.text,
-                    icon: option.icon,
-                    pick: () => params.edit(option.request),
-                })),
-            }),
-        };
+        return bindCommand(
+            definitions.state,
+            {
+                ...where,
+                keywords: stateOptions.map(option => option.text),
+                run: () => params.inline?.state?.() ?? false,
+                options: () => ({
+                    options: stateOptions.map(option => ({
+                        value: option.key,
+                        label: option.text,
+                        icon: option.icon,
+                        pick: () => params.edit(option.request),
+                    })),
+                }),
+            },
+            t,
+        );
     }
 
     /**
      * An item property's action: offered where at least one of the items may take it, its key running the inline
      * picker even where none may — the item view then says why (K1b).
      */
-    function base(params: EditCommandsParams, kind: ItemPermission, title: string, icon: LucideIcon): Command {
+    function base(params: EditCommandsParams, kind: ItemPermission, definition: AppCommand<EditPlaces>): Command {
         const editable = countEditable(params, kind);
-        return {
-            id: `${params.section}.${kind}`,
-            title,
-            section: params.section,
-            key: EDIT_KEYS[kind],
-            icon,
-            menu: editable > 0,
-            detail: editable < params.items.length && editable > 0 ? editableText(params, kind) : undefined,
-            // Not run in place: the submenu opens — unless nothing may take it (the inline picker said why).
-            run: () => params.inline?.[kind]?.() === true || editable === 0,
-        };
+        return bindCommand(
+            definition,
+            {
+                place: params.place,
+                section: params.section,
+                menu: editable > 0,
+                detail: editable < params.items.length && editable > 0 ? editableText(params, kind) : undefined,
+                // Not run in place: the submenu opens — unless nothing may take it (the inline picker said why).
+                run: () => params.inline?.[kind]?.() === true || editable === 0,
+            },
+            t,
+        );
     }
 
     /**
@@ -517,9 +502,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
 /** An action toggling values of several (assignees, labels). */
 interface ToggleCommandSpec {
-    readonly title: string;
-    readonly icon: LucideIcon;
-    readonly keywords: readonly string[];
+    readonly definition: AppCommand<EditPlaces>;
     options(): PickerOption[];
     /** The values an item has. */
     current(item: Item): string[];

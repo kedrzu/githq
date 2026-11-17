@@ -8,8 +8,10 @@ import { CircleCheckBig, CircleSlash, Milestone, Tag, UserPlus, X } from 'lucide
 import { computed, ref, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import * as definitions from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Menu from '@/components/Menu.vue';
@@ -122,6 +124,7 @@ watch(
 useCommands(
   () =>
     editCommands({
+      place: 'list',
       section: 'selection',
       items: selected.value,
       metadata: metadata.value,
@@ -249,8 +252,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="UserPlus"
-          :kbd="EDIT_KEYS.assignees"
-          :keyshortcuts="EDIT_KEYS.assignees"
+          :kbd="keyOf(definitions.assignees)"
+          :keyshortcuts="keyOf(definitions.assignees)"
         >
           {{ t(l.assign) }}
         </Button>
@@ -273,8 +276,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="Tag"
-          :kbd="EDIT_KEYS.labels"
-          :keyshortcuts="EDIT_KEYS.labels"
+          :kbd="keyOf(definitions.labels)"
+          :keyshortcuts="keyOf(definitions.labels)"
         >
           {{ t(l.label) }}
         </Button>
@@ -295,8 +298,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="Milestone"
-          :kbd="EDIT_KEYS.milestone"
-          :keyshortcuts="EDIT_KEYS.milestone"
+          :kbd="keyOf(definitions.milestone)"
+          :keyshortcuts="keyOf(definitions.milestone)"
         >
           {{ t(l.milestone) }}
         </Button>
@@ -311,8 +314,8 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="CircleCheckBig"
-          :kbd="EDIT_KEYS.state"
-          :keyshortcuts="EDIT_KEYS.state"
+          :kbd="keyOf(definitions.state)"
+          :keyshortcuts="keyOf(definitions.state)"
         >
           {{ t(l.close) }}
         </Button>
@@ -333,7 +336,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
     <IconButton
       :icon="X"
       :label="t(l.clear)"
-      kbd="Escape"
+      :kbd="keyOf(definitions.uncheck)"
       size="sm"
       @click="emit('clear')"
     />

@@ -33,11 +33,10 @@ import {
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import * as definitions from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -954,7 +953,7 @@ function endBand(): Band | null {
     const { number, url } = stop.at;
     return {
       ...refusalBand(props.record.reason),
-      link: { label: t(l.seeOnGitHub, { number }), url, key: keyOf(openOnGitHub) },
+      link: { label: t(l.seeOnGitHub, { number }), url, key: keyOf(definitions.openOnGitHub) },
     };
   }
 
@@ -967,7 +966,11 @@ function endBand(): Band | null {
       return record.sent.going
         ? {
             ...said,
-            link: said.link ?? { label: t(openOnGitHub.title), url: endPr.value.url, key: keyOf(openOnGitHub) },
+            link: said.link ?? {
+              label: t(definitions.openOnGitHub.title),
+              url: endPr.value.url,
+              key: keyOf(definitions.openOnGitHub),
+            },
           }
         : said;
     }
@@ -1001,7 +1004,11 @@ function endBand(): Band | null {
       return { tone: 'danger', icon: CircleX, title, text: t(l.sentBeforeRules, { base }), link: null };
     }
     case 'unknown': {
-      const link = { label: t(openOnGitHub.title), url: endPr.value.url, key: keyOf(openOnGitHub) };
+      const link = {
+        label: t(definitions.openOnGitHub.title),
+        url: endPr.value.url,
+        key: keyOf(definitions.openOnGitHub),
+      };
       if (record.refusal) {
         const said = refusalBand(record.refusal);
         return { ...said, link: said.link ?? link };
@@ -1151,7 +1158,11 @@ function getRangeSays(view: StackMergeView): StackSays | null {
       icon: Info,
       title: t(l.stackDissolve),
       text: t(l.stackDissolveDetail, { number: closed }),
-      link: { label: t(openOnGitHub.title), url: merge.open.at(-1)?.url ?? props.pr.url, key: keyOf(openOnGitHub) },
+      link: {
+        label: t(definitions.openOnGitHub.title),
+        url: merge.open.at(-1)?.url ?? props.pr.url,
+        key: keyOf(definitions.openOnGitHub),
+      },
     };
     return { verdict: said, band: under, forward: block ? { kind: 'none', label: text } : { kind: 'merge' } };
   }
@@ -1618,19 +1629,19 @@ function onKeydown(event: KeyboardEvent) {
   } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
     event.preventDefault();
     emit('step', 'markReady');
-  } else if (canTakeOut.value && matchesCommandKey(event, EDIT_KEYS.dequeue)) {
+  } else if (canTakeOut.value && matchesCommandKey(event, keyOf(definitions.dequeue))) {
     event.preventDefault();
     takeOutOfQueue();
-  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranch)) {
+  } else if (canUpdate.value && matchesCommandKey(event, keyOf(definitions.updateBranch))) {
     event.preventDefault();
     update('MERGE');
-  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranchByRebase)) {
+  } else if (canUpdate.value && matchesCommandKey(event, keyOf(definitions.updateBranchByRebase))) {
     event.preventDefault();
     update('REBASE');
-  } else if (mergedBranch.value?.step && matchesCommandKey(event, EDIT_KEYS.branch)) {
+  } else if (mergedBranch.value?.step && matchesCommandKey(event, keyOf(definitions.branch))) {
     event.preventDefault();
     takeBranchStep();
-  } else if (canRevert.value && matchesCommandKey(event, EDIT_KEYS.revert)) {
+  } else if (canRevert.value && matchesCommandKey(event, keyOf(definitions.revert))) {
     event.preventDefault();
     revert();
   } else if (commitEmails.value && matchesCommandKey(event, 'Y')) {
@@ -1800,8 +1811,8 @@ function onOpenFocus(event: Event) {
               v-if="condition.updates && canUpdate"
               variant="ghost"
               size="sm"
-              :kbd="EDIT_KEYS.updateBranchByRebase"
-              :keyshortcuts="EDIT_KEYS.updateBranchByRebase"
+              :kbd="keyOf(definitions.updateBranchByRebase)"
+              :keyshortcuts="keyOf(definitions.updateBranchByRebase)"
               @click="update('REBASE')"
               >{{ t(l.updateByRebase) }}</Button
             >
@@ -1830,8 +1841,8 @@ function onOpenFocus(event: Event) {
             <Button
               v-if="mergedBranch.step"
               size="sm"
-              :kbd="EDIT_KEYS.branch"
-              :keyshortcuts="EDIT_KEYS.branch"
+              :kbd="keyOf(definitions.branch)"
+              :keyshortcuts="keyOf(definitions.branch)"
               :busy="advancing === mergedBranch.step"
               @click="takeBranchStep()"
               >{{ mergedBranch.label }}</Button
@@ -2187,8 +2198,8 @@ function onOpenFocus(event: Event) {
         <template v-if="canTakeOut">
           <Button
             v-if="allowed"
-            :kbd="EDIT_KEYS.dequeue"
-            :keyshortcuts="EDIT_KEYS.dequeue"
+            :kbd="keyOf(definitions.dequeue)"
+            :keyshortcuts="keyOf(definitions.dequeue)"
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
             >{{ t(l.takeOutOfQueue) }}</Button
@@ -2206,8 +2217,8 @@ function onOpenFocus(event: Event) {
           <Button
             v-if="canRevert"
             variant="ghost"
-            :kbd="EDIT_KEYS.revert"
-            :keyshortcuts="EDIT_KEYS.revert"
+            :kbd="keyOf(definitions.revert)"
+            :keyshortcuts="keyOf(definitions.revert)"
             :busy="advancing === 'revert'"
             @click="revert()"
             >{{ t(l.revert) }}</Button

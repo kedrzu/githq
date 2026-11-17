@@ -95,7 +95,17 @@ useCommands((): Command[] => {
 
   switch (cause.kind) {
     case 'failing':
-      return [{ id: 'empty.retry', title: t(l.tryAgain), section: 'view', key: RETRY_KEY, run: () => void tryAgain() }];
+      // The screen's: an item opened beside it keeps the keyboard, its `R` the comment box's (commands D13).
+      return [
+        {
+          id: 'empty.retry',
+          title: t(l.tryAgain),
+          section: 'view',
+          place: 'cantBeRead',
+          key: RETRY_KEY,
+          run: () => void tryAgain(),
+        },
+      ];
     case 'hidden':
     case 'refused':
       return [

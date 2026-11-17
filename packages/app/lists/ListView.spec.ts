@@ -1016,7 +1016,7 @@ test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected
     view.checkedIds.value = ['a2'];
     // Ahead of an opened item's, in the selection's section.
     await expect
-        .poll(() => registry.commands.some(command => command.id === 'selection.merge' && registry.isEnabled(command)))
+        .poll(() => registry.commands.some(command => command.id === 'list.merge' && registry.isEnabled(command)))
         .toBe(true);
 
     await userEvent.keyboard('{Shift>}M{/Shift}');
@@ -1189,7 +1189,7 @@ test("the cursor row: the chip names it and it has its context menu's actions; w
             label: 'web#1',
             title: 'Sign-in redirects',
         });
-    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'menu.copyLink', 'menu.comment']));
+    expect(row.ids()).toEqual(expect.arrayContaining(['item.state', 'item.labels', 'menu.copyLink', 'item.comment']));
     expect(row.command('item.state')?.section).toBe('item');
 
     row.request.mockClear();
@@ -1344,7 +1344,7 @@ function withElement(tag: string, prepare: (element: HTMLElement) => void) {
 test('the comment key opens the row, asking the opened item for its comment box', async () => {
     const row = await mountRow([['todo', ['i1']]], [sampleIssue('i1')]);
     await userEvent.keyboard('j');
-    await expect.poll(() => row.command('menu.comment')).toBeDefined();
+    await expect.poll(() => row.command('item.comment')).toBeDefined();
 
     await userEvent.keyboard('r');
     expect(row.view.opened).toEqual(['i1']);
@@ -1413,9 +1413,9 @@ test("D20, D11: a stack's entry stands for all its pull requests; ⇧M is its wh
     expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
 
     await userEvent.keyboard('{Shift>}X{/Shift}');
-    expect(row.registry.menu?.commandId).toBe('selection.state');
+    expect(row.registry.menu?.commandId).toBe('item.state');
     row.registry.closeMenu();
-    row.command('selection.state')?.options?.().options[0]?.pick();
+    row.command('item.state')?.options?.().options[0]?.pick();
     expect(edit).toHaveBeenCalledWith(['p1', 'p2', 'p3'], expect.objectContaining({ kind: 'close' }));
 });
 

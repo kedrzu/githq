@@ -10,7 +10,6 @@ import {
     Hash,
     Link,
     Maximize2,
-    MessageSquare,
     PanelRight,
     RotateCcw,
     SquareKanban,
@@ -22,9 +21,9 @@ import { useRouter } from 'vue-router';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { bindCommand } from '@/commands/bindCommand.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
-import { openOnGitHub } from '@/commands/definitions/index.js';
+import { comment, openOnGitHub } from '@/commands/definitions/index.js';
 import type { EditCommandsParams, StateOption } from '@/commands/useEditCommands.js';
-import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
+import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -50,6 +49,11 @@ import * as l from './useItemCommands.loc.js';
 export interface ItemCommandsParams {
     /** The items they act on; read every time they are built. */
     readonly ids: () => readonly string[];
+    /**
+     * Where their edits are offered: `item` for a list's row or items (the row stands for its item, its actions yield to
+     * the list's own), or the review of the one pull request.
+     */
+    readonly place: 'item' | 'review';
     /** Where they belong: the command menu offers `item` and `selection` only for a subject of that kind. */
     readonly section: () => EditCommandsParams['section'];
     /** Opens the one item they act on, as Enter opens it. */
@@ -63,7 +67,7 @@ export interface ItemCommandsParams {
  * writing about them, copying them, adding them to a project, and their edits. A repository's metadata is read only as a
  * submenu opens, so building them asks nothing of GitHub.
  */
-export function useItemCommands({ ids, section, open, merge }: ItemCommandsParams) {
+export function useItemCommands({ ids, place: editPlace, section, open, merge }: ItemCommandsParams) {
     const t = useTranslate();
     const auth = useService(AuthStore);
     const details = useService(ItemDetailStore);
@@ -100,6 +104,7 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
 
     function getEditCommands(): Command[] {
         return editCommands({
+            place: editPlace,
             section: section(),
             items: selected.value,
             metadata: metadata.value,
@@ -173,17 +178,20 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
             },
         );
         if (editor.getPermissions(item).comment) {
-            commands.push({
-                id: 'menu.comment',
-                title: t(l.comment),
-                section: own,
-                key: EDIT_KEYS.comment,
-                icon: MessageSquare,
-                run: () => {
-                    navigation.requestComment(item.id);
-                    open();
-                },
-            });
+            commands.push(
+                bindCommand(
+                    comment,
+                    {
+                        place: 'item',
+                        section: own,
+                        run: () => {
+                            navigation.requestComment(item.id);
+                            open();
+                        },
+                    },
+                    t,
+                ),
+            );
         }
 
         if (item.kind === 'issue') {

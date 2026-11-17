@@ -38,8 +38,6 @@ readyForReview:
   en: Mark ready for review
 convertToDraft:
   en: Convert to draft
-comment:
-  en: Comment
 requestReviewers:
   en: Request reviewers…
 addToProject:

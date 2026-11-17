@@ -7,7 +7,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { keyOf } from '@/commands/keyOf.js';
+import { PROJECT_FIELD_COMMANDS } from '@/commands/useEditCommands.js';
 import BottomMenu from '@/components/BottomMenu.vue';
 import Button from '@/components/Button.vue';
 import DateField from '@/components/DateField.vue';
@@ -232,11 +233,13 @@ function getEditor(
 // The keys of the first project's status, priority and iteration.
 function getEditKey(field: ProjectField) {
   const role = getProjectFieldRole(field);
-  return role ? EDIT_KEYS[role] : undefined;
+  return role ? keyOf(PROJECT_FIELD_COMMANDS[role]) : undefined;
 }
 
 function openByRole(role: ProjectFieldRole) {
-  const line = cards.value[0]?.fields.find(field => field.kbd !== undefined && field.kbd === EDIT_KEYS[role]);
+  const line = cards.value[0]?.fields.find(
+    field => field.kbd !== undefined && field.kbd === keyOf(PROJECT_FIELD_COMMANDS[role]),
+  );
   if (!line?.editor) {
     return false;
   }

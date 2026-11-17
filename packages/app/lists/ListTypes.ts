@@ -33,7 +33,10 @@ export interface ListContextMenuProps {
     readonly ids: readonly string[];
     /** Opens the one item it acts on, as Enter would. */
     readonly open: () => void;
-    /** On a stack's entry: merging its whole stack, as `⇧M` on it does (stacked PRs D11); `null` otherwise. */
+    /**
+     * The list's merge of what was right-clicked, as `⇧M` on it does: its one pull request the viewer may merge, or a
+     * stack's entry's whole stack (stacked PRs D11); `null` otherwise.
+     */
     readonly merge: Command | null;
 }
 
