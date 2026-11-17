@@ -58,6 +58,12 @@ test('a run clicked in the workflow in the panel opens in the panel beside the l
     await expect(deploy.run(failedId + 1)).not.toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(DEPLOY_PANEL);
+    // Back in the panel, not only at its address: the address changes before the page has gone.
+    await expect(
+        page
+            .getByRole('complementary', { name: 'Opened item' })
+            .getByRole('button', { name: 'Open full screen', exact: true }),
+    ).toBeVisible();
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(LIST);
