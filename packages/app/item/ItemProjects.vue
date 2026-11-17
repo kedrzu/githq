@@ -32,6 +32,7 @@ import type { ItemProject } from '@/store/ItemTypes.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
 import { isCurrentIteration } from '@/utils/isCurrentIteration.js';
 
+import { getAddableProjects } from './getAddableProjects.js';
 import * as l from './ItemProjects.loc.js';
 
 const props = defineProps<{
@@ -141,12 +142,13 @@ const cards = computed((): ProjectCard[] => {
   }));
 });
 
-const addable = computed((): PickerOption[] => {
-  const inProjects = new Set(props.projects.map(project => project.projectId));
-  return (props.viewerProjects ?? [])
-    .filter(project => !project.closed && !inProjects.has(project.id))
-    .map(project => ({ value: project.id, label: project.title, detail: project.owner }));
-});
+const addable = computed((): PickerOption[] =>
+  getAddableProjects(props.viewerProjects ?? [], [props.projects]).map(project => ({
+    value: project.id,
+    label: project.title,
+    detail: project.owner,
+  })),
+);
 
 defineExpose({
   /** Opens the editor of the first project's status, priority or iteration; `false` when it has none to edit. */

@@ -8,6 +8,7 @@ import type { ViewerProject } from '@/repos/RepositoryTypes.js';
 import { Browser } from '@/services/Browser.js';
 import type { Item } from '@/store/ItemTypes.js';
 
+import { getAddableProjects } from './getAddableProjects.js';
 import { formatShortReference } from './itemRoutes.js';
 import * as l from './useItemActionCommands.loc.js';
 
@@ -33,7 +34,10 @@ export interface ItemActionCommands {
     copyLink(items: readonly Item[], section: ItemActionSection): BoundCommand;
     /** "Add to project…": a submenu of the viewer's open projects not every one of the items is in already. */
     addToProject(params: AddToProjectParams): BoundCommand;
-    /** An issue's "Copy reference" (`owner/name#123`); a pull request's changed files on GitHub and "Copy branch name". */
+    /**
+     * "Copy reference" (`owner/name#123`), and of a pull request its changed files on GitHub and "Copy branch name". The
+     * item menus' layout decides which of them a menu shows (`getItemMenuSections`): a pull request's has no reference.
+     */
     kindCommands(item: Item, section: ItemActionSection): BoundCommand[];
 }
 
@@ -70,20 +74,15 @@ export function useItemActionCommands(): ItemActionCommands {
                     const projects = params.projects();
                     return {
                         loading: projects === null,
-                        options: (projects ?? [])
-                            .filter(
-                                project =>
-                                    !project.closed &&
-                                    !params.items.every(item =>
-                                        item.projects.some(place => place.projectId === project.id),
-                                    ),
-                            )
-                            .map(project => ({
-                                value: project.id,
-                                label: project.title,
-                                detail: project.owner,
-                                pick: () => params.add(project),
-                            })),
+                        options: getAddableProjects(
+                            projects ?? [],
+                            params.items.map(item => item.projects),
+                        ).map(project => ({
+                            value: project.id,
+                            label: project.title,
+                            detail: project.owner,
+                            pick: () => params.add(project),
+                        })),
                     };
                 },
             },
@@ -92,21 +91,21 @@ export function useItemActionCommands(): ItemActionCommands {
     }
 
     function kindCommands(item: Item, section: ItemActionSection): BoundCommand[] {
+        const reference = bindCommand(
+            copyReference,
+            {
+                section,
+                detail: formatShortReference(item),
+                run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
+            },
+            t,
+        );
         if (item.kind === 'issue') {
-            return [
-                bindCommand(
-                    copyReference,
-                    {
-                        section,
-                        detail: formatShortReference(item),
-                        run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
-                    },
-                    t,
-                ),
-            ];
+            return [reference];
         }
 
         return [
+            reference,
             bindCommand(openFiles, { section, run: () => browser.openInNewTab(`${item.url}/files`) }, t),
             bindCommand(copyBranch, { section, detail: item.headRefName, run: () => copy(item.headRefName) }, t),
         ];

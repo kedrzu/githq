@@ -75,13 +75,14 @@ const explainerOpen = ref(false);
 const showExplainer = computed(() => !notice.value || explainerOpen.value);
 
 // Enter anywhere on the page runs the main action — but on a button or a link, whose own it is (`CommandRegistry`); Esc
-// abandons the code, also while it is being asked for.
+// abandons the code, also while it is being asked for. Each once per press: a held Enter must not ask for code after code.
 useCommands(() => [
   bindCommand(
     signIn,
     {
       title: getMainActionTitle(),
       section: 'view',
+      once: true,
       when: () => props.state.kind !== 'requesting',
       run: runMainAction,
     },
@@ -91,6 +92,7 @@ useCommands(() => [
     cancelSignIn,
     {
       section: 'view',
+      once: true,
       when: () => props.state.kind === 'waiting' || props.state.kind === 'requesting',
       run: () => emit('cancel'),
     },

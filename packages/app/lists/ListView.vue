@@ -54,8 +54,9 @@ import { useItemCommands } from './useItemCommands.js';
 import { useRowSwipe } from './useRowSwipe.js';
 
 /**
- * A row's action keys the list has itself — its "Open", "Open full screen" and "Open on GitHub": a context menu draws
- * them, the registry must not run the row's (its `item` section would come before the list's `view`).
+ * A row's action keys the list has itself — its "Open", "Open full screen" and "Open on GitHub". The list's own outrank
+ * the row's by place, but decline at times (`⇧Enter` on the opened item's row is the opened item's own): the row's must
+ * not run then, so the row's are registered without them. The context menu builds its own, keys and all.
  */
 const OWN_KEYS: ReadonlySet<string> = new Set([
   keyOf(definitions.open),

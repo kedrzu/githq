@@ -6,7 +6,7 @@ import { BookMarked, Lock, SquareKanban } from 'lucide-vue-next';
 import { computed, ref, useId } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { turnOnSavedSettings } from '@/commands/definitions/index.js';
+import { loadSavedSettings } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -41,11 +41,7 @@ const repositories = computed(() => props.document.repositories.filter(repositor
 const projects = computed(() => props.document.projects.filter(project => project.tracking));
 
 useCommands(() => [
-  bindCommand(
-    turnOnSavedSettings,
-    { place: 'signIn', title: t(l.load), section: 'view', menu: false, run: () => void loadOnce() },
-    t,
-  ),
+  bindCommand(loadSavedSettings, { section: 'view', menu: false, once: true, run: () => void loadOnce() }, t),
 ]);
 
 async function loadOnce() {
@@ -133,8 +129,8 @@ async function loadOnce() {
         <Button
           variant="primary"
           :size="phone.active ? 'lg' : undefined"
-          :kbd="keyOf(turnOnSavedSettings)"
-          :keyshortcuts="formatAriaKeyShortcuts(keyOf(turnOnSavedSettings))"
+          :kbd="keyOf(loadSavedSettings)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(loadSavedSettings))"
           :busy="loading"
           @click="loadOnce"
         >

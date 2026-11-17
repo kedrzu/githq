@@ -214,8 +214,7 @@ export const CommandRegistry = defineService({
             );
             if (command) {
                 event.preventDefault();
-                // ⌘K held down opens or closes the menu once, rather than flickering it.
-                if (!event.repeat || command.key !== keyOf(commandMenu)) {
+                if (!event.repeat || !command.once) {
                     run(command);
                 }
             }

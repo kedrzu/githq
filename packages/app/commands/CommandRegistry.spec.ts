@@ -63,6 +63,23 @@ test("Enter and Space are a focused button's own, whoever's command they are", a
     expect(ran).toEqual(['list:Enter', 'list:Space']);
 });
 
+test('a key held down runs a `once` command on its first keydown only, any other on each repeat', () => {
+    const ran: string[] = [];
+    const definition = defineAppCommand({ id: 'signIn.Enter', title: () => 'Enter', key: 'Enter', places: ['signIn'] });
+    register([
+        bindCommand(definition, { section: 'view', once: true, run: () => void ran.push('signIn:Enter') }, t),
+        listCommand('J', ran),
+    ]);
+
+    for (const key of ['Enter', 'j']) {
+        for (const repeat of [false, true, true]) {
+            document.body.dispatchEvent(new KeyboardEvent('keydown', { key, repeat, bubbles: true, cancelable: true }));
+        }
+    }
+
+    expect(ran).toEqual(['signIn:Enter', 'list:J', 'list:J', 'list:J']);
+});
+
 /** The registry of a fresh container, with these commands registered for the test. */
 function register(commands: readonly BoundCommand[]) {
     const registry = createContainer().resolve(CommandRegistry);

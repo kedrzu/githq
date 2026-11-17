@@ -22,22 +22,26 @@ const offer = computed(() => update.offer);
 const failed = computed(() => offer.value?.kind === 'installFailed');
 const current = computed(() => update.state?.version ?? '');
 
-// Only the key: the command menu has "Restart to update" and "Try again to install the update" of its own
-// (`AppCommands.vue`).
-const commands = computed((): BoundCommand[] => [
-  bindCommand(
-    loadNewVersion,
-    {
-      place: 'app',
-      title: t(failed.value ? l.retryInstall : l.restartToUpdate),
-      section: 'app',
-      icon: failed.value ? RotateCcw : CircleArrowDown,
-      menu: false,
-      run: () => update.restart(),
-    },
-    t,
-  ),
-]);
+// Its key while it is the newest toast, and the command menu's row while it shows: the menu's own "Restart to update"
+// (`AppCommands.vue`) stands in only once it is dismissed.
+const commands = computed((): BoundCommand[] =>
+  offer.value
+    ? [
+        bindCommand(
+          loadNewVersion,
+          {
+            place: 'app',
+            title: t(failed.value ? l.retryInstall : l.restartToUpdate),
+            detail: t(l.updateVersion, { version: offer.value.version }),
+            section: 'app',
+            icon: failed.value ? RotateCcw : CircleArrowDown,
+            run: () => update.restart(),
+          },
+          t,
+        ),
+      ]
+    : [],
+);
 
 function onOpenChange(open: boolean) {
   if (!open) {

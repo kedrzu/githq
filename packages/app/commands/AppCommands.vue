@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { RotateCcw } from 'lucide-vue-next';
+import { GitBranch, LogOut, RefreshCw, RotateCcw } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -43,16 +43,12 @@ import CommandMenu from './CommandMenu.vue';
 import { CommandRegistry } from './CommandRegistry.js';
 import type { BoundCommand, Command } from './CommandTypes.js';
 import {
-  checkForUpdates,
   commandMenu,
   documentation,
-  goToSettingsSection,
   help,
   loadNewVersion,
   newIssue,
   settings,
-  signOut,
-  switchStream,
   updateLater,
 } from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
@@ -135,7 +131,8 @@ const helpOpen = computed({
 });
 
 useCommands(() => [
-  bindCommand(commandMenu, { section: 'app', menu: false, run: () => registry.openMenu() }, t),
+  // Held down, ⌘K opens the menu once rather than flickering it.
+  bindCommand(commandMenu, { section: 'app', menu: false, once: true, run: () => registry.openMenu() }, t),
   bindCommand(help, { section: 'app', run: () => registry.setHelpOpen(true) }, t),
   bindCommand(documentation, { section: 'app', run: () => browser.openInNewTab(DOCS_URL) }, t),
   bindCommand(newIssue, { place: 'app', section: 'app', run: startNewIssue }, t),
@@ -183,9 +180,10 @@ function getUpdateCommands(): BoundCommand[] {
 
   const commands: BoundCommand[] = [];
   const { activity } = state;
-  if (activity.kind === 'ready' || activity.kind === 'installFailed') {
+  // While the toast offers it, the toast's command is the menu's row too (`UpdateReadyToast`): one command on one id,
+  // its key working only while the toast is the newest. Once the toast is dismissed the row is this one, keyless.
+  if ((activity.kind === 'ready' || activity.kind === 'installFailed') && offer === null) {
     const failed = activity.kind === 'installFailed';
-    // Without its key: that is the toast's, while it is the newest (`UpdateReadyToast`).
     commands.push(
       bindCommand(
         loadNewVersion,
@@ -212,37 +210,41 @@ function getUpdateCommands(): BoundCommand[] {
 }
 
 /** What the Updates section holds, once the native side has told its state. */
-function getUpdateChildren(): BoundCommand[] {
+function getUpdateChildren(): Command[] {
   const { state } = update;
   if (state === null) {
     return [];
   }
 
   // Without its key: that is the section's own, while it is shown (`UpdatesView`).
-  const check = bindCommand(checkForUpdates, { section: 'app', keyed: false, run: () => update.check() }, t);
+  const check: Command = {
+    id: 'checkForUpdates',
+    title: t(l.checkForUpdates),
+    section: 'app',
+    icon: RefreshCw,
+    run: () => update.check(),
+  };
   return state.canChoose ? [check, getSwitchCommand(state)] : [check];
 }
 
 /** To the stream not chosen. A Development build goes to Stable only through the confirmation in Settings (D5, U13). */
-function getSwitchCommand(state: UpdateState): BoundCommand {
+function getSwitchCommand(state: UpdateState): Command {
   const toStable = state.stream === 'development';
-  return bindCommand(
-    switchStream,
-    {
-      title: t(toStable ? l.switchToStable : l.switchToDevelopment),
-      section: 'app',
-      run: () => {
-        if (!toStable) {
-          update.setStream('development');
-        } else if (isPrereleaseVersion(state.version)) {
-          void router.push(CONFIRM_STABLE_PATH);
-        } else {
-          update.setStream('stable');
-        }
-      },
+  return {
+    id: 'switchStream',
+    title: t(toStable ? l.switchToStable : l.switchToDevelopment),
+    section: 'app',
+    icon: GitBranch,
+    run: () => {
+      if (!toStable) {
+        update.setStream('development');
+      } else if (isPrereleaseVersion(state.version)) {
+        void router.push(CONFIRM_STABLE_PATH);
+      } else {
+        update.setStream('stable');
+      }
     },
-    t,
-  );
+  };
 }
 
 function getUpdateLaterCommand(): BoundCommand {
@@ -327,36 +329,25 @@ function getPlaces(): NavigationPlace[] {
 
 /** Settings' sections, with no keys: those run only on Settings itself (`SettingsView`). */
 function getSettingsRows(): Command[] {
-  const rows = bindCommand(
-    goToSettingsSection,
-    SETTINGS_SECTIONS.map(section => ({
-      title: t(settingsSectionLabels[section]),
-      section: 'app' as const,
-      icon: SETTINGS_SECTION_ICONS[section],
-      keyed: false as const,
-      run: () => void router.push(getSettingsPath(section)),
-    })),
-    t,
-  );
-  // One row per section, in its order: no binding is null.
-  return SETTINGS_SECTIONS.flatMap((section, index) => {
-    const row = rows[index];
-    return row ? [withSectionChildren(section, row)] : [];
-  });
+  return SETTINGS_SECTIONS.map(section => ({
+    id: `settings:${section}`,
+    title: t(settingsSectionLabels[section]),
+    section: 'app',
+    icon: SETTINGS_SECTION_ICONS[section],
+    run: () => void router.push(getSettingsPath(section)),
+    children: getSectionChildren(section),
+  }));
 }
 
-function withSectionChildren(section: SettingsSection, row: Command): Command {
+function getSectionChildren(section: SettingsSection): (() => Command[]) | undefined {
   switch (section) {
     case 'account':
-      return {
-        ...row,
-        children: () => [bindCommand(signOut, { section: 'app', run: () => auth.signOut() }, t)],
-      };
+      return () => [{ id: 'signOut', title: t(l.signOut), section: 'app', icon: LogOut, run: () => auth.signOut() }];
     case 'updates':
       // Not on the state: it is `null` until the native side first tells it, and the section is there all the same.
-      return { ...row, children: getUpdateChildren };
+      return getUpdateChildren;
     default:
-      return row;
+      return undefined;
   }
 }
 

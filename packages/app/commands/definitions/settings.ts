@@ -1,11 +1,12 @@
-import { GitBranch, LogOut, RefreshCw } from 'lucide-vue-next';
+import { RefreshCw } from 'lucide-vue-next';
 
 import { defineAppCommand } from '../defineAppCommand.js';
 import * as l from './settings.loc.js';
 
 /**
- * Goes to a section of Settings by its place in the column (`1` Repositories … `8` Updates; commands D9); the command
- * menu's level under Settings offers them with no key. The binding names the section and gives its icon.
+ * Goes to a section of Settings by its place in the column (`1` Repositories … `8` Updates; commands D9), on Settings
+ * itself; the command menu's level under Settings has rows of its own for them. The binding names the section and gives
+ * its icon.
  */
 export const goToSettingsSection = defineAppCommand({
     id: 'goToSettingsSection',
@@ -14,7 +15,10 @@ export const goToSettingsSection = defineAppCommand({
     places: ['settings'],
 });
 
-/** Asks whether a newer githq is out (desktop app): in Settings' Updates section by its key, from the menu anywhere. */
+/**
+ * Asks whether a newer githq is out (desktop app): in Settings' Updates section by its key; the command menu's level
+ * under Updates has a row of its own for it.
+ */
 export const checkForUpdates = defineAppCommand({
     id: 'checkForUpdates',
     title: l.checkForUpdates,
@@ -23,31 +27,23 @@ export const checkForUpdates = defineAppCommand({
     places: ['settings'],
 });
 
-/** Follows the update stream not followed now; the binding names which (U12, U13). */
-export const switchStream = defineAppCommand({
-    id: 'switchStream',
-    title: l.switchStream,
-    icon: GitBranch,
-    places: ['settings'],
-});
-
-/** Signs out of GitHub. */
-export const signOut = defineAppCommand({
-    id: 'signOut',
-    title: l.signOut,
-    icon: LogOut,
-    places: ['settings'],
-});
-
 /**
- * Turns on syncing the settings with those found on GitHub (settings-sync G11, T6): on the first sign-in loading them,
- * in Sync settings combining them with this device's. The binding names which.
+ * On the first sign-in, loads the settings found on GitHub in place of this device's and turns on syncing them
+ * (settings-sync G11).
  */
-export const turnOnSavedSettings = defineAppCommand({
-    id: 'turnOnSavedSettings',
-    title: l.turnOnSavedSettings,
+export const loadSavedSettings = defineAppCommand({
+    id: 'loadSavedSettings',
+    title: l.loadSavedSettings,
     key: 'Mod+Enter',
-    places: ['settings', 'signIn'],
+    places: ['signIn'],
+});
+
+/** In Sync settings, combines this device's settings with those found on GitHub and turns on syncing them (T6). */
+export const combineSettings = defineAppCommand({
+    id: 'combineSettings',
+    title: l.combineSettings,
+    key: 'Mod+Enter',
+    places: ['settings'],
 });
 
 /** Leaves both sides as they were, rather than combining this device's settings with GitHub's (settings-sync T6). */

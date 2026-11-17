@@ -139,7 +139,7 @@ export const copyLink = defineAppCommand({
     places: ['item', 'workflow', 'workflowRun', 'repository', 'project'],
 });
 
-/** Copies an issue's reference, `owner/name#number`. */
+/** Copies an issue's or a pull request's reference, `owner/name#number`. */
 export const copyReference = defineAppCommand({
     id: 'copyReference',
     title: l.copyReference,

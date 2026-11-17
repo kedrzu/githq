@@ -2,12 +2,10 @@ goToSettingsSection:
   en: Go to section 1–8
 checkForUpdates:
   en: Check for updates
-switchStream:
-  en: Switch the update stream
-signOut:
-  en: Sign out
-turnOnSavedSettings:
-  en: Use the settings saved to GitHub
+loadSavedSettings:
+  en: Load the settings saved to GitHub
+combineSettings:
+  en: Combine and turn on
 cancelCombining:
   en: Cancel
 turnOffSync:

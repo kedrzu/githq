@@ -179,7 +179,7 @@ const Harness = defineComponent({
         }
 
         useCommands(() => [
-            bindCommand(commandMenu, { section: 'app', menu: false, run: () => registry.openMenu() }, t),
+            bindCommand(commandMenu, { section: 'app', menu: false, once: true, run: () => registry.openMenu() }, t),
             bindCommand(
                 sidebarCommand,
                 {

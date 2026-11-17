@@ -5,10 +5,12 @@ import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, shallowRef } from 'vue';
+import { createApp, defineComponent, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import Toaster from '@/components/Toaster.vue';
+import UpdateReadyToast from '@/desktop/UpdateReadyToast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import type { AppUpdateShape, UpdateNotice, UpdateOffer, UpdateState } from '@/services/AppUpdate.js';
@@ -821,7 +823,10 @@ function render(container: VueContainer) {
     });
     const host = document.createElement('div');
     document.body.append(host);
-    const app = createApp(AppCommands);
+    // The update's toast beside them, as the shell has it: while it shows, its "Restart to update" is the menu's.
+    const app = createApp({
+        render: () => [h(AppCommands), h(Toaster, null, { default: () => h(UpdateReadyToast) })],
+    });
     app.use(IocPlugin, { container });
     app.use(router);
     app.mount(host);

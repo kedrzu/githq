@@ -46,7 +46,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { cancelCombining, turnOffSync, turnOnSavedSettings } from '@/commands/definitions/index.js';
+import { cancelCombining, combineSettings, turnOffSync } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -204,11 +204,7 @@ useCommands(() => {
   // What combining changes (T6) is shown only while saving is off.
   return props.connect.kind === 'found'
     ? [
-        bindCommand(
-          turnOnSavedSettings,
-          { place: 'settings', title: t(l.combine), section: 'view', run: runCombine },
-          t,
-        ),
+        bindCommand(combineSettings, { section: 'view', once: true, run: runCombine }, t),
         bindCommand(cancelCombining, { title: t(l.cancel), section: 'view', run: cancel }, t),
       ]
     : [];
@@ -418,7 +414,7 @@ function turnOff() {
           <div :class="css.savingView_actions">
             <Button
               variant="primary"
-              :keyshortcuts="formatAriaKeyShortcuts(keyOf(turnOnSavedSettings))"
+              :keyshortcuts="formatAriaKeyShortcuts(keyOf(combineSettings))"
               :busy="combining"
               @click="combineAndTurnOn"
             >

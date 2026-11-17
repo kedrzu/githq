@@ -186,10 +186,15 @@ export interface Command extends CommandMarks {
     /**
      * Runs it — by its key; in the menu too unless it has a submenu, which the menu opens instead. Returning
      * `false` says it could not run here (the item view's picker is not shown): its key then opens the menu at its
-     * submenu, as it does for an action with a submenu and no `run`. With neither `run` nor `options`, its key is the
-     * registering component's own: it is only listed in the help sheet.
+     * submenu, as it does for an action with a submenu and no `run`. A registered command always does something: it
+     * runs, or opens its picker (`options`) or its level of the menu (`children`).
      */
     readonly run?: () => boolean | void;
+    /**
+     * Its key runs it on the first keydown of a press, not on the repeats of a key held down: a one-shot step (signing
+     * in, ⌘K opening the menu) that a held key must not take again and again.
+     */
+    readonly once?: true;
     /** Its second step (a picker's options): the menu opens it on Enter, Tab or →; typing finds its options. */
     readonly options?: () => CommandOptions;
     /** Called as its submenu or level is shown, coming back to it too: what it offers may still have to be read. */

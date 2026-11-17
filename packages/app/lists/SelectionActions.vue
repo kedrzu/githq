@@ -122,7 +122,7 @@ watch(
 );
 
 // The selection's actions (E4): A/L/M and ⇧X open the toolbar's pickers and menu — before an opened item's,
-// which yield to them (the registry's section order) — and the command menu offers their values and the projects'
+// which yield to them (the list keeps the keyboard over the item beside it, commands D13) — and the command menu offers their values and the projects'
 // status, priority and iteration, made on every item that may take them.
 useCommands(
   () =>
