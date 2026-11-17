@@ -2,10 +2,10 @@
 name: git-workflow
 description: >-
     How a change moves in githq — one task, one Paseo worktree, one branch, one PR; kept up to date
-    with main by merging, squash-merged on the owner's word; GitHub Issues as the tracker, stacked PRs
-    through GitHub's native stacks — all through git and `gh`. The dev pipeline (/dev:*) relies on it;
+    with main by merging, squash-merged on the owner's word; GitHub Issues as the tracker; no stacked
+    PRs — all through git and `gh`. The dev pipeline (/dev:*) relies on it;
     reach for it whenever a task becomes known, you open a branch, commit, push, catch up with main, resolve a merge
-    conflict, open or describe a PR, comment on an issue, build a PR stack or merge, watch a PR's checks
+    conflict, open or describe a PR, comment on an issue or merge, watch a PR's checks
     until green, or deal with a failure the PR did not cause.
 ---
 
@@ -134,7 +134,7 @@ git merge --no-edit origin/main
 ```
 
 Merge, never rebase or force-push: review comments keep their anchors, and the merge commits vanish
-in the squash. In a stack only the bottom node merges `main` (Stack).
+in the squash.
 
 After a merge that moved the `nzyme` gitlink, `bun.lock` or a `package.json`, rerun `zsh setup.sh`.
 
@@ -211,7 +211,7 @@ exists and its title and description are current. The pipeline supplies the text
 
 ## Green
 
-A ready PR is yours until every check passes on its last commit, in a stack on every node: the owner merges by hand and
+A ready PR is yours until every check passes on its last commit: the owner merges by hand and
 should find nothing left to do.
 
 A full run takes about 9 minutes, so wait as a background command, which wakes you when it exits:
@@ -244,42 +244,7 @@ tracked fix, even if a rerun turns it green, because otherwise it keeps hitting 
 
 ## Stack
 
-GitHub's native stacked pull requests, driven through `gh api` (no `gh` subcommand). One change,
-several PRs, each based on the one below; every node lands as its own squash commit titled by its PR.
-Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`).
-
-- **Read the chain** (stack number, then nodes bottom to top):
-  ```bash
-  gh api "repos/kedrzu/githq/stacks?pull_request=<any node>" \
-    --jq 'if length == 0 then "not stacked" else .[0] | .number, (.pull_requests[] | "\(.number) \(.head.ref) \(.state)") end'
-  ```
-- **Add a node** on top of node `k`, which must be committed and pushed:
-  ```bash
-  git switch -c <branch>-<k+1>
-  # commit the node's changes (Checkpoint), then:
-  git push -u origin HEAD
-  gh pr create --draft --base <branch of node k> --title "…" --body-file - <<'EOF'
-  Part <k+1> of <n>; previous: #<PR of node k>. Closes #<N> only in the last part.
-  EOF
-  # the first extra node creates the stack, bottom first; later ones append:
-  echo '{"pull_requests":[<pr 1>,<pr 2>]}' | gh api -X POST repos/kedrzu/githq/stacks --input -
-  echo '{"pull_requests":[<new pr>]}' | gh api -X POST repos/kedrzu/githq/stacks/<stack>/add --input -
-  ```
-- **Mark the chain ready** once, when the whole chain is up and verified: `gh pr ready <PR>` for each node, bottom first.
-  Each node then gets its own run, which is what proves it green on its own.
-- **Check out the tip / node `k`:** `git switch <branch of that node> && git pull --no-rebase`. A
-  branch another worktree holds cannot be switched to here: work on it in that worktree.
-- **Propagate an edit to a lower node** without force-pushing: commit and push it on node `k`, then
-  for each node above, in order: `git switch <node k+1> && git merge --no-edit <node k> && git push`.
-  A conflict stops the walk on that node: resolve it there, commit, push, carry on upward.
-- **Catching up with `main`:** Sync on the **bottom** node only, then propagate upward. Never merge
-  `main` into a higher node.
-- **GitHub rewrites upper branches itself** after a partial merge or its „Rebase stack” button. Keep
-  every node pushed, so after `git fetch` a rewritten node is taken from the remote:
-  `git switch -C <node> origin/<node>`.
-- **Must stay in the bottom node:** a moved `nzyme` gitlink, `package.json` / `bun.lock` changes that later nodes
-  depend on.
-- **Landing a stack:** the whole chain at once — Land. Never merge a mid-stack PR in the GitHub UI.
+Not used here: every change lands as one PR, however large.
 
 ## Land
 
@@ -288,16 +253,10 @@ Only on the owner's word („mergujemy”, „merge it”) — it is irreversibl
 1. Sync, the full `verify` (it says what a change with no code needs), push; the PR must be out of draft.
 2. Green, on this commit. A red check stops the merge.
 3. Merge:
-   - **One PR:** `gh pr merge <PR> --squash --match-head-commit "$(git rev-parse HEAD)"` — the PR
-     title becomes the commit on `main`; the branch is deleted on merge.
-   - **A stack:** `gh pr merge` cannot merge a stacked PR. Merge the **top** PR asynchronously; GitHub
-     lands it and every node below, one squash commit each. The method must be explicit (the API
-     defaults to a merge commit):
-     ```bash
-     uuid=$(echo '{"merge_method":"squash"}' \
-       | gh api -X PUT repos/kedrzu/githq/pulls/<top PR>/merge-async --input - --jq .uuid)
-     gh api repos/kedrzu/githq/pulls/<top PR>/merge-async/$uuid --jq .status   # poll until not pending
-     ```
+   ```bash
+   gh pr merge <PR> --squash --match-head-commit "$(git rev-parse HEAD)"
+   ```
+   The PR title becomes the commit on `main`; the branch is deleted on merge.
 4. `gh pr view <PR> --json state,mergeCommit` confirms `MERGED`. A merged PR with `Closes #<N>`
    closes its issue.
 
