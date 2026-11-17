@@ -14,8 +14,10 @@ export interface KeyConflict {
 /**
  * The pairs of definitions whose keys (`keyOf`, other keys, a family's numbers) are one and whose places can be active
  * together ({@link placesCollide}) — found from the definitions alone, with no screen shown (commands D3). A screen
- * taking an app-wide key is not one, nor two fixed definitions (D13): nobody rebinds them, and their defaults are made
- * together, a `when` deciding which runs (Escape stepping back one layer at a time, the board's ←/→ and the list's).
+ * taking an app-wide key is not one, nor two fixed keys (D13) — a fixed definition's, or any definition's other keys,
+ * which are never rebound: nobody rebinds them, and their defaults are made together, a `when` or a binding deciding
+ * which runs (Escape stepping back one layer at a time, the board's ←/→ and the list's, the review's ↓/↑ moving its
+ * cursor where `J`/`K` step through pull requests without them).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -24,13 +26,14 @@ export function findKeyConflicts(definitions: readonly AnyAppCommand[]): KeyConf
     for (const [index, first] of definitions.entries()) {
         const keys = getKeys(first);
         for (const second of definitions.slice(index + 1)) {
-            if ((!first.configurable && !second.configurable) || !placesCollide(first.places, second.places)) {
+            if (!placesCollide(first.places, second.places)) {
                 continue;
             }
 
-            const others = new Set(getKeys(second).map(normalizeKey));
-            for (const key of keys) {
-                if (others.has(normalizeKey(key))) {
+            const others = getKeys(second);
+            for (const { key, fixed } of keys) {
+                const name = normalizeKey(key);
+                if (others.some(other => normalizeKey(other.key) === name && !(fixed && other.fixed))) {
                     conflicts.push({ key, first, second });
                 }
             }
@@ -59,18 +62,25 @@ export function placesCollide(a: readonly CommandPlace[], b: readonly CommandPla
     );
 }
 
-function getKeys(definition: AnyAppCommand): string[] {
+/** A key of a definition, and whether it is fixed: never rebound, so it can't silence a key chosen later. */
+interface DefinedKey {
+    readonly key: string;
+    readonly fixed: boolean;
+}
+
+function getKeys(definition: AnyAppCommand): DefinedKey[] {
     if (definition.kind === 'family') {
-        const keys: string[] = [];
+        const keys: DefinedKey[] = [];
         for (let number = definition.numbers.first; number <= definition.numbers.last; number++) {
-            keys.push(`${number}`);
+            keys.push({ key: `${number}`, fixed: true });
         }
 
         return keys;
     }
 
     const key = keyOf(definition);
-    return [...(key === undefined ? [] : [key]), ...(definition.otherKeys ?? [])];
+    const own = key === undefined ? [] : [{ key, fixed: !definition.configurable }];
+    return [...own, ...(definition.otherKeys ?? []).map(other => ({ key: other, fixed: true }))];
 }
 
 /** `o` and `O` are one key: a letter's case is its Shift, which the notation writes out. */

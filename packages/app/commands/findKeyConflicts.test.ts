@@ -51,3 +51,14 @@ test('two fixed definitions are no conflict, whatever their key; a configurable 
         { key: 'Escape', first: close, second: custom },
     ]);
 });
+
+test("other keys are fixed: one on a fixed definition's key is no conflict, one on a configurable definition's key is", () => {
+    const next = defineAppCommand({ id: 'next', title, key: 'J', otherKeys: ['ArrowDown'], places: ['review'] });
+    const line = defineAppCommand({ id: 'line', title, key: 'ArrowDown', places: ['review'], configurable: false });
+    const custom = defineAppCommand({ id: 'custom', title, key: 'ArrowDown', places: ['review'] });
+
+    expect(findKeyConflicts([next, line, custom])).toEqual([
+        { key: 'ArrowDown', first: next, second: custom },
+        { key: 'ArrowDown', first: line, second: custom },
+    ]);
+});

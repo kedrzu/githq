@@ -923,7 +923,7 @@ function getKeyCommands(): Command[] {
     ),
     bindCommand(
       definitions.check,
-      { ...own, when: () => currentIds().length > 0, run: () => toggleIds(currentIds()) },
+      { place: 'list', ...own, when: () => currentIds().length > 0, run: () => toggleIds(currentIds()) },
       t,
     ),
     bindCommand(definitions.checkNext, { ...own, run: () => extend(1) }, t),
@@ -933,6 +933,7 @@ function getKeyCommands(): Command[] {
     bindCommand(
       definitions.uncheck,
       {
+        place: 'list',
         ...own,
         when: () => selecting.value || checkedIds.value.length > 0,
         run: () => {

@@ -4,11 +4,12 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { next, submitReview } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 
 import * as l from './ReviewAllViewed.loc.js';
-import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   /** How many files all are. */
@@ -58,8 +59,8 @@ const note = computed(() => {
         <Button
           size="sm"
           variant="light"
-          :kbd="REVIEW_KEYS.submit"
-          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+          :kbd="keyOf(submitReview)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(submitReview))"
           :busy="sending"
           @click="emit('submit')"
         >
@@ -68,8 +69,8 @@ const note = computed(() => {
         <Button
           v-if="nextNumber !== null"
           size="sm"
-          :kbd="REVIEW_KEYS.nextPullRequest"
-          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+          :kbd="keyOf(next)"
+          :keyshortcuts="formatAriaKeyShortcuts(keyOf(next))"
           @click="emit('next')"
         >
           {{ t(l.next, { number: nextNumber }) }}

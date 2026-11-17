@@ -5,10 +5,11 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, PencilLine } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { submitReview } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 
 import * as l from './ReviewPendingToolbar.loc.js';
-import { REVIEW_KEYS } from './useReviewKeySheet.js';
 import type { ReviewFinishState } from './writing/ReviewWriting.js';
 
 const props = defineProps<{
@@ -134,8 +135,8 @@ const failureText = computed(() => {
         :class="css.reviewPendingToolbar_main"
         size="sm"
         variant="light"
-        :kbd="REVIEW_KEYS.submit"
-        :keyshortcuts="REVIEW_KEYS.submit"
+        :kbd="keyOf(submitReview)"
+        :keyshortcuts="keyOf(submitReview)"
         :busy="sending"
         @click="emit('submit')"
       >

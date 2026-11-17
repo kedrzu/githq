@@ -156,21 +156,21 @@ export const copyBranch = defineAppCommand({
 });
 
 /**
- * The viewer's draft review submitted: its dialog, on the opened pull request's thread, or — from the draft reviews — the
- * selected row's review opened at it.
+ * The viewer's draft review submitted: its dialog, on the opened pull request's thread or in its review (there with no
+ * draft too, a review of no comments), or — from the draft reviews — the selected row's review opened at it.
  */
 export const submitReview = defineAppCommand({
     id: 'submitReview',
     title: l.submitReview,
     icon: Send,
     key: 'Shift+S',
-    places: ['item', 'draftReviews'],
+    places: ['item', 'draftReviews', 'review'],
 });
 
-/** The viewer's draft review on the opened pull request thrown away, after its dialog asks. */
+/** The viewer's draft review on the opened pull request, or the one reviewed, thrown away after its dialog asks. */
 export const discardReview = defineAppCommand({
     id: 'discardReview',
     title: l.discardReview,
     icon: Trash2,
-    places: ['item'],
+    places: ['item', 'review'],
 });

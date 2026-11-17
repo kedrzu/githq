@@ -4,12 +4,13 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import { comment as commentCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import CommentEditor from '@/comments/CommentEditor.vue';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import type { ReviewThread, ReviewThreadComment as ReviewThreadCommentData } from '@/review/threads/ReviewThread.js';
 import ReviewThreadComment from '@/review/threads/ReviewThreadComment.vue';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
 import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
 import { useCommentFailureText } from '@/review/writing/useCommentFailureText.js';
@@ -66,7 +67,7 @@ const resolveFailure = computed(() => {
 });
 /** The focus is in the thread: `R` opens its reply editor, as on code review's focused thread. */
 const focused = ref(false);
-const replyKey = computed(() => (focused.value && props.replies ? REVIEW_KEYS.reply : undefined));
+const replyKey = computed(() => (focused.value && props.replies ? keyOf(commentCommand) : undefined));
 /** Hide asked whether to discard the reply: Discard folds the thread too. */
 const hiding = ref(false);
 

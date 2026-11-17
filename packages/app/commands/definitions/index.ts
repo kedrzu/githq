@@ -3,6 +3,8 @@ export * from './commits.js';
 export * from './edit.js';
 export * from './item.js';
 export * from './list.js';
+export * from './reading.js';
+export * from './review.js';
 export * from './tabs.js';
 export * from './view.js';
 export * from './workflows.js';

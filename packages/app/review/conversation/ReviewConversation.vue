@@ -4,6 +4,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue';
 
+import { toggleConversation } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
 import CommentEntry from '@/comments/CommentEntry.vue';
 import CommentFailedCard from '@/comments/CommentFailedCard.vue';
@@ -19,8 +21,6 @@ import ItemComposer from '@/item/ItemComposer.vue';
 import { useNow } from '@/services/useNow.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
-
-import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 
 import { buildConversation } from './buildConversation.js';
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
@@ -203,7 +203,7 @@ async function showOlder(load: () => Promise<void>) {
         >{{ count }}</span
       >
       <span :class="css.reviewConversation_spacer" />
-      <Kbd :keys="REVIEW_KEYS.conversation" />
+      <Kbd :keys="keyOf(toggleConversation)" />
       <IconButton
         :icon="X"
         :label="t(l.close)"

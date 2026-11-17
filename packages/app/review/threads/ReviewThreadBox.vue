@@ -16,6 +16,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronUp, CircleCheck, History, RotateCcw } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { comment as commentCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
@@ -24,7 +26,6 @@ import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
 import * as l from './ReviewThreadBox.loc.js';
 import ReviewThreadComment from './ReviewThreadComment.vue';
 import type { ReviewThread } from './ReviewThread.js';
-import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import ReviewFailureNote from '../writing/ReviewFailureNote.vue';
 import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
 import { useResolveFailureText } from '../writing/useResolveFailureText.js';
@@ -153,8 +154,8 @@ const failureText = computed(() =>
           variant="field"
           size="sm"
           block
-          :kbd="focused ? REVIEW_KEYS.reply : undefined"
-          :keyshortcuts="focused ? REVIEW_KEYS.reply : undefined"
+          :kbd="focused ? keyOf(commentCommand) : undefined"
+          :keyshortcuts="focused ? keyOf(commentCommand) : undefined"
           @click="emit('reply')"
         >
           {{ inDraft ? t(l.addToDraft) : t(l.reply) }}

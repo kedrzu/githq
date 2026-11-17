@@ -135,13 +135,16 @@ export const state = defineAppCommand({
     places: EDIT_PLACES,
 });
 
-/** The opened item's comment box; a list's row opens first. */
+/**
+ * The opened item's comment box, a list's row opening first; a reply box in the thread the keys are on — the review's
+ * under the cursor, an opened item's focused thread on the code. One command: rebinding moves both.
+ */
 export const comment = defineAppCommand({
     id: 'comment',
     title: l.comment,
     icon: MessageSquare,
     key: 'R',
-    places: ['item'],
+    places: ['item', 'review'],
 });
 
 /** A pull request's ordinary command (merging D16): its branch brought up to date with the base by a merge. */

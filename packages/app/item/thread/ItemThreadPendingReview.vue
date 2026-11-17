@@ -60,6 +60,7 @@ useCommands(() => [
   bindCommand(
     discardReview,
     {
+      place: 'item',
       section: 'item',
       when: () => finish.value !== null && finish.value.kind !== 'sending' && props.entry.review !== null,
       run: () => {

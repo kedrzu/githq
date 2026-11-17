@@ -1,18 +1,24 @@
 <!-- Find in the review's code (`Review / Find bar`, CR137–CR143): the query in a mono field growing with it, its three switches at the field's end (match case, whole word, regular expression), where the search stands ("3 of 128", "+" while more may come, "No results", an invalid or too slow pattern), previous, next and close. The field keeps its own keys: Enter and F3 and ⌘G next, with Shift previous; Esc closes, ⌘F selects what is typed. The buttons don't take the focus from it. -->
+<script lang="ts">
+/** The keys the find field takes while the cursor is in it, its own (commands D11); out of it find's commands run theirs. */
+export const FIND_FIELD_KEYS = { next: 'Enter', previous: 'Shift+Enter' } as const;
+</script>
+
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowDown, ArrowUp, CaseSensitive, Regex, Search, WholeWord, X } from 'lucide-vue-next';
 import { computed, useTemplateRef } from 'vue';
 
+import { closeFind, find, findNext, findPrevious } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { keyOf } from '@/commands/keyOf.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import IconButton from '@/components/IconButton.vue';
 import SearchField from '@/components/SearchField.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
 import ReviewToggle from '../ReviewToggle.vue';
-import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import type { FindOptions } from './compileFindQuery.js';
 import type { FindState } from './createFindRunner.js';
 import * as l from './ReviewFindBar.loc.js';
@@ -103,27 +109,23 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, REVIEW_KEYS.find)) {
+  if (matchesCommandKey(event, keyOf(find))) {
     event.preventDefault();
     selectField();
-  } else if (
-    matchesCommandKey(event, REVIEW_KEYS.findNextInField) ||
-    matchesCommandKey(event, REVIEW_KEYS.findNextF3) ||
-    matchesCommandKey(event, REVIEW_KEYS.findNext)
-  ) {
+  } else if (matchesAny(event, [FIND_FIELD_KEYS.next, keyOf(findNext), ...(findNext.otherKeys ?? [])])) {
     event.preventDefault();
     emit('next');
-  } else if (
-    matchesCommandKey(event, REVIEW_KEYS.findPreviousInField) ||
-    matchesCommandKey(event, REVIEW_KEYS.findPreviousF3) ||
-    matchesCommandKey(event, REVIEW_KEYS.findPrevious)
-  ) {
+  } else if (matchesAny(event, [FIND_FIELD_KEYS.previous, keyOf(findPrevious), ...(findPrevious.otherKeys ?? [])])) {
     event.preventDefault();
     emit('previous');
-  } else if (matchesCommandKey(event, REVIEW_KEYS.closeFind)) {
+  } else if (matchesCommandKey(event, keyOf(closeFind))) {
     event.preventDefault();
     emit('close');
   }
+}
+
+function matchesAny(event: KeyboardEvent, keys: readonly string[]) {
+  return keys.some(key => matchesCommandKey(event, key));
 }
 </script>
 
@@ -187,8 +189,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="ArrowUp"
       :label="t(l.previous)"
-      :kbd="REVIEW_KEYS.findPreviousInField"
-      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.findPreviousInField)"
+      :kbd="FIND_FIELD_KEYS.previous"
+      :keyshortcuts="formatAriaKeyShortcuts(FIND_FIELD_KEYS.previous)"
       :disabled="total === 0"
       tid="review-find-previous"
       @mousedown.prevent
@@ -198,8 +200,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="ArrowDown"
       :label="t(l.next)"
-      :kbd="REVIEW_KEYS.findNextInField"
-      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.findNextInField)"
+      :kbd="FIND_FIELD_KEYS.next"
+      :keyshortcuts="formatAriaKeyShortcuts(FIND_FIELD_KEYS.next)"
       :disabled="total === 0"
       tid="review-find-next"
       @mousedown.prevent
@@ -209,8 +211,8 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.reviewFindBar_action"
       :icon="X"
       :label="t(l.close)"
-      :kbd="REVIEW_KEYS.closeFind"
-      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.closeFind)"
+      :kbd="keyOf(closeFind)"
+      :keyshortcuts="formatAriaKeyShortcuts(keyOf(closeFind))"
       tid="review-find-close"
       @mousedown.prevent
       @click="emit('close')"

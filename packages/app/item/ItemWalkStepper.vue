@@ -3,8 +3,10 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
+import { next, previous } from '@/commands/definitions/index.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { keyOf } from '@/commands/keyOf.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 
@@ -17,10 +19,10 @@ const props = withDefaults(
     position: ItemWalkPosition;
     previousLabel: string;
     nextLabel: string;
-    /** In the app's key notation; left out, `K`/`J`. */
+    /** In the app's key notation; left out, those of `previous` and `next`. */
     stepKeys?: ItemStepKeys;
   }>(),
-  { stepKeys: () => ({ previous: 'K', next: 'J' }) },
+  { stepKeys: () => ({ previous: keyOf(previous), next: keyOf(next) }) },
 );
 
 const emit = defineEmits<{

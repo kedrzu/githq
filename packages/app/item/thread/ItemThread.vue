@@ -4,6 +4,9 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
+import { comment as commentCommand } from '@/commands/definitions/index.js';
+import { keyOf } from '@/commands/keyOf.js';
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
 import CommentEntry from '@/comments/CommentEntry.vue';
 import CommentFailedCard from '@/comments/CommentFailedCard.vue';
@@ -524,8 +527,9 @@ function findThreadCard(threadId: string) {
 }
 
 /**
- * On a code thread (F5): `J`/`K` move to the next and previous one, staying at the first and the last, and `R` opens its
- * reply editor. Taken here, before the screen's own keys — the item's and its list's — which they are anywhere else.
+ * On a code thread (F5): `J`/`K` move to the next and previous one, staying at the first and the last, and `R` (the
+ * `comment` command's key) opens its reply editor. Taken here, before the screen's own keys — the item's and its list's —
+ * which they are anywhere else.
  */
 function onKeydown(event: KeyboardEvent) {
   const { target } = event;
@@ -534,19 +538,15 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  switch (event.key) {
-    case 'j':
-    case 'k':
+  if (event.key === 'j' || event.key === 'k') {
+    event.preventDefault();
+    moveToThread(card, event.key === 'j' ? 1 : -1);
+  } else if (matchesCommandKey(event, keyOf(commentCommand))) {
+    const threadId = card.dataset.codeThread ?? '';
+    const thread = (props.reviewThreads ?? []).find(({ id }) => id === threadId);
+    if (thread?.viewerCanReply && !draftThreads.value.has(threadId) && props.reviewWriting) {
       event.preventDefault();
-      moveToThread(card, event.key === 'j' ? 1 : -1);
-      return;
-    case 'r': {
-      const threadId = card.dataset.codeThread ?? '';
-      const thread = (props.reviewThreads ?? []).find(({ id }) => id === threadId);
-      if (thread?.viewerCanReply && !draftThreads.value.has(threadId) && props.reviewWriting) {
-        event.preventDefault();
-        void openReply(threadId);
-      }
+      void openReply(threadId);
     }
   }
 }

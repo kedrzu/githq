@@ -18,23 +18,26 @@ const ROW_PLACES = [
 
 /**
  * Moves the cursor of what is listed one step down; an opened item, or a commit on its page, to the next of the list it
- * was opened from (`useItemKeys`).
+ * was opened from (`useItemKeys`); a review to the next pull request of that list.
  */
 export const next = defineAppCommand({
     id: 'next',
     title: l.next,
     key: 'J',
     otherKeys: ['ArrowDown'],
-    places: [...ROW_PLACES, 'item', 'commit'],
+    places: [...ROW_PLACES, 'item', 'commit', 'review'],
 });
 
-/** Moves the cursor of what is listed one step up; an opened item, or a commit on its page, to the previous one. */
+/**
+ * Moves the cursor of what is listed one step up; an opened item, or a commit on its page, to the previous one; a review
+ * to the previous pull request.
+ */
 export const previous = defineAppCommand({
     id: 'previous',
     title: l.previous,
     key: 'K',
     otherKeys: ['ArrowUp'],
-    places: [...ROW_PLACES, 'item', 'commit'],
+    places: [...ROW_PLACES, 'item', 'commit', 'review'],
 });
 
 /**
@@ -50,12 +53,12 @@ export const open = defineAppCommand({
     configurable: false,
 });
 
-/** Adds the selected row to the items edited together, or takes it out. */
+/** Adds the selected row to the items edited together, or takes it out; in a review, the current file to those selected. */
 export const check = defineAppCommand({
     id: 'check',
     title: l.check,
     key: 'X',
-    places: ['list'],
+    places: ['list', 'review'],
 });
 
 /** Adds the selected row and the next one to the items edited together, and moves there. */
@@ -76,12 +79,12 @@ export const checkPrevious = defineAppCommand({
     places: ['list'],
 });
 
-/** Empties the items edited together (on a phone, leaves selecting them). */
+/** Empties the items edited together (on a phone, leaves selecting them), or a review's files selected. */
 export const uncheck = defineAppCommand({
     id: 'uncheck',
     title: l.uncheck,
     key: 'Escape',
-    places: ['list'],
+    places: ['list', 'review'],
     configurable: false,
 });
 
