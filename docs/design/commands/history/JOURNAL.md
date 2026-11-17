@@ -65,3 +65,9 @@
 
 - Owner: the review's reply in a thread is the same command as the item's comment (R), named "Reply to the thread"
   there.
+
+## 2026-11-17 (delivery, M5)
+
+- Owner: the merge panel's keys stay the dialog's (D11); its methods 1–3 become a numbered family it handles.
+- Owner, key clashes: select the failed items ⌥F (D8); ⇧Enter opens a commit full screen as everywhere, its pull
+  request on ⇧O; Try again is one fixed Enter command everywhere; restart to update ⌥R everywhere.
