@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { AnyAppCommand } from './defineAppCommand.js';
 import type { NavigationPlace } from './searchNavigation.js';
 
 /**
@@ -19,8 +20,9 @@ export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item',
  * item, a commit, workflow (its runs too) or workflow run opened as one, a repository's commit graph, its Workflows
  * section, the broken workflows, a repository's workflow alerts, the tracked repositories or projects, the draft
  * reviews, a review, the changelog, a screen GitHub won't show (`CantBeRead`), a repository or a project as their menus
- * offer them (their screens too: a new issue in a project, the tabs of both), My work (its filters). Places tell which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a layer over
- * the screen (`CommandRegistry`); more are added as commands move onto definitions.
+ * offer them (their screens too: a new issue in a project, the tabs of both), My work (its filters). Places tell
+ * which keys collide, which command takes a key while two places are on screen, and that a screen's key yields to a
+ * layer over the screen (`CommandRegistry`); more are added as commands move onto definitions.
  */
 export type CommandPlace =
     | 'app'
@@ -47,8 +49,8 @@ export type CommandPlace =
  * open beside it (the list's `J`, `K` and `O` act on its row, `ListView.vue`); the commit graph with a commit open
  * beside it, and a repository's Workflows section with a workflow (their `J`/`K` move the cursor the panel follows); an
  * item opened over a review, or beside a screen GitHub won't show; a workflow's run beside its repository's Workflows
- * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the first. `app` is never in it: it is with
- * every place, and every place keeps the keyboard over it.
+ * section, whose keys are then the run's. Hand-kept, acyclic: no place keeps it over one that keeps it over the
+ * first. `app` is never in it: it is with every place, and every place keeps the keyboard over it.
  */
 export const PLACES_TOGETHER: readonly (readonly [keeper: CommandPlace, other: CommandPlace])[] = [
     ['list', 'item'],
@@ -102,7 +104,10 @@ export interface CommandParts {
     readonly rows: readonly CommandPart[];
 }
 
-/** One of {@link CommandParts}: an action (`repository.goToSection.1`, a saved view's `project.goToView.2`) or a place (`myWork:assigned`). */
+/**
+ * One of {@link CommandParts}: an action (`repository.goToSection.1`, a saved view's `project.goToView.2`) or a place
+ * (`myWork:assigned`).
+ */
 export type CommandPart =
     | { readonly kind: 'command'; readonly command: Command }
     | { readonly kind: 'place'; readonly place: NavigationPlace };
@@ -121,7 +126,15 @@ export interface Command extends CommandMarks {
      * place keeps the keyboard runs (`orderByKeyPrecedence`). Without it the section alone decides.
      */
     readonly place?: CommandPlace;
-    /** How much it matters (commands D14): higher first in its group of the command menu, a tie-break while typing. Default `0`. */
+    /**
+     * The definition it was bound from (`bindCommand`): what a button that runs it finds it by
+     * (`CommandRegistry.findByDefinition`), never by its id (commands D2).
+     */
+    readonly definition?: AnyAppCommand;
+    /**
+     * How much it matters (commands D14): higher first in its group of the command menu, a tie-break while typing.
+     * Default `0`.
+     */
     readonly priority?: number;
     /** Other words it is found by ("close" for "Done"). */
     readonly keywords?: readonly string[];

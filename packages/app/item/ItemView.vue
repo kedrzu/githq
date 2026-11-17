@@ -44,6 +44,7 @@ import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
+import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
 import {
   addToProject,
   comment,
@@ -418,7 +419,7 @@ const opened = computed(() => {
 /** The key of the item menu, on its trigger and in its footer. */
 const itemMenuKey = keyOf(itemMenu);
 /** What a list's context menu offers that the item menu leaves out: GitHub has its button beside it, full screen its own. */
-const OUTSIDE_ITEM_MENU: ReadonlySet<string> = new Set([`item.${openOnGitHub.id}`, `item.${openFullScreen.id}`]);
+const OUTSIDE_ITEM_MENU: ReadonlySet<AnyAppCommand> = new Set([openOnGitHub, openFullScreen]);
 
 /**
  * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub and full
@@ -427,7 +428,9 @@ const OUTSIDE_ITEM_MENU: ReadonlySet<string> = new Set([`item.${openOnGitHub.id}
 const itemMenuSections = computed(() =>
   itemMenuOpen.value
     ? getItemMenuSections(
-        [...getEditCommands(), ...getItemCommands()].filter(command => !OUTSIDE_ITEM_MENU.has(command.id)),
+        [...getEditCommands(), ...getItemCommands()].filter(
+          command => !(command.definition && OUTSIDE_ITEM_MENU.has(command.definition)),
+        ),
         props.item.kind,
       )
     : [],

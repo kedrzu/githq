@@ -35,7 +35,7 @@ const t = useTranslate();
 const registry = useService(CommandRegistry);
 
 /** "New issue" from the app's commands, when it can run here; with its key, should it have one. */
-const newIssue = computed(() => registry.findById(`app.${definitions.newIssue.id}`));
+const newIssue = computed(() => registry.findByDefinition(definitions.newIssue));
 
 const look = computed(
   (): { icon: LucideIcon; tone: 'good' | 'muted'; title: string; detail: string; fact?: string } => {

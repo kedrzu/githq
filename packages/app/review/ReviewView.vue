@@ -1119,6 +1119,8 @@ useCommands(() => [
     id: 'review.submit',
     title: t(l.submitReview),
     section: 'view',
+    // The review's: an item opened over it keeps the keyboard, its `⇧S` its own draft's submit (commands D13).
+    place: 'review',
     key: REVIEW_KEYS.submit,
     icon: Send,
     // With no draft a review of no comments, which names the head read: not before there is one (D33).

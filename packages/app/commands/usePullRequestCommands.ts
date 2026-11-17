@@ -10,6 +10,16 @@ import type { Command, CommandSection } from './CommandTypes.js';
 import { branch, dequeue, rerunChecks, revert, updateBranch, updateBranchByRebase } from './definitions/index.js';
 import * as l from './usePullRequestCommands.loc.js';
 
+/** The definitions of a pull request's ordinary commands, the ones {@link usePullRequestCommands} binds. */
+export const PULL_REQUEST_COMMANDS = [
+    updateBranch,
+    updateBranchByRebase,
+    rerunChecks,
+    branch,
+    revert,
+    dequeue,
+] as const;
+
 /** What {@link usePullRequestCommands} builds from. */
 export type PullRequestCommandSource = Pick<MergeContext, 'getCommands' | 'run'>;
 

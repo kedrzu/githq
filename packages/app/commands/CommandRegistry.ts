@@ -8,6 +8,7 @@ import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
 import type { Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
+import type { AnyAppCommand } from './defineAppCommand.js';
 import { getRunKeys } from './getRunKeys.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 import { orderByKeyPrecedence } from './orderByKeyPrecedence.js';
@@ -97,7 +98,7 @@ export const CommandRegistry = defineService({
             register,
             showKeySheet,
             isEnabled,
-            findById,
+            findByDefinition,
             run,
             openMenu,
             openParts,
@@ -137,11 +138,11 @@ export const CommandRegistry = defineService({
         }
 
         /**
-         * The action registered under `id` (`project.newIssueInProject`) if it can run now, for a button that runs it
-         * (the phone's New issue, My work's).
+         * The action bound from `definition` if it can run now, for a button that runs it (the phone's New issue, My
+         * work's); of several places binding it, the first by {@link orderByKeyPrecedence}.
          */
-        function findById(id: string) {
-            return findCommand(command => command.id === id);
+        function findByDefinition(definition: AnyAppCommand) {
+            return findCommand(command => command.definition === definition);
         }
 
         /** Runs the action by its key — or, where it does not run itself, opens the menu at its submenu. */

@@ -108,9 +108,7 @@ const registry = useService(CommandRegistry);
 
 /** What the phone's New issue runs: a project's own in a project, else the app's (H1, H5). */
 const newIssue = computed(
-  () =>
-    registry.findById(`project.${definitions.newIssueInProject.id}`) ??
-    registry.findById(`app.${definitions.newIssue.id}`),
+  () => registry.findByDefinition(definitions.newIssueInProject) ?? registry.findByDefinition(definitions.newIssue),
 );
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));

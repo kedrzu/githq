@@ -6,7 +6,7 @@ import type { AppCommand, AppCommandFamily, CommandPlaces } from './defineAppCom
 import { keyOf } from './keyOf.js';
 
 /** The fields of a {@link Command} that come from its definition, never from a place (commands D1). */
-type DefinedField = 'id' | 'title' | 'key' | 'otherKeys' | 'keywords' | 'priority' | 'place';
+type DefinedField = 'id' | 'title' | 'key' | 'otherKeys' | 'keywords' | 'priority' | 'place' | 'definition';
 
 /** Which of its places a binding offers a definition in: named when the definition has several. */
 export type CommandBindingPlace<TPlaces extends CommandPlaces> = TPlaces extends readonly [infer TPlace]
@@ -117,5 +117,6 @@ function toCommand<TPlaces extends CommandPlaces>(
         keywords: keywords || definition.keywords ? [...ownKeywords, ...(keywords ?? [])] : undefined,
         priority: definition.priority,
         place,
+        definition,
     };
 }

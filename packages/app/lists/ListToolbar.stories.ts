@@ -159,7 +159,8 @@ function withNewIssue({ inProject = false }: WithNewIssueOptions = {}): Decorato
                 const started = shallowRef<string | null>(null);
                 useCommands(() => [
                     {
-                        id: `app.${definitions.newIssue.id}`,
+                        id: 'newIssue',
+                        definition: definitions.newIssue,
                         title: 'New issue',
                         section: 'app',
                         run: () => {
@@ -169,7 +170,8 @@ function withNewIssue({ inProject = false }: WithNewIssueOptions = {}): Decorato
                     ...(inProject
                         ? [
                               {
-                                  id: `project.${definitions.newIssueInProject.id}`,
+                                  id: 'newIssueInProject',
+                                  definition: definitions.newIssueInProject,
                                   title: 'New issue in Platform Q4',
                                   section: 'view' as const,
                                   key: keyOf(definitions.newIssueInProject),

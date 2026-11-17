@@ -36,6 +36,7 @@ test('the definition gives what it is, the binding what it does there', () => {
         keywords: ['browser'],
         priority: 2,
         place: 'item',
+        definition: OPEN,
         section: 'item',
         run,
         when,

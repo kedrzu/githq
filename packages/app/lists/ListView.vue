@@ -12,7 +12,7 @@ import type { Command, CommandSubject } from '@/commands/CommandTypes.js';
 import * as definitions from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
+import { PULL_REQUEST_COMMANDS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -63,16 +63,7 @@ const OWN_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 /** The keys of a pull request's ordinary commands, which a stack's entry doesn't take (D11). */
-const ORDINARY_KEYS: ReadonlySet<string> = new Set(
-  [
-    definitions.updateBranch,
-    definitions.updateBranchByRebase,
-    definitions.rerunChecks,
-    definitions.branch,
-    definitions.revert,
-    definitions.dequeue,
-  ].map(definition => keyOf(definition)),
-);
+const ORDINARY_KEYS: ReadonlySet<string> = new Set(PULL_REQUEST_COMMANDS.map(definition => keyOf(definition)));
 
 const props = withDefaults(
   defineProps<{
