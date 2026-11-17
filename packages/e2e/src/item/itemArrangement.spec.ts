@@ -155,7 +155,7 @@ test('a page opened by its address: "Back to the panel" puts the item in the pan
     await expect(item.root).toBeHidden();
 });
 
-test("Shift+Enter over a screen with no list: a commit's pull request goes from the panel to its page, and Escape back over the commit graph", async ({
+test("⇧O opens a commit's pull request in the panel over the graph, Shift+Enter takes it to its page, and Escape back over the commit graph", async ({
     page,
     github,
 }) => {
@@ -178,11 +178,11 @@ test("Shift+Enter over a screen with no list: a commit's pull request goes from 
     const item = new ItemViewHarness(page);
     await expect(graph.cursorRow).toContainText('fix: export the CSV header');
     await page.keyboard.press('Enter');
-    // Shift+Enter opens the pull request the details show, read after the commit: until then it has nothing to open.
+    // ⇧O opens the pull request the details show, read after the commit: until then it has nothing to open.
     await expect(graph.details.getByRole('button', { name: /Fix the crash on start/ })).toBeVisible();
 
     // The commit's pull request, in the panel over the graph.
-    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.press('Shift+O');
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(item.fullScreenButton).toBeVisible();
     const panel = `/${SAMPLE_REPOSITORY}/commits?pane=issue&issue=octocat%7Capp%7C4`;
