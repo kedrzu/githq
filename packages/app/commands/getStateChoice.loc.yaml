@@ -1,0 +1,15 @@
+closeIssue:
+  en: Close issue
+closePullRequest:
+  en: Close pull request
+closeItems:
+  plural: count
+  en:
+    one: Close 1 item…
+    many: 'Close {count} items…'
+closeCompleted:
+  en: Close as completed
+closeNotPlanned:
+  en: Close as not planned
+reopen:
+  en: Reopen

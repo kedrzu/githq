@@ -226,19 +226,6 @@ const Harness = defineComponent({
                             }),
                         places: D1_ISSUE_DETAIL.projects.slice(0, 1),
                         now: SAMPLE_NOW,
-                        stateOptions: [
-                            {
-                                key: 'completed',
-                                text: 'Close as completed',
-                                request: { kind: 'close', reason: 'COMPLETED' },
-                            },
-                            {
-                                key: 'notPlanned',
-                                text: 'Close as not planned',
-                                request: { kind: 'close', reason: 'NOT_PLANNED' },
-                            },
-                        ],
-                        stateTitle: 'Close 3 items…',
                         edit: edit,
                         setField: (place, field, value) =>
                             edit({

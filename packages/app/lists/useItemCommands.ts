@@ -1,37 +1,22 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import { CircleCheckBig, CircleSlash, GitPullRequestClosed, PanelRight, RotateCcw } from 'lucide-vue-next';
+import { PanelRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { bindCommand } from '@/commands/bindCommand.js';
-import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
-import {
-    addToProject,
-    comment,
-    copyBranch,
-    copyLink,
-    copyReference,
-    open as openItem,
-    openFiles,
-    openFullScreen,
-    openOnGitHub,
-} from '@/commands/definitions/index.js';
-import type { EditCommandsParams, StateOption } from '@/commands/useEditCommands.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
+import { comment, open as openItem, openFullScreen, openOnGitHub } from '@/commands/definitions/index.js';
+import type { EditCommandsParams } from '@/commands/useEditCommands.js';
 import { useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
-import {
-    IssueRoutes,
-    formatItemReference,
-    formatShortReference,
-    getItemPagePath,
-    getItemReference,
-} from '@/item/itemRoutes.js';
+import { IssueRoutes, formatItemReference, getItemPagePath, getItemReference } from '@/item/itemRoutes.js';
+import { useItemActionCommands } from '@/item/useItemActionCommands.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -77,6 +62,7 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
     const router = useRouter();
     const merging = injectContext(MergeContext, { optional: true });
     const editCommands = useEditCommands();
+    const actions = useItemActionCommands();
 
     // Through the detail too: a pull request opened by its address (its review) need not be in any list.
     const selected = computed(() => ids().flatMap(id => details.getItem(id) ?? []));
@@ -111,8 +97,6 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
             getPermissions: item => editor.getPermissions(item),
             places: places.value,
             now: clock.now(),
-            stateOptions: getStateOptions(),
-            stateTitle: getStateTitle(),
             edit,
             merge,
             pullRequestCommands: merging,
@@ -142,32 +126,17 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
                 },
                 t,
             ),
-            bindCommand(
-                copyLink,
-                {
-                    place: 'item',
-                    section: own,
-                    title: item ? undefined : t(l.copyLinks),
-                    run: () => copy(selected.value.map(candidate => candidate.url).join('\n')),
-                },
-                t,
-            ),
+            actions.copyLink(selected.value, own),
         ];
         if (selected.value.some(candidate => editor.getPermissions(candidate).addToProject)) {
             commands.push(
-                bindCommand(
-                    addToProject,
-                    {
-                        place: 'item',
-                        section: own,
-                        prepare: () => void repositories.ensureViewerProjects(),
-                        options: () => ({
-                            loading: repositories.viewerProjects === null,
-                            options: getProjectOptions(),
-                        }),
-                    },
-                    t,
-                ),
+                actions.addToProject({
+                    section: own,
+                    items: selected.value,
+                    projects: () => repositories.viewerProjects,
+                    prepare: () => void repositories.ensureViewerProjects(),
+                    add: project => edit({ kind: 'addToProject', project }),
+                }),
             );
         }
 
@@ -200,34 +169,7 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
             );
         }
 
-        if (item.kind === 'issue') {
-            commands.push(
-                bindCommand(
-                    copyReference,
-                    {
-                        place: 'item',
-                        section: own,
-                        detail: formatShortReference(item),
-                        run: () => copy(`${item.repository.nameWithOwner}#${item.number}`),
-                    },
-                    t,
-                ),
-            );
-        } else {
-            commands.push(
-                bindCommand(
-                    openFiles,
-                    { place: 'item', section: own, run: () => browser.openInNewTab(`${item.url}/files`) },
-                    t,
-                ),
-                bindCommand(
-                    copyBranch,
-                    { place: 'item', section: own, detail: item.headRefName, run: () => copy(item.headRefName) },
-                    t,
-                ),
-            );
-        }
-
+        commands.push(...actions.kindCommands(item, own));
         return commands;
     }
 
@@ -249,73 +191,6 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
         };
     }
 
-    /** Close the open ones — a pull request alone without a reason — or reopen them when all are closed. */
-    function getStateOptions(): StateOption[] {
-        const closable = selected.value.filter(item => editor.getPermissions(item).state);
-        if (closable.length === 0) {
-            return [];
-        }
-
-        if (closable.every(item => item.state !== 'OPEN')) {
-            return [{ key: 'reopen', text: t(l.reopen), icon: RotateCcw, request: { kind: 'reopen' } }];
-        }
-
-        if (one.value?.kind === 'pullRequest') {
-            return [
-                {
-                    key: 'close',
-                    text: t(l.closePullRequest),
-                    icon: GitPullRequestClosed,
-                    request: { kind: 'close', reason: 'COMPLETED' },
-                },
-            ];
-        }
-
-        return [
-            {
-                key: 'completed',
-                text: t(l.closeCompleted),
-                icon: CircleCheckBig,
-                request: { kind: 'close', reason: 'COMPLETED' },
-            },
-            {
-                key: 'notPlanned',
-                text: t(l.closeNotPlanned),
-                icon: CircleSlash,
-                request: { kind: 'close', reason: 'NOT_PLANNED' },
-            },
-        ];
-    }
-
-    function getStateTitle() {
-        const item = one.value;
-        if (selected.value.every(candidate => candidate.state !== 'OPEN')) {
-            return t(l.reopen);
-        }
-
-        if (!item) {
-            return t(l.closeItems, { count: selected.value.length });
-        }
-
-        return item.kind === 'issue' ? t(l.closeIssue) : t(l.closePullRequest);
-    }
-
-    /** The projects not every one of the items is in already. */
-    function getProjectOptions(): CommandOption[] {
-        return (repositories.viewerProjects ?? [])
-            .filter(
-                project =>
-                    !project.closed &&
-                    !selected.value.every(item => item.projects.some(place => place.projectId === project.id)),
-            )
-            .map(project => ({
-                value: project.id,
-                label: project.title,
-                detail: project.owner,
-                pick: () => edit({ kind: 'addToProject', project }),
-            }));
-    }
-
     /** Its page; the one open in the panel expanded from it, as the header's "Open full screen" does, so Escape comes back. */
     function getPageLocation(item: Item): RouteLocationRaw {
         const reference = getItemReference(item);
@@ -330,9 +205,5 @@ export function useItemCommands({ ids, place: editPlace, section, open, merge }:
 
     function edit(request: EditRequest) {
         void editor.edit(ids(), request);
-    }
-
-    function copy(text: string) {
-        void navigator.clipboard.writeText(text);
     }
 }

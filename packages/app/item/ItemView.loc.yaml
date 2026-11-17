@@ -26,22 +26,12 @@ closes:
   en: Closes
 stateActions:
   en: Close or reopen
-closeCompleted:
-  en: Close as completed
-closeNotPlanned:
-  en: Close as not planned
-closePullRequest:
-  en: Close pull request
-reopen:
-  en: Reopen
 readyForReview:
   en: Mark ready for review
 convertToDraft:
   en: Convert to draft
 requestReviewers:
   en: Request reviewers…
-closeIssueCommand:
-  en: Close issue
 itemMenuLabel:
   en: 'Actions of {reference}'
 resizeSummary:

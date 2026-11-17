@@ -1,6 +1,5 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import { GitPullRequest, GitPullRequestDraft } from 'lucide-vue-next';
 
 import type { PickerOption } from '@/components/Picker.vue';
@@ -21,6 +20,7 @@ import { bindCommand } from './bindCommand.js';
 import type { BoundCommand, CommandOption } from './CommandTypes.js';
 import type { AppCommand } from './defineAppCommand.js';
 import * as definitions from './definitions/index.js';
+import { getStateChoice } from './getStateChoice.js';
 import * as l from './useEditCommands.loc.js';
 import { useProjectFieldOptions } from './useProjectFieldOptions.js';
 import type { PullRequestCommandPlace, PullRequestCommandSource } from './usePullRequestCommands.js';
@@ -39,14 +39,6 @@ export type EditCommandKind =
     | ProjectFieldRole
     | 'state';
 
-/** A way to close or reopen: an entry of the submenu, or the action itself when it is the only one. */
-export interface StateOption {
-    readonly key: string;
-    readonly text: string;
-    readonly icon?: LucideIcon;
-    readonly request: EditRequest;
-}
-
 /** What {@link useEditCommands} builds the actions from; read every time they are. */
 export interface EditCommandsParams {
     /** `list` for the items checked, `item` for the opened one or a list's row (`useItemCommands`), or a review. */
@@ -64,9 +56,6 @@ export interface EditCommandsParams {
     readonly places: readonly ItemDetailProject[];
     /** Epoch ms: which iteration is current. */
     readonly now: number;
-    /** The close / reopen entries the user may use; the action is there when there are any. */
-    readonly stateOptions: readonly StateOption[];
-    readonly stateTitle: string;
     /**
      * The selection's assignees, labels, milestone and project fields (status, priority, iteration) say on their rows
      * the value every item has, or "mixed" when they differ: a phone's command menu, which has no toolbar of pickers
@@ -378,14 +367,15 @@ export function useEditCommands(): (params: EditCommandsParams) => BoundCommand[
         );
     }
 
+    /** Close or reopen, offered where any of the items may take it (`getStateChoice`). */
     function stateCommand(params: EditCommandsParams): BoundCommand | null {
-        const { stateOptions } = params;
+        const { title, options: stateOptions } = getStateChoice(params.items, item => params.getPermissions(item), t);
         const [first] = stateOptions;
         if (!first) {
             return null;
         }
 
-        const where = { place: params.place, title: params.stateTitle, section: params.section };
+        const where = { place: params.place, title, section: params.section };
 
         // Nothing to choose between (a pull request has no reason to close for, reopening is one thing): it just runs.
         if (stateOptions.length === 1) {

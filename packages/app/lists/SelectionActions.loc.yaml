@@ -43,10 +43,6 @@ noMilestone:
   en: No milestone
 close:
   en: Close
-closeCompleted:
-  en: Close as completed
-closeNotPlanned:
-  en: Close as not planned
 clear:
   en: Clear selection
 filterAssignees:
@@ -67,11 +63,6 @@ pullRequests:
   en:
     one: 1 pull request
     many: '{count} pull requests'
-closeCommand:
-  plural: count
-  en:
-    one: Close 1 item…
-    many: 'Close {count} items…'
 onlyWhatApplies:
   plural: count
   en:

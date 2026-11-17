@@ -36,30 +36,18 @@ import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheckBig, CircleSlash, GitPullRequestClosed, ChevronDown, RotateCcw } from 'lucide-vue-next';
+import { ChevronDown } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
-import type { BoundCommand, CommandOption } from '@/commands/CommandTypes.js';
+import type { BoundCommand } from '@/commands/CommandTypes.js';
 import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
-import {
-  addToProject,
-  comment,
-  copyBranch,
-  copyLink,
-  copyReference,
-  itemMenu,
-  openFiles,
-  openFullScreen,
-  openOnGitHub,
-  review,
-} from '@/commands/definitions/index.js';
+import { comment, itemMenu, openFullScreen, openOnGitHub, review } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { useEditCommands } from '@/commands/useEditCommands.js';
-import type { StateOption } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import Avatar from '@/components/Avatar.vue';
 import ColumnSplit from '@/components/ColumnSplit.vue';
@@ -112,6 +100,7 @@ import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
+import { useItemActionCommands } from './useItemActionCommands.js';
 import { useItemKeys } from './useItemArrangement.js';
 
 const props = withDefaults(
@@ -219,6 +208,7 @@ provideContext(KeyHintsContext, {
 const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
+const actions = useItemActionCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
 const dockedComposerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('dockedComposer');
 /** On a phone, the composer docked above the keyboard (mobile D51): grown from the command line's pill. */
@@ -319,7 +309,7 @@ const requiredCheckIds = computed(() =>
 const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
 const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.editing?.metadata, props.viewerCanEnableAutoMerge));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
-/** `owner/name#123`: what the item menu and the pickers name it by, and what "Copy reference" copies. */
+/** `owner/name#123`: what the item menu and the pickers name it by. */
 const referenceText = computed(() => `${props.item.repository.nameWithOwner}#${props.item.number}`);
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
@@ -373,43 +363,6 @@ const reviewerOptions = computed(() =>
     ? pickerOptions.assignees([props.editing.metadata], props.editing.viewerLogin)
     : null,
 );
-/** The state menu's entries the user may use, for the item as it is. */
-const stateActions = computed(() => {
-  const { item } = props;
-  const actions: StateOption[] = [];
-  if (permissions.value?.state) {
-    if (item.state === 'OPEN') {
-      if (item.kind === 'issue') {
-        actions.push(
-          {
-            key: 'completed',
-            text: t(l.closeCompleted),
-            icon: CircleCheckBig,
-            request: { kind: 'close', reason: 'COMPLETED' },
-          },
-          {
-            key: 'notPlanned',
-            text: t(l.closeNotPlanned),
-            icon: CircleSlash,
-            request: { kind: 'close', reason: 'NOT_PLANNED' },
-          },
-        );
-      } else {
-        actions.push({
-          key: 'close',
-          text: t(l.closePullRequest),
-          icon: GitPullRequestClosed,
-          request: { kind: 'close', reason: 'COMPLETED' },
-        });
-      }
-    } else if (!(item.kind === 'pullRequest' && item.merged)) {
-      actions.push({ key: 'reopen', text: t(l.reopen), icon: RotateCcw, request: { kind: 'reopen' } });
-    }
-  }
-
-  return actions;
-});
-
 const opened = computed(() => {
   const ago = formatTimeAgo(Date.parse(props.item.createdAt), props.now);
   const { author } = props.item;
@@ -559,8 +512,6 @@ function getEditCommands(): BoundCommand[] {
     getPermissions: () => editing.permissions,
     places: (props.detail?.projects ?? []).filter(place => place.viewerCanUpdate),
     now: props.now,
-    stateOptions: stateActions.value,
-    stateTitle: getStateTitle(),
     edit,
     merge,
     mergeExternal: phone.active,
@@ -640,15 +591,13 @@ function getItemCommands(): BoundCommand[] {
   ];
   if (permissions.value?.addToProject) {
     commands.push(
-      bindCommand(
-        addToProject,
-        {
-          section: 'item',
-          prepare: () => emit('needProjects'),
-          options: () => ({ loading: editing?.viewerProjects == null, options: getProjectOptions() }),
-        },
-        t,
-      ),
+      actions.addToProject({
+        section: 'item',
+        items: [item],
+        projects: () => editing?.viewerProjects ?? null,
+        prepare: () => emit('needProjects'),
+        add: project => emit('edit', { kind: 'addToProject', project }),
+      }),
     );
   }
 
@@ -683,35 +632,8 @@ function getItemCommands(): BoundCommand[] {
       },
       t,
     ),
-    bindCommand(
-      openFiles,
-      { section: 'item', when: () => pr.value !== null, run: () => browser.openInNewTab(`${item.url}/files`) },
-      t,
-    ),
-    bindCommand(
-      copyLink,
-      { place: 'item', section: 'item', run: () => void navigator.clipboard.writeText(item.url) },
-      t,
-    ),
-    bindCommand(
-      copyReference,
-      {
-        section: 'item',
-        detail: formatShortReference(item),
-        run: () => void navigator.clipboard.writeText(referenceText.value),
-      },
-      t,
-    ),
-    bindCommand(
-      copyBranch,
-      {
-        section: 'item',
-        detail: pr.value?.headRefName,
-        when: () => pr.value !== null,
-        run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
-      },
-      t,
-    ),
+    actions.copyLink([item], 'item'),
+    ...actions.kindCommands(item, 'item'),
   );
 
   commands.push(keys.commands.closeFullScreen);
@@ -720,27 +642,6 @@ function getItemCommands(): BoundCommand[] {
   }
 
   return commands;
-}
-
-function getStateTitle() {
-  const { item } = props;
-  if (item.state !== 'OPEN') {
-    return t(l.reopen);
-  }
-
-  return item.kind === 'issue' ? t(l.closeIssueCommand) : t(l.closePullRequest);
-}
-
-function getProjectOptions(): CommandOption[] {
-  const inProjects = new Set(props.item.projects.map(project => project.projectId));
-  return (props.editing?.viewerProjects ?? [])
-    .filter(project => !project.closed && !inProjects.has(project.id))
-    .map(project => ({
-      value: project.id,
-      label: project.title,
-      detail: project.owner,
-      pick: () => emit('edit', { kind: 'addToProject', project }),
-    }));
 }
 </script>
 
