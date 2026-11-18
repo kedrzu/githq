@@ -1,4 +1,4 @@
-<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says after them (`tail`), its ⋯ at the card's edge — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). On an item's thread a card is a stop of the reading cursor (`stop`, `data-reading-stop`): the cursor on it, its border turns `current-edge` and its head `current-header`, as code review's current file (`Activity / Comment · current`) — a linked or a draft card keeps its own border and takes the head alone — and it is the `aria-current` one; where no screen provides a cursor (code review's conversation), nothing marks it. Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says after them (`tail`), its ⋯ at the card's edge — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). On an item's thread a card is a stop of the reading cursor (`stop`, `data-reading-stop`): the cursor on it, its border turns `current-edge` and its head `current-header`, as code review's current file (`Activity / Comment · current`) — a linked or a draft card keeps its own border and takes the head alone — and it is the `aria-current` one; where no screen provides a cursor (code review's conversation), nothing marks it. Its menu (`menu`) opens from the ⋯ (`menuOpen`, also from outside: the item's `.`) and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -64,6 +64,9 @@ defineSlots<{
   /** A band at the bottom of the card, under what was written. */
   footer?(): unknown;
 }>();
+
+/** Its menu, from the ⋯, is open: opened from outside too, by the screen's key for the card (`.`). */
+const menuOpen = defineModel<boolean>('menuOpen', { default: false });
 
 const t = useTranslate();
 const headRef = useTemplateRef<HTMLElement>('head');
@@ -175,6 +178,7 @@ watchPostEffect(() => {
           <span :class="css.commentCard_spacer" />
           <Menu
             v-if="$slots.menu"
+            v-model:open="menuOpen"
             align="end"
             :label="description ? t(l.descriptionMenu) : t(l.commentMenu)"
             @close-auto-focus="emit('menuClose', $event)"

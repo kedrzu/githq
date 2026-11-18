@@ -169,6 +169,14 @@ export class ItemViewHarness {
         return this.comments.and(this.root.locator('[aria-current="location"]'));
     }
 
+    /**
+     * The stop of its thread the reading cursor is on, marked `aria-current="true"` (D44): on its page only; none in the
+     * panel. Its key is `data-reading-stop`: `description`, a comment's id, `fold`…
+     */
+    get readingCursor(): Locator {
+        return this.root.locator('[data-reading-stop][aria-current="true"]');
+    }
+
     /** A comment or a reviewer's line holding `text`. */
     entry(text: string): Locator {
         return this.root.getByRole('listitem').filter({ hasText: text });

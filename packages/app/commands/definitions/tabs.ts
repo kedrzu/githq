@@ -40,23 +40,27 @@ export const showFilter = defineAppCommand({
 
 /**
  * Steps to the tab before the one shown, wrapping around: a repository's sections, a project's saved views; a review's
- * previous file. One command for all, so rebinding moves all; a symbol, not a control's own key (D4), so it can be
- * rebound. The binding names what it steps through ("Previous section"); keys and the help sheet only, as in ⌘K it
- * would stand between the tabs.
+ * previous file; on an opened item's page, the reading cursor to the previous comment of its thread, staying at the
+ * first. One command for all, so rebinding moves all; a symbol, not a control's own key (D4), so it can be rebound. The
+ * binding names what it steps through ("Previous section"); keys and the help sheet only, as in ⌘K it would stand
+ * between the tabs.
  */
 export const previousTab = defineAppCommand({
     id: 'previousTab',
     title: l.previousTab,
     icon: ChevronLeft,
     key: '[',
-    places: ['repository', 'project', 'review'],
+    places: ['repository', 'project', 'review', 'item'],
 });
 
-/** Steps to the tab after the one shown, wrapping around; as {@link previousTab}. */
+/**
+ * Steps to the tab after the one shown, wrapping around; as {@link previousTab}. On an opened item's page, the next
+ * comment, staying at the last; reaching the fold, it unfolds the middle and lands on the first comment it revealed.
+ */
 export const nextTab = defineAppCommand({
     id: 'nextTab',
     title: l.nextTab,
     icon: ChevronRight,
     key: ']',
-    places: ['repository', 'project', 'review'],
+    places: ['repository', 'project', 'review', 'item'],
 });

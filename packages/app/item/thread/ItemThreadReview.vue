@@ -128,6 +128,8 @@ function toggle(threadId: string, open: boolean) {
     :linked="linked"
     :stop="entry.id"
     :stop-kind="bodyShown || !dismissed ? 'comment' : 'row'"
+    :menu-open="actions?.openMenu === entry.id"
+    @update:menu-open="actions?.setMenuOpen(entry.id, $event)"
     @menu-close="actions?.onMenuClose($event)"
   >
     <template #verdict>

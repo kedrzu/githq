@@ -1,4 +1,6 @@
 import {
+    CircleCheck,
+    Ellipsis,
     FileDiff,
     GitBranch,
     Github,
@@ -6,8 +8,10 @@ import {
     Link,
     Maximize2,
     Minimize2,
+    Pencil,
     Send,
     SquareKanban,
+    TextQuote,
     Trash2,
 } from 'lucide-vue-next';
 
@@ -173,4 +177,49 @@ export const discardReview = defineAppCommand({
     title: l.discardReview,
     icon: Trash2,
     places: ['item', 'review'],
+});
+
+/**
+ * Opens the menu (⋯) of the card the reading cursor is on, on an opened item's page: the description, a comment or a
+ * review. Not offered on a stop with no menu (a commit, an event, a comment of a code thread).
+ */
+export const commentMenu = defineAppCommand({
+    id: 'commentMenu',
+    title: l.commentMenu,
+    icon: Ellipsis,
+    key: '.',
+    places: ['item'],
+});
+
+/** Quotes the card the reading cursor is on into the composer, as its menu's Quote reply does, on an item's page. */
+export const quoteComment = defineAppCommand({
+    id: 'quoteComment',
+    title: l.quoteComment,
+    icon: TextQuote,
+    key: 'Q',
+    places: ['item'],
+});
+
+/**
+ * Resolves the code thread the reading cursor is in, or unresolves it, on an item's page, where GitHub lets the viewer;
+ * the binding names which way it goes and gives its icon.
+ */
+export const resolveThread = defineAppCommand({
+    id: 'resolveThread',
+    title: l.resolveThread,
+    icon: CircleCheck,
+    key: 'H',
+    places: ['item'],
+});
+
+/**
+ * Edits the comment or the description the reading cursor is on in place, on an item's page, where GitHub lets the
+ * viewer; with its editor open already, puts the text cursor back in it.
+ */
+export const editComment = defineAppCommand({
+    id: 'editComment',
+    title: l.editComment,
+    icon: Pencil,
+    key: 'W',
+    places: ['item'],
 });

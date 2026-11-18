@@ -36,6 +36,8 @@ export interface CommentActions {
     readonly focusedEditor: string | null | undefined;
     /** The card whose ⋯ takes the focus, for the moment it takes it. */
     readonly menuFocus: string | null | undefined;
+    /** The card whose menu is open from its ⋯ or its key, by its comment's or review's id (`null` the description). */
+    readonly openMenu: string | null | undefined;
     /** The comment asked to be deleted, while the dialog asks. */
     readonly deletingId: string | null;
     /** Not as the edit started, or not taken by GitHub: an edit GitHub refused counts as changed. */
@@ -47,6 +49,13 @@ export interface CommentActions {
     setAsking(id: string | null, asking: boolean): void;
     /** Edit, from the card's menu: the editor opens with the comment's Markdown and takes the focus. */
     startEdit(id: string | null, body: string): void;
+    /**
+     * Edit by its key, with no menu closing after: the editor opens with the comment's Markdown and takes the focus, or,
+     * open already, takes it again.
+     */
+    editByKey(id: string | null, body: string): Promise<void>;
+    /** The card's menu opened (from its ⋯ or its key) or closed. */
+    setMenuOpen(id: string | null, open: boolean): void;
     /** Cancel, or Discard once asked: the focus back to the card's ⋯, and on where the user was leaving to if asked. */
     cancelEdit(id: string | null): void;
     /** Saved as it was: nothing to send, unless it is an edit GitHub did not take. */
@@ -80,6 +89,7 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
     const asking = ref<string | null | undefined>(undefined);
     const focusedEditor = ref<string | null | undefined>(undefined);
     const menuFocus = ref<string | null | undefined>(undefined);
+    const openMenu = ref<string | null | undefined>(undefined);
     const deletingId = ref<string | null>(null);
     /** Where the user was going when leaving asked: Discard goes on there, Keep editing forgets it. */
     let leaving: (() => void) | null = null;
@@ -99,6 +109,7 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
                 leaving = null;
                 focusedEditor.value = undefined;
                 deletingId.value = null;
+                openMenu.value = undefined;
             }
 
             for (const edit of failed ?? []) {
@@ -115,12 +126,15 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
         asking,
         focusedEditor,
         menuFocus,
+        openMenu,
         deletingId,
         isChanged,
         getFailure,
         setText,
         setAsking,
         startEdit,
+        editByKey,
+        setMenuOpen,
         cancelEdit,
         saveEdit,
         quote,
@@ -135,6 +149,10 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
 
     function openEditor(id: string | null, text: string) {
         editors.value = new Map(editors.value).set(id, { text, start: text });
+        // The editor takes the card's place, its menu going with it before it could say it closed.
+        if (openMenu.value === id) {
+            openMenu.value = undefined;
+        }
     }
 
     function closeEditor(id: string | null) {
@@ -176,6 +194,27 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
         editOpened = true;
         focusedEditor.value = id;
         openEditor(id, body);
+    }
+
+    async function editByKey(id: string | null, body: string) {
+        if (!editors.value.has(id)) {
+            focusedEditor.value = id;
+            openEditor(id, body);
+            return;
+        }
+
+        // The editor takes the focus when it is told to: told again a tick on.
+        focusedEditor.value = undefined;
+        await nextTick();
+        focusedEditor.value = id;
+    }
+
+    function setMenuOpen(id: string | null, open: boolean) {
+        if (open) {
+            openMenu.value = id;
+        } else if (openMenu.value === id) {
+            openMenu.value = undefined;
+        }
     }
 
     function cancelEdit(id: string | null) {

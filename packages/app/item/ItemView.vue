@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); `⇧Enter` opens full screen, never from a text field, and on a page expanded from the panel Escape goes back to it ("Close full screen") — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — and the reference heads the title instead, opening the item menu at the bottom (D45, `Menu`'s sheet). Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); `⇧Enter` opens full screen, never from a text field, and on a page expanded from the panel Escape goes back to it ("Close full screen") — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. On a phone (mobile MB33, MB62) the header (`ItemHeader`) is the phone's top bar: back at the left, naming what it returns to (`backTitle`: the list, or the repository with none), previous and next at the right while the item is in a list, nothing else — and the reference heads the title instead, opening the item menu at the bottom (D45, `Menu`'s sheet). Its width below the header decides the layout, not the arrangement (measured, `twoColumns`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px on a page, 1300px in the panel (a panel that wide is dragged so on purpose), they scroll as one column, the panel as it always was and a page centred at the reading width; from there they stand side by side and scroll as one, the wheel scrolling them wherever the pointer is: the summary at the left in a column of its own (`ColumnSplit`: 440px by default, its edge dragged or moved by the arrow keys from 360 to 560px, the width kept on this device, the timeline keeping 560px), sticky in that scroll (`StickyFit`: at the top while it fits the view, once taller scrolled until its bottom meets the view's, then kept there), the timeline beside it. In the panel the two take its width, the thread at most the reading width; on a page they stand in a box of their own, centred, with two widths the user chooses: the box's, a maximum, its left or right edge dragged (or moved by the arrow keys) symmetrically, synced with the user's settings, from the two columns' narrowest (360 + 560px) to the width there is — dragged to the edge, all the width there is in any window — by default the summary's 440px beside a timeline at the reading width, a narrower window drawing it narrower without changing it; and the summary's, inside it, its edge moving only the edge between the columns, the thread filling the timeline. The columns and their edges run the whole scroll, at least the view's height. Unlike the app's other columns the two are one surface, the edges drawn only while hovered, dragged or focused, both columns' content 24px from every edge in the panel, 32px on a page, so the edge between them lies midway; the summary moves between the two places as it is (`Teleport`), nothing in it remounted. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. On a phone (mobile D29) the bar is the phone's strip under the top bar — "Stack · 2 of 4", the pips, ← and → — and the content has no rows: a tap on the strip drops them (D48). A phone shows no key hints anywhere in the item (mobile D52, `KeyHintsContext`), and "Merge…", which it has no panel for yet (D4), opens the pull request on github.com. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); on a phone (mobile D51) the thread ends with its last card and the composer is docked above the keyboard instead (`PhoneKeyboardDock`), grown from the command line's pill (`focusComposer`) — one composer on screen, the command line's ⌘ aside while it is open — and back to the pill once a comment, a close or a reopen goes, Escape is pressed or the screen around it is tapped, what is typed kept in the item's draft; the thread's scroll ends above it; for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). On its page, not on a phone, the thread has the reading cursor (D44, `useReadingCursor`), starting on the comment the address links to, else on the first stop on screen: ↓ ↑ and PageDown PageUp move it, `[` `]` step between comments, `]` unfolding the fold before the next one; `R` replies in the code thread it is in, else goes to the composer, `.` opens its card's menu, `Q` quotes it, `H` resolves or unresolves its code thread and `W` edits it — each only where the card's menu or the thread offers it. In the panel the list beside it keeps ↓ ↑ and `[` `]`, and nothing is marked. -->
 <script lang="ts">
 /**
  * From this width of an opened item below its header on a page, it stands in two columns: an issue's summary and
@@ -36,8 +36,8 @@ import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { ChevronDown } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import { bindCommand } from '@/commands/bindCommand.js';
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
@@ -45,7 +45,23 @@ import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import type { BoundCommand } from '@/commands/CommandTypes.js';
 import type { AnyAppCommand } from '@/commands/defineAppCommand.js';
-import { comment, itemMenu, openFullScreen, openOnGitHub, review } from '@/commands/definitions/index.js';
+import {
+  comment,
+  commentMenu,
+  editComment,
+  itemMenu,
+  lineDown,
+  lineUp,
+  nextTab,
+  openFullScreen,
+  openOnGitHub,
+  pageDown,
+  pageUp,
+  previousTab,
+  quoteComment,
+  resolveThread,
+  review,
+} from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { useEditCommands } from '@/commands/useEditCommands.js';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
@@ -70,6 +86,10 @@ import { countMergeChecks } from '@/merge/countMergeChecks.js';
 import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
+import { getReadingCursorTop } from '@/reading/getReadingCursorTop.js';
+import { provideReadingCursor } from '@/reading/ReadingCursor.js';
+import type { ReadingCursor } from '@/reading/ReadingCursor.js';
+import { useReadingCursor } from '@/reading/useReadingCursor.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
@@ -99,6 +119,7 @@ import StackBar from './StackBar.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
+import type { ThreadStopActions } from './thread/ItemThread.vue';
 import ItemThreadComposer from './thread/ItemThreadComposer.vue';
 import { useItemActionCommands } from './useItemActionCommands.js';
 import { useItemKeys } from './useItemArrangement.js';
@@ -248,6 +269,19 @@ const pageWidth = useMaxWidth({
   min: PAGE_WIDTH.min,
   room: columnsWidth,
 });
+/** On its page, not on a phone (mobile D52): the thread has the reading cursor (D44), its keys and its marking. */
+const reading = computed(() => props.arrangement === 'page' && !phone.active);
+const cursor = shallowRef<ReadingCursor | null>(null);
+// In the panel no stop is marked: the list beside it has the keyboard.
+provideReadingCursor(computed(() => (reading.value ? cursor.value : null)));
+const readingCursor = useReadingCursor({
+  scroller: getScroller,
+  cursor,
+  isActive: reading,
+  coveredBottom: dockCover,
+});
+/** The item and the linked comment the cursor was placed for as it opened: placed again only for another one. */
+let placedFor: { itemId: string; anchor: string | null } | null = null;
 
 // Measured before the first paint, so a page opens in two columns rather than one for a frame. The body decides the
 // layout, not the scroll inside it, whose scrollbar comes and goes with the layout.
@@ -286,6 +320,14 @@ watch(
 watch(twoColumns, () => {
   stackDropped.value = false;
 });
+
+// The cursor starts on the comment the address links to, else on the first stop on screen: as the item opens, another
+// opens in its place, it comes to its page, or the linked comment shows up once read.
+watch(
+  [() => props.item.id, () => props.detail, () => props.reviewThreads, () => props.linkedAnchor, reading],
+  placeCursor,
+  { immediate: true, flush: 'post' },
+);
 
 // D27: whether the rows at the top of the content are in view; back in view, the dropped copy has no reason to stay.
 useIntersectionObserver({
@@ -430,6 +472,9 @@ useCommands(
     title: props.item.title,
   }),
 );
+
+// The thread's reading cursor and what it acts on: apart from the item's actions, rebound as the cursor moves.
+useCommands(getReadingCommands);
 
 // D27: a click outside the dropped rows and the bar takes them away; the bar's own click toggles them.
 onWindowEvent('pointerdown', event => {
@@ -583,9 +628,22 @@ function quoteReply(body: string) {
 function getItemCommands(): BoundCommand[] {
   const { item, editing } = props;
   const commands: BoundCommand[] = [
+    // On a code thread the reading cursor is in, its reply; anywhere else the composer.
     bindCommand(
       comment,
-      { place: 'item', section: 'item', when: () => canComment.value, run: () => void focusComposer() },
+      {
+        place: 'item',
+        section: 'item',
+        when: () => getStopActions()?.reply != null || canComment.value,
+        run: () => {
+          const reply = getStopActions()?.reply;
+          if (reply) {
+            reply();
+          } else {
+            void focusComposer();
+          }
+        },
+      },
       t,
     ),
   ];
@@ -642,6 +700,186 @@ function getItemCommands(): BoundCommand[] {
   }
 
   return commands;
+}
+
+/**
+ * The reading cursor's keys (D44), on the page only — in the panel ↓ ↑ and `[` `]` are the list's and its sections' —
+ * and the actions on where it is, each offered only where it has something to act on.
+ */
+function getReadingCommands(): BoundCommand[] {
+  const motion = { place: 'item', section: 'item', menu: false, when: () => reading.value } as const;
+  const resolve = getStopActions()?.resolve ?? null;
+  return [
+    bindCommand(lineDown, { ...motion, run: () => readingCursor.move(1) }, t),
+    bindCommand(lineUp, { ...motion, run: () => readingCursor.move(-1) }, t),
+    bindCommand(pageDown, { ...motion, run: () => readingCursor.page(1) }, t),
+    bindCommand(pageUp, { ...motion, run: () => readingCursor.page(-1) }, t),
+    bindCommand(nextTab, { ...motion, title: t(l.nextComment), run: () => void nextComment() }, t),
+    bindCommand(
+      previousTab,
+      {
+        ...motion,
+        title: t(l.previousComment),
+        run: () => {
+          readingCursor.stepComment(-1);
+        },
+      },
+      t,
+    ),
+    bindCommand(
+      commentMenu,
+      {
+        place: 'item',
+        section: 'item',
+        when: () => getStopActions()?.menu != null,
+        run: () => getStopActions()?.menu?.(),
+      },
+      t,
+    ),
+    bindCommand(
+      quoteComment,
+      {
+        place: 'item',
+        section: 'item',
+        when: () => getStopActions()?.quote != null,
+        run: () => getStopActions()?.quote?.(),
+      },
+      t,
+    ),
+    bindCommand(
+      resolveThread,
+      {
+        place: 'item',
+        section: 'item',
+        title: resolve?.resolved === false ? t(l.unresolveThread) : t(l.resolveThread),
+        icon: resolve?.resolved === false ? RotateCcw : CircleCheck,
+        when: () => getStopActions()?.resolve != null,
+        run: () => void resolveAtCursor(),
+      },
+      t,
+    ),
+    bindCommand(
+      editComment,
+      {
+        place: 'item',
+        section: 'item',
+        when: () => getStopActions()?.edit != null,
+        run: () => getStopActions()?.edit?.(),
+      },
+      t,
+    ),
+  ];
+}
+
+function getScroller() {
+  return twoColumns.value ? columnsRef.value : scrollRef.value;
+}
+
+/** What the keys can do where the reading cursor is; `null` with no cursor, or off the page. */
+function getStopActions(): ThreadStopActions | null {
+  const at = cursor.value;
+  if (!reading.value || !at) {
+    return null;
+  }
+
+  return threadRef.value?.getStopActions(at.key, getCursorThread()) ?? null;
+}
+
+/** The code thread holding the cursor's place, by its box — not its stop: a review's head is in no thread. */
+function getCursorThread() {
+  const scroller = getScroller();
+  const top = scroller && cursor.value ? getReadingCursorTop(scroller, cursor.value) : null;
+  if (!scroller || top === null) {
+    return null;
+  }
+
+  for (const card of scroller.querySelectorAll<HTMLElement>('[data-code-thread]')) {
+    const box = card.getBoundingClientRect();
+    if (box.top <= top && top < box.bottom) {
+      return card.dataset.codeThread ?? null;
+    }
+  }
+
+  return null;
+}
+
+/** As the item opens: on the stop of the comment the address links to, once drawn, else on the first one on screen. */
+async function placeCursor() {
+  // A tick on, the layout follows the width measured as it mounted: one column or two.
+  await nextTick();
+  const scroller = getScroller();
+  if (!reading.value) {
+    placedFor = null;
+    cursor.value = null;
+    return;
+  }
+
+  if (!props.detail || !scroller) {
+    return;
+  }
+
+  const anchor = props.linkedAnchor || null;
+  const linked = anchor === null ? null : findLinkedStop(scroller, anchor);
+  if (placedFor?.itemId === props.item.id && (linked === null || placedFor.anchor === anchor)) {
+    return;
+  }
+
+  placedFor = { itemId: props.item.id, anchor: linked === null ? null : anchor };
+  if (linked === null) {
+    readingCursor.setToTop();
+  } else {
+    readingCursor.setTo(linked);
+  }
+}
+
+/** The stop the address's anchor names: a code thread's comment is one, a comment's or a review's `<li>` holds one. */
+function findLinkedStop(scroller: HTMLElement, anchor: string) {
+  const target = scroller.querySelector(`#${CSS.escape(anchor)}`);
+  const stop = target?.closest('[data-reading-stop]') ?? target?.querySelector('[data-reading-stop]');
+  return stop?.getAttribute('data-reading-stop') ?? null;
+}
+
+/** `]`: the next comment; the fold before it unfolds first, to land on the first comment it hid. */
+async function nextComment() {
+  if (isFoldNext() && !(await threadRef.value?.showFolded())) {
+    return;
+  }
+
+  readingCursor.stepComment(1);
+}
+
+/** The fold is below the cursor, with no comment between: `]` would pass over what it hides. */
+function isFoldNext() {
+  const scroller = getScroller();
+  const fold = scroller?.querySelector('[data-reading-stop="fold"]');
+  const top = scroller && cursor.value ? getReadingCursorTop(scroller, cursor.value) : null;
+  if (!scroller || !fold || top === null) {
+    return false;
+  }
+
+  const foldTop = fold.getBoundingClientRect().top;
+  if (foldTop <= top) {
+    return false;
+  }
+
+  return ![...scroller.querySelectorAll('[data-reading-stop-kind="comment"]')].some(stop => {
+    const box = stop.getBoundingClientRect();
+    return box.height > 0 && box.top > top && box.top < foldTop;
+  });
+}
+
+/** `H`: the thread drawn again — folded to its row, or opened — and the cursor on what stands for it now. */
+async function resolveAtCursor() {
+  const resolve = getStopActions()?.resolve;
+  if (!resolve) {
+    return;
+  }
+
+  await resolve.run();
+  const scroller = getScroller();
+  if (resolve.stop !== null && scroller?.querySelector(`[data-reading-stop="${CSS.escape(resolve.stop)}"]`)) {
+    readingCursor.setTo(resolve.stop);
+  }
 }
 </script>
 
