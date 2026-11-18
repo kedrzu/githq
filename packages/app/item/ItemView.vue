@@ -647,7 +647,7 @@ function getItemCommands(): BoundCommand[] {
 
 <template>
   <article
-    :class="[css.itemView, css[`itemView_${arrangement}`]]"
+    :class="[css.itemView, css[`itemView_${arrangement}`], phone.active && css.itemView_phone]"
     :aria-label="item.title"
   >
     <ItemHeader
@@ -1223,6 +1223,12 @@ $item-column-inset: var(--item-column-inset);
   .itemView_page & {
     padding: 32px $item-page-inset;
     scroll-padding-block: 32px;
+  }
+
+  // A phone has no width to spare: the content as far from the sides as the top bar's and the command line's.
+  .itemView_phone & {
+    padding: $spacing-16 $phone-edge-inset;
+    scroll-padding-block: $spacing-16;
   }
 
   // Sections keep their height; the column scrolls instead.
