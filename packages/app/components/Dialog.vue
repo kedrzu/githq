@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu), or the whole screen (a phone's new issue form, mobile D42) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). A phone's sheet (`left`, `bottom`) slides in from its edge and back out, 200 ms, with animations on; a tap on it while it slides out does nothing. It is put in the page as it opens, so the one opened last is on top, and leaves it once closed (a sheet once it has slid out). -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Hanging from near the window's top, centred, or a sheet along its left edge (the phone's places panel) or rising from its bottom (a phone's list options, its command menu), or the whole screen (a phone's new issue form, mobile D42) — a phone's task, while which the command line steps aside (mobile D18, `PhoneLayout.openTask`). Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). Its height can be capped below the window's (the command menu, `maxHeight`). A phone's sheet (`left`, `bottom`) slides in from its edge and back out, 200 ms, with animations on; a tap on it while it slides out does nothing. It is put in the page as it opens, so the one opened last is on top, and leaves it once closed (a sheet once it has slid out). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -37,6 +37,8 @@ const props = withDefaults(
     bare?: boolean;
     /** With `bare`: as tall as the content, up to the window (the command menu), instead of the window. */
     fitContent?: boolean;
+    /** The most it grows to in px, the window still capping it (the command menu: 480). The edges' sheets ignore it. */
+    maxHeight?: number;
     /** Centred on the window both ways (the merge panel), instead of hanging from near its top. */
     centered?: boolean;
     /**
@@ -76,6 +78,10 @@ let closeTask: (() => void) | null = null;
 // content has: reka's `Presence` keeps it until it has slid out, and the title unmounting with it says it is gone.
 const inPage = ref(open.value);
 const sheet = computed(() => props.edge === 'left' || props.edge === 'bottom');
+const contentStyle = computed(() => ({
+  width: props.edge === 'bottom' || props.edge === 'full' ? undefined : `${width.value}px`,
+  '--dialog-max-height': props.maxHeight != null ? `${props.maxHeight}px` : undefined,
+}));
 
 // A sheet from below or a screen of its own is a task: the phone's command line leaves while it is open (mobile D18).
 watch(
@@ -137,7 +143,7 @@ function leavePage() {
           centered && css.dialog_centered,
           edge && css[`dialog_${edge}`],
         ]"
-        :style="edge === 'bottom' || edge === 'full' ? undefined : { width: `${width}px` }"
+        :style="contentStyle"
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
         @open-auto-focus="emit('openAutoFocus', $event)"
@@ -236,7 +242,8 @@ function leavePage() {
   display: flex;
   flex-direction: column;
   max-width: calc(100vw - #{$spacing-24 * 2});
-  max-height: calc(86vh - #{$spacing-24});
+  // `maxHeight` lowers the window's cap; the edges' sheets set their own.
+  max-height: min(calc(86vh - #{$spacing-24}), var(--dialog-max-height, 100vh));
   overflow: hidden;
   color: $color-fg;
   background: $color-bg-2;
@@ -264,7 +271,7 @@ function leavePage() {
 
 .dialog_fit {
   top: 11vh;
-  max-height: 78vh;
+  max-height: min(78vh, var(--dialog-max-height, 100vh));
 }
 
 .dialog_centered {
