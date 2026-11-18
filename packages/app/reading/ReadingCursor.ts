@@ -1,0 +1,63 @@
+import { defineContext, injectContext, provideContext } from '@nzyme/vue-utils/context.js';
+import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
+import { computed, toValue } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
+
+/**
+ * Where a reading screen's cursor is: on the stop keyed so, so many pixels below its top. Held by key, not by
+ * position, so a re-layout above it (a comment loading, an image) keeps it on its stop.
+ */
+export interface ReadingCursor {
+    /** The stop's `data-reading-stop`. */
+    readonly key: string;
+    /** How far below the stop's top, in px: the cursor reads through a tall stop. */
+    readonly offset: number;
+}
+
+/**
+ * What a stop is (`data-reading-stop-kind`): a comment, which `[` `]` step between, or any other row (a commit, an
+ * event, the fold), which only ↓ ↑ reach.
+ */
+export type ReadingStopKind = 'comment' | 'row';
+
+/** A stop measured from the scroller's content top, in document order among the others. */
+export interface ReadingStopBox {
+    readonly key: string;
+    readonly kind: ReadingStopKind;
+    readonly top: number;
+    readonly bottom: number;
+}
+
+/** The part of the content the reader sees, from the content's top: the scroller less what covers its edges. */
+export interface ReadingBand {
+    readonly top: number;
+    readonly bottom: number;
+}
+
+/** What a stop is told: whether the cursor is on it. */
+export interface ReadingStop {
+    readonly current: boolean;
+}
+
+/** The cursor's stop, for the stops to mark themselves. */
+interface ReadingCursorContext {
+    currentKey(): string | null;
+}
+
+const ReadingCursorContext = defineContext<ReadingCursorContext>('ReadingCursorContext');
+
+/** Lets the stops below know which of them the cursor is on (`useReadingStop`). */
+export function provideReadingCursor(cursor: Readonly<Ref<ReadingCursor | null>>): void {
+    provideContext(ReadingCursorContext, { currentKey: () => cursor.value?.key ?? null });
+}
+
+/**
+ * Whether the reading cursor is on the stop keyed so. Never, where no screen provides a cursor (code review's
+ * conversation shares the comment card and shows no marking).
+ */
+export function useReadingStop(key: MaybeRefOrGetter<string>): ReadingStop {
+    const context = injectContext(ReadingCursorContext, { optional: true });
+    return reactive<ReadingStop>({
+        current: computed(() => context !== null && context.currentKey() === toValue(key)),
+    });
+}

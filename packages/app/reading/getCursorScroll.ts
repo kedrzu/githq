@@ -1,5 +1,5 @@
 /** How near the cursor may come to an edge of what shows before the diff scrolls (D44): a third of it. */
-const SCROLL_OFF = 1 / 3;
+export const SCROLL_OFF = 1 / 3;
 
 /** What the viewport shows; an `AnchoredListViewport` is one. */
 export interface CursorScrollViewport {
