@@ -39,7 +39,7 @@ watch(
 );
 
 const commands = computed((): BoundCommand[] =>
-  older.value ? [] : [bindCommand(whatChanged, { section: 'app', run: openChangelog }, t)],
+  older.value ? [] : [bindCommand(whatChanged, { section: 'app', proposed: true, run: openChangelog }, t)],
 );
 
 function openChangelog() {

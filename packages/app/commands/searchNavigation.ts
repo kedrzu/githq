@@ -8,27 +8,42 @@ import type { PreparedMatchTexts } from '@/utils/findMatches.js';
 import type { Command, CommandMarks } from './CommandTypes.js';
 import { findMenuRows } from './findMenuRows.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
+import type { RecentVisit } from './RecentVisitsStore.js';
 
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
-/** A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken workflows, a tracked project, a repository, Settings. */
+/**
+ * A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken
+ * workflows, a tracked project, a repository, Settings; or a level only, with no screen of its own: "Repositories" and
+ * "Projects", which list the tracked ones.
+ */
 export interface NavigationPlace extends CommandMarks {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
-    readonly kind: 'draftReviews' | 'myWork' | 'workflows' | 'project' | 'repository' | 'settings';
+    readonly kind:
+        | 'draftReviews'
+        | 'myWork'
+        | 'workflows'
+        | 'project'
+        | 'projects'
+        | 'repository'
+        | 'repositories'
+        | 'settings';
     readonly title: string;
     readonly detail?: string;
     /** Other words it is found by (a project's owner). */
     readonly keywords?: readonly string[];
     /** The key that also goes there, shown on its line (`,` for Settings). */
     readonly key?: string;
-    /** The app's address of it. */
-    readonly path: string;
+    /** The app's address of it; none for a place that is only a level (Repositories), which Enter opens. */
+    readonly path?: string;
     /** The rows under it, a level the menu walks into. */
     readonly children?: () => readonly Command[];
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
+    /** The field's text while its level is open ("Filter repositories…"). */
+    readonly placeholder?: string;
 }
 
 /** What the menu finds places and items in: the local copy, nothing read from GitHub (instant). */
@@ -37,20 +52,24 @@ export interface NavigationData {
     /** The tracked repositories (`owner/name`): one typed that is not opens its own screen (J5). */
     readonly trackedRepositories: readonly string[];
     readonly items: readonly Item[];
+    /**
+     * The places and items opened lately, newest first, without the screen shown and the item opened (`RecentVisitsStore`):
+     * the empty menu lists those still in {@link places} and {@link items}.
+     */
+    readonly recent?: readonly RecentVisit[];
     /** The rows under a repository not tracked: found only with the repository named. */
     repositoryChildren?(nameWithOwner: string): readonly Command[];
 }
 
-/** A place or an item the typed text finds. */
+/** A place or an item the typed text finds; `match` is `null` for one listed with nothing typed, which marks nothing. */
 export type NavigationResult =
-    /** `match` is `null` when nothing is typed: every place is listed, none is marked. */
     | {
           readonly kind: 'place';
           readonly score: number;
           readonly place: NavigationPlace;
           readonly match: CommandMenuMatch | null;
       }
-    | { readonly kind: 'item'; readonly score: number; readonly item: Item; readonly match: CommandMenuMatch }
+    | { readonly kind: 'item'; readonly score: number; readonly item: Item; readonly match: CommandMenuMatch | null }
     /** `owner/name` typed of a repository not tracked: its screen (J5). */
     | { readonly kind: 'repository'; readonly score: number; readonly nameWithOwner: string };
 

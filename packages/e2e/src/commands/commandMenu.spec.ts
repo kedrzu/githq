@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
@@ -33,6 +33,186 @@ test('⌘K jumps to an item found by its title in the local copy, and to a proje
     await page.keyboard.press('Escape');
     await menu.run(SAMPLE_PROJECT);
     await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
+});
+
+test('the empty ⌘K lists the projects, repositories and items opened lately under "Recent", newest first, not the screen shown, and after a reload; a phone too', async ({
+    page,
+    github,
+}) => {
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const item = new ItemViewHarness(page);
+    const recent = menu.group('Recent').getByRole('option');
+
+    await menu.run(SAMPLE_PROJECT);
+    await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
+    await menu.run('remember the side');
+    await expect(item.title).toHaveText('Remember the sidebar width');
+    await page.keyboard.press('Escape');
+    await expect(item.title).toBeHidden();
+    await menu.run(SAMPLE_REPOSITORY);
+    await expect(page).toHaveURL(new RegExp(`^[^?]*/${SAMPLE_REPOSITORY}`, 'u'));
+
+    // On the repository's view, it is not where to go.
+    await menu.open();
+    await expect(recent).toHaveText([/^Remember the sidebar width/u, new RegExp(`^${SAMPLE_PROJECT}`, 'u')]);
+    await page.keyboard.press('Escape');
+
+    await menu.run('My work');
+    await expect(page).toHaveURL(/\/$/u);
+    const expected = [
+        new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'),
+        /^Remember the sidebar width/u,
+        new RegExp(`^${SAMPLE_PROJECT}`, 'u'),
+    ];
+    await menu.open();
+    await expect(recent).toHaveText(expected);
+    await page.keyboard.press('Escape');
+
+    await page.reload();
+    await menu.open();
+    await expect(recent).toHaveText(expected);
+    await page.keyboard.press('Escape');
+    await expect(menu.root).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: /Do or find…/u }).click();
+    await expect(recent).toHaveText(expected);
+    // The tracked repository is only in "Recent", the rest behind "Repositories".
+    await expect(menu.option(/^Repositories/u)).toBeVisible();
+    await expect(menu.option(new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'))).toHaveCount(1);
+});
+
+test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the app\'s actions, but "Repositories" and "Projects", whose levels list them alphabetically, narrow as typed, step back on ← and go to one on Enter', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    const { login } = SAMPLE_VIEWER.viewer;
+    world.repository(`${login}/web`);
+    world.repository(`${login}/api`);
+    world.project({ title: 'Launch', number: 2 });
+    world.project({ title: 'Billing', number: 3 });
+    await openTrackedWork(page, github, world);
+    const menu = new CommandMenuHarness(page);
+    const top = menu.root.getByRole('listbox', { name: 'Command menu' });
+    const repositories = menu.root.getByRole('listbox', { name: 'Repositories' });
+    const projects = menu.root.getByRole('listbox', { name: 'Projects' });
+
+    await menu.open();
+    await expect(menu.option(/^Repositories\s*3$/u)).toBeVisible();
+    await expect(menu.option(/^Projects\s*3$/u)).toBeVisible();
+    await expect(menu.option(new RegExp(`^${login}/(app|web|api)`, 'u'))).toHaveCount(0);
+    await expect(menu.option(/^(Roadmap|Launch|Billing)/u)).toHaveCount(0);
+    // The app's actions are found by typing, not listed.
+    await expect(menu.option(/^Keyboard shortcuts/u)).toHaveCount(0);
+    await menu.field.pressSequentially('keyboard');
+    await expect(menu.option(/^Keyboard shortcuts/u)).toBeVisible();
+    await menu.field.clear();
+
+    // The last two lines: ↑ from the first wraps to "Projects", then "Repositories".
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Tab');
+    await expect(repositories.getByRole('option')).toHaveText([
+        new RegExp(`^${login}/api`, 'u'),
+        new RegExp(`^${login}/app`, 'u'),
+        new RegExp(`^${login}/web`, 'u'),
+    ]);
+    await expect(menu.field).toHaveAttribute('placeholder', 'Filter repositories…');
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(top).toBeVisible();
+    await expect(menu.option(/^Repositories/u)).toBeVisible();
+
+    // "Projects" is the last line: ↑ from the first wraps to it.
+    await page.keyboard.press('Escape');
+    await expect(menu.root).toBeHidden();
+    await menu.open();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Tab');
+    await expect(projects.getByRole('option')).toHaveText([/^Billing/u, /^Launch/u, /^Roadmap/u]);
+    await expect(menu.field).toHaveAttribute('placeholder', 'Filter projects…');
+    await menu.field.pressSequentially('lau');
+    await expect(projects.getByRole('option')).toHaveText([/^Launch/u]);
+    await menu.field.clear();
+    await page.keyboard.press('ArrowLeft');
+    await expect(top).toBeVisible();
+
+    await menu.field.pressSequentially('projects');
+    await page.keyboard.press('Enter');
+    await expect(projects).toBeVisible();
+    await menu.field.pressSequentially('launch');
+    await page.keyboard.press('Enter');
+    await expect(menu.root).toBeHidden();
+    await expect(page).toHaveURL(`/users/${login}/projects/2`);
+
+    await menu.open();
+    await menu.field.pressSequentially('repositories');
+    await page.keyboard.press('Enter');
+    await expect(repositories).toBeVisible();
+    await menu.field.pressSequentially('web');
+    await expect(repositories.getByRole('option')).toHaveText([new RegExp(`^${login}/web`, 'u')]);
+    await page.keyboard.press('Enter');
+    await expect(menu.root).toBeHidden();
+    await expect(page).toHaveURL(new RegExp(`^[^?]*/${login}/web`, 'u'));
+});
+
+test('"Recent" sits after the context\'s groups and before "Go to", keeps the five opened last and leaves out the item open', async ({
+    page,
+    github,
+}) => {
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const item = new ItemViewHarness(page);
+    const recent = menu.group('Recent').getByRole('option');
+
+    await menu.run(SAMPLE_PROJECT);
+    await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
+    await menu.run(SAMPLE_REPOSITORY);
+    await expect(page).toHaveURL(new RegExp(`^[^?]*/${SAMPLE_REPOSITORY}`, 'u'));
+    for (const title of [
+        'Remember the sidebar width',
+        'Add a dark theme',
+        'Document the setup',
+        'Ship the onboarding tour',
+    ]) {
+        await menu.run(title);
+        await expect(item.title).toHaveText(title);
+        await page.keyboard.press('Escape');
+        await expect(item.title).toBeHidden();
+    }
+
+    await menu.run('My work');
+    await expect(page).toHaveURL(/\/$/u);
+    await menu.open();
+    // Six opened, the project first: it is the one left out.
+    await expect(recent).toHaveText([
+        /^Ship the onboarding tour/u,
+        /^Document the setup/u,
+        /^Add a dark theme/u,
+        /^Remember the sidebar width/u,
+        new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'),
+    ]);
+    // The groups' headings in the list's order: My work's own first.
+    const snapshot = await menu.root.getByRole('listbox').ariaSnapshot();
+    expect([...snapshot.matchAll(/^\s*- group "([^"]+)"/gmu)].map(match => match[1])).toEqual([
+        'This view',
+        'Recent',
+        'Go to',
+    ]);
+    await page.keyboard.press('Escape');
+
+    await menu.run('Add a dark theme');
+    await expect(item.title).toHaveText('Add a dark theme');
+    await menu.open();
+    await expect(recent).toHaveText([
+        /^Ship the onboarding tour/u,
+        /^Document the setup/u,
+        /^Remember the sidebar width/u,
+        new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'),
+        new RegExp(`^${SAMPLE_PROJECT}`, 'u'),
+    ]);
 });
 
 test('⌘K sets the Status of two selected items at once, by typing the value', async ({ page, github }) => {
@@ -330,7 +510,7 @@ async function expectDocsStart(tab: Page) {
     await tab.close();
 }
 
-test('the command menu is at most 480px tall on a desktop, less on a short window, its rows scrolling; a phone’s sheet is not held to it', async ({
+test('the command menu is at most 600px tall on a desktop, less on a short window, its rows scrolling; a phone’s sheet is not held to it', async ({
     page,
     github,
 }) => {
@@ -340,7 +520,7 @@ test('the command menu is at most 480px tall on a desktop, less on a short windo
     const listbox = menu.root.getByRole('listbox');
 
     await menu.open();
-    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(480);
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(600);
     // The rows scroll inside it, the field above them still in view.
     expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(true);
     await expect(menu.field).toBeInViewport();
@@ -349,10 +529,66 @@ test('the command menu is at most 480px tall on a desktop, less on a short windo
     await page.setViewportSize({ width: 1440, height: 500 });
     await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(0.78 * 500 + 1);
 
-    // A phone's sheet rises from below as tall as its rows, up to the window, not 480.
+    // A phone's sheet rises from below as tall as its rows, up to the window, not 600.
     await page.keyboard.press('Escape');
     await expect(menu.root).toBeHidden();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: /Do or find…/u }).click();
-    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeGreaterThan(480);
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeGreaterThan(600);
 });
+
+test('the command menu’s rows stop short of its scrollbar, the last one wrapped to keeps the list’s padding, and rows that don’t scroll sit evenly inset', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const listbox = menu.root.getByRole('listbox');
+    const highlighted = listbox.locator('[role="option"][data-highlighted]');
+
+    await menu.open();
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(600);
+    expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(true);
+
+    // Whether the scrollbar takes its own width (classic) or is drawn over the list (overlay, the thin one about 8px),
+    // the highlighted row ends before it.
+    await expect(highlighted).toBeVisible();
+    await expect
+        .poll(async () => {
+            const room = await measureRow(highlighted);
+            return room.right - Math.max(room.scrollbar, 8);
+        })
+        .toBeGreaterThanOrEqual(0);
+
+    // ↑ on the first row wraps to the last, scrolled into view above the list's bottom padding, not touching the footer.
+    await page.keyboard.press('ArrowUp');
+    await expect(listbox.getByRole('option').last()).toHaveAttribute('data-highlighted', '');
+    await expect.poll(async () => (await measureRow(highlighted)).bottom).toBeGreaterThanOrEqual(4);
+
+    // A list that doesn't scroll keeps no room for a scrollbar: its rows sit inset alike on both sides.
+    await menu.field.pressSequentially('remember the side');
+    await expect(menu.option(/Remember the sidebar width/)).toBeVisible();
+    expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(false);
+    const room = await measureRow(highlighted);
+    expect(Math.abs(room.left - room.right)).toBeLessThanOrEqual(1);
+});
+
+/** The room between a row and its list's edges, and the width the list's scrollbar takes beside the rows (0 overlay). */
+async function measureRow(row: Locator) {
+    return await row.evaluate(element => {
+        const list = element.closest<HTMLElement>('[role="listbox"]');
+        if (!list) {
+            throw new Error('The row is not in a listbox');
+        }
+
+        const outer = list.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return {
+            left: box.left - outer.left,
+            right: outer.right - box.right,
+            bottom: outer.bottom - box.bottom,
+            scrollbar: list.offsetWidth - list.clientWidth,
+        };
+    });
+}

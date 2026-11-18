@@ -16,3 +16,11 @@ draftReviews:
   en: Draft reviews
 signOut:
   en: Sign out
+repositoriesLevel:
+  en: Repositories
+projectsLevel:
+  en: Projects
+filterRepositories:
+  en: Filter repositories…
+filterProjects:
+  en: Filter projects…

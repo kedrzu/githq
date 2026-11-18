@@ -1,6 +1,8 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { findOptionLabels } from '@/components/filterOptions.js';
+import { isPendingItem } from '@/store/isPendingItem.js';
+import type { Item } from '@/store/ItemTypes.js';
 
 import type {
     Command,
@@ -54,10 +56,18 @@ export type CommandMenuEntry = CommandMenuEntryBase &
     );
 
 /**
- * The menu's headings: the place's parts (mobile D17), the subject's actions, the screen's, the repository's, the places,
- * the app's; `level` is a submenu's rows, with no heading.
+ * The menu's headings: the place's parts (mobile D17), the subject's actions, the screen's, the repository's, the places
+ * and items opened lately, the places, the app's; `level` is a submenu's rows, with no heading.
  */
-export type CommandMenuGroupKey = 'level' | 'parts' | 'subject' | 'view' | 'repository' | NavigationGroup | 'app';
+export type CommandMenuGroupKey =
+    | 'level'
+    | 'parts'
+    | 'subject'
+    | 'view'
+    | 'repository'
+    | 'recent'
+    | NavigationGroup
+    | 'app';
 
 /** Entries under one heading. */
 export interface CommandMenuGroup {
@@ -103,6 +113,8 @@ export interface ResolveMenuPathParams {
 /** A level {@link resolveMenuPath} found. */
 export interface MenuPathStep extends MenuLevel {
     readonly title: string;
+    /** The field's text while it is open, in place of the menu's own. */
+    readonly placeholder?: string;
     /** The action it is a level of; `null` for a place or a repository not tracked. */
     readonly command: Command | null;
 }
@@ -134,6 +146,7 @@ const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
     'subject',
     'view',
     'repository',
+    'recent',
     'goTo',
     'projects',
     'repositories',
@@ -143,6 +156,9 @@ const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
 
 /** How many options of one action typing finds directly. */
 const OPTION_LIMIT = 3;
+
+/** How many places and items opened lately the empty menu lists. */
+const RECENT_LIMIT = 5;
 
 /** What a level the text does not name costs a row under it. */
 const CHILD_WEIGHT = 0.6;
@@ -170,7 +186,11 @@ const OUTSIDE_CONTEXT_FACTOR = 0.9;
  * of the submenus under them (E4: "in prog" finds "Set Status → In progress"), each paying for the levels above it:
  * words from the start of the text may name those levels, in path order, and the rest goes to the row. The heading
  * with the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
- * `#123` finds the items only. Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
+ * `#123` finds the items only. With nothing typed the top leaves out the tracked repositories, the projects and the app's
+ * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories" and "Projects", whose levels list them, and typing finds them all.
+ * Before "Go to" it lists under "Recent" the projects, repositories and items opened lately (`navigation.recent`), newest
+ * first, at most five, those no longer tracked or in the local copy left out; typing finds them where it always does.
+ * Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
  * lists them first under their own heading, each in its order and out of the group it would have been in; typing
  * finds them where it always does.
  *
@@ -183,10 +203,20 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     const typed = (commandsOnly ? query.trimStart().slice(1) : query).trim();
     const onlyNumber = isOnlyItemNumber(typed);
     const found = new Map<CommandMenuGroupKey, Map<string, CommandMenuEntry>>();
-    const parts = !level && typed === '' && !commandsOnly ? (params.parts ?? null) : null;
+    // Nothing typed at the top: the places and actions that are always there wait to be typed for or entered.
+    const untouched = !level && typed === '' && !commandsOnly;
+    const parts = untouched ? (params.parts ?? null) : null;
     const partIds = new Set(parts?.rows.map(getPartId));
     for (const part of parts?.rows ?? []) {
         addPart(part);
+    }
+
+    if (untouched) {
+        for (const result of findRecent(navigation)) {
+            if (!partIds.has(getNavigationId(result))) {
+                addNavigation(result, 'recent');
+            }
+        }
     }
 
     const rows = getTopRows();
@@ -214,7 +244,9 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     }
 
     const groups = GROUP_ORDER.flatMap(key => {
-        const entries = [...(found.get(key)?.values() ?? [])];
+        const entries = [...(found.get(key)?.values() ?? [])].filter(
+            entry => !untouched || isListedUntyped(key, entry),
+        );
         const sorted =
             typed === ''
                 ? entries
@@ -341,8 +373,7 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         });
     }
 
-    function addNavigation(result: NavigationResult) {
-        const group = getNavigationGroup(result);
+    function addNavigation(result: NavigationResult, group: CommandMenuGroupKey = getNavigationGroup(result)) {
         const id = getNavigationId(result);
         add(group, {
             kind: 'navigation',
@@ -388,6 +419,39 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     }
 }
 
+/** The places and items opened lately still in the local copy, newest first. */
+function findRecent(navigation: NavigationData): NavigationResult[] {
+    const recent = navigation.recent ?? [];
+    if (recent.length === 0) {
+        return [];
+    }
+
+    const itemIds = new Set(recent.flatMap(visit => (visit.kind === 'item' ? [visit.id] : [])));
+    const items = new Map<string, Item>();
+    for (const item of navigation.items) {
+        if (itemIds.has(item.id) && !isPendingItem(item)) {
+            items.set(item.id, item);
+        }
+    }
+
+    const results: NavigationResult[] = [];
+    for (const visit of recent) {
+        if (visit.kind === 'place') {
+            const place = navigation.places.find(candidate => candidate.id === visit.id);
+            if (place) {
+                results.push({ kind: 'place', score: 100, place, match: null });
+            }
+        } else {
+            const item = items.get(visit.id);
+            if (item) {
+                results.push({ kind: 'item', score: 100, item, match: null });
+            }
+        }
+    }
+
+    return results.slice(0, RECENT_LIMIT);
+}
+
 /**
  * The levels a path of ids leads through, from the top; where a level is gone (a `when` changed), it ends at the last
  * one still there. A root is an action's id, a place (`place:…`) or a repository not tracked (`repository:owner/name`).
@@ -415,7 +479,13 @@ function findRootStep(id: string, params: ResolveMenuPathParams): MenuPathStep |
     if (id.startsWith('place:')) {
         const place = navigation.places.find(candidate => `place:${candidate.id}` === id);
         return place?.children
-            ? { title: place.title, command: null, path, rows: getOfferedChildren(place.children()) }
+            ? {
+                  title: place.title,
+                  placeholder: place.placeholder,
+                  command: null,
+                  path,
+                  rows: getOfferedChildren(place.children()),
+              }
             : null;
     }
 
@@ -441,7 +511,13 @@ function toCommandStep(command: Command, path: readonly string[]): MenuPathStep 
         return null;
     }
 
-    return { title: command.title, command, path, rows: getOfferedChildren(command.children?.() ?? []) };
+    return {
+        title: command.title,
+        placeholder: command.placeholder,
+        command,
+        path,
+        rows: getOfferedChildren(command.children?.() ?? []),
+    };
 }
 
 /** It opens a level, a picker or a form, unless it can't run. */
@@ -592,6 +668,31 @@ function getGroup(section: CommandSection): CommandMenuGroupKey {
     }
 }
 
+/**
+ * Whether the top lists an entry of its group while nothing is typed: the long groups are found by typing or under a
+ * "Go to" level, and of the app's actions only what the app offers now (githq D36) is listed.
+ */
+function isListedUntyped(group: CommandMenuGroupKey, entry: CommandMenuEntry) {
+    switch (group) {
+        case 'level':
+        case 'parts':
+        case 'subject':
+        case 'view':
+        case 'repository':
+        case 'recent':
+        case 'goTo':
+        case 'items':
+            return true;
+        case 'app':
+            return entry.kind === 'command' && entry.command.proposed === true;
+        case 'projects':
+        case 'repositories':
+            return false;
+        default:
+            return assertNever(group);
+    }
+}
+
 function getContextFactor(group: CommandMenuGroupKey) {
     switch (group) {
         case 'level':
@@ -600,6 +701,7 @@ function getContextFactor(group: CommandMenuGroupKey) {
         case 'view':
         case 'repository':
             return 1;
+        case 'recent':
         case 'goTo':
         case 'projects':
         case 'repositories':

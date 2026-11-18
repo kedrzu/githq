@@ -758,7 +758,7 @@ Lines under the buttons that change with the system: more than the page needs.
 
 ### D36
 
-**The command menu is a tree with a rule for its top** (owner, 2026-11-05). The top holds the current context (the
+**The command menu is a tree with a rule for its top** (owner, 2026-11-05). What the top lists with nothing typed: [D42](#d42). The top holds the current context (the
 actions of the subject, the screen and the screen's repository), what the sidebar shows and what the app proposes now.
 Everything else hangs under a parent.
 
@@ -907,6 +907,30 @@ the dim reference on line 2.
 a narrow list cuts the status text to make room for them.
 
 ### D42
+
+**The empty command menu holds the context, Recent and Go to** (owner, 2026-11-18). Amends [D36](#d36)'s top. With
+nothing typed the menu lists, in this order: the context's actions (the subject's, the screen's, the screen's
+repository's), unchanged; **Recent**, up to five tracked projects, tracked repositories, issues and pull requests
+opened lately, newest first, never the screen shown or the item opened; and **Go to**, which ends with
+**Repositories** and **Projects**, each with its count, whose levels list the tracked ones alphabetically. The
+tracked repositories, the projects and the app's own actions are found by typing; only what the app proposes now
+(an update to restart into, Update later, What changed) stays listed. Typing finds everything as before. The menu is
+at most 600 px tall on a desktop, a scrolling list keeping its rows clear of the scrollbar. Drawn in `githq.pen`
+(E12–E15 in App · Command menu).
+
+- **Recent is kept in the browser, per user** (`RecentVisitsStore`), forgotten on sign-out: a rebuildable record of
+  what was opened, nothing from GitHub. A project's saved view counts as its project.
+- **The open item's actions stay complete** at the top, however many: acting on what is open is why ⌘K was pressed
+  there; Recent and Go to are a scroll or a word away.
+
+**Why.** Every tracked repository and project listed under the context buried the few rows that fit the moment, and
+a tall menu over the whole window distracted more than it helped.
+
+**Rejected.** Recent with places only (items found by `#` or typing): returning to the issue just read is the common
+case. Capping each group at five rows with "more…": arbitrary cuts. Repositories grouped by owner inside the level: a
+filter-as-you-type list needs no headings.
+
+### D43
 
 **An opened item's page has code review's reading cursor over its thread.** (owner, 2026-11-18.) Drawn in `githq.pen`,
 App · Pull request, F24, F27, F30, F31; the design log is `changelog/reading-cursor.md`.

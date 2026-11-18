@@ -28,7 +28,9 @@ const browser = useService(Browser);
 const router = useRouter();
 const t = useTranslate();
 
-const commands = computed((): BoundCommand[] => [bindCommand(openStartedRun, { section: 'app', run: openStarted }, t)]);
+const commands = computed((): BoundCommand[] => [
+  bindCommand(openStartedRun, { section: 'app', proposed: true, run: openStarted }, t),
+]);
 
 function getStartedTitle(started: WorkflowDispatchStarted) {
   const params = { workflow: started.workflowName, ref: started.ref };

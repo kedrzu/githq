@@ -37,7 +37,7 @@ const props = withDefaults(
     bare?: boolean;
     /** With `bare`: as tall as the content, up to the window (the command menu), instead of the window. */
     fitContent?: boolean;
-    /** The most it grows to in px, the window still capping it (the command menu: 480). The edges' sheets ignore it. */
+    /** The most it grows to in px, the window still capping it (the command menu: 600). The edges' sheets ignore it. */
     maxHeight?: number;
     /** Centred on the window both ways (the merge panel), instead of hanging from near its top. */
     centered?: boolean;
