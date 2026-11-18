@@ -47,3 +47,19 @@ Choices the brief left open:
   contradict a sidebar listing four and three; E11 keeps E1's sidebar and its counts.
 - Go to's row for workflows is "Broken workflows", the label the sidebar and the app use, not "Workflows".
 - On My work, Go to still lists My work; only Recent leaves out the place on screen.
+
+## Round 2 · agent brief
+
+Asked (`.context/command-menu-declutter-brief-2.md`, not committed): "the scrollbar overlaps the highlighted row". In
+E11–E15 the 4 px scrollbar sat at 672–676 px over the rows, which ran to 674 px. New rule for the menu's list: when
+it scrolls, the scrollbar has a gutter of its own and every row and heading ends before it; when it does not scroll,
+no gutter and no scrollbar, rows full inner width with equal insets.
+Changed: the right padding of the five scrolling lists. The scrollbar stays where it was, now 4 px clear of the rows
+and 4 px from the menu's edge (a 12 px gutter). The lists are per-screen frames, not a component, so each screen got
+the same change; the rows and headings are `fill_container` instances and follow the padding. E1–E10 and the unclipped
+whole lists beside E11 (`FNkie`) and E12 (`C7ZYNJ`) don't scroll and keep 6 px on both sides; E2 (`ieMkl`) is the
+non-scrolling example, rows full width.
+
+- [ ] E11 Results (`xvCh7`), E12 Results (`oajv2`), E13 Results (`Jo3U6`), E14 Results (`pvAiu`), E15 Results
+  (`xs2Av`): padding `[4,6,8,6]` → `[4,12,8,6]`, rows 668 → 662 px wide, ending at 668 px; scrollbars (`S9ufb`,
+  `IUsbE`, `Y8txRS`, `p8Nmg`, `x4afN`) unchanged at 672 px.
