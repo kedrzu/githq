@@ -72,7 +72,7 @@ const ONLY_ITEM_NUMBER = /^#\d+$/u;
 /**
  * The places and items typed text finds in the local copy, best first, each with what the menu marks. Places by
  * their names; items by number (`#123`, `repo#123`, `owner/repo#123`) above a title starting with the text above
- * the title's words holding it, newest first among equals; any `owner/name` or repository address that is not
+ * the title's words holding it, newest first among equals; bare `123` is a number and then a word of titles (`[HLD-123]`); any `owner/name` or repository address that is not
  * tracked as a repository to open. `#123` is items only. Nothing typed: every place, no item.
  *
  * @__NO_SIDE_EFFECTS__
@@ -127,12 +127,26 @@ export function findUntrackedRepository(typed: string, data: NavigationData) {
     return tracked ? null : nameWithOwner;
 }
 
-function findItems(typed: string, number: RegExpExecArray | null, items: readonly Item[]): NavigationResult[] {
-    const prepared = prepareItems(items);
-    const found = number ? findItemsByNumber(prepared.rows, number[1], Number(number[2])) : findItemsByTitle();
-    return found.slice(0, ITEM_LIMIT);
+/** An item the typed text finds. */
+type ItemResult = Extract<NavigationResult, { kind: 'item' }>;
 
-    function findItemsByTitle(): NavigationResult[] {
+function findItems(typed: string, number: RegExpExecArray | null, items: readonly Item[]): ItemResult[] {
+    const prepared = prepareItems(items);
+    if (!number) {
+        return findItemsByTitle().slice(0, ITEM_LIMIT);
+    }
+
+    const byNumber = findItemsByNumber(prepared.rows, number[1], Number(number[2]));
+    if (typed.includes('#')) {
+        return byNumber.slice(0, ITEM_LIMIT);
+    }
+
+    // A bare number is also a word of a title: a task key like `[HLD-699]`.
+    const numbered = new Set(byNumber.map(result => result.item));
+    const byTitle = findItemsByTitle().filter(result => !numbered.has(result.item));
+    return [...byNumber, ...byTitle].slice(0, ITEM_LIMIT);
+
+    function findItemsByTitle(): ItemResult[] {
         return findMatches(typed, prepared, { hitLimit: ITEM_HIT_LIMIT }).map(({ row, score, ranges }) => ({
             kind: 'item',
             score,
@@ -158,7 +172,7 @@ function prepareItems(items: readonly Item[]) {
 }
 
 function findItemsByNumber(items: readonly Item[], repository: string | undefined, number: number) {
-    const found: NavigationResult[] = [];
+    const found: ItemResult[] = [];
     for (const item of items) {
         if (hasNumber(item, repository, number)) {
             const reference = formatShortReference(item);
