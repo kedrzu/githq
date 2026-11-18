@@ -87,13 +87,13 @@ test('a number hit marks the digits of the reference as the menu writes it', () 
     ]);
 });
 
-test('bare digits are a number among items; a place holding them is still found', () => {
+test('bare digits are a number among items, then a word of titles; a place holding them is still found', () => {
     const places = [{ ...PORTAL, id: 'sprint', title: 'Sprint 1187' }];
     const items = [...DATA.items, issue('title', 'skyline-labs/api', 7, 'Holds 1187 in its title', '2026-10-24')];
     const results = searchNavigation('1187', { ...DATA, places, items });
 
-    expect(ids(results)).toEqual(['b', 'a']);
-    expect(results.map(result => result.kind)).toEqual(['item', 'item', 'place']);
+    expect(ids(results)).toEqual(['b', 'a', 'title']);
+    expect(results.map(result => result.kind)).toEqual(['item', 'item', 'place', 'item']);
     expect(ids(searchNavigation('12', DATA))).toEqual(['d']);
 });
 
@@ -217,3 +217,13 @@ function issue(id: string, nameWithOwner: string, number: number, title: string,
         repository: { ...base.repository, nameWithOwner },
     };
 }
+
+test('a bare number also finds the titles holding it, below the item with that number', () => {
+    const data = {
+        ...DATA,
+        items: [...DATA.items, issue('task', 'skyline-labs/api', 2301, '[HLD-490][Project] Task name', '2026-10-24')],
+    };
+
+    expect(ids(searchNavigation('490', data))).toEqual(['c', 'task']);
+    expect(ids(searchNavigation('#490', data))).toEqual(['c']);
+});

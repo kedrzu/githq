@@ -1,3 +1,6 @@
 # Playwright's results and report
 test-results/
 playwright-report/
+
+# The README demo's recordings (`playwright.demo.config.ts`)
+demo-results/

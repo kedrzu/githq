@@ -157615,7 +157615,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "1200 × 630 (og:image, twitter:summary_large_image) and 1280 × 640 (GitHub repository social preview). Everything important sits inside the central safe area — X and Slack crop to ~1.91:1, iMessage and LinkedIn round the corners and can trim a few pixels off each edge. Headline stays ≥ 56 px so it reads in a 500 px wide feed card.",
+              "content": "1200 × 630 (og:image, twitter:summary_large_image) and 1280 × 640 (GitHub repository social preview). Everything important sits inside the central safe area — X and Slack crop to ~1.91:1, iMessage and LinkedIn round the corners and can trim a few pixels off each edge. Headline stays ≥ 56 px so it reads in a 500 px wide feed card. The app in each image is built from the components, as the landing's hero picture (Sidebar / expanded with broken workflows marked, List pane / My work, and in B the pull request panel), so it follows the app.",
               "lineHeight": 1.5,
               "fontFamily": "Inter",
               "fontSize": 16,
@@ -157687,27 +157687,14 @@
                     },
                     {
                       "type": "frame",
-                      "id": "vpsIO",
-                      "x": 680,
+                      "id": "xluhs",
+                      "x": 576,
                       "y": 96,
                       "name": "App screenshot",
                       "clip": true,
-                      "width": 960,
-                      "height": 600,
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "docs/design/githq/landing/my-work.png",
-                        "mode": "cover",
-                        "transform": [
-                          1,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0
-                        ]
-                      },
+                      "width": 1200,
+                      "height": 750,
+                      "fill": "$bg",
                       "cornerRadius": 14,
                       "stroke": "$border-2",
                       "strokeWidth": 1,
@@ -157718,9 +157705,9 @@
                           "color": "#000000CC",
                           "offset": {
                             "x": 0,
-                            "y": 30
+                            "y": 40
                           },
-                          "blur": 80
+                          "blur": 120
                         },
                         {
                           "type": "shadow",
@@ -157728,16 +157715,321 @@
                           "color": "#7B87F733",
                           "offset": {
                             "x": 0,
-                            "y": -8
+                            "y": -10
                           },
-                          "blur": 60
+                          "blur": 90
+                        }
+                      ],
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vOKuO",
+                          "name": "Main",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "children": [
+                            {
+                              "id": "ujjtT",
+                              "type": "ref",
+                              "ref": "ZPurg",
+                              "name": "Sidebar",
+                              "height": "fill_container",
+                              "descendants": {
+                                "b49czV": {
+                                  "fill": "$bg-3"
+                                },
+                                "uONNn": {
+                                  "fill": "$fg"
+                                },
+                                "AC0j9": {
+                                  "fill": "$fg",
+                                  "fontWeight": "500"
+                                },
+                                "xJU2l": {
+                                  "enabled": true
+                                },
+                                "m9ZtIx": {
+                                  "enabled": true
+                                },
+                                "CTGG0": {
+                                  "content": "3",
+                                  "fill": "$red"
+                                },
+                                "pxvMV": {
+                                  "enabled": true,
+                                  "fill": "$red-quiet"
+                                },
+                                "KMmC0": {
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "id": "r6W1er",
+                              "type": "ref",
+                              "ref": "A8DFa",
+                              "name": "List pane",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "descendants": {
+                                "IGHgn/XODhV": {
+                                  "type": "frame",
+                                  "id": "cMejd",
+                                  "name": "Surface",
+                                  "width": "fill_container",
+                                  "cornerRadius": 6,
+                                  "gap": 10,
+                                  "padding": 8,
+                                  "children": [
+                                    {
+                                      "id": "hXYsG",
+                                      "type": "ref",
+                                      "ref": "E9ePx",
+                                      "name": "Type",
+                                      "descendants": {
+                                        "TZbKU": {
+                                          "type": "icon",
+                                          "id": "rkKZn",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "K2w2Up",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Pcwhy",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "CGZBw",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Webhook signatures fail behind the new proxy",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "v8lIU",
+                                              "x": 356,
+                                              "y": 1,
+                                              "name": "Number",
+                                              "enabled": false,
+                                              "fill": "$fg-2",
+                                              "content": "#18842",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "id": "gnOrv",
+                                              "type": "ref",
+                                              "ref": "of5Pp",
+                                              "name": "Avatar DK",
+                                              "width": 16,
+                                              "height": 16,
+                                              "fill": "#81C995",
+                                              "cornerRadius": 8,
+                                              "enabled": false,
+                                              "descendants": {
+                                                "zeZzP": {
+                                                  "type": "text",
+                                                  "id": "cK6XA",
+                                                  "name": "Initials",
+                                                  "fill": "#0D1117",
+                                                  "content": "DK",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 7,
+                                                  "fontWeight": "600"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "S6hNI",
+                                              "name": "Updated",
+                                              "fill": "$fg-dim",
+                                              "content": "3h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Agpbh",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "r56Uvd",
+                                              "name": "Repository",
+                                              "fill": "$fg-3",
+                                              "content": "fitloop/api#463",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "KrymQ",
+                                              "name": "Project field",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "qMxxy",
+                                                  "name": "icon square-kanban",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "square-kanban",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "JSnqr",
+                                                  "name": "Todo",
+                                                  "fill": "$fg-2",
+                                                  "content": "Todo",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "fMbLf",
+                                              "type": "ref",
+                                              "ref": "VvI4P",
+                                              "name": "Mention",
+                                              "gap": 4,
+                                              "descendants": {
+                                                "muoMv": {
+                                                  "type": "icon",
+                                                  "id": "PmTo1",
+                                                  "name": "icon at-sign",
+                                                  "width": 11,
+                                                  "height": 11,
+                                                  "icon": "at-sign",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                "uYfBa": {
+                                                  "type": "text",
+                                                  "id": "ArMgS",
+                                                  "name": "Mention text",
+                                                  "fill": "$fg-dim",
+                                                  "content": "sofiab",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Qe1zm",
+                                              "type": "ref",
+                                              "ref": "BVme8",
+                                              "name": "Size",
+                                              "descendants": {
+                                                "g9LUX": {
+                                                  "type": "text",
+                                                  "id": "chBoc",
+                                                  "name": "Added",
+                                                  "fill": "$diff-added",
+                                                  "content": "+340",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                "Cb3Zq": {
+                                                  "type": "text",
+                                                  "id": "V0JdH",
+                                                  "name": "Removed",
+                                                  "fill": "$diff-removed",
+                                                  "content": "−72",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "U6qMJE",
+                          "type": "ref",
+                          "ref": "BFhwj",
+                          "name": "Status bar",
+                          "width": "fill_container"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "Tz7UE",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 470,
+                          "name": "Bottom fade",
+                          "fill": {
+                            "type": "gradient",
+                            "gradientType": "linear",
+                            "enabled": true,
+                            "rotation": 180,
+                            "size": {
+                              "height": 1
+                            },
+                            "colors": [
+                              {
+                                "color": "#0D111700",
+                                "position": 0
+                              },
+                              {
+                                "color": "#0D1117",
+                                "position": 1
+                              }
+                            ]
+                          },
+                          "width": 1200,
+                          "height": 280
                         }
                       ]
                     },
                     {
                       "type": "rectangle",
                       "id": "KKjRt",
-                      "x": 560,
+                      "x": 340,
                       "y": 0,
                       "name": "Left fade",
                       "fill": {
@@ -157750,8 +158042,56 @@
                         },
                         "colors": [
                           {
-                            "color": "#0D1117",
+                            "color": "#0D111700",
                             "position": 0
+                          },
+                          {
+                            "color": "#0D111700",
+                            "position": 0.073
+                          },
+                          {
+                            "color": "#0D111701",
+                            "position": 0.146
+                          },
+                          {
+                            "color": "#0D111704",
+                            "position": 0.219
+                          },
+                          {
+                            "color": "#0D111708",
+                            "position": 0.291
+                          },
+                          {
+                            "color": "#0D11170F",
+                            "position": 0.364
+                          },
+                          {
+                            "color": "#0D111718",
+                            "position": 0.437
+                          },
+                          {
+                            "color": "#0D111723",
+                            "position": 0.51
+                          },
+                          {
+                            "color": "#0D111730",
+                            "position": 0.583
+                          },
+                          {
+                            "color": "#0D11173D",
+                            "position": 0.656
+                          },
+                          {
+                            "color": "#0D11174A",
+                            "position": 0.728
+                          },
+                          {
+                            "color": "#0D111757",
+                            "position": 0.801
+                          },
+                          {
+                            "color": "#0D111760",
+                            "position": 0.874
                           },
                           {
                             "color": "#0D111700",
@@ -157759,7 +158099,7 @@
                           }
                         ]
                       },
-                      "width": 200,
+                      "width": 270,
                       "height": 630
                     },
                     {
@@ -157768,7 +158108,7 @@
                       "x": 80,
                       "y": 80,
                       "name": "Copy",
-                      "width": 560,
+                      "width": 480,
                       "height": 470,
                       "layout": "vertical",
                       "justifyContent": "space_between",
@@ -157849,7 +158189,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": 460,
-                              "content": "The keyboard-first command center for every repository you have on GitHub.",
+                              "content": "Issues, Projects, pull requests and Actions from every repository, on one fast screen.",
                               "lineHeight": 1.45,
                               "fontFamily": "Inter",
                               "fontSize": 22,
@@ -157925,9 +158265,9 @@
                     }
                   ],
                   "layout": "vertical",
-                  "gap": 20,
+                  "gap": 18,
                   "padding": [
-                    64,
+                    56,
                     0,
                     0,
                     0
@@ -157992,7 +158332,7 @@
                       "id": "OQCGG",
                       "name": "Screenshot stage",
                       "padding": [
-                        22,
+                        20,
                         0,
                         0,
                         0
@@ -158000,17 +158340,12 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "Rtffe",
+                          "id": "f5cUC",
                           "name": "App screenshot",
                           "clip": true,
-                          "width": 1000,
+                          "width": 1120,
                           "height": 625,
-                          "fill": {
-                            "type": "image",
-                            "enabled": true,
-                            "url": "docs/design/githq/landing/my-work.png",
-                            "mode": "cover"
-                          },
+                          "fill": "$bg",
                           "cornerRadius": 14,
                           "stroke": "$border-2",
                           "strokeWidth": 1,
@@ -158021,9 +158356,9 @@
                               "color": "#000000CC",
                               "offset": {
                                 "x": 0,
-                                "y": 30
+                                "y": 40
                               },
-                              "blur": 80
+                              "blur": 120
                             },
                             {
                               "type": "shadow",
@@ -158031,18 +158366,313 @@
                               "color": "#7B87F733",
                               "offset": {
                                 "x": 0,
-                                "y": -8
+                                "y": -10
                               },
-                              "blur": 60
+                              "blur": 90
                             }
                           ],
+                          "layout": "vertical",
                           "children": [
                             {
+                              "type": "frame",
+                              "id": "Gumng",
+                              "name": "Main",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "id": "pYxbX",
+                                  "type": "ref",
+                                  "ref": "ZPurg",
+                                  "name": "Sidebar",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "b49czV": {
+                                      "fill": "$bg-3"
+                                    },
+                                    "uONNn": {
+                                      "fill": "$fg"
+                                    },
+                                    "AC0j9": {
+                                      "fill": "$fg",
+                                      "fontWeight": "500"
+                                    },
+                                    "xJU2l": {
+                                      "enabled": true
+                                    },
+                                    "m9ZtIx": {
+                                      "enabled": true
+                                    },
+                                    "CTGG0": {
+                                      "content": "3",
+                                      "fill": "$red"
+                                    },
+                                    "pxvMV": {
+                                      "enabled": true,
+                                      "fill": "$red-quiet"
+                                    },
+                                    "KMmC0": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "gZcGA",
+                                  "type": "ref",
+                                  "ref": "A8DFa",
+                                  "name": "List pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "i1LPH/XODhV": {
+                                      "fill": "$sel",
+                                      "stroke": "#7B87F74D",
+                                      "strokeWidth": 1
+                                    },
+                                    "Z9BxYw/XODhV": {
+                                      "fill": "#00000000",
+                                      "strokeWidth": 0
+                                    },
+                                    "IGHgn/XODhV": {
+                                      "type": "frame",
+                                      "id": "b4t5i",
+                                      "name": "Surface",
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "gap": 10,
+                                      "padding": 8,
+                                      "children": [
+                                        {
+                                          "id": "uRUqZ",
+                                          "type": "ref",
+                                          "ref": "E9ePx",
+                                          "name": "Type",
+                                          "descendants": {
+                                            "TZbKU": {
+                                              "type": "icon",
+                                              "id": "kkGqO",
+                                              "name": "icon circle-dot",
+                                              "width": 15,
+                                              "height": 15,
+                                              "icon": "circle-dot",
+                                              "library": "lucide",
+                                              "fill": "$green"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "awSON",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 5,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "K0fybz",
+                                              "name": "Line 1",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "o9T80k",
+                                                  "name": "Title",
+                                                  "fill": "$fg",
+                                                  "content": "Webhook signatures fail behind the new proxy",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 13.5,
+                                                  "fontWeight": "500"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "qfVEC",
+                                                  "x": 356,
+                                                  "y": 1,
+                                                  "name": "Number",
+                                                  "enabled": false,
+                                                  "fill": "$fg-2",
+                                                  "content": "#18842",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 13.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "id": "dinZu",
+                                                  "type": "ref",
+                                                  "ref": "of5Pp",
+                                                  "name": "Avatar DK",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "fill": "#81C995",
+                                                  "cornerRadius": 8,
+                                                  "enabled": false,
+                                                  "descendants": {
+                                                    "zeZzP": {
+                                                      "type": "text",
+                                                      "id": "DDyTs",
+                                                      "name": "Initials",
+                                                      "fill": "#0D1117",
+                                                      "content": "DK",
+                                                      "fontFamily": "$font",
+                                                      "fontSize": 7,
+                                                      "fontWeight": "600"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "aEvA6",
+                                                  "name": "Updated",
+                                                  "fill": "$fg-dim",
+                                                  "content": "3h",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "JnCkO",
+                                              "name": "Line 2",
+                                              "width": "fill_container",
+                                              "gap": 10,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "z208DW",
+                                                  "name": "Repository",
+                                                  "fill": "$fg-3",
+                                                  "content": "fitloop/api#463",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "HS25l",
+                                                  "name": "Project field",
+                                                  "gap": 5,
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "icon",
+                                                      "id": "F7SgW",
+                                                      "name": "icon square-kanban",
+                                                      "width": 12,
+                                                      "height": 12,
+                                                      "icon": "square-kanban",
+                                                      "library": "lucide",
+                                                      "fill": "$fg-3"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "Vqpv7",
+                                                      "name": "Todo",
+                                                      "fill": "$fg-2",
+                                                      "content": "Todo",
+                                                      "fontFamily": "$font",
+                                                      "fontSize": 11.5,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "id": "jsdtm",
+                                                  "type": "ref",
+                                                  "ref": "VvI4P",
+                                                  "name": "Mention",
+                                                  "gap": 4,
+                                                  "descendants": {
+                                                    "muoMv": {
+                                                      "type": "icon",
+                                                      "id": "ME7KO",
+                                                      "name": "icon at-sign",
+                                                      "width": 11,
+                                                      "height": 11,
+                                                      "icon": "at-sign",
+                                                      "library": "lucide",
+                                                      "fill": "$fg-3"
+                                                    },
+                                                    "uYfBa": {
+                                                      "type": "text",
+                                                      "id": "qqZe6",
+                                                      "name": "Mention text",
+                                                      "fill": "$fg-dim",
+                                                      "content": "sofiab",
+                                                      "fontFamily": "$font",
+                                                      "fontSize": 11.5,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "id": "j1CRIz",
+                                                  "type": "ref",
+                                                  "ref": "BVme8",
+                                                  "name": "Size",
+                                                  "descendants": {
+                                                    "g9LUX": {
+                                                      "type": "text",
+                                                      "id": "c61g5X",
+                                                      "name": "Added",
+                                                      "fill": "$diff-added",
+                                                      "content": "+340",
+                                                      "fontFamily": "$mono",
+                                                      "fontSize": 11.5,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    "Cb3Zq": {
+                                                      "type": "text",
+                                                      "id": "H2keo",
+                                                      "name": "Removed",
+                                                      "fill": "$diff-removed",
+                                                      "content": "−72",
+                                                      "fontFamily": "$mono",
+                                                      "fontSize": 11.5,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "N1GCr",
+                                  "type": "ref",
+                                  "ref": "pX8Wm",
+                                  "name": "PR panel",
+                                  "height": "fill_container"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "T9aOa",
+                              "type": "ref",
+                              "ref": "Nopak",
+                              "name": "Status bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "Q9y1K": {
+                                  "name": "Segment · PR view (panel)"
+                                }
+                              }
+                            },
+                            {
                               "type": "rectangle",
-                              "id": "kPjz3",
+                              "id": "RuSHF",
                               "layoutPosition": "absolute",
                               "x": 0,
-                              "y": 120,
+                              "y": 170,
                               "name": "Bottom fade",
                               "fill": {
                                 "type": "gradient",
@@ -158063,8 +158693,8 @@
                                   }
                                 ]
                               },
-                              "width": 1000,
-                              "height": 200
+                              "width": 1120,
+                              "height": 190
                             }
                           ]
                         }
@@ -158077,7 +158707,7 @@
             {
               "type": "frame",
               "id": "r1aeXU",
-              "name": "C · Brand — GitHub repo social preview (1280 × 640)",
+              "name": "C · GitHub repository social preview (1280 × 640)",
               "layout": "vertical",
               "gap": 16,
               "children": [
@@ -158086,7 +158716,7 @@
                   "id": "UcU9G",
                   "name": "Label",
                   "fill": "$fg-dim",
-                  "content": "C · Brand — GitHub repo social preview (1280 × 640)",
+                  "content": "C · GitHub repository social preview (1280 × 640)",
                   "fontFamily": "JetBrains Mono",
                   "fontSize": 14,
                   "fontWeight": "normal"
@@ -158099,17 +158729,13 @@
                   "width": 1280,
                   "height": 640,
                   "fill": "$bg",
-                  "layout": "vertical",
-                  "gap": 36,
-                  "justifyContent": "center",
-                  "alignItems": "center",
+                  "layout": "none",
                   "children": [
                     {
                       "type": "rectangle",
-                      "id": "DGWSQ",
-                      "layoutPosition": "absolute",
-                      "x": 140,
-                      "y": -180,
+                      "id": "O3gXC9",
+                      "x": 450,
+                      "y": -270,
                       "name": "Glow",
                       "fill": {
                         "type": "gradient",
@@ -158122,7 +158748,7 @@
                         },
                         "colors": [
                           {
-                            "color": "#7B87F730",
+                            "color": "#7B87F738",
                             "position": 0
                           },
                           {
@@ -158131,168 +158757,533 @@
                           }
                         ]
                       },
-                      "width": 1000,
-                      "height": 760
-                    },
-                    {
-                      "id": "y6zKGW",
-                      "type": "ref",
-                      "ref": "Jdpz4",
-                      "name": "Wordmark",
-                      "descendants": {
-                        "vRWIQ": {
-                          "fontSize": 168,
-                          "letterSpacing": -7.5
-                        },
-                        "LgB4e": {
-                          "fontSize": 168,
-                          "letterSpacing": -7.5
-                        },
-                        "N78Orz": {
-                          "fontSize": 168,
-                          "letterSpacing": -7.5
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "id": "Y7F6gp",
-                      "name": "Tagline",
-                      "fill": "$fg-2",
-                      "content": "All your repos at the speed of thought",
-                      "fontFamily": "Inter",
-                      "fontSize": 30,
-                      "fontWeight": "normal"
+                      "width": 1180,
+                      "height": 940
                     },
                     {
                       "type": "frame",
-                      "id": "t0Bk5",
-                      "name": "Facts",
-                      "gap": 10,
-                      "padding": [
-                        8,
-                        0,
-                        0,
-                        0
+                      "id": "c38PJ",
+                      "x": 624,
+                      "y": 100,
+                      "name": "App screenshot",
+                      "clip": true,
+                      "width": 1200,
+                      "height": 750,
+                      "fill": "$bg",
+                      "cornerRadius": 14,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "effect": [
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#000000CC",
+                          "offset": {
+                            "x": 0,
+                            "y": 40
+                          },
+                          "blur": 120
+                        },
+                        {
+                          "type": "shadow",
+                          "shadowType": "outer",
+                          "color": "#7B87F733",
+                          "offset": {
+                            "x": 0,
+                            "y": -10
+                          },
+                          "blur": 90
+                        }
                       ],
+                      "layout": "vertical",
                       "children": [
                         {
                           "type": "frame",
-                          "id": "H4z22b",
-                          "name": "keyboard-first",
-                          "fill": "$bg-2",
-                          "cornerRadius": 8,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "padding": [
-                            8,
-                            14
-                          ],
+                          "id": "a5nD8",
+                          "name": "Main",
+                          "width": "fill_container",
+                          "height": "fill_container",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "ZNCkH",
-                              "name": "Label",
-                              "fill": "$fg-2",
-                              "content": "keyboard-first",
-                              "fontFamily": "JetBrains Mono",
-                              "fontSize": 18,
-                              "fontWeight": "normal"
+                              "id": "QAOOy",
+                              "type": "ref",
+                              "ref": "ZPurg",
+                              "name": "Sidebar",
+                              "height": "fill_container",
+                              "descendants": {
+                                "b49czV": {
+                                  "fill": "$bg-3"
+                                },
+                                "uONNn": {
+                                  "fill": "$fg"
+                                },
+                                "AC0j9": {
+                                  "fill": "$fg",
+                                  "fontWeight": "500"
+                                },
+                                "xJU2l": {
+                                  "enabled": true
+                                },
+                                "m9ZtIx": {
+                                  "enabled": true
+                                },
+                                "CTGG0": {
+                                  "content": "3",
+                                  "fill": "$red"
+                                },
+                                "pxvMV": {
+                                  "enabled": true,
+                                  "fill": "$red-quiet"
+                                },
+                                "KMmC0": {
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "id": "x8aiO",
+                              "type": "ref",
+                              "ref": "A8DFa",
+                              "name": "List pane",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "descendants": {
+                                "IGHgn/XODhV": {
+                                  "type": "frame",
+                                  "id": "mH0h6",
+                                  "name": "Surface",
+                                  "width": "fill_container",
+                                  "cornerRadius": 6,
+                                  "gap": 10,
+                                  "padding": 8,
+                                  "children": [
+                                    {
+                                      "id": "YTOAE",
+                                      "type": "ref",
+                                      "ref": "E9ePx",
+                                      "name": "Type",
+                                      "descendants": {
+                                        "TZbKU": {
+                                          "type": "icon",
+                                          "id": "h4snR3",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "DiyjX",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "jTGDs",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "G6oxGb",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Webhook signatures fail behind the new proxy",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "MRiUT",
+                                              "x": 356,
+                                              "y": 1,
+                                              "name": "Number",
+                                              "enabled": false,
+                                              "fill": "$fg-2",
+                                              "content": "#18842",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "id": "fG4Qz",
+                                              "type": "ref",
+                                              "ref": "of5Pp",
+                                              "name": "Avatar DK",
+                                              "width": 16,
+                                              "height": 16,
+                                              "fill": "#81C995",
+                                              "cornerRadius": 8,
+                                              "enabled": false,
+                                              "descendants": {
+                                                "zeZzP": {
+                                                  "type": "text",
+                                                  "id": "SUutS",
+                                                  "name": "Initials",
+                                                  "fill": "#0D1117",
+                                                  "content": "DK",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 7,
+                                                  "fontWeight": "600"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "TuxsD",
+                                              "name": "Updated",
+                                              "fill": "$fg-dim",
+                                              "content": "3h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "rX7I9",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ziZy2",
+                                              "name": "Repository",
+                                              "fill": "$fg-3",
+                                              "content": "fitloop/api#463",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "aSLoU",
+                                              "name": "Project field",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "ulzci",
+                                                  "name": "icon square-kanban",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "square-kanban",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "VCKhN",
+                                                  "name": "Todo",
+                                                  "fill": "$fg-2",
+                                                  "content": "Todo",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "kLH7e",
+                                              "type": "ref",
+                                              "ref": "VvI4P",
+                                              "name": "Mention",
+                                              "gap": 4,
+                                              "descendants": {
+                                                "muoMv": {
+                                                  "type": "icon",
+                                                  "id": "diR9F",
+                                                  "name": "icon at-sign",
+                                                  "width": 11,
+                                                  "height": 11,
+                                                  "icon": "at-sign",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                "uYfBa": {
+                                                  "type": "text",
+                                                  "id": "CD2Vs",
+                                                  "name": "Mention text",
+                                                  "fill": "$fg-dim",
+                                                  "content": "sofiab",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "C30iL",
+                                              "type": "ref",
+                                              "ref": "BVme8",
+                                              "name": "Size",
+                                              "descendants": {
+                                                "g9LUX": {
+                                                  "type": "text",
+                                                  "id": "LyhpR",
+                                                  "name": "Added",
+                                                  "fill": "$diff-added",
+                                                  "content": "+340",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                "Cb3Zq": {
+                                                  "type": "text",
+                                                  "id": "uFBea",
+                                                  "name": "Removed",
+                                                  "fill": "$diff-removed",
+                                                  "content": "−72",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
                             }
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "aEU3t",
-                          "name": "GitHub is the backend",
-                          "fill": "$bg-2",
-                          "cornerRadius": 8,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "Wv7z3",
-                              "name": "Label",
-                              "fill": "$fg-2",
-                              "content": "GitHub is the backend",
-                              "fontFamily": "JetBrains Mono",
-                              "fontSize": 18,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "id": "Wxdk6",
+                          "type": "ref",
+                          "ref": "BFhwj",
+                          "name": "Status bar",
+                          "width": "fill_container"
                         },
                         {
-                          "type": "frame",
-                          "id": "abg8q",
-                          "name": "free",
-                          "fill": "$bg-2",
-                          "cornerRadius": 8,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "EuGIk",
-                              "name": "Label",
-                              "fill": "$fg-2",
-                              "content": "free",
-                              "fontFamily": "JetBrains Mono",
-                              "fontSize": 18,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "m7pGI",
-                          "name": "AGPL-3.0",
-                          "fill": "$bg-2",
-                          "cornerRadius": 8,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "wSxIq",
-                              "name": "Label",
-                              "fill": "$fg-2",
-                              "content": "AGPL-3.0",
-                              "fontFamily": "JetBrains Mono",
-                              "fontSize": 18,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "type": "rectangle",
+                          "id": "BNNAr",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 470,
+                          "name": "Bottom fade",
+                          "fill": {
+                            "type": "gradient",
+                            "gradientType": "linear",
+                            "enabled": true,
+                            "rotation": 180,
+                            "size": {
+                              "height": 1
+                            },
+                            "colors": [
+                              {
+                                "color": "#0D111700",
+                                "position": 0
+                              },
+                              {
+                                "color": "#0D1117",
+                                "position": 1
+                              }
+                            ]
+                          },
+                          "width": 1200,
+                          "height": 280
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "XxM5F",
-                      "layoutPosition": "absolute",
-                      "x": 0,
-                      "y": 580,
-                      "name": "URL",
-                      "fill": "$fg-dim",
-                      "textGrowth": "fixed-width",
-                      "width": 1280,
-                      "content": "githq.dev",
-                      "textAlign": "center",
-                      "fontFamily": "JetBrains Mono",
-                      "fontSize": 18,
-                      "fontWeight": "normal"
+                      "type": "rectangle",
+                      "id": "L2zhAI",
+                      "x": 380,
+                      "y": 0,
+                      "name": "Left fade",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 270,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#0D111700",
+                            "position": 0
+                          },
+                          {
+                            "color": "#0D111700",
+                            "position": 0.074
+                          },
+                          {
+                            "color": "#0D111701",
+                            "position": 0.148
+                          },
+                          {
+                            "color": "#0D111703",
+                            "position": 0.223
+                          },
+                          {
+                            "color": "#0D111707",
+                            "position": 0.297
+                          },
+                          {
+                            "color": "#0D11170D",
+                            "position": 0.371
+                          },
+                          {
+                            "color": "#0D111715",
+                            "position": 0.445
+                          },
+                          {
+                            "color": "#0D11171F",
+                            "position": 0.519
+                          },
+                          {
+                            "color": "#0D11172A",
+                            "position": 0.594
+                          },
+                          {
+                            "color": "#0D111736",
+                            "position": 0.668
+                          },
+                          {
+                            "color": "#0D111742",
+                            "position": 0.742
+                          },
+                          {
+                            "color": "#0D11174C",
+                            "position": 0.816
+                          },
+                          {
+                            "color": "#0D111755",
+                            "position": 0.891
+                          },
+                          {
+                            "color": "#0D111700",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "width": 274,
+                      "height": 640
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bvYHD",
+                      "x": 88,
+                      "y": 84,
+                      "name": "Copy",
+                      "width": 500,
+                      "height": 472,
+                      "layout": "vertical",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F8N4y",
+                          "name": "Brand",
+                          "gap": 14,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "KpWZp",
+                              "type": "ref",
+                              "ref": "Jdpz4",
+                              "name": "Wordmark",
+                              "descendants": {
+                                "vRWIQ": {
+                                  "fontSize": 34,
+                                  "letterSpacing": -1.5
+                                },
+                                "LgB4e": {
+                                  "fontSize": 34,
+                                  "letterSpacing": -1.5
+                                },
+                                "N78Orz": {
+                                  "fontSize": 34,
+                                  "letterSpacing": -1.5
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FgyDC",
+                          "name": "Message",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 22,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "x7K7r",
+                              "name": "Headline",
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "enabled": true,
+                                "rotation": 180,
+                                "size": {
+                                  "height": 1
+                                },
+                                "colors": [
+                                  {
+                                    "color": "#F0F6FC",
+                                    "position": 0.35
+                                  },
+                                  {
+                                    "color": "#9198A1",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "All your repos\nat the speed\nof thought",
+                              "lineHeight": 1.04,
+                              "fontFamily": "Geist",
+                              "fontSize": 70,
+                              "fontWeight": "600",
+                              "letterSpacing": -2.8
+                            },
+                            {
+                              "type": "text",
+                              "id": "QoSTT",
+                              "name": "Subhead",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": 490,
+                              "content": "Issues, Projects, pull requests and Actions from every repository, on one fast screen.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "Inter",
+                              "fontSize": 24,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "AjuGD",
+                          "name": "Footer",
+                          "fill": "$fg-dim",
+                          "content": "githq.dev  ·  free  ·  open source",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 17,
+                          "fontWeight": "normal",
+                          "letterSpacing": 0.2
+                        }
+                      ]
                     }
                   ]
                 }
