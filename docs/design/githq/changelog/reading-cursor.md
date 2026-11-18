@@ -60,3 +60,53 @@ screens F24–F31, the frames below `App · Pull request` moved down.
 
 Not drawn: an issue's thread (the same stops without reviews and commits) and the cursor arriving on the description;
 both follow the comment's look.
+
+## Round 2 · owner's pick
+
+Asked (`.context/reading-cursor-brief-2.md`, the owner on 2026-11-18): Variant A, with no left-edge mark anywhere: a
+comment inside a code thread, when current, gets only the tint on its part of the thread card. The cursor stays
+invisible (no caret). The keys `.` menu, `Q` quote reply, `H` resolve / unresolve, `W` edit are settled; `E` stays code
+review's (an item can be open over a review). Changed: Variants B and C deleted, A's screens moved out and renamed, F30
+settled, the remaining components moved next to their bases, the frames below `App · Pull request` moved back up.
+
+- [ ] Review / Comment · current (`fNNF4`): the 2 px `$current-edge` mark on the card's left edge removed (the
+  `kIiiC` stroke override); only the tint `#7B87F71A` stays, bleeding to the thread card's edges.
+- [ ] Review / Comment (`IHFo8`): the `Avatar column` wrapper (`kIiiC`) removed, the avatar (`J1oko`) back as the
+  first child, as at the base revision. Looks the same.
+- [ ] The 78 avatar overrides (`…/J1oko` fill, `…/J1oko/zeZzP` initials) were lost by that move and restored to their
+  values before it, compared key by key (`uIXia`, `qrcqS`, `znW1W`, `GlhsY`, `YKqKB`, `DwBhj`, `PwdqU`, `jd4oq` and 31
+  screens' `WFYVj`); code review threads `UileD` and `jd4oq` render as before.
+- [ ] Deleted Variant B and C screens: F25 (slot `JdGyd`), F26 (`o2l5YY`), F28 (`wjEgA`), F29 (`H3fLcv`), with their
+  rows `eqlQW`, `B90kX`.
+- [ ] Deleted B/C-only components: `Review / Comment · current (B)` (`b05oDt`), `Activity / Comment · current (B)`
+  (`Wv4fu`), `· linked, current (B)` (`SRvT4`), `· narrow, current (B)` (`X1IEKj`), `Activity / Review · current (B)`
+  (`g0TRzR`), `Activity / Review · pending, current (B)` (`ImkNG`), `Activity / Reading caret` (`ZNAuv`), with their
+  columns `i6q6F`, `k7YE9H`.
+- [ ] F24 (slot `mzLjU`, screen `VN5jy`): moved into the row `TS9ng`; `F24 · Variant A · The current comment, as the
+  current file` → `F24 · The current comment, as the current file`; caption: picked by the owner, no mark on any edge
+  and no caret, "see F25" → "see F27".
+- [ ] F27 (slot `gkuKb`, screen `T2Mnvm`): moved into `TS9ng`; `F27 · Variant A · The cursor on every other kind of
+  stop` → `F27 · The cursor on every other kind of stop`; caption: a comment in a code thread gets only the tint, no
+  mark.
+- [ ] Variants · How the reading cursor shows (`lTN61`, amber): deleted, with its head and the `Variant A` row
+  (`O0Ijm`).
+- [ ] F30 (slot `sH3i5`, screen `E2nZW`): `F30 · Question · Keys for the thread's cursor and its actions` → `F30 · Keys
+  for the thread's cursor and its actions`; amber fill, stroke, padding and radius removed from the slot; caption: the
+  keys are settled, E isn't used because it is code review's (expand hidden lines) and an item can be open over a
+  review.
+- [ ] F31 (caption `m67Kfj`): "both proposed in F30" → "F30"; "drawn in Variant A's look" → "the comment under the
+  cursor has F24's look".
+- [ ] Components · Activity (`X7uA3I`), each next to its base, its height unchanged (no screen moved), 1440 px wider:
+  `Activity / Commit · current` (`xyiYO`) after `pbG2Y` and `Activity / Fold · current` (`VRxDl`) after `lshuQ` in
+  Shared; `Activity / Event · current` (`uBr3s`), `Activity / Comment · current` (`Dp20Y`) and `Activity / Review ·
+  current` (`s5t76`) after their bases in Item thread; `Activity / Code comment · resolved, current` (`sx0mg`) after
+  `NXXMN` in Writing; `Activity / Review · pending, current` (`f6qw8F`) after `PwdqU` and `Activity / Comment · linked,
+  current` (`y3xMc`) after `iMK9U` in Comments and reviews; `Activity / Comment · narrow, current` (`VlCXB`) after
+  `k6csA` in Narrow cards.
+- [ ] Components · Code review (`crvke`): `Review / Comment · current` (`fNNF4`) moved under its base `IHFo8` in
+  Thread parts › Comments (`QzHN5`), not into Components · Activity, since its base lives there.
+- [ ] Components · Reading cursor (`bkmox`): deleted, empty.
+- [ ] Layout: the row `TS9ng` shrank to F24, F27, F30, F31 (4158 → 1270 high); `XN8vf` 2888 px shorter (24662 →
+  21774) and 1340 px wider (9730 → 11070, from Components · Activity); the 29 top-level frames that started at y 30426
+  or below moved up 2888 px as whole rows (the code review row now at 27538). The stray root text `BnN7r` was not moved,
+  as in round 1.
