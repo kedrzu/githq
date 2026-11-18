@@ -407,7 +407,19 @@ export const ReviewWritingFactory = defineFactory({
             forgetBox(id);
             setInMap(textsRef, id, null);
             setInMap(statusesRef, id, { kind: 'sent', way: done, body });
-            const threadsRead = done === 'joinAndSubmit' ? await sendFinish(COMMENT_REVIEW) : await readAgain();
+            if (done === 'joinAndSubmit') {
+                closeAfterRead(id, await sendFinish(COMMENT_REVIEW));
+                return;
+            }
+
+            // It goes as soon as the threads hold it: waiting for the draft read too, it would show twice meanwhile.
+            await Promise.all([
+                params.readThreadsAgain().then(threadsRead => closeAfterRead(id, threadsRead)),
+                readDraftAgain(),
+            ]);
+        }
+
+        function closeAfterRead(id: string, threadsRead: boolean) {
             if (!dropped) {
                 afterRead(threadsRead, () => close(id));
             }
