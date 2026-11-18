@@ -70,9 +70,10 @@ test('with animations off, no overlay animates and each is out of the page with 
         });
     }
 
-    // Back to the list from the item the popover was opened on, where a phone has its places button.
+    // Back to the list from the item the popover was opened on, where a phone has its places button. The list's row shows
+    // beside the panel too: the address says the panel closed. Narrowed before then, the window moves the item to its page.
     await shell.myWorkLink('My work').click();
-    await expect(myWork.row(ISSUE)).toBeVisible();
+    await expect(page).toHaveURL('/');
     await page.setViewportSize(PHONE);
     for (const sheet of phoneSheets(page)) {
         await test.step(`phone: ${sheet.name}`, async () => {
