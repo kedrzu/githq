@@ -66,7 +66,7 @@ test('⌘K sets the Status of two selected items at once, by typing the value', 
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['SetProjectFieldValue', 'SetProjectFieldValue']);
 });
 
-test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
+test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by" sets the order; `>` finds actions only', async ({
     page,
     github,
 }) => {
@@ -74,14 +74,14 @@ test('E1: the view’s options are actions — "Show as board" shows it as a boa
     const menu = new CommandMenuHarness(page);
 
     await menu.open();
-    await expect(menu.option(/^Group by…/)).toBeVisible();
+    await expect(menu.option(/^Group by/)).toBeVisible();
     await menu.option(/^Show as board/).click();
     await expect(menu.root).toBeHidden();
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 
     await menu.open();
     await menu.field.pressSequentially('> order');
-    await expect(menu.option(/^Order by…/)).toBeVisible();
+    await expect(menu.option(/^Order by/)).toBeVisible();
     await expect(menu.root.getByRole('option')).toHaveCount(1);
     await page.keyboard.press('Enter');
     await menu.field.pressSequentially('title');
@@ -90,7 +90,7 @@ test('E1: the view’s options are actions — "Show as board" shows it as a boa
 
     await menu.open();
     await menu.field.pressSequentially('> order');
-    await expect(menu.option(/^Order by…\s*Title/)).toBeVisible();
+    await expect(menu.option(/^Order by\s*Title/)).toBeVisible();
 });
 
 test('D14: a list\'s "This view" opens on what acts on the list and its row, its view options after them', async ({
@@ -112,14 +112,14 @@ test('D14: a list\'s "This view" opens on what acts on the list and its row, its
     await expect(menu.group('This view').getByRole('option')).toHaveText(
         [
             `New issue in ${SAMPLE_PROJECT}`,
-            `Add existing issues to ${SAMPLE_PROJECT}…`,
+            `Add existing issues to ${SAMPLE_PROJECT}`,
             'Open on GitHub',
             'Open full screen',
             'Show as list',
-            'Group by…',
-            'Order by…',
-            'Row field…',
-            'Show properties…',
+            'Group by',
+            'Order by',
+            'Row field',
+            'Show properties',
         ].map(title => new RegExp(`^${title.replaceAll(' ', '\\s')}`, 'u')),
     );
 });

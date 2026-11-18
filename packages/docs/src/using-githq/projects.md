@@ -78,7 +78,7 @@ the field the columns stand for.
 ### Row field
 
 A project can show one field next to its items everywhere else in githq, in My work and in repositories, such as
-`In progress`. Choose it in the view's display options, or with **Row field…** in the command menu. It is kept on this
+`In progress`. Choose it in the view's display options, or with **Row field** in the command menu. It is kept on this
 device.
 
 ## Add to a project
@@ -91,7 +91,7 @@ Where you may update the project:
   <kbd>Enter</kbd> adds the draft with that group's value and leaves the line open for the next; <kbd>Esc</kbd> closes it.
 - **Existing issues.** **Add existing issues to…** in the command menu lists the issues on your device. Pick several in
   a row.
-- **From an item.** **Add to project…** in an item's menu, or **Add to project** on an opened item.
+- **From an item.** **Add to project** in an item's menu, or **Add to project** on an opened item.
 
 ::: info
 githq shows a draft issue, but doesn't edit it. Editing a draft and turning it into an issue happen on GitHub for now.

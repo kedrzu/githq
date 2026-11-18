@@ -885,7 +885,7 @@ test('Reset view options is offered only while the options differ from the defau
     expect(viewCommands(changed.container).map(command => command.id)).toContain('list.resetView');
 });
 
-test('Group by… and Order by… still set the grouping and the order', () => {
+test('Group by and Order by still set the grouping and the order', () => {
     const view = mount();
     const commands = viewCommands(view.container);
     commands

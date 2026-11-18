@@ -5,8 +5,8 @@ closePullRequest:
 closeItems:
   plural: count
   en:
-    one: Close 1 item…
-    many: 'Close {count} items…'
+    one: Close 1 item
+    many: 'Close {count} items'
 closeCompleted:
   en: Close as completed
 closeNotPlanned:

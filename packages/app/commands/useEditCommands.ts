@@ -312,10 +312,10 @@ export function useEditCommands(): (params: EditCommandsParams) => BoundCommand[
     }
 
     /**
-     * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
+     * "Merge pull request" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
      * merged, for the panel to say so (PM24) — the first of the actions; never for several items, which merge one at
      * a time. Its title is the way forward the panel leads to, as the standing's button says (PM38): "Update branch",
-     * "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…".
+     * "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge".
      */
     function mergeCommand(params: EditCommandsParams): BoundCommand | null {
         const pr = getOnePullRequest(params);

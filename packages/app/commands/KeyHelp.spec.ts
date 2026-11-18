@@ -12,7 +12,7 @@ test('? lists the keys the registry runs, by section; Escape closes it and leave
     await userEvent.keyboard('?');
     const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
     const item = help.getByRole('region', { name: 'Opened item' });
-    await expect.element(item.getByRole('term').filter({ hasText: 'Set status…' })).toBeInTheDocument();
+    await expect.element(item.getByRole('term').filter({ hasText: 'Set status' })).toBeInTheDocument();
     await expect.element(item.getByRole('definition').filter({ hasText: 'Shift+X' })).toBeInTheDocument();
     await expect.element(help.getByRole('term').filter({ hasText: 'Keyboard shortcuts' })).toBeInTheDocument();
     // The item's own keys, handled by the item view itself, are listed too.

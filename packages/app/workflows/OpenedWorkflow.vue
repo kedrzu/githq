@@ -1,4 +1,4 @@
-<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key), or with no list behind it (opened by its address) up to the repository's Workflows section —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens in its place in the panel when the workflow is there, else on its page, Back (and Esc from the run in the panel) returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. "Run workflow…", offered with write access to a repository that isn't archived for an enabled workflow of its own, opens the command menu at its form (`useRunWorkflowCommand`). By the same gate ⌘K disables the workflow, or enables it beside its dimmed "Run workflow", and re-runs all the jobs of the run under the cursor full screen or cancels it while it goes (`WorkflowRunStore`, no key: D10); it also opens the workflow's file at the default branch on GitHub — not for one GitHub generates — and copies the workflow's link. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
+<!-- The workflow an address opens, in its arrangement (actions D15): found among the repository's workflows and kept current (`useOpenedWorkflow`, which reads its runs' first page and its file as it opens), shown in the workflow view — in the panel beside the Workflows section or on its page — and moved as any opened item is (`useItemArrangement`): "Open full screen" (`⇧Enter`) expands it from the panel, Escape goes back the way it came — the list selecting the workflow opened last (`ItemNavigation.lastOpenedId`, by its key), or with no list behind it (opened by its address) up to the repository's Workflows section —, `⇧K`/`⇧J` step through the list of workflows it was opened from, by their keys (`WorkflowRoutes.formatKey`). A run opens in its place in the panel when the workflow is there, else on its page, Back (and Esc from the run in the panel) returning here on that run (the selected run is kept per workflow for the session, `WorkflowTabPlaces`); the filters and the grouping set there go to the run history and the settings. "Run workflow", offered with write access to a repository that isn't archived for an enabled workflow of its own, opens the command menu at its form (`useRunWorkflowCommand`). By the same gate ⌘K disables the workflow, or enables it beside its dimmed "Run workflow", and re-runs all the jobs of the run under the cursor full screen or cancels it while it goes (`WorkflowRunStore`, no key: D10); it also opens the workflow's file at the default branch on GitHub — not for one GitHub generates — and copies the workflow's link. Until the repository's workflows are read it says it is opening; once read, a workflow not among them is said missing. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -106,7 +106,7 @@ const toggle = computed(() => {
   return state === 'active' ? 'disable' : 'enable';
 });
 
-/** "Run workflow · Deploy" for the workflow open: what its Run workflow… button opens the command menu at too. */
+/** "Run workflow · Deploy" for the workflow open: what its Run workflow button opens the command menu at too. */
 const runCommand = computed(() =>
   opened.state
     ? runWorkflowCommands.forWorkflow({ nameWithOwner: opened.nameWithOwner, state: opened.state, place: 'workflow' })
@@ -170,7 +170,7 @@ useCommands(() => {
   return commands;
 });
 
-/** "Run workflow…" is offered where the user may run it and GitHub may run it by hand: the file decides the rest. */
+/** "Run workflow" is offered where the user may run it and GitHub may run it by hand: the file decides the rest. */
 const offerRun = computed(
   () =>
     opened.state !== null &&

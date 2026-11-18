@@ -21,6 +21,6 @@ submitOrNext:
 submitOnly:
   en: Send your review.
 submit:
-  en: Submit review…
+  en: Submit review
 next:
   en: 'Next: #{number}'

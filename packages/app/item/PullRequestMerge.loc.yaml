@@ -33,6 +33,8 @@ notAnswered:
   en: GitHub hasn't answered · not shown as merged
 nextRefreshSettles:
   en: The next refresh settles it
+mergeShort:
+  en: Merge
 backToMerge:
   en: Back to the merge
 deleteBranch:

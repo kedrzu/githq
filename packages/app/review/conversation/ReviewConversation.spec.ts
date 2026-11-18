@@ -68,7 +68,7 @@ test('the user’s own comment is edited in place and deleted once confirmed, as
     });
 
     await openMenu('Thanks, looks right.');
-    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete' }));
     await userEvent.click(page.getByRole('button', { name: 'Delete comment' }));
     expect(onEdit).toHaveBeenLastCalledWith({ kind: 'deleteComment', commentId: 'C_MINE' });
 

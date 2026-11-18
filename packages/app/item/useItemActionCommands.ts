@@ -32,7 +32,7 @@ export interface AddToProjectParams {
 export interface ItemActionCommands {
     /** "Copy link" of one item, "Copy links" of several, one address per line. */
     copyLink(items: readonly Item[], section: ItemActionSection): BoundCommand;
-    /** "Add to project…": a submenu of the viewer's open projects not every one of the items is in already. */
+    /** "Add to project": a submenu of the viewer's open projects not every one of the items is in already. */
     addToProject(params: AddToProjectParams): BoundCommand;
     /**
      * "Copy reference" (`owner/name#123`), and of a pull request its changed files on GitHub and "Copy branch name". The

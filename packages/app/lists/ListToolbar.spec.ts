@@ -121,7 +121,7 @@ test('a menu option naming a command is that command: its choices are the submen
         'list.showProperties',
     ]);
     const command = commands.find(candidate => candidate.id === 'list.rowField');
-    expect(command?.title).toBe('Row field…');
+    expect(command?.title).toBe('Row field');
     expect(command?.detail).toBe('Priority');
     const submenu = command?.options?.().options;
     expect(submenu?.map(option => [option.value, option.chosen])).toEqual([

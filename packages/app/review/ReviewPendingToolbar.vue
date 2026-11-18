@@ -1,4 +1,4 @@
-<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the ways out, neither of them one click: Discard review… and Submit review… (⇧S) each open their dialog. A refused submission turns it red with GitHub's reason (`· failed`, CR76), everything kept: Edit review… goes back to the dialog, Try again sends the same again. A review with no draft shows here too, on its way and when refused, though no draft keeps the toolbar otherwise. A failure not about the draft open now can be dismissed, and a different draft than it was sent against takes Try again away: only the dialog, which lists its comments, can submit that one (D33). The bar runs the diff column's full width, its content kept to the diff's box by `--review-diff-inset`, how far in from each side the box stands (none outside a review). -->
+<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the ways out, neither of them one click: Discard review and Submit review (⇧S) each open their dialog. A refused submission turns it red with GitHub's reason (`· failed`, CR76), everything kept: Edit review goes back to the dialog, Try again sends the same again. A review with no draft shows here too, on its way and when refused, though no draft keeps the toolbar otherwise. A failure not about the draft open now can be dismissed, and a different draft than it was sent against takes Try again away: only the dialog, which lists its comments, can submit that one (D33). The bar runs the diff column's full width, its content kept to the diff's box by `--review-diff-inset`, how far in from each side the box stands (none outside a review). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -23,9 +23,9 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** Discard review… */
+  /** Discard review */
   discard: [];
-  /** Submit review… or Edit review… */
+  /** Submit review or Edit review */
   submit: [];
   retry: [];
   dismiss: [];

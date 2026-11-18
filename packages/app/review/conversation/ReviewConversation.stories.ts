@@ -208,7 +208,7 @@ export const Verdicts: Story = {
 
 /**
  * CR120: the description, the user's own comment, another's and reviews as the pull request's cards, at 340 px, a very
- * long login among them; the user's comment offers Edit and Delete…, every card Quote reply and Copy link.
+ * long login among them; the user's comment offers Edit and Delete, every card Quote reply and Copy link.
  */
 export const Cards: Story = {
     args: {

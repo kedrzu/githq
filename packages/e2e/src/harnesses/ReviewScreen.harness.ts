@@ -112,14 +112,14 @@ export class ReviewScreenHarness {
         return this.page.getByRole('region', { name: 'Your draft review' });
     }
 
-    /** The toolbar's "Submit review…". */
+    /** The toolbar's "Submit review". */
     get submitReviewButton(): Locator {
-        return this.pendingToolbar.getByRole('button', { name: 'Submit review…' });
+        return this.pendingToolbar.getByRole('button', { name: 'Submit review' });
     }
 
-    /** The toolbar's "Discard review…". */
+    /** The toolbar's "Discard review". */
     get discardReviewButton(): Locator {
-        return this.pendingToolbar.getByRole('button', { name: 'Discard review…' });
+        return this.pendingToolbar.getByRole('button', { name: 'Discard review' });
     }
 
     /** The toast of a comment box just discarded (D40), in the review's own notifications at the foot of the diff. */

@@ -30,7 +30,7 @@ const EDIT_PLACES = ['list', 'item', 'review'] as const;
 
 /**
  * The merge panel for one pull request (merging D9), or a stack's entry's whole stack (stacked PRs D11). Its bindings
- * name the way forward the panel leads to ("Queue…", "Auto-merge…", "Mark ready…", "Merge all 3").
+ * name the way forward the panel leads to ("Queue", "Auto-merge", "Mark ready", "Merge all 3").
  */
 export const merge = defineAppCommand({
     id: 'merge',
