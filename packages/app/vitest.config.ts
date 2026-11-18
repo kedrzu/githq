@@ -76,6 +76,10 @@ export default defineConfig({
                 ],
                 test: {
                     name: 'storybook',
+                    // A browser test's actions get what is left of the test's budget, not a timeout of their own. In
+                    // a full run on a loaded machine a test that takes 0.3 s can take 30 times that, and the default
+                    // 15 s then runs out in whichever click comes last (#358).
+                    testTimeout: 30_000,
                     exclude: ['**/node_modules/**', '**/.git/**', '**/.nuxt/**', '**/.output/**'],
                     browser: {
                         enabled: true,
