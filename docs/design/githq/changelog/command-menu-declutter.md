@@ -221,3 +221,21 @@ through the Pen MCP.
 
 Checked, no change: Go to's counts ("My work 12", "Repositories… 12", "Projects… 5") follow the title in E12, E13 and
 E15, as `CommandMenu.vue` now draws them (`commandMenu_count`, after the title, before the chevron).
+
+## Round 8 · implementation
+
+Asked (`.context/command-menu-declutter-brief-7.md`, not committed): follow `main`'s #355 (`reading-cursor.md` round
+3), which dropped the trailing "…" from every button and command label, so the built rows read "Repositories" and
+"Projects". Forced by: copy that changed in the code. Only command labels changed; placeholders ("Type a command or
+search…", "Filter repositories…", "Search or jump to…") keep theirs. Made through the Pen MCP.
+
+- [x] E12 Results (`E4srSI`) and `The whole list · E12` (`s6c5qL`): "Set status…", "Set priority…", "Set iteration…",
+  "Assign to…", "Add or remove labels…", "Close issue…", "Group by…", "Repositories…", "Projects…" → the same without
+  "…" (`y7WmmH`, `UXgUX`, `XO7h8`, `kRMWn`, `YGt6e`, `MQHZy`, `QqdfK`, `gClif`, `IoNrn`; `ZZn9x`, `sgOkY`, `mSi8U`,
+  `X9zLL`, `X3MX34`, `uS879`, `Nn94c`, `mbnHg`, `Vv25N`), each instance's layer name too.
+- [x] E13 (`J1mJg`), `The whole list · E13` (`ikmRq`), E15 (`CBAUZ`): "Group by…", "Repositories…", "Projects…" → no
+  "…" (`u59lZ`, `o5Lx7r`, `pflMQ`; `nzYB9`, `AuCI4`, `XND1p`; `Gyj9I`, `Ts65A`, `tQm5H`), layer names too.
+
+Checked, no change: E14 (`U6RVn`) draws no command label with "…" (its crumb already reads "Repositories"). Screen
+titles and captions that cite "Repositories…" (`Slot · E14 · Repositories… entered`) keep their names, as codes and
+titles stay.

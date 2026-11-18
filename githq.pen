@@ -70725,7 +70725,7 @@
                                   "id": "y7WmmH",
                                   "type": "ref",
                                   "ref": "DOwi8",
-                                  "name": "Result Set status…",
+                                  "name": "Result Set status",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -70733,7 +70733,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set status…"
+                                      "content": "Set status"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -70771,7 +70771,7 @@
                                   "id": "UXgUX",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Set priority…",
+                                  "name": "Result Set priority",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -70779,7 +70779,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set priority…"
+                                      "content": "Set priority"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -70817,7 +70817,7 @@
                                   "id": "XO7h8",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Set iteration…",
+                                  "name": "Result Set iteration",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -70825,7 +70825,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set iteration…"
+                                      "content": "Set iteration"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -70863,7 +70863,7 @@
                                   "id": "kRMWn",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Assign to…",
+                                  "name": "Result Assign to",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -70871,7 +70871,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Assign to…"
+                                      "content": "Assign to"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -70908,7 +70908,7 @@
                                   "id": "YGt6e",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Add or remove labels…",
+                                  "name": "Result Add or remove labels",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -70916,7 +70916,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Add or remove labels…"
+                                      "content": "Add or remove labels"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -70998,7 +70998,7 @@
                                   "id": "MQHZy",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Close issue…",
+                                  "name": "Result Close issue",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71006,7 +71006,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Close issue…"
+                                      "content": "Close issue"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -71265,7 +71265,7 @@
                                   "id": "QqdfK",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Group by…",
+                                  "name": "Result Group by",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71273,7 +71273,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Group by…"
+                                      "content": "Group by"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -71753,7 +71753,7 @@
                                   "id": "gClif",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Repositories…",
+                                  "name": "Result Repositories",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71761,7 +71761,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Repositories…"
+                                      "content": "Repositories"
                                     },
                                     "MXfcN": {
                                       "content": "4",
@@ -71776,7 +71776,7 @@
                                   "id": "IoNrn",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Projects…",
+                                  "name": "Result Projects",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71784,7 +71784,7 @@
                                       "fill": "$accent"
                                     },
                                     "e2wbth": {
-                                      "content": "Projects…"
+                                      "content": "Projects"
                                     },
                                     "MXfcN": {
                                       "content": "3",
@@ -71892,7 +71892,7 @@
                                   "id": "ZZn9x",
                                   "type": "ref",
                                   "ref": "DOwi8",
-                                  "name": "Result Set status…",
+                                  "name": "Result Set status",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71900,7 +71900,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set status…"
+                                      "content": "Set status"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -71938,7 +71938,7 @@
                                   "id": "sgOkY",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Set priority…",
+                                  "name": "Result Set priority",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71946,7 +71946,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set priority…"
+                                      "content": "Set priority"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -71984,7 +71984,7 @@
                                   "id": "mSi8U",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Set iteration…",
+                                  "name": "Result Set iteration",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -71992,7 +71992,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Set iteration…"
+                                      "content": "Set iteration"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -72030,7 +72030,7 @@
                                   "id": "X9zLL",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Assign to…",
+                                  "name": "Result Assign to",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72038,7 +72038,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Assign to…"
+                                      "content": "Assign to"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -72075,7 +72075,7 @@
                                   "id": "X3MX34",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Add or remove labels…",
+                                  "name": "Result Add or remove labels",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72083,7 +72083,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Add or remove labels…"
+                                      "content": "Add or remove labels"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -72165,7 +72165,7 @@
                                   "id": "uS879",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Close issue…",
+                                  "name": "Result Close issue",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72173,7 +72173,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Close issue…"
+                                      "content": "Close issue"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -72432,7 +72432,7 @@
                                   "id": "Nn94c",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Group by…",
+                                  "name": "Result Group by",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72440,7 +72440,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Group by…"
+                                      "content": "Group by"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -72920,7 +72920,7 @@
                                   "id": "mbnHg",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Repositories…",
+                                  "name": "Result Repositories",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72928,7 +72928,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Repositories…"
+                                      "content": "Repositories"
                                     },
                                     "MXfcN": {
                                       "content": "4",
@@ -72943,7 +72943,7 @@
                                   "id": "Vv25N",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Projects…",
+                                  "name": "Result Projects",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -72951,7 +72951,7 @@
                                       "fill": "$accent"
                                     },
                                     "e2wbth": {
-                                      "content": "Projects…"
+                                      "content": "Projects"
                                     },
                                     "MXfcN": {
                                       "content": "3",
@@ -73410,7 +73410,7 @@
                                   "id": "u59lZ",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Group by…",
+                                  "name": "Result Group by",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -73418,7 +73418,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Group by…"
+                                      "content": "Group by"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -73898,7 +73898,7 @@
                                   "id": "o5Lx7r",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Repositories…",
+                                  "name": "Result Repositories",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -73906,7 +73906,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Repositories…"
+                                      "content": "Repositories"
                                     },
                                     "MXfcN": {
                                       "content": "12",
@@ -73921,7 +73921,7 @@
                                   "id": "pflMQ",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Projects…",
+                                  "name": "Result Projects",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -73929,7 +73929,7 @@
                                       "fill": "$accent"
                                     },
                                     "e2wbth": {
-                                      "content": "Projects…"
+                                      "content": "Projects"
                                     },
                                     "MXfcN": {
                                       "content": "5",
@@ -74101,7 +74101,7 @@
                                   "id": "nzYB9",
                                   "type": "ref",
                                   "ref": "k3mGr",
-                                  "name": "Result Group by…",
+                                  "name": "Result Group by",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -74109,7 +74109,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Group by…"
+                                      "content": "Group by"
                                     },
                                     "nsltD": {
                                       "enabled": true
@@ -74589,7 +74589,7 @@
                                   "id": "AuCI4",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Repositories…",
+                                  "name": "Result Repositories",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -74597,7 +74597,7 @@
                                       "fill": "$fg-2"
                                     },
                                     "e2wbth": {
-                                      "content": "Repositories…"
+                                      "content": "Repositories"
                                     },
                                     "MXfcN": {
                                       "content": "12",
@@ -74612,7 +74612,7 @@
                                   "id": "XND1p",
                                   "type": "ref",
                                   "ref": "EZkQt",
-                                  "name": "Result Projects…",
+                                  "name": "Result Projects",
                                   "width": "fill_container",
                                   "descendants": {
                                     "z7iSD": {
@@ -74620,7 +74620,7 @@
                                       "fill": "$accent"
                                     },
                                     "e2wbth": {
-                                      "content": "Projects…"
+                                      "content": "Projects"
                                     },
                                     "MXfcN": {
                                       "content": "5",
@@ -75717,7 +75717,7 @@
                               "id": "Gyj9I",
                               "type": "ref",
                               "ref": "k3mGr",
-                              "name": "Result Group by…",
+                              "name": "Result Group by",
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
@@ -75725,7 +75725,7 @@
                                   "fill": "$fg-2"
                                 },
                                 "e2wbth": {
-                                  "content": "Group by…"
+                                  "content": "Group by"
                                 },
                                 "nsltD": {
                                   "enabled": true
@@ -76205,7 +76205,7 @@
                               "id": "Ts65A",
                               "type": "ref",
                               "ref": "EZkQt",
-                              "name": "Result Repositories…",
+                              "name": "Result Repositories",
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
@@ -76213,7 +76213,7 @@
                                   "fill": "$fg-2"
                                 },
                                 "e2wbth": {
-                                  "content": "Repositories…"
+                                  "content": "Repositories"
                                 },
                                 "MXfcN": {
                                   "content": "12",
@@ -76228,7 +76228,7 @@
                               "id": "tQm5H",
                               "type": "ref",
                               "ref": "DOwi8",
-                              "name": "Result Projects…",
+                              "name": "Result Projects",
                               "width": "fill_container",
                               "descendants": {
                                 "z7iSD": {
@@ -76236,7 +76236,7 @@
                                   "fill": "$accent"
                                 },
                                 "e2wbth": {
-                                  "content": "Projects…"
+                                  "content": "Projects"
                                 },
                                 "nsltD": {
                                   "enabled": true
