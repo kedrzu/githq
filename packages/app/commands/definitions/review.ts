@@ -128,43 +128,49 @@ export const focusFilter = defineAppCommand({
     places: ['review'],
 });
 
-/** Moves the diff's line cursor a stop down, faster the longer it is held. */
+/**
+ * Moves a reading cursor a step down, further the longer it is held: the diff's line cursor in a review, the cursor over
+ * an opened item's thread on its page (D44); a commit's or a run's page, which have no cursor, scroll by it.
+ */
 export const lineDown = defineAppCommand({
     id: 'lineDown',
     title: l.lineDown,
     icon: ArrowDown,
     key: 'ArrowDown',
-    places: ['review'],
+    places: ['review', 'item', 'commit', 'workflowRun'],
     configurable: false,
 });
 
-/** Moves the diff's line cursor a stop up, faster the longer it is held. */
+/** Moves a reading cursor a step up, further the longer it is held; as {@link lineDown}. */
 export const lineUp = defineAppCommand({
     id: 'lineUp',
     title: l.lineUp,
     icon: ArrowUp,
     key: 'ArrowUp',
-    places: ['review'],
+    places: ['review', 'item', 'commit', 'workflowRun'],
     configurable: false,
 });
 
-/** Moves the diff's line cursor a screen down. */
+/**
+ * Moves a reading cursor a screen down: the diff's line cursor in a review, the cursor over an opened item's thread on
+ * its page, the page scrolling with it; a commit's or a run's page scroll a screen.
+ */
 export const pageDown = defineAppCommand({
     id: 'pageDown',
     title: l.pageDown,
     icon: ChevronsDown,
     key: 'PageDown',
-    places: ['review'],
+    places: ['review', 'item', 'commit', 'workflowRun'],
     configurable: false,
 });
 
-/** Moves the diff's line cursor a screen up. */
+/** Moves a reading cursor a screen up; as {@link pageDown}. */
 export const pageUp = defineAppCommand({
     id: 'pageUp',
     title: l.pageUp,
     icon: ChevronsUp,
     key: 'PageUp',
-    places: ['review'],
+    places: ['review', 'item', 'commit', 'workflowRun'],
     configurable: false,
 });
 

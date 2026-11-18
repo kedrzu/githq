@@ -26,3 +26,11 @@ resizeSummary:
   en: Resize the summary
 resizeItem:
   en: Resize the item
+nextComment:
+  en: Next comment
+previousComment:
+  en: Previous comment
+resolveThread:
+  en: Resolve thread
+unresolveThread:
+  en: Unresolve thread

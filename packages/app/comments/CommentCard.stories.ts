@@ -4,6 +4,7 @@ import GitHubHtml from '@/item/GitHubHtml.vue';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import CommentCard from './CommentCard.vue';
 import CommentMenu from './CommentMenu.vue';
@@ -121,4 +122,42 @@ export const WideReview: Story = {
 /** The thread at its widest: the threads and the Author chip follow the time, the ⋯ stays at the edge. */
 export const WidestReview: Story = {
     parameters: { width: 1300, menu: true, verdict: 'CHANGES_REQUESTED', tail: '2 threads · 1 resolved' },
+};
+
+/** `Activity / Comment · current`: the reading cursor on it, the border `current-edge`, the head `current-header`. */
+export const Current: Story = {
+    args: { stop: COMMENT.id },
+    parameters: { menu: true },
+    decorators: [withReadingCursor(COMMENT.id)],
+};
+
+/** `· linked, current`: the address names it too; it keeps the accent border, the head alone takes the cursor's tint. */
+export const CurrentLinked: Story = {
+    args: { stop: COMMENT.id, linked: true },
+    parameters: { menu: true },
+    decorators: [withReadingCursor(COMMENT.id)],
+};
+
+/** `Activity / Review · pending, current`: the draft review keeps its amber border, the head alone takes the tint. */
+export const CurrentPending: Story = {
+    args: { author: VIEWER, stop: 'draftReview', pending: true, name: 'Your review' },
+    decorators: [withReadingCursor('draftReview')],
+};
+
+/** `· narrow, current`: the narrow card marked the same. */
+export const CurrentNarrow: Story = {
+    args: { stop: COMMENT.id },
+    parameters: { width: NARROW, menu: true },
+    decorators: [withReadingCursor(COMMENT.id)],
+};
+
+/** A stop the cursor is not on: no mark. */
+export const NotCurrent: Story = {
+    args: { stop: COMMENT.id },
+    decorators: [withReadingCursor('description')],
+};
+
+/** No stop, as in code review's conversation: never marked, even where a cursor is on a key like its comment's. */
+export const NotAStop: Story = {
+    decorators: [withReadingCursor(COMMENT.id)],
 };

@@ -4,7 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Copy, GitCommitHorizontal, GitPullRequest, Github, Info, X } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import {
   closeItem,
@@ -69,6 +69,10 @@ const emit = defineEmits<{
 const store = useService(CommitGraphStore);
 const tracking = useService(TrackingStore);
 const t = useTranslate();
+/** The one scroll under the toolbar, for the page's reading keys (`OpenedCommit`). */
+const scroll = useTemplateRef('scroll');
+
+defineExpose({ scroll });
 
 const commit = computed(() => store.getCommit(props.nameWithOwner, props.oid));
 const detail = computed(() => store.getDetail(props.nameWithOwner, props.oid));
@@ -233,7 +237,10 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
       />
     </header>
 
-    <div :class="css.commitDetails_scroll">
+    <div
+      ref="scroll"
+      :class="css.commitDetails_scroll"
+    >
       <div :class="css.commitDetails_content">
         <p
           v-if="notice"

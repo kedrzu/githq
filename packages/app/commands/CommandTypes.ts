@@ -349,6 +349,11 @@ export interface CommandKeySheet {
     readonly columns: readonly { readonly title: string; readonly rows: readonly CommandKeyRow[] }[];
     /** The keys that fit no column, along the bottom. */
     readonly footer: readonly CommandKeyRow[];
+    /**
+     * After the columns, the actions that can run now, a column per section as the plain sheet lists them, but those
+     * on a key the columns speak of: a screen whose keys add to the rest instead of standing for them (an item's page).
+     */
+    readonly listed?: boolean;
 }
 
 /** A submenu: what an action offers to pick. */

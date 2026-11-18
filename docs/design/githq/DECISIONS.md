@@ -930,6 +930,43 @@ a tall menu over the whole window distracted more than it helped.
 case. Capping each group at five rows with "more…": arbitrary cuts. Repositories grouped by owner inside the level: a
 filter-as-you-type list needs no headings.
 
+### D43
+
+**An opened item's page has code review's reading cursor over its thread.** (owner, 2026-11-18.) Drawn in `githq.pen`,
+App · Pull request, F24, F27, F30, F31; the design log is `changelog/reading-cursor.md`.
+
+- **Keys.** ↓ ↑ move the cursor a line (about two), further a repeat the longer the key is held; PageDown PageUp a
+  screen; `[` `]` from comment to comment, `]` unfolding the folded middle before the next one. The actions act on the
+  stop under the cursor: `R` replies in its code thread, else goes to the composer; `.` opens the card's menu; `Q`
+  quotes it; `H` resolves or unresolves its code thread; `W` edits it. Each only where the card's menu or the thread
+  offers it. `?` shows "The thread" first, then the item's other keys and the app's (F30); the card's menu shows `W`
+  beside Edit and `Q` beside Quote reply (F31).
+- **Stops.** The description, each comment and review, each comment of a code thread, the viewer's draft review — the
+  comments `[` `]` step between — and each commit of a push, event line, resolved thread's row and the fold, rows only
+  ↓ ↑ reach. The innermost stop holds the cursor: a review's own card holds it again in its tail after its threads.
+- **The look is Variant A, without an edge mark.** The stop under the cursor takes the current file's look in code
+  review (border and head in the current tones); a comment inside a code thread gets only a tint on its part of the
+  thread card. No mark on the left edge, anywhere.
+- **The cursor itself is invisible.** No caret for where it is inside a tall comment; the stop is marked, the place in
+  it is not.
+- **Only on the page, not on a phone.** In the panel the list beside it keeps ↓ ↑ and `[` `]`, and nothing is marked;
+  a phone has no keys.
+- **One mechanism for every scrolling screen** (`packages/app/reading/`): a screen marks its stops and hooks in, the
+  held-key speed-up shared with code review's line cursor. The commit page and a workflow run's overview use it without
+  stops, ↓ ↑ only scrolling. The other scrolling screens, Settings and the rest, wait for
+  [#367](https://github.com/kedrzu/githq/issues/367): their forms own the arrow keys.
+- **`W` edits, not `E`.** `E` is code review's (expand the hidden lines), and an item can be open over a review, so the
+  two screens share their keys. The free keys checked on the item and every screen sharing its keys were B G H Q W Y Z .
+  ;.
+
+**Why.** On an item's page the thread is what is read, and with no cursor the keys could only scroll it: a reply, a
+quote or a resolve needed the mouse to say which comment. Code review's cursor already answered that for a diff, and
+the same rules on both screens are one thing to learn.
+
+**Rejected** (the owner's pick of Variant A, round 2 of the log). Variant B: a lit segment beside the comment on the
+rail and a faint tint. Variant C: Variant A plus a caret in the gutter for the cursor's place in a tall comment. A 2 px
+mark on the left edge of a code thread's current comment, drawn in round 1.
+
 ## Open questions
 
 ### D26

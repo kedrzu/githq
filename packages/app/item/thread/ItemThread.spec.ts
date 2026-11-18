@@ -16,6 +16,8 @@ import * as stories from './ItemThread.stories.js';
 
 const {
     CodeThreads,
+    CursorOnLinkedReview,
+    PullRequestThread,
     IssueInPanel,
     IssueThread,
     PullRequestInPanel,
@@ -878,3 +880,53 @@ test('"N new since you looked" stands before the first item others made since, a
     await expect.element(line).toBeVisible();
     expect(line.element().nextElementSibling?.textContent).toContain('Fixed by #15 once it lands');
 });
+
+test('every stop of the reading cursor has a key of its own, of its kind; the new-since line and a failed comment are none', async () => {
+    await PullRequestThread.run();
+    const stops = getStops();
+    expect(new Set(stops.map(stop => stop.key)).size).toBe(stops.length);
+    expect(stops[0]).toEqual({ key: 'description', kind: 'comment' });
+    expect(stops.filter(stop => stop.kind === 'row').map(stop => stop.key.split(':')[0])).toEqual(
+        expect.arrayContaining(['commit', 'events']),
+    );
+    expect(
+        page
+            .getByText(/new since you looked$/u)
+            .element()
+            .closest('[data-reading-stop]'),
+    ).toBeNull();
+
+    await CodeThreads.run();
+    const codeStops = getStops();
+    expect(new Set(codeStops.map(stop => stop.key)).size).toBe(codeStops.length);
+    expect(codeStops).toEqual(
+        expect.arrayContaining([
+            { key: 'R_sofiab', kind: 'comment' },
+            { key: 'T_db_0', kind: 'comment' },
+            { key: 'T_db_1', kind: 'comment' },
+            { key: 'thread:T_schema', kind: 'row' },
+        ]),
+    );
+
+    await NotSent.run();
+    for (const failed of page.getByText('Not sent').elements()) {
+        expect(failed.closest('[data-reading-stop]')).toBeNull();
+    }
+});
+
+test('the reading cursor on a linked review marks its card current; its item stays the location', async () => {
+    await CursorOnLinkedReview.run();
+    const review = page.getByRole('listitem').filter({ has: dbThread() });
+    await expect.element(review).toHaveAttribute('aria-current', 'location');
+    const stop = review.element().querySelector('[data-reading-stop="R_sofiab"]');
+    expect(stop?.getAttribute('aria-current')).toBe('true');
+    expect(document.querySelectorAll('[aria-current="true"]')).toHaveLength(1);
+});
+
+/** The stops of the reading cursor drawn, in document order. */
+function getStops() {
+    return [...document.querySelectorAll('[data-reading-stop]')].map(stop => ({
+        key: stop.getAttribute('data-reading-stop') ?? '',
+        kind: stop.getAttribute('data-reading-stop-kind'),
+    }));
+}

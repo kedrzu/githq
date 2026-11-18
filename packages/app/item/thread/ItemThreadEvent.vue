@@ -1,4 +1,4 @@
-<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest right after them. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab, marked ↗ on a phone (mobile D11). A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). -->
+<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest right after them. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab, marked ↗ on a phone (mobile D11). A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). The line is a row stop of the reading cursor (`events:<id>`): the cursor on it tints it as code review's cursor line (`Activity / Event · current`) and makes it `aria-current`. -->
 <script lang="ts" setup>
 import type { TranslationResult, TranslationSimple, TranslationWithParams } from '@nzyme/i18n-core';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -42,6 +42,7 @@ import type { VNodeChild } from 'vue';
 import Avatar from '@/components/Avatar.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { useReadingStop } from '@/reading/ReadingCursor.js';
 import { getReviewRequestName } from '@/store/getReviewRequestName.js';
 import type { ThreadCommitRef, ThreadReferencedCommit, ThreadRef } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
@@ -83,6 +84,8 @@ interface EventLook {
 const t = useTranslate();
 const language = useLanguage();
 const css = useCssModule('css');
+const stopKey = computed(() => `events:${props.entry.id}`);
+const stop = useReadingStop(stopKey);
 
 const actor = computed(() => (props.entry.kind === 'events' ? props.entry.actor : null));
 const look = computed((): EventLook => {
@@ -464,7 +467,12 @@ function getEventLook(event: SingleThreadEvent): EventLook {
 </script>
 
 <template>
-  <div :class="css.itemThreadEvent">
+  <div
+    :class="[css.itemThreadEvent, stop.current && css.itemThreadEvent_current]"
+    :data-reading-stop="stopKey"
+    data-reading-stop-kind="row"
+    :aria-current="stop.current || undefined"
+  >
     <span
       :class="css.itemThreadEvent_badge"
       aria-hidden="true"
@@ -502,6 +510,12 @@ function getEventLook(event: SingleThreadEvent): EventLook {
 <style lang="scss" module="css">
 .itemThreadEvent {
   @include item-thread-badge-row;
+}
+
+// Under the reading cursor, as code review's cursor line: a fill only, so nothing moves.
+.itemThreadEvent_current {
+  background: $color-cursor-tint;
+  border-radius: $radius-md;
 }
 
 .itemThreadEvent_badge {

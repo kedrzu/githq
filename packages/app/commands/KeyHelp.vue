@@ -1,4 +1,4 @@
-<!-- The keyboard help (`?`): every action that has a key and can run here, by section — read from the same registry the keys and the command menu run from, so it never lists a key that does something else: of actions on one key only the one that runs shows. A screen with more keys than that holds gives its own sheet instead (`sheet`, CR29): columns of rows that speak of a key pair, whatever can run at the moment, and a row of others along the bottom. -->
+<!-- The keyboard help (`?`): every action that has a key and can run here, by section — read from the same registry the keys and the command menu run from, so it never lists a key that does something else: of actions on one key only the one that runs shows. A screen with more keys than that holds gives its own sheet instead (`sheet`, CR29): columns of rows that speak of a key pair, whatever can run at the moment, and a row of others along the bottom; a sheet that adds to the rest (`listed`: the thread's keys on an item's page, F30) is followed by the actions that can run now, a column per section, but those on a key it speaks of. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { VisuallyHidden } from 'reka-ui';
@@ -8,7 +8,7 @@ import Dialog from '@/components/Dialog.vue';
 import DialogHead from '@/components/DialogHead.vue';
 import Kbd from '@/components/Kbd.vue';
 
-import type { BoundCommand, CommandKeySheet } from './CommandTypes.js';
+import type { BoundCommand, CommandKeyRow, CommandKeySheet } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { formatAriaKeyShortcuts } from './formatAriaKeyShortcuts.js';
 import * as l from './KeyHelp.loc.js';
@@ -45,6 +45,32 @@ const sections = computed(() =>
     commands: listed.value.filter(command => command.section === section),
   })).filter(({ commands }) => commands.length > 0),
 );
+/** The sheet's columns, then, for a sheet that adds to the rest, the sections of what runs on a key it does not speak of. */
+const sheetColumns = computed(() => {
+  const sheet = props.sheet;
+  if (!sheet) {
+    return [];
+  }
+
+  if (!sheet.listed) {
+    return sheet.columns;
+  }
+
+  const spoken = new Set(sheet.columns.flatMap(column => column.rows.flatMap(row => row.keys)));
+  const rest = sections.value
+    .map(({ section, commands }) => ({
+      title: t(l[section]),
+      rows: commands
+        .filter(command => command.key !== undefined && !spoken.has(command.key))
+        .map((command): CommandKeyRow => ({ keys: getKeys(command), label: command.title })),
+    }))
+    .filter(column => column.rows.length > 0);
+  return [...sheet.columns, ...rest];
+});
+
+function getKeys(command: BoundCommand) {
+  return [command.key ?? '', ...(command.otherKeys ?? [])];
+}
 </script>
 
 <template>
@@ -64,7 +90,7 @@ const sections = computed(() =>
       <DialogHead :title="sheet.title" />
       <div :class="css.keyHelp_columns">
         <section
-          v-for="(column, index) in sheet.columns"
+          v-for="(column, index) in sheetColumns"
           :key="column.title"
           :aria-labelledby="`${id}-${index}`"
         >
@@ -94,7 +120,10 @@ const sections = computed(() =>
           </dl>
         </section>
       </div>
-      <dl :class="css.keyHelp_footer">
+      <dl
+        v-if="sheet.footer.length > 0"
+        :class="css.keyHelp_footer"
+      >
         <div
           v-for="row in sheet.footer"
           :key="row.label"
@@ -147,7 +176,7 @@ const sections = computed(() =>
             <dt :class="css.keyHelp_title">{{ command.title }}</dt>
             <dd :class="css.keyHelp_keys">
               <template
-                v-for="(key, keyIndex) in [command.key ?? '', ...(command.otherKeys ?? [])]"
+                v-for="(key, keyIndex) in getKeys(command)"
                 :key="key"
               >
                 <span

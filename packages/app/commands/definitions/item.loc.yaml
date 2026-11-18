@@ -28,3 +28,11 @@ submitReview:
   en: Submit review
 discardReview:
   en: Discard review
+commentMenu:
+  en: Comment actions
+quoteComment:
+  en: Quote reply
+resolveThread:
+  en: Resolve or unresolve thread
+editComment:
+  en: Edit comment

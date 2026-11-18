@@ -1,4 +1,4 @@
-<!-- The viewer's own draft review on an item's thread (`Activity / Review · pending`, F14), last before the composer: an amber card, "Your review · pending" and when it was started, the threads it starts (`ItemThreadCodeThread`, their comments marked "Pending", no reply or resolve), and code review's own pending toolbar (`ReviewPendingToolbar`) at its foot: Discard review and Submit review (⇧S, also in the command menu) open code review's dialogs, and finish the draft through the same writing as code review (`ReviewWriting`), so a refusal shows here as it does there. -->
+<!-- The viewer's own draft review on an item's thread (`Activity / Review · pending`, F14), last before the composer: an amber card, "Your review · pending" and when it was started, the threads it starts (`ItemThreadCodeThread`, their comments marked "Pending", no reply or resolve), and code review's own pending toolbar (`ReviewPendingToolbar`) at its foot: Discard review and Submit review (⇧S, also in the command menu) open code review's dialogs, and finish the draft through the same writing as code review (`ReviewWriting`), so a refusal shows here as it does there. The card is a stop of the reading cursor (`draftReview`), each comment of its threads one inside it; the cursor on the card tints its head and leaves the amber border (`Activity / Review · pending, current`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -89,6 +89,7 @@ function discard() {
     :now="now"
     :name="t(l.yourReview)"
     pending
+    stop="draftReview"
   >
     <template #verdict>
       <span :class="css.itemThreadPendingReview_verdict">{{ t(l.pending) }}</span>

@@ -516,7 +516,7 @@ export function useItemKeys(options: UseItemKeysOptions): ItemKeysViewModel {
             };
         }
 
-        // ↓/↑ scroll the item.
+        // ↓/↑ are the page's own: on an item's they move the reading cursor over its thread (`ItemView`).
         const item = { ...own, place, otherKeys: false } as const;
         return {
             next: bindCommand(definitions.next, { ...item, title: t(l.next), run: () => options.next() }, t),

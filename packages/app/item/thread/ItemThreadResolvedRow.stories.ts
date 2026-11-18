@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import { SCHEMA_THREAD } from '@/testing/sampleReviews.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadResolvedRow from './ItemThreadResolvedRow.vue';
 
@@ -30,3 +31,6 @@ export const WithExcerpt: Story = { args: { says: 'excerpt' } };
 
 /** In a review where another row has the same file: the file, then the first line of its first comment. */
 export const WithPathAndExcerpt: Story = { args: { says: 'both' } };
+
+/** `Activity / Code comment · resolved, current`: the reading cursor on the row, tinted over its fill. */
+export const Current: Story = { decorators: [withReadingCursor(`thread:${SCHEMA_THREAD.id}`)] };

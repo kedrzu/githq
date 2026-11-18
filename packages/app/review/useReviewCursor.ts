@@ -1,17 +1,15 @@
-import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, ShallowRef } from 'vue';
 
-import { Clock } from '@/services/Clock.js';
+import { getCursorScroll } from '@/reading/getCursorScroll.js';
+import { useHeldKey } from '@/reading/useHeldKey.js';
 
 import type { AnchoredListExposed } from './AnchoredList.vue';
 import { estimateReviewRowHeight } from './buildReviewRows.js';
 import type { ReviewGapDirection, ReviewRow } from './buildReviewRows.js';
 import { findCursorAfterRows } from './cursor/findCursorAfterRows.js';
 import { findCursorOnScreen } from './cursor/findCursorOnScreen.js';
-import { getCursorScroll } from './cursor/getCursorScroll.js';
-import { getCursorStep } from './cursor/getCursorStep.js';
 import { isCursorStop } from './cursor/isCursorStop.js';
 import { moveCursor } from './cursor/moveCursor.js';
 import type { ReviewCursor } from './cursor/ReviewCursor.js';
@@ -57,8 +55,6 @@ export interface ReviewCursorActions {
     noteExpanding(direction: ReviewGapDirection): void;
 }
 
-/** A run of the arrow later than this after the previous one is a new press, not its key's repeat. */
-const HOLD_GAP_MS = 150;
 /** Less than a pixel off is wholly on screen: the rows' edges are fractions. */
 const SHOWN_TOLERANCE = 1;
 
@@ -69,13 +65,9 @@ const SHOWN_TOLERANCE = 1;
  * its stop, or the nearest left.
  */
 export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorActions {
-    const clock = useService(Clock);
+    const held = useHeldKey();
     const { cursor } = options;
 
-    /** Since when the arrow has been held, `null` with none. */
-    let heldSince: number | null = null;
-    let heldDirection: 1 | -1 = 1;
-    let lastRun = 0;
     let lastPointer: { x: number; y: number } | null = null;
     let expanding: ReviewGapDirection | null = null;
 
@@ -100,28 +92,11 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
     // The window's, for a move into the diff to be told from where the pointer was before.
     onWindowEvent('pointermove', onPointerMove, { passive: true });
 
-    // Commands are told nothing of the key: its release, or the window losing it (⌘Tab), ends the hold.
-    onWindowEvent('keyup', event => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            heldSince = null;
-        }
-    });
-    onWindowEvent('blur', () => {
-        heldSince = null;
-    });
-
     return { move, page, setTo, stepTo, followScroll, noteExpanding };
 
     function move(direction: 1 | -1) {
-        const now = clock.now();
-        if (heldSince === null || direction !== heldDirection || now - lastRun > HOLD_GAP_MS) {
-            heldSince = now;
-            heldDirection = direction;
-        }
-
-        lastRun = now;
         const from = cursor.value;
-        const delta = direction * getCursorStep(now - heldSince);
+        const delta = direction * held.step(direction);
         moveTo(from ? moveCursor({ rows: toValue(options.rows), cursor: from, delta }) : findTop(), direction);
     }
 

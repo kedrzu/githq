@@ -4,7 +4,24 @@ import { page } from 'vitest/browser';
 
 import * as stories from './CommentCard.stories.js';
 
-const { Narrow, NarrowLongLogin, WideReview, WidestReview } = composeStories(stories);
+const {
+    Current,
+    CurrentLinked,
+    CurrentPending,
+    Narrow,
+    NarrowLongLogin,
+    NotAStop,
+    NotCurrent,
+    WideReview,
+    WidestReview,
+} = composeStories(stories);
+
+/** `$color-current-edge`, `$color-current-header`, `$color-accent`, `$color-amber` at 50%, `$color-bg-2`. */
+const CURRENT_EDGE = 'rgb(79, 88, 157)';
+const CURRENT_HEADER = 'rgb(27, 33, 48)';
+const ACCENT = 'rgb(123, 135, 247)';
+const AMBER_HALF = 'rgba(210, 153, 34, 0.5)';
+const BG_2 = 'rgb(21, 27, 35)';
 
 /** The card's head: the paragraph the login is in. */
 function getHead(login: string) {
@@ -83,3 +100,48 @@ test("at the thread's widest the threads follow the time 6px after it while the 
     const more = page.getByRole('button', { name: 'Comment actions' }).element().getBoundingClientRect();
     expect(more.right).toBeGreaterThan(head.getBoundingClientRect().right - 20);
 });
+
+test('under the reading cursor the card is the current one: its border current-edge, its head current-header', async () => {
+    await Current.run();
+    const head = getHead(Current.args.author?.login ?? '');
+
+    expect(getStop()?.getAttribute('aria-current')).toBe('true');
+    expect(getComputedStyle(assertCard(head)).borderTopColor).toBe(CURRENT_EDGE);
+    expect(getComputedStyle(head).backgroundColor).toBe(CURRENT_HEADER);
+});
+
+test('a linked card keeps its accent border and a draft review its amber one; their heads take the tint', async () => {
+    await CurrentLinked.run();
+    const linked = getHead(CurrentLinked.args.author?.login ?? '');
+    expect(getComputedStyle(assertCard(linked)).borderTopColor).toBe(ACCENT);
+    expect(getComputedStyle(linked).backgroundColor).toBe(CURRENT_HEADER);
+
+    await CurrentPending.run();
+    const pending = getHead('Your review');
+    expect(getComputedStyle(assertCard(pending)).borderTopColor).toBe(AMBER_HALF);
+    expect(getComputedStyle(pending).backgroundColor).toBe(CURRENT_HEADER);
+});
+
+test("a stop the cursor is not on, and a card that is no stop (code review's conversation), are not marked", async () => {
+    await NotCurrent.run();
+    expect(getStop()?.hasAttribute('aria-current')).toBe(false);
+    expect(getComputedStyle(getHead(NotCurrent.args.author?.login ?? '')).backgroundColor).toBe(BG_2);
+
+    await NotAStop.run();
+    const head = getHead(NotAStop.args.author?.login ?? '');
+    expect(getStop()).toBeNull();
+    expect(document.querySelector('[aria-current]')).toBeNull();
+    expect(getComputedStyle(head).backgroundColor).toBe(BG_2);
+    expect(getComputedStyle(assertCard(head)).borderTopColor).not.toBe(CURRENT_EDGE);
+});
+
+function getStop() {
+    return document.querySelector('[data-reading-stop]');
+}
+
+/** The card around a head. */
+function assertCard(head: HTMLElement) {
+    const card = head.parentElement;
+    expect(card).not.toBeNull();
+    return card!;
+}

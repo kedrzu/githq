@@ -18,6 +18,7 @@ import {
 } from '@/testing/sampleThreadEvents.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThread from './ItemThread.vue';
 import ItemThreadComposer from './ItemThreadComposer.vue';
@@ -313,3 +314,13 @@ function longThread(): IssueDetail {
     const { comments } = I1_ISSUE_DETAIL;
     return { ...I1_ISSUE_DETAIL, comments: { ...comments, totalCount: 18, nodes: [...comments.nodes, ...more] } };
 }
+
+/**
+ * The reading cursor on sofiab's review, which the address names too: its card marked as the current one, its item still
+ * the location.
+ */
+export const CursorOnLinkedReview: Story = {
+    args: { ...CodeThreads.args, linkedAnchor: `pullrequestreview-${CHANGES_REQUESTED_REVIEW.id}` },
+    parameters: ON_PAGE,
+    decorators: [withReadingCursor(CHANGES_REQUESTED_REVIEW.id)],
+};

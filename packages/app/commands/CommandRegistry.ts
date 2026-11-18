@@ -51,7 +51,9 @@ export const CommandRegistry = defineService({
         const sourcesRef = shallowRef<readonly CommandSource[]>([]);
         const menuRef = shallowRef<CommandMenuRequest | null>(null);
         const helpRef = shallowRef(false);
-        const keySheetRef = shallowRef<(() => CommandKeySheet) | null>(null);
+        // The screens' own sheets as they came, the last one shown: an item's page over a review shows the item's, and the
+        // review's again once the item goes.
+        const keySheetsRef = shallowRef<readonly (() => CommandKeySheet)[]>([]);
         const removedRef = shallowRef<ReadonlySet<CommandContextPart>>(new Set());
 
         const commands = computed(() => sourcesRef.value.flatMap(source => source.commands));
@@ -91,7 +93,7 @@ export const CommandRegistry = defineService({
             },
             /** The screen's own help sheet, `null` for the list of what can run now; reactive. */
             get keySheet(): CommandKeySheet | null {
-                return keySheetRef.value?.() ?? null;
+                return keySheetsRef.value.at(-1)?.() ?? null;
             },
             register,
             showKeySheet,
@@ -123,11 +125,9 @@ export const CommandRegistry = defineService({
 
         /** Has the help sheet show this while the screen is shown; returns what takes it away again. */
         function showKeySheet(sheet: () => CommandKeySheet) {
-            keySheetRef.value = sheet;
+            keySheetsRef.value = [...keySheetsRef.value, sheet];
             return () => {
-                if (keySheetRef.value === sheet) {
-                    keySheetRef.value = null;
-                }
+                keySheetsRef.value = keySheetsRef.value.filter(candidate => candidate !== sheet);
             };
         }
 

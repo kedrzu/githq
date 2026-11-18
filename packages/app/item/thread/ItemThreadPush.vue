@@ -1,4 +1,4 @@
-<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, right after the message, marked ↗ on a phone, mobile D11) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. -->
+<!-- A push on an item's thread (`Activity / Push`, item-activity F13): a commit badge on the rail, who — their avatar and login, or the name git records when the author has no GitHub account, then without an avatar — "pushed 3 commits" and the time of the newest, then up to three commits, newest first (`Activity / Commit`: the message wrapping under itself, the CI mark and the hash, a link to the commit on GitHub, right after the message, marked ↗ on a phone, mobile D11) and "Show N more commits", which shows the older ones in place and gives the focus to the first of them. Each commit shown is a row stop of the reading cursor (`commit:<hash>`): the cursor on one tints it, a little past its edges, as code review's cursor line (`Activity / Commit · current`), and makes it `aria-current`. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { GitCommitHorizontal } from 'lucide-vue-next';
@@ -8,6 +8,8 @@ import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import CommitStateMarks from '@/commits/CommitStateMarks.vue';
+import { useReadingStops } from '@/reading/ReadingCursor.js';
+import type { ThreadCommit } from '@/store/ItemDetailTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ThreadPush } from './buildThread.js';
@@ -24,6 +26,7 @@ const props = defineProps<{
 
 const t = useTranslate();
 const commitsRef = useTemplateRef<HTMLElement>('commits');
+const isCurrent = useReadingStops();
 const expanded = ref(false);
 
 const who = computed(() => props.push.actor?.login ?? props.push.authorName ?? '');
@@ -31,6 +34,10 @@ const who = computed(() => props.push.actor?.login ?? props.push.authorName ?? '
 const shown = computed(() => props.push.commits.toReversed().slice(0, expanded.value ? undefined : SHOWN));
 const more = computed(() => props.push.commits.length - shown.value.length);
 const when = computed(() => formatAge(Date.parse(props.push.updatedAt), props.now));
+
+function getStopKey(commit: ThreadCommit) {
+  return `commit:${commit.abbreviatedOid}`;
+}
 
 async function showMore() {
   expanded.value = true;
@@ -70,7 +77,10 @@ async function showMore() {
         <li
           v-for="commit in shown"
           :key="commit.id"
-          :class="css.itemThreadPush_commit"
+          :class="[css.itemThreadPush_commit, isCurrent(getStopKey(commit)) && css.itemThreadPush_commit_current]"
+          :data-reading-stop="getStopKey(commit)"
+          data-reading-stop-kind="row"
+          :aria-current="isCurrent(getStopKey(commit)) || undefined"
         >
           <GitCommitHorizontal
             :class="css.itemThreadPush_commitIcon"
@@ -168,6 +178,13 @@ async function showMore() {
   gap: $spacing-8;
   align-items: flex-start;
   padding: 3px 0;
+}
+
+// Under the reading cursor, as code review's cursor line: the tint 6px past its edges, a fill and a shadow, so nothing
+// moves.
+.itemThreadPush_commit_current {
+  background: $color-cursor-tint;
+  box-shadow: 0 0 0 $spacing-6 $color-cursor-tint;
 }
 
 .itemThreadPush_commitIcon {

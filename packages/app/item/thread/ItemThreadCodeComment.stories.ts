@@ -4,6 +4,7 @@ import { fn } from 'storybook/test';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { DB_THREAD, RESOLVED_CODE_COMMENT, REVIEW_VIEWER } from '@/testing/sampleReviews.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadCodeComment from './ItemThreadCodeComment.vue';
 
@@ -40,3 +41,6 @@ export const Resolved: Story = {};
 export const Open: Story = {
     args: { entry: { kind: 'codeComment', id: DB_THREAD.id, thread: { ...DB_THREAD, isOutdated: true } } },
 };
+
+/** The reading cursor on the thread's first comment: tinted from the card's edge to its edge, the head not marked. */
+export const CurrentComment: Story = { args: Open.args, decorators: [withReadingCursor(`${DB_THREAD.id}_0`)] };

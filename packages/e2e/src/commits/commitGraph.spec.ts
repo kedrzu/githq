@@ -408,6 +408,43 @@ test('with a workflow open in the panel, a click on a commit in Commits opens th
     await expect(graph.cursorRow).toContainText('docs: describe the setup');
 });
 
+test('on its page a commit scrolls by ↓ and PageDown, and ↑ and PageUp back; in the panel they stay the graph', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1500, height: 500 });
+    const sample = createSampleTrackedWork();
+    const body = Array.from({ length: 80 }, (_, index) => `Line ${index + 1} of a long message.`).join('\n\n');
+    sample.world.history(SAMPLE_REPOSITORY, {
+        commits: [
+            { oid: sha('c2'), headline: 'A long one', body, author: 'monalisa', minutesAgo: 10, parents: [sha('c1')] },
+            { oid: sha('c1'), headline: 'The first', author: 'monalisa', minutesAgo: 20 },
+        ],
+        branches: { main: sha('c2') },
+    });
+    await openTrackedWork(page, github, sample.world);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+
+    // In the panel ↓ is the graph's: its cursor moves, the details stay at the top.
+    await page.goto(commitPanel('commits', 'c2'));
+    await expect(graph.detailsHeadline).toHaveText('A long one');
+    await expect(graph.details).toContainText('Line 80 of a long message.');
+    await page.keyboard.press('ArrowDown');
+    await expect(graph.cursorRow).toContainText('The first');
+    expect(await graph.detailsScrollTop()).toBe(0);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/commit/${sha('c2')}`);
+    await expect(graph.details).toContainText('Line 80 of a long message.');
+    await page.keyboard.press('ArrowDown');
+    await expect.poll(() => graph.detailsScrollTop()).toBeGreaterThan(0);
+    const afterLine = await graph.detailsScrollTop();
+    await page.keyboard.press('PageDown');
+    await expect.poll(() => graph.detailsScrollTop()).toBeGreaterThan(afterLine + 100);
+    await page.keyboard.press('PageUp');
+    await page.keyboard.press('ArrowUp');
+    await expect.poll(() => graph.detailsScrollTop()).toBe(0);
+});
+
 /**
  * A small history: `main` with a release branch merged back (tagged `v1.0.0`, from a merged pull request whose CI
  * passed), and `feat/login` a commit ahead of it, from an open pull request whose CI fails, in the runs `failedRuns`.

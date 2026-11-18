@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
+
 import ItemThreadFold from './ItemThreadFold.vue';
 
 /** The thread's width in a panel: the band on two lines. */
@@ -49,3 +51,6 @@ export const Busy: Story = {
         await expect(band).toHaveAttribute('aria-busy', 'true');
     },
 };
+
+/** `Activity / Fold · current`: the reading cursor on the band, tinted over its fill. */
+export const Current: Story = { decorators: [withReadingCursor('fold')] };
