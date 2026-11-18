@@ -63,3 +63,46 @@ non-scrolling example, rows full width.
 - [ ] E11 Results (`xvCh7`), E12 Results (`oajv2`), E13 Results (`Jo3U6`), E14 Results (`pvAiu`), E15 Results
   (`xs2Av`): padding `[4,6,8,6]` → `[4,12,8,6]`, rows 668 → 662 px wide, ending at 668 px; scrollbars (`S9ufb`,
   `IUsbE`, `Y8txRS`, `p8Nmg`, `x4afN`) unchanged at 672 px.
+
+## Round 3 · agent brief
+
+Asked (`.context/command-menu-declutter-brief-3.md`, not committed): the footer as the app draws it
+(`CommandMenu.vue`, `hints`). `>` is one more key hint in the row, not "Type > for commands only" pinned to the right
+edge. At the top level: Move, Run, Open submenu (while the highlighted row opens one), `>` Commands only, Remove context
+(while a chip shows the subject or the repository). Inside a level: Move, Run, Open submenu, `←` Back, Esc Close.
+Inside a picker: Move, Set, `←` Back, Esc Close.
+Changed: the shared footer, and every hand-drawn desktop command menu footer swapped for an instance of it that sets
+only which hints show. Each screen's hints follow its own state: chip or not, highlighted row opening a submenu or not.
+Notes the code has no source for are gone: "Matches in tracked data, instant", "Each item is updated on GitHub in the
+background", "12 tracked · type to filter". So are hints it doesn't draw: `#` Search by number, `⌫` Search everywhere,
+`1–7` Pick, `⇧↵` Run and keep open, `⌫` Clear selection, `⌫` Back.
+
+- [ ] Command / Footer (`Tkzk6`): new `Hint Commands only` (`Hxnl8`, `>` key cap, after Open submenu) and `Hint Back`
+  (`B5cKg`, `←`, off, before Close); spacer and "Type > for commands only" note removed. Default: Move, Run, Open
+  submenu, Commands only, Remove context.
+- [ ] Command / Menu · search repositories (`r5WU3O`) › Footer (`zgunc`): Back's key `⌫` → `←`. Its note "Asks GitHub ·
+  org: and stars: work" stays: the code shows a picker's hint at the footer's end.
+- [ ] E1 (`SbPDO`): footer → instance `JIT1f`: Move, Run, Open submenu, Commands only, Remove context.
+- [ ] E2 (`ieMkl`): footer → instance `nU98d`: Move, Set, Back, Close (was `1–7` Pick, Set, `⌫` Back, Close).
+- [ ] E3 (`uGavg`), E5 (`YorXE`): footers → instances `FZfZ7`, `M4r3JL`: Move, Run, Commands only.
+- [ ] E4 (`d45Gg4`): footer → instance `cX554`: Move, Run, Commands only, Remove context.
+- [ ] E6 (`M2ikYI`): footer inside the search component's instance → instance `VeMJm`: Move, Run, Commands only, Remove
+  context (Open submenu dropped: Show as board opens none).
+- [ ] E7 (`MsoAv`), E9 (`TFxqV`), E10 (`xkY2C`): Move shown again (the code always shows it): Move, Back, Close.
+- [ ] E11 (`qODk6`, `O2d0m`): unchanged instances, now with Commands only in the row.
+- [ ] E12 (`pir9A`, `tU2sZ`), E14 (`p0WBT`), E15 (`m0DPh`): footers re-made: Move, Run, Commands only (Open submenu
+  dropped: Show as board opens none).
+- [ ] E13 (`UrxMz`): Move, Run, Open submenu, Back, Close (was Open, `⌫` Back and the count note).
+- [ ] U20 (`AaZUD`), Settings ⌘K (`SPnft`), W4k (`C2rdgC`), W40 (`lgokF`): footers → instances: Move, Run, Commands
+  only.
+- [ ] W41 (`eNKzT`): footer → instance: Move, Run, Open submenu, Commands only.
+
+Left as they were, already as the code draws them: W36, W46, W47, W48 (their hints match; the note at the end is the
+highlighted row's or the level's hint) and W37 (a form's footer). Not changed: the landing page's command menu
+illustration (Feature 06, desktop and mobile), a picture on a page, not a screen.
+
+Choices the brief left open:
+
+- E3, E5, U20 and Settings ⌘K draw a place ("Platform Q4 · Current sprint") as the chip, which the code never does: it
+  shows only a subject or a repository. Their footers leave out Remove context, as the code would; the chip itself is
+  out of this round's scope.

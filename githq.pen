@@ -61006,11 +61006,11 @@
                           "name": "Hint Back",
                           "descendants": {
                             "nIxfQ": {
-                              "name": "Kbd ⌫"
+                              "name": "Kbd ←"
                             },
                             "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
+                              "name": "Key arrow-left",
+                              "icon": "arrow-left"
                             },
                             "IJcUr": {
                               "name": "Back",
@@ -61327,6 +61327,24 @@
                           }
                         },
                         {
+                          "id": "Hxnl8",
+                          "type": "ref",
+                          "ref": "xfbOl",
+                          "name": "Hint Commands only",
+                          "descendants": {
+                            "m5wIG9": {
+                              "name": "Kbd >"
+                            },
+                            "m5wIG9/luKkY": {
+                              "content": ">"
+                            },
+                            "IOvfA": {
+                              "name": "Commands only",
+                              "content": "Commands only"
+                            }
+                          }
+                        },
+                        {
                           "id": "HnJnz",
                           "type": "ref",
                           "ref": "dxCfd",
@@ -61342,6 +61360,26 @@
                             "IJcUr": {
                               "name": "Remove context",
                               "content": "Remove context"
+                            }
+                          }
+                        },
+                        {
+                          "id": "B5cKg",
+                          "type": "ref",
+                          "ref": "dxCfd",
+                          "name": "Hint Back",
+                          "enabled": false,
+                          "descendants": {
+                            "nIxfQ": {
+                              "name": "Kbd ←"
+                            },
+                            "nIxfQ/YRrEc": {
+                              "name": "Key arrow-left",
+                              "icon": "arrow-left"
+                            },
+                            "IJcUr": {
+                              "name": "Back",
+                              "content": "Back"
                             }
                           }
                         },
@@ -61363,23 +61401,6 @@
                               "content": "Close"
                             }
                           }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "DCTgQ",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "p3Owv",
-                          "name": "Footer note",
-                          "fill": "$fg-dim",
-                          "content": "Type > for commands only",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -62809,90 +62830,11 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "sbnep",
+                      "id": "JIT1f",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
-                      "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "M7VCJ",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Move"
-                        },
-                        {
-                          "id": "Ovwtq",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Run"
-                        },
-                        {
-                          "id": "q6ib9a",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Open submenu",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd →"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key arrow-right",
-                              "icon": "arrow-right"
-                            },
-                            "IJcUr": {
-                              "name": "Open submenu",
-                              "content": "Open submenu"
-                            }
-                          }
-                        },
-                        {
-                          "id": "v2Jwa",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Remove context",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Remove context",
-                              "content": "Remove context"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "jtmGg",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "p8odB",
-                          "name": "Type > for commands only",
-                          "fill": "$fg-dim",
-                          "content": "Type > for commands only",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                      "width": "fill_container"
                     }
                   ]
                 },
@@ -63889,78 +63831,32 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "RIuZn",
+                      "id": "nU98d",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "CecN2",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Pick"
+                      "descendants": {
+                        "Pggzz/IJcUr": {
+                          "name": "Set",
+                          "content": "Set"
                         },
-                        {
-                          "id": "irY1C",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Set",
-                          "descendants": {
-                            "IJcUr": {
-                              "name": "Set",
-                              "content": "Set"
-                            }
-                          }
+                        "nMvE8": {
+                          "enabled": false
                         },
-                        {
-                          "id": "Q76Mz",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Back",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Back",
-                              "content": "Back"
-                            }
-                          }
+                        "Hxnl8": {
+                          "enabled": false
                         },
-                        {
-                          "id": "krLxw",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Close",
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd Esc"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "Esc"
-                            },
-                            "IOvfA": {
-                              "name": "Close",
-                              "content": "Close"
-                            }
-                          }
+                        "HnJnz": {
+                          "enabled": false
+                        },
+                        "B5cKg": {
+                          "enabled": true
+                        },
+                        "r1YfB": {
+                          "enabled": true
                         }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -64653,95 +64549,19 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "KwV2l",
+                      "id": "FZfZ7",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "alHZb",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Move"
+                      "descendants": {
+                        "nMvE8": {
+                          "enabled": false
                         },
-                        {
-                          "id": "XftPY",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Open",
-                          "descendants": {
-                            "IJcUr": {
-                              "name": "Open",
-                              "content": "Open"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Q5SGl",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Search by number",
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd #"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "#"
-                            },
-                            "IOvfA": {
-                              "name": "Search by number",
-                              "content": "Search by number"
-                            }
-                          }
-                        },
-                        {
-                          "id": "v3iQUh",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Search everywhere",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Search everywhere",
-                              "content": "Search everywhere"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "G8388J",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "CGI90",
-                          "name": "Matches in tracked data, instant",
-                          "fill": "$fg-dim",
-                          "content": "Matches in tracked data, instant",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
+                        "HnJnz": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -67239,88 +67059,16 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "jqEHT",
+                      "id": "cX554",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "Mu6BV",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Run"
-                        },
-                        {
-                          "id": "OiTOm",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Run and keep open",
-                          "descendants": {
-                            "HWvRC": {
-                              "name": "Kbd ⇧↵"
-                            },
-                            "HWvRC/q1SXG": {
-                              "name": "Key arrow-big-up",
-                              "icon": "arrow-big-up"
-                            },
-                            "HWvRC/lhKUf": {
-                              "name": "Key corner-down-left",
-                              "icon": "corner-down-left"
-                            },
-                            "z2kG0": {
-                              "name": "Run and keep open",
-                              "content": "Run and keep open"
-                            }
-                          }
-                        },
-                        {
-                          "id": "smRgG",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Clear selection",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Clear selection",
-                              "content": "Clear selection"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "wFvMF",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "l2qok3",
-                          "name": "Shown in palette, done in one go",
-                          "fill": "$fg-dim",
-                          "content": "Each item is updated on GitHub in the background",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
+                      "descendants": {
+                        "nMvE8": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -68068,95 +67816,19 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "CjL4g",
+                      "id": "M4r3JL",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "gsxXk",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Move"
+                      "descendants": {
+                        "nMvE8": {
+                          "enabled": false
                         },
-                        {
-                          "id": "qI85P",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Open",
-                          "descendants": {
-                            "IJcUr": {
-                              "name": "Open",
-                              "content": "Open"
-                            }
-                          }
-                        },
-                        {
-                          "id": "urMzJ",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Search by number",
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd #"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "#"
-                            },
-                            "IOvfA": {
-                              "name": "Search by number",
-                              "content": "Search by number"
-                            }
-                          }
-                        },
-                        {
-                          "id": "pAT7u",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Search everywhere",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Search everywhere",
-                              "content": "Search everywhere"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "IvJhu",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "A5QEu",
-                          "name": "Matches in tracked data, instant",
-                          "fill": "$fg-dim",
-                          "content": "Matches in tracked data, instant",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
+                        "HnJnz": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -68954,43 +68626,17 @@
                         "VoOvh": {
                           "enabled": false
                         },
-                        "M5GtB": {
-                          "name": "Hint Run"
-                        },
-                        "M5GtB/IJcUr": {
-                          "name": "Run",
-                          "content": "Run"
-                        },
-                        "b5AZ2B": {
-                          "enabled": true,
-                          "name": "Hint Open submenu"
-                        },
-                        "b5AZ2B/nIxfQ": {
-                          "name": "Kbd →"
-                        },
-                        "b5AZ2B/nIxfQ/YRrEc": {
-                          "name": "Key arrow-right",
-                          "icon": "arrow-right"
-                        },
-                        "b5AZ2B/IJcUr": {
-                          "name": "Open submenu",
-                          "content": "Open submenu"
-                        },
-                        "bFkox": {
-                          "name": "Hint Remove context"
-                        },
-                        "bFkox/m5wIG9": {
-                          "name": "Kbd ⌫"
-                        },
-                        "bFkox/m5wIG9/luKkY": {
-                          "content": "⌫"
-                        },
-                        "bFkox/IOvfA": {
-                          "name": "Remove context",
-                          "content": "Remove context"
-                        },
-                        "ISJ2i": {
-                          "content": "Type > for commands only"
+                        "zgunc": {
+                          "id": "VeMJm",
+                          "type": "ref",
+                          "ref": "Tkzk6",
+                          "name": "Footer",
+                          "width": "fill_container",
+                          "descendants": {
+                            "nMvE8": {
+                              "enabled": false
+                            }
+                          }
                         }
                       }
                     },
@@ -69164,7 +68810,7 @@
                           "content": "Type at least two characters"
                         },
                         "iK8v5": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "M5GtB": {
                           "enabled": false
@@ -69465,7 +69111,7 @@
                           "enabled": true
                         },
                         "iK8v5": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "M5GtB": {
                           "enabled": false
@@ -69636,7 +69282,7 @@
                           "content": "Nothing on GitHub matches \"vitee\""
                         },
                         "iK8v5": {
-                          "enabled": false
+                          "enabled": true
                         },
                         "M5GtB": {
                           "enabled": false
@@ -73428,12 +73074,15 @@
                               ]
                             },
                             {
-                              "id": "DimoX",
+                              "id": "pir9A",
                               "type": "ref",
                               "ref": "Tkzk6",
                               "name": "Footer",
                               "width": "fill_container",
                               "descendants": {
+                                "nMvE8": {
+                                  "enabled": false
+                                },
                                 "HnJnz": {
                                   "enabled": false
                                 }
@@ -74113,12 +73762,15 @@
                               ]
                             },
                             {
-                              "id": "MTCFc",
+                              "id": "tU2sZ",
                               "type": "ref",
                               "ref": "Tkzk6",
                               "name": "Footer",
                               "width": "fill_container",
                               "descendants": {
+                                "nMvE8": {
+                                  "enabled": false
+                                },
                                 "HnJnz": {
                                   "enabled": false
                                 }
@@ -74776,23 +74428,23 @@
                           ]
                         },
                         {
-                          "id": "eQY7d",
+                          "id": "UrxMz",
                           "type": "ref",
                           "ref": "Tkzk6",
                           "name": "Footer",
                           "width": "fill_container",
                           "descendants": {
-                            "Pggzz/IJcUr": {
-                              "content": "Open"
+                            "Hxnl8": {
+                              "enabled": false
                             },
-                            "HnJnz/IJcUr": {
-                              "content": "Back"
+                            "HnJnz": {
+                              "enabled": false
+                            },
+                            "B5cKg": {
+                              "enabled": true
                             },
                             "r1YfB": {
                               "enabled": true
-                            },
-                            "p3Owv": {
-                              "content": "12 tracked · type to filter"
                             }
                           }
                         }
@@ -75834,12 +75486,15 @@
                               ]
                             },
                             {
-                              "id": "Rd3D4",
+                              "id": "p0WBT",
                               "type": "ref",
                               "ref": "Tkzk6",
                               "name": "Footer",
                               "width": "fill_container",
                               "descendants": {
+                                "nMvE8": {
+                                  "enabled": false
+                                },
                                 "HnJnz": {
                                   "enabled": false
                                 }
@@ -76817,12 +76472,15 @@
                               ]
                             },
                             {
-                              "id": "jzUjk",
+                              "id": "m0DPh",
                               "type": "ref",
                               "ref": "Tkzk6",
                               "name": "Footer",
                               "width": "fill_container",
                               "descendants": {
+                                "nMvE8": {
+                                  "enabled": false
+                                },
                                 "HnJnz": {
                                   "enabled": false
                                 }
@@ -132508,98 +132166,19 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "H2tBm4",
+                          "id": "AaZUD",
+                          "type": "ref",
+                          "ref": "Tkzk6",
                           "name": "Footer",
                           "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "pFXfH",
-                              "type": "ref",
-                              "ref": "XSeiZ",
-                              "name": "Hint Move"
+                          "descendants": {
+                            "nMvE8": {
+                              "enabled": false
                             },
-                            {
-                              "id": "qPzFJ",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Open",
-                              "descendants": {
-                                "IJcUr": {
-                                  "name": "Open",
-                                  "content": "Open"
-                                }
-                              }
-                            },
-                            {
-                              "id": "KqAuO",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Search by number",
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd #"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "#"
-                                },
-                                "IOvfA": {
-                                  "name": "Search by number",
-                                  "content": "Search by number"
-                                }
-                              }
-                            },
-                            {
-                              "id": "lEBcQ",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Search everywhere",
-                              "descendants": {
-                                "nIxfQ": {
-                                  "name": "Kbd ⌫"
-                                },
-                                "nIxfQ/YRrEc": {
-                                  "name": "Key delete",
-                                  "icon": "delete"
-                                },
-                                "IJcUr": {
-                                  "name": "Search everywhere",
-                                  "content": "Search everywhere"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "fzsF7",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "Zmo4U",
-                              "x": 492,
-                              "y": 9,
-                              "name": "Matches in tracked data, instant",
-                              "enabled": false,
-                              "fill": "$fg-dim",
-                              "content": "Matches in tracked data, instant",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
+                            "HnJnz": {
+                              "enabled": false
                             }
-                          ]
+                          }
                         }
                       ]
                     },
@@ -219580,78 +219159,19 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "gSUWG",
+                          "id": "C2rdgC",
+                          "type": "ref",
+                          "ref": "Tkzk6",
                           "name": "Footer",
                           "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "wuh7T",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Move",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↑↓"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↑↓"
-                                },
-                                "IOvfA": {
-                                  "name": "Move",
-                                  "content": "Move"
-                                }
-                              }
+                          "descendants": {
+                            "nMvE8": {
+                              "enabled": false
                             },
-                            {
-                              "id": "H0T6a",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Run",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↵"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↵"
-                                },
-                                "IOvfA": {
-                                  "name": "Run",
-                                  "content": "Run"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "z7Ouf",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "wGUaB",
-                              "name": "Type > for commands only",
-                              "fill": "$fg-dim",
-                              "content": "Type > for commands only",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
+                            "HnJnz": {
+                              "enabled": false
                             }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -238293,78 +237813,19 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "LkdwA",
+                          "id": "lgokF",
+                          "type": "ref",
+                          "ref": "Tkzk6",
                           "name": "Footer",
                           "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "j7pwlu",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Move",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↑↓"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↑↓"
-                                },
-                                "IOvfA": {
-                                  "name": "Move",
-                                  "content": "Move"
-                                }
-                              }
+                          "descendants": {
+                            "nMvE8": {
+                              "enabled": false
                             },
-                            {
-                              "id": "d1S4M",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Run",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↵"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↵"
-                                },
-                                "IOvfA": {
-                                  "name": "Run",
-                                  "content": "Run"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "ofopZ",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "h5g5m",
-                              "name": "Note",
-                              "fill": "$fg-dim",
-                              "content": "Type > for commands only",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
+                            "HnJnz": {
+                              "enabled": false
                             }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -238758,78 +238219,16 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "T9AwYB",
+                          "id": "eNKzT",
+                          "type": "ref",
+                          "ref": "Tkzk6",
                           "name": "Footer",
                           "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "vxuQh",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Move",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↑↓"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↑↓"
-                                },
-                                "IOvfA": {
-                                  "name": "Move",
-                                  "content": "Move"
-                                }
-                              }
-                            },
-                            {
-                              "id": "sWD2S",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Run",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↵"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↵"
-                                },
-                                "IOvfA": {
-                                  "name": "Run",
-                                  "content": "Run"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Z30ln",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "z6YyjO",
-                              "name": "Note",
-                              "fill": "$fg-dim",
-                              "content": "Type > for commands only",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
+                          "descendants": {
+                            "HnJnz": {
+                              "enabled": false
                             }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -253158,95 +252557,19 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "ofNs2",
+                      "id": "SPnft",
+                      "type": "ref",
+                      "ref": "Tkzk6",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "LT0UB",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Move"
+                      "descendants": {
+                        "nMvE8": {
+                          "enabled": false
                         },
-                        {
-                          "id": "fIjkz",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Open",
-                          "descendants": {
-                            "IJcUr": {
-                              "name": "Open",
-                              "content": "Open"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Q2co8r",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Search by number",
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd #"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "#"
-                            },
-                            "IOvfA": {
-                              "name": "Search by number",
-                              "content": "Search by number"
-                            }
-                          }
-                        },
-                        {
-                          "id": "ZUpN2",
-                          "type": "ref",
-                          "ref": "dxCfd",
-                          "name": "Hint Search everywhere",
-                          "descendants": {
-                            "nIxfQ": {
-                              "name": "Kbd ⌫"
-                            },
-                            "nIxfQ/YRrEc": {
-                              "name": "Key delete",
-                              "icon": "delete"
-                            },
-                            "IJcUr": {
-                              "name": "Search everywhere",
-                              "content": "Search everywhere"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "K2WY8d",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "cCK9b",
-                          "name": "Matches in tracked data, instant",
-                          "fill": "$fg-dim",
-                          "content": "Matches in tracked data, instant",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
+                        "HnJnz": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 },
