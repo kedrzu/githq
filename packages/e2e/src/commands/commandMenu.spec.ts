@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
@@ -330,7 +330,7 @@ async function expectDocsStart(tab: Page) {
     await tab.close();
 }
 
-test('the command menu is at most 480px tall on a desktop, less on a short window, its rows scrolling; a phone’s sheet is not held to it', async ({
+test('the command menu is at most 600px tall on a desktop, less on a short window, its rows scrolling; a phone’s sheet is not held to it', async ({
     page,
     github,
 }) => {
@@ -340,7 +340,7 @@ test('the command menu is at most 480px tall on a desktop, less on a short windo
     const listbox = menu.root.getByRole('listbox');
 
     await menu.open();
-    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(480);
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(600);
     // The rows scroll inside it, the field above them still in view.
     expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(true);
     await expect(menu.field).toBeInViewport();
@@ -349,10 +349,66 @@ test('the command menu is at most 480px tall on a desktop, less on a short windo
     await page.setViewportSize({ width: 1440, height: 500 });
     await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(0.78 * 500 + 1);
 
-    // A phone's sheet rises from below as tall as its rows, up to the window, not 480.
+    // A phone's sheet rises from below as tall as its rows, up to the window, not 600.
     await page.keyboard.press('Escape');
     await expect(menu.root).toBeHidden();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: /Do or find…/u }).click();
-    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeGreaterThan(480);
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeGreaterThan(600);
 });
+
+test('the command menu’s rows stop short of its scrollbar, the last one wrapped to keeps the list’s padding, and rows that don’t scroll sit evenly inset', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const listbox = menu.root.getByRole('listbox');
+    const highlighted = listbox.locator('[role="option"][data-highlighted]');
+
+    await menu.open();
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(600);
+    expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(true);
+
+    // Whether the scrollbar takes its own width (classic) or is drawn over the list (overlay, the thin one about 8px),
+    // the highlighted row ends before it.
+    await expect(highlighted).toBeVisible();
+    await expect
+        .poll(async () => {
+            const room = await measureRow(highlighted);
+            return room.right - Math.max(room.scrollbar, 8);
+        })
+        .toBeGreaterThanOrEqual(0);
+
+    // ↑ on the first row wraps to the last, scrolled into view above the list's bottom padding, not touching the footer.
+    await page.keyboard.press('ArrowUp');
+    await expect(listbox.getByRole('option').last()).toHaveAttribute('data-highlighted', '');
+    await expect.poll(async () => (await measureRow(highlighted)).bottom).toBeGreaterThanOrEqual(4);
+
+    // A list that doesn't scroll keeps no room for a scrollbar: its rows sit inset alike on both sides.
+    await menu.field.pressSequentially('remember the side');
+    await expect(menu.option(/Remember the sidebar width/)).toBeVisible();
+    expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(false);
+    const room = await measureRow(highlighted);
+    expect(Math.abs(room.left - room.right)).toBeLessThanOrEqual(1);
+});
+
+/** The room between a row and its list's edges, and the width the list's scrollbar takes beside the rows (0 overlay). */
+async function measureRow(row: Locator) {
+    return await row.evaluate(element => {
+        const list = element.closest<HTMLElement>('[role="listbox"]');
+        if (!list) {
+            throw new Error('The row is not in a listbox');
+        }
+
+        const outer = list.getBoundingClientRect();
+        const box = element.getBoundingClientRect();
+        return {
+            left: box.left - outer.left,
+            right: outer.right - box.right,
+            bottom: outer.bottom - box.bottom,
+            scrollbar: list.offsetWidth - list.clientWidth,
+        };
+    });
+}
