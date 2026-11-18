@@ -94,7 +94,7 @@ Keys act on the selected row, without opening it:
 |<kbd>Shift</kbd> <kbd>M</kbd>|Merge a pull request you may merge|
 
 githq offers only what your role in the repository allows. Right-click a row for its menu: every action, each with its
-key, plus **Copy link**, **Add to project…** and **Open full screen**.
+key, plus **Copy link**, **Add to project** and **Open full screen**.
 
 ### Several items at once
 

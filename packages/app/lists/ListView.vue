@@ -617,7 +617,7 @@ if (merging) {
   });
 }
 
-// The list's keys, run by the registry before an opened item's own; "Merge…" of the selected row first, as the command
+// The list's keys, run by the registry before an opened item's own; "Merge pull request" of the selected row first, as the command
 // menu offers it (PM39).
 useCommands(
   () => [...getMergeCommands(), ...getRowCommands(), ...getKeyCommands()],
@@ -625,7 +625,7 @@ useCommands(
 );
 
 /**
- * `⇧M` "Merge…" (merging D9): of the selected row while nothing is checked, or of one pull request checked alone — the
+ * `⇧M` "Merge pull request" (merging D9): of the selected row while nothing is checked, or of one pull request checked alone — the
  * selection's, ahead of an opened item's — never of several, which are never merged together; on a stack's entry, its
  * whole stack (stacked PRs D11). The list owns both: once the merge is sent, the merged ones are unchecked and the
  * selection moves past them (PM32a, SP7).
@@ -725,8 +725,8 @@ function findStackEntry(id: string): Placed | null {
 
 /**
  * The way forward the panel leads to, before its read (PM38): the pull request's, as its standing says it; a stack's,
- * as the panel opening on it would — "Merge all 3", "Merge 2" up to the one holding the rest, "Queue…" on a merge
- * queue's branch, "In the queue" once there, "Rebase on GitHub", "Mark #102 ready…" (stacked PRs D11, SP15, SP45–SP49,
+ * as the panel opening on it would — "Merge all 3", "Merge 2" up to the one holding the rest, "Queue" on a merge
+ * queue's branch, "In the queue" once there, "Rebase on GitHub", "Mark #102 ready" (stacked PRs D11, SP15, SP45–SP49,
  * SP53, SP54).
  */
 function getMergeTitle(target: MergeTarget): string {

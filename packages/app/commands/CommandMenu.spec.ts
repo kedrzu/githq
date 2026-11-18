@@ -42,19 +42,19 @@ test("E1/E2: Enter opens an action's submenu — both projects' status — and p
 
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     await expect
-        .element(menu.getByRole('option', { name: /Set status… In progress · Platform Q4/u }))
+        .element(menu.getByRole('option', { name: /Set status In progress · Platform Q4/u }))
         .toBeInTheDocument();
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
 
     // The first line is the item's first action; Enter opens its submenu.
     await userEvent.keyboard('{Enter}');
-    const submenu = page.getByRole('listbox', { name: 'Assign to…' });
+    const submenu = page.getByRole('listbox', { name: 'Assign to' });
     await expect.element(submenu).toBeInTheDocument();
     await userEvent.keyboard('{Backspace}');
 
     await userEvent.keyboard('set stat');
     await userEvent.keyboard('{Tab}');
-    const statuses = page.getByRole('listbox', { name: 'Set status…' });
+    const statuses = page.getByRole('listbox', { name: 'Set status' });
     await expect.element(statuses.getByRole('group', { name: 'Platform Q4' })).toBeInTheDocument();
     await expect.element(statuses.getByRole('group', { name: 'Bug triage' })).toBeInTheDocument();
 
@@ -86,7 +86,7 @@ test('Escape steps back out of a submenu, then closes; ⌫ in the empty field ta
     await OnOpenItem.run();
 
     await userEvent.keyboard('label{ArrowRight}');
-    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels…' })).toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels' })).toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
 
@@ -105,7 +105,7 @@ test('← in the empty field of a submenu steps back; with text it only moves th
     await expect.element(page.getByRole('option', { name: /Set status/u })).toBeInTheDocument();
 
     await userEvent.keyboard('label{ArrowRight}');
-    const labels = page.getByRole('listbox', { name: 'Add or remove labels…' });
+    const labels = page.getByRole('listbox', { name: 'Add or remove labels' });
     await expect.element(labels).toBeInTheDocument();
     await userEvent.keyboard('bug{ArrowLeft}');
     await expect.element(labels).toBeInTheDocument();
@@ -153,14 +153,14 @@ test('E4: the selection\'s actions say "2 of 3 editable"; its key runs the same 
     await SeveralSelected.run();
 
     await expect
-        .element(page.getByRole('option', { name: /Add or remove labels… 2 of 3 editable/u }))
+        .element(page.getByRole('option', { name: /Add or remove labels 2 of 3 editable/u }))
         .toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: /Set status…/u })).toHaveTextContent('S');
+    await expect.element(page.getByRole('option', { name: /Set status/u })).toHaveTextContent('S');
     await userEvent.keyboard('{Escape}');
 
     // S has no picker of its own here: it opens the menu at its submenu, the projects' statuses.
     await userEvent.keyboard('s');
-    const statuses = page.getByRole('listbox', { name: 'Set status…' });
+    const statuses = page.getByRole('listbox', { name: 'Set status' });
     await userEvent.click(statuses.getByRole('option', { name: 'In review' }));
     await expect
         .element(page.getByTestId('asked'))
@@ -199,7 +199,7 @@ test('⌘K in a submenu closes the whole menu, where Escape only steps back', as
     await OnOpenItem.run();
 
     await userEvent.keyboard('label{ArrowRight}');
-    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels…' })).toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels' })).toBeInTheDocument();
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await expect.element(page.getByRole('dialog', { name: 'Command menu' })).not.toBeInTheDocument();
 });
@@ -257,8 +257,8 @@ test("E5: the letters typed are marked in a title, a detail and a reference, and
 test('E5: a line found by a word it does not show shows that word after its title, marked', async () => {
     await MatchInHiddenWord.run();
 
-    const row = page.getByRole('option', { name: /^Assign to…/u });
-    await expect.element(row).toHaveTextContent(/^Assign to…\s*assignees/iu);
+    const row = page.getByRole('option', { name: /^Assign to/u });
+    await expect.element(row).toHaveTextContent(/^Assign to\s*assignees/iu);
     expect(getMarks(row)).toEqual(['assignees']);
 });
 
@@ -272,7 +272,7 @@ test('E5: a found option marks its value, not the action leading it; a submenu m
 
     await userEvent.clear(page.getByRole('textbox', { name: 'Type a command or search…' }));
     await userEvent.keyboard('set stat{Tab}rev');
-    const statuses = page.getByRole('listbox', { name: 'Set status…' });
+    const statuses = page.getByRole('listbox', { name: 'Set status' });
     const option = statuses
         .getByRole('group', { name: 'Platform Q4' })
         .getByRole('option', { name: 'In review', exact: true });
@@ -284,7 +284,7 @@ test('E5: a submenu option found by its detail marks the detail', async () => {
     await OnOpenItem.run();
 
     await userEvent.keyboard('{Enter}');
-    await expect.element(page.getByRole('listbox', { name: 'Assign to…' })).toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Assign to' })).toBeInTheDocument();
     await userEvent.keyboard('you');
     const option = page.getByRole('option', { name: /^kedrzu you/u });
     await expect.element(option).toBeInTheDocument();
@@ -409,7 +409,7 @@ test('↑ on the first line wraps to the last, in the menu and in a submenu', as
     await expect.element(lines.first()).toHaveAttribute('data-highlighted');
 
     await userEvent.keyboard('label{ArrowRight}');
-    const options = page.getByRole('listbox', { name: 'Add or remove labels…' }).getByRole('option');
+    const options = page.getByRole('listbox', { name: 'Add or remove labels' }).getByRole('option');
     await expect.element(options.first()).toHaveAttribute('data-highlighted');
     await userEvent.keyboard('{ArrowUp}');
     await expect.element(options.last()).toHaveAttribute('data-highlighted');
@@ -508,7 +508,7 @@ test("the chip stays over an action's picker and leaves in a place's level", asy
     await expect.element(chip).toBeInTheDocument();
 
     await userEvent.keyboard('label{ArrowRight}');
-    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels…' })).toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels' })).toBeInTheDocument();
     await expect.element(chip).toBeInTheDocument();
 });
 
@@ -703,7 +703,7 @@ test('W36: an action with a start goes straight into that level, saying what it 
     await expect.element(page.getByText('Reading the workflow files…')).toBeInTheDocument();
 
     await userEvent.keyboard('{Backspace}');
-    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    const repositories = page.getByRole('listbox', { name: 'Run workflow' });
     await expect.element(repositories.getByRole('option', { name: 'fitloop/api' })).toBeInTheDocument();
     await userEvent.keyboard('api{Enter}{Enter}');
     await expect.element(page.getByTestId('asked')).toHaveTextContent('api Deploy ran');
@@ -712,7 +712,7 @@ test('W36: an action with a start goes straight into that level, saying what it 
 test("W46, W36: a level's rows sit under their headings, wherever they were given, with the level's placeholder and hint", async () => {
     await RunWorkflowRepositories.run();
 
-    const repositories = page.getByRole('listbox', { name: 'Run workflow…' });
+    const repositories = page.getByRole('listbox', { name: 'Run workflow' });
     const tracked = repositories.getByRole('group', { name: 'Tracked repositories' });
     await expect.element(tracked.getByRole('option', { name: 'fitloop/webapp' })).toBeInTheDocument();
     // Given after "Nothing to run"'s row, it is shown with the other row of its heading.
@@ -778,7 +778,7 @@ test("on a phone opened from a list's command line, the field carries that line'
 test("on a phone a picker's field finds only its values, under the way back and the level's title; back returns to the top", async () => {
     await PhoneStatusInTwoProjects.run();
 
-    const statuses = page.getByRole('listbox', { name: 'Set status…' });
+    const statuses = page.getByRole('listbox', { name: 'Set status' });
     await expect.element(statuses).toBeInTheDocument();
     // The first project's statuses nearest the field, read downwards.
     const nearest = statuses.getByRole('group').last();

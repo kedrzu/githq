@@ -66,7 +66,7 @@ export const RefusedWithDifferentDraft: Story = {
     },
     play: async ({ canvas }) => {
         await expect(canvas.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
-        await expect(canvas.getByRole('button', { name: 'Edit review…' })).toBeInTheDocument();
+        await expect(canvas.getByRole('button', { name: 'Edit review' })).toBeInTheDocument();
         await expect(canvas.queryByRole('button', { name: 'Try again' })).toBeNull();
     },
 };

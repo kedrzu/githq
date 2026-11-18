@@ -1,25 +1,25 @@
 merge:
-  en: Merge…
+  en: Merge pull request
 assignees:
-  en: Assign to…
+  en: Assign to
 assigneesKeyword:
   en: assignees
 labels:
-  en: Add or remove labels…
+  en: Add or remove labels
 labelsKeyword:
   en: label
 milestone:
-  en: Set milestone…
+  en: Set milestone
 issueType:
-  en: Set issue type…
+  en: Set issue type
 status:
-  en: Set status…
+  en: Set status
 priority:
-  en: Set priority…
+  en: Set priority
 iteration:
-  en: Set iteration…
+  en: Set iteration
 reviewers:
-  en: Request review…
+  en: Request review
 reviewersKeyword:
   en: reviewers
 draft:

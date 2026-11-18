@@ -54,7 +54,7 @@ export interface RunWorkflowCommands {
      */
     forWorkflow(target: RunWorkflowTarget): BoundCommand | null;
     /**
-     * "Run workflow…" for any workflow: the tracked repositories, each with how many workflows the user can run there, then
+     * "Run workflow" for any workflow: the tracked repositories, each with how many workflows the user can run there, then
      * the workflows of the one picked, then the form. Inside a tracked repository it opens at that repository's
      * workflows, a step back showing the others.
      */

@@ -558,7 +558,7 @@ test('⇧S opens the dialog, sending takes a press there: submitted as an approv
     expect(writes[0]?.variables).toMatchObject({ event: 'APPROVE', body: 'Reads well' });
 });
 
-test("a refused submission turns the toolbar red with GitHub's words and keeps everything: Edit review… has the choice, Try again sends the same", async ({
+test("a refused submission turns the toolbar red with GitHub's words and keeps everything: Edit review has the choice, Try again sends the same", async ({
     page,
     github,
 }) => {
@@ -574,7 +574,7 @@ test("a refused submission turns the toolbar red with GitHub's words and keeps e
     await expect(review.pendingToolbar).toContainText('Can not approve your own pull request');
     await expect(review.pendingToolbar).toContainText('Everything is kept');
 
-    await review.pendingToolbar.getByRole('button', { name: 'Edit review…' }).click();
+    await review.pendingToolbar.getByRole('button', { name: 'Edit review' }).click();
     await expect(review.submitDialog.getByRole('textbox')).toHaveValue('Reads well');
     await expect(review.submitDialog.getByRole('radio', { name: 'Approve' })).toBeChecked();
     await page.keyboard.press('Escape');
@@ -863,7 +863,7 @@ test('a reply box opens inside its thread and closes again, the thread and what 
 
     await page.keyboard.press('Escape');
     await expect(review.commentBox('Reply to sofiab')).toBeHidden();
-    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply…' })).toBeVisible();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply' })).toBeVisible();
     expect(await review.threadOffset('First thread here')).toBe(at);
 });
 
@@ -899,7 +899,7 @@ test('a reply with a draft open joins it, and its button, its comment and the to
 }) => {
     const { review, writes } = await openWriting(page, github, { draft: 2, threads: OPEN_THREADS });
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
     const box = review.commentBox('Reply to sofiab');
     await expect(box.getByRole('button', { name: 'Add to draft' })).toBeVisible();
     await expect(box.getByRole('button', { name: 'Submit draft (3 comments)' })).toBeVisible();
@@ -920,7 +920,7 @@ test('a reply labelled to go now, meeting a draft begun elsewhere, is not sent: 
 }) => {
     const { review, writes, setDraft } = await openWriting(page, github, { threads: OPEN_THREADS });
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
     await page.keyboard.type('Keep me');
     setDraft(4);
     await page.keyboard.press(FIRST_KEY);
@@ -939,7 +939,7 @@ test('a reply GitHub refuses comes back in its box, and after a reload it is sti
     const { review, refused, writes } = await openWriting(page, github, { threads: OPEN_THREADS });
     refused.set('AddPullRequestReviewThreadReply', 'The thread is locked');
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
     await page.keyboard.type('Keep me too');
     await page.keyboard.press(FIRST_KEY);
 
@@ -1139,7 +1139,7 @@ test('the keys sheet has every row whatever can run now, and no key of the app i
     await expect(writing.getByText('Suggest a change')).toBeVisible();
     // With no thread focused and no draft, R and ⇧S are listed all the same.
     await expect(writing.getByText('Reply to the thread')).toBeVisible();
-    await expect(writing.getByText('Submit review…')).toBeVisible();
+    await expect(writing.getByText('Submit review')).toBeVisible();
     await expect(sheet.getByText('New issue')).toBeHidden();
     const moving = sheet.getByRole('region', { name: 'Moving' });
     await expect(moving.getByText('Next and previous file')).toBeVisible();
@@ -1177,7 +1177,7 @@ test('⇧S with no draft: an approval goes with no line comment, naming the head
     await expect(review.pendingToolbar).toBeHidden();
 });
 
-test("an approval refused with no draft shows GitHub's words though no draft is open; Edit review… has the choice", async ({
+test("an approval refused with no draft shows GitHub's words though no draft is open; Edit review has the choice", async ({
     page,
     github,
 }) => {
@@ -1195,7 +1195,7 @@ test("an approval refused with no draft shows GitHub's words though no draft is 
     github.releaseAnswers();
 
     await expect(review.pendingToolbar).toContainText('Review Can not approve your own pull request');
-    await review.pendingToolbar.getByRole('button', { name: 'Edit review…' }).click();
+    await review.pendingToolbar.getByRole('button', { name: 'Edit review' }).click();
     await expect(review.submitDialog.getByRole('radio', { name: 'Approve' })).toBeChecked();
     await page.keyboard.press('Escape');
 
@@ -1260,7 +1260,7 @@ test('the palette offers what a review has keys for: back, GitHub and the cursor
     }
 });
 
-test('every file viewed with threads left: the block says so over them, and its Submit review… opens the dialog', async ({
+test('every file viewed with threads left: the block says so over them, and its Submit review opens the dialog', async ({
     page,
     github,
 }) => {
@@ -1290,6 +1290,6 @@ test('every file viewed with threads left: the block says so over them, and its 
     await expect(review.diff.getByText('All 2 files viewed')).toBeInViewport();
     await expect(review.diff.getByText(/thread.is.still.open.on.1.file,.shown.below/u)).toBeVisible();
     await expect(review.thread('Why here?')).toBeVisible();
-    await review.diff.getByRole('button', { name: 'Submit review…' }).click();
+    await review.diff.getByRole('button', { name: 'Submit review' }).click();
     await expect(review.submitDialog).toBeVisible();
 });

@@ -30,7 +30,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** "Reply…" was clicked. */
+  /** "Reply" was clicked. */
   reply: [];
   /** Resolve thread, or Unresolve. */
   setResolved: [resolved: boolean];

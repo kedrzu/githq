@@ -53,7 +53,7 @@ export interface CommentActions {
     saveEdit(id: string | null, body: string): void;
     /** Quote reply picked: handed over once the menu closed, so the composer keeps the focus it takes. */
     quote(body: string): void;
-    /** Delete… picked: asked once the menu closed and the focus is on the card's ⋯. */
+    /** Delete picked: asked once the menu closed and the focus is on the card's ⋯. */
     askDelete(id: string): void;
     confirmDelete(): void;
     cancelDelete(): void;
@@ -87,7 +87,7 @@ export function useCommentActions(options: UseCommentActionsOptions): CommentAct
     let editOpened = false;
     /** The text Quote reply picked, handed over once the menu closed. */
     let quoted: string | null = null;
-    /** The comment Delete… picked, asked about once the menu closed. */
+    /** The comment Delete picked, asked about once the menu closed. */
     let deleting: string | null = null;
 
     watch(

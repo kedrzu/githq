@@ -293,7 +293,7 @@ test('Search repositories: asks once typing pauses, nothing under two characters
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}search repositories');
     await expect
-        .element(page.getByRole('option', { name: /^Search repositories… Any repository on GitHub/u }))
+        .element(page.getByRole('option', { name: /^Search repositories Any repository on GitHub/u }))
         .toBeInTheDocument();
     await userEvent.keyboard('{Enter}');
     const field = page.getByRole('textbox', { name: 'Search GitHub for a repository…' });
@@ -433,7 +433,7 @@ test("on a repository's view the group has only its page, link and settings: its
     }
 });
 
-test('W36: "Run workflow…" starts in the screen\'s repository, named once over its level', async () => {
+test('W36: "Run workflow" starts in the screen\'s repository, named once over its level', async () => {
     await mountWithAnotherRepository('/acme/web/actions/runs/7');
 
     await openMenu();
@@ -442,7 +442,7 @@ test('W36: "Run workflow…" starts in the screen\'s repository, named once over
     expect(page.getByText('acme/web', { exact: true }).elements()).toHaveLength(1);
 });
 
-test('W36: with the repository taken out of the menu, "Run workflow…" starts at the tracked repositories', async () => {
+test('W36: with the repository taken out of the menu, "Run workflow" starts at the tracked repositories', async () => {
     await mountWithAnotherRepository('/acme/web/actions/runs/7');
 
     await openMenu();

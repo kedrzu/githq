@@ -13,13 +13,13 @@ const SELECTION: CommandSubject = { kind: 'selection', label: '3 items', title: 
 
 const STATUS: Command = {
     id: 'item.status',
-    title: 'Set status…',
+    title: 'Set status',
     section: 'item',
     options: () => ({
         options: ['Todo', 'In progress', 'Done'].map(label => ({ value: label, label, pick: () => undefined })),
     }),
 };
-const SELECTION_ASSIGN: Command = { id: 'selection.assignees', title: 'Assign to…', section: 'selection' };
+const SELECTION_ASSIGN: Command = { id: 'selection.assignees', title: 'Assign to', section: 'selection' };
 const SIDEBAR: Command = { id: 'app.sidebar', title: 'Collapse sidebar', section: 'app', key: 'Mod+B' };
 const KEYS_ONLY: Command = { id: 'app.commandMenu', title: 'Open the command menu', section: 'app', menu: false };
 
@@ -38,7 +38,7 @@ test("the subject's actions are offered for their subject only, none once it is 
 });
 
 test('D14: of one group the higher priority is listed first; typing, the match decides and priority breaks ties', () => {
-    const grouping: Command = { id: 'view.grouping', title: 'Group by…', section: 'view' };
+    const grouping: Command = { id: 'view.grouping', title: 'Group by', section: 'view' };
     const archive: Command = { id: 'view.archive', title: 'Archive view', section: 'view', priority: 1 };
     const remove: Command = { id: 'view.remove', title: 'Remove view', section: 'view', priority: 2 };
     const commands = [grouping, archive, remove];
@@ -81,7 +81,7 @@ test('a search is offered as an action, but its answers are not looked through o
     }));
     const searching: Command = {
         id: 'app.searchRepositories',
-        title: 'Search repositories…',
+        title: 'Search repositories',
         section: 'app',
         options,
         search,
@@ -162,7 +162,7 @@ test('entries carry what the menu marks: a title, a hidden word, an option, a pl
         items: [{ ...sampleIssue('i'), title: 'Account page' }],
     };
 
-    expect(find('sts', [STATUS])).toEqual({ field: 'title', text: 'Set status…', ranges: [0, 1, 2, 3, 4, 5] });
+    expect(find('sts', [STATUS])).toEqual({ field: 'title', text: 'Set status', ranges: [0, 1, 2, 3, 4, 5] });
     expect(find('creat', [newIssue])).toEqual({ field: 'hidden', text: 'create', ranges: [0, 5] });
     expect(find('in prog', [STATUS])).toEqual({ field: 'title', text: 'In progress', ranges: [0, 2, 3, 7] });
     expect(
@@ -534,12 +534,12 @@ test('"in prog" on an opened item finds a status value above item titles; "statu
 
     expect(menu[0]?.key).toBe('subject');
     expect(score(menu, id)).toBeCloseTo(64);
-    expect(findEntry(menu, id)?.ancestors).toEqual([{ title: 'Set status…', ranges: null }]);
+    expect(findEntry(menu, id)?.ancestors).toEqual([{ title: 'Set status', ranges: null }]);
 
     const named = build({ query: 'status in prog', commands: [STATUS], subject: ITEM });
     expect(ids(named)).toEqual([id]);
     expect(score(named, id)).toBeCloseTo(64);
-    expect(findEntry(named, id)?.ancestors).toEqual([{ title: 'Set status…', ranges: [4, 10] }]);
+    expect(findEntry(named, id)?.ancestors).toEqual([{ title: 'Set status', ranges: [4, 10] }]);
     expect(findEntry(named, id)?.path).toEqual(['item.status']);
 });
 
@@ -689,7 +689,7 @@ test('a path walks from a command, a place or an untracked repository to the las
     expect(updates?.path).toEqual(updatesPath);
 
     expect(titles(['repository:acme/foo', 'repository:acme/foo/pulls'])).toEqual(['acme/foo', 'Pulls of acme/foo']);
-    expect(titles(['item.status'], [STATUS])).toEqual(['Set status…']);
+    expect(titles(['item.status'], [STATUS])).toEqual(['Set status']);
 
     // Gone: an unknown level, a child that has no submenu, a root whose `when` says no.
     expect(titles([...updatesPath, 'place:settings/updates/stable'])).toEqual(['Settings', 'Updates']);

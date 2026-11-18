@@ -37,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** "Reply…" was clicked on a thread. */
+  /** "Reply" was clicked on a thread. */
   reply: [threadId: string];
   /** Resolve thread, or Unresolve, on a thread. */
   setResolved: [threadId: string, resolved: boolean];

@@ -106,7 +106,7 @@ test('W37, W39: "Run workflow · Deploy" on the selected workflow: its form at m
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/2`);
 });
 
-test('W46, W48: "Run workflow…" from My work: the repositories with what each can run, from one read of their files; then the workflow and its form', async ({
+test('W46, W48: "Run workflow" from My work: the repositories with what each can run, from one read of their files; then the workflow and its form', async ({
     page,
     github,
 }) => {
@@ -152,7 +152,7 @@ test('W46, W48: "Run workflow…" from My work: the repositories with what each 
     expect(dispatchBodies(github)).toEqual([{ ref: 'main', return_run_details: true }]);
 });
 
-test('W46: "Run workflow…" from My work marks a repository with read access and an archived one as unable to run, reading none of their files', async ({
+test('W46: "Run workflow" from My work marks a repository with read access and an archived one as unable to run, reading none of their files', async ({
     page,
     github,
 }) => {
@@ -189,7 +189,7 @@ test('W36: a workflow without workflow_dispatch shows "Run workflow" it can\'t r
     const command = menu.option(/Run workflow · CLA/u);
     await expect(command).toContainText('CLA has no workflow_dispatch trigger');
     await expect(command).toContainText(/can['’]t\srun/u);
-    // W48: the cursor skips it to "Run workflow…", and the footer says Enter picks another workflow there.
+    // W48: the cursor skips it to "Run workflow", and the footer says Enter picks another workflow there.
     await expect(menu.root.getByText('Enter picks another workflow')).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(menu.root.getByRole('group', { name: 'Run workflow · CLA' })).toHaveCount(0);

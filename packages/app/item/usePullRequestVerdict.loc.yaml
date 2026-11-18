@@ -64,17 +64,17 @@ requiredRunning:
 approved:
   en: approved
 merge:
-  en: Merge…
+  en: Merge pull request
 resolveConflicts:
   en: Resolve on GitHub
 updateBranch:
   en: Update branch
 markReady:
-  en: Mark ready…
+  en: Mark ready
 queue:
-  en: Queue…
+  en: Queue
 autoMerge:
-  en: Auto-merge…
+  en: Auto-merge
 readyForQueue:
   en: Ready for the queue
 reviewRequired:

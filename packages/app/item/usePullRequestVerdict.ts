@@ -40,7 +40,7 @@ export type PullRequestVerdictTone = 'accent' | 'danger' | 'done' | 'muted' | 's
 
 /**
  * The way forward of where a pull request stands (merging D12): what `⌘↵` does in the merge panel, and what the
- * standing's "Merge…" says it leads to (PM38) — merge it, add it to its branch's merge queue, turn auto-merge on or
+ * standing's "Merge pull request" says it leads to (PM38) — merge it, add it to its branch's merge queue, turn auto-merge on or
  * off, mark it ready for review, bring the base branch in, or resolve its conflicts in GitHub's editor. Never anything
  * costlier: jumping the queue and bypassing have chords of their own.
  */
@@ -80,8 +80,8 @@ export interface PullRequestVerdictViewModel {
      */
     readonly forward: PullRequestWayForward | null;
     /**
-     * What `⇧M` says it leads to, wherever it is offered: "Merge…", "Queue…", "Auto-merge…", "Mark ready…", "Update
-     * branch", "Resolve on GitHub" — "Merge…" with no way forward too, as it opens the panel all the same.
+     * What `⇧M` says it leads to, wherever it is offered: "Merge pull request", "Queue", "Auto-merge", "Mark ready", "Update
+     * branch", "Resolve on GitHub" — "Merge pull request" with no way forward too, as it opens the panel all the same.
      */
     readonly forwardTitle: string;
 }
@@ -333,7 +333,7 @@ export function usePullRequestVerdicts(): (params: PullRequestVerdictParams) => 
         };
     }
 
-    /** What `⇧M` says it leads to: "Merge…" with no way forward too, as it still opens the panel. */
+    /** What `⇧M` says it leads to: "Merge pull request" with no way forward too, as it still opens the panel. */
     function getForwardTitle(pr: PullRequestItem, forward: PullRequestWayForward | null) {
         switch (forward) {
             case 'merge':

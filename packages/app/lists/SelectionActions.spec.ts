@@ -55,13 +55,13 @@ test('mobile D28: on a phone ⌘ over the selection offers its actions as on the
 
     await expect.element(page.getByRole('toolbar', { name: 'Selected items' })).not.toBeInTheDocument();
     await expect.element(menu.getByText('Only what applies to all 3')).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Add or remove labels…\s*mixed/u })).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Set milestone…\s*mixed/u })).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Assign to…\s*mlaine/u })).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Close 3 items…/u })).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Set status…\s*In progress · Platform Q4/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Add or remove labels\s*mixed/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Set milestone\s*mixed/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Assign to\s*mlaine/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Close 3 items/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Set status\s*In progress · Platform Q4/u })).toBeVisible();
 
-    await userEvent.click(menu.getByRole('option', { name: /^Add or remove labels…/u }));
+    await userEvent.click(menu.getByRole('option', { name: /^Add or remove labels/u }));
     await userEvent.click(page.getByRole('option', { name: /^calendar/u }));
 
     await expect
@@ -73,7 +73,7 @@ test('mobile D28: on a phone the Status row over items in different statuses say
     await PhoneMenuOverMixedStatuses.run();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
 
-    await expect.element(menu.getByRole('option', { name: /^Set status…\s*mixed/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Set status\s*mixed/u })).toBeVisible();
 });
 
 /** The bar over `items`, all selected, spanning `span` in the list. */

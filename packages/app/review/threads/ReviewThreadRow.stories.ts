@@ -226,7 +226,7 @@ export const Gone: Story = { args: { row: createThreadRowSample({ kind: 'gone', 
 export const WithActions: Story = {
     args: { onReply: fn(), onSetResolved: fn() },
     play: async ({ args, canvas }) => {
-        await userEvent.click(canvas.getByRole('button', { name: 'Reply…' }));
+        await userEvent.click(canvas.getByRole('button', { name: 'Reply' }));
         await expect(args.onReply).toHaveBeenCalledOnce();
         await userEvent.click(canvas.getByRole('button', { name: 'Resolve' }));
         await expect(args.onSetResolved).toHaveBeenCalledWith(true);
@@ -237,7 +237,7 @@ export const WithActions: Story = {
 export const FocusedWithKey: Story = {
     args: { focused: true },
     play: async ({ canvas }) => {
-        await expect(canvas.getByRole('button', { name: /Reply…/ })).toHaveAttribute('aria-keyshortcuts', 'R');
+        await expect(canvas.getByRole('button', { name: /Reply/ })).toHaveAttribute('aria-keyshortcuts', 'R');
     },
 };
 
@@ -248,20 +248,23 @@ export const Replying: Story = {
     play: async ({ args, canvas }) => {
         const thread = canvas.getByRole('group', { name: /^Thread by/u });
         const box = await canvas.findByRole('group', { name: /^Reply.to.sofiab$/u });
-        await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
+        // The box's own Reply sends; the one that opened it is gone.
+        await expect(canvas.getAllByRole('button', { name: 'Reply' }).filter(button => !box.contains(button))).toEqual(
+            [],
+        );
         await expect(thread).toContainElement(box);
         await userEvent.click(canvas.getByRole('button', { name: /^Resolve.thread$/u }));
         await expect(args.onSetResolved).toHaveBeenCalledWith(true);
     },
 };
 
-/** A reply on its way: the last of the thread's comments, and Reply… is back. */
+/** A reply on its way: the last of the thread's comments, and Reply is back. */
 export const ReplySent: Story = {
     args: { replies: { sent: [REPLY], box: null }, viewer: VIEWER },
     render: renderWithReply,
     play: async ({ canvas }) => {
         await expect(canvas.getByText('Agreed, migrating it.')).toBeVisible();
-        await expect(canvas.getByRole('button', { name: 'Reply…' })).toBeVisible();
+        await expect(canvas.getByRole('button', { name: 'Reply' })).toBeVisible();
     },
 };
 
@@ -275,7 +278,7 @@ export const NothingAllowed: Story = {
         }),
     },
     play: async ({ canvas }) => {
-        await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
+        await expect(canvas.queryByRole('button', { name: 'Reply' })).toBeNull();
         await expect(canvas.queryByRole('button', { name: 'Resolve' })).toBeNull();
     },
 };
@@ -315,7 +318,7 @@ export const ReplyToDraft: Story = {
         }),
     },
     play: async ({ canvas }) => {
-        await expect(canvas.getByRole('button', { name: /Add.to.your.draft…/u })).toBeVisible();
+        await expect(canvas.getByRole('button', { name: /Add.to.your.draft/u })).toBeVisible();
     },
 };
 

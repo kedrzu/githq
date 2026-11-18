@@ -1,4 +1,4 @@
-<!-- Over the threads kept when every file is viewed and those hidden (CR63, `All viewed`): that all of them are, what is left to answer, and the ways on: Submit review… (⇧S) and the next pull request (J). -->
+<!-- Over the threads kept when every file is viewed and those hidden (CR63, `All viewed`): that all of them are, what is left to answer, and the ways on: Submit review (⇧S) and the next pull request (J). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck } from 'lucide-vue-next';

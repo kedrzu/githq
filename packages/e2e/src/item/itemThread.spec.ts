@@ -456,7 +456,7 @@ test('with the draft chosen, a reply from the thread starts a review on the head
     // Pushed after the item was read: its row still names the head before.
     const head = sample.world.push(sample.pullRequest, 'sofiab', 'Fall back to home');
 
-    await thread.getByRole('button', { name: 'Reply…' }).click();
+    await thread.getByRole('button', { name: 'Reply' }).click();
     await expect(thread.getByRole('button', { name: 'Start a review' })).toBeVisible();
     await page.keyboard.type('Home is the fallback now.');
     await page.keyboard.press(REPLY_KEY);
@@ -507,7 +507,7 @@ test('a reply GitHub refuses comes back with its text and why; leaving the item 
     const { item, thread, writes, refused } = await openReviewThread(page, github);
     refused.set('AddPullRequestReviewThreadReply', 'The thread is locked');
 
-    await thread.getByRole('button', { name: 'Reply…' }).click();
+    await thread.getByRole('button', { name: 'Reply' }).click();
     await page.keyboard.type('Keep me');
     await page.keyboard.press(REPLY_KEY);
 
@@ -563,7 +563,7 @@ test("the viewer's draft review shows last, as theirs alone; somebody else's dra
 
     const draft = item.entry('Mine, not sent yet.');
     await expect(draft).toContainText(/^Your review\s*pending/u);
-    await expect(draft.getByRole('button', { name: 'Reply…' })).toHaveCount(0);
+    await expect(draft.getByRole('button', { name: 'Reply' })).toHaveCount(0);
     await expect(item.root).not.toContainText('Not sent by sofiab yet.');
     const order = await item.root
         .getByRole('listitem')

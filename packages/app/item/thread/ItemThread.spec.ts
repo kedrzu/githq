@@ -311,7 +311,7 @@ test('where the user may no longer comment, a comment not sent stays readable wi
     expect(page.getByRole('button', { name: 'Retry' }).query()).toBeNull();
 });
 
-test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not let them change, only Quote reply and Copy link", async () => {
+test("K1b: the user's own comment offers Edit and Delete; one GitHub does not let them change, only Quote reply and Copy link", async () => {
     await IssueInPanel.run();
 
     await openMenu(MINE);
@@ -321,7 +321,7 @@ test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not
         'Edit',
         'Quote reply',
         'Copy link',
-        'Delete…',
+        'Delete',
     ]);
     await userEvent.keyboard('{Escape}');
 
@@ -336,7 +336,7 @@ test('where the user may not comment, the menu offers no Quote reply: the quote 
     await openMenu(MINE);
     const items = page.getByRole('menuitem');
     await expect.element(items.nth(0)).toHaveTextContent('Edit');
-    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Copy link', 'Delete…']);
+    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Copy link', 'Delete']);
 });
 
 test('the description has the same menu without Delete, from a right click too', async () => {
@@ -472,7 +472,7 @@ test("Cancel in the delete confirmation gives the focus back to the comment's �
 
     // From a right click too, where the menu has no ⋯ of its own to give the focus back to.
     await rightClickCard(MINE);
-    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete' }));
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
 
@@ -481,12 +481,12 @@ test("Cancel in the delete confirmation gives the focus back to the comment's �
     expect(onEdit).not.toHaveBeenCalled();
 });
 
-test('Delete… asks once; only the confirmation deletes', async () => {
+test('Delete asks once; only the confirmation deletes', async () => {
     const onEdit = vi.fn();
     await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
 
     await openMenu(MINE);
-    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete' }));
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await expect.element(dialog).toBeVisible();
     expect(onEdit).not.toHaveBeenCalled();
@@ -614,10 +614,10 @@ async function openCodeThreads(options: FakeReviewWritingOptions = {}) {
     return { args, writing };
 }
 
-test('Reply… opens the editor in the band, the cursor in it; Cancel on nothing typed closes it, the focus back on the thread', async () => {
+test('Reply opens the editor in the band, the cursor in it; Cancel on nothing typed closes it, the focus back on the thread', async () => {
     const { writing } = await openCodeThreads();
 
-    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply' }));
     const field = dbThread().getByRole('textbox', { name: 'Reply' });
     await expect.element(field).toHaveFocus();
     expect(writing.targets).toEqual([expect.objectContaining({ threadId: DB_THREAD.id, path: 'src/store/db.ts' })]);
@@ -630,7 +630,7 @@ test('Reply… opens the editor in the band, the cursor in it; Cancel on nothing
 
 test('a reply with text asks before it is let go: Esc asks, Esc keeps writing, Enter discards it', async () => {
     const { writing } = await openCodeThreads();
-    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply' }));
     await userEvent.keyboard('Not yet');
 
     await userEvent.keyboard('{Escape}');
@@ -648,14 +648,14 @@ test('a reply with text asks before it is let go: Esc asks, Esc keeps writing, E
 
 test('⌘↵ sends the reply as code review would, which shows at once; one GitHub refused comes back with its text and why', async () => {
     const { writing } = await openCodeThreads();
-    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply' }));
     await userEvent.keyboard('Migrated, see e81f0a3.');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
     expect(writing.sent).toEqual([{ body: 'Migrated, see e81f0a3.', way: 'single', threadId: DB_THREAD.id }]);
     await expect.element(dbThread().getByText('Migrated, see e81f0a3.')).toBeVisible();
     await expect.element(dbThread().getByText('Sending…')).toBeVisible();
-    await expect.element(dbThread().getByRole('button', { name: 'Reply…' })).toBeVisible();
+    await expect.element(dbThread().getByRole('button', { name: 'Reply' })).toBeVisible();
 
     const [box] = writing.targets;
     writing.answer(box?.id ?? '', { kind: 'failed', failure: { kind: 'refused', message: 'The thread is locked' } });
@@ -665,7 +665,7 @@ test('⌘↵ sends the reply as code review would, which shows at once; one GitH
 
 test('with the viewer’s draft open a reply joins it: its button says so', async () => {
     const { writing } = await openCodeThreads({ draftOpen: true });
-    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply' }));
     await userEvent.keyboard('In the draft');
     await userEvent.click(dbThread().getByRole('button', { name: 'Add to draft' }));
 
@@ -681,9 +681,9 @@ test('Resolve thread goes through the writing, and the thread says the viewer re
     await expect.element(dbThread()).toHaveTextContent('mlaine marked this thread as resolved.');
 });
 
-test('Reply… shows its R, and says it, only while its code thread has the focus', async () => {
+test('Reply shows its R, and says it, only while its code thread has the focus', async () => {
     await openCodeThreads();
-    const reply = dbThread().getByRole('button', { name: 'Reply…' });
+    const reply = dbThread().getByRole('button', { name: 'Reply' });
     await expect.element(reply).not.toHaveAttribute('aria-keyshortcuts');
 
     await userEvent.click(dbThread().getByText('That’s what the e2e trips on.', { exact: false }));
@@ -731,13 +731,13 @@ test('Hide on a resolved thread being replied to closes an empty reply and folds
     const row = page.getByRole('button', { name: /^Resolved/u });
     const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
     await userEvent.click(row);
-    await userEvent.click(schema.getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(schema.getByRole('button', { name: 'Reply' }));
     await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
     await expect.element(row).toHaveFocus();
     expect(writing.targets).toEqual([]);
 
     await userEvent.click(row);
-    await userEvent.click(schema.getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(schema.getByRole('button', { name: 'Reply' }));
     await userEvent.keyboard('Not yet');
     await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
     await expect.element(schema.getByRole('status')).toHaveTextContent('Discard your reply?');
@@ -755,7 +755,7 @@ test('Hide on a resolved thread of a review folds it with its reply on its way, 
     await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
     const row = page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u });
     await userEvent.click(row);
-    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply' }));
     await userEvent.keyboard('Migrated, see e81f0a3.');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(dbThread().getByText('Sending…')).toBeVisible();

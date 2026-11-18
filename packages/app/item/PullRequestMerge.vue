@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column — it drops its buttons' key hints and the conditions' asides. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge…" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column — it drops its buttons' key hints and the conditions' asides. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -35,7 +35,7 @@ const props = defineProps<{
   /** Read with the opened item; the branch's owner comes from it. */
   detail?: PullRequestDetail | null;
   /**
-   * The viewer may merge it (`EditPermissions.mergePanel`): "Merge…" is offered while it is not being merged; `false`
+   * The viewer may merge it (`EditPermissions.mergePanel`): "Merge pull request" is offered while it is not being merged; `false`
    * says they can't, while it is open, not being merged and merges alone. `null` when not known: neither shows.
    */
   canMerge?: boolean | null;
@@ -53,7 +53,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** "Merge…": the merge panel is wanted. */
+  /** "Merge pull request": the merge panel is wanted. */
   merge: [];
   /** One of its ordinary commands, from its button. */
   command: [command: PullRequestCommand];
@@ -101,7 +101,7 @@ const verdict = computed((): PullRequestVerdict => {
       return assertNever(record);
   }
 });
-/** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
+/** What stands in "Merge pull request"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
 const note = computed(() => {
   if (!open.value || props.pr.merged) {
     return null;
@@ -117,7 +117,7 @@ const note = computed(() => {
 
   return props.canMerge === false ? t(l.cannotMerge) : null;
 });
-/** "Merge…" opens the panel, and says the way forward it leads to (PM38). */
+/** "Merge pull request" opens the panel, and says the way forward it leads to (PM38). */
 const mergeLabel = computed(() => {
   if (ended.value && ended.value.kind !== 'unknown') {
     return t(l.backToMerge);
@@ -137,7 +137,7 @@ const branchCommand = computed(() =>
   props.commands?.find(command => command.kind === 'deleteBranch' || command.kind === 'restoreBranch'),
 );
 
-/** "Merge…" is offered: the viewer may merge it, it isn't being merged, and updating isn't the way forward, which its button above says all "Merge…" would. */
+/** "Merge pull request" is offered: the viewer may merge it, it isn't being merged, and updating isn't the way forward, which its button above says all "Merge pull request" would. */
 const mergeOffered = computed(
   () => props.canMerge === true && !merging.value && !(updateCommand.value && mergeVerdict.forward === 'updateBranch'),
 );

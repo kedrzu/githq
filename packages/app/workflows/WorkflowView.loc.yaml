@@ -34,7 +34,7 @@ lastRunsPassed:
 nothingCounts:
   en: no ref counts here
 runWorkflow:
-  en: Run workflow…
+  en: Run workflow
 hintRun:
   en: Run
 hintWorkflow:

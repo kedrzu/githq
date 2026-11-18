@@ -22,8 +22,8 @@ The page leads with a one-line verdict, such as **Ready to merge**, **Can't merg
 holds it back: failing or running checks, a review still missing or asking for changes, conflicts with the base branch,
 a branch behind its base. Then its branches, its size, and the ways on:
 
-- **Merge…** (<kbd>Shift</kbd> <kbd>M</kbd>) opens the merge panel. Its label names the way forward when there is one,
-  such as **Update branch**, **Resolve on GitHub** or **Queue…**. Without write access to the repository, it reads
+- **Merge pull request** (<kbd>Shift</kbd> <kbd>M</kbd>) opens the merge panel. Its label names the way forward when there is one,
+  such as **Update branch**, **Resolve on GitHub** or **Queue**. Without write access to the repository, it reads
   **You can't merge in this repository**.
 - **Review files** (<kbd>D</kbd>) opens the code review. <kbd>Shift</kbd> <kbd>O</kbd> opens the changed files on GitHub
   instead.
@@ -155,15 +155,15 @@ The box has two buttons, one on <kbd>⌘</kbd> <kbd>Enter</kbd> and the other on
 Which one is on <kbd>⌘</kbd> <kbd>Enter</kbd> is yours to choose, in **Settings → Code review**. By default it sends
 the comment at once. With drafts first, the other button reads **Comment now**.
 
-<kbd>R</kbd> or **Reply…** answers a thread. **Resolve** folds it; **Unresolve** opens it again.
+<kbd>R</kbd> or **Reply** answers a thread. **Resolve** folds it; **Unresolve** opens it again.
 
 ### Your draft review, and submitting
 
 While you have a draft review, comments join it: the buttons read **Add to draft** and **Submit draft**. A toolbar at
-the foot of the diff counts your pending comments, which others can't see until you submit, with **Discard review…** and
-**Submit review…**.
+the foot of the diff counts your pending comments, which others can't see until you submit, with **Discard review** and
+**Submit review**.
 
-**Submit review…** (<kbd>Shift</kbd> <kbd>S</kbd>) opens a dialog: an optional comment on the pull request, and what the
+**Submit review** (<kbd>Shift</kbd> <kbd>S</kbd>) opens a dialog: an optional comment on the pull request, and what the
 review is, **Comment**, **Approve** or **Request changes**, on <kbd>1</kbd>, <kbd>2</kbd> and <kbd>3</kbd>.
 <kbd>⌘</kbd> <kbd>Enter</kbd> sends it. If GitHub refuses, everything you wrote is kept, with **Try again**.
 
