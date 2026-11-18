@@ -220,7 +220,8 @@ conditions are at [signpath.org/terms](https://signpath.org/terms.html), summari
 2. Publish the first public (unsigned) release: SignPath signs only software already released in that form.
 3. Make sure the root README's **Code signing policy** is current: the team roles, the privacy statement, and how
    to uninstall.
-4. Apply at [signpath.org](https://signpath.org). MFA is required on GitHub and on SignPath.
+4. Apply at [signpath.org](https://signpath.org), with the answers in [SIGNPATH-APPLICATION.md](SIGNPATH-APPLICATION.md).
+   MFA is required on GitHub and on SignPath.
 5. Once accepted, a follow-up PR wires
    [`signpath/github-action-submit-signing-request`](https://github.com/signpath/github-action-submit-signing-request)
    into the Windows `bundle` job, and adds "Free code signing provided by SignPath.io, certificate by SignPath
