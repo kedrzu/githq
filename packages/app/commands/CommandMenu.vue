@@ -773,6 +773,11 @@ function onEscape(event: KeyboardEvent) {
               :ranges="getRanges(row, 'title')"
             />
           </span>
+          <span
+            v-if="row.marks?.count != null"
+            :class="css.commandMenu_count"
+            >{{ numbers.format(row.marks.count) }}</span
+          >
           <ChevronRight
             v-if="row.enter"
             :class="css.commandMenu_more"
@@ -812,11 +817,6 @@ function onEscape(event: KeyboardEvent) {
             v-if="row.aside"
             :class="css.commandMenu_aside"
             >{{ row.aside }}</span
-          >
-          <span
-            v-if="row.marks?.count != null"
-            :class="css.commandMenu_aside"
-            >{{ numbers.format(row.marks.count) }}</span
           >
           <ArrowUpRight
             v-if="row.marks?.external"
@@ -928,6 +928,13 @@ function onEscape(event: KeyboardEvent) {
   font-size: $font-size-sm;
   color: $color-fg-dim;
   white-space: nowrap;
+}
+
+// A place's count follows its title (D41).
+.commandMenu_count {
+  flex: none;
+  font-size: $font-size-sm;
+  color: $color-fg-dim;
 }
 
 .commandMenu_aside {
