@@ -103,6 +103,8 @@ export interface ResolveMenuPathParams {
 /** A level {@link resolveMenuPath} found. */
 export interface MenuPathStep extends MenuLevel {
     readonly title: string;
+    /** The field's text while it is open, in place of the menu's own. */
+    readonly placeholder?: string;
     /** The action it is a level of; `null` for a place or a repository not tracked. */
     readonly command: Command | null;
 }
@@ -170,7 +172,8 @@ const OUTSIDE_CONTEXT_FACTOR = 0.9;
  * of the submenus under them (E4: "in prog" finds "Set Status → In progress"), each paying for the levels above it:
  * words from the start of the text may name those levels, in path order, and the rest goes to the row. The heading
  * with the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
- * `#123` finds the items only. Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
+ * `#123` finds the items only. With nothing typed the top leaves out the tracked repositories, the projects and the app's
+ * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories…" and "Projects…", whose levels list them, and typing finds them all. Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
  * lists them first under their own heading, each in its order and out of the group it would have been in; typing
  * finds them where it always does.
  *
@@ -213,8 +216,12 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         descend(untracked ? [...roots, untracked] : roots, words);
     }
 
+    // Nothing typed at the top: the places and actions that are always there wait to be typed for or entered.
+    const untouched = !level && typed === '' && !commandsOnly;
     const groups = GROUP_ORDER.flatMap(key => {
-        const entries = [...(found.get(key)?.values() ?? [])];
+        const entries = [...(found.get(key)?.values() ?? [])].filter(
+            entry => !untouched || isListedUntyped(key, entry),
+        );
         const sorted =
             typed === ''
                 ? entries
@@ -415,7 +422,13 @@ function findRootStep(id: string, params: ResolveMenuPathParams): MenuPathStep |
     if (id.startsWith('place:')) {
         const place = navigation.places.find(candidate => `place:${candidate.id}` === id);
         return place?.children
-            ? { title: place.title, command: null, path, rows: getOfferedChildren(place.children()) }
+            ? {
+                  title: place.title,
+                  placeholder: place.placeholder,
+                  command: null,
+                  path,
+                  rows: getOfferedChildren(place.children()),
+              }
             : null;
     }
 
@@ -441,7 +454,13 @@ function toCommandStep(command: Command, path: readonly string[]): MenuPathStep 
         return null;
     }
 
-    return { title: command.title, command, path, rows: getOfferedChildren(command.children?.() ?? []) };
+    return {
+        title: command.title,
+        placeholder: command.placeholder,
+        command,
+        path,
+        rows: getOfferedChildren(command.children?.() ?? []),
+    };
 }
 
 /** It opens a level, a picker or a form, unless it can't run. */
@@ -589,6 +608,30 @@ function getGroup(section: CommandSection): CommandMenuGroupKey {
             return 'app';
         default:
             return assertNever(section);
+    }
+}
+
+/**
+ * Whether the top lists an entry of its group while nothing is typed: the long groups are found by typing or under a
+ * "Go to" level, and of the app's actions only what the app offers now (githq D36) is listed.
+ */
+function isListedUntyped(group: CommandMenuGroupKey, entry: CommandMenuEntry) {
+    switch (group) {
+        case 'level':
+        case 'parts':
+        case 'subject':
+        case 'view':
+        case 'repository':
+        case 'goTo':
+        case 'items':
+            return true;
+        case 'app':
+            return entry.kind === 'command' && entry.command.proposed === true;
+        case 'projects':
+        case 'repositories':
+            return false;
+        default:
+            return assertNever(group);
     }
 }
 

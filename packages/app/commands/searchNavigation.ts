@@ -12,23 +12,37 @@ import type { CommandMenuMatch } from './findMenuRows.js';
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
-/** A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken workflows, a tracked project, a repository, Settings. */
+/**
+ * A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken
+ * workflows, a tracked project, a repository, Settings; or a level only, with no screen of its own: "Repositories…" and
+ * "Projects…", which list the tracked ones.
+ */
 export interface NavigationPlace extends CommandMarks {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
-    readonly kind: 'draftReviews' | 'myWork' | 'workflows' | 'project' | 'repository' | 'settings';
+    readonly kind:
+        | 'draftReviews'
+        | 'myWork'
+        | 'workflows'
+        | 'project'
+        | 'projects'
+        | 'repository'
+        | 'repositories'
+        | 'settings';
     readonly title: string;
     readonly detail?: string;
     /** Other words it is found by (a project's owner). */
     readonly keywords?: readonly string[];
     /** The key that also goes there, shown on its line (`,` for Settings). */
     readonly key?: string;
-    /** The app's address of it. */
-    readonly path: string;
+    /** The app's address of it; none for a place that is only a level (Repositories…), which Enter opens. */
+    readonly path?: string;
     /** The rows under it, a level the menu walks into. */
     readonly children?: () => readonly Command[];
     /** The rows found when the text does not name it; leaving it out means `children`. */
     readonly foundAlone?: () => readonly Command[];
+    /** The field's text while its level is open ("Filter repositories…"). */
+    readonly placeholder?: string;
 }
 
 /** What the menu finds places and items in: the local copy, nothing read from GitHub (instant). */

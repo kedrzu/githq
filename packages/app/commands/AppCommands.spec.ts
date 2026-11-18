@@ -98,8 +98,11 @@ test('"Documentation" is among the app\'s own, after "Keyboard shortcuts", is fo
     onTestFinished(() => open.mockRestore());
     const router = mount();
 
+    // The empty menu leaves the app's own out (E13): `>` lists every action, in their order.
     await openMenu();
+    await userEvent.keyboard('>');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Keyboard shortcuts/ })).toBeInTheDocument();
     const titles = menu
         .getByRole('option')
         .elements()
@@ -108,7 +111,7 @@ test('"Documentation" is among the app\'s own, after "Keyboard shortcuts", is fo
     expect(help).toBeGreaterThanOrEqual(0);
     expect(titles[help + 1]).toMatch(/^Documentation/u);
 
-    await userEvent.keyboard('docs');
+    await userEvent.keyboard('{Backspace}docs');
     await expect.element(menu.getByRole('option', { name: /^Documentation/u })).toBeInTheDocument();
     await userEvent.keyboard('{Enter}');
 
@@ -144,12 +147,13 @@ test('on the web the command menu offers no update: nothing at the top, nothing 
     mount();
 
     await openMenu();
+    await userEvent.keyboard('>');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     await expect.element(menu.getByRole('option', { name: /^Keyboard shortcuts/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Update later/ })).not.toBeInTheDocument();
 
-    await userEvent.keyboard('settings{ArrowRight}updates{ArrowRight}');
+    await userEvent.keyboard('{Backspace}settings{ArrowRight}updates{ArrowRight}');
     const updates = page.getByRole('listbox', { name: 'Updates' });
     await expect.element(updates).toBeInTheDocument();
     await expect.element(updates.getByRole('option')).not.toBeInTheDocument();
@@ -376,7 +380,7 @@ for (const path of ['/', '/settings', '/orgs/acme/projects/1']) {
 
         await openMenu();
         const menu = page.getByRole('listbox', { name: 'Command menu' });
-        await expect.element(menu.getByRole('option', { name: /^Keyboard shortcuts/ })).toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Settings/ })).toBeInTheDocument();
         await expect.element(menu.getByRole('option', { name: /^Open on GitHub/ })).not.toBeInTheDocument();
         await expect.element(menu.getByRole('option', { name: /^Copy link/ })).not.toBeInTheDocument();
         await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
@@ -612,9 +616,11 @@ test("a project's saved view is found by typing its name, not listed with nothin
     const router = await mount({ projects: [SAMPLE_PROJECT] });
     const board = new RegExp(`^${SAMPLE_PROJECT.title}\\s*→\\s*${SAMPLE_VIEW_BOARD.name}`, 'u');
 
+    // The empty menu lists the projects under "Projects…" (E13), the views under none.
     await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
-    await expect.element(menu.getByRole('option', { name: /^Platform Q4/u })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Projects…/u })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Platform Q4/u })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: board })).not.toBeInTheDocument();
 
     await userEvent.keyboard('copy');

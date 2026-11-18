@@ -92,7 +92,7 @@ test('Escape steps back out of a submenu, then closes; ⌫ in the empty field ta
 
     await userEvent.keyboard('{Backspace}');
     await expect.element(page.getByRole('option', { name: /Set status/u })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: /Collapse sidebar/u })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /^Settings/u })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).not.toBeInTheDocument();
@@ -137,7 +137,7 @@ test('⌫ in the empty field takes out the item, then the repository with its gr
     await userEvent.keyboard('{Backspace}');
     await expect.element(repositoryGroup).not.toBeInTheDocument();
     await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: /Collapse sidebar/u })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /^Settings/u })).toBeInTheDocument();
 });
 
 test("K1b: what a contributor can't edit is not offered — no labels, no assignees, no milestone", async () => {
@@ -492,6 +492,16 @@ test('Enter enters a level with nothing to run; a picker under it steps back to 
 
     await userEvent.keyboard('{ArrowLeft}');
     await expect.element(level).toBeInTheDocument();
+});
+
+test('E14: Enter enters a place that is only a level, its field saying what it filters; nothing is gone to', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('repositories{Enter}');
+    const level = page.getByRole('listbox', { name: 'Repositories…' });
+    await expect.element(level.getByRole('option', { name: 'skyline-labs/portal' })).toBeInTheDocument();
+    await expect.element(page.getByPlaceholder('Filter repositories…')).toBeInTheDocument();
+    await expect.element(page.getByTestId('went')).toHaveTextContent('Nowhere');
 });
 
 test("the chip stays over an action's picker and leaves in a place's level", async () => {

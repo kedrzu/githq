@@ -24,17 +24,19 @@ const SIDEBAR: Command = { id: 'app.sidebar', title: 'Collapse sidebar', section
 const KEYS_ONLY: Command = { id: 'app.commandMenu', title: 'Open the command menu', section: 'app', menu: false };
 
 test("the subject's actions are offered for their subject only, none once it is taken out", () => {
-    const commands = [STATUS, SELECTION_ASSIGN, SIDEBAR, KEYS_ONLY];
+    const board: Command = { id: 'view.board', title: 'Show as board', section: 'view' };
+    const keysOnly: Command = { ...KEYS_ONLY, section: 'view' };
+    const commands = [STATUS, SELECTION_ASSIGN, board, keysOnly];
 
     expect(
         ids(buildCommandMenu({ query: '', commands, subject: ITEM, repository: null, navigation: NOTHING })),
-    ).toEqual(['item.status', 'app.sidebar']);
+    ).toEqual(['item.status', 'view.board']);
     expect(
         ids(buildCommandMenu({ query: '', commands, subject: SELECTION, repository: null, navigation: NOTHING })),
-    ).toEqual(['selection.assignees', 'app.sidebar']);
+    ).toEqual(['selection.assignees', 'view.board']);
     expect(
         ids(buildCommandMenu({ query: '', commands, subject: null, repository: null, navigation: NOTHING })),
-    ).toEqual(['app.sidebar']);
+    ).toEqual(['view.board']);
 });
 
 test('D14: of one group the higher priority is listed first; typing, the match decides and priority breaks ties', () => {
@@ -251,7 +253,7 @@ test('E4: a long list of options finds its first hits only', () => {
     ).toEqual(['view.add:0', 'view.add:1', 'view.add:2']);
 });
 
-test('nothing typed lists every action and place in the fixed order, unmarked', () => {
+test('nothing typed lists the actions in context and the places to go in the fixed order, unmarked', () => {
     const menu = buildCommandMenu({
         query: '',
         commands: [SIDEBAR, STATUS],
@@ -263,7 +265,7 @@ test('nothing typed lists every action and place in the fixed order, unmarked', 
         },
     });
 
-    expect(menu.map(group => group.key)).toEqual(['subject', 'goTo', 'app']);
+    expect(menu.map(group => group.key)).toEqual(['subject', 'goTo']);
     for (const entry of menu.flatMap(group => group.entries)) {
         expect(
             entry.kind === 'navigation' && entry.result.kind !== 'repository' ? entry.result.match : null,
@@ -353,10 +355,10 @@ test('a repository action is offered only with a repository, under its own group
         navigation: { ...NOTHING, places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'My work', path: '/' }] },
     });
 
-    expect(menu.map(group => group.key)).toEqual(['repository', 'goTo', 'app']);
-    expect(ids(menu)).toEqual(['repository.pullRequests', 'place:x', 'app.sidebar']);
+    expect(menu.map(group => group.key)).toEqual(['repository', 'goTo']);
+    expect(ids(menu)).toEqual(['repository.pullRequests', 'place:x']);
     expect(
-        ids(buildCommandMenu({ query: '', commands, subject: ITEM, repository: null, navigation: NOTHING })),
+        ids(buildCommandMenu({ query: '>', commands, subject: ITEM, repository: null, navigation: NOTHING })),
     ).toEqual(['app.sidebar']);
 });
 
@@ -729,7 +731,7 @@ test("mobile D17: the place's parts lead the top while nothing is typed, out of 
     };
 
     const menu = build(params);
-    expect(menu.map(group => group.key)).toEqual(['parts', 'repository', 'goTo', 'app']);
+    expect(menu.map(group => group.key)).toEqual(['parts', 'repository', 'goTo']);
     expect(menu[0]?.entries.map(entry => entry.id)).toEqual([
         'repository.goToSection.3',
         'repository.goToSection.1',
@@ -741,9 +743,47 @@ test("mobile D17: the place's parts lead the top while nothing is typed, out of 
         'place:myWork:assigned',
         'repository.copyLink',
         'place:settings',
-        'app.sidebar',
     ]);
     expect(build({ ...params, query: 'issues' }).map(group => group.key)).toEqual(['repository']);
+});
+
+test('E13: nothing typed leaves out the repositories, the projects and the app\'s actions; "Go to" ends with their levels', () => {
+    const menu = build({ commands: [SIDEBAR], navigation: trackedWork() });
+
+    expect(menu.map(group => group.key)).toEqual(['goTo']);
+    expect(ids(menu)).toEqual(['place:settings', 'place:repositories', 'place:projects']);
+    expect(findEntry(menu, 'place:repositories')?.path).toEqual(['place:repositories']);
+});
+
+test("githq D36: with nothing typed the app's actions are listed only when the app offers them now", () => {
+    const restart: Command = { id: 'app.restart', title: 'Restart to update', section: 'app', proposed: true };
+
+    expect(ids(build({ commands: [SIDEBAR, restart] }))).toEqual(['app.restart']);
+    expect(ids(build({ query: 'collapse', commands: [SIDEBAR, restart] }))).toEqual(['app.sidebar']);
+});
+
+test('typing still finds a repository, a project and an app action, each once, and the levels by their names', () => {
+    const found = (query: string) => ids(build({ query, commands: [SIDEBAR], navigation: trackedWork() }));
+
+    expect(found('acme/web')).toEqual(['place:repository:acme/web']);
+    expect(found('platform')).toEqual(['place:project:platform']);
+    expect(found('collapse side')).toEqual(['app.sidebar']);
+    expect(found('repos')).toEqual(['place:repositories']);
+    // Named, the level gives its rows as any place does.
+    expect(found('repositories web')).toEqual(['place:repositories/repository:acme/web']);
+});
+
+test('E14: a level of places resolves to its rows with its placeholder, and a row to its own children', () => {
+    const [level, repository] = resolveMenuPath({
+        path: ['place:repositories', 'place:repositories/repository:acme/web'],
+        commands: [],
+        navigation: trackedWork(),
+    });
+
+    expect(level?.rows.map(row => row.id)).toEqual(['repository:acme/api', 'repository:acme/web']);
+    expect(level?.placeholder).toBe('Filter repositories…');
+    expect(repository?.title).toBe('acme/web');
+    expect(repository?.rows).toEqual([REPOSITORY_ROW]);
 });
 
 function build(params: Partial<BuildCommandMenuParams>) {
@@ -779,4 +819,51 @@ function repositoryPlace(name: string): NavigationPlace {
         children: () => [REPOSITORY_ROW],
         foundAlone: () => [],
     };
+}
+
+/** Tracked work as `AppCommands` gives it: Settings, the levels of the repositories and the projects, and the places they hold. */
+function trackedWork(): NavigationData {
+    const repositories = [repositoryPlace('acme/api'), repositoryPlace('acme/web')];
+    const projects: NavigationPlace[] = [
+        { id: 'project:platform', group: 'projects', kind: 'project', title: 'Platform Q4', path: '/p/1' },
+    ];
+    return {
+        ...NOTHING,
+        trackedRepositories: ['acme/api', 'acme/web'],
+        places: [
+            SETTINGS,
+            {
+                id: 'repositories',
+                group: 'goTo',
+                kind: 'repositories',
+                title: 'Repositories…',
+                count: repositories.length,
+                placeholder: 'Filter repositories…',
+                children: () => repositories.map(toRow),
+                foundAlone: () => [],
+            },
+            {
+                id: 'projects',
+                group: 'goTo',
+                kind: 'projects',
+                title: 'Projects…',
+                count: projects.length,
+                children: () => projects.map(toRow),
+                foundAlone: () => [],
+            },
+            ...projects,
+            ...repositories,
+        ],
+    };
+
+    function toRow(tracked: NavigationPlace): Command {
+        return {
+            id: tracked.id,
+            title: tracked.title,
+            section: 'app',
+            run: () => undefined,
+            children: tracked.children,
+            foundAlone: tracked.foundAlone,
+        };
+    }
 }

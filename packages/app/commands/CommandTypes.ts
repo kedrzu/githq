@@ -164,6 +164,12 @@ export interface Command extends CommandMarks {
     /** `false`: run by its key and listed in the help, never offered in the menu. */
     readonly menu?: boolean;
     /**
+     * What the app offers now (githq D36: an update ready, a run just started): an action of the `app` section listed in the
+     * menu's top with nothing typed, where the app's other actions are found only by typing. It is registered only while it
+     * applies.
+     */
+    readonly proposed?: true;
+    /**
      * Why it can't run here ("CLA has no workflow_dispatch trigger", W48): the menu shows it dimmed with this reason and
      * "can't run", and nothing runs or opens from it — its key neither.
      */

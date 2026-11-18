@@ -355,7 +355,7 @@ const Harness = defineComponent({
         function navigate(result: NavigationResult) {
             switch (result.kind) {
                 case 'place':
-                    went.value = result.place.path;
+                    went.value = result.place.path ?? result.place.title;
                     break;
                 case 'item':
                     went.value = `${result.item.repository.nameWithOwner}#${result.item.number}`;
@@ -746,40 +746,53 @@ function selectedIssue(
 function createLevelNavigation(say: (text: string) => void): NavigationData {
     return {
         ...NAVIGATION,
-        places: NAVIGATION.places.map(place => {
-            switch (place.id) {
-                case 'repository:portal':
-                    return {
-                        ...place,
-                        children: () => [
-                            levelRow('pulls', 'Pull requests', say),
-                            {
-                                ...levelRow('workflows', 'Workflows', say),
-                                children: () => [
-                                    levelRow('deploy', 'Deploy', say),
-                                    levelRow('nightly', 'Nightly', say),
-                                ],
-                            },
-                        ],
-                        foundAlone: () => [],
-                    };
-                case 'project:q4':
-                    return {
-                        ...place,
-                        children: () => [
-                            levelRow('board', 'Board', say),
-                            {
-                                id: 'iterations',
-                                title: 'Iterations',
-                                section: 'app',
-                                children: () => [levelRow('current', 'Current iteration', say)],
-                            },
-                        ],
-                    };
-                default:
-                    return place;
-            }
-        }),
+        places: [
+            ...NAVIGATION.places.map((place): NavigationPlace => {
+                switch (place.id) {
+                    case 'repository:portal':
+                        return {
+                            ...place,
+                            children: () => [
+                                levelRow('pulls', 'Pull requests', say),
+                                {
+                                    ...levelRow('workflows', 'Workflows', say),
+                                    children: () => [
+                                        levelRow('deploy', 'Deploy', say),
+                                        levelRow('nightly', 'Nightly', say),
+                                    ],
+                                },
+                            ],
+                            foundAlone: () => [],
+                        };
+                    case 'project:q4':
+                        return {
+                            ...place,
+                            children: () => [
+                                levelRow('board', 'Board', say),
+                                {
+                                    id: 'iterations',
+                                    title: 'Iterations',
+                                    section: 'app',
+                                    children: () => [levelRow('current', 'Current iteration', say)],
+                                },
+                            ],
+                        };
+                    default:
+                        return place;
+                }
+            }),
+            // E13: a place that is only a level, Enter opening it.
+            {
+                id: 'repositories',
+                group: 'goTo',
+                kind: 'repositories',
+                title: 'Repositories…',
+                count: 1,
+                placeholder: 'Filter repositories…',
+                children: () => [levelRow('repository:portal', 'skyline-labs/portal', say)],
+                foundAlone: () => [],
+            },
+        ],
         repositoryChildren: nameWithOwner => [levelRow('pulls', `Pull requests of ${nameWithOwner}`, say)],
     };
 }

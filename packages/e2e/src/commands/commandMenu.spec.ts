@@ -35,6 +35,50 @@ test('⌘K jumps to an item found by its title in the local copy, and to a proje
     await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
 });
 
+test('E13, E14: the empty ⌘K lists no tracked repository but "Repositories…", whose level lists them alphabetically, narrows as typed, steps back on ← and goes to one on Enter', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    const { login } = SAMPLE_VIEWER.viewer;
+    world.repository(`${login}/web`);
+    world.repository(`${login}/api`);
+    await openTrackedWork(page, github, world);
+    const menu = new CommandMenuHarness(page);
+    const top = menu.root.getByRole('listbox', { name: 'Command menu' });
+    const level = menu.root.getByRole('listbox', { name: 'Repositories…' });
+
+    await menu.open();
+    await expect(menu.option(/^Repositories…\s*3$/u)).toBeVisible();
+    await expect(menu.option(/^Projects…/u)).toBeVisible();
+    await expect(menu.option(new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'))).toHaveCount(0);
+    await expect(menu.option(new RegExp(`^${SAMPLE_PROJECT}`, 'u'))).toHaveCount(0);
+
+    // The last two lines: ↑ from the first wraps to "Projects…", then "Repositories…".
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Tab');
+    await expect(level.getByRole('option')).toHaveText([
+        new RegExp(`^${login}/api`, 'u'),
+        new RegExp(`^${login}/app`, 'u'),
+        new RegExp(`^${login}/web`, 'u'),
+    ]);
+    await expect(menu.field).toHaveAttribute('placeholder', 'Filter repositories…');
+
+    await page.keyboard.press('ArrowLeft');
+    await expect(top).toBeVisible();
+    await expect(menu.option(/^Repositories…/u)).toBeVisible();
+
+    await menu.field.pressSequentially('repositories');
+    await page.keyboard.press('Enter');
+    await expect(level).toBeVisible();
+    await menu.field.pressSequentially('web');
+    await expect(level.getByRole('option')).toHaveText([new RegExp(`^${login}/web`, 'u')]);
+    await page.keyboard.press('Enter');
+    await expect(menu.root).toBeHidden();
+    await expect(page).toHaveURL(new RegExp(`^[^?]*/${login}/web`, 'u'));
+});
+
 test('⌘K sets the Status of two selected items at once, by typing the value', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     const shell = await openTrackedWork(page, github, sample.world);

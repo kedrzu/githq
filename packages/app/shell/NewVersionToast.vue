@@ -20,7 +20,14 @@ const t = useTranslate();
 const commands: BoundCommand[] = [
   bindCommand(
     loadNewVersion,
-    { place: 'app', title: t(l.reloadCommand), section: 'app', icon: RotateCw, run: () => version.reload() },
+    {
+      place: 'app',
+      title: t(l.reloadCommand),
+      section: 'app',
+      proposed: true,
+      icon: RotateCw,
+      run: () => version.reload(),
+    },
     t,
   ),
 ];
