@@ -4,6 +4,9 @@ export const REPOSITORY_URL = 'https://github.com/kedrzu/githq';
 /** Why githq asks for what it does — the design's "What githq keeps in your browser", until a page of its own. */
 export const WHY_URL = `${REPOSITORY_URL}/blob/main/docs/design/githq/README.md#what-githq-keeps-in-your-browser`;
 
+/** The footer's "Code signing policy": the README's section, which SignPath Foundation wants linked from the home and download pages. */
+export const CODE_SIGNING_POLICY_URL = `${REPOSITORY_URL}#code-signing-policy`;
+
 /** The footer's "Issues": githq's own tracker. */
 export const ISSUES_URL = `${REPOSITORY_URL}/issues`;
 

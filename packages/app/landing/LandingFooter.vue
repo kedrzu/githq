@@ -1,4 +1,4 @@
-<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections, the docs (`/docs/`), `/download` and "Sign in", to the project on GitHub and to how githq works, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
+<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections, the docs (`/docs/`), `/download` and "Sign in", to the project on GitHub, to how githq works and its code signing policy, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -13,6 +13,7 @@ import { DOWNLOAD_PATH } from './desktopBuilds.js';
 import * as l from './LandingFooter.loc.js';
 import {
   API_LIMITS_URL,
+  CODE_SIGNING_POLICY_URL,
   DESIGN_DOCS_URL,
   DOCS_PATH,
   ISSUES_URL,
@@ -63,6 +64,7 @@ const resources: FooterLink[] = [
   { label: l.howSyncWorks, href: SYNC_URL },
   { label: l.apiLimits, href: API_LIMITS_URL },
   { label: l.privacy, href: WHY_URL },
+  { label: l.codeSigningPolicy, href: CODE_SIGNING_POLICY_URL },
 ];
 // The columns of links out to GitHub; "Product" is its own, for "Sign in".
 const outside = [

@@ -141485,291 +141485,10 @@
           ]
         },
         {
-          "type": "frame",
-          "id": "jPtzV",
-          "name": "Footer",
-          "width": "fill_container",
-          "stroke": "$border",
-          "strokeWidth": {
-            "top": 1
-          },
-          "layout": "vertical",
-          "gap": 56,
-          "padding": [
-            64,
-            120,
-            48,
-            120
-          ],
-          "children": [
-            {
-              "type": "frame",
-              "id": "qjEGu",
-              "name": "Top",
-              "width": "fill_container",
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "R3EVM7",
-                  "name": "Brand",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "id": "X5mHaX",
-                      "type": "ref",
-                      "ref": "Jdpz4",
-                      "name": "Wordmark"
-                    },
-                    {
-                      "type": "text",
-                      "id": "T5vvC",
-                      "name": "Tagline",
-                      "fill": "$fg-dim",
-                      "content": "All your repositories in one place.",
-                      "fontFamily": "Inter",
-                      "fontSize": 14,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "hBrnH",
-                  "name": "Columns",
-                  "gap": 96,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "jwBw8",
-                      "name": "Product",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Zik7Y",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Product",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "v4W0Z",
-                          "name": "Features",
-                          "fill": "$fg-2",
-                          "content": "Features",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "cC94u",
-                          "name": "Keyboard",
-                          "fill": "$fg-2",
-                          "content": "Keyboard",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "ASTdW",
-                          "name": "Download the app",
-                          "fill": "$fg-2",
-                          "content": "Download the app",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "keb35",
-                          "name": "Sign in",
-                          "fill": "$fg-2",
-                          "content": "Sign in",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Om2gv",
-                      "name": "Project",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "ddMjk",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Project",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "KJiZv",
-                          "name": "GitHub",
-                          "fill": "$fg-2",
-                          "content": "GitHub",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "qSvgX",
-                          "name": "Issues",
-                          "fill": "$fg-2",
-                          "content": "Issues",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "y5rXP",
-                          "name": "Design docs",
-                          "fill": "$fg-2",
-                          "content": "Design docs",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "Ogu1X",
-                          "name": "Releases",
-                          "fill": "$fg-2",
-                          "content": "Releases",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "UXTV0",
-                      "name": "Resources",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "M3KUX",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Resources",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "PlxZA",
-                          "name": "How sync works",
-                          "fill": "$fg-2",
-                          "content": "How sync works",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "DxTCi",
-                          "name": "API limits",
-                          "fill": "$fg-2",
-                          "content": "API limits",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "Zozbg",
-                          "name": "Privacy",
-                          "fill": "$fg-2",
-                          "content": "Privacy",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "rFh8t",
-              "name": "Bottom",
-              "width": "fill_container",
-              "stroke": "$border",
-              "strokeWidth": {
-                "top": 1
-              },
-              "padding": [
-                24,
-                0,
-                0,
-                0
-              ],
-              "justifyContent": "space_between",
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "ZaXTV",
-                  "name": "Legal",
-                  "fill": "$fg-dim",
-                  "content": "© 2026 githq · Not affiliated with GitHub, Inc.",
-                  "fontFamily": "Inter",
-                  "fontSize": 13,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "frame",
-                  "id": "xTu8q",
-                  "name": "Social",
-                  "gap": 18,
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "v2LUgx",
-                      "name": "github",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "github",
-                      "library": "lucide",
-                      "fill": "$fg-3"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "jDKdV",
-                      "name": "rss",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "rss",
-                      "library": "lucide",
-                      "fill": "$fg-3"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "id": "J9olfl",
+          "type": "ref",
+          "ref": "AEV5m",
+          "name": "Footer"
         }
       ]
     },
@@ -149889,295 +149608,10 @@
           ]
         },
         {
-          "type": "frame",
-          "id": "yiS37",
-          "name": "Footer",
-          "width": "fill_container",
-          "stroke": "$border",
-          "strokeWidth": {
-            "top": 1
-          },
-          "layout": "vertical",
-          "gap": 40,
-          "padding": [
-            48,
-            20,
-            32,
-            20
-          ],
-          "children": [
-            {
-              "type": "frame",
-              "id": "EtxIp",
-              "name": "Top",
-              "width": "fill_container",
-              "layout": "vertical",
-              "gap": 36,
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "k7NpXq",
-                  "name": "Brand",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "id": "PK8Y1",
-                      "type": "ref",
-                      "ref": "Jdpz4",
-                      "name": "Wordmark"
-                    },
-                    {
-                      "type": "text",
-                      "id": "VDaGJ",
-                      "name": "Tagline",
-                      "fill": "$fg-dim",
-                      "content": "All your repositories in one place.",
-                      "fontFamily": "Inter",
-                      "fontSize": 14,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "AerGW",
-                  "name": "Columns",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "f27PX",
-                      "name": "Product",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "P5GpLF",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Product",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "J1qAn9",
-                          "name": "Features",
-                          "fill": "$fg-2",
-                          "content": "Features",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "TmzbG",
-                          "name": "Keyboard",
-                          "fill": "$fg-2",
-                          "content": "Keyboard",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "bjX9c",
-                          "name": "Download the app",
-                          "fill": "$fg-2",
-                          "content": "Download the app",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "Qpkyx",
-                          "name": "Sign in",
-                          "fill": "$fg-2",
-                          "content": "Sign in",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Cu82T",
-                      "name": "Project",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "jUXZY",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Project",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "FaJOB",
-                          "name": "GitHub",
-                          "fill": "$fg-2",
-                          "content": "GitHub",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "cXg22",
-                          "name": "Issues",
-                          "fill": "$fg-2",
-                          "content": "Issues",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "F9j9s",
-                          "name": "Design docs",
-                          "fill": "$fg-2",
-                          "content": "Design docs",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "hHYKu",
-                          "name": "Releases",
-                          "fill": "$fg-2",
-                          "content": "Releases",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ePSHv",
-                      "name": "Resources",
-                      "layout": "vertical",
-                      "gap": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "gLQsR",
-                          "name": "Heading",
-                          "fill": "$fg",
-                          "content": "Resources",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "wfZkQ",
-                          "name": "How sync works",
-                          "fill": "$fg-2",
-                          "content": "How sync works",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "J0Vy2",
-                          "name": "API limits",
-                          "fill": "$fg-2",
-                          "content": "API limits",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "u3zGj",
-                          "name": "Privacy",
-                          "fill": "$fg-2",
-                          "content": "Privacy",
-                          "fontFamily": "Inter",
-                          "fontSize": 14,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "D1UzQP",
-              "name": "Bottom",
-              "width": "fill_container",
-              "stroke": "$border",
-              "strokeWidth": {
-                "top": 1
-              },
-              "layout": "vertical",
-              "gap": 16,
-              "padding": [
-                24,
-                0,
-                0,
-                0
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "X9OOdD",
-                  "name": "Legal",
-                  "fill": "$fg-dim",
-                  "content": "© 2026 githq · Not affiliated with GitHub, Inc.",
-                  "fontFamily": "Inter",
-                  "fontSize": 13,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "frame",
-                  "id": "FqJM8",
-                  "name": "Social",
-                  "gap": 18,
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "S2HxD2",
-                      "name": "github",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "github",
-                      "library": "lucide",
-                      "fill": "$fg-3"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "jtBux",
-                      "name": "rss",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "rss",
-                      "library": "lucide",
-                      "fill": "$fg-3"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "id": "e6jOzH",
+          "type": "ref",
+          "ref": "GxJaR",
+          "name": "Footer"
         }
       ]
     },
@@ -433626,6 +433060,615 @@
                   "height": 24
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "HnJop",
+              "name": "Row · Footer",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AEV5m",
+                  "name": "Landing / Footer",
+                  "reusable": true,
+                  "width": 1440,
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 56,
+                  "padding": [
+                    64,
+                    120,
+                    48,
+                    120
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yss8o",
+                      "name": "Top",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "d2dAjG",
+                          "name": "Brand",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "id": "n7tLWl",
+                              "type": "ref",
+                              "ref": "Jdpz4",
+                              "name": "Wordmark"
+                            },
+                            {
+                              "type": "text",
+                              "id": "gCcBn",
+                              "name": "Tagline",
+                              "fill": "$fg-dim",
+                              "content": "All your repositories in one place.",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xZbWx",
+                          "name": "Columns",
+                          "gap": 96,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "KsedY",
+                              "name": "Product",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TQ2uI",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Product",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wuiwp",
+                                  "name": "Features",
+                                  "fill": "$fg-2",
+                                  "content": "Features",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "iLft5",
+                                  "name": "Keyboard",
+                                  "fill": "$fg-2",
+                                  "content": "Keyboard",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bXe2T",
+                                  "name": "Download the app",
+                                  "fill": "$fg-2",
+                                  "content": "Download the app",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "LpAl0",
+                                  "name": "Sign in",
+                                  "fill": "$fg-2",
+                                  "content": "Sign in",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JlWCB",
+                              "name": "Project",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZUeU7",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Project",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "OP94B",
+                                  "name": "GitHub",
+                                  "fill": "$fg-2",
+                                  "content": "GitHub",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "v601f7",
+                                  "name": "Issues",
+                                  "fill": "$fg-2",
+                                  "content": "Issues",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ix3Ap",
+                                  "name": "Design docs",
+                                  "fill": "$fg-2",
+                                  "content": "Design docs",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Cgk2y",
+                                  "name": "Releases",
+                                  "fill": "$fg-2",
+                                  "content": "Releases",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Vh6j5",
+                              "name": "Resources",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "O2kzs",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Resources",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "qNCCx",
+                                  "name": "How sync works",
+                                  "fill": "$fg-2",
+                                  "content": "How sync works",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wIw0B",
+                                  "name": "API limits",
+                                  "fill": "$fg-2",
+                                  "content": "API limits",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "M1w39N",
+                                  "name": "Privacy",
+                                  "fill": "$fg-2",
+                                  "content": "Privacy",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cOc40",
+                                  "name": "Code signing policy",
+                                  "fill": "$fg-2",
+                                  "content": "Code signing policy",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JbLu5",
+                      "name": "Bottom",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "padding": [
+                        24,
+                        0,
+                        0,
+                        0
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pslc1",
+                          "name": "Legal",
+                          "fill": "$fg-dim",
+                          "content": "© 2026 githq · Not affiliated with GitHub, Inc.",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nuP13",
+                          "name": "Social",
+                          "gap": 18,
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "lTccH",
+                              "name": "github",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "github",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "CoXlV",
+                              "name": "rss",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "rss",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GxJaR",
+                  "name": "Landing / Footer · mobile",
+                  "reusable": true,
+                  "width": 390,
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 40,
+                  "padding": [
+                    48,
+                    20,
+                    32,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LrO1r",
+                      "name": "Top",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 36,
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "OUs1I",
+                          "name": "Brand",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "id": "FqUC3",
+                              "type": "ref",
+                              "ref": "Jdpz4",
+                              "name": "Wordmark"
+                            },
+                            {
+                              "type": "text",
+                              "id": "vovAX",
+                              "name": "Tagline",
+                              "fill": "$fg-dim",
+                              "content": "All your repositories in one place.",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "q1Z1PQ",
+                          "name": "Columns",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "L6VFU",
+                              "name": "Product",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "QMSbf",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Product",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "r98zv",
+                                  "name": "Features",
+                                  "fill": "$fg-2",
+                                  "content": "Features",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "lbhdT",
+                                  "name": "Keyboard",
+                                  "fill": "$fg-2",
+                                  "content": "Keyboard",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "l7UrFu",
+                                  "name": "Download the app",
+                                  "fill": "$fg-2",
+                                  "content": "Download the app",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ToeUd",
+                                  "name": "Sign in",
+                                  "fill": "$fg-2",
+                                  "content": "Sign in",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t50Wc",
+                              "name": "Project",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "G6Tuk",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Project",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "K3jtRk",
+                                  "name": "GitHub",
+                                  "fill": "$fg-2",
+                                  "content": "GitHub",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "St5io",
+                                  "name": "Issues",
+                                  "fill": "$fg-2",
+                                  "content": "Issues",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ui23Q",
+                                  "name": "Design docs",
+                                  "fill": "$fg-2",
+                                  "content": "Design docs",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZAme7",
+                                  "name": "Releases",
+                                  "fill": "$fg-2",
+                                  "content": "Releases",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EwpPJ",
+                              "name": "Resources",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "kV7Rg",
+                                  "name": "Heading",
+                                  "fill": "$fg",
+                                  "content": "Resources",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "e2tGA",
+                                  "name": "How sync works",
+                                  "fill": "$fg-2",
+                                  "content": "How sync works",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BmnX3",
+                                  "name": "API limits",
+                                  "fill": "$fg-2",
+                                  "content": "API limits",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BI84A",
+                                  "name": "Privacy",
+                                  "fill": "$fg-2",
+                                  "content": "Privacy",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "z4lQm",
+                                  "name": "Code signing policy",
+                                  "fill": "$fg-2",
+                                  "content": "Code signing policy",
+                                  "fontFamily": "Inter",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RsMFb",
+                      "name": "Bottom",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        24,
+                        0,
+                        0,
+                        0
+                      ],
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YURvq",
+                          "name": "Legal",
+                          "fill": "$fg-dim",
+                          "content": "© 2026 githq · Not affiliated with GitHub, Inc.",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "A9XkDU",
+                          "name": "Social",
+                          "gap": 18,
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "X7pJm",
+                              "name": "github",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "github",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "tIOBb",
+                              "name": "rss",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "rss",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -434003,6 +434046,12 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "id": "Weopg",
+                      "type": "ref",
+                      "ref": "AEV5m",
+                      "name": "Footer"
                     }
                   ]
                 }
@@ -434389,6 +434438,12 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "id": "i2POJP",
+                      "type": "ref",
+                      "ref": "GxJaR",
+                      "name": "Footer"
                     }
                   ]
                 }
@@ -434532,6 +434587,12 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "id": "cgXAv",
+                      "type": "ref",
+                      "ref": "AEV5m",
+                      "name": "Footer"
                     }
                   ]
                 }
