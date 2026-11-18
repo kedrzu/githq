@@ -329,3 +329,30 @@ async function expectDocsStart(tab: Page) {
     await expect(tab.getByRole('heading', { level: 1 })).toHaveText('What is githq');
     await tab.close();
 }
+
+test('the command menu is at most 480px tall on a desktop, less on a short window, its rows scrolling; a phone’s sheet is not held to it', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const listbox = menu.root.getByRole('listbox');
+
+    await menu.open();
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(480);
+    // The rows scroll inside it, the field above them still in view.
+    expect(await listbox.evaluate(list => list.scrollHeight > list.clientHeight)).toBe(true);
+    await expect(menu.field).toBeInViewport();
+
+    // A short window caps it lower: 78% of its height.
+    await page.setViewportSize({ width: 1440, height: 500 });
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeLessThanOrEqual(0.78 * 500 + 1);
+
+    // A phone's sheet rises from below as tall as its rows, up to the window, not 480.
+    await page.keyboard.press('Escape');
+    await expect(menu.root).toBeHidden();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: /Do or find…/u }).click();
+    await expect.poll(async () => (await menu.root.boundingBox())?.height).toBeGreaterThan(480);
+});
