@@ -5398,7 +5398,7 @@
                                   "id": "lsKaS",
                                   "name": "Merge label",
                                   "fill": "$fg",
-                                  "content": "Merge…",
+                                  "content": "Merge pull request",
                                   "fontFamily": "$font",
                                   "fontSize": 12.5,
                                   "fontWeight": "500"
@@ -5836,8 +5836,11 @@
                             {
                               "type": "frame",
                               "id": "jOqHL",
+                              "x": 229,
+                              "y": 7,
                               "name": "spacer",
-                              "width": "fill_container",
+                              "enabled": false,
+                              "width": "fill_container(84)",
                               "height": 1
                             },
                             {
@@ -6234,6 +6237,9 @@
                           "descendants": {
                             "CowyG": {
                               "enabled": false
+                            },
+                            "lsKaS": {
+                              "content": "Merge"
                             },
                             "iICyO": {
                               "enabled": false
@@ -44097,7 +44103,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "The PR item view: the same sections and container modes as an issue, plus merge status, reviews, checks, branches and size. “Merge…” (⇧M) opens the merge panel (next frame, “App · Merging a pull request”). githq doesn't show diffs: ⇧O opens “Files changed” on GitHub for code review.",
+              "content": "The PR item view: the same sections and container modes as an issue, plus merge status, reviews, checks, branches and size. “Merge pull request” (⇧M) opens the merge panel (next frame, “App · Merging a pull request”). githq doesn't show diffs: ⇧O opens “Files changed” on GitHub for code review.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -47428,7 +47434,7 @@
                           "fill": "$red"
                         },
                         "pSlRN": {
-                          "content": "Delete…",
+                          "content": "Delete",
                           "fill": "$red"
                         }
                       }
@@ -50034,7 +50040,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Ready: the verdict turns green and “Merge…” (⇧M) becomes the one prominent action. It opens the merge panel; “Open on GitHub” (O) stays beside it.",
+                      "content": "Ready: the verdict turns green and “Merge pull request” (⇧M) becomes the one prominent action. It opens the merge panel; “Open on GitHub” (O) stays beside it.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -56554,7 +56560,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A review is one card: the reviewer's avatar in the gutter, the verdict in its head (approved green, changes requested red, “reviewed” for comments only), the summary, then its code threads. Without a summary the card holds just the threads; with no summary and a single thread GitHub can't tell it from a comment posted on its own, so it reads as a code comment. A dismissed review folds to its head, “Show review” opens it, and the dismissal follows as an event. Your own pending review sits at the end of the thread, above the composer, with the same band as in code review (“Submit review…” ⇧S, “Others can't see them until you submit.”) and its dialogs; nobody else sees it. A thread whose lines changed since says “Outdated” and keeps the old lines; unresolved it stays open, resolved it folds like any other.",
+                      "content": "A review is one card: the reviewer's avatar in the gutter, the verdict in its head (approved green, changes requested red, “reviewed” for comments only), the summary, then its code threads. Without a summary the card holds just the threads; with no summary and a single thread GitHub can't tell it from a comment posted on its own, so it reads as a code comment. A dismissed review folds to its head, “Show review” opens it, and the dismissal follows as an event. Your own pending review sits at the end of the thread, above the composer, with the same band as in code review (“Submit review” ⇧S, “Others can't see them until you submit.”) and its dialogs; nobody else sees it. A thread whose lines changed since says “Outdated” and keeps the old lines; unresolved it stays open, resolved it folds like any other.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -56836,7 +56842,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "⋯ in a comment's head (or right-clicking the card outside its text — on the text itself the browser's menu stays, as everywhere GitHub's rendering shows) opens its menu: Edit, Quote reply, Copy link, Delete…. Edit turns the card into the editor where it stands, with its text: Cancel (Esc) puts the card back unchanged, or, once the text was changed, first asks in the footer: Keep editing (Esc) or Discard (↵); J / K, opening another item or closing it ask the same, and Discard then goes where you were going; an unchanged edit closes without a question, Update comment (⌘↵; Update description on the description) saves it, and the head then says “· edited”; if GitHub refuses, a toast says so and the editor opens again with your text. Quote reply puts the text, quoted, into the composer at the end and scrolls there. Copy link copies the comment's github.com link, quietly, as everywhere in githq. Delete… asks once, since GitHub keeps no copy. Edit and Delete are offered on your own comments, and on anyone's where you can write to the repository; otherwise the menu has Quote reply and Copy link. The description card has the same menu, without Delete.",
+                      "content": "⋯ in a comment's head (or right-clicking the card outside its text — on the text itself the browser's menu stays, as everywhere GitHub's rendering shows) opens its menu: Edit, Quote reply, Copy link, Delete. Edit turns the card into the editor where it stands, with its text: Cancel (Esc) puts the card back unchanged, or, once the text was changed, first asks in the footer: Keep editing (Esc) or Discard (↵); J / K, opening another item or closing it ask the same, and Discard then goes where you were going; an unchanged edit closes without a question, Update comment (⌘↵; Update description on the description) saves it, and the head then says “· edited”; if GitHub refuses, a toast says so and the editor opens again with your text. Quote reply puts the text, quoted, into the composer at the end and scrolls there. Copy link copies the comment's github.com link, quietly, as everywhere in githq. Delete asks once, since GitHub keeps no copy. Edit and Delete are offered on your own comments, and on anyone's where you can write to the repository; otherwise the menu has Quote reply and Copy link. The description card has the same menu, without Delete.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -62706,7 +62712,7 @@
                                 {
                                   "type": "frame",
                                   "id": "kLH8s",
-                                  "name": "Submit your review…",
+                                  "name": "Submit your review",
                                   "width": "fill_container",
                                   "gap": 10,
                                   "alignItems": "center",
@@ -62736,7 +62742,7 @@
                                       "id": "MvVAW",
                                       "name": "Label",
                                       "fill": "$fg-2",
-                                      "content": "Submit your review…",
+                                      "content": "Submit your review",
                                       "fontFamily": "$font",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
@@ -64264,7 +64270,7 @@
                         {
                           "type": "frame",
                           "id": "ohKIj",
-                          "name": "Result Set status…",
+                          "name": "Result Set status",
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
@@ -64292,7 +64298,7 @@
                               "id": "R1Mdn",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Set status…",
+                              "content": "Set status",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64335,7 +64341,7 @@
                         {
                           "type": "frame",
                           "id": "Vgbjl",
-                          "name": "Result Set priority…",
+                          "name": "Result Set priority",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -64360,7 +64366,7 @@
                               "id": "xp2q0",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Set priority…",
+                              "content": "Set priority",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64408,7 +64414,7 @@
                         {
                           "type": "frame",
                           "id": "m9TnHK",
-                          "name": "Result Set iteration…",
+                          "name": "Result Set iteration",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -64433,7 +64439,7 @@
                               "id": "U6Zsip",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Set iteration…",
+                              "content": "Set iteration",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64481,7 +64487,7 @@
                         {
                           "type": "frame",
                           "id": "R3weHd",
-                          "name": "Result Assign to…",
+                          "name": "Result Assign",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -64506,7 +64512,7 @@
                               "id": "JQ8Sw",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Assign to…",
+                              "content": "Assign",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64544,7 +64550,7 @@
                         {
                           "type": "frame",
                           "id": "qM9Zg",
-                          "name": "Result Add or remove labels…",
+                          "name": "Result Add or remove labels",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -64569,7 +64575,7 @@
                               "id": "DxBdx",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Add or remove labels…",
+                              "content": "Add or remove labels",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64660,7 +64666,7 @@
                         {
                           "type": "frame",
                           "id": "b53Plc",
-                          "name": "Result Close issue…",
+                          "name": "Result Close issue",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -64685,7 +64691,7 @@
                               "id": "E6rLyH",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Close issue…",
+                              "content": "Close issue",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -64997,7 +65003,7 @@
                         {
                           "type": "frame",
                           "id": "KukBY",
-                          "name": "Result Group by…",
+                          "name": "Result Group by",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -65022,7 +65028,7 @@
                               "id": "wWgIn",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Group by…",
+                              "content": "Group by",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -66287,7 +66293,7 @@
                         {
                           "type": "frame",
                           "id": "NvMj0",
-                          "name": "Result Add to another project…",
+                          "name": "Result Add to another project",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -66312,7 +66318,7 @@
                               "id": "c9BDpb",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Add to another project…",
+                              "content": "Add to another project",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -69391,7 +69397,7 @@
                         {
                           "type": "frame",
                           "id": "an23x",
-                          "name": "Result Set status…",
+                          "name": "Result Set status",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -69416,7 +69422,7 @@
                               "id": "CA9rm",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Set status…",
+                              "content": "Set status",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -69449,7 +69455,7 @@
                         {
                           "type": "frame",
                           "id": "bCUmv",
-                          "name": "Result Assign to…",
+                          "name": "Result Assign",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -69474,7 +69480,7 @@
                               "id": "UKCYL",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Assign to…",
+                              "content": "Assign",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -69512,7 +69518,7 @@
                         {
                           "type": "frame",
                           "id": "s0n3H",
-                          "name": "Result Add labels…",
+                          "name": "Result Add labels",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -69537,7 +69543,7 @@
                               "id": "y784D",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Add labels…",
+                              "content": "Add labels",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -69585,7 +69591,7 @@
                         {
                           "type": "frame",
                           "id": "Whw5l",
-                          "name": "Result Close 3 issues…",
+                          "name": "Result Close 3 issues",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -69610,7 +69616,7 @@
                               "id": "p9nrd",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Close 3 issues…",
+                              "content": "Close 3 issues",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -70668,7 +70674,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "\"Search repositories…\" is a command like any other, and its submenu is the only place the menu asks GitHub: it sends what is typed, once typing pauses and from two characters, to GitHub's repository search, as github.com's search does. Public repositories and the private ones the user can see. Enter opens the repository's screen (J5). The top level goes on matching only what is kept here. Decision: D34.",
+              "content": "\"Search repositories\" is a command like any other, and its submenu is the only place the menu asks GitHub: it sends what is typed, once typing pauses and from two characters, to GitHub's repository search, as github.com's search does. Public repositories and the private ones the user can see. Enter opens the repository's screen (J5). The top level goes on matching only what is kept here. Decision: D34.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -70714,7 +70720,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Tracking also starts here (D34): \"Track repository\" shows only while the screen's repository is not tracked, as the last line of the group under its name (D32), so a plain Enter cannot start it. It starts the usual first download and leaves the rows on screen. A tracked repository has no such line, and \"Stop tracking\" stays in the sidebar's menu (D32). \"Search repositories…\" is in App on every screen. Neither has a button outside the menu. Go to is cut to two lines here; the list scrolls.",
+                      "content": "Tracking also starts here (D34): \"Track repository\" shows only while the screen's repository is not tracked, as the last line of the group under its name (D32), so a plain Enter cannot start it. It starts the usual first download and leaves the rows on screen. A tracked repository has no such line, and \"Stop tracking\" stays in the sidebar's menu (D32). \"Search repositories\" is in App on every screen. Neither has a button outside the menu. Go to is cut to two lines here; the list scrolls.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -70990,7 +70996,7 @@
                           "icon": "rows-3"
                         },
                         "ya6cp/e2wbth": {
-                          "content": "Group by…"
+                          "content": "Group by"
                         },
                         "ya6cp/MXfcN": {
                           "content": "Milestone",
@@ -71017,7 +71023,7 @@
                           "icon": "arrow-down-up"
                         },
                         "F44Oo/e2wbth": {
-                          "content": "Order by…"
+                          "content": "Order by"
                         },
                         "F44Oo/MXfcN": {
                           "content": "Updated",
@@ -71383,7 +71389,7 @@
                           "icon": "search"
                         },
                         "zJMom/e2wbth": {
-                          "content": "Search repositories…"
+                          "content": "Search repositories"
                         },
                         "zJMom/MXfcN": {
                           "enabled": true,
@@ -73716,7 +73722,7 @@
                               "id": "B4Dq4K",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Close as duplicate of…",
+                              "content": "Close as duplicate",
                               "fontFamily": "$font",
                               "fontSize": 13,
                               "fontWeight": "normal"
@@ -74286,7 +74292,7 @@
                               "id": "YnKgl",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Merge…",
+                              "content": "Merge pull request",
                               "fontFamily": "$font",
                               "fontSize": 13,
                               "fontWeight": "normal"
@@ -79579,7 +79585,7 @@
                               "id": "aZPvu",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Merge…",
+                              "content": "Merge pull request",
                               "fontFamily": "$font",
                               "fontSize": 13,
                               "fontWeight": "normal"
@@ -92634,7 +92640,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The filter also asks GitHub, as Search repositories… in the command menu does (E8): from two typed characters, once typing pauses, GitHub's qualifiers included. Your own matches come first; GitHub's results follow under On GitHub, and tick like any other row, so someone else's repository is tracked from the same list. A typed owner/name finds that one repository. Rows already in your lists are not repeated there. The same chooser serves Settings (T18), so this works there too, and G10's input for a name becomes this search.",
+                      "content": "The filter also asks GitHub, as Search repositories in the command menu does (E8): from two typed characters, once typing pauses, GitHub's qualifiers included. Your own matches come first; GitHub's results follow under On GitHub, and tick like any other row, so someone else's repository is tracked from the same list. A typed owner/name finds that one repository. Rows already in your lists are not repeated there. The same chooser serves Settings (T18), so this works there too, and G10's input for a name becomes this search.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -157668,7 +157674,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same panel. The standing stays beneath it and only gains “Merge…”.",
+                      "content": "The same panel. The standing stays beneath it and only gains “Merge pull request”.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -178554,7 +178560,7 @@
                           "name": "Button Revert…",
                           "descendants": {
                             "G36gb": {
-                              "content": "Revert…"
+                              "content": "Revert"
                             },
                             "E6FRCf": {
                               "id": "JZ3An",
@@ -183553,7 +183559,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same verdict line as the panel. “Merge…” opens the panel and its label follows the way forward. Branches and size stay in place. Conditions fold once they no longer matter.",
+                      "content": "The same verdict line as the panel. “Merge pull request” opens the panel and its label follows the way forward. Branches and size stay in place. Conditions fold once they no longer matter.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -183708,7 +183714,7 @@
                               "icon": "list-ordered"
                             },
                             "lsKaS": {
-                              "content": "Queue…"
+                              "content": "Queue"
                             },
                             "iICyO/pINSd": {
                               "enabled": true
@@ -183778,7 +183784,7 @@
                               "icon": "timer"
                             },
                             "lsKaS": {
-                              "content": "Auto-merge…"
+                              "content": "Auto-merge"
                             }
                           }
                         },
@@ -184009,7 +184015,7 @@
                               "icon": "eye"
                             },
                             "lsKaS": {
-                              "content": "Mark ready…"
+                              "content": "Mark ready"
                             }
                           }
                         },
@@ -184113,7 +184119,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "⇧M is the first entry, only when write access allows it. Its title is the way forward, as the item's button says: “Merge…”, “Update branch”, “Resolve on GitHub” or “Mark ready…”; here the branch must be brought up to date first. Ordinary commands appear when they apply; here, a branch that's behind and a failed check that isn't required. The item menu (M2) and right-click (L2) title it the same way; theirs read “Merge…” as nothing comes first.",
+                      "content": "⇧M is the first entry, only when write access allows it. Its title is the way forward, as the item's button says: “Merge pull request”, “Update branch”, “Resolve on GitHub” or “Mark ready”; here the branch must be brought up to date first. Ordinary commands appear when they apply; here, a branch that's behind and a failed check that isn't required. The item menu (M2) and right-click (L2) title it the same way; theirs read “Merge pull request” as nothing comes first.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -190225,7 +190231,7 @@
                               "icon": "play"
                             },
                             "hqldH": {
-                              "content": "Run workflow…"
+                              "content": "Run workflow"
                             },
                             "ZBaFq": {
                               "enabled": false
@@ -229674,7 +229680,7 @@
                                   "icon": "play"
                                 },
                                 "e2wbth": {
-                                  "content": "Run workflow…"
+                                  "content": "Run workflow"
                                 },
                                 "MXfcN": {
                                   "content": "a workflow in fitloop/webapp · 3 can run"
@@ -232765,7 +232771,7 @@
                                   "icon": "play"
                                 },
                                 "e2wbth": {
-                                  "content": "Run workflow…"
+                                  "content": "Run workflow"
                                 },
                                 "MXfcN": {
                                   "content": "a workflow in fitloop/webapp · 3 can run"
@@ -249641,7 +249647,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Stop tracking"
                                                     }
                                                   }
                                                 },
@@ -250099,7 +250105,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Stop tracking"
                                                     }
                                                   }
                                                 },
@@ -250577,7 +250583,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Stop tracking"
                                                     }
                                                   }
                                                 },
@@ -251058,7 +251064,7 @@
                                                       "name": "Stop tracking",
                                                       "descendants": {
                                                         "tzW1W": {
-                                                          "content": "Stop tracking…"
+                                                          "content": "Stop tracking"
                                                         }
                                                       }
                                                     },
@@ -251514,7 +251520,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Stop tracking"
                                                     }
                                                   }
                                                 },
@@ -251983,7 +251989,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Stop tracking"
                                                     }
                                                   }
                                                 },
@@ -259706,7 +259712,7 @@
                                                   "id": "zAmge",
                                                   "name": "Merge label",
                                                   "fill": "#FFFFFF",
-                                                  "content": "Merge…",
+                                                  "content": "Merge",
                                                   "fontFamily": "$font",
                                                   "fontSize": 12.5,
                                                   "fontWeight": "600"
@@ -286216,7 +286222,7 @@
                                     },
                                     "Cenjq": {
                                       "fill": "$fg",
-                                      "content": "Link as a stack…",
+                                      "content": "Link as a stack",
                                       "fontSize": 12.5
                                     }
                                   }
@@ -294313,7 +294319,7 @@
                         {
                           "type": "frame",
                           "id": "M0zlQ",
-                          "name": "Result Merge stack…",
+                          "name": "Result Merge stack",
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
@@ -294341,7 +294347,7 @@
                               "id": "c0gzv",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Merge stack…",
+                              "content": "Merge stack",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -294517,7 +294523,7 @@
                         {
                           "type": "frame",
                           "id": "ClJ3p",
-                          "name": "Result Add a pull request on top…",
+                          "name": "Result Add a pull request on top",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -294542,7 +294548,7 @@
                               "id": "yAw6Y",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Add a pull request on top…",
+                              "content": "Add a pull request on top",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -294559,7 +294565,7 @@
                         {
                           "type": "frame",
                           "id": "Z4mHh",
-                          "name": "Result Dissolve stack…",
+                          "name": "Result Dissolve stack",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -294584,7 +294590,7 @@
                               "id": "q1A2HI",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Dissolve stack…",
+                              "content": "Dissolve stack",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -294672,7 +294678,7 @@
                         {
                           "type": "frame",
                           "id": "hrhmw",
-                          "name": "Result Assign…",
+                          "name": "Result Assign",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -294697,7 +294703,7 @@
                               "id": "Zl588",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Assign…",
+                              "content": "Assign",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -294725,7 +294731,7 @@
                         {
                           "type": "frame",
                           "id": "KDK0R",
-                          "name": "Result Label…",
+                          "name": "Result Label",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -294750,7 +294756,7 @@
                               "id": "C3eSH",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Label…",
+                              "content": "Label",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -294952,7 +294958,7 @@
                         {
                           "type": "frame",
                           "id": "YurPt",
-                          "name": "Result Link into a stack…",
+                          "name": "Result Link into a stack",
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
@@ -294980,7 +294986,7 @@
                               "id": "H5sZJ",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Link into a stack…",
+                              "content": "Link into a stack",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -295007,7 +295013,7 @@
                         {
                           "type": "frame",
                           "id": "hqFkc",
-                          "name": "Result Assign…",
+                          "name": "Result Assign",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -295032,7 +295038,7 @@
                               "id": "Nw9Td",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Assign…",
+                              "content": "Assign",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -295060,7 +295066,7 @@
                         {
                           "type": "frame",
                           "id": "VOG3w",
-                          "name": "Result Label…",
+                          "name": "Result Label",
                           "width": "fill_container",
                           "cornerRadius": 7,
                           "gap": 10,
@@ -295085,7 +295091,7 @@
                               "id": "rQFV3",
                               "name": "Label",
                               "fill": "$fg",
-                              "content": "Label…",
+                              "content": "Label",
                               "fontFamily": "$font",
                               "fontSize": 13.5,
                               "fontWeight": "normal"
@@ -295285,7 +295291,7 @@
                     {
                       "type": "frame",
                       "id": "R6r4YM",
-                      "name": "Result Add on top…",
+                      "name": "Result Add on top",
                       "width": "fill_container",
                       "cornerRadius": 7,
                       "gap": 10,
@@ -295310,7 +295316,7 @@
                           "id": "i8zZs",
                           "name": "Label",
                           "fill": "$fg",
-                          "content": "Add on top…",
+                          "content": "Add on top",
                           "fontFamily": "$font",
                           "fontSize": 13.5,
                           "fontWeight": "normal"
@@ -295327,7 +295333,7 @@
                     {
                       "type": "frame",
                       "id": "wvtMY",
-                      "name": "Result Dissolve stack…",
+                      "name": "Result Dissolve stack",
                       "width": "fill_container",
                       "cornerRadius": 7,
                       "gap": 10,
@@ -295352,7 +295358,7 @@
                           "id": "wNp6H",
                           "name": "Label",
                           "fill": "$fg",
-                          "content": "Dissolve stack…",
+                          "content": "Dissolve stack",
                           "fontFamily": "$font",
                           "fontSize": 13.5,
                           "fontWeight": "normal"
@@ -298176,7 +298182,7 @@
                             {
                               "type": "frame",
                               "id": "GkJeR",
-                              "name": "Result Link into a stack…",
+                              "name": "Result Link into a stack",
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
@@ -298204,7 +298210,7 @@
                                   "id": "JDjRe",
                                   "name": "Label",
                                   "fill": "$fg",
-                                  "content": "Link into a stack…",
+                                  "content": "Link into a stack",
                                   "fontFamily": "$font",
                                   "fontSize": 13.5,
                                   "fontWeight": "normal"
@@ -298231,7 +298237,7 @@
                             {
                               "type": "frame",
                               "id": "xVo24",
-                              "name": "Result Assign…",
+                              "name": "Result Assign",
                               "width": "fill_container",
                               "cornerRadius": 7,
                               "gap": 10,
@@ -298256,7 +298262,7 @@
                                   "id": "q6XpU",
                                   "name": "Label",
                                   "fill": "$fg",
-                                  "content": "Assign…",
+                                  "content": "Assign",
                                   "fontFamily": "$font",
                                   "fontSize": 13.5,
                                   "fontWeight": "normal"
@@ -298284,7 +298290,7 @@
                             {
                               "type": "frame",
                               "id": "EVgbu",
-                              "name": "Result Label…",
+                              "name": "Result Label",
                               "width": "fill_container",
                               "cornerRadius": 7,
                               "gap": 10,
@@ -298309,7 +298315,7 @@
                                   "id": "lQOoT",
                                   "name": "Label",
                                   "fill": "$fg",
-                                  "content": "Label…",
+                                  "content": "Label",
                                   "fontFamily": "$font",
                                   "fontSize": 13.5,
                                   "fontWeight": "normal"
@@ -343634,10 +343640,201 @@
                   "type": "frame",
                   "id": "hCsvh",
                   "name": "Writing",
-                  "width": 560,
+                  "width": 900,
                   "layout": "vertical",
                   "gap": 12,
                   "children": [
+                    {
+                      "type": "frame",
+                      "id": "OCfqo",
+                      "name": "Review / Pending toolbar",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "fill": "#D299221A",
+                      "stroke": "#D2992259",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        8,
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fA0IB",
+                          "name": "Title row",
+                          "height": 24,
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "X52tWk",
+                              "name": "Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "pencil-line",
+                              "library": "lucide",
+                              "fill": "$amber"
+                            },
+                            {
+                              "type": "text",
+                              "id": "X085EX",
+                              "name": "Count",
+                              "fill": "$amber",
+                              "content": "3",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "xoElz",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "pending comments",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "w6fa5w",
+                          "name": "Note",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Others can't see them until you submit.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T3XYh",
+                          "x": 406,
+                          "y": 21.5,
+                          "name": "spacer",
+                          "enabled": false,
+                          "width": 1,
+                          "height": 1
+                        },
+                        {
+                          "id": "DdloZ",
+                          "type": "ref",
+                          "ref": "gQ61z",
+                          "name": "Dismiss",
+                          "enabled": false,
+                          "descendants": {
+                            "tzW1W": {
+                              "content": "Dismiss"
+                            }
+                          }
+                        },
+                        {
+                          "id": "wqUGr",
+                          "type": "ref",
+                          "ref": "gQ61z",
+                          "name": "Discard",
+                          "descendants": {
+                            "tzW1W": {
+                              "content": "Discard review"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p7BfB7",
+                          "name": "Submit",
+                          "fill": "$amber",
+                          "cornerRadius": 6,
+                          "gap": 7,
+                          "padding": [
+                            4,
+                            6,
+                            4,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RMOTL",
+                              "name": "Label",
+                              "fill": "#0D1117",
+                              "content": "Submit review",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "id": "G1X6Y",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧S",
+                              "fill": "#0D111726",
+                              "stroke": "#0D111733",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "arrow-big-up",
+                                  "fill": "#0D1117"
+                                },
+                                "Q8v43": {
+                                  "content": "S",
+                                  "fill": "#0D1117"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "zWVql",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "OCfqo",
+                      "name": "Review / Pending toolbar · failed",
+                      "width": "fill_container",
+                      "fill": "#F851491A",
+                      "stroke": "#F8514959",
+                      "descendants": {
+                        "X52tWk": {
+                          "icon": "circle-alert",
+                          "fill": "$red"
+                        },
+                        "X085EX": {
+                          "enabled": false
+                        },
+                        "xoElz": {
+                          "content": "Couldn't send your review",
+                          "fill": "$red"
+                        },
+                        "w6fa5w": {
+                          "content": "GitHub refused engine.ts:48: \"must be part of the diff\". Everything is kept."
+                        },
+                        "wqUGr/tzW1W": {
+                          "content": "Edit review"
+                        },
+                        "p7BfB7": {
+                          "fill": "$red"
+                        },
+                        "RMOTL": {
+                          "content": "Try again"
+                        },
+                        "G1X6Y": {
+                          "enabled": false
+                        }
+                      }
+                    },
                     {
                       "id": "MdLTM",
                       "type": "ref",
@@ -345294,192 +345491,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "OCfqo",
-                      "name": "Review / Pending toolbar",
-                      "reusable": true,
-                      "width": "fill_container",
-                      "height": 44,
-                      "fill": "#D299221A",
-                      "stroke": "#D2992259",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 10,
-                      "padding": [
-                        0,
-                        8,
-                        0,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "fA0IB",
-                          "name": "Title row",
-                          "gap": 5,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "X52tWk",
-                              "name": "Icon",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "pencil-line",
-                              "library": "lucide",
-                              "fill": "$amber"
-                            },
-                            {
-                              "type": "text",
-                              "id": "X085EX",
-                              "name": "Count",
-                              "fill": "$amber",
-                              "content": "3",
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "700"
-                            },
-                            {
-                              "type": "text",
-                              "id": "xoElz",
-                              "name": "Title",
-                              "fill": "$fg",
-                              "content": "pending comments",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "w6fa5w",
-                          "name": "Note",
-                          "fill": "$fg-2",
-                          "content": "Others can't see them until you submit.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "T3XYh",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "DdloZ",
-                          "type": "ref",
-                          "ref": "gQ61z",
-                          "name": "Dismiss",
-                          "enabled": false,
-                          "descendants": {
-                            "tzW1W": {
-                              "content": "Dismiss"
-                            }
-                          }
-                        },
-                        {
-                          "id": "wqUGr",
-                          "type": "ref",
-                          "ref": "gQ61z",
-                          "name": "Discard",
-                          "descendants": {
-                            "tzW1W": {
-                              "content": "Discard review…"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "p7BfB7",
-                          "name": "Submit",
-                          "fill": "$amber",
-                          "cornerRadius": 6,
-                          "gap": 7,
-                          "padding": [
-                            4,
-                            6,
-                            4,
-                            10
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "RMOTL",
-                              "name": "Label",
-                              "fill": "#0D1117",
-                              "content": "Submit review…",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "id": "G1X6Y",
-                              "type": "ref",
-                              "ref": "L44zw",
-                              "name": "Kbd ⇧S",
-                              "fill": "#0D111726",
-                              "stroke": "#0D111733",
-                              "descendants": {
-                                "pINSd": {
-                                  "icon": "arrow-big-up",
-                                  "fill": "#0D1117"
-                                },
-                                "Q8v43": {
-                                  "content": "S",
-                                  "fill": "#0D1117"
-                                }
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "zWVql",
-                      "type": "ref",
-                      "reusable": true,
-                      "ref": "OCfqo",
-                      "name": "Review / Pending toolbar · failed",
-                      "width": "fill_container",
-                      "fill": "#F851491A",
-                      "stroke": "#F8514959",
-                      "descendants": {
-                        "X52tWk": {
-                          "icon": "circle-alert",
-                          "fill": "$red"
-                        },
-                        "X085EX": {
-                          "enabled": false
-                        },
-                        "xoElz": {
-                          "content": "Couldn't send your review",
-                          "fill": "$red"
-                        },
-                        "w6fa5w": {
-                          "content": "GitHub refused engine.ts:48: \"must be part of the diff\". Everything is kept."
-                        },
-                        "wqUGr/tzW1W": {
-                          "content": "Edit review…"
-                        },
-                        "p7BfB7": {
-                          "fill": "$red"
-                        },
-                        "RMOTL": {
-                          "content": "Try again"
-                        },
-                        "G1X6Y": {
-                          "enabled": false
-                        }
-                      }
                     }
                   ]
                 },
@@ -365611,7 +365622,7 @@
                                 {
                                   "type": "frame",
                                   "id": "ATb60",
-                                  "name": "Submit review…",
+                                  "name": "Submit review",
                                   "width": "fill_container",
                                   "gap": 10,
                                   "alignItems": "center",
@@ -365641,7 +365652,7 @@
                                       "id": "hxXEH",
                                       "name": "Label",
                                       "fill": "$fg-2",
-                                      "content": "Submit review…",
+                                      "content": "Submit review",
                                       "fontFamily": "$font",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
@@ -366168,7 +366179,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "One row pinned to the foot of the diff column, under the code: the count in bold, what it means, Discard review… and Submit review… (⇧S). It takes 44 px of height only while a review is pending, and with the conversation on it stays under the diff. Both buttons ask first: CR39 and CR75. #1202's row in the stack has an amber dot.",
+                      "content": "One row pinned to the foot of the diff column, under the code: the count in bold, what it means, Discard review and Submit review (⇧S). It takes 44 px of height only while a review is pending, and with the conversation on it stays under the diff. Both buttons ask first: CR39 and CR75. #1202's row in the stack has an amber dot.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -368083,7 +368094,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Discard review… has no key and doesn't act by itself. This dialog in the middle of the screen says what goes and that it can't be brought back, focus starts on Cancel, and only the red button or ⌘↵ deletes the review on GitHub.",
+                      "content": "Discard review has no key and doesn't act by itself. This dialog in the middle of the screen says what goes and that it can't be brought back, focus starts on Cancel, and only the red button or ⌘↵ deletes the review on GitHub.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -370095,7 +370106,7 @@
                                       "content": "⇧S"
                                     },
                                     "IOvfA": {
-                                      "content": "Submit…"
+                                      "content": "Submit"
                                     }
                                   }
                                 }
@@ -378247,7 +378258,7 @@
                                                   "id": "Lrzcr",
                                                   "name": "Label",
                                                   "fill": "#0D1117",
-                                                  "content": "Submit review…",
+                                                  "content": "Submit review",
                                                   "fontFamily": "$font",
                                                   "fontSize": 12,
                                                   "fontWeight": "600"
@@ -384919,7 +384930,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Submit review… (⇧S, or from the toolbar) opens this in the middle of the screen, so sending is never one click. An optional comment that goes on the pull request itself, not on a file; then what the review is, a comment by default: Tab out of the field, then 1 2 3. The button takes the choice's name and colour. ⌘↵ sends it all as one review, and the toolbar and the sidebar entry go with it.",
+                      "content": "Submit review (⇧S, or from the toolbar) opens this in the middle of the screen, so sending is never one click. An optional comment that goes on the pull request itself, not on a file; then what the review is, a comment by default: Tab out of the field, then 1 2 3. The button takes the choice's name and colour. ⌘↵ sends it all as one review, and the toolbar and the sidebar entry go with it.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -386597,7 +386608,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "GitHub refused the review, so nothing was sent: the toolbar turns red and says why, in GitHub's words. The comment, the verdict and the three pending comments are all still here, and the review is still pending on GitHub; Try again sends the same one, Edit review… reopens the dialog. Nothing is dropped silently.",
+                      "content": "GitHub refused the review, so nothing was sent: the toolbar turns red and says why, in GitHub's words. The comment, the verdict and the three pending comments are all still here, and the review is still pending on GitHub; Try again sends the same one, Edit review reopens the dialog. Nothing is dropped silently.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -390637,7 +390648,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Submitting needs no draft (CR85), so the toolbar shows up for those moments too. Sending: no count and no buttons. Refused with no draft open: GitHub's words, and Dismiss as well, because nothing is pending to keep it there; Dismiss keeps the choice, so ⇧S reopens it. Refused while another draft has turned up (begun in another tab or on github.com): no Try again, since that would send comments never shown; Edit review… lists them. While the draft it was sent against is open it stays CR76, with no Dismiss (D28).",
+                      "content": "Submitting needs no draft (CR85), so the toolbar shows up for those moments too. Sending: no count and no buttons. Refused with no draft open: GitHub's words, and Dismiss as well, because nothing is pending to keep it there; Dismiss keeps the choice, so ⇧S reopens it. Refused while another draft has turned up (begun in another tab or on github.com): no Try again, since that would send comments never shown; Edit review lists them. While the draft it was sent against is open it stays CR76, with no Dismiss (D28).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -391342,7 +391353,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "CR63 with no thread left to show: the plain approving flow. After the last V the same offer stands, Submit review… and Next, with the way back to the files last. Next is left out at the end of the list.",
+                      "content": "CR63 with no thread left to show: the plain approving flow. After the last V the same offer stands, Submit review and Next, with the way back to the files last. Next is left out at the end of the list.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -391435,7 +391446,7 @@
                               "id": "AWNGP",
                               "name": "Label",
                               "fill": "#0D1117",
-                              "content": "Submit review…",
+                              "content": "Submit review",
                               "fontFamily": "$font",
                               "fontSize": 12,
                               "fontWeight": "600"
@@ -404244,7 +404255,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The card's ⋯ opens the menu the pull request's thread has. Edit turns the card into the editor in place (CR123); Quote reply puts the quoted text into the sidebar's composer at the foot; Copy link copies the comment's GitHub link; Delete… asks first. Edit and Delete show on comments you may change, as on the thread. Scrolled to the latest comments.",
+                      "content": "The card's ⋯ opens the menu the pull request's thread has. Edit turns the card into the editor in place (CR123); Quote reply puts the quoted text into the sidebar's composer at the foot; Copy link copies the comment's GitHub link; Delete asks first. Edit and Delete show on comments you may change, as on the thread. Scrolled to the latest comments.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -455925,7 +455936,7 @@
                               "icon": "list-filter"
                             },
                             "bZUUX": {
-                              "content": "Filter…"
+                              "content": "Filter"
                             },
                             "tPamw": {
                               "enabled": false
@@ -455946,7 +455957,7 @@
                               "icon": "arrow-down-wide-narrow"
                             },
                             "bZUUX": {
-                              "content": "Sort and group…"
+                              "content": "Sort and group"
                             },
                             "tPamw": {
                               "enabled": false
@@ -464617,6 +464628,9 @@
                         "Lxodb": {
                           "enabled": false
                         },
+                        "lsKaS": {
+                          "content": "Merge"
+                        },
                         "iICyO": {
                           "type": "icon",
                           "id": "BfZu0",
@@ -465507,7 +465521,7 @@
                           "content": "In 2 files"
                         },
                         "b24mtF/lsKaS": {
-                          "content": "Resolve…"
+                          "content": "Resolve"
                         },
                         "EbIQE/h5alMd": {
                           "enabled": false
@@ -465651,7 +465665,7 @@
                           "content": "3 files"
                         },
                         "b24mtF/lsKaS": {
-                          "content": "Mark ready…"
+                          "content": "Mark ready"
                         },
                         "b24mtF/BfZu0": {
                           "enabled": false
@@ -466096,7 +466110,7 @@
                           "fill": "$red"
                         },
                         "e16Wg/bZUUX": {
-                          "content": "Delete…",
+                          "content": "Delete",
                           "fill": "$red"
                         },
                         "e16Wg/tPamw": {
@@ -471197,7 +471211,7 @@
                           "fill": "$fg-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "#1205 waiting for review, with the desktop's summary (D52): the standing card says what stops it, then Reviews and Checks as lists. Merge… and Review files carry ↗: they open github.com, as Open on GitHub does.",
+                          "content": "#1205 waiting for review, with the desktop's summary (D52): the standing card says what stops it, then Reviews and Checks as lists. Merge and Review files carry ↗: they open github.com, as Open on GitHub does.",
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 13,
@@ -475591,7 +475605,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "A draft of mine: the standing card says Draft, with Mark ready… where Merge… would be. ⌘ opens the menu at the pull request, and Ready for review is nearest the thumb. Request review opens its picker as in MB110. The changed files leave for github.com.",
+                              "content": "A draft of mine: the standing card says Draft, with Mark ready where Merge would be. ⌘ opens the menu at the pull request, and Ready for review is nearest the thumb. Request review opens its picker as in MB110. The changed files leave for github.com.",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -478183,7 +478197,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "The ⋯ in a card's head (or a long press on the card outside its text) opens the desktop's comment menu as a menu at the bottom (D45): Edit, Quote reply, Copy link, Delete…. Edit and Delete are on your own comments and on anyone's where you can write to the repository; otherwise only Quote reply and Copy link. The description card has the same menu without Delete. No search: the desktop's menu has none.",
+                              "content": "The ⋯ in a card's head (or a long press on the card outside its text) opens the desktop's comment menu as a menu at the bottom (D45): Edit, Quote reply, Copy link, Delete. Edit and Delete are on your own comments and on anyone's where you can write to the repository; otherwise only Quote reply and Copy link. The description card has the same menu without Delete. No search: the desktop's menu has none.",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -483439,7 +483453,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "The search also asks GitHub, as Search repositories… in the command menu does (E8): from two typed characters, once typing pauses, GitHub's qualifiers included. Its results come under On GitHub, after your own matches, and tick like any other; typing owner/name finds that one repository. While GitHub answers, the group's place says \"Searching GitHub…\" on one calm line; when it finds nothing, \"Nothing on GitHub matches\". Private repositories show only where GitHub lets githq see them.",
+                              "content": "The search also asks GitHub, as Search repositories in the command menu does (E8): from two typed characters, once typing pauses, GitHub's qualifiers included. Its results come under On GitHub, after your own matches, and tick like any other; typing owner/name finds that one repository. While GitHub answers, the group's place says \"Searching GitHub…\" on one calm line; when it finds nothing, \"Nothing on GitHub matches\". Private repositories show only where GitHub lets githq see them.",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -494755,7 +494769,7 @@
                           "fill": "$fg-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Approved, checks green, no conflicts: the card turns green and Merge… is the primary button, still opening github.com. Checks fold to one line of passed checks, as on the desktop.",
+                          "content": "Approved, checks green, no conflicts: the card turns green and Merge is the primary button, still opening github.com. Checks fold to one line of passed checks, as on the desktop.",
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 13,

@@ -110,3 +110,75 @@ settled, the remaining components moved next to their bases, the frames below `A
   21774) and 1340 px wider (9730 → 11070, from Components · Activity); the 29 top-level frames that started at y 30426
   or below moved up 2888 px as whole rows (the code review row now at 27538). The stray root text `BnN7r` was not moved,
   as in round 1.
+
+## Round 3 · owner's feedback
+
+Asked (`.context/reading-cursor-brief-3.md`, the owner on 2026-11-18): fix the clipped layouts (F27's draft review
+toolbar ran past its card, Submit cut by the amber border) by layout, not by widening screens; drop the trailing "…"
+from every button, menu item and command label in the file, `Merge…` becoming `Merge pull request`; keep it on
+placeholders, progress texts and layout truncation. Changed: one component's layout, one shared header's spacer, two
+components moved to a wider column, 63 labels, 22 captions and 27 layer names. No node copied, no instance re-created:
+every label is a content change on its node or an override on its instance (ids checked unique and every ref resolving
+to a reusable node through the MCP before saving).
+
+### Clipped layouts
+
+- [ ] Review / Pending toolbar (`OCfqo`): the note (`w6fa5w`) wraps (`fixed-width`, `fill_container`) and the spacer
+  (`T3XYh`) is hidden, so the note takes the room left and the buttons never move past the edge; height 44 →
+  `fit_content(44)`, padding `[0,8,0,14]` → `[10,8,10,14]`, layout made explicit (horizontal); the Title row (`fA0IB`)
+  24 px high so a one-line toolbar stays 44 px in every state. F27's draft review (`B0CQM1`, 640 px): one row, the note
+  on two lines, 54 px high; F14 (`z2SZAj`) and the code review's diff column stay one line at 44 px.
+- [ ] Review / Pending toolbar (`OCfqo`) and `· failed` (`zWVql`): moved from `Left column parts` (`c9jmMT`, 300 px,
+  too narrow for them) to the head of `Writing` (`hCsvh`) next to their other states; `Writing` 560 → 900 px (its
+  states were 900 px wide already), `Thread parts` (`SSotp`) 4110 → 4450 px, inside `Components · Code review`'s width.
+- [ ] Item / Checks header (`UYFLP` in `JKPLA`): the spacer (`jOqHL`) hidden; the commit text ran 1 px past the 376 px
+  summary in F24 and F30 (`Ey47x`); it now follows the summary of checks.
+- [ ] Item / PR merge (`BioKQ`): layout untouched. `Merge pull request` fits the panel (512 px) and the merging
+  screens (580 px), but not the 376 px summary card (`XPhTt` in `Item / Summary · pull request`, F18, F24, F30) nor
+  the phone variant (`T6Pdf7`, 358 px): the three buttons need ~430 / ~410 px and a Pen row cannot wrap. Those two say
+  `Merge` (an override on `lsKaS`) until the owner decides how the row breaks there. Same on SP5's hand-drawn panel copy
+  (`zAmge`, 11 px short).
+- Checked, left as they are: code lines cut by a narrow code excerpt (`Components · Activity`'s narrow review cards),
+  threads and summaries cut at a screen's foot (F24, F30), the rail's badge overhang. Not in this round's scope and
+  unchanged: L2's `Re-request` (`h0qFyP`) runs 4 px past the Request review submenu; M2/L2's merge item shows a
+  `git-merge` icon where a chevron was (`s1j0T`).
+
+### Labels, before → after
+
+- [ ] Components:
+  - Item / PR merge (`BioKQ`): `Merge…` → `Merge pull request` (`lsKaS`).
+  - Review / Pending toolbar (`OCfqo`): `Discard review…` → `Discard review` (`wqUGr`), `Submit review…` → `Submit
+    review` (`RMOTL`); `· failed` (`zWVql`): `Edit review…` → `Edit review`.
+  - Activity / Comment menu (`nS2AY`): `Delete…` → `Delete` (`UUyle`).
+  - Item / Summary · pull request (`NjMaL`, `XPhTt`) and Item / PR merge · phone (`T6Pdf7`): `Merge…` → `Merge` (see
+    above).
+- [ ] App · Pull request (`XN8vf`): key help `Submit your review…` → `Submit your review` (`MvVAW`, row `kLH8s`).
+- [ ] App · Code review (`CEDLB`): key help `Submit review…` → `Submit review` (`hxXEH`, row `ATb60`); the submit dialog
+  buttons `Submit review…` → `Submit review` (`Lrzcr`, `AWNGP`); the hint `Submit…` → `Submit` (`fn4wZ`).
+- [ ] App · Command menu (`D27jC`): `Set status…` ×2 → `Set status`, `Set priority…` → `Set priority`, `Set
+  iteration…` → `Set iteration`, `Assign to…` ×2 → `Assign`, `Add or remove labels…` → `Add or remove labels`, `Close
+  issue…` → `Close issue`, `Group by…` ×2 → `Group by`, `Add to another project…` → `Add to another project`, `Add
+  labels…` → `Add labels`, `Close 3 issues…` → `Close 3 issues`, `Order by…` → `Order by`, `Search repositories…` →
+  `Search repositories` (E6, `F1thkx`).
+- [ ] App · Context menu (`uWch5`): `Merge…` → `Merge pull request` (`YnKgl`), `Close as duplicate of…` → `Close as
+  duplicate` (`B4Dq4K`).
+- [ ] App · Item menu (`xgYRz`): `Merge…` → `Merge pull request` (`aZPvu`).
+- [ ] App · Merging a pull request (`LLr2k`): `Revert…` → `Revert` (`D22dpX`), `Queue…` → `Queue` (`q9eCkj`),
+  `Auto-merge…` → `Auto-merge` (`DEdfl`), `Mark ready…` → `Mark ready` (`kUaDx`).
+- [ ] App · Stacked pull requests (`LIEPU`): `Merge…` → `Merge` (`zAmge`, SP5), `Link as a stack…` → `Link as a stack`
+  (`Ce6Ns`), `Merge stack…` → `Merge stack`, `Add a pull request on top…` → `Add a pull request on top`, `Add on top…`
+  → `Add on top`, `Dissolve stack…` ×2 → `Dissolve stack`, `Link into a stack…` ×2 → `Link into a stack`, `Assign…` ×3
+  → `Assign`, `Label…` ×3 → `Label`.
+- [ ] App · Workflows (`IEyTW`): `Run workflow…` → `Run workflow` (the item head's button `Z77eN`, command results
+  `XDjCY`, `V07KCN`).
+- [ ] App · Settings (`i3VkT`): `Stop tracking…` → `Stop tracking` (×6: `OMjCC/B51Lj`, `cnrP3/H9AJ5k`, `bgmkW/Ovylc`,
+  `sc1pF/bMrIM`, `ocatW/T6nssq`, `cWv8Z/sEmMI`).
+- [ ] App · Mobile (`jy6bO`): `Filter…` → `Filter` and `Sort and group…` → `Sort and group` (command results `y5AfkM`,
+  `mZrl9`), `Delete…` → `Delete` (`Hvbw2`), `Resolve…` → `Resolve` (`q5Pag`), `Mark ready…` → `Mark ready` (`OA04b`).
+- [ ] Captions quoting those labels, same before → after (`Merge…` → `Merge pull request` on the desktop, `Merge` on
+  the phone): `i9uua`, `o5NKSb`, `klRij`, `o9BXr` (XN8vf); `JpbpK`, `aCSQ2`, `K7Vxiw`, `nMKsz`, `wbf2k`, `tvSZQ`,
+  `PYIvB` (CEDLB); `IS15j`, `gFIsY`, `j8W8yw` (LLr2k); `Anrxt`, `LZy1y` (D27jC); `hFwIS` (Zk4sa); `kA1Ux`, `JsH6J`,
+  `Rj3dd`, `aIIvY`, `PqUdr` (jy6bO).
+- [ ] Layer names that carried the old label lost the "…" (27, e.g. `Result Set status…` → `Result Set status`).
+- Kept: placeholders (`Reply…`, `Search or jump to…`, `Filter…`, `Assign to…` in the phone's assignee picker, `Branch
+  or tag…`, `Add to your draft…`), progress texts (`Sending…`, `Checking…`, `Reading…`) and truncated text.
