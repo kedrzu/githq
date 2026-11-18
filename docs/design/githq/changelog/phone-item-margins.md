@@ -24,11 +24,24 @@ reference was 14 already, under 16, so it stays.
 - [x] Phone / Thread · reviews (`CySKi`): side inset 16 → 12.
 - [x] Phone / Stack strip (`yjxbJ`): left inset 16 → 12, so the strip's icon lines up with the reference above it.
 
-Left at more than 12 px while the toolbars sit at 12, not changed in this round:
+The owner kept the phone's 16 px for the other phone screens (filter strip, first sign-in, settings, the new issue
+form, empty screens); round 2 brings the ones that sat wider than that to 16.
 
-- Phone / Filter strip (`VtYLv`): chips 16 from the sides (padding `[10,16,6,16]`), with the list's group headers.
-- First sign-in, `MB135`–`MB138`, `MB163`, `MB164`: the setup bar 20, the intro 20, the search, segments, rows and
-  footer 16.
-- Settings, `MB146`–`MB161`, `MB168`, `MB172`, `MB246`: section titles, rows and notes 16; `MB162`'s empty state 24.
-- New issue form, `MB194`–`MB196`, `MB210`–`MB214`, `MB216`, `MB268`, `MB269`: fields, details and body 16.
-- Empty screens, `MB96`, `MB208`, `MB209`: centred content in a 24 px inset.
+## Round 2 · implementation
+
+Asked: the owner kept the phone's 16 px for everything but the item; the design's wider insets brought to it.
+
+The `Empty / Note · …` components are shared with desktop screens, so the inset changed in the phone screens' own
+frames that hold them. The iOS status strip and keyboard and the `More` rows' 52 px indent (aligned with the rows'
+names) stay.
+
+- [x] Phone / Setup bar (`H329p`): left inset 20 → 16 (`MB135`–`MB138`, `MB163`, `MB164`).
+- [x] MB135 · Intro (`WvRYo`): side inset 20 → 16.
+- [x] MB138 · Intro (`E5KES`): side inset 20 → 16.
+- [x] MB138 · Nothing to pick (`dIG5L`): side inset 20 → 16.
+- [x] MB96 · Centre (`YWPCh`): side inset 24 → 16.
+- [x] MB208 · Pane (`n4YW6N`): side inset 24 → 16.
+- [x] MB209 · Pane (`Ozbfg`): side inset 24 → 16.
+- [x] MB162 · Content (`K5lPz`): side inset 24 → 16.
+- [x] Phone / Sheet / Private data hidden (`MPx50`): head and body side inset 20 → 16, as the other phone sheets
+  (`MB137`).
