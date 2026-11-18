@@ -4,6 +4,7 @@ import { PAGE_WIDTH as ITEM_PAGE_WIDTH } from '@/item/ItemView.vue';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import {
   ChevronRight,
   CircleDot,
@@ -34,7 +35,9 @@ import { useMaxWidth } from '@/components/useMaxWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
 import { useOtherArrangement } from '@/item/useItemArrangement.js';
+import { useReadingCursor } from '@/reading/useReadingCursor.js';
 import type { OtherArrangement } from '@/item/useItemArrangement.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import type { MaxWidth } from '@/settings/sync/SettingsDocument.js';
@@ -125,6 +128,8 @@ interface RunMessage {
 
 /** Where the run's commands are offered. */
 const RUN_PLACE = { place: 'workflowRun', section: 'view' } as const;
+/** The page's scrolling keys, in no menu. */
+const SCROLL = { place: 'workflowRun', section: 'view', menu: false, when: () => scrolling.value } as const;
 /** The jobs' column: dragged from 200 to 480px. */
 const JOBS_WIDTH = { key: 'workflowRunJobs', default: 268, min: 200, max: 480 };
 /**
@@ -137,6 +142,8 @@ const t = useTranslate();
 const otherArrangement = useOtherArrangement(() => props.arrangement);
 const root = useTemplateRef('root');
 const roomRef = useTemplateRef('room');
+const overviewRef = useTemplateRef('overview');
+const phone = useService(PhoneLayout);
 /** The width there is for the box. */
 const room = ref(0);
 const box = useMaxWidth({
@@ -176,6 +183,14 @@ const runUrl = computed(() =>
   getGitHubUrl(getWorkflowRunPath({ nameWithOwner: props.nameWithOwner, runId: props.runId })),
 );
 const page = computed(() => props.arrangement === 'page');
+/** On its page, not on a phone, with the overview shown: ↓ ↑ PageDown PageUp scroll it. A job's log has its own keys. */
+const scrolling = computed(() => page.value && !phone.active && props.model.body.kind === 'overview');
+const scrollKeys = useReadingCursor({
+  scroller: overviewRef,
+  cursor: shallowRef(null),
+  stops: false,
+  isActive: scrolling,
+});
 const finished = computed(() => props.model.run?.status === 'completed');
 const atOverview = computed(() => props.model.body.kind === 'overview');
 const showsColumns = computed(() => {
@@ -350,6 +365,11 @@ useCommands(() => [
   ),
   // After the log's search closes by Escape (`jobLog` keeps the keyboard over the run).
   bindCommand(definitions.back, { ...RUN_PLACE, menu: false, run: () => emit('close') }, t),
+  // Off in the panel, where the list beside it has ↓ ↑; the job's log, when shown, keeps them over these.
+  bindCommand(definitions.lineDown, { ...SCROLL, title: t(l.scrollDown), run: () => scrollKeys.move(1) }, t),
+  bindCommand(definitions.lineUp, { ...SCROLL, title: t(l.scrollUp), run: () => scrollKeys.move(-1) }, t),
+  bindCommand(definitions.pageDown, { ...SCROLL, title: t(l.screenDown), run: () => scrollKeys.page(1) }, t),
+  bindCommand(definitions.pageUp, { ...SCROLL, title: t(l.screenUp), run: () => scrollKeys.page(-1) }, t),
 ]);
 
 let roomObserver: ResizeObserver | undefined;
@@ -552,7 +572,10 @@ function getInvalidFileMessage(): RunMessage {
             />
           </template>
           <template v-if="atOverview">
-            <div :class="css.workflowRunView_overview">
+            <div
+              ref="overview"
+              :class="css.workflowRunView_overview"
+            >
               <WorkflowRunOverview
                 :run="model.run"
                 :jobs="model.jobs"

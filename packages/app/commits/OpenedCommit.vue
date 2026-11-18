@@ -2,20 +2,31 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, watch } from 'vue';
+import { computed, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { bindCommand } from '@/commands/bindCommand.js';
-import { firstParent, openCommitPullRequest, openOnGitHub, secondParent } from '@/commands/definitions/index.js';
+import {
+  firstParent,
+  lineDown,
+  lineUp,
+  openCommitPullRequest,
+  openOnGitHub,
+  pageDown,
+  pageUp,
+  secondParent,
+} from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { parseItemUrl } from '@/item/itemRoutes.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
 import { useItemArrangement, useItemKeys } from '@/item/useItemArrangement.js';
 import { useOpenItemReference } from '@/item/useOpenItemReference.js';
+import { useReadingCursor } from '@/reading/useReadingCursor.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 
 import CommitDetails from './CommitDetails.vue';
@@ -24,6 +35,7 @@ import { CommitRoutes, parseCommitKey } from './commitRoutes.js';
 import type { CommitReference } from './commitRoutes.js';
 import type { CommitParent } from './CommitTypes.js';
 import { groupCommitRefs } from './groupCommitRefs.js';
+import * as l from './OpenedCommit.loc.js';
 
 const props = defineProps<{
   reference: CommitReference;
@@ -46,6 +58,8 @@ const route = useRoute();
 const router = useRouter();
 const openItemReference = useOpenItemReference();
 const now = useNow(AGE_TICK_MS);
+const phone = useService(PhoneLayout);
+const details = useTemplateRef('details');
 
 const nameWithOwner = computed(() => `${props.reference.owner}/${props.reference.name}`);
 /** The sha as the address names it, as GitHub is asked for it. */
@@ -66,6 +80,15 @@ const refs = computed(() => groupCommitRefs(store.get(nameWithOwner.value)?.refs
 const chosenRef = computed(() => {
   const chosen = store.getChosenRef(nameWithOwner.value);
   return chosen?.oid === oid.value ? chosen : null;
+});
+
+/** On its page, not on a phone: ↓ ↑ PageDown PageUp scroll the details (a commit has nothing to stop on). */
+const scrolling = computed(() => props.arrangement === 'page' && !phone.active);
+const scrollKeys = useReadingCursor({
+  scroller: () => details.value?.scroll ?? null,
+  cursor: shallowRef(null),
+  stops: false,
+  isActive: scrolling,
 });
 
 const arranging = useItemArrangement({
@@ -102,6 +125,7 @@ useCommands(() => {
     bindCommand(secondParent, { section: 'item', menu: false, run: () => openParent(1) }, t),
     bindCommand(openCommitPullRequest, { section: 'item', menu: false, run: openPullRequest }, t),
     commands.close,
+    ...getScrollCommands(),
     bindCommand(openOnGitHub, { place: 'commit', section: 'item', run: () => browser.openInNewTab(url.value) }, t),
     commands.closeFullScreen,
     ...(commands.openFullScreen ? [commands.openFullScreen] : []),
@@ -174,6 +198,17 @@ function read() {
   store.ensureChecks(current, full);
 }
 
+/** The page's keys for scrolling, off in the panel, where the graph beside it has ↓ ↑. */
+function getScrollCommands() {
+  const motion = { place: 'commit', section: 'item', menu: false, when: () => scrolling.value } as const;
+  return [
+    bindCommand(lineDown, { ...motion, title: t(l.scrollDown), run: () => scrollKeys.move(1) }, t),
+    bindCommand(lineUp, { ...motion, title: t(l.scrollUp), run: () => scrollKeys.move(-1) }, t),
+    bindCommand(pageDown, { ...motion, title: t(l.screenDown), run: () => scrollKeys.page(1) }, t),
+    bindCommand(pageUp, { ...motion, title: t(l.screenUp), run: () => scrollKeys.page(-1) }, t),
+  ];
+}
+
 /** A parent there is none of does nothing. */
 function openParent(index: number) {
   const parent = store.getCommit(nameWithOwner.value, oid.value)?.parents[index];
@@ -206,6 +241,7 @@ function locate(reference: CommitReference) {
 
 <template>
   <CommitDetails
+    ref="details"
     :name-with-owner="nameWithOwner"
     :oid="oid"
     :refs="refs"

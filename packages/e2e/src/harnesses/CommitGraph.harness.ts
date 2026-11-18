@@ -21,6 +21,17 @@ export class CommitGraphHarness {
         this.details = page.getByRole('region', { name: 'Commit details' });
     }
 
+    /** How far the details' one scroll is scrolled: the first element in them that scrolls. */
+    async detailsScrollTop(): Promise<number> {
+        return this.details.evaluate(details => {
+            const scroller = Array.from(details.querySelectorAll('*')).find(
+                element =>
+                    getComputedStyle(element).overflowY === 'auto' && element.scrollHeight > element.clientHeight,
+            );
+            return scroller?.scrollTop ?? 0;
+        });
+    }
+
     /** The headline in the details. */
     get detailsHeadline(): Locator {
         return this.details.getByRole('heading', { level: 2 });
