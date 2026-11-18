@@ -5,6 +5,7 @@ import { getPendingComments } from '@/review/writing/getPendingComments.js';
 import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { DRAFT_THREAD, PENDING_REVIEW, REVIEW_VIEWER } from '@/testing/sampleReviews.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadPendingReview from './ItemThreadPendingReview.vue';
 
@@ -53,3 +54,6 @@ export const SubmitRefused: Story = {
         },
     },
 };
+
+/** `Activity / Review · pending, current`: the reading cursor on the draft, its head tinted, the amber border kept. */
+export const Current: Story = { decorators: [withReadingCursor('draftReview')] };

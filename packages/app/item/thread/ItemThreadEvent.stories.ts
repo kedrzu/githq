@@ -15,6 +15,7 @@ import {
     THEIR_OWN_REVIEW_REQUEST,
 } from '@/testing/sampleThreadEvents.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import { buildThread } from './buildThread.js';
 import type { ThreadChecksFailed, ThreadEventLine } from './buildThread.js';
@@ -110,3 +111,6 @@ function withEvents(detail: ItemDetail, newest: readonly ThreadEvent[]): ItemDet
 
 /** The thread at its widest: the time follows what was done, it is not pushed to the far edge. */
 export const Wide: Story = { parameters: { width: WIDEST } };
+
+/** `Activity / Event · current`: the reading cursor on the line, tinted with rounded corners. */
+export const Current: Story = { decorators: [withReadingCursor(`events:${linesOf(I1_ISSUE_DETAIL)[0]!.id}`)] };

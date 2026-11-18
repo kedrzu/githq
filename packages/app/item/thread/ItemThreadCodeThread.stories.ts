@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import { DB_THREAD, DRAFT_THREAD, REVIEW_VIEWER, SCHEMA_THREAD, sampleReviewThread } from '@/testing/sampleReviews.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 
@@ -68,4 +69,13 @@ export const LongLine: Story = {
             comments: [[REVIEW_VIEWER, '<p>Wraps badly in a terminal too.</p>', 60_000, 'R_long']],
         }),
     },
+};
+
+/** `Review / Comment · current`: the reading cursor on its second comment, tinted from the card's edge to its edge. */
+export const CurrentComment: Story = { decorators: [withReadingCursor('T_db_1')] };
+
+/** The cursor on the comment the address names: tinted, and still the location. */
+export const CurrentLinkedComment: Story = {
+    args: { linkedAnchor: 'discussion_T_db_1' },
+    decorators: [withReadingCursor('T_db_1')],
 };

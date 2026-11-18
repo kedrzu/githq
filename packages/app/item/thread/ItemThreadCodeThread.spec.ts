@@ -4,7 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ItemThreadCodeThread.stories.js';
 
-const { Open, Resolved, ReadOnly, ResolvedCannotUnresolve, Draft, LongLine } = composeStories(stories);
+const { Open, Resolved, ReadOnly, ResolvedCannotUnresolve, Draft, LongLine, CurrentComment, CurrentLinkedComment } =
+    composeStories(stories);
 
 test('Reply… and Resolve thread are offered only where GitHub lets the viewer reply and resolve', async () => {
     await Open.run();
@@ -46,4 +47,14 @@ test('a line wider than the card scrolls sideways in its frame, the card keeping
     // The story's frame: 440 wide, padded 16 each side.
     expect(thread.getBoundingClientRect().width).toBe(408);
     expect(code.scrollWidth).toBeGreaterThan(code.clientWidth);
+});
+
+test('the comment under the reading cursor is the current one, a linked one still the location', async () => {
+    await CurrentComment.run();
+    const stops = [...document.querySelectorAll('[data-reading-stop]')];
+    expect(stops.map(stop => stop.getAttribute('data-reading-stop'))).toEqual(['T_db_0', 'T_db_1']);
+    expect(stops.map(stop => stop.getAttribute('aria-current'))).toEqual([null, 'true']);
+
+    await CurrentLinkedComment.run();
+    expect(document.querySelector('[data-reading-stop="T_db_1"]')?.getAttribute('aria-current')).toBe('location');
 });

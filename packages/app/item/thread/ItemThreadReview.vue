@@ -1,4 +1,4 @@
-<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. -->
+<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. Its card is a stop of the reading cursor, keyed by the review's id — a row when folded dismissed to its head — and each comment of its open threads one inside it (`ItemThreadCodeThread`), each resolved thread's row another (`ItemThreadResolvedRow`), marked while the cursor is on them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -126,6 +126,8 @@ function toggle(threadId: string, open: boolean) {
     :created-at="entry.review.submittedAt"
     :now="now"
     :linked="linked"
+    :stop="entry.id"
+    :stop-kind="bodyShown || !dismissed ? 'comment' : 'row'"
     @menu-close="actions?.onMenuClose($event)"
   >
     <template #verdict>

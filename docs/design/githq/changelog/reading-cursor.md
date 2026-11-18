@@ -25,7 +25,7 @@ screens F24–F31, the frames below `App · Pull request` moved down.
   `jd4oq` and 31 screens' `WFYVj`). Check a few code review threads' avatars.
 - [ ] App · Pull request (`XN8vf`): new last row `Row of screens · The reading cursor` (`TS9ng`); nothing above it
   moved.
-- [ ] Components · Reading cursor (`bkmox`), in that row (moves into Components · Activity once a variant is picked):
+- [x] Components · Reading cursor (`bkmox`), in that row (moves into Components · Activity once a variant is picked):
   - Rows, every variant: `Activity / Commit · current` (`xyiYO`, fill and a 6 px outer bleed `#7B87F71A`),
     `Activity / Event · current` (`uBr3s`, `#7B87F71A`, radius 6), `Activity / Fold · current` (`VRxDl`, band
     `$bg-2` + `#7B87F71A`), `Activity / Code comment · resolved, current` (`sx0mg`, the folded row `$bg` +
@@ -69,7 +69,7 @@ invisible (no caret). The keys `.` menu, `Q` quote reply, `H` resolve / unresolv
 review's (an item can be open over a review). Changed: Variants B and C deleted, A's screens moved out and renamed, F30
 settled, the remaining components moved next to their bases, the frames below `App · Pull request` moved back up.
 
-- [ ] Review / Comment · current (`fNNF4`): the 2 px `$current-edge` mark on the card's left edge removed (the
+- [x] Review / Comment · current (`fNNF4`): the 2 px `$current-edge` mark on the card's left edge removed (the
   `kIiiC` stroke override); only the tint `#7B87F71A` stays, bleeding to the thread card's edges.
 - [ ] Review / Comment (`IHFo8`): the `Avatar column` wrapper (`kIiiC`) removed, the avatar (`J1oko`) back as the
   first child, as at the base revision. Looks the same.

@@ -1,4 +1,4 @@
-<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment; both where the file alone would not tell it from another row — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. It is a code thread to `J`/`K` (`data-code-thread`, `ItemThread`). -->
+<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment; both where the file alone would not tell it from another row — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. It is a code thread to `J`/`K` (`data-code-thread`, `ItemThread`), and a row stop of the reading cursor (`thread:<id>`): the cursor on it tints it as code review's cursor line (`Activity / Code comment · resolved, current`) and makes it `aria-current`. -->
 <script lang="ts" setup>
 import { arrayRemoveDuplicates } from '@nzyme/utils/array/arrayRemoveDuplicates.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
@@ -8,6 +8,7 @@ import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import { useReadingStop } from '@/reading/ReadingCursor.js';
 import { getHtmlFirstLine } from '@/review/utils/getHtmlFirstLine.js';
 
 import * as l from './ItemThreadResolvedRow.loc.js';
@@ -33,6 +34,8 @@ defineEmits<{
 const MAX_AVATARS = 3;
 
 const t = useTranslate();
+const stopKey = computed(() => `thread:${props.thread.id}`);
+const stop = useReadingStop(stopKey);
 
 /** Who wrote in it, each once, in the order they first did. */
 const people = computed(() =>
@@ -44,8 +47,11 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
 <template>
   <button
     type="button"
-    :class="css.itemThreadResolvedRow"
+    :class="[css.itemThreadResolvedRow, stop.current && css.itemThreadResolvedRow_current]"
     :data-code-thread="thread.id"
+    :data-reading-stop="stopKey"
+    data-reading-stop-kind="row"
+    :aria-current="stop.current || undefined"
     aria-expanded="false"
     @click="$emit('click')"
   >
@@ -103,6 +109,15 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
 
   &:hover {
     background: $color-bg-2;
+  }
+}
+
+// Under the reading cursor: the tint over its fill, hovered or not.
+.itemThreadResolvedRow_current {
+  background: linear-gradient($color-cursor-tint, $color-cursor-tint), $color-bg;
+
+  &:hover {
+    background: linear-gradient($color-cursor-tint, $color-cursor-tint), $color-bg-2;
   }
 }
 

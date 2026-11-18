@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { F5_PULL_REQUEST_DETAIL } from '@/testing/sampleThreadEvents.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import { buildThread } from './buildThread.js';
 import type { ThreadPush } from './buildThread.js';
@@ -54,3 +55,8 @@ export const Wide: Story = { parameters: { width: WIDEST } };
 
 /** Mobile D11: on a phone, which doesn't show commits, each commit's hash ends in ↗ — it opens on github.com. */
 export const OnPhone: Story = { decorators: [withPhoneLayout(true)], parameters: { width: 390 } };
+
+/** `Activity / Commit · current`: the reading cursor on the newest commit, tinted a little past its edges. */
+export const CurrentCommit: Story = {
+    decorators: [withReadingCursor(`commit:${THREE_COMMITS!.commits.at(-1)!.abbreviatedOid}`)],
+};

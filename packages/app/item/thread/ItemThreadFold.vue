@@ -1,4 +1,4 @@
-<!-- A break in an item's thread where its middle is not shown (`Activity / Fold`, F5): the rail turns dashed beside one band, the whole of it a button on nzyme's `useButton` — "Show 18 earlier events", what is folded by group ("10 commits · 3 comments · 5 other events", a group with none left out), a chevron — busy while they are read. A read that failed says so in place of the groups; the band reads again. Where the thread is narrow (a panel) the band takes two lines. -->
+<!-- A break in an item's thread where its middle is not shown (`Activity / Fold`, F5): the rail turns dashed beside one band, the whole of it a button on nzyme's `useButton` — "Show 18 earlier events", what is folded by group ("10 commits · 3 comments · 5 other events", a group with none left out), a chevron — busy while they are read. A read that failed says so in place of the groups; the band reads again. Where the thread is narrow (a panel) the band takes two lines. It is a row stop of the reading cursor (`fold`): the cursor on it tints the band as code review's cursor line (`Activity / Fold · current`) and makes it `aria-current`. -->
 <script lang="ts" setup>
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -11,6 +11,8 @@ import {
   UnfoldVertical,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+
+import { useReadingStop } from '@/reading/ReadingCursor.js';
 
 import * as l from './ItemThreadFold.loc.js';
 
@@ -28,6 +30,7 @@ defineEmits(useButton.emits);
 
 const { Button, busy } = useButton();
 const t = useTranslate();
+const stop = useReadingStop('fold');
 
 const groups = computed(() =>
   [
@@ -44,13 +47,18 @@ const groups = computed(() =>
 </script>
 
 <template>
-  <div :class="css.itemThreadFold">
+  <div
+    :class="css.itemThreadFold"
+    data-reading-stop="fold"
+    data-reading-stop-kind="row"
+    :aria-current="stop.current || undefined"
+  >
     <span
       :class="css.itemThreadFold_break"
       aria-hidden="true"
     />
     <Button
-      :class="css.itemThreadFold_band"
+      :class="[css.itemThreadFold_band, stop.current && css.itemThreadFold_band_current]"
       :aria-busy="busy || undefined"
     >
       <span :class="css.itemThreadFold_show">
@@ -158,6 +166,15 @@ $dash-offset: ($item-thread-rail-break-width - $item-thread-rail-width) * 0.5;
       'show chevron'
       'summary summary';
     grid-template-columns: 1fr auto;
+  }
+}
+
+// Under the reading cursor: the tint over the band's fill, hovered or not.
+.itemThreadFold_band_current {
+  background: linear-gradient($color-cursor-tint, $color-cursor-tint), $color-bg-2;
+
+  &:hover {
+    background: linear-gradient($color-cursor-tint, $color-cursor-tint), $color-bg-3;
   }
 }
 

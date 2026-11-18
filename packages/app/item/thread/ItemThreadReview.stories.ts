@@ -12,6 +12,7 @@ import {
     SCHEMA_NAME_THREAD,
 } from '@/testing/sampleReviews.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadReview from './ItemThreadReview.vue';
 
@@ -77,3 +78,12 @@ export const Dismissed: Story = { args: { entry: DISMISSED_REVIEW } };
 
 /** Dismissed, its dismissal not read yet: dismissed, not what it was. */
 export const DismissedUnknown: Story = { args: { entry: { ...DISMISSED_REVIEW, dismissedFrom: null } } };
+
+/** `Activity / Review · current`: the reading cursor on the review's card, its border and head as the current file's. */
+export const Current: Story = { decorators: [withReadingCursor(CHANGES_REQUESTED_REVIEW.id)] };
+
+/** A dismissed review folded to its head under the reading cursor: a row stop, marked as a card. */
+export const DismissedCurrent: Story = {
+    args: { entry: DISMISSED_REVIEW },
+    decorators: [withReadingCursor(DISMISSED_REVIEW.id)],
+};

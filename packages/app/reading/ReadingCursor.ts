@@ -56,8 +56,18 @@ export function provideReadingCursor(cursor: Readonly<Ref<ReadingCursor | null>>
  * conversation shares the comment card and shows no marking).
  */
 export function useReadingStop(key: MaybeRefOrGetter<string>): ReadingStop {
-    const context = injectContext(ReadingCursorContext, { optional: true });
+    const isCurrent = useReadingStops();
     return reactive<ReadingStop>({
-        current: computed(() => context !== null && context.currentKey() === toValue(key)),
+        current: computed(() => isCurrent(toValue(key))),
     });
+}
+
+/**
+ * Whether the reading cursor is on the stop keyed so, for a component drawing several stops in a loop (a push's
+ * commits, a code thread's comments), where one `useReadingStop` each cannot be called. Reactive where it is read;
+ * never, where no screen provides a cursor.
+ */
+export function useReadingStops(): (key: string) => boolean {
+    const context = injectContext(ReadingCursorContext, { optional: true });
+    return key => context !== null && context.currentKey() === key;
 }

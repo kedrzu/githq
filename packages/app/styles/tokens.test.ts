@@ -96,6 +96,8 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
     'current-edge': "accent at 60% over the window, opaque so the block's overlapping corners don't show stronger",
     'current-header': "accent at 6% over bg-2, the current file's header, faint enough for AA on it",
+    'cursor-tint':
+        "the reading cursor's row, sel's accent at 10.2% left translucent to lie over any of the thread's fills",
     'find-match': "the amber of a match of find (D47), dark and faint enough for every syntax colour's AA on it",
     'find-match-current': 'the current match, stronger than a match and outlined, still AA for every syntax colour',
     'find-match-outline': "the design's outline of the current match",

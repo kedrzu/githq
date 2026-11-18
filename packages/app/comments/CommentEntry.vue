@@ -1,4 +1,4 @@
-<!-- One comment, or an item's description, wherever comments are listed (an item's thread, code review's conversation): its card (`CommentCard`) with what was written as GitHub rendered it — or as typed while on its way, dimmed, "Sending…" for its time — "edited" once changed, and its menu (`CommentMenu`): Edit, which turns the card into its editor in place (`CommentEditor`), Quote reply, Copy link and Delete…, each only where GitHub says the user may (K1b), all done by the list's `useCommentActions`. A comment on its way has no menu: GitHub has nothing to act on yet. A description with nothing written says so. -->
+<!-- One comment, or an item's description, wherever comments are listed (an item's thread, code review's conversation): its card (`CommentCard`) with what was written as GitHub rendered it — or as typed while on its way, dimmed, "Sending…" for its time — "edited" once changed, and its menu (`CommentMenu`): Edit, which turns the card into its editor in place (`CommentEditor`), Quote reply, Copy link and Delete…, each only where GitHub says the user may (K1b), all done by the list's `useCommentActions`. A comment on its way has no menu: GitHub has nothing to act on yet. A description with nothing written says so. On an item's thread (`stop`) the card is a stop of the reading cursor, keyed by the comment's id or `description`, and marked while the cursor is on it (`CommentCard`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
@@ -44,6 +44,8 @@ const props = defineProps<{
   itemNumber: number;
   /** Whom `@` suggests first in the editor. */
   people?: readonly ItemUser[];
+  /** A stop of the reading cursor (an item's thread), keyed by {@link id}, or `description`. */
+  stop?: boolean;
 }>();
 
 defineSlots<{
@@ -82,6 +84,7 @@ const t = useTranslate();
     :menu-focused="actions.menuFocus === id"
     :linked="linked"
     :description="id === null"
+    :stop="stop ? (id ?? 'description') : undefined"
     @menu-close="actions.onMenuClose"
   >
     <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
