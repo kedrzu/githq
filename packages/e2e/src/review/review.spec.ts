@@ -817,7 +817,7 @@ test('V with viewed files hidden brings the next file to the top of the screen, 
     await page.keyboard.press('v');
     await expect(page.getByRole('heading', { name: 'All 2 files viewed' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Next: #/u })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Submit review…' }).click();
+    await page.getByRole('button', { name: 'Submit review' }).click();
     await expect(review.submitDialog).toBeVisible();
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Show viewed files' }).click();

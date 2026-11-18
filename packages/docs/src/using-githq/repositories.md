@@ -7,7 +7,7 @@ Actions workflows. It opens for any repository you can see on GitHub, tracked or
 
 - **The sidebar** lists the repositories you track, under **Repositories**, each with its count of open items.
 - **The command menu** (<kbd>⌘</kbd> <kbd>K</kbd>, or <kbd>Ctrl</kbd> <kbd>K</kbd> on Windows and Linux) finds a
-  tracked repository by name. Type `owner/name` to open one you don't track, or choose **Search repositories…** to
+  tracked repository by name. Type `owner/name` to open one you don't track, or choose **Search repositories** to
   search all of GitHub.
 - **An address.** githq uses GitHub's addresses: `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`
   open the matching section, and `/owner/name/actions` the workflows of a tracked repository. `/owner/name` opens the
@@ -39,7 +39,7 @@ tags.
 
 Both sections are lists of the repository's items with GitHub's own properties.
 
-- **State**: **Open** by default, **Closed**, or **Open and closed**. **Filter by state…** in the command menu does the
+- **State**: **Open** by default, **Closed**, or **Open and closed**. **Filter by state** in the command menu does the
   same.
 - **Group**: by **Milestone** (the default), **Assignee**, **Author**, **Status**, **Label**, **Issue type** (issues
   only) or **None**. A pull request's status is its stage, such as **Waiting for review**, **Needs work** or **Ready to

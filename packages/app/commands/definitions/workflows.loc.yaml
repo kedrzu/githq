@@ -3,7 +3,7 @@ alertSettings:
 openLatestFailure:
   en: Open latest failure
 runWorkflow:
-  en: Run workflow…
+  en: Run workflow
 dispatchKeyword:
   en: dispatch
 actionsKeyword:

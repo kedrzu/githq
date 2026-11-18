@@ -11,9 +11,9 @@ note:
     one: Others can't see it until you submit.
     many: Others can't see them until you submit.
 discard:
-  en: Discard review…
+  en: Discard review
 submit:
-  en: Submit review…
+  en: Submit review
 sending:
   en: Sending your review…
 sendFailed:
@@ -31,6 +31,6 @@ commentRefused:
 dismiss:
   en: Dismiss
 edit:
-  en: Edit review…
+  en: Edit review
 tryAgain:
   en: Try again

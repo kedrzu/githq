@@ -1003,7 +1003,7 @@ test("PM38: ⇧M's title is the way forward the panel leads to, as the opened it
     await userEvent.keyboard('j');
     await expect.poll(title).toBe('Update branch');
     await userEvent.keyboard('j');
-    await expect.poll(title).toBe('Mark ready…');
+    await expect.poll(title).toBe('Mark ready');
 });
 
 test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected row is; once sent it is unchecked and the list moves past it', async () => {
@@ -1121,11 +1121,11 @@ test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole
     view.columns.value = entry(rebase);
     await expect.poll(title).toMatch(matchText('Rebase on GitHub'));
     view.columns.value = entry(draft);
-    await expect.poll(title).toBe('Mark #10 ready…');
+    await expect.poll(title).toBe('Mark #10 ready');
     view.columns.value = entry(blocked);
-    await expect.poll(title).toBe('Merge…');
+    await expect.poll(title).toBe('Merge pull request');
     view.columns.value = entry(members.map(pr => ({ ...pr, isMergeQueueEnabled: true })));
-    await expect.poll(title).toBe('Queue…');
+    await expect.poll(title).toBe('Queue');
     view.columns.value = entry(
         members.map(pr => ({
             ...pr,
@@ -1146,13 +1146,13 @@ test("D11: a stack's entry's context menu merges its whole stack", async () => {
     mount(STACKED, 'list', { merge: merging.context, contextMenu: true });
 
     await userEvent.click(page.getByText('stack S_1'), { button: 'right' });
-    await userEvent.click(page.getByRole('menuitem', { name: 'Merge…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Merge pull request' }));
     expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
 
     // A pull request's own row offers no merge of the stack.
     await userEvent.click(page.getByText('a1'), { button: 'right' });
     await expect.element(page.getByRole('menuitem', { name: 'Open a1' })).toBeVisible();
-    await expect.element(page.getByRole('menuitem', { name: 'Merge…' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Merge pull request' })).not.toBeInTheDocument();
 });
 
 /** A list with a context menu over items in the local copy, every request to GitHub counted from when it is mounted. */

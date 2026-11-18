@@ -19,7 +19,7 @@ export interface StateOption {
 /** How the items are closed or reopened: the action's title and its entries. */
 export interface StateChoice {
     /**
-     * "Close issue", "Close pull request", "Close 3 items…" — the ellipsis only for several, whose two reasons are a
+     * "Close issue", "Close pull request", "Close 3 items" — the ellipsis only for several, whose two reasons are a
      * submenu — or "Reopen".
      */
     readonly title: string;

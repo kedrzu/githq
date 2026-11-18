@@ -315,7 +315,7 @@ test('without write access in the repository nothing offers merging: the standin
     const palette = new CommandMenuHarness(page);
     await palette.open();
     await palette.field.pressSequentially('Merge');
-    await expect(palette.option(/^Merge…/)).toHaveCount(0);
+    await expect(palette.option(/^Merge pull request/)).toHaveCount(0);
     await page.keyboard.press('Escape');
     expect(getMergeRequests(github)).toEqual([]);
 });

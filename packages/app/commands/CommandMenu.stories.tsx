@@ -190,7 +190,7 @@ const Harness = defineComponent({
         editing: { type: Object as PropType<ItemEditing>, default: () => SAMPLE_MAINTAINER_EDITING },
         startCommandId: { type: String as PropType<string | null>, default: null },
         startOpen: { type: Boolean, default: true },
-        /** "Search repositories…" as the app has it, with GitHub answering this; left out it is not offered. */
+        /** "Search repositories" as the app has it, with GitHub answering this; left out it is not offered. */
         github: { type: Function as PropType<() => Promise<RepositoryBrowseSearchQuery>>, default: undefined },
         repository: { type: String as PropType<string | null>, default: null },
         /** Levels to walk into, under places, repositories and actions; what their rows do is written in `asked`. */
@@ -198,7 +198,7 @@ const Harness = defineComponent({
         /** "Run workflow" with two workflows to run through a form: Deploy, and Release that can't run. */
         workflows: { type: Boolean, default: false },
         /**
-         * On a workflow nobody can run by hand (W48): "Run workflow · CLA", disabled, and "Run workflow…" starting at the
+         * On a workflow nobody can run by hand (W48): "Run workflow · CLA", disabled, and "Run workflow" starting at the
          * screen's repository (W36), whose workflows are still being read; fitloop/api beside it has Deploy.
          */
         repositoryWorkflows: { type: Boolean, default: false },
@@ -384,7 +384,7 @@ export const OnOpenItem: Story = {};
 /** K1b: a contributor — what they can't edit is not offered; commenting and adding to a project are. */
 export const OnOpenItemAsContributor: Story = { args: { editing: SAMPLE_CONTRIBUTOR_EDITING } };
 
-/** E2: "Set status…" opened — the status of both projects the item is in, the current one checked. */
+/** E2: "Set status" opened — the status of both projects the item is in, the current one checked. */
 export const StatusInTwoProjects: Story = { args: { startCommandId: 'item.status' } };
 
 /** E3: nothing opened — typing finds projects, repositories and items of the local copy, and any `owner/name`. */
@@ -419,7 +419,7 @@ export const FoundItems: Story = {
     },
 };
 
-/** E7: "Search repositories…" opened, before typing. */
+/** E7: "Search repositories" opened, before typing. */
 export const SearchBeforeTyping: Story = {
     args: {
         subject: 'none',
@@ -516,13 +516,13 @@ export const FormCantRun: Story = {
 };
 
 /**
- * W48 → W36: on CLA, which has no workflow_dispatch: its own line disabled, and "Run workflow…" at the repository, its hint
+ * W48 → W36: on CLA, which has no workflow_dispatch: its own line disabled, and "Run workflow" at the repository, its hint
  * at the footer's end.
  */
 export const RunWorkflowInRepository: Story = { args: { subject: 'none', repositoryWorkflows: true } };
 
 /**
- * W46: "Run workflow…"'s level — the repositories under "Tracked repositories" and "Nothing to run", its own placeholder
+ * W46: "Run workflow"'s level — the repositories under "Tracked repositories" and "Nothing to run", its own placeholder
  * and its step at the footer's end.
  */
 export const RunWorkflowRepositories: Story = {
@@ -932,7 +932,7 @@ function createRepositoryWorkflowCommands(say: (text: string) => void, t: Transl
             'runWorkflow',
             'app',
             {
-                title: 'Run workflow…',
+                title: 'Run workflow',
                 section: 'app',
                 icon: Play,
                 start: 'webapp',

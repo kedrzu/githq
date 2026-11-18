@@ -107,7 +107,7 @@ describe('what is found', () => {
 
 describe('scattered letters', () => {
     test('are off by default', () => {
-        expect(search('sts', ['Set status…'])).toEqual([]);
+        expect(search('sts', ['Set status'])).toEqual([]);
     });
 
     test('rank below the rule and keep the scores of today', () => {

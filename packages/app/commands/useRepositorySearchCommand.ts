@@ -23,7 +23,7 @@ type FoundRepository = Extract<
 >;
 
 /**
- * "Search repositories…" (D34, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
+ * "Search repositories" (D34, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
  * its qualifiers work (`useGitHubSearch`); picking a repository goes to its screen.
  */
 export function useRepositorySearchCommand(): () => BoundCommand {
