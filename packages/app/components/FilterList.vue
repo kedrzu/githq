@@ -3,7 +3,7 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ListboxContent, ListboxFilter, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRoot } from 'reka-ui';
 import type { AcceptableValue } from 'reka-ui';
-import { computed, nextTick, onMounted, useId, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue';
 
 import * as l from './FilterList.loc.js';
 import Kbd from './Kbd.vue';
@@ -117,6 +117,11 @@ const listRef = useTemplateRef<HTMLElement>('list');
 const filterRef = useTemplateRef<HTMLElement>('filter');
 /** The highlight moved since the rows last changed: it is on one of them by the user's or the list's choice. */
 let highlightCurrent = false;
+/** The rows scroll under a scrollbar drawn over them (macOS's overlay one), which they then stop short of. */
+const overlayScrollbar = ref(false);
+/** On a phone (`fromBelow`, `touch`) the rows keep the full width: its scrollbar shows only while a finger scrolls. */
+const reservesScrollbar = computed(() => !props.fromBelow && props.size !== 'touch');
+let scrollbarObserver: ResizeObserver | undefined;
 
 const rows = computed(() => props.groups.flatMap(group => group.rows));
 /** The list, not the filter, takes the focus as it shows, so that no on-screen keyboard comes before a tap. */
@@ -136,6 +141,9 @@ watch(
   { immediate: true },
 );
 
+// Rows coming and going can make the list start or stop scrolling without its box resizing (at its cap).
+watch(() => props.groups, measureScrollbar, { flush: 'post' });
+
 onMounted(() => {
   // Without a filter the list takes the keys at once: ↓ highlights the first row. From below or on a phone it holds the
   // focus too, so that no on-screen keyboard comes up before the filter is tapped.
@@ -147,7 +155,33 @@ onMounted(() => {
   if (props.fromBelow) {
     setTimeout(highlightLast);
   }
+
+  // The list resizing (the dialog, the window, its cap reached) can make it start or stop scrolling.
+  const list = listRef.value?.querySelector<HTMLElement>('[role="listbox"]');
+  if (list && reservesScrollbar.value) {
+    scrollbarObserver = new ResizeObserver(measureScrollbar);
+    scrollbarObserver.observe(list);
+  }
 });
+
+onBeforeUnmount(() => scrollbarObserver?.disconnect());
+
+/**
+ * A classic scrollbar takes its own width beside the rows; an overlay one takes none and is drawn over their ends, the
+ * highlighted row's background too, so while the list scrolls under one the rows make room for it. A list that doesn't
+ * scroll keeps its rows the full width, its insets equal.
+ */
+function measureScrollbar() {
+  const list = listRef.value?.querySelector<HTMLElement>('[role="listbox"]');
+  if (!list || !reservesScrollbar.value) {
+    return;
+  }
+
+  const style = getComputedStyle(list);
+  const borders = Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.borderRightWidth);
+  const scrolls = list.scrollHeight > list.clientHeight;
+  overlayScrollbar.value = scrolls && list.offsetWidth - list.clientWidth - borders <= 0;
+}
 
 function highlightBest() {
   if (props.fromBelow) {
@@ -323,7 +357,7 @@ function onListKeydown(event: KeyboardEvent) {
     >
       <ListboxContent
         :id="listId"
-        :class="css.filterList_list"
+        :class="[css.filterList_list, overlayScrollbar && css.filterList_list_overlayScrollbar]"
         :aria-label="label"
         :aria-activedescendant="activeDescendant"
       >
@@ -393,6 +427,9 @@ function onListKeydown(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
+// The room an overlay scrollbar takes beside the rows: the app's thin scrollbar (`scrollbar-width: thin`) is about 8px.
+$scrollbar-reserve: 8px;
+
 .filterList {
   display: flex;
   flex-direction: column;
@@ -432,6 +469,11 @@ function onListKeydown(event: KeyboardEvent) {
   flex-direction: column;
   overflow-y: auto;
   outline: none;
+}
+
+// Room for an overlay scrollbar beside the rows.
+.filterList_list_overlayScrollbar {
+  padding-right: $scrollbar-reserve;
 }
 
 .filterList_heading {
@@ -539,10 +581,16 @@ function onListKeydown(event: KeyboardEvent) {
 .filterList_lg {
   .filterList_list {
     padding: $spacing-6;
+    // A row scrolled into view (↑ from the first wraps to the last) keeps the list's padding from its edges.
+    scroll-padding-block: $spacing-6;
 
     &:empty {
       padding: 0;
     }
+  }
+
+  .filterList_list_overlayScrollbar {
+    padding-right: $spacing-6 + $scrollbar-reserve;
   }
 
   .filterList_status {

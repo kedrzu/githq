@@ -102,14 +102,25 @@ for (const [name, target] of [
 
 test('the command menu offers neither a repository nor a project being untracked', async () => {
     const { pending } = await open();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const filter = page.getByRole('textbox', { name: 'Type a command or search…' });
+
+    // Typed, the menu finds both while they are tracked: what follows can't pass for a search finding nothing.
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await userEvent.fill(filter, 'acme');
+    await expect.element(menu.getByRole('option', { name: WEB })).toBeInTheDocument();
+    await userEvent.fill(filter, ROADMAP);
+    await expect.element(menu.getByRole('option', { name: ROADMAP })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
 
     pending.untrack(WEB_TARGET, WEB);
     pending.untrack({ kind: 'project', id: 'PVT_1' }, ROADMAP);
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await userEvent.fill(filter, 'acme');
     await expect.element(menu.getByRole('option', { name: API })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: WEB })).not.toBeInTheDocument();
+    await userEvent.fill(filter, ROADMAP);
     await expect.element(menu.getByRole('option', { name: ROADMAP })).not.toBeInTheDocument();
 });
 

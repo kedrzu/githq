@@ -1,4 +1,4 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). At most 480px tall on a desktop, its rows scrolling. Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about), a level the chip or a crumb already names not named again. ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject) — kept by the caller (`CommandRegistry`), so the actions that start from them, "Run workflow" and New issue, then start from neither; Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). With nothing typed at the top it lists what is in context, "Recent" — up to five projects, repositories and items opened lately, newest first, not the screen shown or the item opened (`navigation.recent`) — and "Go to", which ends with "Repositories" and "Projects", each with its count, whose levels list the tracked ones alphabetically; the tracked repositories, the projects and the app's actions — but what the app offers now (`proposed`, D36) — are otherwise found by typing. At most 600px tall on a desktop, its rows scrolling. Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about), a level the chip or a crumb already names not named again. ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject) — kept by the caller (`CommandRegistry`), so the actions that start from them, "Run workflow" and New issue, then start from neither; Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assert } from '@nzyme/utils/assert.js';
@@ -119,7 +119,9 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   myWork: Inbox,
   workflows: Workflow,
   project: SquareKanban,
+  projects: SquareKanban,
   repository: BookMarked,
+  repositories: BookMarked,
   settings: Settings,
 };
 
@@ -244,7 +246,7 @@ const highlightedRow = computed(() => rows.value.find(row => row.value === highl
 const placeholder = computed(() =>
   submenu.value
     ? (submenuOptions.value?.placeholder ?? t(l.filterOptions))
-    : (step.value?.command?.placeholder ?? (phoneLayout.active ? t(l.doOrFind) : t(l.placeholder))),
+    : (step.value?.placeholder ?? (phoneLayout.active ? t(l.doOrFind) : t(l.placeholder))),
 );
 /** Quiet text at the footer's end: where a picker's options come from, the highlighted line's, a listed line's that can't run, its level's. */
 const footerHint = computed(() => {
@@ -342,6 +344,8 @@ function getHeading(key: CommandMenuGroupKey): string | null {
       return t(l.view);
     case 'repository':
       return repository.value;
+    case 'recent':
+      return t(l.recent);
     case 'goTo':
       return t(l.goTo);
     case 'projects':
@@ -408,11 +412,13 @@ function toRow(entry: CommandMenuEntry): Row {
         activate: () => pick(option),
       };
     }
-    case 'navigation':
-      return {
-        ...toNavigationRow(entry.id, entry.result),
-        enter: entry.path.length > 0 ? () => enterLevel(entry.path) : undefined,
-      };
+    case 'navigation': {
+      const enter = entry.path.length > 0 ? () => enterLevel(entry.path) : undefined;
+      const row = toNavigationRow(entry.id, entry.result);
+      // A place that is only a level (Repositories) has nowhere to go: Enter opens it.
+      const levelOnly = entry.result.kind === 'place' && entry.result.place.path === undefined;
+      return { ...row, activate: levelOnly && enter ? enter : row.activate, enter };
+    }
     default:
       return assertNever(entry);
   }
@@ -636,7 +642,7 @@ function onEscape(event: KeyboardEvent) {
     v-model:open="open"
     :title="t(l.title)"
     :width="680"
-    :max-height="480"
+    :max-height="600"
     :edge="phoneLayout.active ? 'bottom' : undefined"
     bare
     fit-content
@@ -767,6 +773,11 @@ function onEscape(event: KeyboardEvent) {
               :ranges="getRanges(row, 'title')"
             />
           </span>
+          <span
+            v-if="row.marks?.count != null"
+            :class="css.commandMenu_count"
+            >{{ numbers.format(row.marks.count) }}</span
+          >
           <ChevronRight
             v-if="row.enter"
             :class="css.commandMenu_more"
@@ -806,11 +817,6 @@ function onEscape(event: KeyboardEvent) {
             v-if="row.aside"
             :class="css.commandMenu_aside"
             >{{ row.aside }}</span
-          >
-          <span
-            v-if="row.marks?.count != null"
-            :class="css.commandMenu_aside"
-            >{{ numbers.format(row.marks.count) }}</span
           >
           <ArrowUpRight
             v-if="row.marks?.external"
@@ -922,6 +928,13 @@ function onEscape(event: KeyboardEvent) {
   font-size: $font-size-sm;
   color: $color-fg-dim;
   white-space: nowrap;
+}
+
+// A place's count follows its title (D41).
+.commandMenu_count {
+  flex: none;
+  font-size: $font-size-sm;
+  color: $color-fg-dim;
 }
 
 .commandMenu_aside {

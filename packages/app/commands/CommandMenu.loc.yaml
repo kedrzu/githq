@@ -8,6 +8,8 @@ filterOptions:
   en: Filter options…
 view:
   en: This view
+recent:
+  en: Recent
 goTo:
   en: Go to
 projects:

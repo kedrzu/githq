@@ -139,6 +139,18 @@ const NAVIGATION: NavigationData = {
     ],
 };
 
+/** E13: what was opened lately, newest first — the first item no longer in the local copy, so left out. */
+const RECENT_NAVIGATION: NavigationData = {
+    ...NAVIGATION,
+    recent: [
+        { kind: 'place', id: 'project:q4' },
+        { kind: 'item', id: 'I_gone' },
+        { kind: 'item', id: 'I_77' },
+        { kind: 'place', id: 'repository:portal' },
+        { kind: 'item', id: 'PR_1198' },
+    ],
+};
+
 const MOBILE_METADATA: RepositoryMetadata = {
     ...SAMPLE_PORTAL_METADATA,
     nameWithOwner: 'skyline-labs/mobile',
@@ -204,6 +216,8 @@ const Harness = defineComponent({
         repositoryWorkflows: { type: Boolean, default: false },
         /** Opened from the phone's command line on a list (mobile D17): the place's parts first. */
         parts: { type: String as PropType<PhonePlace | null>, default: null },
+        /** A project, an issue, a repository and a pull request opened lately, as kept (`RecentVisitsStore`). */
+        recent: { type: Boolean, default: false },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -219,7 +233,7 @@ const Harness = defineComponent({
         const went = ref('Nowhere');
         const sidebar = ref('expanded');
         const t = useTranslate();
-        const navigation = props.levels ? createLevelNavigation(say) : NAVIGATION;
+        const navigation = props.levels ? createLevelNavigation(say) : props.recent ? RECENT_NAVIGATION : NAVIGATION;
 
         if (props.levels) {
             useCommands(() => createLevelCommands(say, t));
@@ -355,7 +369,7 @@ const Harness = defineComponent({
         function navigate(result: NavigationResult) {
             switch (result.kind) {
                 case 'place':
-                    went.value = result.place.path;
+                    went.value = result.place.path ?? result.place.title;
                     break;
                 case 'item':
                     went.value = `${result.item.repository.nameWithOwner}#${result.item.number}`;
@@ -592,6 +606,15 @@ export const PhoneFoundItems: Story = {
     decorators: [withPhoneLayout(true)],
 };
 
+/** E13, E15: nothing typed — "Recent" before "Go to": a project, an issue, a repository and a pull request opened lately. */
+export const Recent: Story = { args: { subject: 'none', recent: true } };
+
+/** The same on a phone over My work: its parts nearest the field, "Recent" above them. */
+export const PhoneRecent: Story = {
+    args: { subject: 'none', parts: 'myWork', recent: true },
+    decorators: [withPhoneLayout(true)],
+};
+
 /** The list a phone's command line is on, for its parts. */
 type PhonePlace = 'repository' | 'project' | 'myWork';
 
@@ -746,40 +769,53 @@ function selectedIssue(
 function createLevelNavigation(say: (text: string) => void): NavigationData {
     return {
         ...NAVIGATION,
-        places: NAVIGATION.places.map(place => {
-            switch (place.id) {
-                case 'repository:portal':
-                    return {
-                        ...place,
-                        children: () => [
-                            levelRow('pulls', 'Pull requests', say),
-                            {
-                                ...levelRow('workflows', 'Workflows', say),
-                                children: () => [
-                                    levelRow('deploy', 'Deploy', say),
-                                    levelRow('nightly', 'Nightly', say),
-                                ],
-                            },
-                        ],
-                        foundAlone: () => [],
-                    };
-                case 'project:q4':
-                    return {
-                        ...place,
-                        children: () => [
-                            levelRow('board', 'Board', say),
-                            {
-                                id: 'iterations',
-                                title: 'Iterations',
-                                section: 'app',
-                                children: () => [levelRow('current', 'Current iteration', say)],
-                            },
-                        ],
-                    };
-                default:
-                    return place;
-            }
-        }),
+        places: [
+            ...NAVIGATION.places.map((place): NavigationPlace => {
+                switch (place.id) {
+                    case 'repository:portal':
+                        return {
+                            ...place,
+                            children: () => [
+                                levelRow('pulls', 'Pull requests', say),
+                                {
+                                    ...levelRow('workflows', 'Workflows', say),
+                                    children: () => [
+                                        levelRow('deploy', 'Deploy', say),
+                                        levelRow('nightly', 'Nightly', say),
+                                    ],
+                                },
+                            ],
+                            foundAlone: () => [],
+                        };
+                    case 'project:q4':
+                        return {
+                            ...place,
+                            children: () => [
+                                levelRow('board', 'Board', say),
+                                {
+                                    id: 'iterations',
+                                    title: 'Iterations',
+                                    section: 'app',
+                                    children: () => [levelRow('current', 'Current iteration', say)],
+                                },
+                            ],
+                        };
+                    default:
+                        return place;
+                }
+            }),
+            // E13: a place that is only a level, Enter opening it.
+            {
+                id: 'repositories',
+                group: 'goTo',
+                kind: 'repositories',
+                title: 'Repositories',
+                count: 1,
+                placeholder: 'Filter repositories…',
+                children: () => [levelRow('repository:portal', 'skyline-labs/portal', say)],
+                foundAlone: () => [],
+            },
+        ],
         repositoryChildren: nameWithOwner => [levelRow('pulls', `Pull requests of ${nameWithOwner}`, say)],
     };
 }
