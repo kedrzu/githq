@@ -1,4 +1,4 @@
-<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete… in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. Where the reading cursor's keys work (an item's page, F31), Edit shows `W` and Quote reply `Q`; they act on the card under the cursor, not inside the open menu. -->
+<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. Where the reading cursor's keys work (an item's page, F31), Edit shows `W` and Quote reply `Q`; they act on the card under the cursor, not inside the open menu. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Link, Pencil, TextQuote, Trash2 } from 'lucide-vue-next';

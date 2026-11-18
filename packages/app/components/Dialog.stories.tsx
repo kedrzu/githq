@@ -115,7 +115,7 @@ export const Centered: Story = {
                             centered
                         >
                             {{
-                                trigger: () => <Button>Merge…</Button>,
+                                trigger: () => <Button>Merge pull request</Button>,
                                 default: () => <p>Ready to merge · Approved · checks passed · no conflicts</p>,
                             }}
                         </Dialog>

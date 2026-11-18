@@ -1,14 +1,14 @@
 toggleLayout:
   en: Show as board or list
 groupBy:
-  en: Group by…
+  en: Group by
 orderBy:
-  en: Order by…
+  en: Order by
 filterByState:
-  en: Filter by state…
+  en: Filter by state
 rowField:
-  en: Row field…
+  en: Row field
 showProperties:
-  en: Show properties…
+  en: Show properties
 resetView:
   en: Reset view options

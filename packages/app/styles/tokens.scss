@@ -256,6 +256,9 @@ $window-controls-height: 36px;
 $touch-target-size: 44px;
 // An icon in a phone's top bar or command line, larger than the desktop's for a finger's target.
 $phone-icon-size: 22px;
+// A phone screen's content from its sides, as far as the top bar's and the command line's: the narrow screen spares no
+// margin wider than its toolbars'.
+$phone-edge-inset: $spacing-12;
 // An icon at the start of a row in a phone's sheet (the command menu's, MB223).
 $phone-row-icon-size: 18px;
 // A text field on a phone: iOS Safari zooms the page into a field whose text is smaller as it is focused.
@@ -279,7 +282,7 @@ $phone-home-indicator-room: env(safe-area-inset-bottom, 0px);
 // takes there — what the screens' scroll leaves at its end and the toasts sit above. The home indicator's inset where
 // the browser gives one.
 $phone-command-line-height: 48px;
-$phone-command-line-gap: $spacing-12;
+$phone-command-line-gap: $phone-edge-inset;
 $phone-command-line-room: calc(
     #{$phone-command-line-height + $phone-command-line-gap * 2} + #{$phone-home-indicator-room}
 );

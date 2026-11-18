@@ -331,7 +331,7 @@ for (const [label, params] of READ_ONLY_REPOSITORIES) {
         await page.goto(DEPLOY_PAGE);
         const deploy = new WorkflowItemHarness(page, 'Deploy');
         await expect(deploy.run(2)).toHaveAttribute('aria-current', 'true');
-        await expect(deploy.root.getByRole('button', { name: 'Run workflow…' })).toHaveCount(0);
+        await expect(deploy.root.getByRole('button', { name: 'Run workflow' })).toHaveCount(0);
 
         // The running run under the cursor: cancelling it is what would be offered.
         const menu = new CommandMenuHarness(page);

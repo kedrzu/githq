@@ -61,7 +61,7 @@ its fields, views and iterations. A project you don't track shows only the items
 ## Track or stop tracking later
 
 **From the command menu.** Open it with <kbd>⌘</kbd> <kbd>K</kbd> (<kbd>Ctrl</kbd> <kbd>K</kbd> on Windows and Linux)
-and choose **Search repositories…** to find any repository on GitHub and open it. On the screen of a repository you
+and choose **Search repositories** to find any repository on GitHub and open it. On the screen of a repository you
 don't track, **Track repository** is the last line of the command menu.
 
 **From the sidebar.** The menu of a tracked repository or project in the sidebar has **Stop tracking**.

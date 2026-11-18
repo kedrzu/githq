@@ -80,9 +80,9 @@ export class ItemViewHarness {
         return this.root.getByRole('note');
     }
 
-    /** "Merge…" of a pull request's standing (`⇧M`), where the user may merge it. */
+    /** "Merge pull request" of a pull request's standing (`⇧M`), where the user may merge it; "Merge" where it is narrow. */
     get mergeButton(): Locator {
-        return this.root.getByRole('button', { name: 'Merge…', exact: true });
+        return this.root.getByRole('button', { name: /^Merge(?: pull request)?$/u });
     }
 
     /** "Add to project". */
@@ -92,7 +92,7 @@ export class ItemViewHarness {
 
     /**
      * "Request" over a pull request's reviews. It shows once the repository's users are read: only then does `⇧R` open
-     * its picker rather than the command menu's "Request review…".
+     * its picker rather than the command menu's "Request review".
      */
     get requestReviewButton(): Locator {
         return this.root.getByRole('button', { name: /^Request(\s|$)/ });
@@ -192,7 +192,7 @@ export class ItemViewHarness {
         return entry.locator('xpath=following-sibling::li[1]');
     }
 
-    /** Picks `action` ("Edit", "Delete…") from the ⋯ menu of the comment holding `text`. */
+    /** Picks `action` ("Edit", "Delete") from the ⋯ menu of the comment holding `text`. */
     async commentAction(text: string, action: string): Promise<void> {
         await this.entry(text).getByRole('button', { name: 'Comment actions' }).click();
         await this.page.getByRole('menuitem', { name: action }).click();

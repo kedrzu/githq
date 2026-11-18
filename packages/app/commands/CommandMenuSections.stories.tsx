@@ -47,7 +47,7 @@ function renderSelection(startOpen: boolean) {
             const commands: Command[] = [
                 {
                     id: 'selection.assignees',
-                    title: 'Assign to…',
+                    title: 'Assign',
                     section: 'selection',
                     key: 'A',
                     icon: UserPlus,
@@ -65,7 +65,7 @@ function renderSelection(startOpen: boolean) {
                 },
                 {
                     id: 'selection.labels',
-                    title: 'Add or remove labels…',
+                    title: 'Add or remove labels',
                     section: 'selection',
                     key: 'L',
                     icon: Tag,

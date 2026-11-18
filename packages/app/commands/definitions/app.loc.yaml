@@ -5,7 +5,7 @@ createKeyword:
 newIssueInProject:
   en: New issue in project
 addItemsToProject:
-  en: Add existing issues to project…
+  en: Add existing issues to project
 backToMerge:
   en: Back to the refused merge
 mergedBranch:
@@ -27,7 +27,7 @@ settings:
 sidebar:
   en: Collapse or expand the sidebar
 searchRepositories:
-  en: Search repositories…
+  en: Search repositories
 openInDesktop:
   en: Open in desktop app
 loadNewVersion:

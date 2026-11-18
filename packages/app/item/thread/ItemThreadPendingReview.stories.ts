@@ -37,7 +37,7 @@ type Story = StoryObj<typeof meta>;
 /** `Activity / Review · pending`: amber, its comment "Pending", the pending toolbar at its foot. */
 export const Pending: Story = {};
 
-/** Submitting it was refused: the toolbar turns red with why, Edit review… and Try again. */
+/** Submitting it was refused: the toolbar turns red with why, Edit review and Try again. */
 export const SubmitRefused: Story = {
     args: {
         writing: {

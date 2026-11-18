@@ -153,10 +153,10 @@ test('Back with a changed edit open asks too; Discard goes back', async ({ page,
     await expect(page).not.toHaveURL(/issue=/u);
 });
 
-test('Delete… asks once, then the comment is gone, here and on GitHub', async ({ page, github }) => {
+test('Delete asks once, then the comment is gone, here and on GitHub', async ({ page, github }) => {
     const { sample, item } = await openWithComment(page, github);
 
-    await item.commentAction(TEXT, 'Delete…');
+    await item.commentAction(TEXT, 'Delete');
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await dialog.getByRole('button', { name: 'Delete comment' }).click();
 
@@ -172,7 +172,7 @@ test('a delete GitHub refuses brings the comment back, with its toast', async ({
         message: 'Resource not accessible by integration',
     });
 
-    await item.commentAction(TEXT, 'Delete…');
+    await item.commentAction(TEXT, 'Delete');
     await page
         .getByRole('dialog', { name: 'Delete this comment?' })
         .getByRole('button', { name: 'Delete comment' })

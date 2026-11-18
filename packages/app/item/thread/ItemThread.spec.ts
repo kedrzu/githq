@@ -313,7 +313,7 @@ test('where the user may no longer comment, a comment not sent stays readable wi
     expect(page.getByRole('button', { name: 'Retry' }).query()).toBeNull();
 });
 
-test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not let them change, only Quote reply and Copy link", async () => {
+test("K1b: the user's own comment offers Edit and Delete; one GitHub does not let them change, only Quote reply and Copy link", async () => {
     await IssueInPanel.run();
 
     await openMenu(MINE);
@@ -323,7 +323,7 @@ test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not
         'Edit',
         'Quote reply',
         'Copy link',
-        'Delete…',
+        'Delete',
     ]);
     await userEvent.keyboard('{Escape}');
 
@@ -338,7 +338,7 @@ test('where the user may not comment, the menu offers no Quote reply: the quote 
     await openMenu(MINE);
     const items = page.getByRole('menuitem');
     await expect.element(items.nth(0)).toHaveTextContent('Edit');
-    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Copy link', 'Delete…']);
+    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Copy link', 'Delete']);
 });
 
 test('the description has the same menu without Delete, from a right click too', async () => {
@@ -474,7 +474,7 @@ test("Cancel in the delete confirmation gives the focus back to the comment's �
 
     // From a right click too, where the menu has no ⋯ of its own to give the focus back to.
     await rightClickCard(MINE);
-    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete' }));
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
 
@@ -483,12 +483,12 @@ test("Cancel in the delete confirmation gives the focus back to the comment's �
     expect(onEdit).not.toHaveBeenCalled();
 });
 
-test('Delete… asks once; only the confirmation deletes', async () => {
+test('Delete asks once; only the confirmation deletes', async () => {
     const onEdit = vi.fn();
     await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
 
     await openMenu(MINE);
-    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete' }));
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await expect.element(dialog).toBeVisible();
     expect(onEdit).not.toHaveBeenCalled();

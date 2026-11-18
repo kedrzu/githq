@@ -72,15 +72,15 @@ export const NarrowDetails: Story = {
         await userEvent.click(canvas.getByRole('button', { name: 'Details' }));
         await expect(canvas.getByText('Never counts')).toBeVisible();
         // No dispatch: nothing to run, even where it is offered.
-        await expect(canvas.queryByRole('button', { name: 'Run workflow…' })).toBeNull();
+        await expect(canvas.queryByRole('button', { name: 'Run workflow' })).toBeNull();
     },
 };
 
-/** A dispatchable workflow where running it is offered: "Run workflow…" beside its name. */
+/** A dispatchable workflow where running it is offered: "Run workflow" beside its name. */
 export const RunOffered: Story = {
     args: { offerRun: true },
     play: async ({ args, canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Run workflow…' }));
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Run workflow' }));
         await expect(args.onRunWorkflow).toHaveBeenCalledTimes(1);
     },
 };

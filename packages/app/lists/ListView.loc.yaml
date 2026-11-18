@@ -5,13 +5,13 @@ mergeStack:
 mergeStackPart:
   en: Merge {count}
 queue:
-  en: Queue…
+  en: Queue
 inQueue:
   en: In the queue
 rebaseOnGitHub:
   en: Rebase on GitHub
 markReady:
-  en: 'Mark #{number} ready…'
+  en: 'Mark #{number} ready'
 pullRequests:
   plural: count
   en:

@@ -44,4 +44,4 @@ settings:
 newIssueInProject:
   en: New issue in {project}
 addItemsToProject:
-  en: Add existing issues to {project}…
+  en: Add existing issues to {project}
