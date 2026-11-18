@@ -264,8 +264,8 @@ test('a line being read stays where it is through a layout switch', async ({ pag
     await page.goto(REVIEW_ADDRESS);
     await expect(review.code('new 0')).toHaveCount(1);
 
-    await review.diff.hover();
-    await page.mouse.wheel(0, 2000);
+    // Not `mouse.wheel`: its event may wait for a frame nothing else asks for, leaving the diff unscrolled.
+    await review.diff.evaluate(diff => diff.scrollBy(0, 2000));
     await expect(review.code('new 0')).toHaveCount(0);
     const before = await review.topLine('new ');
 
