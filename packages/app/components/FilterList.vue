@@ -119,6 +119,8 @@ const filterRef = useTemplateRef<HTMLElement>('filter');
 let highlightCurrent = false;
 /** The rows scroll under a scrollbar drawn over them (macOS's overlay one), which they then stop short of. */
 const overlayScrollbar = ref(false);
+/** On a phone (`fromBelow`, `touch`) the rows keep the full width: its scrollbar shows only while a finger scrolls. */
+const reservesScrollbar = computed(() => !props.fromBelow && props.size !== 'touch');
 let scrollbarObserver: ResizeObserver | undefined;
 
 const rows = computed(() => props.groups.flatMap(group => group.rows));
@@ -156,7 +158,7 @@ onMounted(() => {
 
   // The list resizing (the dialog, the window, its cap reached) can make it start or stop scrolling.
   const list = listRef.value?.querySelector<HTMLElement>('[role="listbox"]');
-  if (list) {
+  if (list && reservesScrollbar.value) {
     scrollbarObserver = new ResizeObserver(measureScrollbar);
     scrollbarObserver.observe(list);
   }
@@ -171,7 +173,7 @@ onBeforeUnmount(() => scrollbarObserver?.disconnect());
  */
 function measureScrollbar() {
   const list = listRef.value?.querySelector<HTMLElement>('[role="listbox"]');
-  if (!list) {
+  if (!list || !reservesScrollbar.value) {
     return;
   }
 
