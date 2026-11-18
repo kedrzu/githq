@@ -1,3 +1,6 @@
+import { rm } from 'node:fs/promises';
+import path from 'node:path';
+
 import { getOAuthClientId } from '@githq/github/oauth.js';
 import { getBeaconLoaderScript } from '@githq/github/usageStatistics.js';
 import { simplifyAliasesModule } from '@nzyme/nuxt-tools';
@@ -112,7 +115,13 @@ export default defineNuxtConfig({
         // is a SPA, whose `index.html` is the shell anyway.
         prerender: DESKTOP ? {} : { routes: ['/', '/index.html'], crawlLinks: false, failOnError: true },
         hooks: DESKTOP
-            ? {}
+            ? {
+                  // The landing page's pictures and recording, a few megabytes in every installer for a page the
+                  // desktop app does not have (D21).
+                  async compiled(nitro) {
+                      await rm(path.join(nitro.options.output.publicDir, 'landing'), { recursive: true, force: true });
+                  },
+              }
             : {
                   // The landing page goes to `_landing.html`, leaving `index.html` to the shell, with its critical CSS
                   // inlined: the rules it uses go into the page, and its stylesheets load without blocking the

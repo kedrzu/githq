@@ -1,11 +1,11 @@
-<!-- The landing page's hero (githq.pen "Landing — githq.dev"): at its top, on its gradient, the banner of a sign-in that didn't finish, then "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first, which rises in once as the page opens. Under the call to action the development sign-in. -->
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): at its top, on its gradient, the banner of a sign-in that didn't finish, then "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over the app (`LandingHeroDemo`): a still — the one image the page loads first, which rises in once as the page opens — and then a recording of it in use. Under the call to action the development sign-in. -->
 <script lang="ts" setup>
-import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowRight, Star } from 'lucide-vue-next';
 
 import type { DesktopSystem } from './desktopBuilds.js';
 import LandingActions from './LandingActions.vue';
+import LandingHeroDemo from './LandingHeroDemo.vue';
 import * as l from './LandingHero.loc.js';
 import { REPOSITORY_URL } from './landingLinks.js';
 
@@ -71,17 +71,7 @@ const t = useTranslate();
     </div>
 
     <div :class="css.landingHero_stage">
-      <div :class="css.landingHero_shot">
-        <NuxtImg
-          :class="css.landingHero_image"
-          src="/landing/hero-my-work.webp"
-          width="2400"
-          height="1500"
-          sizes="320:134vw 720:84vw 1080:84vw 1440:1200px"
-          fetchpriority="high"
-          :alt="t(l.heroAlt)"
-        />
-      </div>
+      <LandingHeroDemo />
     </div>
   </section>
 </template>
@@ -193,69 +183,11 @@ const t = useTranslate();
 }
 
 .landingHero_stage {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-16;
-  align-items: center;
   width: 100%;
   padding-top: 40px;
 
   @include landing-mobile {
     padding-top: 32px;
-  }
-}
-
-.landingHero_shot {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid $color-border-2;
-  border-radius: 14px;
-  box-shadow:
-    0 40px 120px rgb(0 0 0 / 80%),
-    0 -10px 90px rgba($color-accent, 0.2);
-
-  // The app runs on below the fold: its bottom fades into the page.
-  &::after {
-    position: absolute;
-    inset: 57% 0 0;
-    content: '';
-    background: linear-gradient(180deg, rgba($color-bg, 0), $color-bg);
-  }
-
-  // Once, as the page opens: no state and no script, so the prerendered page plays it too, and where it does not
-  // play the screenshot simply stands in place. Starts visible, so the page's first image is painted at once.
-  @media (prefers-reduced-motion: no-preference) {
-    animation: hero-rise-in $landing-motion-duration ease-out;
-  }
-
-  @include landing-mobile {
-    aspect-ratio: 350 / 292;
-    border-radius: 12px;
-
-    &::after {
-      inset-block-start: 52%;
-    }
-  }
-}
-
-.landingHero_image {
-  display: block;
-  width: 100%;
-  height: auto;
-
-  // A phone shows the list's left part, larger, instead of the whole window shrunk.
-  @include landing-mobile {
-    height: 100%;
-    object-fit: cover;
-    object-position: left top;
-  }
-}
-
-@keyframes hero-rise-in {
-  from {
-    opacity: 0.4;
-    transform: translateY(16px);
   }
 }
 </style>
