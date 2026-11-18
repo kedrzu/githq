@@ -11,7 +11,9 @@ All your repos at the speed of thought.
 
 </div>
 
-<img src="docs/assets/readme/my-work.png" alt="githq: My work across every repository, with the sidebar marking the repositories whose workflows are broken" width="100%">
+<img src="docs/assets/readme/demo.webp" alt="githq in use: ⌘K finds an issue across every repository, S moves it to In Progress at once while GitHub is still saving, and ⌘K opens the project's board with the card already moved" width="100%">
+
+<p align="center"><sub>⌘K to find an issue in any repository · <kbd>S</kbd> to set its status · no spinner anywhere. Recorded from the real app (<code>bun run demo:readme</code>).</sub></p>
 
 ## Why
 
