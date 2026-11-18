@@ -87,6 +87,9 @@ export const Current: Story = {
     play: openMenu,
 };
 
+/** Opens the menu and waits for its items: the project is tracked once IndexedDB is read, and until then the menu is empty, which axe rejects. */
 async function openMenu({ canvasElement }: { canvasElement: HTMLElement }) {
     await userEvent.click(within(canvasElement).getByRole('button'));
+    // The menu opens in a portal, outside the canvas.
+    await within(canvasElement.ownerDocument.body).findAllByRole('menuitem');
 }
