@@ -286,6 +286,33 @@
                       ]
                     },
                     {
+                      "id": "CSqgu",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "T24lwV",
+                      "name": "Kbd / two icons + key",
+                      "descendants": {
+                        "weRcq": {
+                          "name": "Key command",
+                          "icon": "command"
+                        },
+                        "w5d1Ed": {
+                          "name": "Key arrow-big-up",
+                          "icon": "arrow-big-up"
+                        },
+                        "G9hW7": {
+                          "type": "text",
+                          "id": "h6MJK",
+                          "name": "Key",
+                          "fill": "$fg-2",
+                          "content": "C",
+                          "fontFamily": "$mono",
+                          "fontSize": 10.5,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
                       "type": "frame",
                       "id": "xfbOl",
                       "name": "Hint",
@@ -63272,14 +63299,36 @@
                       "fill": "$fg-2"
                     },
                     {
-                      "type": "text",
-                      "id": "e2wbth",
-                      "name": "Label",
-                      "fill": "$fg",
-                      "content": "owner/name",
-                      "fontFamily": "$font",
-                      "fontSize": 13.5,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "pLPEd",
+                      "name": "Title",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "e2wbth",
+                          "name": "Label",
+                          "fill": "$fg",
+                          "content": "owner/name",
+                          "fontFamily": "$font",
+                          "fontSize": 13.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "nsltD",
+                          "x": 0,
+                          "y": 0,
+                          "name": "icon chevron-right",
+                          "enabled": false,
+                          "width": 13,
+                          "height": 13,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        }
+                      ]
                     },
                     {
                       "type": "text",
@@ -63309,10 +63358,10 @@
                       "fontWeight": "normal"
                     },
                     {
-                      "id": "VijC9",
+                      "id": "tKPtn",
                       "type": "ref",
-                      "ref": "oPSI9",
-                      "name": "Kbd modifier",
+                      "ref": "L44zw",
+                      "name": "Kbd with modifier",
                       "enabled": false
                     },
                     {
@@ -63321,19 +63370,6 @@
                       "ref": "w9kS9",
                       "name": "Kbd",
                       "enabled": false
-                    },
-                    {
-                      "type": "icon",
-                      "id": "nsltD",
-                      "x": 0,
-                      "y": 0,
-                      "name": "icon chevron-right",
-                      "enabled": false,
-                      "width": 13,
-                      "height": 13,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "$fg-3"
                     }
                   ]
                 },
@@ -64498,14 +64534,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "R1Mdn",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Set status",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "Rhc5C",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "R1Mdn",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Set status",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "mVOK3",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -64529,16 +64584,6 @@
                               "type": "ref",
                               "ref": "w9kS9",
                               "name": "Kbd S"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "mVOK3",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64566,14 +64611,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "xp2q0",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Set priority",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "K2vETS",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xp2q0",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Set priority",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "V8zgx",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -64602,16 +64666,6 @@
                                   "content": "P"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "V8zgx",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64639,14 +64693,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "U6Zsip",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Set iteration",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "nkIIm",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "U6Zsip",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Set iteration",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "qsUfZ",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -64675,16 +64748,6 @@
                                   "content": "I"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "qsUfZ",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64712,14 +64775,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "JQ8Sw",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Assign",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "j6Bbyj",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JQ8Sw",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Assign",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "g0Pr1h",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -64738,16 +64820,6 @@
                                   "content": "A"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "g0Pr1h",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64775,14 +64847,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "DxBdx",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Add or remove labels",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "EAUaL",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "DxBdx",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Add or remove labels",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "J1RcS",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -64801,16 +64892,6 @@
                                   "content": "L"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "J1RcS",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64891,14 +64972,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "E6rLyH",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Close issue",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "Jf7jq",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "E6rLyH",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Close issue",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "b0mA9V",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -64927,16 +65027,6 @@
                                   "content": "X"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "b0mA9V",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -64981,18 +65071,16 @@
                               "height": 1
                             },
                             {
-                              "id": "CI753",
+                              "id": "D2DLrB",
                               "type": "ref",
-                              "ref": "oPSI9",
-                              "name": "Kbd ⇧"
-                            },
-                            {
-                              "id": "wPcgs",
-                              "type": "ref",
-                              "ref": "oPSI9",
-                              "name": "Kbd ↵",
+                              "ref": "guh3O",
+                              "name": "Kbd ⇧↵",
                               "descendants": {
-                                "YRrEc": {
+                                "q1SXG": {
+                                  "name": "Key arrow-big-up",
+                                  "icon": "arrow-big-up"
+                                },
+                                "lhKUf": {
                                   "name": "Key corner-down-left",
                                   "icon": "corner-down-left"
                                 }
@@ -65041,30 +65129,20 @@
                               "height": 1
                             },
                             {
-                              "id": "z7OzCi",
+                              "id": "jBBbI",
                               "type": "ref",
-                              "ref": "oPSI9",
-                              "name": "Kbd ⌘",
+                              "ref": "CSqgu",
+                              "name": "Kbd ⌘⇧C",
                               "descendants": {
-                                "YRrEc": {
+                                "weRcq": {
                                   "name": "Key command",
                                   "icon": "command"
-                                }
-                              }
-                            },
-                            {
-                              "id": "ahPNe",
-                              "type": "ref",
-                              "ref": "oPSI9",
-                              "name": "Kbd ⇧"
-                            },
-                            {
-                              "id": "bPZdl",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd C",
-                              "descendants": {
-                                "luKkY": {
+                                },
+                                "w5d1Ed": {
+                                  "name": "Key arrow-big-up",
+                                  "icon": "arrow-big-up"
+                                },
+                                "h6MJK": {
                                   "content": "C"
                                 }
                               }
@@ -65186,18 +65264,16 @@
                               "height": 1
                             },
                             {
-                              "id": "gjfgf",
+                              "id": "xHCo1",
                               "type": "ref",
-                              "ref": "oPSI9",
-                              "name": "Kbd ⇧"
-                            },
-                            {
-                              "id": "xfKWm",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd V",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧V",
                               "descendants": {
-                                "luKkY": {
+                                "pINSd": {
+                                  "name": "Key arrow-big-up",
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
                                   "content": "V"
                                 }
                               }
@@ -65228,14 +65304,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "wWgIn",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Group by",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "EjJpU",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "wWgIn",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Group by",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "zp5w2",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -65253,16 +65348,6 @@
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
-                            },
-                            {
-                              "type": "icon",
-                              "id": "zp5w2",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -66518,14 +66603,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "c9BDpb",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Add to another project",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "UIYnV",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "c9BDpb",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Add to another project",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "n2sKxD",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -66533,16 +66637,6 @@
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
-                            },
-                            {
-                              "type": "icon",
-                              "id": "n2sKxD",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         }
@@ -67230,14 +67324,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "TrO11",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Filter: Area is Platform",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "exQoS",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TrO11",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Filter: Area is Platform",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "wPEEL",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -67245,16 +67358,6 @@
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
-                            },
-                            {
-                              "type": "icon",
-                              "id": "wPEEL",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -69622,14 +69725,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "CA9rm",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Set status",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "Pgnb4",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "CA9rm",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Set status",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "Ikj4I",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -69643,16 +69765,6 @@
                               "type": "ref",
                               "ref": "w9kS9",
                               "name": "Kbd S"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "Ikj4I",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -69680,14 +69792,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "UKCYL",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Assign",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "jyXmb",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "UKCYL",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Assign",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "qHh0B",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -69706,16 +69837,6 @@
                                   "content": "A"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "qHh0B",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -69743,14 +69864,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "y784D",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Add labels",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "G5BIv",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "y784D",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Add labels",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "kC7In",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "text",
@@ -69779,16 +69919,6 @@
                                   "content": "L"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "kC7In",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -69816,14 +69946,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "p9nrd",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Close 3 issues",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "P1NSR1",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "p9nrd",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Close 3 issues",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "gvEdr",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -69842,16 +69991,6 @@
                                   "content": "X"
                                 }
                               }
-                            },
-                            {
-                              "type": "icon",
-                              "id": "gvEdr",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         }
@@ -71162,34 +71301,24 @@
                           "content": "This view",
                           "name": "This view"
                         },
-                        "tbKqD": {
-                          "name": "Result Show as board",
-                          "enabled": true
-                        },
-                        "tbKqD/z7iSD": {
-                          "icon": "columns-3"
-                        },
                         "tbKqD/e2wbth": {
                           "content": "Show as board"
                         },
-                        "tbKqD/MXfcN": {
-                          "content": "",
+                        "tbKqD/nsltD": {
                           "enabled": false
                         },
-                        "tbKqD/IxzB4": {
-                          "enabled": false,
-                          "content": ""
+                        "tbKqD/tKPtn": {
+                          "enabled": true,
+                          "name": "Kbd ⇧V"
                         },
-                        "tbKqD/VijC9": {
-                          "enabled": true
+                        "tbKqD/tKPtn/pINSd": {
+                          "icon": "arrow-big-up",
+                          "name": "Key arrow-big-up"
                         },
-                        "tbKqD/py3B3": {
-                          "enabled": true
-                        },
-                        "tbKqD/py3B3/luKkY": {
+                        "tbKqD/tKPtn/Q8v43": {
                           "content": "V"
                         },
-                        "tbKqD/nsltD": {
+                        "tbKqD/py3B3": {
                           "enabled": false
                         },
                         "ya6cp": {
@@ -71202,6 +71331,9 @@
                         "ya6cp/e2wbth": {
                           "content": "Group by"
                         },
+                        "ya6cp/nsltD": {
+                          "enabled": true
+                        },
                         "ya6cp/MXfcN": {
                           "content": "Milestone",
                           "enabled": true
@@ -71210,14 +71342,8 @@
                           "enabled": false,
                           "content": ""
                         },
-                        "ya6cp/VijC9": {
-                          "enabled": false
-                        },
                         "ya6cp/py3B3": {
                           "enabled": false
-                        },
-                        "ya6cp/nsltD": {
-                          "enabled": true
                         },
                         "F44Oo": {
                           "name": "Result Order by…",
@@ -71229,6 +71355,9 @@
                         "F44Oo/e2wbth": {
                           "content": "Order by"
                         },
+                        "F44Oo/nsltD": {
+                          "enabled": true
+                        },
                         "F44Oo/MXfcN": {
                           "content": "Updated",
                           "enabled": true
@@ -71237,14 +71366,8 @@
                           "enabled": false,
                           "content": ""
                         },
-                        "F44Oo/VijC9": {
-                          "enabled": false
-                        },
                         "F44Oo/py3B3": {
                           "enabled": false
-                        },
-                        "F44Oo/nsltD": {
-                          "enabled": true
                         },
                         "Ms3d7": {
                           "enabled": true,
@@ -71264,13 +71387,13 @@
                         "F6fbn/e2wbth": {
                           "content": "Issues"
                         },
+                        "F6fbn/nsltD": {
+                          "enabled": false
+                        },
                         "F6fbn/MXfcN": {
                           "enabled": false
                         },
                         "F6fbn/IxzB4": {
-                          "enabled": false
-                        },
-                        "F6fbn/VijC9": {
                           "enabled": false
                         },
                         "F6fbn/py3B3": {
@@ -71278,9 +71401,6 @@
                         },
                         "F6fbn/py3B3/luKkY": {
                           "content": "1"
-                        },
-                        "F6fbn/nsltD": {
-                          "enabled": false
                         },
                         "ZR2qv": {
                           "enabled": true,
@@ -71292,13 +71412,13 @@
                         "ZR2qv/e2wbth": {
                           "content": "Pull requests"
                         },
+                        "ZR2qv/nsltD": {
+                          "enabled": false
+                        },
                         "ZR2qv/MXfcN": {
                           "enabled": false
                         },
                         "ZR2qv/IxzB4": {
-                          "enabled": false
-                        },
-                        "ZR2qv/VijC9": {
                           "enabled": false
                         },
                         "ZR2qv/py3B3": {
@@ -71306,9 +71426,6 @@
                         },
                         "ZR2qv/py3B3/luKkY": {
                           "content": "2"
-                        },
-                        "ZR2qv/nsltD": {
-                          "enabled": false
                         },
                         "sXnrR": {
                           "enabled": true,
@@ -71320,13 +71437,13 @@
                         "sXnrR/e2wbth": {
                           "content": "Commits"
                         },
+                        "sXnrR/nsltD": {
+                          "enabled": false
+                        },
                         "sXnrR/MXfcN": {
                           "enabled": false
                         },
                         "sXnrR/IxzB4": {
-                          "enabled": false
-                        },
-                        "sXnrR/VijC9": {
                           "enabled": false
                         },
                         "sXnrR/py3B3": {
@@ -71334,9 +71451,6 @@
                         },
                         "sXnrR/py3B3/luKkY": {
                           "content": "3"
-                        },
-                        "sXnrR/nsltD": {
-                          "enabled": false
                         },
                         "FmzBC": {
                           "name": "Result Open on GitHub",
@@ -71348,6 +71462,9 @@
                         "FmzBC/e2wbth": {
                           "content": "Open on GitHub"
                         },
+                        "FmzBC/nsltD": {
+                          "enabled": false
+                        },
                         "FmzBC/MXfcN": {
                           "enabled": true,
                           "content": "vitejs/vite"
@@ -71355,13 +71472,7 @@
                         "FmzBC/IxzB4": {
                           "enabled": false
                         },
-                        "FmzBC/VijC9": {
-                          "enabled": false
-                        },
                         "FmzBC/py3B3": {
-                          "enabled": false
-                        },
-                        "FmzBC/nsltD": {
                           "enabled": false
                         },
                         "O5NxG": {
@@ -71374,19 +71485,16 @@
                         "O5NxG/e2wbth": {
                           "content": "Copy link"
                         },
+                        "O5NxG/nsltD": {
+                          "enabled": false
+                        },
                         "O5NxG/MXfcN": {
                           "enabled": false
                         },
                         "O5NxG/IxzB4": {
                           "enabled": false
                         },
-                        "O5NxG/VijC9": {
-                          "enabled": false
-                        },
                         "O5NxG/py3B3": {
-                          "enabled": false
-                        },
-                        "O5NxG/nsltD": {
                           "enabled": false
                         },
                         "f1fSS": {
@@ -71399,6 +71507,9 @@
                         "f1fSS/e2wbth": {
                           "content": "Track repository"
                         },
+                        "f1fSS/nsltD": {
+                          "enabled": false
+                        },
                         "f1fSS/MXfcN": {
                           "enabled": true,
                           "content": "Keep all of it here, in the background"
@@ -71406,13 +71517,7 @@
                         "f1fSS/IxzB4": {
                           "enabled": false
                         },
-                        "f1fSS/VijC9": {
-                          "enabled": false
-                        },
                         "f1fSS/py3B3": {
-                          "enabled": false
-                        },
-                        "f1fSS/nsltD": {
                           "enabled": false
                         },
                         "TIfXc": {
@@ -71429,19 +71534,16 @@
                         "GBYw5/e2wbth": {
                           "content": "My work"
                         },
+                        "GBYw5/nsltD": {
+                          "enabled": false
+                        },
                         "GBYw5/MXfcN": {
                           "enabled": false
                         },
                         "GBYw5/IxzB4": {
                           "enabled": false
                         },
-                        "GBYw5/VijC9": {
-                          "enabled": false
-                        },
                         "GBYw5/py3B3": {
-                          "enabled": false
-                        },
-                        "GBYw5/nsltD": {
                           "enabled": false
                         },
                         "H0rw5": {
@@ -71454,13 +71556,13 @@
                         "H0rw5/e2wbth": {
                           "content": "Settings"
                         },
+                        "H0rw5/nsltD": {
+                          "enabled": false
+                        },
                         "H0rw5/MXfcN": {
                           "enabled": false
                         },
                         "H0rw5/IxzB4": {
-                          "enabled": false
-                        },
-                        "H0rw5/VijC9": {
                           "enabled": false
                         },
                         "H0rw5/py3B3": {
@@ -71468,9 +71570,6 @@
                         },
                         "H0rw5/py3B3/luKkY": {
                           "content": ","
-                        },
-                        "H0rw5/nsltD": {
-                          "enabled": false
                         },
                         "XnNgs": {
                           "enabled": true,
@@ -71486,13 +71585,13 @@
                         "G2VaU/e2wbth": {
                           "content": "Collapse sidebar"
                         },
+                        "G2VaU/nsltD": {
+                          "enabled": false
+                        },
                         "G2VaU/MXfcN": {
                           "enabled": false
                         },
                         "G2VaU/IxzB4": {
-                          "enabled": false
-                        },
-                        "G2VaU/VijC9": {
                           "enabled": false
                         },
                         "G2VaU/py3B3": {
@@ -71500,9 +71599,6 @@
                         },
                         "G2VaU/py3B3/luKkY": {
                           "content": "⌘B"
-                        },
-                        "G2VaU/nsltD": {
-                          "enabled": false
                         },
                         "SAr0i": {
                           "name": "Result Keyboard shortcuts",
@@ -71514,13 +71610,13 @@
                         "SAr0i/e2wbth": {
                           "content": "Keyboard shortcuts"
                         },
+                        "SAr0i/nsltD": {
+                          "enabled": false
+                        },
                         "SAr0i/MXfcN": {
                           "enabled": false
                         },
                         "SAr0i/IxzB4": {
-                          "enabled": false
-                        },
-                        "SAr0i/VijC9": {
                           "enabled": false
                         },
                         "SAr0i/py3B3": {
@@ -71528,9 +71624,6 @@
                         },
                         "SAr0i/py3B3/luKkY": {
                           "content": "?"
-                        },
-                        "SAr0i/nsltD": {
-                          "enabled": false
                         },
                         "DSzhK": {
                           "name": "Result New issue",
@@ -71542,13 +71635,13 @@
                         "DSzhK/e2wbth": {
                           "content": "New issue"
                         },
+                        "DSzhK/nsltD": {
+                          "enabled": false
+                        },
                         "DSzhK/MXfcN": {
                           "enabled": false
                         },
                         "DSzhK/IxzB4": {
-                          "enabled": false
-                        },
-                        "DSzhK/VijC9": {
                           "enabled": false
                         },
                         "DSzhK/py3B3": {
@@ -71556,9 +71649,6 @@
                         },
                         "DSzhK/py3B3/luKkY": {
                           "content": "C"
-                        },
-                        "DSzhK/nsltD": {
-                          "enabled": false
                         },
                         "C6Plf5": {
                           "name": "Result Sign out",
@@ -71570,19 +71660,16 @@
                         "C6Plf5/e2wbth": {
                           "content": "Sign out"
                         },
+                        "C6Plf5/nsltD": {
+                          "enabled": false
+                        },
                         "C6Plf5/MXfcN": {
                           "enabled": false
                         },
                         "C6Plf5/IxzB4": {
                           "enabled": false
                         },
-                        "C6Plf5/VijC9": {
-                          "enabled": false
-                        },
                         "C6Plf5/py3B3": {
-                          "enabled": false
-                        },
-                        "C6Plf5/nsltD": {
                           "enabled": false
                         },
                         "zJMom": {
@@ -71595,6 +71682,9 @@
                         "zJMom/e2wbth": {
                           "content": "Search repositories"
                         },
+                        "zJMom/nsltD": {
+                          "enabled": true
+                        },
                         "zJMom/MXfcN": {
                           "enabled": true,
                           "content": "Any repository on GitHub"
@@ -71602,14 +71692,8 @@
                         "zJMom/IxzB4": {
                           "enabled": false
                         },
-                        "zJMom/VijC9": {
-                          "enabled": false
-                        },
                         "zJMom/py3B3": {
                           "enabled": false
-                        },
-                        "zJMom/nsltD": {
-                          "enabled": true
                         },
                         "VoOvh": {
                           "enabled": false
@@ -71797,9 +71881,6 @@
                           "enabled": true
                         },
                         "D3fCpt": {
-                          "enabled": false
-                        },
-                        "tbKqD": {
                           "enabled": false
                         },
                         "ya6cp": {
@@ -72103,9 +72184,6 @@
                       "x": 380,
                       "y": 96,
                       "descendants": {
-                        "tbKqD": {
-                          "enabled": false
-                        },
                         "ya6cp": {
                           "enabled": false
                         },
@@ -72270,9 +72348,6 @@
                       "descendants": {
                         "ecD2f": {
                           "content": "vitee"
-                        },
-                        "tbKqD": {
-                          "enabled": false
                         },
                         "ya6cp": {
                           "enabled": false
@@ -73674,18 +73749,16 @@
                           "height": 1
                         },
                         {
-                          "id": "mGdhj",
+                          "id": "pR6Mi",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "qVQqr",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ↵",
+                          "ref": "guh3O",
+                          "name": "Kbd ⇧↵",
                           "descendants": {
-                            "YRrEc": {
+                            "q1SXG": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "lhKUf": {
                               "name": "Key corner-down-left",
                               "icon": "corner-down-left"
                             }
@@ -74458,30 +74531,20 @@
                           "height": 1
                         },
                         {
-                          "id": "aU6rK",
+                          "id": "RgYqH",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "KeMjf",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "ODefO",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -75312,18 +75375,16 @@
                           "height": 1
                         },
                         {
-                          "id": "WfZ9b",
+                          "id": "JDvcN",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "KWQRO",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd O",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧O",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "O"
                             }
                           }
@@ -75397,18 +75458,16 @@
                           "height": 1
                         },
                         {
-                          "id": "v6QNvZ",
+                          "id": "e8dMxp",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "SbHzJ",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd R",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧M",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "M"
                             }
                           }
@@ -75476,18 +75535,16 @@
                           "height": 1
                         },
                         {
-                          "id": "VL7DR",
+                          "id": "PJ3v2",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "ewJ8m",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd R",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧R",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "R"
                             }
                           }
@@ -75919,30 +75976,20 @@
                           "height": 1
                         },
                         {
-                          "id": "nfzX4",
+                          "id": "ohAMJ",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "a88CA7",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "sLJqV",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -76961,18 +77008,16 @@
                           "height": 1
                         },
                         {
-                          "id": "s1sb72",
+                          "id": "stOsK",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "vtAWx",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd O",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧O",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "O"
                             }
                           }
@@ -77127,30 +77172,20 @@
                           "height": 1
                         },
                         {
-                          "id": "UBqb7",
+                          "id": "rQGiB",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "EszmR",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "lmm03",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -78076,30 +78111,20 @@
                           "height": 1
                         },
                         {
-                          "id": "SLx69",
+                          "id": "VHlMh",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "A3kdy",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "v9sUU5",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -80003,30 +80028,20 @@
                           "height": 1
                         },
                         {
-                          "id": "X2IJ7",
+                          "id": "psrc3",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Z4Hp9J",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "LIAeM",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -80201,24 +80216,16 @@
                           "height": 1
                         },
                         {
-                          "id": "SkfL1",
+                          "id": "pcssU",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "L44zw",
+                          "name": "Kbd ⌘.",
                           "descendants": {
-                            "YRrEc": {
+                            "pINSd": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "SmB52",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd .",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "Q8v43": {
                               "content": "."
                             }
                           }
@@ -80690,18 +80697,16 @@
                           "height": 1
                         },
                         {
-                          "id": "IA3if",
+                          "id": "fK1cO",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "u7vUHr",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd R",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧M",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "M"
                             }
                           }
@@ -80769,18 +80774,16 @@
                           "height": 1
                         },
                         {
-                          "id": "E4xcfr",
+                          "id": "TWHgh",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "mQSGp",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd R",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧R",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "R"
                             }
                           }
@@ -80870,18 +80873,16 @@
                           "height": 1
                         },
                         {
-                          "id": "PCBbm",
+                          "id": "B7uTwi",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "yotEq",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd O",
+                          "ref": "L44zw",
+                          "name": "Kbd ⇧O",
                           "descendants": {
-                            "luKkY": {
+                            "pINSd": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "Q8v43": {
                               "content": "O"
                             }
                           }
@@ -81271,30 +81272,20 @@
                           "height": 1
                         },
                         {
-                          "id": "W1voFY",
+                          "id": "UresH",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "CSqgu",
+                          "name": "Kbd ⌘⇧C",
                           "descendants": {
-                            "YRrEc": {
+                            "weRcq": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "bPIPJ",
-                          "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⇧"
-                        },
-                        {
-                          "id": "F1SfY1",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd C",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "w5d1Ed": {
+                              "name": "Key arrow-big-up",
+                              "icon": "arrow-big-up"
+                            },
+                            "h6MJK": {
                               "content": "C"
                             }
                           }
@@ -81450,24 +81441,16 @@
                           "height": 1
                         },
                         {
-                          "id": "IHT7o",
+                          "id": "ZT7vU",
                           "type": "ref",
-                          "ref": "oPSI9",
-                          "name": "Kbd ⌘",
+                          "ref": "L44zw",
+                          "name": "Kbd ⌘.",
                           "descendants": {
-                            "YRrEc": {
+                            "pINSd": {
                               "name": "Key command",
                               "icon": "command"
-                            }
-                          }
-                        },
-                        {
-                          "id": "mFSkI",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd .",
-                          "descendants": {
-                            "luKkY": {
+                            },
+                            "Q8v43": {
                               "content": "."
                             }
                           }
@@ -139448,14 +139431,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "oHvZU",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Filter: Area is Platform",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "elW4R",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "oHvZU",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Filter: Area is Platform",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "w7xo8",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -139463,16 +139465,6 @@
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
-                            },
-                            {
-                              "type": "icon",
-                              "id": "w7xo8",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -148286,14 +148278,33 @@
                               "fill": "$fg-2"
                             },
                             {
-                              "type": "text",
-                              "id": "F9tCWp",
-                              "name": "Label",
-                              "fill": "$fg",
-                              "content": "Filter: Area is Platform",
-                              "fontFamily": "$font",
-                              "fontSize": 13.5,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "n1Uz3t",
+                              "name": "Title",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "F9tCWp",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Filter: Area is Platform",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "AZe2N",
+                                  "name": "icon chevron-right",
+                                  "width": 13,
+                                  "height": 13,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -148301,16 +148312,6 @@
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
-                            },
-                            {
-                              "type": "icon",
-                              "id": "AZe2N",
-                              "name": "icon chevron-right",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
                             }
                           ]
                         },
@@ -230725,15 +230726,15 @@
                                 "e2wbth": {
                                   "content": "Run workflow · Deploy"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "the selected workflow — main · 3 inputs"
                                 },
                                 "IxzB4": {
                                   "content": "main · 3 inputs",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -230762,15 +230763,15 @@
                                 "e2wbth": {
                                   "content": "Run workflow"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "a workflow in fitloop/webapp · 3 can run"
                                 },
                                 "IxzB4": {
                                   "content": "3 can run",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             }
@@ -231116,15 +231117,15 @@
                                   "content": "fitloop/webapp",
                                   "fill": "$fg"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "3 workflows you can run · Deploy, Release, Nightly e2e"
                                 },
                                 "IxzB4": {
                                   "content": "Deploy, Release, Nightly e2e",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -231143,15 +231144,15 @@
                                   "content": "fitloop/api",
                                   "fill": "$fg"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "1 workflow you can run · Deploy"
                                 },
                                 "IxzB4": {
                                   "content": "Deploy",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -231170,15 +231171,15 @@
                                   "content": "mlaine/tasklet",
                                   "fill": "$fg"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "1 workflow you can run · Deploy preview"
                                 },
                                 "IxzB4": {
                                   "content": "Deploy preview",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -231210,15 +231211,15 @@
                                   "content": "mlaine/mdlint",
                                   "fill": "$fg-dim"
                                 },
+                                "nsltD": {
+                                  "enabled": false
+                                },
                                 "MXfcN": {
                                   "content": "no workflow with workflow_dispatch"
                                 },
                                 "IxzB4": {
                                   "content": "can't run",
                                   "enabled": true
-                                },
-                                "nsltD": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -232363,15 +232364,15 @@
                                 "e2wbth": {
                                   "content": "Deploy"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "main · 3 inputs"
                                 },
                                 "IxzB4": {
                                   "content": "main · 3 inputs",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -232389,15 +232390,15 @@
                                 "e2wbth": {
                                   "content": "Release"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "main · 1 input"
                                 },
                                 "IxzB4": {
                                   "content": "main · 1 input",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -232415,15 +232416,15 @@
                                 "e2wbth": {
                                   "content": "Nightly e2e"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "main · no inputs"
                                 },
                                 "IxzB4": {
                                   "content": "main · no inputs",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             }
@@ -233853,15 +233854,15 @@
                                 "e2wbth": {
                                   "content": "Run workflow"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "a workflow in fitloop/webapp · 3 can run"
                                 },
                                 "IxzB4": {
                                   "content": "3 can run",
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             }
@@ -234980,14 +234981,14 @@
                                   "content": "Run workflow · Deploy",
                                   "fill": "$fg"
                                 },
+                                "nsltD": {
+                                  "enabled": true
+                                },
                                 "MXfcN": {
                                   "content": "the open workflow — main · 3 inputs"
                                 },
                                 "IxzB4": {
                                   "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
                                 }
                               }
                             },
@@ -497513,21 +497514,10 @@
                               "id": "dDEKT",
                               "type": "ref",
                               "ref": "w9kS9",
-                              "name": "Key 1",
+                              "name": "Key",
                               "descendants": {
                                 "luKkY": {
-                                  "content": "⌘"
-                                }
-                              }
-                            },
-                            {
-                              "id": "V6QPHv",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Key 2",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "K"
+                                  "content": "⌘K"
                                 }
                               }
                             }
@@ -499717,30 +499707,19 @@
                                         },
                                         "B9g0g": {
                                           "type": "frame",
-                                          "id": "cjEav",
+                                          "id": "wODuM",
                                           "name": "Keys",
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "id": "mJDJC",
+                                              "id": "ByAGN",
                                               "type": "ref",
                                               "ref": "w9kS9",
-                                              "name": "Key 1",
+                                              "name": "Key",
                                               "descendants": {
                                                 "luKkY": {
-                                                  "content": "⌘"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "n6fKG1",
-                                              "type": "ref",
-                                              "ref": "w9kS9",
-                                              "name": "Key 2",
-                                              "descendants": {
-                                                "luKkY": {
-                                                  "content": "K"
+                                                  "content": "⌘K"
                                                 }
                                               }
                                             }
@@ -500231,30 +500210,19 @@
                                         },
                                         "B9g0g": {
                                           "type": "frame",
-                                          "id": "O36lC",
+                                          "id": "L1kFtP",
                                           "name": "Keys",
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "id": "sEVK7",
+                                              "id": "mlGSK",
                                               "type": "ref",
                                               "ref": "w9kS9",
-                                              "name": "Key 1",
+                                              "name": "Key",
                                               "descendants": {
                                                 "luKkY": {
-                                                  "content": "⇧"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "GbauV",
-                                              "type": "ref",
-                                              "ref": "w9kS9",
-                                              "name": "Key 2",
-                                              "descendants": {
-                                                "luKkY": {
-                                                  "content": "C"
+                                                  "content": "⇧C"
                                                 }
                                               }
                                             }
@@ -500274,41 +500242,19 @@
                                         },
                                         "B9g0g": {
                                           "type": "frame",
-                                          "id": "R3jwd",
+                                          "id": "GqhOm",
                                           "name": "Keys",
                                           "gap": 4,
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "id": "qBjzj",
+                                              "id": "TigkE",
                                               "type": "ref",
                                               "ref": "w9kS9",
-                                              "name": "Key 1",
+                                              "name": "Key",
                                               "descendants": {
                                                 "luKkY": {
-                                                  "content": "⌘"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "WOVZB",
-                                              "type": "ref",
-                                              "ref": "w9kS9",
-                                              "name": "Key 2",
-                                              "descendants": {
-                                                "luKkY": {
-                                                  "content": "⇧"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "lgfmV",
-                                              "type": "ref",
-                                              "ref": "w9kS9",
-                                              "name": "Key 3",
-                                              "descendants": {
-                                                "luKkY": {
-                                                  "content": "O"
+                                                  "content": "⌘⇧O"
                                                 }
                                               }
                                             }
