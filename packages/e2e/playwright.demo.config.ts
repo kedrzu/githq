@@ -2,12 +2,8 @@ import { defineConfig } from '@playwright/test';
 
 import config from './playwright.config.js';
 
-/** The size the README's demo is recorded at: the app's dense desktop layout, small enough for a light animation. */
-const DEMO_VIEWPORT = { width: 1280, height: 760 };
-
-// The README's demo (`src/demo/*.demo.ts`), recorded as a video against the mocked GitHub, as the e2e tests run;
-// `src/demo/recordReadmeDemo.ts` runs it and turns the video into `docs/assets/readme/demo.webp`. Not a test: `bun run
-// e2e` never runs it.
+// The README's demo (`src/demo/*.demo.ts`), recorded frame by frame against the mocked GitHub, as the e2e tests run;
+// `src/demo/recordReadmeDemo.ts` runs it and encodes the frames. Not a test: `bun run e2e` never runs it.
 export default defineConfig({
     ...config,
     testMatch: /\.demo\.ts$/,
@@ -16,8 +12,8 @@ export default defineConfig({
     outputDir: './demo-results',
     use: {
         ...config.use,
-        viewport: DEMO_VIEWPORT,
-        video: { mode: 'on', size: DEMO_VIEWPORT },
+        // The app's dense desktop layout; a README shows it a little smaller still.
+        viewport: { width: 1280, height: 760 },
         trace: 'off',
         screenshot: 'off',
     },

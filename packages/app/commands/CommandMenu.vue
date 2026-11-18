@@ -102,7 +102,7 @@ interface Row extends FilterListRow {
   readonly hint?: string;
   readonly color?: string;
   readonly avatarUrl?: string;
-  readonly keys?: readonly string[];
+  readonly keys?: string;
   readonly chosen?: boolean;
   /** A part's (mobile D17): its count, a dot when changed on this device, ↗ when it leaves, a check when shown. */
   readonly marks?: CommandMarks;
@@ -385,7 +385,7 @@ function toRow(entry: CommandMenuEntry): Row {
         icon: command.icon ?? Zap,
         title: command.title,
         detail: command.detail,
-        keys: command.key?.split('+'),
+        keys: command.key,
         marks: command,
         hint: command.hint,
         ancestors: entry.ancestors,
@@ -435,7 +435,7 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
         icon: PLACE_ICONS[place.kind],
         title: place.title,
         detail: place.detail,
-        keys: place.key?.split('+'),
+        keys: place.key,
         marks: place,
         match: result.match,
         activate: go,
@@ -771,6 +771,11 @@ function onEscape(event: KeyboardEvent) {
               :ranges="getRanges(row, 'title')"
             />
           </span>
+          <ChevronRight
+            v-if="row.enter"
+            :class="css.commandMenu_more"
+            aria-hidden="true"
+          />
           <span
             v-if="row.marks?.changed"
             :class="css.commandMenu_changed"
@@ -822,14 +827,8 @@ function onEscape(event: KeyboardEvent) {
             :aria-label="t(l.chosen)"
           />
           <Kbd
-            v-for="(key, index) in phoneLayout.active ? [] : (row.keys ?? [])"
-            :key="index"
-            :keys="key"
-          />
-          <ChevronRight
-            v-if="row.enter"
-            :class="css.commandMenu_more"
-            aria-hidden="true"
+            v-if="row.keys && !phoneLayout.active"
+            :keys="row.keys"
           />
         </template>
       </template>

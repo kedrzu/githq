@@ -3,6 +3,7 @@
 import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
+import { createPromise } from '@nzyme/utils/createPromise.js';
 import { watch } from 'vue';
 
 import { ItemResolver } from '@/item/ItemResolver.js';
@@ -1064,6 +1065,25 @@ test('a reply GitHub says joined a draft after all shows as in the draft, which 
     await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
 
     expect(seen).toContainEqual({ kind: 'sent', way: 'joinDraft', body: 'Agreed' });
+});
+
+test('a reply sent goes the moment the threads read hold it, not once the draft is read too: it never shows twice', async () => {
+    const github = createGitHub();
+    github.threads = [threadOf('T_1', ['SUBMITTED'])];
+    const { model, session, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    github.threads = [threadOf('T_1', ['SUBMITTED', 'SUBMITTED'])];
+    const draftRead = createPromise();
+    // The draft read after the reply went, not the check before it.
+    session.github.holdIf = request =>
+        request.operation === 'ItemDetail' && writes().length > 0 ? draftRead.promise : null;
+
+    model.writing.send(id, 'single');
+    await waitUntil(() => model.threads[0]?.comments.length === 2, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.writing.targets).toEqual([]);
+    draftRead.resolve();
 });
 
 test('a reply joining the open draft names it, so that a draft gone by then refuses it rather than publishing it', async () => {

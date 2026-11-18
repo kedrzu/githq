@@ -1,6 +1,7 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
-import type { Page } from '@playwright/test';
+import type { Page, TestInfo } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
@@ -19,11 +20,10 @@ const TYPING_DELAY_MS = 90;
 
 // The README's demo: ⌘K finds an issue across every repository, S moves it to "In Progress" while GitHub is still
 // answering, ⌘K opens the project's board with the card already moved. No spinner anywhere. Recorded by
-// `recordReadmeDemo.ts`, which cuts the video at the second written to `demo-start.txt`.
+// `recordReadmeDemo.ts` from the frames this writes ({@link recordFrames}).
 test('README demo', async ({ page, github }, testInfo) => {
     test.setTimeout(120_000);
     const world = createSampleDemoWork();
-    const recordingStarted = Date.now();
     // Registered after the GitHub mock, so it answers the avatars first: initials instead of the mock's 1×1 pixel.
     await page
         .context()
@@ -33,7 +33,7 @@ test('README demo', async ({ page, github }, testInfo) => {
     await openTrackedWork(page, github, world);
     await page.mouse.move(-10, -10);
     await page.waitForTimeout(500);
-    await writeFile(testInfo.outputPath('demo-start.txt'), String((Date.now() - recordingStarted) / 1000));
+    const stopRecording = await recordFrames(page, testInfo);
 
     await page.waitForTimeout(1200);
     const menu = new CommandMenuHarness(page);
@@ -77,12 +77,52 @@ test('README demo', async ({ page, github }, testInfo) => {
     const board = new ProjectScreenHarness(page);
     await expect(board.row(DEMO_ISSUE)).toBeVisible();
     await expect(board.rows('In Progress').filter({ hasText: DEMO_ISSUE })).toHaveCount(1);
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(500);
+    await stopRecording();
 });
 
+/** One frame of the recording: its PNG in `frames/`, and when Chrome painted it, in seconds. */
+export interface DemoFrame {
+    readonly file: string;
+    readonly time: number;
+}
+
+/** What {@link recordFrames} writes to `frames.json`: the frames, and when the recording stopped, in seconds. */
+export interface DemoRecording {
+    readonly frames: readonly DemoFrame[];
+    readonly end: number;
+}
+
+/**
+ * Records what the page paints, losslessly: Chrome's screencast sends a PNG each time the screen changes, so a still
+ * screen costs nothing and every frame comes with the time it was painted. Playwright's own video is a low-bitrate VP8,
+ * whose blocks show in every dark gradient. The frames and `frames.json` ({@link DemoRecording}) go to the test's output.
+ */
+async function recordFrames(page: Page, testInfo: TestInfo): Promise<() => Promise<void>> {
+    const folder = testInfo.outputPath('frames');
+    await mkdir(folder, { recursive: true });
+    const frames: DemoFrame[] = [];
+    const writes: Promise<void>[] = [];
+    const session = await page.context().newCDPSession(page);
+    session.on('Page.screencastFrame', frame => {
+        const file = `f${String(frames.length + 1).padStart(4, '0')}.png`;
+        frames.push({ file, time: frame.metadata.timestamp ?? Date.now() / 1000 });
+        writes.push(writeFile(path.join(folder, file), Buffer.from(frame.data, 'base64')));
+        void session.send('Page.screencastFrameAck', { sessionId: frame.sessionId });
+    });
+    await session.send('Page.startScreencast', { format: 'png' });
+
+    return async () => {
+        const recording: DemoRecording = { frames, end: Date.now() / 1000 };
+        await session.send('Page.stopScreencast');
+        await Promise.all(writes);
+        await writeFile(testInfo.outputPath('frames.json'), JSON.stringify(recording));
+    };
+}
+
 /** An avatar with the user's initials, as githq's designs draw them; the viewer's avatar path names no login. */
-function avatarOf(path: string) {
-    const login = path.startsWith('/u/') ? SAMPLE_VIEWER.viewer.login : path.slice(1);
+function avatarOf(pathname: string) {
+    const login = pathname.startsWith('/u/') ? SAMPLE_VIEWER.viewer.login : pathname.slice(1);
     const colors = ['#5b8def', '#8b6fd6', '#d9895b', '#4fa37a', '#c75f8a'];
     let hash = 0;
     for (const char of login) {
