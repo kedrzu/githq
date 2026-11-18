@@ -55,5 +55,5 @@ from are in [headlines.md](headlines.md).
 
 - The page and the README describe failing workflows across repositories ahead of the code, because that work is
   about to land.
-- The sign-in screen that shows the landing and the share images in `githq.pen` still carry the old headline.
+- The sign-in screen that shows the landing still carries the old headline.
 - Who the first reader is: to be learned from talking to people, not decided here.
