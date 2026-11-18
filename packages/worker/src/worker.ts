@@ -10,11 +10,13 @@ import { authorize, exchangeToken, openApproval, refreshAccessToken, revokeToken
 import { isDocsPath, serveDocs } from './docs.js';
 import { DOWNLOAD_PREFIX, serveDownload } from './download.js';
 import { LANDING_PATH, serveHome, serveLanding } from './home.js';
+import { isMediaPath, serveMedia } from './media.js';
 import type { WorkerEnv } from './WorkerEnv.js';
 
 /**
  * The githq Worker (`wrangler.jsonc`). Cloudflare serves the SPA's files itself and runs the Worker only for
- * `/api/*`, `/`, `/_landing`, `/download/*` and `/docs/*` but `/docs/assets/*` (`assets.run_worker_first`). `/` and
+ * `/api/*`, `/`, `/_landing`, `/download/*`, `/docs/*` but `/docs/assets/*` and `/landing/*.mp4`
+ * (`assets.run_worker_first`). `/landing/*.mp4` are the landing page's videos, in byte ranges (`media.ts`). `/` and
  * `/_landing` are the choice between the prerendered landing page and the app (`home.ts`); `/download/*` are the fixed
  * links to the desktop installers of the latest release (`download.ts`); `/docs/*` is the documentation site, whose
  * unknown addresses get its 404 page instead of the app (`docs.ts`,
@@ -30,6 +32,9 @@ export default {
         }
         if (isDocsPath(pathname)) {
             return await serveDocs(request, env);
+        }
+        if (isMediaPath(pathname)) {
+            return await serveMedia(request, env);
         }
         switch (pathname) {
             case '/':
