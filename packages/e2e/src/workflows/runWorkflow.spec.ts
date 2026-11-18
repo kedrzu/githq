@@ -71,7 +71,8 @@ test('W37, W39: "Run workflow · Deploy" on the selected workflow: its form at m
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
-    await menu.field.pressSequentially('Run workflow');
+    // The workflow's name too: "Run workflow" alone is the whole title of the command that picks one.
+    await menu.field.pressSequentially('Run workflow Deploy');
     await expect(menu.option(/Run workflow · Deploy/u)).toContainText('main · 3 inputs');
     await expect(menu.option(/Run workflow · Deploy/u).locator('kbd')).toHaveCount(0);
     // W47: the footer says where Enter goes from the highlighted line.
