@@ -103,7 +103,7 @@ function drillIn(event: Event) {
           >{{ detail }}</span
         >
       </span>
-      <MenuShortcut :shortcut="shortcut" />
+      <MenuShortcut :keys="shortcut" />
     </DropdownMenuSubTrigger>
     <DropdownMenuPortal>
       <DropdownMenuSubContent

@@ -157,11 +157,7 @@ const sections = computed(() =>
                   >/</span
                 >
                 <VisuallyHidden>{{ formatAriaKeyShortcuts(key) }}</VisuallyHidden>
-                <Kbd
-                  v-for="(part, index) in key.split('+')"
-                  :key="index"
-                  :keys="part"
-                />
+                <Kbd :keys="key" />
               </template>
             </dd>
           </div>
