@@ -13,6 +13,8 @@ const {
     SeveralSelected,
     Closed,
     MatchInHiddenWord,
+    FoundItems,
+    PhoneFoundItems,
     SearchBeforeTyping,
     SearchResults,
     SearchAsking,
@@ -246,8 +248,7 @@ test("E5: the letters typed are marked in a title, a detail and a reference, and
     await userEvent.clear(field);
     await userEvent.keyboard('portal#1187');
     const inReference = page.getByRole('option', {
-        name: 'Calendar shows wrong timezone for recurring bookings portal#1187',
-        exact: true,
+        name: /Calendar shows wrong timezone for recurring bookings .*portal#1187/u,
     });
     await expect.element(inReference).toBeInTheDocument();
     expect(getMarks(inReference)).toEqual(['1187']);
@@ -294,9 +295,56 @@ test('E5: above 5 words a line is still found, unmarked', async () => {
     await Typing.run();
 
     await userEvent.keyboard('retry stripe webhook delivery on 5xx');
-    const row = page.getByRole('option', { name: /^Retry Stripe webhook delivery on 5xx/u });
+    const row = page.getByRole('option', { name: /Retry Stripe webhook delivery on 5xx .*api#477/u });
     await expect.element(row).toBeInTheDocument();
     expect(getMarks(row)).toEqual([]);
+});
+
+test('E11: a found item says its kind and state through its icon, its reference and standing on the second line', async () => {
+    await FoundItems.run();
+
+    const open = page.getByRole('option', { name: /Calendar export to iCal feeds/u });
+    await expect.element(open.getByRole('img', { name: 'Open pull request' })).toBeInTheDocument();
+    await expect.element(open).toHaveTextContent(/portal#1198\s*approved · checks passed/iu);
+
+    const merged = page.getByRole('option', { name: /Calendar view for weekly bookings/u });
+    await expect.element(merged.getByRole('img', { name: 'Merged pull request' })).toBeInTheDocument();
+    const notPlanned = page.getByRole('option', { name: /Calendar invites in Outlook format/u });
+    await expect.element(notPlanned.getByRole('img', { name: 'Closed issue, not planned' })).toBeInTheDocument();
+});
+
+test("E11: a found issue shows its first project's row field, with how many more projects it is in", async () => {
+    await FoundItems.run();
+
+    const inProjects = page.getByRole('option', { name: /Calendar shows wrong timezone for recurring bookings/u });
+    await expect.element(inProjects).toHaveTextContent(/portal#1187.*In progress\s*\+1/u);
+    // Not in a project: no field.
+    await expect
+        .element(page.getByRole('option', { name: /Calendar export to iCal feeds/u }))
+        .not.toHaveTextContent(/\+1/u);
+});
+
+test('E11: words of the title are marked on its line, a typed #N inside the reference under it', async () => {
+    await FoundItems.run();
+
+    const row = page.getByRole('option', { name: /Calendar shows wrong timezone for recurring bookings/u });
+    await expect.element(row).toBeInTheDocument();
+    expect(getMarks(row)).toEqual(['Cal']);
+
+    await userEvent.clear(page.getByRole('textbox', { name: 'Type a command or search…' }));
+    await userEvent.keyboard('#1187');
+    await expect.element(row).toBeInTheDocument();
+    const marks = row.element().querySelectorAll('mark');
+    expect(Array.from(marks, mark => mark.textContent)).toEqual(['1187']);
+    expect(marks[0]?.closest('span')?.textContent).toBe('portal#1187');
+});
+
+test("MB272: on a phone a found pull request's checks and standing are each said in full", async () => {
+    await PhoneFoundItems.run();
+
+    const open = page.getByRole('option', { name: /Calendar export to iCal feeds/u });
+    await expect.element(open.getByRole('img', { name: '12 of 12 checks passed' })).toBeInTheDocument();
+    await expect.element(open.getByRole('img', { name: 'approved · checks passed' })).toBeInTheDocument();
 });
 
 test('E7: before typing the search says to type, not that nothing matches, and offers nothing to open', async () => {

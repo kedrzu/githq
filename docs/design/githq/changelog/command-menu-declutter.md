@@ -106,3 +106,19 @@ Choices the brief left open:
 - E3, E5, U20 and Settings ⌘K draw a place ("Platform Q4 · Current sprint") as the chip, which the code never does: it
   shows only a subject or a repository. Their footers leave out Remove context, as the code would; the chip itself is
   out of this round's scope.
+
+## Round 4 · merge with main (#350)
+
+Asked (`.context/command-menu-merge-brief.md`, not committed): resolve the `githq.pen` conflicts from merging
+`origin/main`. Both sides grew `App · Command menu` (`D27jC`): this branch by the Calmer empty menu rows and moved the
+frames below it down by 2708 px; #350 by `Parts · Item results`, `Group header · Found items, two lines` and `Row of
+screens · Found items` (log: `command-menu-item-rows.md`) and moved the same frames down by 1292 px. The driver kept
+ours for the 21 conflicting `y` values.
+Changed: the frames below the menus row only. `D27jC` is a vertical layout, so both sides' rows already stack without
+overlap: main's Found items header and row, then this branch's Calmer empty menu header, row and the variants frame.
+It now ends at 75215 px, so the next row starts 1200 px below, at 76415 px (base + 4000).
+
+- [ ] The 21 top-level frames below `D27jC` (`Zk4sa`, `gvCqI`, `i3VkT`, `epLfx`, `iZkBN`, `O6Vuj8`, `Sz7Bf`, `BnN7r`,
+  `rV6qN`, `ohwJa`, `Ri8IR`, `jy6bO`, `JJOFX`, `ucqck`, `XCfAD`, `jv9Tp`, `ykYxo`, `I5wWZ`, `S5J7kt`, `nCTdq`,
+  `PiKGF`): `y` +1292 (flows row 75123 → 76415, platforms 87880 → 89172, web and brand 130175 → 131467), relative
+  offsets kept. No top-level frames overlap.
