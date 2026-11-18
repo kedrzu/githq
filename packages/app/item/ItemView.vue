@@ -693,7 +693,7 @@ function getItemCommands(): BoundCommand[] {
           <MenuLabel>
             <span :class="css.itemView_menuFooter">
               {{ t(itemMenu.title) }}
-              <MenuShortcut :shortcut="itemMenuKey" />
+              <MenuShortcut :keys="itemMenuKey" />
             </span>
           </MenuLabel>
         </Menu>
