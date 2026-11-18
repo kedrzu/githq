@@ -182,3 +182,21 @@ to a reusable node through the MCP before saving).
 - [ ] Layer names that carried the old label lost the "…" (27, e.g. `Result Set status…` → `Result Set status`).
 - Kept: placeholders (`Reply…`, `Search or jump to…`, `Filter…`, `Assign to…` in the phone's assignee picker, `Branch
   or tag…`, `Add to your draft…`), progress texts (`Sending…`, `Checking…`, `Reading…`) and truncated text.
+
+## Merge · main (#350) into this branch
+
+Conflict: both sides moved the same top-level frames down. This branch grew `App · Pull request` (`XN8vf`) and moved
+every frame from y 26240 by 1298 px; main grew `App · Command menu` (`D27jC`) and moved the rows below it by 1292 px.
+Both hold, so each conflicting frame moved by both (kept value + 1292). Checked: no top-level frames overlap,
+`App · Command menu` ends at 73805 above the next row at 75005, `App · Pull request` ends at 26435 above 27538.
+
+- [ ] Flows and states row (`Zk4sa`, `gvCqI`, `i3VkT`, `epLfx`, `iZkBN`, `O6Vuj8`, `Sz7Bf`): y 73713 → 75005.
+- [ ] Platforms row (`rV6qN`, `ohwJa`, `Ri8IR`, `jy6bO`): y 86470 → 87762.
+- [ ] Web and brand row (`JJOFX`, `ucqck`, `XCfAD`, `jv9Tp`, `ykYxo`, `I5wWZ`, `S5J7kt`, `nCTdq`, `PiKGF`): y 128765 →
+  130057.
+
+## Owner's decision on the merge button's label (2026-11-18)
+
+Where "Merge pull request" does not fit — the summary card in two columns (376 px) and on a phone (358 px) — the button
+says "Merge", without "…"; everywhere it fits (the panel, the merging screens, the menus) it says "Merge pull request".
+The file already draws it so after round 3; nothing to change.

@@ -19,11 +19,11 @@ import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import type { PhonePart } from '@/shell/PhoneLayout.js';
-import type { Item } from '@/store/ItemTypes.js';
+import type { Item, ItemRepository } from '@/store/ItemTypes.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
-import { sampleIssue } from '@/testing/sampleItems.js';
-import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
+import { D1_ITEMS, SAMPLE_NOW, sampleUser } from '@/testing/sampleMyWork.js';
 import {
     SAMPLE_CONTRIBUTOR_EDITING,
     SAMPLE_MAINTAINER_EDITING,
@@ -44,6 +44,60 @@ import type { NavigationData, NavigationPlace, NavigationResult } from './search
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
 import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
+
+const PORTAL: ItemRepository = {
+    nameWithOwner: 'skyline-labs/portal',
+    owner: 'skyline-labs',
+    isPrivate: false,
+    viewerPermission: 'WRITE',
+};
+
+/**
+ * E11, MB272: found by "cal" beside D1's portal#1187 (in Platform Q4 "In progress" and Bug triage): an open pull request
+ * approved with its checks passed (behind its base), a draft with a check failing, a merged one and an issue closed as not planned.
+ */
+const FOUND_ITEMS: readonly Item[] = [
+    {
+        ...samplePullRequest('PR_1198'),
+        repository: PORTAL,
+        number: 1198,
+        title: 'Calendar export to iCal feeds',
+        author: sampleUser('tw', '#c3a6f2'),
+        reviewDecision: 'APPROVED',
+        checks: { state: 'SUCCESS', passing: 12, failing: 0, pending: 0 },
+        // Behind its base, so approved with its checks passed but not ready to merge.
+        mergeStateStatus: 'BEHIND',
+        behindBase: true,
+    },
+    {
+        ...samplePullRequest('PR_1212'),
+        repository: PORTAL,
+        number: 1212,
+        title: 'Calendar sync with Google Workspace',
+        author: sampleUser('olam', '#7fb3d5'),
+        isDraft: true,
+        checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 },
+    },
+    {
+        ...samplePullRequest('PR_1150'),
+        repository: PORTAL,
+        number: 1150,
+        title: 'Calendar view for weekly bookings',
+        author: sampleUser('pnowak', '#81c995'),
+        state: 'MERGED',
+        merged: true,
+        closedAt: '2026-10-21T10:00:00Z',
+    },
+    {
+        ...sampleIssue('I_1102'),
+        repository: PORTAL,
+        number: 1102,
+        title: 'Calendar invites in Outlook format',
+        state: 'CLOSED',
+        stateReason: 'NOT_PLANNED',
+        closedAt: '2026-10-21T10:00:00Z',
+    },
+];
 
 /** What the menu finds while nothing is opened (E3): projects, repositories, items of the local copy. */
 const NAVIGATION: NavigationData = {
@@ -81,6 +135,7 @@ const NAVIGATION: NavigationData = {
         ...D1_ITEMS,
         { ...sampleIssue('I_77'), number: 77, title: 'Keep reactivity when the sidebar collapses' },
         { ...sampleIssue('I_78'), number: 78, title: 'Żółty label is unreadable on the dark theme' },
+        ...FOUND_ITEMS,
     ],
 };
 
@@ -353,6 +408,17 @@ export const MatchInHiddenWord: Story = {
     },
 };
 
+/**
+ * E11: issues and pull requests found in two lines — the kind icon in its state's tone, the title marked and its age;
+ * under it the reference, the checks and standing, the first project's row field with "+1", the author.
+ */
+export const FoundItems: Story = {
+    args: { subject: 'none' },
+    play: async () => {
+        await userEvent.keyboard('cal');
+    },
+};
+
 /** E7: "Search repositories…" opened, before typing. */
 export const SearchBeforeTyping: Story = {
     args: {
@@ -515,6 +581,15 @@ export const PhoneTyping: Story = {
     play: async () => {
         await userEvent.keyboard('plat');
     },
+};
+
+/**
+ * Mobile MB272: the same found on a phone — the title on one line, then the reference, the checks as a count and the
+ * standing in a word, the project field, the avatar and the age.
+ */
+export const PhoneFoundItems: Story = {
+    ...FoundItems,
+    decorators: [withPhoneLayout(true)],
 };
 
 /** The list a phone's command line is on, for its parts. */
