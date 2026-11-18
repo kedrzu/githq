@@ -139,6 +139,18 @@ const NAVIGATION: NavigationData = {
     ],
 };
 
+/** E13: what was opened lately, newest first — the first item no longer in the local copy, so left out. */
+const RECENT_NAVIGATION: NavigationData = {
+    ...NAVIGATION,
+    recent: [
+        { kind: 'place', id: 'project:q4' },
+        { kind: 'item', id: 'I_gone' },
+        { kind: 'item', id: 'I_77' },
+        { kind: 'place', id: 'repository:portal' },
+        { kind: 'item', id: 'PR_1198' },
+    ],
+};
+
 const MOBILE_METADATA: RepositoryMetadata = {
     ...SAMPLE_PORTAL_METADATA,
     nameWithOwner: 'skyline-labs/mobile',
@@ -204,6 +216,8 @@ const Harness = defineComponent({
         repositoryWorkflows: { type: Boolean, default: false },
         /** Opened from the phone's command line on a list (mobile D17): the place's parts first. */
         parts: { type: String as PropType<PhonePlace | null>, default: null },
+        /** A project, an issue, a repository and a pull request opened lately, as kept (`RecentVisitsStore`). */
+        recent: { type: Boolean, default: false },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -219,7 +233,7 @@ const Harness = defineComponent({
         const went = ref('Nowhere');
         const sidebar = ref('expanded');
         const t = useTranslate();
-        const navigation = props.levels ? createLevelNavigation(say) : NAVIGATION;
+        const navigation = props.levels ? createLevelNavigation(say) : props.recent ? RECENT_NAVIGATION : NAVIGATION;
 
         if (props.levels) {
             useCommands(() => createLevelCommands(say, t));
@@ -589,6 +603,15 @@ export const PhoneTyping: Story = {
  */
 export const PhoneFoundItems: Story = {
     ...FoundItems,
+    decorators: [withPhoneLayout(true)],
+};
+
+/** E13, E15: nothing typed — "Recent" before "Go to": a project, an issue, a repository and a pull request opened lately. */
+export const Recent: Story = { args: { subject: 'none', recent: true } };
+
+/** The same on a phone over My work: its parts nearest the field, "Recent" above them. */
+export const PhoneRecent: Story = {
+    args: { subject: 'none', parts: 'myWork', recent: true },
     decorators: [withPhoneLayout(true)],
 };
 

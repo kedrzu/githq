@@ -1,6 +1,8 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { findOptionLabels } from '@/components/filterOptions.js';
+import { isPendingItem } from '@/store/isPendingItem.js';
+import type { Item } from '@/store/ItemTypes.js';
 
 import type {
     Command,
@@ -54,10 +56,18 @@ export type CommandMenuEntry = CommandMenuEntryBase &
     );
 
 /**
- * The menu's headings: the place's parts (mobile D17), the subject's actions, the screen's, the repository's, the places,
- * the app's; `level` is a submenu's rows, with no heading.
+ * The menu's headings: the place's parts (mobile D17), the subject's actions, the screen's, the repository's, the places
+ * and items opened lately, the places, the app's; `level` is a submenu's rows, with no heading.
  */
-export type CommandMenuGroupKey = 'level' | 'parts' | 'subject' | 'view' | 'repository' | NavigationGroup | 'app';
+export type CommandMenuGroupKey =
+    | 'level'
+    | 'parts'
+    | 'subject'
+    | 'view'
+    | 'repository'
+    | 'recent'
+    | NavigationGroup
+    | 'app';
 
 /** Entries under one heading. */
 export interface CommandMenuGroup {
@@ -136,6 +146,7 @@ const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
     'subject',
     'view',
     'repository',
+    'recent',
     'goTo',
     'projects',
     'repositories',
@@ -145,6 +156,9 @@ const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
 
 /** How many options of one action typing finds directly. */
 const OPTION_LIMIT = 3;
+
+/** How many places and items opened lately the empty menu lists. */
+const RECENT_LIMIT = 5;
 
 /** What a level the text does not name costs a row under it. */
 const CHILD_WEIGHT = 0.6;
@@ -173,7 +187,10 @@ const OUTSIDE_CONTEXT_FACTOR = 0.9;
  * words from the start of the text may name those levels, in path order, and the rest goes to the row. The heading
  * with the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
  * `#123` finds the items only. With nothing typed the top leaves out the tracked repositories, the projects and the app's
- * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories…" and "Projects…", whose levels list them, and typing finds them all. Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
+ * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories…" and "Projects…", whose levels list them, and typing finds them all.
+ * Before "Go to" it lists under "Recent" the projects, repositories and items opened lately (`navigation.recent`), newest
+ * first, at most five, those no longer tracked or in the local copy left out; typing finds them where it always does.
+ * Given the place's parts (the phone's command line, mobile D17), the top with nothing typed
  * lists them first under their own heading, each in its order and out of the group it would have been in; typing
  * finds them where it always does.
  *
@@ -186,10 +203,20 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     const typed = (commandsOnly ? query.trimStart().slice(1) : query).trim();
     const onlyNumber = isOnlyItemNumber(typed);
     const found = new Map<CommandMenuGroupKey, Map<string, CommandMenuEntry>>();
-    const parts = !level && typed === '' && !commandsOnly ? (params.parts ?? null) : null;
+    // Nothing typed at the top: the places and actions that are always there wait to be typed for or entered.
+    const untouched = !level && typed === '' && !commandsOnly;
+    const parts = untouched ? (params.parts ?? null) : null;
     const partIds = new Set(parts?.rows.map(getPartId));
     for (const part of parts?.rows ?? []) {
         addPart(part);
+    }
+
+    if (untouched) {
+        for (const result of findRecent(navigation)) {
+            if (!partIds.has(getNavigationId(result))) {
+                addNavigation(result, 'recent');
+            }
+        }
     }
 
     const rows = getTopRows();
@@ -216,8 +243,6 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         descend(untracked ? [...roots, untracked] : roots, words);
     }
 
-    // Nothing typed at the top: the places and actions that are always there wait to be typed for or entered.
-    const untouched = !level && typed === '' && !commandsOnly;
     const groups = GROUP_ORDER.flatMap(key => {
         const entries = [...(found.get(key)?.values() ?? [])].filter(
             entry => !untouched || isListedUntyped(key, entry),
@@ -348,8 +373,7 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         });
     }
 
-    function addNavigation(result: NavigationResult) {
-        const group = getNavigationGroup(result);
+    function addNavigation(result: NavigationResult, group: CommandMenuGroupKey = getNavigationGroup(result)) {
         const id = getNavigationId(result);
         add(group, {
             kind: 'navigation',
@@ -393,6 +417,39 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
 
         found.set(group, entries);
     }
+}
+
+/** The places and items opened lately still in the local copy, newest first. */
+function findRecent(navigation: NavigationData): NavigationResult[] {
+    const recent = navigation.recent ?? [];
+    if (recent.length === 0) {
+        return [];
+    }
+
+    const itemIds = new Set(recent.flatMap(visit => (visit.kind === 'item' ? [visit.id] : [])));
+    const items = new Map<string, Item>();
+    for (const item of navigation.items) {
+        if (itemIds.has(item.id) && !isPendingItem(item)) {
+            items.set(item.id, item);
+        }
+    }
+
+    const results: NavigationResult[] = [];
+    for (const visit of recent) {
+        if (visit.kind === 'place') {
+            const place = navigation.places.find(candidate => candidate.id === visit.id);
+            if (place) {
+                results.push({ kind: 'place', score: 100, place, match: null });
+            }
+        } else {
+            const item = items.get(visit.id);
+            if (item) {
+                results.push({ kind: 'item', score: 100, item, match: null });
+            }
+        }
+    }
+
+    return results.slice(0, RECENT_LIMIT);
 }
 
 /**
@@ -622,6 +679,7 @@ function isListedUntyped(group: CommandMenuGroupKey, entry: CommandMenuEntry) {
         case 'subject':
         case 'view':
         case 'repository':
+        case 'recent':
         case 'goTo':
         case 'items':
             return true;
@@ -643,6 +701,7 @@ function getContextFactor(group: CommandMenuGroupKey) {
         case 'view':
         case 'repository':
             return 1;
+        case 'recent':
         case 'goTo':
         case 'projects':
         case 'repositories':

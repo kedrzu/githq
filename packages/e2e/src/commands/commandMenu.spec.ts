@@ -35,6 +35,51 @@ test('⌘K jumps to an item found by its title in the local copy, and to a proje
     await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
 });
 
+test('the empty ⌘K lists the projects, repositories and items opened lately under "Recent", newest first, not the screen shown, and after a reload; a phone too', async ({
+    page,
+    github,
+}) => {
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const menu = new CommandMenuHarness(page);
+    const item = new ItemViewHarness(page);
+    const recent = menu.group('Recent').getByRole('option');
+
+    await menu.run(SAMPLE_PROJECT);
+    await expect(page).toHaveURL(SAMPLE_PROJECT_PATH);
+    await menu.run('remember the side');
+    await expect(item.title).toHaveText('Remember the sidebar width');
+    await page.keyboard.press('Escape');
+    await expect(item.title).toBeHidden();
+    await menu.run(SAMPLE_REPOSITORY);
+    await expect(page).toHaveURL(new RegExp(`^[^?]*/${SAMPLE_REPOSITORY}`, 'u'));
+
+    // On the repository's view, it is not where to go.
+    await menu.open();
+    await expect(recent).toHaveText([/^Remember the sidebar width/u, new RegExp(`^${SAMPLE_PROJECT}`, 'u')]);
+    await page.keyboard.press('Escape');
+
+    await menu.run('My work');
+    await expect(page).toHaveURL(/\/$/u);
+    const expected = [
+        new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'),
+        /^Remember the sidebar width/u,
+        new RegExp(`^${SAMPLE_PROJECT}`, 'u'),
+    ];
+    await menu.open();
+    await expect(recent).toHaveText(expected);
+    await page.keyboard.press('Escape');
+
+    await page.reload();
+    await menu.open();
+    await expect(recent).toHaveText(expected);
+    await page.keyboard.press('Escape');
+    await expect(menu.root).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: /Do or find…/u }).click();
+    await expect(recent).toHaveText(expected);
+});
+
 test('E13, E14: the empty ⌘K lists no tracked repository but "Repositories…", whose level lists them alphabetically, narrows as typed, steps back on ← and goes to one on Enter', async ({
     page,
     github,

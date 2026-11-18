@@ -221,7 +221,7 @@ test('`#123` finds items only: no action, option or place holding the digits, ev
     const [first] = menu[0]?.entries ?? [];
 
     expect(ids(menu)).toEqual(['item:i']);
-    expect(first?.kind === 'navigation' && first.result.kind === 'item' ? first.result.match.field : null).toBe(
+    expect(first?.kind === 'navigation' && first.result.kind === 'item' ? first.result.match?.field : null).toBe(
         'reference',
     );
     expect(
@@ -784,6 +784,54 @@ test('E14: a level of places resolves to its rows with its placeholder, and a ro
     expect(level?.placeholder).toBe('Filter repositories…');
     expect(repository?.title).toBe('acme/web');
     expect(repository?.rows).toEqual([REPOSITORY_ROW]);
+});
+
+test('the empty menu lists up to five places and items opened lately under "Recent", before "Go to", the gone left out', () => {
+    const navigation = trackedWork();
+    const recent: NavigationData = {
+        ...navigation,
+        items: [sampleIssue('I_1'), sampleIssue('I_2'), { ...sampleIssue('I_new'), number: 0 }],
+        recent: [
+            { kind: 'item', id: 'I_2' },
+            { kind: 'place', id: 'repository:acme/gone' },
+            { kind: 'place', id: 'project:platform' },
+            { kind: 'item', id: 'I_gone' },
+            { kind: 'item', id: 'I_new' },
+            { kind: 'place', id: 'repository:acme/web' },
+            { kind: 'item', id: 'I_1' },
+            { kind: 'place', id: 'repository:acme/api' },
+        ],
+    };
+    const view: Command = { id: 'view.board', title: 'Show as board', section: 'view' };
+    const copyLink: Command = { id: 'repository.copyLink', title: 'Copy link', section: 'repository' };
+
+    const menu = build({ commands: [view, copyLink], repository: 'acme/web', navigation: recent });
+
+    expect(menu.map(group => group.key)).toEqual(['view', 'repository', 'recent', 'goTo']);
+    expect(menu.find(group => group.key === 'recent')?.entries.map(entry => entry.id)).toEqual([
+        'item:I_2',
+        'place:project:platform',
+        'place:repository:acme/web',
+        'item:I_1',
+        'place:repository:acme/api',
+    ]);
+    // Its repository is entered as anywhere else.
+    expect(findEntry(menu, 'place:repository:acme/web')?.path).toEqual(['place:repository:acme/web']);
+    expect(findEntry(menu, 'item:I_2')?.path).toEqual([]);
+
+    // Typing finds them where it always does, each once.
+    expect(build({ query: 'platform', navigation: recent }).map(group => group.key)).toEqual(['projects']);
+    expect(build({ query: '>', navigation: recent }).map(group => group.key)).toEqual([]);
+});
+
+test("mobile D17: with the place's parts, Recent comes after them", () => {
+    const assigned = place('myWork:assigned', 'Assigned to me');
+    const menu = build({
+        navigation: { ...trackedWork(), recent: [{ kind: 'place', id: 'project:platform' }] },
+        parts: { heading: 'My work', rows: [{ kind: 'place', place: assigned }] },
+    });
+
+    expect(menu.map(group => group.key)).toEqual(['parts', 'recent', 'goTo']);
 });
 
 function build(params: Partial<BuildCommandMenuParams>) {
