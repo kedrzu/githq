@@ -13,7 +13,6 @@ import {
   ChevronRight,
   CircleDot,
   Command as CommandIcon,
-  GitPullRequest,
   Inbox,
   Layers,
   PencilLine,
@@ -37,9 +36,9 @@ import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import MatchedText from '@/components/MatchedText.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import { formatShortReference } from '@/item/itemRoutes.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import PhonePartChip from '@/shell/PhonePartChip.vue';
+import type { Item } from '@/store/ItemTypes.js';
 
 import { buildCommandMenu, resolveMenuPath } from './buildCommandMenu.js';
 import type { CommandMenuAncestor, CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
@@ -47,6 +46,7 @@ import CommandCrumbs from './CommandCrumbs.vue';
 import type { CommandCrumb } from './CommandCrumbs.vue';
 import CommandForm from './CommandForm.vue';
 import * as l from './CommandMenu.loc.js';
+import CommandMenuItem from './CommandMenuItem.vue';
 import type {
   Command,
   CommandFormValues,
@@ -96,8 +96,8 @@ interface Row extends FilterListRow {
   readonly detail?: string;
   /** Dim text at the line's end. */
   readonly aside?: string;
-  /** Monospaced dim text: an item's reference. */
-  readonly reference?: string;
+  /** An issue or pull request found: drawn in two lines of its own (`CommandMenuItem`), in place of the rest. */
+  readonly item?: Item;
   /** Quiet text at the footer's end while it is highlighted. */
   readonly hint?: string;
   readonly color?: string;
@@ -441,9 +441,9 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
       const { item } = result;
       return {
         value,
-        icon: item.kind === 'issue' ? CircleDot : GitPullRequest,
+        icon: null,
         title: item.title,
-        reference: formatShortReference(item),
+        item,
         match: result.match,
         activate: go,
       };
@@ -727,108 +727,106 @@ function onEscape(event: KeyboardEvent) {
         />
       </template>
       <template #row="{ row }">
-        <component
-          :is="row.icon"
-          v-if="row.icon"
-          :class="css.commandMenu_icon"
-          aria-hidden="true"
+        <CommandMenuItem
+          v-if="row.item"
+          :item="row.item"
+          :match="row.match ?? null"
         />
-        <span
-          v-if="row.color"
-          :class="css.commandMenu_dot"
-          :style="{ background: `#${row.color}` }"
-          aria-hidden="true"
-        />
-        <Avatar
-          v-if="row.avatarUrl"
-          :name="row.title"
-          :src="row.avatarUrl"
-          size="xs"
-          decorative
-        />
-        <span :class="css.commandMenu_title">
-          <template
-            v-for="(ancestor, index) in row.ancestors ?? []"
-            :key="index"
+        <template v-else>
+          <component
+            :is="row.icon"
+            v-if="row.icon"
+            :class="css.commandMenu_icon"
+            aria-hidden="true"
+          />
+          <span
+            v-if="row.color"
+            :class="css.commandMenu_dot"
+            :style="{ background: `#${row.color}` }"
+            aria-hidden="true"
+          />
+          <Avatar
+            v-if="row.avatarUrl"
+            :name="row.title"
+            :src="row.avatarUrl"
+            size="xs"
+            decorative
+          />
+          <span :class="css.commandMenu_title">
+            <template
+              v-for="(ancestor, index) in row.ancestors ?? []"
+              :key="index"
+              ><MatchedText
+                :text="withoutEllipsis(ancestor.title)"
+                :ranges="ancestor.ranges"
+              />
+              → </template
             ><MatchedText
-              :text="withoutEllipsis(ancestor.title)"
-              :ranges="ancestor.ranges"
+              :text="row.title"
+              :ranges="getRanges(row, 'title')"
             />
-            → </template
-          ><MatchedText
-            :text="row.title"
-            :ranges="getRanges(row, 'title')"
+          </span>
+          <span
+            v-if="row.marks?.changed"
+            :class="css.commandMenu_changed"
+            role="img"
+            :aria-label="t(l.changed)"
           />
-        </span>
-        <span
-          v-if="row.marks?.changed"
-          :class="css.commandMenu_changed"
-          role="img"
-          :aria-label="t(l.changed)"
-        />
-        <span
-          v-if="row.match?.field === 'hidden'"
-          :class="css.commandMenu_detail"
-        >
-          <MatchedText
-            :text="row.match.text"
-            :ranges="row.match.ranges"
+          <span
+            v-if="row.match?.field === 'hidden'"
+            :class="css.commandMenu_detail"
+          >
+            <MatchedText
+              :text="row.match.text"
+              :ranges="row.match.ranges"
+            />
+          </span>
+          <span
+            v-if="row.detail"
+            :class="css.commandMenu_detail"
+          >
+            <MatchedText
+              :text="row.detail"
+              :ranges="getRanges(row, 'detail')"
+            />
+          </span>
+          <Check
+            v-if="row.chosen"
+            :class="css.commandMenu_check"
+            :aria-label="t(l.chosen)"
           />
-        </span>
-        <span
-          v-if="row.reference"
-          :class="css.commandMenu_reference"
-        >
-          <MatchedText
-            :text="row.reference"
-            :ranges="getRanges(row, 'reference')"
+          <span :class="css.commandMenu_spacer" />
+          <span
+            v-if="row.aside"
+            :class="css.commandMenu_aside"
+            >{{ row.aside }}</span
+          >
+          <span
+            v-if="row.marks?.count != null"
+            :class="css.commandMenu_aside"
+            >{{ numbers.format(row.marks.count) }}</span
+          >
+          <ArrowUpRight
+            v-if="row.marks?.external"
+            :class="css.commandMenu_external"
+            :aria-label="t(l.external)"
           />
-        </span>
-        <span
-          v-if="row.detail"
-          :class="css.commandMenu_detail"
-        >
-          <MatchedText
-            :text="row.detail"
-            :ranges="getRanges(row, 'detail')"
+          <Check
+            v-if="row.marks?.current"
+            :class="css.commandMenu_current"
+            :aria-label="t(l.chosen)"
           />
-        </span>
-        <Check
-          v-if="row.chosen"
-          :class="css.commandMenu_check"
-          :aria-label="t(l.chosen)"
-        />
-        <span :class="css.commandMenu_spacer" />
-        <span
-          v-if="row.aside"
-          :class="css.commandMenu_aside"
-          >{{ row.aside }}</span
-        >
-        <span
-          v-if="row.marks?.count != null"
-          :class="css.commandMenu_aside"
-          >{{ numbers.format(row.marks.count) }}</span
-        >
-        <ArrowUpRight
-          v-if="row.marks?.external"
-          :class="css.commandMenu_external"
-          :aria-label="t(l.external)"
-        />
-        <Check
-          v-if="row.marks?.current"
-          :class="css.commandMenu_current"
-          :aria-label="t(l.chosen)"
-        />
-        <Kbd
-          v-for="(key, index) in phoneLayout.active ? [] : (row.keys ?? [])"
-          :key="index"
-          :keys="key"
-        />
-        <ChevronRight
-          v-if="row.enter"
-          :class="css.commandMenu_more"
-          aria-hidden="true"
-        />
+          <Kbd
+            v-for="(key, index) in phoneLayout.active ? [] : (row.keys ?? [])"
+            :key="index"
+            :keys="key"
+          />
+          <ChevronRight
+            v-if="row.enter"
+            :class="css.commandMenu_more"
+            aria-hidden="true"
+          />
+        </template>
       </template>
       <template
         v-if="submenu && submenuOptions?.note"
@@ -915,13 +913,6 @@ function onEscape(event: KeyboardEvent) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.commandMenu_reference {
-  flex: none;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
 }
 
 .commandMenu_detail {
