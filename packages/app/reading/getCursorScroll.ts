@@ -1,14 +1,23 @@
-import type { AnchoredListViewport } from '../AnchoredList.vue';
-
 /** How near the cursor may come to an edge of what shows before the diff scrolls (D44): a third of it. */
 const SCROLL_OFF = 1 / 3;
+
+/** What the viewport shows; an `AnchoredListViewport` is one. */
+export interface CursorScrollViewport {
+    readonly height: number;
+    /** How far down from its top the pinned row's overlay reaches. */
+    readonly covered: number;
+    /** How far the list is scrolled from its top. */
+    readonly scrolled: number;
+    /** How much further down the list can scroll. */
+    readonly remaining: number;
+}
 
 export interface GetCursorScrollParams {
     /** The stop's top, from the viewport's top. */
     readonly top: number;
     /** The stop's bottom, from the viewport's top. */
     readonly bottom: number;
-    readonly viewport: AnchoredListViewport;
+    readonly viewport: CursorScrollViewport;
     /** Which way the cursor moved. */
     readonly direction: 'down' | 'up';
 }

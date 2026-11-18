@@ -5,7 +5,7 @@ import type { ReviewCursor } from './ReviewCursor.js';
 export interface MoveCursorParams {
     readonly rows: readonly ReviewRow[];
     readonly cursor: ReviewCursor;
-    /** How many stops, down if positive: more than one for a held key ({@link getCursorStep}) or a page. */
+    /** How many stops, down if positive: more than one for a held key ({@link getHeldStep}) or a page. */
     readonly delta: number;
 }
 

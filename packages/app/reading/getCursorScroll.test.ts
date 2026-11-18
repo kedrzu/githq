@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test';
 
-import type { AnchoredListViewport } from '../AnchoredList.vue';
 import { getCursorScroll } from './getCursorScroll.js';
+import type { CursorScrollViewport } from './getCursorScroll.js';
 
 // What shows under the pinned header is 600 px: the band a third from each edge is 240 to 440.
-const VIEWPORT: AnchoredListViewport = { height: 640, covered: 40, scrolled: 5000, remaining: 5000 };
+const VIEWPORT: CursorScrollViewport = { height: 640, covered: 40, scrolled: 5000, remaining: 5000 };
 
 test('inside the band a third from either edge the diff stays; past it, it scrolls just enough, the way the cursor went', () => {
     expect(getCursorScroll({ top: 420, bottom: 440, viewport: VIEWPORT, direction: 'down' })).toBe(0);
