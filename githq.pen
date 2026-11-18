@@ -61106,7 +61106,7 @@
                 {
                   "type": "frame",
                   "id": "F0DiHJ",
-                  "name": "Command / Item result · A",
+                  "name": "Command / Item result",
                   "reusable": true,
                   "width": 668,
                   "cornerRadius": 7,
@@ -61241,292 +61241,6 @@
                             },
                             {
                               "id": "Cmk1b",
-                              "type": "ref",
-                              "ref": "of5Pp",
-                              "name": "Avatar",
-                              "width": 16,
-                              "height": 16,
-                              "fill": "#81C995",
-                              "cornerRadius": 8,
-                              "descendants": {
-                                "zeZzP": {
-                                  "content": "DK",
-                                  "fontSize": 7
-                                }
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "SvcCH",
-                  "name": "Command / Item result · B",
-                  "reusable": true,
-                  "width": 668,
-                  "cornerRadius": 7,
-                  "gap": 10,
-                  "padding": [
-                    7,
-                    10
-                  ],
-                  "children": [
-                    {
-                      "id": "xpPJO",
-                      "type": "ref",
-                      "ref": "E9ePx",
-                      "name": "Type"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "FJAQO",
-                      "name": "Content",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "v1dtKH",
-                          "name": "Line 1",
-                          "clip": true,
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "cqT2i",
-                              "name": "Title",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "tGfCq",
-                                  "name": "Match",
-                                  "fill": "$accent",
-                                  "content": "Cal",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "J7zbre",
-                                  "name": "Rest",
-                                  "fill": "$fg",
-                                  "content": "endar shows wrong timezone for recurring bookings",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "cBPf8",
-                              "name": "Reference",
-                              "fill": "$fg-dim",
-                              "content": "portal#1187",
-                              "fontFamily": "$mono",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Kb0im",
-                          "name": "Line 2",
-                          "width": "fill_container",
-                          "height": 16,
-                          "gap": 10,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "RnAr9",
-                              "type": "ref",
-                              "ref": "VvI4P",
-                              "name": "Standing",
-                              "descendants": {
-                                "muoMv": {
-                                  "name": "icon circle-check",
-                                  "icon": "circle-check",
-                                  "fill": "$green"
-                                },
-                                "uYfBa": {
-                                  "fill": "$green",
-                                  "content": "Approved · checks passed"
-                                }
-                              }
-                            },
-                            {
-                              "id": "TKYTa",
-                              "type": "ref",
-                              "ref": "mB3rK",
-                              "name": "Project field",
-                              "enabled": false
-                            },
-                            {
-                              "type": "text",
-                              "id": "SDFmx",
-                              "name": "Age",
-                              "fill": "$fg-dim",
-                              "content": "2h",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "mFJzG",
-                  "name": "Command / Item result · C",
-                  "reusable": true,
-                  "width": 668,
-                  "cornerRadius": 7,
-                  "gap": 10,
-                  "padding": [
-                    7,
-                    10
-                  ],
-                  "children": [
-                    {
-                      "id": "NiuGp",
-                      "type": "ref",
-                      "ref": "E9ePx",
-                      "name": "Type"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "B0d2me",
-                      "name": "Content",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "Bq2nG",
-                          "name": "Line 1",
-                          "clip": true,
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "GFirn",
-                              "name": "Title",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "xts9Y",
-                                  "name": "Match",
-                                  "fill": "$accent",
-                                  "content": "Cal",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "V5IGVU",
-                                  "name": "Rest",
-                                  "fill": "$fg",
-                                  "content": "endar shows wrong timezone for recurring bookings",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "w4IDDJ",
-                              "name": "Age",
-                              "fill": "$fg-dim",
-                              "content": "2h",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "EjmW1",
-                          "name": "Line 2",
-                          "width": "fill_container",
-                          "height": 16,
-                          "gap": 10,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "oO6gj",
-                              "name": "State",
-                              "fill": "$green",
-                              "content": "Open",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "text",
-                              "id": "lCYgq",
-                              "name": "Reference",
-                              "fill": "$fg-dim",
-                              "content": "portal#1187",
-                              "fontFamily": "$mono",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "id": "SSgGD",
-                              "type": "ref",
-                              "ref": "VvI4P",
-                              "name": "Checks",
-                              "descendants": {
-                                "muoMv": {
-                                  "name": "icon check",
-                                  "icon": "check",
-                                  "fill": "$green"
-                                },
-                                "uYfBa": {
-                                  "fill": "$green",
-                                  "content": "12/12"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "IOXfr",
-                              "name": "Review",
-                              "fill": "$green",
-                              "content": "Approved",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "id": "mzyfN",
-                              "type": "ref",
-                              "ref": "mB3rK",
-                              "name": "Project field",
-                              "enabled": false
-                            },
-                            {
-                              "id": "YGwW1",
                               "type": "ref",
                               "ref": "of5Pp",
                               "name": "Avatar",
@@ -69836,18 +69550,53 @@
         },
         {
           "type": "frame",
-          "id": "N9uHlJ",
-          "name": "Variants · Two-line item rows in the command menu",
-          "fill": "#D299221A",
-          "stroke": "#D29922",
-          "strokeWidth": 2,
+          "id": "a0ooIB",
+          "name": "Group header · Found items, two lines",
+          "width": 1400,
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            40,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "pqnqU",
+              "name": "Group title",
+              "fill": "$fg",
+              "content": "Found items, two lines",
+              "fontFamily": "$font",
+              "fontSize": 22,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "zM2D5",
+              "name": "Group note",
+              "fill": "$fg-2",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "An issue or pull request the menu finds takes two lines, cut from the list row (the List row components): line 1 the kind-and-state icon, the title with the match marked and its age; line 2, smaller and dim, the reference, where it stands as the list row says it (one combined fact when all is well, failing checks on their own before the standing), an issue's project field and the author's avatar. Actions and places stay one line.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "d0BXnD",
+          "name": "Row of screens · Found items",
           "gap": 80,
-          "padding": 24,
           "children": [
             {
               "type": "frame",
               "id": "wspS5",
-              "name": "Slot · E11 · Variant A · Like the list row",
+              "name": "Slot · E11 · Found items · two lines",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -69864,7 +69613,7 @@
                       "id": "nr6n0",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "E11 · Variant A · Like the list row",
+                      "content": "E11 · Found items · two lines",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -69876,7 +69625,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Recommended. Each found issue or pull request is the desktop list row, cut to its basic facts: line 1 the kind-and-state icon, the title with the match marked and its age right after it; line 2, smaller and dim, the reference, the checks and where it stands as the list row's statuses (icon and words in their tone), an issue's project field (dot, value, \"+1\") and the author's avatar (none for your own). Actions and places stay one line.",
+                      "content": "Typing \"cal\" in a project. Each found issue or pull request is the desktop list row cut to its basic facts: line 1 the kind-and-state icon, the title with the match marked and its age right after it; line 2, smaller and dim, the reference, where it stands as the list row's status says it (\"Approved · checks passed\" as one fact; a draft's \"1 check failing\" on its own, then \"Draft\"), an issue's project field (dot, value, \"+1\") and the author's avatar (none for your own). Actions and places stay one line.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -69887,7 +69636,7 @@
                 {
                   "type": "frame",
                   "id": "brt0M",
-                  "name": "E11 · Variant A · Like the list row",
+                  "name": "E11 · Found items · two lines",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -70354,7 +70103,10 @@
                                 },
                                 "AzX7w/uYfBa": {
                                   "fill": "$green",
-                                  "content": "Checks passed"
+                                  "content": "Approved · checks passed"
+                                },
+                                "hKw2Q": {
+                                  "enabled": false
                                 },
                                 "hKw2Q/muoMv": {
                                   "name": "icon circle-check",
@@ -70645,1607 +70397,6 @@
                     },
                     {
                       "id": "Hx7aV",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD": {
-                          "name": "Segment · Project pane"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "i5qqOK",
-              "name": "Slot · E12 · Variant B · One standing, quiet",
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "o5qGH4",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "JLiTJ",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "E12 · Variant B · One standing, quiet",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "q6KY1",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The calmest: line 1 the kind-and-state icon, the title with the match marked and the reference right after it, as the one-line row has it today; line 2 one short standing in its tone (\"Approved · checks passed\", \"1 check failing · draft\", \"Merged 3d ago\") or, for an issue, its project field, then the age. No avatars, no separate checks: the least information of the three.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "yc9Eg",
-                  "name": "E12 · Variant B · One standing, quiet",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "jUlik",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "y4wnL",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "TjcGY": {
-                              "fill": "$bg-3"
-                            },
-                            "Gb6TH": {
-                              "fill": "$accent"
-                            },
-                            "C5flXL": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Z1u4F",
-                          "type": "ref",
-                          "ref": "MJtxW",
-                          "name": "Project pane",
-                          "width": "fill_container",
-                          "height": "fill_container"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "nluwD",
-                      "layoutPosition": "absolute",
-                      "x": 0,
-                      "y": 0,
-                      "name": "Scrim",
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "#05060899"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "d8SnOL",
-                      "layoutPosition": "absolute",
-                      "x": 380,
-                      "y": 96,
-                      "name": "Command menu",
-                      "clip": true,
-                      "width": 680,
-                      "fill": "$bg-2",
-                      "cornerRadius": 12,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000C0",
-                        "offset": {
-                          "x": 0,
-                          "y": 24
-                        },
-                        "blur": 64
-                      },
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "G9xtI",
-                          "name": "Input row",
-                          "width": "fill_container",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 8,
-                          "padding": [
-                            12,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "YAxbB",
-                              "name": "Context chip",
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "rk28q",
-                                  "name": "icon square-kanban",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "square-kanban",
-                                  "library": "lucide",
-                                  "fill": "$accent"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Tk5KP",
-                                  "name": "Platform Q4 · Current sprint",
-                                  "fill": "$fg",
-                                  "content": "Platform Q4 · Current sprint",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "Pbsrw",
-                              "name": "Query",
-                              "fill": "$fg",
-                              "content": "cal",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "XSIoO",
-                              "name": "Caret",
-                              "width": 1.5,
-                              "height": 18,
-                              "fill": "$accent"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "MyIqw",
-                          "name": "Results",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "padding": [
-                            4,
-                            6,
-                            8,
-                            6
-                          ],
-                          "children": [
-                            {
-                              "id": "u18yP",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Actions",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Actions",
-                                  "content": "Actions"
-                                }
-                              }
-                            },
-                            {
-                              "id": "G2TI05",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Filter: Area is Calendar",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon funnel",
-                                  "icon": "funnel",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "uM3I4",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "Qi3RW",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "Filter: Area is ",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "vDpac",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "Cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "N2BKH",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "enabled": false
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "FBuS7",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Filter: Label is calendar",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon funnel",
-                                  "icon": "funnel",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "XZ3EK",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "TLS3O",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "Filter: Label is ",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "i2itYq",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "VwqfD",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "enabled": false
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "vYtPR",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Go to",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Go to",
-                                  "content": "Go to"
-                                }
-                              }
-                            },
-                            {
-                              "id": "mrt2E",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Calendar revamp",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon square-kanban",
-                                  "icon": "square-kanban",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "Wf8Cu",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "u713c",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "Cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "cyeW5",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar revamp",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "content": "fitloop · 34 items"
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "GDsU0",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result fitloop/calendar-sync",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon book-marked",
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "fC7Wo",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "EnJND",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "fitloop/",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "QHwh7",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "pnlNN",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar-sync",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "content": "private · tracked"
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "AX6xk",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Items",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Items",
-                                  "content": "Items"
-                                }
-                              }
-                            },
-                            {
-                              "id": "cKWB3",
-                              "type": "ref",
-                              "ref": "SvcCH",
-                              "name": "Item portal#1187",
-                              "fill": "$sel",
-                              "stroke": "#7B87F74D",
-                              "strokeWidth": 1,
-                              "descendants": {
-                                "xpPJO/TZbKU": {
-                                  "name": "icon git-pull-request",
-                                  "icon": "git-pull-request",
-                                  "fill": "$green"
-                                },
-                                "J7zbre": {
-                                  "content": "endar shows wrong timezone for recurring bookings"
-                                },
-                                "cBPf8": {
-                                  "content": "portal#1187"
-                                },
-                                "RnAr9/muoMv": {
-                                  "name": "icon circle-check",
-                                  "icon": "circle-check",
-                                  "fill": "$green"
-                                },
-                                "RnAr9/uYfBa": {
-                                  "fill": "$green",
-                                  "content": "Approved · checks passed"
-                                },
-                                "SDFmx": {
-                                  "content": "2h"
-                                }
-                              }
-                            },
-                            {
-                              "id": "JtqDa",
-                              "type": "ref",
-                              "ref": "SvcCH",
-                              "name": "Item webapp#904",
-                              "descendants": {
-                                "xpPJO/TZbKU": {
-                                  "name": "icon git-pull-request-draft",
-                                  "icon": "git-pull-request-draft",
-                                  "fill": "$fg-dim"
-                                },
-                                "J7zbre": {
-                                  "content": "endar sync: retry on 429 from Google"
-                                },
-                                "cBPf8": {
-                                  "content": "webapp#904"
-                                },
-                                "RnAr9/muoMv": {
-                                  "name": "icon circle-x",
-                                  "icon": "circle-x",
-                                  "fill": "$red"
-                                },
-                                "RnAr9/uYfBa": {
-                                  "fill": "$red",
-                                  "content": "1 check failing · draft"
-                                },
-                                "SDFmx": {
-                                  "content": "5h"
-                                }
-                              }
-                            },
-                            {
-                              "id": "CmdTs",
-                              "type": "ref",
-                              "ref": "SvcCH",
-                              "name": "Item portal#1150",
-                              "descendants": {
-                                "xpPJO/TZbKU": {
-                                  "name": "icon git-merge",
-                                  "icon": "git-merge",
-                                  "fill": "$purple"
-                                },
-                                "J7zbre": {
-                                  "content": "endar export to iCal"
-                                },
-                                "cBPf8": {
-                                  "content": "portal#1150"
-                                },
-                                "RnAr9/muoMv": {
-                                  "name": "icon git-merge",
-                                  "icon": "git-merge",
-                                  "fill": "$purple"
-                                },
-                                "RnAr9/uYfBa": {
-                                  "fill": "$purple",
-                                  "content": "Merged 3d ago"
-                                },
-                                "SDFmx": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "VPCaX",
-                              "type": "ref",
-                              "ref": "SvcCH",
-                              "name": "Item portal#1201",
-                              "descendants": {
-                                "xpPJO/TZbKU": {
-                                  "name": "icon circle-dot",
-                                  "icon": "circle-dot",
-                                  "fill": "$green"
-                                },
-                                "J7zbre": {
-                                  "content": "endar picker ignores locale"
-                                },
-                                "cBPf8": {
-                                  "content": "portal#1201"
-                                },
-                                "RnAr9": {
-                                  "enabled": false
-                                },
-                                "TKYTa": {
-                                  "enabled": true
-                                },
-                                "TKYTa/J7NvLM": {
-                                  "fill": "$amber"
-                                },
-                                "TKYTa/a9YQ3": {
-                                  "content": "In progress"
-                                },
-                                "TKYTa/gz9AR": {
-                                  "content": "+1"
-                                },
-                                "SDFmx": {
-                                  "content": "1d"
-                                }
-                              }
-                            },
-                            {
-                              "id": "FHeLM",
-                              "type": "ref",
-                              "ref": "SvcCH",
-                              "name": "Item webapp#877",
-                              "descendants": {
-                                "xpPJO/TZbKU": {
-                                  "name": "icon circle-slash",
-                                  "icon": "circle-slash",
-                                  "fill": "$fg-dim"
-                                },
-                                "J7zbre": {
-                                  "content": "endar dark mode contrast"
-                                },
-                                "cBPf8": {
-                                  "content": "webapp#877"
-                                },
-                                "RnAr9": {
-                                  "enabled": false
-                                },
-                                "TKYTa": {
-                                  "enabled": true
-                                },
-                                "TKYTa/J7NvLM": {
-                                  "fill": "$green"
-                                },
-                                "TKYTa/a9YQ3": {
-                                  "content": "Done"
-                                },
-                                "TKYTa/gz9AR": {
-                                  "enabled": false
-                                },
-                                "SDFmx": {
-                                  "content": "2w"
-                                }
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "zBZtH",
-                          "name": "Footer",
-                          "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "lB1lZ",
-                              "type": "ref",
-                              "ref": "XSeiZ",
-                              "name": "Hint Move"
-                            },
-                            {
-                              "id": "fHffM",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Open",
-                              "descendants": {
-                                "IJcUr": {
-                                  "name": "Open",
-                                  "content": "Open"
-                                }
-                              }
-                            },
-                            {
-                              "id": "CMtVJ",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Search by number",
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd #"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "#"
-                                },
-                                "IOvfA": {
-                                  "name": "Search by number",
-                                  "content": "Search by number"
-                                }
-                              }
-                            },
-                            {
-                              "id": "So3gb",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Search everywhere",
-                              "descendants": {
-                                "nIxfQ": {
-                                  "name": "Kbd ⌫"
-                                },
-                                "nIxfQ/YRrEc": {
-                                  "name": "Key delete",
-                                  "icon": "delete"
-                                },
-                                "IJcUr": {
-                                  "name": "Search everywhere",
-                                  "content": "Search everywhere"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "IBlNO",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "ltbDC",
-                              "name": "Matches in tracked data, instant",
-                              "fill": "$fg-dim",
-                              "content": "Matches in tracked data, instant",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "SsQgH",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD": {
-                          "name": "Segment · Project pane"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "FNLeY",
-              "name": "Slot · E13 · Variant C · State words first",
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "R4SuwG",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "jXNYz",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "E13 · Variant C · State words first",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "B1jbGg",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The phone list row's short facts, on the desktop: line 1 the icon, the title with the match marked, its age; line 2 starts with the state as a word in its tone (\"Open\", \"Draft\", \"Merged\", \"Not planned\"), then the reference, the checks as a count (\"✓ 12/12\", red \"✕ 8/9\"), the review as a word, an issue's project field and one avatar.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "n6CtD",
-                  "name": "E13 · Variant C · State words first",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "ruXBk",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "k8hBH",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "TjcGY": {
-                              "fill": "$bg-3"
-                            },
-                            "Gb6TH": {
-                              "fill": "$accent"
-                            },
-                            "C5flXL": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            }
-                          }
-                        },
-                        {
-                          "id": "utDhm",
-                          "type": "ref",
-                          "ref": "MJtxW",
-                          "name": "Project pane",
-                          "width": "fill_container",
-                          "height": "fill_container"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "tKLx5",
-                      "layoutPosition": "absolute",
-                      "x": 0,
-                      "y": 0,
-                      "name": "Scrim",
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "#05060899"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "DN567",
-                      "layoutPosition": "absolute",
-                      "x": 380,
-                      "y": 96,
-                      "name": "Command menu",
-                      "clip": true,
-                      "width": 680,
-                      "fill": "$bg-2",
-                      "cornerRadius": 12,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000C0",
-                        "offset": {
-                          "x": 0,
-                          "y": 24
-                        },
-                        "blur": 64
-                      },
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "QfLHd",
-                          "name": "Input row",
-                          "width": "fill_container",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 8,
-                          "padding": [
-                            12,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "uqWri",
-                              "name": "Context chip",
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "cxzwF",
-                                  "name": "icon square-kanban",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "square-kanban",
-                                  "library": "lucide",
-                                  "fill": "$accent"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Sj1Vu",
-                                  "name": "Platform Q4 · Current sprint",
-                                  "fill": "$fg",
-                                  "content": "Platform Q4 · Current sprint",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "Jzl42",
-                              "name": "Query",
-                              "fill": "$fg",
-                              "content": "cal",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "A57Dh",
-                              "name": "Caret",
-                              "width": 1.5,
-                              "height": 18,
-                              "fill": "$accent"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "imOrI",
-                          "name": "Results",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "padding": [
-                            4,
-                            6,
-                            8,
-                            6
-                          ],
-                          "children": [
-                            {
-                              "id": "VNhJs",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Actions",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Actions",
-                                  "content": "Actions"
-                                }
-                              }
-                            },
-                            {
-                              "id": "Ss3r2",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Filter: Area is Calendar",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon funnel",
-                                  "icon": "funnel",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "K5T38B",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "w0NndB",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "Filter: Area is ",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "U2R6x",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "Cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "FmkIL",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "enabled": false
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "GMEpQ",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Filter: Label is calendar",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon funnel",
-                                  "icon": "funnel",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "p193cW",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "Q7E3I9",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "Filter: Label is ",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "SlqqH",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "A1eIV",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "enabled": false
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "wO0Qe",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Go to",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Go to",
-                                  "content": "Go to"
-                                }
-                              }
-                            },
-                            {
-                              "id": "ERFa9",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result Calendar revamp",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon square-kanban",
-                                  "icon": "square-kanban",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "KXipi",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "dvSUI",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "Cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "ZJCiO",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar revamp",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "content": "fitloop · 34 items"
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "GtmLO",
-                              "type": "ref",
-                              "ref": "k3mGr",
-                              "name": "Result fitloop/calendar-sync",
-                              "descendants": {
-                                "z7iSD": {
-                                  "name": "icon book-marked",
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "e2wbth": {
-                                  "type": "frame",
-                                  "id": "C5TGVb",
-                                  "name": "Label",
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "v0dq2l",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "fitloop/",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "R5uA1W",
-                                      "name": "Match",
-                                      "fill": "$accent",
-                                      "content": "cal",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "m5Ddoz",
-                                      "name": "Text",
-                                      "fill": "$fg",
-                                      "content": "endar-sync",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                "MXfcN": {
-                                  "content": "private · tracked"
-                                },
-                                "IxzB4": {
-                                  "enabled": false
-                                },
-                                "nsltD": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "PV9wb",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section Items",
-                              "width": "fill_container",
-                              "descendants": {
-                                "CcUdj": {
-                                  "name": "Items",
-                                  "content": "Items"
-                                }
-                              }
-                            },
-                            {
-                              "id": "MOYqn",
-                              "type": "ref",
-                              "ref": "mFJzG",
-                              "name": "Item portal#1187",
-                              "fill": "$sel",
-                              "stroke": "#7B87F74D",
-                              "strokeWidth": 1,
-                              "descendants": {
-                                "NiuGp/TZbKU": {
-                                  "name": "icon git-pull-request",
-                                  "icon": "git-pull-request",
-                                  "fill": "$green"
-                                },
-                                "V5IGVU": {
-                                  "content": "endar shows wrong timezone for recurring bookings"
-                                },
-                                "w4IDDJ": {
-                                  "content": "2h"
-                                },
-                                "oO6gj": {
-                                  "content": "Open",
-                                  "fill": "$green"
-                                },
-                                "lCYgq": {
-                                  "content": "portal#1187"
-                                },
-                                "SSgGD/muoMv": {
-                                  "name": "icon check",
-                                  "icon": "check",
-                                  "fill": "$green"
-                                },
-                                "SSgGD/uYfBa": {
-                                  "fill": "$green",
-                                  "content": "12/12"
-                                },
-                                "IOXfr": {
-                                  "content": "Approved",
-                                  "fill": "$green"
-                                },
-                                "YGwW1": {
-                                  "name": "Avatar DK",
-                                  "fill": "#81C995"
-                                },
-                                "YGwW1/zeZzP": {
-                                  "content": "DK"
-                                }
-                              }
-                            },
-                            {
-                              "id": "MsBMu",
-                              "type": "ref",
-                              "ref": "mFJzG",
-                              "name": "Item webapp#904",
-                              "descendants": {
-                                "NiuGp/TZbKU": {
-                                  "name": "icon git-pull-request-draft",
-                                  "icon": "git-pull-request-draft",
-                                  "fill": "$fg-dim"
-                                },
-                                "V5IGVU": {
-                                  "content": "endar sync: retry on 429 from Google"
-                                },
-                                "w4IDDJ": {
-                                  "content": "5h"
-                                },
-                                "oO6gj": {
-                                  "content": "Draft",
-                                  "fill": "$fg-dim"
-                                },
-                                "lCYgq": {
-                                  "content": "webapp#904"
-                                },
-                                "SSgGD/muoMv": {
-                                  "name": "icon x",
-                                  "icon": "x",
-                                  "fill": "$red"
-                                },
-                                "SSgGD/uYfBa": {
-                                  "fill": "$red",
-                                  "content": "8/9"
-                                },
-                                "IOXfr": {
-                                  "enabled": false
-                                },
-                                "YGwW1": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "jwpl6",
-                              "type": "ref",
-                              "ref": "mFJzG",
-                              "name": "Item portal#1150",
-                              "descendants": {
-                                "NiuGp/TZbKU": {
-                                  "name": "icon git-merge",
-                                  "icon": "git-merge",
-                                  "fill": "$purple"
-                                },
-                                "V5IGVU": {
-                                  "content": "endar export to iCal"
-                                },
-                                "w4IDDJ": {
-                                  "content": "3d"
-                                },
-                                "oO6gj": {
-                                  "content": "Merged",
-                                  "fill": "$purple"
-                                },
-                                "lCYgq": {
-                                  "content": "portal#1150"
-                                },
-                                "SSgGD": {
-                                  "enabled": false
-                                },
-                                "IOXfr": {
-                                  "enabled": false
-                                },
-                                "YGwW1": {
-                                  "name": "Avatar ML",
-                                  "fill": "#C9A26B"
-                                },
-                                "YGwW1/zeZzP": {
-                                  "content": "ML"
-                                }
-                              }
-                            },
-                            {
-                              "id": "D0lF44",
-                              "type": "ref",
-                              "ref": "mFJzG",
-                              "name": "Item portal#1201",
-                              "descendants": {
-                                "NiuGp/TZbKU": {
-                                  "name": "icon circle-dot",
-                                  "icon": "circle-dot",
-                                  "fill": "$green"
-                                },
-                                "V5IGVU": {
-                                  "content": "endar picker ignores locale"
-                                },
-                                "w4IDDJ": {
-                                  "content": "1d"
-                                },
-                                "oO6gj": {
-                                  "content": "Open",
-                                  "fill": "$green"
-                                },
-                                "lCYgq": {
-                                  "content": "portal#1201"
-                                },
-                                "SSgGD": {
-                                  "enabled": false
-                                },
-                                "IOXfr": {
-                                  "enabled": false
-                                },
-                                "mzyfN": {
-                                  "enabled": true
-                                },
-                                "mzyfN/J7NvLM": {
-                                  "fill": "$amber"
-                                },
-                                "mzyfN/a9YQ3": {
-                                  "content": "In progress"
-                                },
-                                "mzyfN/gz9AR": {
-                                  "content": "+1"
-                                },
-                                "YGwW1": {
-                                  "name": "Avatar AS",
-                                  "fill": "#B39DDB"
-                                },
-                                "YGwW1/zeZzP": {
-                                  "content": "AS"
-                                }
-                              }
-                            },
-                            {
-                              "id": "UIs8Q",
-                              "type": "ref",
-                              "ref": "mFJzG",
-                              "name": "Item webapp#877",
-                              "descendants": {
-                                "NiuGp/TZbKU": {
-                                  "name": "icon circle-slash",
-                                  "icon": "circle-slash",
-                                  "fill": "$fg-dim"
-                                },
-                                "V5IGVU": {
-                                  "content": "endar dark mode contrast"
-                                },
-                                "w4IDDJ": {
-                                  "content": "2w"
-                                },
-                                "oO6gj": {
-                                  "content": "Not planned",
-                                  "fill": "$fg-dim"
-                                },
-                                "lCYgq": {
-                                  "content": "webapp#877"
-                                },
-                                "SSgGD": {
-                                  "enabled": false
-                                },
-                                "IOXfr": {
-                                  "enabled": false
-                                },
-                                "mzyfN": {
-                                  "enabled": true
-                                },
-                                "mzyfN/J7NvLM": {
-                                  "fill": "$green"
-                                },
-                                "mzyfN/a9YQ3": {
-                                  "content": "Done"
-                                },
-                                "mzyfN/gz9AR": {
-                                  "enabled": false
-                                },
-                                "YGwW1": {
-                                  "enabled": false
-                                }
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "EzLBN",
-                          "name": "Footer",
-                          "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "gqiXk",
-                              "type": "ref",
-                              "ref": "XSeiZ",
-                              "name": "Hint Move"
-                            },
-                            {
-                              "id": "sDTny",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Open",
-                              "descendants": {
-                                "IJcUr": {
-                                  "name": "Open",
-                                  "content": "Open"
-                                }
-                              }
-                            },
-                            {
-                              "id": "GYAtR",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Search by number",
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd #"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "#"
-                                },
-                                "IOvfA": {
-                                  "name": "Search by number",
-                                  "content": "Search by number"
-                                }
-                              }
-                            },
-                            {
-                              "id": "GnIK2",
-                              "type": "ref",
-                              "ref": "dxCfd",
-                              "name": "Hint Search everywhere",
-                              "descendants": {
-                                "nIxfQ": {
-                                  "name": "Kbd ⌫"
-                                },
-                                "nIxfQ/YRrEc": {
-                                  "name": "Key delete",
-                                  "icon": "delete"
-                                },
-                                "IJcUr": {
-                                  "name": "Search everywhere",
-                                  "content": "Search everywhere"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "W8Sjo",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "r5wJp",
-                              "name": "Matches in tracked data, instant",
-                              "fill": "$fg-dim",
-                              "content": "Matches in tracked data, instant",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "KyS5w",
                       "type": "ref",
                       "ref": "BFhwj",
                       "name": "Status bar",
@@ -86270,7 +84421,7 @@
       "type": "frame",
       "id": "Zk4sa",
       "x": 0,
-      "y": 73551,
+      "y": 73707,
       "name": "App · First sign-in and choosing what to track",
       "fill": "#08090B",
       "layout": "vertical",
@@ -94644,7 +92795,7 @@
       "type": "frame",
       "id": "gvCqI",
       "x": 5040,
-      "y": 73551,
+      "y": 73707,
       "name": "App · Creating an issue",
       "fill": "#08090B",
       "layout": "vertical",
@@ -105923,7 +104074,7 @@
       "type": "frame",
       "id": "epLfx",
       "x": 18672,
-      "y": 73551,
+      "y": 73707,
       "name": "App · States",
       "fill": "#08090B",
       "layout": "vertical",
@@ -115114,7 +113265,7 @@
       "type": "frame",
       "id": "iZkBN",
       "x": 23712,
-      "y": 73551,
+      "y": 73707,
       "name": "App · Freshness",
       "fill": "#08090B",
       "layout": "vertical",
@@ -118539,7 +116690,7 @@
       "type": "frame",
       "id": "rV6qN",
       "x": 0,
-      "y": 86308,
+      "y": 86464,
       "name": "Desktop · Sign in with a device code",
       "fill": "#08090B",
       "layout": "vertical",
@@ -120507,7 +118658,7 @@
       "type": "frame",
       "id": "ohwJa",
       "x": 6560,
-      "y": 86308,
+      "y": 86464,
       "name": "Desktop · Updates",
       "fill": "#08090B",
       "layout": "vertical",
@@ -132689,7 +130840,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 128603,
+      "y": 128759,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -140850,7 +139001,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 128603,
+      "y": 128759,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -149249,7 +147400,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 128603,
+      "y": 128759,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -149882,7 +148033,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 128603,
+      "y": 128759,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -153167,7 +151318,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 128603,
+      "y": 128759,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -155017,7 +153168,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 128603,
+      "y": 128759,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -234284,7 +232435,7 @@
       "type": "frame",
       "id": "i3VkT",
       "x": 10080,
-      "y": 73551,
+      "y": 73707,
       "name": "App · Settings",
       "fill": "#08090B",
       "layout": "vertical",
@@ -333387,7 +331538,7 @@
       "type": "frame",
       "id": "Ri8IR",
       "x": 16160,
-      "y": 86308,
+      "y": 86464,
       "name": "Desktop · Commits",
       "fill": "#08090B",
       "layout": "vertical",
@@ -430123,7 +428274,7 @@
       "type": "text",
       "id": "BnN7r",
       "x": 17870.178661448972,
-      "y": 75912.65929019575,
+      "y": 76068.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
       "fontFamily": "Inter",
@@ -430134,7 +428285,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 128603,
+      "y": 128759,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -432939,7 +431090,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 128603,
+      "y": 128759,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -433280,7 +431431,7 @@
       "type": "frame",
       "id": "O6Vuj8",
       "x": 25712,
-      "y": 73551,
+      "y": 73707,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -444787,7 +442938,7 @@
       "type": "frame",
       "id": "Sz7Bf",
       "x": 32964,
-      "y": 73551,
+      "y": 73707,
       "name": "App · Toasts",
       "fill": "#08090B",
       "layout": "vertical",
@@ -448792,7 +446943,7 @@
       "type": "frame",
       "id": "jy6bO",
       "x": 19680,
-      "y": 86308,
+      "y": 86464,
       "name": "App · Mobile",
       "fill": "#08090B",
       "layout": "vertical",
@@ -453551,6 +451702,191 @@
                       "enabled": false
                     }
                   }
+                },
+                {
+                  "type": "frame",
+                  "id": "OyV9N",
+                  "name": "Command / Item result · phone",
+                  "reusable": true,
+                  "width": 390,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uBqlL",
+                      "name": "Icon",
+                      "padding": [
+                        1,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "id": "UG8UF",
+                          "type": "ref",
+                          "ref": "E9ePx",
+                          "name": "Type"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aeK7O",
+                      "name": "Content",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dsDVo",
+                          "name": "Line 1",
+                          "clip": true,
+                          "width": "fill_container",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "vO7OY",
+                              "name": "Title",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tdjxM",
+                                  "name": "Match",
+                                  "fill": "$accent",
+                                  "content": "Cal",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "vqA4n",
+                                  "name": "Rest",
+                                  "fill": "$fg",
+                                  "content": "endar shows wrong timezone for recurri…",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IYgsw",
+                          "name": "Line 2",
+                          "width": "fill_container",
+                          "height": 20,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "AVL0i",
+                              "name": "Reference",
+                              "fill": "$fg-dim",
+                              "content": "portal#1187",
+                              "fontFamily": "$mono",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "JPlZZ",
+                              "type": "ref",
+                              "ref": "VvI4P",
+                              "name": "Checks",
+                              "descendants": {
+                                "muoMv": {
+                                  "name": "icon check",
+                                  "icon": "check",
+                                  "fill": "$green"
+                                },
+                                "uYfBa": {
+                                  "fill": "$green",
+                                  "content": "12/12"
+                                }
+                              }
+                            },
+                            {
+                              "id": "FkIW7",
+                              "type": "ref",
+                              "ref": "VvI4P",
+                              "name": "Standing",
+                              "descendants": {
+                                "muoMv": {
+                                  "name": "icon circle-check",
+                                  "icon": "circle-check",
+                                  "fill": "$green"
+                                },
+                                "uYfBa": {
+                                  "fill": "$green",
+                                  "content": "Approved"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "jT5ze",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Draft",
+                              "enabled": false,
+                              "fill": "$fg-2",
+                              "content": "Draft",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "Lk2sF",
+                              "type": "ref",
+                              "ref": "mB3rK",
+                              "name": "Project field",
+                              "enabled": false
+                            },
+                            {
+                              "type": "frame",
+                              "id": "OtRtc",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "NwGm5",
+                              "type": "ref",
+                              "ref": "of5Pp",
+                              "name": "Avatar",
+                              "fill": "#81C995",
+                              "descendants": {
+                                "zeZzP": {
+                                  "content": "DK"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "c8wn2S",
+                              "name": "Age",
+                              "fill": "$fg-dim",
+                              "content": "2h",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
@@ -468911,6 +467247,646 @@
                               "ref": "V06xmv",
                               "name": "Sheet",
                               "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KUXwe",
+                  "name": "Slot · MB272 · Command menu · Found items, two lines",
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "u7ZaUq",
+                      "name": "Caption",
+                      "width": 390,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "V9nJD",
+                          "name": "Caption title",
+                          "fill": "$fg",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "MB272 · Command menu · Found items, two lines",
+                          "fontFamily": "$font",
+                          "fontSize": 15,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qcvCe",
+                          "name": "Caption note",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "\"cal\" typed over a project's list, the keyboard down (D16). The whole list runs upwards, so the best match, Calendar shows wrong timezone…, sits right above the input. A found issue or pull request takes two lines: the kind-and-state icon and the title on one line, cut short; then the reference, the short standing as the phone's list row says it, the project field, the author's avatar and the age. E11 on the desktop.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bPLMo",
+                      "name": "MB272 · Command menu · Found items, two lines",
+                      "clip": true,
+                      "width": 390,
+                      "height": 844,
+                      "fill": "$bg",
+                      "cornerRadius": 24,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "Nqh67",
+                          "type": "ref",
+                          "ref": "BpXu0",
+                          "name": "Status strip",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "IBMki",
+                          "type": "ref",
+                          "ref": "mVWVs",
+                          "name": "Top bar",
+                          "width": "fill_container",
+                          "descendants": {
+                            "LaOVG": {
+                              "content": "Platform Q4"
+                            },
+                            "f6G1s": {
+                              "enabled": true
+                            },
+                            "f6G1s/LG7b7": {
+                              "icon": "sliders-horizontal"
+                            },
+                            "yCsSA/LG7b7": {
+                              "icon": "plus"
+                            }
+                          }
+                        },
+                        {
+                          "id": "YMddu",
+                          "type": "ref",
+                          "ref": "x5FXSy",
+                          "name": "Pane",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Y7yqg4",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Holder",
+                          "width": 390,
+                          "height": 844,
+                          "layout": "vertical",
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "id": "F8jRKc",
+                              "type": "ref",
+                              "ref": "RGShR",
+                              "name": "Command line",
+                              "width": "fill_container",
+                              "descendants": {
+                                "s3BoH2/YDESO": {
+                                  "content": "Current sprint"
+                                },
+                                "s3BoH2/c0AlY1": {
+                                  "content": "34"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "FyOYg",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Scrim",
+                          "fill": "#00000099",
+                          "width": 390,
+                          "height": 844
+                        },
+                        {
+                          "type": "frame",
+                          "id": "q3uUau",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Holder",
+                          "width": 390,
+                          "height": 844,
+                          "layout": "vertical",
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "id": "DJgd7",
+                              "type": "ref",
+                              "ref": "V06xmv",
+                              "name": "Sheet",
+                              "width": "fill_container",
+                              "descendants": {
+                                "hzHgW": {
+                                  "type": "frame",
+                                  "id": "eeWcb",
+                                  "name": "Results",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    4,
+                                    0
+                                  ],
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "lBjRt",
+                                      "type": "ref",
+                                      "ref": "ikYkr",
+                                      "name": "Section Actions",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "CYCl2": {
+                                          "content": "Actions"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "S3YdeR",
+                                      "type": "ref",
+                                      "ref": "i6jhQ",
+                                      "name": "Filter: Area is Calendar",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "JVDhZ": {
+                                          "icon": "list-filter"
+                                        },
+                                        "bZUUX": {
+                                          "type": "frame",
+                                          "id": "P2gXCl",
+                                          "name": "Label",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "b6sP3m",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "Filter: Area is ",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Hy7IV",
+                                              "name": "Match",
+                                              "fill": "$accent",
+                                              "content": "Cal",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "buObd",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "endar",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        "tPamw": {
+                                          "enabled": false
+                                        },
+                                        "s255dF": {
+                                          "enabled": false
+                                        },
+                                        "wuwm0": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "aaUrU",
+                                      "type": "ref",
+                                      "ref": "ikYkr",
+                                      "name": "Section Go to",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "CYCl2": {
+                                          "content": "Go to"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "btfdn",
+                                      "type": "ref",
+                                      "ref": "i6jhQ",
+                                      "name": "fitloop/calendar-sync",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "JVDhZ": {
+                                          "icon": "book-marked"
+                                        },
+                                        "bZUUX": {
+                                          "type": "frame",
+                                          "id": "JJutv",
+                                          "name": "Label",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "zFlVa",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "fitloop/",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "dUCB6",
+                                              "name": "Match",
+                                              "fill": "$accent",
+                                              "content": "cal",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "TuIgi",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "endar-sync",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        "tPamw": {
+                                          "enabled": false
+                                        },
+                                        "s255dF": {
+                                          "content": "private"
+                                        },
+                                        "wuwm0": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "mZMpE",
+                                      "type": "ref",
+                                      "ref": "i6jhQ",
+                                      "name": "Calendar revamp",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "JVDhZ": {
+                                          "icon": "square-kanban"
+                                        },
+                                        "bZUUX": {
+                                          "type": "frame",
+                                          "id": "r2fhj",
+                                          "name": "Label",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "q8AjNY",
+                                              "name": "Match",
+                                              "fill": "$accent",
+                                              "content": "Cal",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "bT6KV",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "endar revamp",
+                                              "fontFamily": "$font",
+                                              "fontSize": 15,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        "tPamw": {
+                                          "enabled": false
+                                        },
+                                        "s255dF": {
+                                          "content": "34"
+                                        },
+                                        "wuwm0": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "AhfqT",
+                                      "type": "ref",
+                                      "ref": "ikYkr",
+                                      "name": "Section Items",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "CYCl2": {
+                                          "content": "Items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "pZqYy",
+                                      "type": "ref",
+                                      "ref": "OyV9N",
+                                      "name": "Item webapp#877",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "UG8UF/TZbKU": {
+                                          "name": "icon circle-slash",
+                                          "icon": "circle-slash",
+                                          "fill": "$fg-dim"
+                                        },
+                                        "vqA4n": {
+                                          "content": "endar dark mode contrast"
+                                        },
+                                        "AVL0i": {
+                                          "content": "webapp#877"
+                                        },
+                                        "JPlZZ": {
+                                          "enabled": false
+                                        },
+                                        "FkIW7": {
+                                          "enabled": false
+                                        },
+                                        "jT5ze": {
+                                          "enabled": false
+                                        },
+                                        "Lk2sF": {
+                                          "enabled": true
+                                        },
+                                        "Lk2sF/J7NvLM": {
+                                          "fill": "$green"
+                                        },
+                                        "Lk2sF/a9YQ3": {
+                                          "content": "Done"
+                                        },
+                                        "Lk2sF/gz9AR": {
+                                          "enabled": false
+                                        },
+                                        "NwGm5": {
+                                          "enabled": false
+                                        },
+                                        "c8wn2S": {
+                                          "content": "2w"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Hcjc5",
+                                      "type": "ref",
+                                      "ref": "OyV9N",
+                                      "name": "Item portal#1201",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "UG8UF/TZbKU": {
+                                          "name": "icon circle-dot",
+                                          "icon": "circle-dot",
+                                          "fill": "$green"
+                                        },
+                                        "vqA4n": {
+                                          "content": "endar picker ignores locale"
+                                        },
+                                        "AVL0i": {
+                                          "content": "portal#1201"
+                                        },
+                                        "JPlZZ": {
+                                          "enabled": false
+                                        },
+                                        "FkIW7": {
+                                          "enabled": false
+                                        },
+                                        "jT5ze": {
+                                          "enabled": false
+                                        },
+                                        "Lk2sF": {
+                                          "enabled": true
+                                        },
+                                        "Lk2sF/J7NvLM": {
+                                          "fill": "$amber"
+                                        },
+                                        "Lk2sF/a9YQ3": {
+                                          "content": "In progress"
+                                        },
+                                        "Lk2sF/gz9AR": {
+                                          "content": "+1"
+                                        },
+                                        "NwGm5": {
+                                          "name": "Avatar AS",
+                                          "fill": "#B39DDB"
+                                        },
+                                        "NwGm5/zeZzP": {
+                                          "content": "AS"
+                                        },
+                                        "c8wn2S": {
+                                          "content": "1d"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "y7e4wI",
+                                      "type": "ref",
+                                      "ref": "OyV9N",
+                                      "name": "Item portal#1150",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "UG8UF/TZbKU": {
+                                          "name": "icon git-merge",
+                                          "icon": "git-merge",
+                                          "fill": "$purple"
+                                        },
+                                        "vqA4n": {
+                                          "content": "endar export to iCal"
+                                        },
+                                        "AVL0i": {
+                                          "content": "portal#1150"
+                                        },
+                                        "JPlZZ": {
+                                          "enabled": false
+                                        },
+                                        "FkIW7/muoMv": {
+                                          "name": "icon git-merge",
+                                          "icon": "git-merge",
+                                          "fill": "$purple"
+                                        },
+                                        "FkIW7/uYfBa": {
+                                          "fill": "$purple",
+                                          "content": "Merged"
+                                        },
+                                        "jT5ze": {
+                                          "enabled": false
+                                        },
+                                        "Lk2sF": {
+                                          "enabled": false
+                                        },
+                                        "NwGm5": {
+                                          "name": "Avatar ML",
+                                          "fill": "#C9A26B"
+                                        },
+                                        "NwGm5/zeZzP": {
+                                          "content": "ML"
+                                        },
+                                        "c8wn2S": {
+                                          "content": "3d"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "IbOXT",
+                                      "type": "ref",
+                                      "ref": "OyV9N",
+                                      "name": "Item webapp#904",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "UG8UF/TZbKU": {
+                                          "name": "icon git-pull-request-draft",
+                                          "icon": "git-pull-request-draft",
+                                          "fill": "$fg-dim"
+                                        },
+                                        "vqA4n": {
+                                          "content": "endar sync: retry on 429 from Google"
+                                        },
+                                        "AVL0i": {
+                                          "content": "webapp#904"
+                                        },
+                                        "JPlZZ/muoMv": {
+                                          "name": "icon x",
+                                          "icon": "x",
+                                          "fill": "$red"
+                                        },
+                                        "JPlZZ/uYfBa": {
+                                          "fill": "$red",
+                                          "content": "8/9"
+                                        },
+                                        "FkIW7": {
+                                          "enabled": false
+                                        },
+                                        "jT5ze": {
+                                          "enabled": true
+                                        },
+                                        "Lk2sF": {
+                                          "enabled": false
+                                        },
+                                        "NwGm5": {
+                                          "enabled": false
+                                        },
+                                        "c8wn2S": {
+                                          "content": "5h"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "l4spXj",
+                                      "type": "ref",
+                                      "ref": "OyV9N",
+                                      "name": "Item portal#1187",
+                                      "width": "fill_container",
+                                      "fill": "$sel",
+                                      "descendants": {
+                                        "UG8UF/TZbKU": {
+                                          "name": "icon git-pull-request",
+                                          "icon": "git-pull-request",
+                                          "fill": "$green"
+                                        },
+                                        "vqA4n": {
+                                          "content": "endar shows wrong timezone for recurri…"
+                                        },
+                                        "AVL0i": {
+                                          "content": "portal#1187"
+                                        },
+                                        "JPlZZ/muoMv": {
+                                          "name": "icon check",
+                                          "icon": "check",
+                                          "fill": "$green"
+                                        },
+                                        "JPlZZ/uYfBa": {
+                                          "fill": "$green",
+                                          "content": "12/12"
+                                        },
+                                        "FkIW7/muoMv": {
+                                          "name": "icon circle-check",
+                                          "icon": "circle-check",
+                                          "fill": "$green"
+                                        },
+                                        "FkIW7/uYfBa": {
+                                          "fill": "$green",
+                                          "content": "Approved"
+                                        },
+                                        "jT5ze": {
+                                          "enabled": false
+                                        },
+                                        "Lk2sF": {
+                                          "enabled": false
+                                        },
+                                        "NwGm5": {
+                                          "name": "Avatar DK",
+                                          "fill": "#81C995"
+                                        },
+                                        "NwGm5/zeZzP": {
+                                          "content": "DK"
+                                        },
+                                        "c8wn2S": {
+                                          "content": "2h"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "R9SxoV": {
+                                  "id": "qLLhp",
+                                  "type": "ref",
+                                  "ref": "wBBj9",
+                                  "name": "Input",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "CKMJU": {
+                                      "content": "Current sprint",
+                                      "fontFamily": "$font"
+                                    },
+                                    "Z1XY5y": {
+                                      "content": "cal"
+                                    }
+                                  }
+                                }
+                              }
                             }
                           ]
                         }
@@ -494149,7 +493125,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 128603,
+      "y": 128759,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",
