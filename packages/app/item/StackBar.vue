@@ -172,8 +172,10 @@ function findHeld(index: number, direction: 1 | -1) {
   height: $touch-target-size;
   padding: 0 $spacing-6 0 0;
 
+  // Its icon in line with the item's content under it.
   .stackBar_toggle {
     flex: 1;
+    padding-left: $phone-edge-inset;
   }
 }
 
