@@ -4,7 +4,9 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
+import type { PropType } from 'vue';
 
+import type { ItemArrangement } from '@/item/itemRoutes.js';
 import ItemView from '@/item/ItemView.vue';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
@@ -19,10 +21,14 @@ import { help as helpCommand, newIssueInProject } from './definitions/index.js';
 import KeyHelp from './KeyHelp.vue';
 import { useCommands } from './useCommands.js';
 
-/** The help over an opened item: its keys, and the app's `?` that opens it. Closing the item is written out. */
+/**
+ * The help over an opened item: its keys, and the app's `?` that opens it. Closing the item is written out. On the
+ * item's page, the item's own sheet (F30).
+ */
 const Harness = defineComponent({
     props: {
         startOpen: { type: Boolean, default: true },
+        arrangement: { type: String as PropType<ItemArrangement>, default: 'panel' },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -40,7 +46,7 @@ const Harness = defineComponent({
                     <ItemView
                         item={D1_ISSUE}
                         detail={D1_ISSUE_DETAIL}
-                        arrangement="panel"
+                        arrangement={props.arrangement}
                         now={SAMPLE_NOW}
                         loadThreadMiddle={() => Promise.resolve()}
                         editing={SAMPLE_MAINTAINER_EDITING}
@@ -57,6 +63,7 @@ const Harness = defineComponent({
                     open={registry.helpOpen}
                     onUpdate:open={(open: boolean) => registry.setHelpOpen(open)}
                     commands={registry.commands}
+                    sheet={registry.keySheet}
                 />
             </div>
         );
@@ -110,6 +117,9 @@ export const OverOpenItem: Story = {};
 
 /** Closed: `?` opens it. */
 export const Closed: Story = { args: { startOpen: false } };
+
+/** F30: on the item's page, the thread's keys first, then the item's other keys and the app's. */
+export const OnItemPage: Story = { args: { arrangement: 'page' } };
 
 /** A list's and an opened item's `O` together: the list's runs, and the help lists only it. */
 export const ListBesideItem: StoryObj<typeof BesideHarness> = {

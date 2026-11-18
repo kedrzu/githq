@@ -49,11 +49,11 @@ screens F24–F31, the frames below `App · Pull request` moved down.
   - F27 (slot `gkuKb`, sheet `T2Mnvm`), F28 (slot `wjEgA`, sheet `S1KXk`), F29 (slot `H3fLcv`, sheet `r8nSx`): Variant
     A, B, C on a comment in a review's code thread, a commit, an event line, a resolved thread's row, the fold, a
     linked comment, the draft review and the narrow one-column card.
-- [ ] F30 · Question · Keys for the thread's cursor and its actions (amber slot `sH3i5`, screen `E2nZW`): the key help
+- [x] F30 · Question · Keys for the thread's cursor and its actions (amber slot `sH3i5`, screen `E2nZW`): the key help
   (?) as a `Keyboard shortcuts` dialog over F24 with a `The thread` section: `[` `]`, ↓ ↑, PgDn PgUp, R, and the
   proposed `.` the comment's menu, `Q` Quote reply, `H` Resolve or unresolve, `W` Edit. The caption lists the keys
   checked free on the item and every screen sharing its keys: B G H Q W Y Z . ; (F is the workflows', V the review's).
-- [ ] F31 · The comment's menu, opened by its key (slot `Htj0R`, screen `PjVCn`): `nS2AY` open under mlaine's current
+- [x] F31 · The comment's menu, opened by its key (slot `Htj0R`, screen `PjVCn`): `nS2AY` open under mlaine's current
   comment, `W` on Edit and `Q` on Quote reply; Copy link and Delete without a key.
 - [ ] Layout: `XN8vf` grew 4186 px (20476 → 24662) and 100 px wider; the 29 top-level frames that started at y 26240
   or below (`CEDLB`'s row and every row under it) moved down 4186 px as whole rows, keeping their gaps.
@@ -90,11 +90,11 @@ settled, the remaining components moved next to their bases, the frames below `A
   mark.
 - [ ] Variants · How the reading cursor shows (`lTN61`, amber): deleted, with its head and the `Variant A` row
   (`O0Ijm`).
-- [ ] F30 (slot `sH3i5`, screen `E2nZW`): `F30 · Question · Keys for the thread's cursor and its actions` → `F30 · Keys
+- [x] F30 (slot `sH3i5`, screen `E2nZW`): `F30 · Question · Keys for the thread's cursor and its actions` → `F30 · Keys
   for the thread's cursor and its actions`; amber fill, stroke, padding and radius removed from the slot; caption: the
   keys are settled, E isn't used because it is code review's (expand hidden lines) and an item can be open over a
   review.
-- [ ] F31 (caption `m67Kfj`): "both proposed in F30" → "F30"; "drawn in Variant A's look" → "the comment under the
+- [x] F31 (caption `m67Kfj`): "both proposed in F30" → "F30"; "drawn in Variant A's look" → "the comment under the
   cursor has F24's look".
 - [ ] Components · Activity (`X7uA3I`), each next to its base, its height unchanged (no screen moved), 1440 px wider:
   `Activity / Commit · current` (`xyiYO`) after `pbG2Y` and `Activity / Fold · current` (`VRxDl`) after `lshuQ` in

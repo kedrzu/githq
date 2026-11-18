@@ -1,7 +1,7 @@
 import { defineContext, injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, toValue } from 'vue';
-import type { MaybeRefOrGetter, Ref } from 'vue';
+import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue';
 
 /**
  * Where a reading screen's cursor is: on the stop keyed so, so many pixels below its top. Held by key, not by
@@ -70,4 +70,13 @@ export function useReadingStop(key: MaybeRefOrGetter<string>): ReadingStop {
 export function useReadingStops(): (key: string) => boolean {
     const context = injectContext(ReadingCursorContext, { optional: true });
     return key => context !== null && context.currentKey() === key;
+}
+
+/**
+ * Whether a screen above has a reading cursor now (an item's page), so the keys acting where it is work: a card's menu
+ * shows them beside its entries (F31). Never in code review's conversation or an item's panel.
+ */
+export function useReadingCursorShown(): ComputedRef<boolean> {
+    const context = injectContext(ReadingCursorContext, { optional: true });
+    return computed(() => context !== null && context.currentKey() !== null);
 }

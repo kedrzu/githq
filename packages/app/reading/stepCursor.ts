@@ -17,7 +17,9 @@ export interface StepCursorParams {
 
 /**
  * Where the reading cursor goes from `y`: so far down or up, a line no further than the next stop's top going down or
- * the nearest stop's top above it going up, so no stop is passed over and a tall one takes several presses. A line
+ * the nearest stop's top above it going up, so no stop is passed over and a tall one takes several presses. A line down
+ * that would end in a gap between stops goes on to the next stop's top: the cursor stands on a stop, so in a gap wider
+ * than a line it would be held at the stop above's end, every press landing in the gap again. A line
  * never lands in a parent's tail after its last nested stop shorter than {@link LINE_STEP} (a card's padding): the
  * marking would go back to the parent for a press. Never above the first stop's top nor below the last stop's end, so
  * at the content's ends it stays on the first or last stop.
@@ -41,6 +43,15 @@ export function stepCursor({ stops, y, distance, by }: StepCursorParams): number
     }
 
     target = Math.min(Math.max(target, first), end);
+    if (
+        by === 'line' &&
+        distance > 0 &&
+        nextTop !== null &&
+        !stops.some(stop => stop.top <= target && target < stop.bottom)
+    ) {
+        return nextTop;
+    }
+
     const tailStart = by === 'line' ? findShortTailStart(stops, target) : null;
     if (tailStart === null) {
         return target;

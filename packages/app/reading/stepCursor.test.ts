@@ -17,12 +17,11 @@ const STOPS: readonly ReadingStopBox[] = [
 ];
 
 test('↓ from the top reaches every stop by a press of its own, a tall one taking several, and stays on the last', () => {
-    // From the code thread's comment straight to the push: the review's padding after it is no stop; the push's
+    // The gap after the tall comment crossed in the press reaching it. From the code thread's comment straight to the push: the review's padding after it is no stop; the push's
     // toolbar, a line or more, is.
     expect(walk(1)).toEqual([
         'description',
         'event',
-        'tall',
         'tall',
         'tall',
         'tall',
@@ -64,6 +63,17 @@ test('↑ from the end reaches every stop by a press of its own too, a tall one 
 test('a held key goes further a press inside a stop, still stopping at the next stop’s top', () => {
     expect(stepCursor({ stops: STOPS, y: 50, distance: 120, by: 'line' })).toBe(170);
     expect(stepCursor({ stops: STOPS, y: 50, distance: 240, by: 'line' })).toBe(260);
+});
+
+test('↓ crosses a gap between stops wider than a line in one press, the cursor held at its stop as the screen holds it', () => {
+    // The description, then a push's header (no stop) and its commit.
+    const stops: readonly ReadingStopBox[] = [
+        { key: 'description', kind: 'comment', top: 0, bottom: 90 },
+        { key: 'commit', kind: 'row', top: 140, bottom: 165 },
+    ];
+    // The cursor at the description's last line, where its offset is clamped to.
+    expect(stepCursor({ stops, y: 89, distance: 40, by: 'line' })).toBe(140);
+    expect(stepCursor({ stops, y: 40, distance: 40, by: 'line' })).toBe(80);
 });
 
 test('a page passes stops, and stops at the content’s ends', () => {

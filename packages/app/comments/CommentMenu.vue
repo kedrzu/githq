@@ -1,10 +1,13 @@
-<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete… in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. -->
+<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete… in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. Where the reading cursor's keys work (an item's page, F31), Edit shows `W` and Quote reply `Q`; they act on the card under the cursor, not inside the open menu. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Link, Pencil, TextQuote, Trash2 } from 'lucide-vue-next';
 
+import { keyOf } from '@/commands/keyOf.js';
+import { editComment, quoteComment } from '@/commands/definitions/index.js';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
+import { useReadingCursorShown } from '@/reading/ReadingCursor.js';
 
 import * as l from './CommentMenu.loc.js';
 
@@ -24,18 +27,21 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const keys = useReadingCursorShown();
 </script>
 
 <template>
   <MenuItem
     v-if="canEdit"
     :icon="Pencil"
+    :shortcut="keys ? keyOf(editComment) : undefined"
     @select="emit('edit')"
     >{{ t(l.edit) }}</MenuItem
   >
   <MenuItem
     v-if="canQuote"
     :icon="TextQuote"
+    :shortcut="keys ? keyOf(quoteComment) : undefined"
     @select="emit('quoteReply')"
     >{{ t(l.quoteReply) }}</MenuItem
   >

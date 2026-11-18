@@ -1,10 +1,10 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test } from 'vitest';
+import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './KeyHelp.stories.jsx';
 
-const { Closed, ListBesideItem } = composeStories(stories);
+const { Closed, ListBesideItem, OnItemPage } = composeStories(stories);
 
 test('? lists the keys the registry runs, by section; Escape closes it and leaves the item open', async () => {
     await Closed.run();
@@ -44,4 +44,22 @@ test("with a list and an item on one key, O runs the list's and ? lists only the
     const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
     await expect.element(help.getByRole('term').filter({ hasText: 'Open the row' })).toBeInTheDocument();
     await expect.element(help.getByRole('term').filter({ hasText: 'Open the item' })).not.toBeInTheDocument();
+});
+
+test("on the item's page the thread's keys come first, then the item's others and the app's, none listed twice", async () => {
+    // A phone's item has no reading cursor: a window as wide as a computer's.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await OnItemPage.run();
+
+    const help = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const thread = help.getByRole('region', { name: 'The thread' });
+    await expect.element(thread.getByRole('term').filter({ hasText: 'Previous and next comment' })).toBeInTheDocument();
+    await expect.element(thread.getByRole('term').filter({ hasText: 'Edit your comment' })).toBeInTheDocument();
+    const item = help.getByRole('region', { name: 'Opened item' });
+    await expect.element(item.getByRole('term').filter({ hasText: 'Set status' }).first()).toBeInTheDocument();
+    // `R` and `[` `]` are the thread's: the item's column leaves them out.
+    await expect.element(item.getByRole('term').filter({ hasText: 'Next comment' })).not.toBeInTheDocument();
+    await expect.element(item.getByRole('term').filter({ hasText: /^Comment$/u })).not.toBeInTheDocument();
+    await expect.element(help.getByRole('region', { name: 'Anywhere' })).toBeInTheDocument();
 });
