@@ -161,12 +161,12 @@ function textOf(element: Element): string {
     return element.textContent.replaceAll(/\s+/g, ' ').trim();
 }
 
-test('the hero screenshot loads first; the rest wait for the reader, with their size known before they load', async () => {
+test('the hero still loads first; the rest wait for the reader, with their size known before they load', async () => {
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     const [hero, ...rest] = [...landingPage().querySelectorAll('img')];
-    expect(hero?.getAttribute('src')).toBe('/landing/hero-my-work.webp');
+    expect(hero?.getAttribute('src')).toBe('/landing/hero.webp');
     expect(hero?.getAttribute('fetchpriority')).toBe('high');
     expect(hero?.getAttribute('loading')).toBeNull();
     expect(rest).toHaveLength(7);
@@ -176,6 +176,34 @@ test('the hero screenshot loads first; the rest wait for the reader, with their 
         expect(Number(image.getAttribute('width'))).toBeGreaterThan(0);
         expect(Number(image.getAttribute('height'))).toBeGreaterThan(0);
     }
+});
+
+test('the recording joins the still once the page has loaded, out of screen readers, and pauses on its button', async () => {
+    const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+    onTestFinished(() => {
+        pause.mockRestore();
+        play.mockRestore();
+    });
+    await Landing.run();
+
+    await vi.waitFor(() => expect(landingPage().querySelector('video')).not.toBeNull());
+    const video = landingPage().querySelector('video');
+    expect(video?.getAttribute('aria-hidden')).toBe('true');
+    expect([...(video?.querySelectorAll('source') ?? [])].map(source => source.getAttribute('src'))).toEqual([
+        '/landing/hero.av1.mp4',
+        '/landing/hero.mp4',
+    ]);
+    // Nothing to pause until it plays: a recording that never loads leaves the still alone.
+    await expect.element(page.getByRole('button', { name: 'Pause the demo' })).not.toBeInTheDocument();
+
+    video?.dispatchEvent(new Event('playing'));
+    await userEvent.click(page.getByRole('button', { name: 'Pause the demo' }));
+    expect(pause).toHaveBeenCalledTimes(1);
+    await userEvent.click(page.getByRole('button', { name: 'Play the demo' }));
+    expect(play).toHaveBeenCalledTimes(1);
+    video?.dispatchEvent(new Event('playing'));
+    await expect.element(page.getByRole('button', { name: 'Pause the demo' })).toBeVisible();
 });
 
 test('on a phone the sections are behind a menu, which a chosen section closes', async () => {
@@ -197,6 +225,8 @@ test('on a phone the sections are behind a menu, which a chosen section closes',
     await userEvent.click(menu.getByRole('link', { name: 'Compare' }));
     await expect.element(menuButton).toHaveAttribute('aria-expanded', 'false');
     await expect.element(menu).not.toBeInTheDocument();
+    // Too small to follow: the still alone.
+    expect(landingPage().querySelector('video')).toBeNull();
 });
 
 test('the banner of a sign-in that did not finish sits above the hero', async () => {
@@ -225,7 +255,7 @@ test('a section waits hidden only if it is below the viewport after mount, and r
     expect(comparison.getAttribute('data-reveal')).toBe('revealed');
 });
 
-test('under reduced motion nothing hides or moves: no section waits, the address stays githq’s', async () => {
+test('under reduced motion nothing hides or moves: no section waits, no recording plays, the address stays githq’s', async () => {
     const matchMedia = window.matchMedia.bind(window);
     // A query the browser always matches stands in for the visitor's setting.
     const spy = vi
@@ -244,6 +274,7 @@ test('under reduced motion nothing hides or moves: no section waits, the address
 
     const root = landingPage();
     expect(root.querySelectorAll('[data-reveal]')).toHaveLength(0);
+    expect(root.querySelector('video')).toBeNull();
     const steps = [...root.querySelectorAll('[data-step]')].map(loop => loop.getAttribute('data-step'));
     expect(steps).toEqual(['githq']);
 });

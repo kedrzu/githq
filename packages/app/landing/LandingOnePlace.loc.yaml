@@ -15,4 +15,4 @@ workflows:
 issues:
   en: Issues assigned to you
 alt:
-  en: githq’s “My work” list across several repositories, opening with the workflows failing on main, then a review requested from you, your pull requests and the issues assigned to you.
+  en: githq’s “My work” across several repositories, the sidebar counting broken workflows beside reviews requested from you, your pull requests and the issues assigned to you.

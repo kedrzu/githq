@@ -13,7 +13,7 @@ reviewStacks:
 reviewOnGitHub:
   en: An ordinary GitHub review, on github.com at once
 reviewAlt:
-  en: A pull request under review in githq, with the rest of its stack and the changed files on the left and the diff with a resolved comment on the right.
+  en: A pull request under review in githq, with the rest of its stack and the changed files on the left and the diff on the right.
 instantKicker:
   en: Instant
 instantTitle:
@@ -29,9 +29,9 @@ instantEdits:
 instantRefresh:
   en: Background refresh on GitHub’s free “not modified” answers
 instantAlt:
-  en: A project board in githq, its issues in Todo, In progress and In review columns.
+  en: A project board in githq, its issues and pull requests in Todo, In Progress and Done columns, the card just moved to In Progress highlighted.
 instantToast:
-  en: Status → In progress · saved to GitHub
+  en: Status → In Progress · saved to GitHub
 keyboardKicker:
   en: Keyboard
 keyboardTitle:
@@ -55,7 +55,7 @@ keyLabels:
 keyOpenOnGitHub:
   en: Open on GitHub
 keyboardAlt:
-  en: githq’s command menu open over a list, finding projects, repositories, issues and actions for “plat”.
+  en: githq’s command menu open over a list, finding issues, pull requests and a setting for “sync”.
 faithfulKicker:
   en: Faithful to GitHub
 faithfulTitle:
@@ -71,4 +71,4 @@ faithfulTwoWay:
 faithfulAddresses:
   en: Every githq address is a GitHub address
 faithfulAlt:
-  en: An issue open in githq, with its assignees, labels, milestone, sub-issues and the fields of two GitHub Projects.
+  en: An issue open in githq, with its assignees, labels, milestone, issue type and its status in a GitHub Project, beside its description.

@@ -13,4 +13,4 @@ sentBack:
 merge:
   en: Review and merge the green ones, open the red one
 alt:
-  en: A list in githq of pull requests opened by agents across five repositories, most with passing checks and one with a failing deploy preview, then the issues handed out to agents.
+  en: githq’s “My work” grouped by author, the pull requests opened by the agents claude, codex and copilot across four repositories, most with passing checks and one failing.
