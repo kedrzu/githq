@@ -155,7 +155,8 @@ Updates are signed with the project's updater key, and the app refuses an update
 
 Members of these roles use multi-factor authentication on GitHub and on any signing service.
 
-**Privacy.** The desktop app talks to these hosts and no others:
+**Privacy.** The desktop app collects no personal data and sends none of your data anywhere but GitHub. It talks to
+these hosts and no others:
 
 - `api.github.com`, for your issues, pull requests, the code they change and projects, and for any change you make, on your behalf
   with your token;
@@ -163,9 +164,15 @@ Members of these roles use multi-factor authentication on GitHub and on any sign
   GitHub Releases;
 - GitHub's image hosts (`avatars.githubusercontent.com` and other `*.githubusercontent.com` hosts), for avatars
   and images in issues;
-- `githq.dev`, only to renew your token, which GitHub makes expire after 8 hours, and to revoke it at GitHub when you
-  sign out. Unless you turned **Share usage statistics** off in Settings → Privacy, each adds one to an anonymous
-  count of renewals or sign-outs that holds only that it came from the desktop app ([what githq counts](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)).
+- `githq.dev`, githq's own sign-in service, only to renew your token, which GitHub makes expire after 8 hours, and to
+  revoke it at GitHub when you sign out.
+
+**Anonymous usage counts.** When githq.dev renews or revokes a token, it adds one to a count of renewals or sign-outs,
+so we know roughly how many people use githq. A count holds only the event and that it came from the desktop app: no
+GitHub login, token, IP address, device, country, nor anything about your repositories, issues or pull requests. It
+can't tell one person from another, and nothing is sent for it beyond the renewal or sign-out itself. Turn it off in
+Settings → Privacy → **Share usage statistics**; githq works the same either way
+([what githq counts](https://githq.dev/docs/how-it-works/privacy-and-permissions#usage-statistics)).
 
 Your token stays in your system's keychain. The copy of your GitHub data stays on your computer. Links you open
 go to your own browser. What GitHub does with these requests is

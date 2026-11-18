@@ -32,6 +32,8 @@ apiLimits:
   en: API limits
 privacy:
   en: Privacy
+codeSigningPolicy:
+  en: Code signing policy
 legal:
   en: © 2026 githq · Not affiliated with GitHub, Inc.
 githubRepository:
