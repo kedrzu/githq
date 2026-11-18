@@ -122,3 +122,73 @@ It now ends at 75215 px, so the next row starts 1200 px below, at 76415 px (base
   `rV6qN`, `ohwJa`, `Ri8IR`, `jy6bO`, `JJOFX`, `ucqck`, `XCfAD`, `jv9Tp`, `ykYxo`, `I5wWZ`, `S5J7kt`, `nCTdq`,
   `PiKGF`): `y` +1292 (flows row 75123 → 76415, platforms 87880 → 89172, web and brand 130175 → 131467), relative
   offsets kept. No top-level frames overlap.
+
+## Round 5 · the owner's picks, in the app
+
+Asked (`.context/command-menu-declutter-brief-4.md`, not committed): the desktop menu's height cap is 600 px (was 480),
+the open item's actions in E11 unchanged; Recent holds places and items mixed (Variant A); E13 is one flat list,
+alphabetical by `owner/name`; Recent stays above Go to; no place chip the app doesn't draw; scrolled to its end, the
+last row keeps the list's bottom padding above the footer.
+Changed: E11, E12 and E14 at the 600 px cap; E13 flat, and short enough that the menu shrinks to it (the app sets
+`max-height`, `CommandMenu.vue`); E14 drawn scrolled to its end with its last row highlighted (↑ on the first row wraps
+there, `CommandMenu.spec.ts`), the end case of the breathing room. The whole lists beside E11 and E12 already end with
+the 8 px padding above the footer. Made through the Pen MCP from the app's session, not a `pen` run: the file was open
+in the app.
+
+- [ ] E11 Command menu (`OVeDx`), E12 Command menu (`T7KxF2`), E14 Command menu (`Nu3GO`): height 480 → 600; Results
+  401 → 521 px tall.
+- [ ] E11 Scrollbar (`S9ufb`): 163 → 277 px (521 of 966 px). E12 Scrollbar (`IUsbE`): 253 → 419 px (521 of 638 px).
+- [ ] E14 Results (`pvAiu`): `justifyContent` start → end, the list scrolled to its end; Scrollbar (`p8Nmg`) 253 →
+  419 px, y 4 → 98, at the track's end.
+- [ ] E14 Results (`pvAiu`): "Projects…" `EZkQt` (`i13tL`) → `DOwi8` instance `tQm5H`, highlighted, with its count and
+  chevron; "Show as board" `DOwi8` (`mjJYp`) → `k3mGr` instance `VeRb6`, same content, no longer highlighted.
+- [ ] E14 Footer (`p0WBT`): Open submenu shown (the highlighted row opens a level): Move, Run, Open submenu, Commands
+  only.
+- [ ] E13 Results (`Jo3U6`): section headings fitloop (`DpMn5`), mlaine (`WxmR5`), skyline-labs (`CXrTb`) and the
+  Scrollbar (`Y8txRS`) deleted; padding `[4,12,8,6]` → `[4,6,8,6]` (no scroll, no gutter); height `fill_container` →
+  `fit_content`. E13 Command menu (`Yc6KM`): height 480 → `fit_content` (449 px).
+- [ ] Variants · What Recent holds (`QI4kh`, amber): deleted, with `E15 · Variant B · Places only` (`B1QvU`, `AWDPM`).
+  `Slot · E14 · Variant A · Places and items mixed` (`rsN4z`) moved to the end of `Row of screens · Calmer empty menu`
+  (`zzInK`) and renamed `Slot · E14 · Places and items mixed`; its screen (`CBAUZ`) and caption title (`Q5IQn5`) the
+  same. Code E14 kept; E15 is not reused.
+- [ ] Captions: Group header note (`uM2CE`), E11 (`RdtML`), E13 (`OfvE8`) and E14 (`s6AEw`) rewritten for the 600 px
+  cap, the flat list, the scrolled end and the settled pick.
+- [ ] E3 (`uGavg`), E5 (`YorXE`), U20 (`yFqlX`), Settings `E5 · ⌘K · Settings` (`BO0pf`): the place chip "Platform Q4
+  · Current sprint" deleted (`zjMmm`, `lp2XK`, `WTDKc`, `hKqtZ`); the field starts with the query.
+- [ ] `E11 · Found items · two lines` (`brt0M`, from #350): its place chip (`y3cre`) deleted too, by the same rule.
+- [ ] Canvas: the 21 top-level frames below the menus row (as in round 4) moved up 1,150 px, so the row, now ending at
+  74,065 px, keeps 1,200 px above the next (flows row 76,415 → 75,265).
+
+Not changed: the landing page's command menu illustrations (Feature 06, desktop and mobile) keep their chip, a picture
+on a page, not a screen.
+
+Left for the owner:
+
+- Two codes collide since the merge with #350: `E11 · ⌘K on an open item · empty, calmer` and `E11 · Found items · two
+  lines`; and `E5 · ⌘K · Settings` in App · Settings shares E5 with App · Command menu.
+- `E11 · Found items · two lines` still draws the old footer ("Search by number", "Search everywhere", "Matches in
+  tracked data, instant") that round 3 replaced elsewhere.
+
+## Round 6 · agent brief
+
+Asked (`.context/command-menu-declutter-brief-5.md`, not committed): unique codes after the merge with #350, which
+took E11 for `E11 · Found items · two lines` (`brt0M`); and that screen's footer as the app draws it.
+Changed: this branch's four screens moved up one number, renamed in descending order so no two screens shared a code
+at any moment. **Codes E11–E14 of rounds 1–5 are now E12–E15** (E15 of round 1, the deleted Variant B, stays retired
+with its old screen). Made through the Pen MCP, not a `pen` run.
+
+- [ ] `Slot · E14 · Places and items mixed` (`rsN4z`), its screen (`CBAUZ`), caption title (`Q5IQn5`): E14 → E15;
+  caption note (`s6AEw`): "E12's menu" → "E13's menu".
+- [ ] `Slot · E13 · Repositories… entered` (`kxw5Z`), its screen (`U6RVn`), caption title (`JDH0n`): E13 → E14;
+  caption note (`OfvE8`): "goes back to E12" → "goes back to E13".
+- [ ] `Slot · E12 · ⌘K on My work · no subject` (`EnBNN`), its screen (`J1mJg`), caption title (`lFyXO`), `The whole
+  list · E12` (`ikmRq`): E12 → E13; caption note (`e4R9d`): "(E13)" → "(E14)".
+- [ ] `Slot · E11 · ⌘K on an open item · empty, calmer` (`EK4Gv`), its screen (`E4srSI`), caption title (`cd171`),
+  `The whole list · E11` (`s6c5qL`): E11 → E12.
+- [ ] `E11 · Found items · two lines` (`brt0M`) › Command menu (`SBAia`): the hand-drawn footer (`Ah771`: Move, Open,
+  `#` Search by number, `⌫` Search everywhere, "Matches in tracked data, instant") → `Command / Footer` (`Tkzk6`)
+  instance `n69mK`: Move, Run, Commands only. Open submenu off (the highlighted row, portal#1187, opens none), Remove
+  context off (no chip since round 5).
+
+Left for the owner: `E5 · ⌘K · Settings` in App · Settings still shares E5 with App · Command menu (out of this
+round's scope).
