@@ -49,7 +49,7 @@ An item you choose opens as it would from a list: over the screen, or on its own
 ## Levels and pickers
 
 Some lines hold more. **Settings** holds its sections, a project its saved views and actions, a repository its sections
-and actions. An action such as **Assign to** or **Set status** holds a picker of its values.
+and actions. An action such as **Assign** or **Set status** holds a picker of its values.
 
 |Key|What it does|
 |-|-|

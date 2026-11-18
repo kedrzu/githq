@@ -31,7 +31,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** `Activity / Code thread`: the code, two comments, Reply and Resolve thread. */
+/** `Activity / Code thread`: the code, two comments, Reply… and Resolve thread. */
 export const Open: Story = {};
 
 /** `· resolved`, opened from its row: the head with Hide, Unresolve and who resolved it. */

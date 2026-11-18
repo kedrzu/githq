@@ -863,7 +863,7 @@ test('a reply box opens inside its thread and closes again, the thread and what 
 
     await page.keyboard.press('Escape');
     await expect(review.commentBox('Reply to sofiab')).toBeHidden();
-    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply' })).toBeVisible();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply…' })).toBeVisible();
     expect(await review.threadOffset('First thread here')).toBe(at);
 });
 
@@ -899,7 +899,7 @@ test('a reply with a draft open joins it, and its button, its comment and the to
 }) => {
     const { review, writes } = await openWriting(page, github, { draft: 2, threads: OPEN_THREADS });
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
     const box = review.commentBox('Reply to sofiab');
     await expect(box.getByRole('button', { name: 'Add to draft' })).toBeVisible();
     await expect(box.getByRole('button', { name: 'Submit draft (3 comments)' })).toBeVisible();
@@ -920,7 +920,7 @@ test('a reply labelled to go now, meeting a draft begun elsewhere, is not sent: 
 }) => {
     const { review, writes, setDraft } = await openWriting(page, github, { threads: OPEN_THREADS });
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
     await page.keyboard.type('Keep me');
     setDraft(4);
     await page.keyboard.press(FIRST_KEY);
@@ -939,7 +939,7 @@ test('a reply GitHub refuses comes back in its box, and after a reload it is sti
     const { review, refused, writes } = await openWriting(page, github, { threads: OPEN_THREADS });
     refused.set('AddPullRequestReviewThreadReply', 'The thread is locked');
 
-    await review.thread('First thread here').getByRole('button', { name: 'Reply' }).click();
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
     await page.keyboard.type('Keep me too');
     await page.keyboard.press(FIRST_KEY);
 

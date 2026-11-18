@@ -185,16 +185,16 @@ test('mobile MB62: on a phone, opened from a link, back names the repository and
     await expect.element(page.getByRole('button', { name: 'Next item' })).not.toBeInTheDocument();
 });
 
-test('mobile MB260: on a phone "Merge pull request" and "Review files" leave for github.com, marked ↗, and no key hint is drawn anywhere in the item', async () => {
+test('mobile MB260: on a phone "Merge" and "Review files" leave for github.com, marked ↗, and no key hint is drawn anywhere in the item', async () => {
     await PhonePullRequestFailing.run();
     const { item, onMerge } = PhonePullRequestFailing.args;
     const url = assertValue(item).url;
 
-    // The pull request on github.com, not the merge panel.
-    const merge = page.getByRole('link', { name: /^Merge pull request/ });
-    await expect.element(merge).toHaveAccessibleName(/^Merge pull request\sopens on\sgithub\.com$/u);
+    // The pull request on github.com, not the merge panel; "Merge pull request" leaves the other two no room (#354).
+    const merge = page.getByRole('link', { name: /^Merge/ });
+    await expect.element(merge).toHaveAccessibleName(/^Merge\sopens on\sgithub\.com$/u);
     await expect.element(merge).toHaveAttribute('href', url);
-    await expect.element(page.getByRole('button', { name: /^Merge pull request/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
     // Its review's address, which the phone hands off to github.com's changed files (mobile D3).
     const review = page.getByRole('link', { name: /^Review files/ });
     await expect.element(review).toHaveAccessibleName(/^Review files\sopens on\sgithub\.com$/u);
@@ -464,12 +464,12 @@ test('M1: the reference opens the item menu — the actions grouped, each with i
     await expect.element(menu).toBeVisible();
     const entries = [...menu.element().querySelectorAll('[role="menuitem"]')].map(entry => entry.textContent);
     expect(entries.findIndex(text => text?.startsWith('Set status'))).toBeLessThan(
-        entries.findIndex(text => text?.startsWith('Assign to')),
+        entries.findIndex(text => text?.startsWith('Assign')),
     );
     expect(entries.findIndex(text => text?.startsWith('Comment'))).toBeLessThan(
         entries.findIndex(text => text?.startsWith('Close issue')),
     );
-    await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).toHaveAttribute('aria-keyshortcuts', 'A');
+    await expect.element(page.getByRole('menuitem', { name: /^Assign/ })).toHaveAttribute('aria-keyshortcuts', 'A');
     // Not from a list: the item is open already.
     await expect.element(page.getByRole('menuitem', { name: 'Open', exact: true })).not.toBeInTheDocument();
 
@@ -945,7 +945,7 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
     await expect.element(page.getByRole('note')).toHaveTextContent("set by skyline-labs/portal's maintainers");
     await expect.element(page.getByRole('button', { name: /^Labels:/ })).not.toBeInTheDocument();
     await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
-    await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: /^Assign/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: /^Close issue/ })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
 

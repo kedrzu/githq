@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column — it drops its buttons' key hints and the conditions' asides. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column, a phone — it drops its buttons' key hints and the conditions' asides, and "Merge pull request" says "Merge". On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -28,6 +28,7 @@ import * as l from './PullRequestMerge.loc.js';
 import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
 import { usePullRequestConditions } from './usePullRequestConditions.js';
 import { usePullRequestVerdict } from './usePullRequestVerdict.js';
+import * as verdictTexts from './usePullRequestVerdict.loc.js';
 import type { PullRequestVerdict } from './usePullRequestVerdict.js';
 
 const props = defineProps<{
@@ -125,6 +126,8 @@ const mergeLabel = computed(() => {
 
   return mergeVerdict.forwardTitle;
 });
+/** Narrow — the summary column, a phone — "Merge pull request" leaves the other two buttons no room: it says "Merge". */
+const mergeShortLabel = computed(() => (mergeLabel.value === t(verdictTexts.merge) ? t(l.mergeShort) : null));
 
 /** Behind, it updates by its own key, no panel needed (PM38), whether or not that is the way forward: something else may hold it too. */
 const updateCommand = computed(() =>
@@ -260,7 +263,12 @@ function refusedAside(reason: EditFailureReason) {
         target="_blank"
         rel="noopener noreferrer"
       >
-        {{ mergeLabel }}<ExternalMark />
+        <span :class="mergeShortLabel && css.pullRequestMerge_wideLabel">{{ mergeLabel }}</span>
+        <span
+          v-if="mergeShortLabel"
+          :class="css.pullRequestMerge_narrowLabel"
+          >{{ mergeShortLabel }}</span
+        ><ExternalMark />
       </Button>
       <Button
         v-else-if="mergeOffered"
@@ -271,7 +279,12 @@ function refusedAside(reason: EditFailureReason) {
         :keyshortcuts="keyOf(merge)"
         @click="emit('merge')"
       >
-        {{ mergeLabel }}
+        <span :class="mergeShortLabel && css.pullRequestMerge_wideLabel">{{ mergeLabel }}</span>
+        <span
+          v-if="mergeShortLabel"
+          :class="css.pullRequestMerge_narrowLabel"
+          >{{ mergeShortLabel }}</span
+        >
       </Button>
       <Button
         variant="secondary"
@@ -433,6 +446,10 @@ $narrow: 480px;
   flex-wrap: wrap;
 }
 
+.pullRequestMerge_narrowLabel {
+  display: none;
+}
+
 .pullRequestMerge_note {
   font-size: $font-size-2xs;
   color: $color-fg-dim;
@@ -441,8 +458,13 @@ $narrow: 480px;
 @container (width < #{$narrow}) {
   // The hints only: `aria-keyshortcuts` still names the keys.
   .pullRequestMerge_actions kbd,
-  .pullRequestMerge_conditionAside {
+  .pullRequestMerge_conditionAside,
+  .pullRequestMerge_wideLabel {
     display: none;
+  }
+
+  .pullRequestMerge_narrowLabel {
+    display: inline;
   }
 }
 </style>

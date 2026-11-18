@@ -57,7 +57,7 @@ test('mobile D28: on a phone ⌘ over the selection offers its actions as on the
     await expect.element(menu.getByText('Only what applies to all 3')).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Add or remove labels\s*mixed/u })).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Set milestone\s*mixed/u })).toBeVisible();
-    await expect.element(menu.getByRole('option', { name: /^Assign to\s*mlaine/u })).toBeVisible();
+    await expect.element(menu.getByRole('option', { name: /^Assign\s*mlaine/u })).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Close 3 items/u })).toBeVisible();
     await expect.element(menu.getByRole('option', { name: /^Set status\s*In progress · Platform Q4/u })).toBeVisible();
 

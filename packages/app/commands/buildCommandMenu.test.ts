@@ -19,7 +19,7 @@ const STATUS: Command = {
         options: ['Todo', 'In progress', 'Done'].map(label => ({ value: label, label, pick: () => undefined })),
     }),
 };
-const SELECTION_ASSIGN: Command = { id: 'selection.assignees', title: 'Assign to', section: 'selection' };
+const SELECTION_ASSIGN: Command = { id: 'selection.assignees', title: 'Assign', section: 'selection' };
 const SIDEBAR: Command = { id: 'app.sidebar', title: 'Collapse sidebar', section: 'app', key: 'Mod+B' };
 const KEYS_ONLY: Command = { id: 'app.commandMenu', title: 'Open the command menu', section: 'app', menu: false };
 

@@ -47,7 +47,7 @@ function renderSelection(startOpen: boolean) {
             const commands: Command[] = [
                 {
                     id: 'selection.assignees',
-                    title: 'Assign to',
+                    title: 'Assign',
                     section: 'selection',
                     key: 'A',
                     icon: UserPlus,

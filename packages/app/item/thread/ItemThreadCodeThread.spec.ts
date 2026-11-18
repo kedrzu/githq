@@ -6,15 +6,15 @@ import * as stories from './ItemThreadCodeThread.stories.js';
 
 const { Open, Resolved, ReadOnly, ResolvedCannotUnresolve, Draft, LongLine } = composeStories(stories);
 
-test('Reply and Resolve thread are offered only where GitHub lets the viewer reply and resolve', async () => {
+test('Reply… and Resolve thread are offered only where GitHub lets the viewer reply and resolve', async () => {
     await Open.run();
-    await expect.element(page.getByRole('button', { name: 'Reply' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Reply…' })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Resolve thread' }));
     expect(Open.args.onSetResolved).toHaveBeenLastCalledWith(true);
 
     await ReadOnly.run();
     await expect.element(page.getByText('Right, migrating now instead of clearing.')).toBeVisible();
-    expect(page.getByRole('button', { name: 'Reply' }).query()).toBeNull();
+    expect(page.getByRole('button', { name: 'Reply…' }).query()).toBeNull();
     expect(page.getByRole('button', { name: 'Resolve thread' }).query()).toBeNull();
 });
 
@@ -27,14 +27,14 @@ test('Unresolve is offered only where GitHub lets the viewer open it again; who 
     await expect.element(page.getByText('mlaine marked this thread as resolved.')).toBeVisible();
     expect(page.getByRole('button', { name: 'Unresolve' }).query()).toBeNull();
     // Replying is GitHub's own call, apart from resolving.
-    await expect.element(page.getByRole('button', { name: 'Reply' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Reply…' })).toBeVisible();
 });
 
-test('a thread of the viewer’s draft has neither Reply nor Resolve, whatever GitHub allows', async () => {
+test('a thread of the viewer’s draft has neither Reply… nor Resolve, whatever GitHub allows', async () => {
     await Draft.run();
 
     await expect.element(page.getByText('Pending')).toBeVisible();
-    expect(page.getByRole('button', { name: 'Reply' }).query()).toBeNull();
+    expect(page.getByRole('button', { name: 'Reply…' }).query()).toBeNull();
     expect(page.getByRole('button', { name: 'Resolve thread' }).query()).toBeNull();
 });
 

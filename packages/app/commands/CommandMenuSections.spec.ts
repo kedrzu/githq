@@ -11,7 +11,7 @@ test('a submenu shows what is set — checked, half-checked — and typing over 
 
     await userEvent.keyboard('{Tab}{Enter}');
     // The chevron says there is more: no "…" in the menu.
-    const assign = page.getByRole('menuitem', { name: 'Assign to' });
+    const assign = page.getByRole('menuitem', { name: 'Assign' });
     await expect.element(assign).toHaveFocus();
     await expect.element(assign).toHaveAttribute('aria-keyshortcuts', 'A');
     await userEvent.keyboard('{ArrowRight}');
@@ -25,7 +25,7 @@ test('a submenu shows what is set — checked, half-checked — and typing over 
     await expect.element(page.getByText('Only people who can be assigned in both repositories.')).toBeVisible();
 
     await userEvent.keyboard('wro');
-    await expect.element(page.getByRole('textbox', { name: 'Filter: Assign to' })).toHaveValue('wro');
+    await expect.element(page.getByRole('textbox', { name: 'Filter: Assign' })).toHaveValue('wro');
     await expect.element(page.getByRole('menuitemcheckbox')).toHaveTextContent('bwrona');
 
     await userEvent.click(page.getByRole('menuitemcheckbox', { name: 'bwrona' }));
@@ -46,8 +46,8 @@ test('on a phone a submenu drills in place: what is set is checked, typing filte
     await PhoneSelection.run();
 
     const sheet = page.getByRole('dialog', { name: '3 issues' });
-    await userEvent.click(sheet.getByRole('menuitem', { name: 'Assign to' }));
-    const people = sheet.getByRole('menu', { name: 'Assign to' });
+    await userEvent.click(sheet.getByRole('menuitem', { name: 'Assign' }));
+    const people = sheet.getByRole('menu', { name: 'Assign' });
     await expect
         .element(people.getByRole('menuitemcheckbox', { name: /^kedrzu/ }))
         .toHaveAttribute('aria-checked', 'true');
@@ -55,7 +55,7 @@ test('on a phone a submenu drills in place: what is set is checked, typing filte
         .element(people.getByRole('menuitemcheckbox', { name: /^pnowak/ }))
         .toHaveAttribute('aria-checked', 'mixed');
 
-    await userEvent.type(people.getByRole('textbox', { name: 'Filter: Assign to' }), 'wro');
+    await userEvent.type(people.getByRole('textbox', { name: 'Filter: Assign' }), 'wro');
     await userEvent.click(people.getByRole('menuitemcheckbox', { name: 'bwrona' }));
     await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: bwrona');
     await expect.element(sheet).not.toBeInTheDocument();
@@ -65,9 +65,9 @@ test("on a phone Home and End in a submenu's filter move its caret, not to the e
     await PhoneSelection.run();
 
     const sheet = page.getByRole('dialog', { name: '3 issues' });
-    await userEvent.click(sheet.getByRole('menuitem', { name: 'Assign to' }));
-    const people = sheet.getByRole('menu', { name: 'Assign to' });
-    const filter = people.getByRole('textbox', { name: 'Filter: Assign to' });
+    await userEvent.click(sheet.getByRole('menuitem', { name: 'Assign' }));
+    const people = sheet.getByRole('menu', { name: 'Assign' });
+    const filter = people.getByRole('textbox', { name: 'Filter: Assign' });
     await userEvent.type(filter, 'wro');
 
     await userEvent.keyboard('{Home}');

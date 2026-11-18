@@ -12,9 +12,9 @@ comments:
     one: 1 comment
     many: '{count} comments'
 reply:
-  en: Reply
+  en: Reply…
 addToDraft:
-  en: Add to your draft
+  en: Add to your draft…
 resolve:
   en: Resolve
 resolveThread:

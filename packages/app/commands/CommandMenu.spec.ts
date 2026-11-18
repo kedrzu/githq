@@ -48,7 +48,7 @@ test("E1/E2: Enter opens an action's submenu — both projects' status — and p
 
     // The first line is the item's first action; Enter opens its submenu.
     await userEvent.keyboard('{Enter}');
-    const submenu = page.getByRole('listbox', { name: 'Assign to' });
+    const submenu = page.getByRole('listbox', { name: 'Assign' });
     await expect.element(submenu).toBeInTheDocument();
     await userEvent.keyboard('{Backspace}');
 
@@ -145,7 +145,7 @@ test("K1b: what a contributor can't edit is not offered — no labels, no assign
 
     await expect.element(page.getByRole('option', { name: /Comment/u })).toBeInTheDocument();
     await expect.element(page.getByRole('option', { name: /labels/u })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: /Assign to/u })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /Assign/u })).not.toBeInTheDocument();
     await expect.element(page.getByRole('option', { name: /milestone/u })).not.toBeInTheDocument();
 });
 
@@ -257,8 +257,8 @@ test("E5: the letters typed are marked in a title, a detail and a reference, and
 test('E5: a line found by a word it does not show shows that word after its title, marked', async () => {
     await MatchInHiddenWord.run();
 
-    const row = page.getByRole('option', { name: /^Assign to/u });
-    await expect.element(row).toHaveTextContent(/^Assign to\s*assignees/iu);
+    const row = page.getByRole('option', { name: /^Assign/u });
+    await expect.element(row).toHaveTextContent(/^Assign\s*assignees/iu);
     expect(getMarks(row)).toEqual(['assignees']);
 });
 
@@ -284,7 +284,7 @@ test('E5: a submenu option found by its detail marks the detail', async () => {
     await OnOpenItem.run();
 
     await userEvent.keyboard('{Enter}');
-    await expect.element(page.getByRole('listbox', { name: 'Assign to' })).toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Assign' })).toBeInTheDocument();
     await userEvent.keyboard('you');
     const option = page.getByRole('option', { name: /^kedrzu you/u });
     await expect.element(option).toBeInTheDocument();

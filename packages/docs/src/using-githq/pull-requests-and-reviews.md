@@ -155,7 +155,7 @@ The box has two buttons, one on <kbd>⌘</kbd> <kbd>Enter</kbd> and the other on
 Which one is on <kbd>⌘</kbd> <kbd>Enter</kbd> is yours to choose, in **Settings → Code review**. By default it sends
 the comment at once. With drafts first, the other button reads **Comment now**.
 
-<kbd>R</kbd> or **Reply** answers a thread. **Resolve** folds it; **Unresolve** opens it again.
+<kbd>R</kbd> or **Reply…** answers a thread. **Resolve** folds it; **Unresolve** opens it again.
 
 ### Your draft review, and submitting
 

@@ -269,7 +269,7 @@ export const Empty: Story = {
 export const Failed: Story = { args: { detail: null, failed: true, readAgain: fn(() => Promise.resolve()) } };
 
 /**
- * F12: the pull request with sofiab's review — its open thread on `src/store/db.ts` with Reply and Resolve thread, its
+ * F12: the pull request with sofiab's review — its open thread on `src/store/db.ts` with Reply… and Resolve thread, its
  * resolved one folded — written through code review's writing (here one that keeps its boxes in memory).
  */
 export const CodeThreads: Story = {
@@ -287,13 +287,13 @@ export const CodeThreads: Story = {
     parameters: ON_PAGE,
 };
 
-/** F10, `Activity / Code thread · replying`: Reply opened the editor in the thread's band, Cancel and Reply. */
+/** F10, `Activity / Code thread · replying`: Reply… opened the editor in the thread's band, Cancel and Reply. */
 export const CodeThreadReplying: Story = {
     args: { ...CodeThreads.args, reviewWriting: new FakeReviewWriting() },
     parameters: ON_PAGE,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(await canvas.findByRole('button', { name: 'Reply' }));
+        await userEvent.click(await canvas.findByRole('button', { name: 'Reply…' }));
         await userEvent.type(
             await canvas.findByRole('textbox', { name: 'Reply' }),
             'And 4a1c9e2 adds a base in another repository to the e2e.',
