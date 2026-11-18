@@ -12,9 +12,9 @@ import MenuShortcut from './MenuShortcut.vue';
 
 defineProps<{
   icon?: LucideIcon;
-  /** The item's key, drawn at the end as one chip (`O`, `Escape`); the caller handles the key itself. */
+  /** The item's key, drawn at the end (`O`, `Escape`), not announced; the caller handles the key itself. */
   kbd?: string;
-  /** The item's key in the app's notation (`Mod+K`, `Shift+O`), drawn one chip per key; the caller handles it. */
+  /** The item's key in the app's notation (`Mod+K`, `Shift+O`), drawn in one chip and announced in `aria-keyshortcuts`; the caller handles it. */
   shortcut?: string;
   /** Dim text after the label. */
   detail?: string;
@@ -64,10 +64,7 @@ const sheet = injectContext(MenuSheetContext, { optional: true });
         ><slot name="status"
       /></span>
     </span>
-    <MenuShortcut
-      :kbd="kbd"
-      :shortcut="shortcut"
-    />
+    <MenuShortcut :keys="shortcut ?? kbd" />
   </component>
 </template>
 
