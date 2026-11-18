@@ -138928,6 +138928,16 @@
                           "fontFamily": "Inter",
                           "fontSize": 14,
                           "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "sVGj0",
+                          "name": "Code signing policy",
+                          "fill": "$fg-2",
+                          "content": "Code signing policy",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -147323,6 +147333,16 @@
                           "name": "Privacy",
                           "fill": "$fg-2",
                           "content": "Privacy",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TsjoT",
+                          "name": "Code signing policy",
+                          "fill": "$fg-2",
+                          "content": "Code signing policy",
                           "fontFamily": "Inter",
                           "fontSize": 14,
                           "fontWeight": "normal"
