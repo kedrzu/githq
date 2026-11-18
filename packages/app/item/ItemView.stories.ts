@@ -134,7 +134,7 @@ export const PullRequestFailing: Story = {
 };
 
 /**
- * Mobile MB260 (D52): the same pull request on a phone — the standing card with "Merge… ↗", "Open on GitHub" and
+ * Mobile MB260 (D52): the same pull request on a phone — the standing card with "Merge pull request ↗", "Open on GitHub" and
  * "Review files ↗", which leave for github.com; Reviews with Request, Checks, what it closes; no key hints anywhere.
  */
 export const PhonePullRequestFailing: Story = {
@@ -154,7 +154,7 @@ export const PullRequestFailingWidePanel: Story = { ...PullRequestFailing, rende
 /** The panel dragged to 1100px: wide enough for a page's two columns, still one in the panel. */
 export const PullRequestFailingWiderPanel: Story = { ...PullRequestFailing, render: renderAt(1100) };
 
-/** F3: approved and ready — "Merge…" is the one prominent action. */
+/** F3: approved and ready — "Merge pull request" is the one prominent action. */
 export const PullRequestReady: Story = {
     args: { item: F3_PULL_REQUEST, detail: F3_PULL_REQUEST_DETAIL, position: { index: 4, count: 13 } },
 };
@@ -171,7 +171,7 @@ export const PullRequestBeingMerged: Story = {
     },
 };
 
-/** PM38: in the merge queue — the verdict the panel says, "Queue…" opening the panel. */
+/** PM38: in the merge queue — the verdict the panel says, "Queue" opening the panel. */
 export const PullRequestInQueue: Story = {
     args: {
         ...PullRequestReady.args,
@@ -189,12 +189,12 @@ export const PullRequestInQueue: Story = {
     },
 };
 
-/** PM38: ready on a queue's branch — "Queue…" leads to adding it. */
+/** PM38: ready on a queue's branch — "Queue" leads to adding it. */
 export const PullRequestQueueReady: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isMergeQueueEnabled: true } },
 };
 
-/** PM38: auto-merge on — the verdict the panel says, "Auto-merge…" opening the panel. */
+/** PM38: auto-merge on — the verdict the panel says, "Auto-merge" opening the panel. */
 export const PullRequestAutoMergeOn: Story = {
     args: {
         ...PullRequestReady.args,
@@ -210,7 +210,7 @@ export const PullRequestAutoMergeOn: Story = {
     },
 };
 
-/** PM38: not met on a repository that allows auto-merge: "Auto-merge…", as the panel offers it. */
+/** PM38: not met on a repository that allows auto-merge: "Auto-merge", as the panel offers it. */
 export const PullRequestAutoMergeOffered: Story = {
     args: {
         ...PullRequestReady.args,
@@ -253,7 +253,7 @@ export const PullRequestOptionalFailing: Story = {
     },
 };
 
-/** PM38: conflicts with its base — "Can't merge", and "Merge…" says the panel leads to GitHub's editor. */
+/** PM38: conflicts with its base — "Can't merge", and "Merge pull request" says the panel leads to GitHub's editor. */
 export const PullRequestConflicts: Story = {
     args: {
         ...PullRequestReady.args,
@@ -272,12 +272,12 @@ export const PullRequestMergeabilityUnknown: Story = {
     },
 };
 
-/** PM38: behind its base, which requires being up to date — "Merge…" says the panel updates the branch. */
+/** PM38: behind its base, which requires being up to date — "Merge pull request" says the panel updates the branch. */
 export const PullRequestBehind: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, mergeStateStatus: 'BEHIND' } },
 };
 
-/** PM38: a draft — the conditions fold, and "Merge…" says the panel marks it ready first. */
+/** PM38: a draft — the conditions fold, and "Merge pull request" says the panel marks it ready first. */
 export const PullRequestDraft: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isDraft: true, mergeStateStatus: 'DRAFT' } },
 };
@@ -323,7 +323,7 @@ export const PullRequestBehindUpdates: Story = {
 
 /**
  * PM38: behind with a required check failed, a pull request can read so (live, 2026-11-03): it updates all the same, by
- * its own key, with "Merge…" still there.
+ * its own key, with "Merge pull request" still there.
  */
 export const PullRequestBehindRequiredFailed: Story = {
     ...PullRequestBehindUpdates,
@@ -343,7 +343,7 @@ export const PullRequestBehindRequiredFailed: Story = {
         })),
     },
     play: async () => {
-        await expect(await within(document.body).findByRole('button', { name: /^Merge…/u })).toBeVisible();
+        await expect(await within(document.body).findByRole('button', { name: /^Merge pull request/u })).toBeVisible();
         await expectButtonRuns(/^Update branch/u, { kind: 'updateBranch', method: 'MERGE' });
     },
 };
@@ -378,7 +378,7 @@ export const PullRequestRerunNamesActions: Story = {
     },
 };
 
-/** PM26, PM38: merged — "Delete branch" in place of "Merge…". */
+/** PM26, PM38: merged — "Delete branch" in place of "Merge pull request". */
 export const PullRequestMergedDeletes: Story = {
     args: {
         ...PullRequestReady.args,
@@ -442,7 +442,7 @@ export const PullRequestOutcomeUnknown: Story = {
     ],
 };
 
-/** K1b: the ready pull request seen by a contributor — no "Merge…", one line says they can't. */
+/** K1b: the ready pull request seen by a contributor — no "Merge pull request", one line says they can't. */
 export const PullRequestContributorView: Story = {
     args: { ...PullRequestReady.args, editing: SAMPLE_CONTRIBUTOR_EDITING },
 };

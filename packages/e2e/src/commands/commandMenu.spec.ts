@@ -78,12 +78,12 @@ test('the empty ⌘K lists the projects, repositories and items opened lately un
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: /Do or find…/u }).click();
     await expect(recent).toHaveText(expected);
-    // The tracked repository is only in "Recent", the rest behind "Repositories…".
-    await expect(menu.option(/^Repositories…/u)).toBeVisible();
+    // The tracked repository is only in "Recent", the rest behind "Repositories".
+    await expect(menu.option(/^Repositories/u)).toBeVisible();
     await expect(menu.option(new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'))).toHaveCount(1);
 });
 
-test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the app\'s actions, but "Repositories…" and "Projects…", whose levels list them alphabetically, narrow as typed, step back on ← and go to one on Enter', async ({
+test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the app\'s actions, but "Repositories" and "Projects", whose levels list them alphabetically, narrow as typed, step back on ← and go to one on Enter', async ({
     page,
     github,
 }) => {
@@ -96,12 +96,12 @@ test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the a
     await openTrackedWork(page, github, world);
     const menu = new CommandMenuHarness(page);
     const top = menu.root.getByRole('listbox', { name: 'Command menu' });
-    const repositories = menu.root.getByRole('listbox', { name: 'Repositories…' });
-    const projects = menu.root.getByRole('listbox', { name: 'Projects…' });
+    const repositories = menu.root.getByRole('listbox', { name: 'Repositories' });
+    const projects = menu.root.getByRole('listbox', { name: 'Projects' });
 
     await menu.open();
-    await expect(menu.option(/^Repositories…\s*3$/u)).toBeVisible();
-    await expect(menu.option(/^Projects…\s*3$/u)).toBeVisible();
+    await expect(menu.option(/^Repositories\s*3$/u)).toBeVisible();
+    await expect(menu.option(/^Projects\s*3$/u)).toBeVisible();
     await expect(menu.option(new RegExp(`^${login}/(app|web|api)`, 'u'))).toHaveCount(0);
     await expect(menu.option(/^(Roadmap|Launch|Billing)/u)).toHaveCount(0);
     // The app's actions are found by typing, not listed.
@@ -110,7 +110,7 @@ test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the a
     await expect(menu.option(/^Keyboard shortcuts/u)).toBeVisible();
     await menu.field.clear();
 
-    // The last two lines: ↑ from the first wraps to "Projects…", then "Repositories…".
+    // The last two lines: ↑ from the first wraps to "Projects", then "Repositories".
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('Tab');
@@ -123,9 +123,9 @@ test('E13, E14: the empty ⌘K lists no tracked repository or project, nor the a
 
     await page.keyboard.press('ArrowLeft');
     await expect(top).toBeVisible();
-    await expect(menu.option(/^Repositories…/u)).toBeVisible();
+    await expect(menu.option(/^Repositories/u)).toBeVisible();
 
-    // "Projects…" is the last line: ↑ from the first wraps to it.
+    // "Projects" is the last line: ↑ from the first wraps to it.
     await page.keyboard.press('Escape');
     await expect(menu.root).toBeHidden();
     await menu.open();
@@ -246,7 +246,7 @@ test('⌘K sets the Status of two selected items at once, by typing the value', 
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['SetProjectFieldValue', 'SetProjectFieldValue']);
 });
 
-test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by…" sets the order; `>` finds actions only', async ({
+test('E1: the view’s options are actions — "Show as board" shows it as a board, "Order by" sets the order; `>` finds actions only', async ({
     page,
     github,
 }) => {
@@ -254,14 +254,14 @@ test('E1: the view’s options are actions — "Show as board" shows it as a boa
     const menu = new CommandMenuHarness(page);
 
     await menu.open();
-    await expect(menu.option(/^Group by…/)).toBeVisible();
+    await expect(menu.option(/^Group by/)).toBeVisible();
     await menu.option(/^Show as board/).click();
     await expect(menu.root).toBeHidden();
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 
     await menu.open();
     await menu.field.pressSequentially('> order');
-    await expect(menu.option(/^Order by…/)).toBeVisible();
+    await expect(menu.option(/^Order by/)).toBeVisible();
     await expect(menu.root.getByRole('option')).toHaveCount(1);
     await page.keyboard.press('Enter');
     await menu.field.pressSequentially('title');
@@ -270,7 +270,7 @@ test('E1: the view’s options are actions — "Show as board" shows it as a boa
 
     await menu.open();
     await menu.field.pressSequentially('> order');
-    await expect(menu.option(/^Order by…\s*Title/)).toBeVisible();
+    await expect(menu.option(/^Order by\s*Title/)).toBeVisible();
 });
 
 test('D14: a list\'s "This view" opens on what acts on the list and its row, its view options after them', async ({
@@ -292,14 +292,14 @@ test('D14: a list\'s "This view" opens on what acts on the list and its row, its
     await expect(menu.group('This view').getByRole('option')).toHaveText(
         [
             `New issue in ${SAMPLE_PROJECT}`,
-            `Add existing issues to ${SAMPLE_PROJECT}…`,
+            `Add existing issues to ${SAMPLE_PROJECT}`,
             'Open on GitHub',
             'Open full screen',
             'Show as list',
-            'Group by…',
-            'Order by…',
-            'Row field…',
-            'Show properties…',
+            'Group by',
+            'Order by',
+            'Row field',
+            'Show properties',
         ].map(title => new RegExp(`^${title.replaceAll(' ', '\\s')}`, 'u')),
     );
 });

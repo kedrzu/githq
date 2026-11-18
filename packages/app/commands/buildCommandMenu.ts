@@ -187,7 +187,7 @@ const OUTSIDE_CONTEXT_FACTOR = 0.9;
  * words from the start of the text may name those levels, in path order, and the rest goes to the row. The heading
  * with the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
  * `#123` finds the items only. With nothing typed the top leaves out the tracked repositories, the projects and the app's
- * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories…" and "Projects…", whose levels list them, and typing finds them all.
+ * actions but those it offers now (`proposed`, githq D36): "Go to" ends with "Repositories" and "Projects", whose levels list them, and typing finds them all.
  * Before "Go to" it lists under "Recent" the projects, repositories and items opened lately (`navigation.recent`), newest
  * first, at most five, those no longer tracked or in the local copy left out; typing finds them where it always does.
  * Given the place's parts (the phone's command line, mobile D17), the top with nothing typed

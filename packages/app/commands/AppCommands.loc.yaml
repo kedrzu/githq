@@ -17,9 +17,9 @@ draftReviews:
 signOut:
   en: Sign out
 repositoriesLevel:
-  en: Repositories…
+  en: Repositories
 projectsLevel:
-  en: Projects…
+  en: Projects
 filterRepositories:
   en: Filter repositories…
 filterProjects:

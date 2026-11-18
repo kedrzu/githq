@@ -17,7 +17,7 @@ review:
 openFiles:
   en: Open changed files on GitHub
 addToProject:
-  en: Add to project…
+  en: Add to project
 copyLink:
   en: Copy link
 copyReference:
@@ -25,6 +25,6 @@ copyReference:
 copyBranch:
   en: Copy branch name
 submitReview:
-  en: Submit review…
+  en: Submit review
 discardReview:
-  en: Discard review…
+  en: Discard review

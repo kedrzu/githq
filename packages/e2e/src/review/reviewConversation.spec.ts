@@ -212,7 +212,7 @@ test('the user’s own comment is edited in place and deleted from the conversat
     await expect.poll(() => world.stateOf(closingPullRequest).comments).toContain('Mine, changed');
 
     await changed.getByRole('button', { name: 'Comment actions' }).click();
-    await page.getByRole('menuitem', { name: 'Delete…' }).click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'Delete comment' }).click();
     await expect(changed).toHaveCount(0);
     await expect.poll(() => world.stateOf(closingPullRequest).comments).not.toContain('Mine, changed');

@@ -48,7 +48,7 @@ export class CommandMenuHarness {
         }).toPass();
     }
 
-    /** Opens "Search repositories…": its submenu's field asks GitHub for what is typed. */
+    /** Opens "Search repositories": its submenu's field asks GitHub for what is typed. */
     async openRepositorySearch(): Promise<void> {
         await this.run('Search repositories');
         await expect(this.root.getByRole('textbox', { name: 'Search GitHub for a repository…' })).toBeVisible();

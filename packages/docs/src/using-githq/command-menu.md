@@ -18,12 +18,12 @@ Before you type, the menu lists what you can do here, under these headings:
 - **What you're on.** The opened item, or the items you selected together. A chip at the left of the field names it,
   such as `portal#1187` or `3 items`, and its actions come first: assign, label, set a status, close and more, each with
   its current value and its key.
-- **This view**: the actions of the screen, such as its filters, its layout or **Group by…**.
+- **This view**: the actions of the screen, such as its filters, its layout or **Group by**.
 - **The repository**, under its name, on any screen that belongs to one: its sections, **Open on GitHub**, **Copy link**,
   **Repository settings**, and **Track repository** while you don't track it.
 - **Go to**: My work and each of its groups, **Draft reviews** while you have any, **Broken workflows** and **Settings**.
 - **Projects** and **Repositories**: the ones you track.
-- **App**: **New issue**, **Keyboard shortcuts**, **Search repositories…** and the like.
+- **App**: **New issue**, **Keyboard shortcuts**, **Search repositories** and the like.
 
 With the field empty, <kbd>⌫</kbd> takes out the chip, so the menu stops acting on that item. The repository's chip goes
 next.
@@ -37,7 +37,7 @@ device, so results are instant and ask nothing of GitHub. It also finds what lie
 - **Issues and pull requests** by title, or by number: `#123`, `portal#123` or `acme/portal#123`. Typing `#123` alone
   finds items only. The menu lists up to eight.
 - **A repository you don't track**: type `owner/name`, and the menu offers to open it.
-- **Any repository on GitHub**: choose **Search repositories…**. This one asks GitHub as you type, at least two
+- **Any repository on GitHub**: choose **Search repositories**. This one asks GitHub as you type, at least two
   characters; `org:` and `stars:` work as on GitHub.
 - **Actions only**: start with `>`, and places and items are left out.
 
@@ -49,7 +49,7 @@ An item you choose opens as it would from a list: over the screen, or on its own
 ## Levels and pickers
 
 Some lines hold more. **Settings** holds its sections, a project its saved views and actions, a repository its sections
-and actions. An action such as **Assign to…** or **Set status…** holds a picker of its values.
+and actions. An action such as **Assign** or **Set status** holds a picker of its values.
 
 |Key|What it does|
 |-|-|

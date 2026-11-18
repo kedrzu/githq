@@ -912,7 +912,7 @@ a narrow list cuts the status text to make room for them.
 nothing typed the menu lists, in this order: the context's actions (the subject's, the screen's, the screen's
 repository's), unchanged; **Recent**, up to five tracked projects, tracked repositories, issues and pull requests
 opened lately, newest first, never the screen shown or the item opened; and **Go to**, which ends with
-**Repositories…** and **Projects…**, each with its count, whose levels list the tracked ones alphabetically. The
+**Repositories** and **Projects**, each with its count, whose levels list the tracked ones alphabetically. The
 tracked repositories, the projects and the app's own actions are found by typing; only what the app proposes now
 (an update to restart into, Update later, What changed) stays listed. Typing finds everything as before. The menu is
 at most 600 px tall on a desktop, a scrolling list keeping its rows clear of the scrollbar. Drawn in `githq.pen`

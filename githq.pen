@@ -458666,7 +458666,7 @@
                   "gap": 8,
                   "padding": [
                     14,
-                    16
+                    12
                   ],
                   "children": [
                     {
@@ -460638,7 +460638,7 @@
                         0,
                         8,
                         0,
-                        16
+                        12
                       ],
                       "alignItems": "center",
                       "children": [
@@ -464034,9 +464034,7 @@
                           "gap": 10,
                           "padding": [
                             0,
-                            16,
-                            0,
-                            20
+                            16
                           ],
                           "alignItems": "center",
                           "children": [
@@ -468236,7 +468234,7 @@
                             4,
                             6,
                             4,
-                            20
+                            16
                           ],
                           "alignItems": "center",
                           "children": [
@@ -468280,9 +468278,9 @@
                           "gap": 14,
                           "padding": [
                             16,
-                            20,
+                            16,
                             8,
-                            20
+                            16
                           ],
                           "children": [
                             {
@@ -469054,9 +469052,9 @@
                       "gap": 24,
                       "padding": [
                         6,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -469167,9 +469165,9 @@
                       "gap": 24,
                       "padding": [
                         6,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -470161,9 +470159,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -470432,9 +470430,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -470638,9 +470636,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -470923,9 +470921,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -470968,9 +470966,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -471002,9 +471000,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -471175,9 +471173,9 @@
                       "layout": "vertical",
                       "padding": [
                         12,
-                        16,
+                        12,
                         24,
-                        16
+                        12
                       ],
                       "children": [
                         {
@@ -479837,9 +479835,9 @@
                                   "layout": "vertical",
                                   "padding": [
                                     0,
-                                    24,
+                                    16,
                                     80,
-                                    24
+                                    16
                                   ],
                                   "justifyContent": "center",
                                   "alignItems": "center",
@@ -486535,9 +486533,9 @@
                                   "gap": 8,
                                   "padding": [
                                     20,
-                                    20,
+                                    16,
                                     10,
-                                    20
+                                    16
                                   ],
                                   "children": [
                                     {
@@ -487615,9 +487613,9 @@
                                   "gap": 8,
                                   "padding": [
                                     20,
-                                    20,
+                                    16,
                                     10,
-                                    20
+                                    16
                                   ],
                                   "children": [
                                     {
@@ -487713,7 +487711,7 @@
                                   "gap": 8,
                                   "padding": [
                                     28,
-                                    20
+                                    16
                                   ],
                                   "children": [
                                     {
@@ -491612,7 +491610,7 @@
                               "gap": 10,
                               "padding": [
                                 40,
-                                24
+                                16
                               ],
                               "children": [
                                 {
@@ -495220,9 +495218,9 @@
                               "height": "fill_container",
                               "padding": [
                                 0,
-                                24,
+                                16,
                                 80,
-                                24
+                                16
                               ],
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -495377,9 +495375,9 @@
                               "height": "fill_container",
                               "padding": [
                                 0,
-                                24,
+                                16,
                                 80,
-                                24
+                                16
                               ],
                               "justifyContent": "center",
                               "alignItems": "center",

@@ -15,8 +15,8 @@ export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
 /**
  * A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken
- * workflows, a tracked project, a repository, Settings; or a level only, with no screen of its own: "Repositories…" and
- * "Projects…", which list the tracked ones.
+ * workflows, a tracked project, a repository, Settings; or a level only, with no screen of its own: "Repositories" and
+ * "Projects", which list the tracked ones.
  */
 export interface NavigationPlace extends CommandMarks {
     readonly id: string;
@@ -36,7 +36,7 @@ export interface NavigationPlace extends CommandMarks {
     readonly keywords?: readonly string[];
     /** The key that also goes there, shown on its line (`,` for Settings). */
     readonly key?: string;
-    /** The app's address of it; none for a place that is only a level (Repositories…), which Enter opens. */
+    /** The app's address of it; none for a place that is only a level (Repositories), which Enter opens. */
     readonly path?: string;
     /** The rows under it, a level the menu walks into. */
     readonly children?: () => readonly Command[];
