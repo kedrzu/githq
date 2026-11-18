@@ -16,7 +16,7 @@ of every other kind of stop; the key help section for the thread (the action key
 its keys. Changed: two variables, one component restructured without a visible change, 23 new components, eight new
 screens F24–F31, the frames below `App · Pull request` moved down.
 
-- [ ] Variables: new `current-edge` `#4F589D` and `current-header` `#1B2130`, the file's side of `tokens.scss`'s
+- [x] Variables: new `current-edge` `#4F589D` and `current-header` `#1B2130`, the file's side of `tokens.scss`'s
   `$color-current-edge` / `$color-current-header` (they existed only in code).
 - [ ] Review / Comment (`IHFo8`): the avatar (`J1oko`) wrapped in a new `Avatar column` (`kIiiC`, height
   fill_container), so a state can draw along the comment's height. Looks the same everywhere.
@@ -82,10 +82,10 @@ settled, the remaining components moved next to their bases, the frames below `A
   (`Wv4fu`), `· linked, current (B)` (`SRvT4`), `· narrow, current (B)` (`X1IEKj`), `Activity / Review · current (B)`
   (`g0TRzR`), `Activity / Review · pending, current (B)` (`ImkNG`), `Activity / Reading caret` (`ZNAuv`), with their
   columns `i6q6F`, `k7YE9H`.
-- [ ] F24 (slot `mzLjU`, screen `VN5jy`): moved into the row `TS9ng`; `F24 · Variant A · The current comment, as the
+- [x] F24 (slot `mzLjU`, screen `VN5jy`): moved into the row `TS9ng`; `F24 · Variant A · The current comment, as the
   current file` → `F24 · The current comment, as the current file`; caption: picked by the owner, no mark on any edge
   and no caret, "see F25" → "see F27".
-- [ ] F27 (slot `gkuKb`, screen `T2Mnvm`): moved into `TS9ng`; `F27 · Variant A · The cursor on every other kind of
+- [x] F27 (slot `gkuKb`, screen `T2Mnvm`): moved into `TS9ng`; `F27 · Variant A · The cursor on every other kind of
   stop` → `F27 · The cursor on every other kind of stop`; caption: a comment in a code thread gets only the tint, no
   mark.
 - [ ] Variants · How the reading cursor shows (`lTN61`, amber): deleted, with its head and the `Variant A` row
@@ -123,7 +123,7 @@ to a reusable node through the MCP before saving).
 
 ### Clipped layouts
 
-- [ ] Review / Pending toolbar (`OCfqo`): the note (`w6fa5w`) wraps (`fixed-width`, `fill_container`) and the spacer
+- [x] Review / Pending toolbar (`OCfqo`): the note (`w6fa5w`) wraps (`fixed-width`, `fill_container`) and the spacer
   (`T3XYh`) is hidden, so the note takes the room left and the buttons never move past the edge; height 44 →
   `fit_content(44)`, padding `[0,8,0,14]` → `[10,8,10,14]`, layout made explicit (horizontal); the Title row (`fA0IB`)
   24 px high so a one-line toolbar stays 44 px in every state. F27's draft review (`B0CQM1`, 640 px): one row, the note
@@ -200,3 +200,12 @@ Both hold, so each conflicting frame moved by both (kept value + 1292). Checked:
 Where "Merge pull request" does not fit — the summary card in two columns (376 px) and on a phone (358 px) — the button
 says "Merge", without "…"; everywhere it fits (the panel, the merging screens, the menus) it says "Merge pull request".
 The file already draws it so after round 3; nothing to change.
+
+## Round 4 · implementation
+
+Built on this branch: F24 and F27 (the stops' marking, Variant A without an edge mark), F30 (the key help's "The
+thread"), F31 (`W` and `Q` in the comment's menu); the variables were already `tokens.scss`'s
+`$color-current-edge` and `$color-current-header`. The code's pending toolbar already kept its buttons whole: its note
+is cut short on one line rather than wrapped, which the drawing's wrap stands for. The labels of round 3 and the merge
+button's are built in #354, their own pull request; the other unticked entries are the file's own layout and need no
+code.
