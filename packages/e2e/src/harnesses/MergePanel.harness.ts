@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /** A line of the merge panel's landing, by its label. */
@@ -40,6 +41,35 @@ export class MergePanelHarness {
     /** The value of a line of the landing: the method, or the commit's title and its first lines. */
     line(name: MergePanelLineName): Locator {
         return this.root.locator('dt', { hasText: name }).locator('xpath=following-sibling::dd[1]');
+    }
+
+    /** The menu of commit addresses (`Y`), "Commit as"; it floats outside the panel. */
+    get emailMenu(): Locator {
+        return this.page.getByRole('menu', { name: 'Commit as' });
+    }
+
+    /**
+     * Picks `email` from the commit address menu for this merge, by keys: `Y` opens it on the address in use, `J`/`K`
+     * walk to `email`, `↵` picks. Remember for this repository stays off.
+     */
+    async pickEmail(email: string): Promise<void> {
+        await this.page.keyboard.press('y');
+        await expect(this.emailMenu).toBeFocused();
+        const rows = this.emailMenu.getByRole('menuitemradio');
+        const texts = await rows.allTextContents();
+        const from = await rows.evaluateAll(items =>
+            items.findIndex(item => item.getAttribute('aria-checked') === 'true'),
+        );
+        const to = texts.findIndex(text => text.startsWith(email));
+        if (to < 0) {
+            throw new Error(`${email} is not in the commit address menu: ${texts.join(', ')}`);
+        }
+
+        for (let step = from; step !== to; step += Math.sign(to - from)) {
+            await this.page.keyboard.press(to > from ? 'j' : 'k');
+        }
+
+        await this.page.keyboard.press('Enter');
     }
 
     /** The commit title's field, while the text is edited (`E`). */

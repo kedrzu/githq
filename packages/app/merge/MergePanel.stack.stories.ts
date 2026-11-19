@@ -198,6 +198,8 @@ const Harness = defineComponent({
                         recordOf: recordOf.value ?? null,
                         sent: null,
                         alreadyMerged: false,
+                        // A stack takes no email (`getCommitEmails`): what it would resolve to doesn't matter.
+                        commitEmail: null,
                         advancing: advancing.value,
                         now: NOW,
                         stack: {

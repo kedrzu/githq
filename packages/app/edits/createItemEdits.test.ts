@@ -85,6 +85,18 @@ test('PM10: an edited title goes, and nothing of the body not edited', async () 
     ]);
 });
 
+test('the commit author goes with auto-merge only when given', async () => {
+    const { editor, session } = await setupMerge({
+        enablePullRequestAutoMerge: { pullRequest: sampleStatus({ autoMergeRequest: AUTO_MERGE_ON }) },
+    });
+
+    await editor.edit(['PR_1'], { kind: 'enableAutoMerge', method: 'SQUASH', authorEmail: 'me@work.example' });
+
+    expect(requests(session, 'EnablePullRequestAutoMerge')).toEqual([
+        { pullRequestId: 'PR_1', mergeMethod: 'SQUASH', expectedHeadOid: 'seen-head', authorEmail: 'me@work.example' },
+    ]);
+});
+
 test('never auto-merge on a stacked pull request: nothing is sent', async () => {
     const { editor, items, session } = await setupMerge({});
     items.upsertMany([

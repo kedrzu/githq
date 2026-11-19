@@ -30,9 +30,14 @@ const {
     BypassRebase,
     BypassRefused,
     BypassSending,
+    EmailAutoMerge,
+    EmailDefaultsLater,
+    EmailMenuUntracked,
     EmailMergeCommit,
     EmailOneAddress,
     EmailOnQueueBranch,
+    EmailOwnerDefault,
+    EmailOwnerNotOffered,
     EmailSentReopened,
     EmailSquashByAuthor,
     EmailSquashNotAuthor,
@@ -823,29 +828,159 @@ test.each([
     await expect.element(page.getByTestId('sent')).not.toHaveTextContent('Bypass');
 });
 
-test('PM6: a squash by the author starts on the default, sends no email; Y moves on, and only then one goes', async () => {
+test('PM6, PM48: a squash by the author starts on the default, sends no email; picked from the menu, another goes', async () => {
     await EmailSquashByAuthor.run();
 
     await expect.element(panel()).toHaveTextContent('m.laine@fitloop.dev');
     await expect.element(panel()).toHaveTextContent('2 more');
-    await userEvent.keyboard('y');
+    await expect.element(panel()).toHaveTextContent('· GitHub default');
+    await openEmailMenu();
+    await userEvent.keyboard('j{Enter}');
+    await expect.element(emailMenu()).not.toBeInTheDocument();
     await expect.element(panel()).toHaveTextContent('mikko@laine.fi');
+    await expect.element(page.getByTestId('remembered')).toHaveTextContent('Nothing remembered');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect
         .element(page.getByTestId('sent'))
         .toHaveTextContent('{"method":"SQUASH","authorEmail":"mikko@laine.fi"}');
 });
 
-test('PM6: back on the default after the last address, none goes; the method leaving for a rebase takes the line and the email', async () => {
+test('PM6: back on the default, none goes; the method leaving for a rebase takes the line and the email', async () => {
     await EmailSquashByAuthor.run();
 
-    await userEvent.keyboard('yyy');
+    await openEmailMenu();
+    await userEvent.keyboard('j{Enter}');
+    await openEmailMenu();
+    await userEvent.keyboard('k{Enter}');
     await expect.element(panel()).toHaveTextContent('m.laine@fitloop.dev');
-    await userEvent.keyboard('y');
+    await openEmailMenu();
+    await userEvent.keyboard('j{Enter}');
     await userEvent.keyboard('3');
     await expect.element(panel()).not.toHaveTextContent('Email');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"REBASE"}');
+});
+
+test('PM50, D5: it starts on the owner’s default, says whose, and sends it — it isn’t GitHub’s', async () => {
+    await EmailOwnerDefault.run();
+
+    await expect.element(page.getByRole('button', { name: 'mikko@laine.fi' })).toBeVisible();
+    await expect.element(panel()).toHaveTextContent('· default for fitloop');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('{"method":"MERGE","authorEmail":"mikko@laine.fi"}');
+});
+
+test('D5: an owner’s default GitHub doesn’t offer here is skipped: GitHub’s default, and no address goes', async () => {
+    await EmailOwnerNotOffered.run();
+
+    await expect.element(page.getByRole('button', { name: 'm.laine@fitloop.dev' })).toBeVisible();
+    await expect.element(panel()).toHaveTextContent('· GitHub default');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"MERGE"}');
+});
+
+test('PM48: the menu lists the resolved address first with its source, GitHub’s default, the rest; the one in use ticked and under the cursor', async () => {
+    await EmailOwnerDefault.run();
+    await openEmailMenu();
+
+    const rows = emailMenu().getByRole('menuitemradio');
+    await expect.element(rows.nth(0)).toHaveTextContent('mikko@laine.fidefault for fitloop');
+    await expect.element(rows.nth(1)).toHaveTextContent('m.laine@fitloop.devGitHub default');
+    await expect.element(rows.nth(2)).toHaveTextContent('mlaine@users.noreply.github.com');
+    await expect.element(rows.nth(0)).toHaveAttribute('aria-checked', 'true');
+    await expect.element(rows.nth(1)).toHaveAttribute('aria-checked', 'false');
+    expect(emailMenu().element().getAttribute('aria-activedescendant')).toBe(rows.nth(0).element().id);
+    await expect.element(rememberSwitch()).toHaveAttribute('aria-checked', 'false');
+});
+
+test('PM48: while the menu is open its keys are its own — the panel’s method, text and ⌘↵ don’t act; Esc closes it with nothing changed', async () => {
+    await EmailOwnerDefault.run();
+    await openEmailMenu();
+
+    await userEvent.keyboard('j3e ');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    await expect.element(page.getByRole('button', { name: /^Merge commit/u })).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(page.getByRole('textbox', { name: 'Commit title' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(emailMenu()).not.toBeInTheDocument();
+    await expect.element(panel()).toBeVisible();
+    await expect.element(panel()).toHaveTextContent('mikko@laine.fi');
+    expect(panel().element().contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"authorEmail":"mikko@laine.fi"');
+});
+
+test('PM51, PM52: ⇧Y turns Remember on; ↵ picks for this merge and makes it the repository’s default, said once', async () => {
+    await EmailOwnerDefault.run();
+    await openEmailMenu();
+
+    await userEvent.keyboard('{Shift>}Y{/Shift}');
+    await expect.element(rememberSwitch()).toHaveAttribute('aria-checked', 'true');
+    await userEvent.keyboard('jj{Enter}');
+    await expect
+        .element(page.getByTestId('remembered'))
+        .toHaveTextContent('Remembered: "mlaine@users.noreply.github.com"');
+    await expect.element(panel()).toHaveTextContent('mlaine@users.noreply.github.com');
+    await expect.element(panel()).toHaveTextContent('· default for this repository');
+    await expect.element(panel()).toHaveTextContent("Saved as this repository's default");
+
+    await openEmailMenu();
+    await expect.element(rememberSwitch()).toHaveAttribute('aria-checked', 'false');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"authorEmail":"mlaine@users.noreply.github.com"');
+});
+
+test('PM51: Space on the switch flips it; GitHub’s default remembered is stored as GitHub’s own, and none goes', async () => {
+    await EmailOwnerDefault.run();
+    await openEmailMenu();
+
+    await userEvent.keyboard('{Tab}');
+    await expect.element(rememberSwitch()).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect.element(rememberSwitch()).toHaveAttribute('aria-checked', 'true');
+    await userEvent.keyboard('j{Enter}');
+    await expect.element(page.getByTestId('remembered')).toHaveTextContent('Remembered: null');
+    await expect.element(panel()).toHaveTextContent('· default for this repository');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"MERGE"}');
+});
+
+test('PM48: picked with Remember off, only this merge changes; an untracked repository offers no Remember', async () => {
+    await EmailMenuUntracked.run();
+
+    await expect.element(emailMenu()).toBeVisible();
+    await expect.element(rememberSwitch()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}Y{/Shift}j{Enter}');
+    await expect.element(page.getByTestId('remembered')).toHaveTextContent('Nothing remembered');
+    await expect.element(panel()).not.toHaveTextContent("Saved as this repository's default");
+    await expect.element(panel()).toHaveTextContent('· GitHub default');
+});
+
+test('PM53: turning auto-merge on shows the line and carries the address chosen', async () => {
+    await EmailAutoMerge.run();
+
+    await expect.element(panel()).toHaveTextContent('· default for fitloop');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('Enable: {"method":"MERGE","authorEmail":"mikko@laine.fi"}');
+});
+
+test('the line waits for the stored defaults, and so does ⌘↵: it never goes on an address the panel didn’t show', async () => {
+    await EmailDefaultsLater.run();
+
+    await expect.element(panel()).not.toHaveTextContent('Email');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    document.querySelector<HTMLElement>('[tid="defaultsArrive"]')?.click();
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('{"method":"MERGE","authorEmail":"mikko@laine.fi"}');
 });
 
 test('PM6: a merge commit offers it to anyone with several addresses; a squash by someone else does not', async () => {
@@ -879,6 +1014,21 @@ test('D15: reopened, it starts on the address its last merge was sent with', asy
 
 function panel() {
     return page.getByRole('dialog', { name: 'Merge fitloop/api#477' });
+}
+
+function emailMenu() {
+    return page.getByRole('menu', { name: 'Commit as' });
+}
+
+function rememberSwitch() {
+    return page.getByRole('switch', { name: 'Remember for this repository' });
+}
+
+/** `Y` from the panel, once its keys work; the menu then has the keys. */
+async function openEmailMenu() {
+    await expect.poll(() => panel().element().contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('y');
+    await expect.element(emailMenu()).toHaveFocus();
 }
 
 function commitLoader() {

@@ -142,6 +142,7 @@ later; they are not part of this design.
 |Whether the short UI animations play|`animations` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Whether usage statistics are shared|`usageStatistics` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
 |Ref list sort, per group|`refSort` at the root of the document, `settings/sync/SettingsDocument.ts`|synced|
+|Default commit email, per owner and per repository ([pr-merge D17](../pr-merge/DECISIONS.md#d17))|`commitEmails` at the root of the document and `commitEmail` in a repository's entry, `settings/sync/SettingsDocument.ts`|synced|
 |Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
 |Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
 |How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|

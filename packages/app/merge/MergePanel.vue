@@ -1,4 +1,4 @@
-<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and hanging from near the window's top, so growing moves nothing above, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too — pressed before the repository's settings are known, as soon as they are, the primary busy until then and the key dropped if they can't be read — and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known; GitHub out of reach before anything was sent, that nothing was, and ⌘↵ tries again. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). Past what isn't met, for a viewer GitHub says may: a line of its own above the footer lists it, as read for the head it would name, and `⌥⌘↵` alone merges — never `⌘↵` (D12, PM12a) — in a stack only its first open pull request (SP55). A commit email to choose, where GitHub offers one, is a line of its own: `Y` moves to the next (PM6). A stack on a merge queue's branch reads ready for the queue, with no method or text to choose, and enters as one group (SP53); in the queue each one says its own position, the verdict the first one's, and it leaves whole; with no entry it is a stack like any (SP54). -->
+<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and hanging from near the window's top, so growing moves nothing above, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too — pressed before the repository's settings are known, as soon as they are, the primary busy until then and the key dropped if they can't be read — and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known; GitHub out of reach before anything was sent, that nothing was, and ⌘↵ tries again. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). Past what isn't met, for a viewer GitHub says may: a line of its own above the footer lists it, as read for the head it would name, and `⌥⌘↵` alone merges — never `⌘↵` (D12, PM12a) — in a stack only its first open pull request (SP55). A commit email to choose, where GitHub offers one and merging or turning auto-merge on is the way forward, is a line of its own (PM50, PM53): it starts on the address the repository resolves to — its own default, else its owner's, else GitHub's — saying which, and waits, `⌘↵` with it, until the stored defaults are read; `Y` opens a menu of the addresses (`CommitEmailMenu`, PM48) whose keys are its own while it is open, picking one for this merge, or, with "Remember for this repository" on, as the repository's default too, which the line then says once (PM51, PM52). Only an address other than GitHub's default is sent (D5). A stack on a merge queue's branch reads ready for the queue, with no method or text to choose, and enters as one group (SP53); in the queue each one says its own position, the verdict the first one's, and it leaves whole; with no entry it is a stack like any (SP54). -->
 <script lang="ts" setup>
 import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -9,6 +9,8 @@ import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
   ArrowUpRight,
+  Check,
+  ChevronDown,
   CircleCheck,
   CircleDashed,
   CircleOff,
@@ -70,11 +72,13 @@ import { MERGE_TIME_LIMIT_MS } from './createMergeEdits.js';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import { getBypassSkips } from './getBypassSkips.js';
+import CommitEmailMenu from './CommitEmailMenu.vue';
 import { getCommitEmails } from './getCommitEmails.js';
 import { getMergeEnd } from './getMergeEnd.js';
 import { getMergeEndLook } from './getMergeEndLook.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
+import type { ResolvedCommitEmail } from './resolveCommitEmail.js';
 import { getReasonTitle } from './getReasonTitle.js';
 import { isAutoMergeAllowed } from './isAutoMergeAllowed.js';
 import MergeChecks from './MergeChecks.vue';
@@ -96,6 +100,7 @@ import StackMergeMembers from './stack/StackMergeMembers.vue';
 import type { StackMerge, StackMergeView } from './stack/StackMergeTypes.js';
 import { useMergeMethodName } from './useMergeMethodName.js';
 import { useMergeQueueTexts } from './useMergeQueueTexts.js';
+import { useCommitEmailSource } from './useCommitEmailSource.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -150,6 +155,13 @@ const props = defineProps<{
   stack?: StackMergeView | null;
   /** Who is signed in: a squash takes an email only from the pull request's author (D4). */
   viewerLogin?: string | null;
+  /**
+   * The commit email the merge starts on and where it comes from (`resolveCommitEmail`): the repository's default,
+   * else its owner's, else GitHub's. `null` until the stored defaults are read: the line waits rather than flip.
+   */
+  commitEmail: ResolvedCommitEmail | null;
+  /** The repository is tracked: only then can an address picked in the menu be remembered as its default. */
+  tracked?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -167,6 +179,11 @@ const emit = defineEmits<{
   visit: [url: string];
   /** `↑` or `↓` in a stack: the line moves one open pull request earlier or later (stacked PRs D18). */
   move: [direction: 'earlier' | 'later'];
+  /**
+   * An address picked in the email menu with "Remember for this repository" on (PM51): the repository's default from
+   * now on; `null` where it is GitHub's own.
+   */
+  rememberEmail: [email: string | null];
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
@@ -254,6 +271,7 @@ const queueTexts = useMergeQueueTexts();
 const getMethodName = useMergeMethodName();
 const checkTexts = useCheckTexts();
 const prConditions = usePullRequestConditions(shownPr);
+const emailSource = useCommitEmailSource();
 
 const offered = computed(() =>
   props.settings
@@ -279,8 +297,15 @@ const edited = ref<Partial<Record<CommitMethod, MergeCommitText>>>(initialEdits(
 const editing = ref(false);
 /** `E` pressed while the proposal was on its way: the editor opens once it is in (PM8). */
 const editWhenRead = ref(false);
-/** The email chosen; `null` for the viewer's default. */
-const chosenEmail = ref<string | null>(props.sent?.request.authorEmail ?? null);
+/**
+ * The email chosen in this panel: `undefined` for the one it resolves to, `null` for GitHub's default, else that
+ * address. Reopened after a merge that did not end merged, the one that merge was sent with (D15).
+ */
+const chosenEmail = ref<string | null | undefined>(props.sent ? (props.sent.request.authorEmail ?? null) : undefined);
+/** The email menu is open (`Y`, PM48). */
+const emailMenuOpen = ref(false);
+/** An address was just remembered as the repository's default: the line says so until the panel closes (PM52). */
+const emailSaved = ref(false);
 /** What is being sent is the merge past the rules: its own button is busy, and the primary stays as it was. */
 const bypassing = ref(false);
 /** `⌘↵` pressed while there was no method to send yet: it goes on once the repository's settings are in. */
@@ -478,16 +503,58 @@ const bypassLines = computed(() => {
     button: bypassOfFirst.value ? t(l.bypassMergeNumber, { number: props.pr.number }) : t(l.bypassMerge),
   };
 });
-/** The addresses to choose the commit email from, while merging is the way forward (PM6); `null` with no choice. */
+/**
+ * The addresses to choose the commit email from, while merging or turning auto-merge on is the way forward (PM48,
+ * PM53); `null` with no choice.
+ */
 const commitEmails = computed(() =>
-  mergesNow.value && standing.forward === 'merge'
-    ? getCommitEmails({ settings: props.settings, method: method.value, pr: props.pr, viewerLogin: props.viewerLogin })
+  (mergesNow.value && standing.forward === 'merge') || forwardStep.value === 'enableAutoMerge'
+    ? getCommitEmails({
+        settings: props.settings,
+        method: method.value,
+        pr: props.pr,
+        viewerLogin: props.viewerLogin,
+        resolved: props.commitEmail?.email,
+      })
     : null,
 );
-/** The address the merge commits with, as the line shows it: the one chosen, while it is still offered. */
+/**
+ * The address the merge commits with, as the line shows it: the one chosen while it is still offered, else the one
+ * it resolves to. `null` without a choice, and while the stored defaults are read.
+ */
 const shownEmail = computed(() => {
+  const emails = commitEmails.value;
   const chosen = chosenEmail.value;
-  return chosen !== null && commitEmails.value?.includes(chosen) ? chosen : (commitEmails.value?.[0] ?? null);
+  if (!emails) {
+    return null;
+  }
+
+  if (chosen === null) {
+    return props.settings?.viewerDefaultCommitEmail ?? null;
+  }
+
+  if (chosen !== undefined && emails.includes(chosen)) {
+    return chosen;
+  }
+
+  const resolved = props.commitEmail?.email;
+  return resolved !== undefined && emails.includes(resolved) ? resolved : null;
+});
+/** There is an address to choose, but the stored defaults aren't read yet: a `⌘↵` meanwhile waits for them. */
+const awaitsEmail = computed(() => commitEmails.value !== null && shownEmail.value === null);
+/** After the address, where it comes from (PM50): the one it resolves to says whose default it is. */
+const emailNote = computed(() => {
+  const shown = shownEmail.value;
+  const resolved = props.commitEmail;
+  if (shown === null) {
+    return null;
+  }
+
+  if (resolved?.email === shown) {
+    return emailSource(resolved.source, props.pr.repository.owner);
+  }
+
+  return shown === props.settings?.viewerDefaultCommitEmail ? emailSource('github', props.pr.repository.owner) : null;
 });
 
 const verdict = computed((): PanelVerdict => {
@@ -859,8 +926,8 @@ watch(offered, (next, previous) => {
   }
 });
 
-watch([method, () => props.settingsReading], ([chosen, reading]) => {
-  if (!forwardWhenRead.value) {
+watch([method, () => props.settingsReading, awaitsEmail], ([chosen, reading, waitsForEmail]) => {
+  if (!forwardWhenRead.value || waitsForEmail) {
     return;
   }
 
@@ -1450,7 +1517,7 @@ function goForward() {
     return;
   }
 
-  if (awaitsMethod.value) {
+  if (awaitsMethod.value || awaitsEmail.value) {
     forwardWhenRead.value = true;
     return;
   }
@@ -1485,12 +1552,22 @@ function bypass() {
   emit('bypass', { request: { ...request, bypassRules: true }, edited: text });
 }
 
-/** `Y`: the next address, back to the default after the last (PM6). */
-function nextEmail() {
-  const emails = commitEmails.value;
-  if (emails && shownEmail.value !== null) {
-    chosenEmail.value = emails[(emails.indexOf(shownEmail.value) + 1) % emails.length] ?? null;
+/**
+ * An address picked in the email menu: for this merge, and remembered as the repository's default when asked to —
+ * GitHub's own as `null` (PM51, PM52).
+ */
+function pickEmail(email: string, remember: boolean) {
+  chosenEmail.value = email;
+  emailSaved.value = remember;
+  if (emailSaved.value) {
+    emit('rememberEmail', email === props.settings?.viewerDefaultCommitEmail ? null : email);
   }
+}
+
+/** The email menu closed: the keys are the panel's again. */
+function onEmailMenuClosed(event: Event) {
+  event.preventDefault();
+  root.value?.focus();
 }
 
 /** `⇧⌘↵`: never `⌘↵`, as it rebuilds everything in progress in the queue (D12, PM14). */
@@ -1551,8 +1628,8 @@ function toSubmission(chosen: PullRequestMergeMethod): MergeSubmission {
       method: chosen,
       ...(text && titleEdited.value ? { title: text.title } : {}),
       ...(text && bodyEdited.value ? { body: text.body } : {}),
-      // With the default, none: the merge stays on REST, and GitHub commits with it (D5).
-      ...(email !== null && email !== commitEmails.value?.[0] ? { authorEmail: email } : {}),
+      // With GitHub's default, none: the merge stays on REST, and GitHub commits with it (D5).
+      ...(email !== null && email !== props.settings?.viewerDefaultCommitEmail ? { authorEmail: email } : {}),
     },
     edited: text && isEdited.value ? text : null,
   };
@@ -1650,9 +1727,9 @@ function onKeydown(event: KeyboardEvent) {
   } else if (canRevert.value && matchesCommandKey(event, keyOf(definitions.revert))) {
     event.preventDefault();
     revert();
-  } else if (commitEmails.value && matchesCommandKey(event, 'Y')) {
+  } else if (shownEmail.value !== null && matchesCommandKey(event, 'Y')) {
     event.preventDefault();
-    nextEmail();
+    emailMenuOpen.value = true;
   } else if (matchesCommandKey(event, 'E') && !editing.value) {
     event.preventDefault();
     void edit();
@@ -2055,23 +2132,61 @@ function onOpenFocus(event: Event) {
           </div>
 
           <div
-            v-if="commitEmails && shownEmail && !editing"
+            v-if="commitEmails && shownEmail && settings?.viewerDefaultCommitEmail && !editing"
             :class="css.mergePanel_line"
           >
             <dt :class="css.mergePanel_lineKey">{{ t(l.email) }}</dt>
             <dd :class="css.mergePanel_lineValue">
               <div :class="css.mergePanel_methodRow">
-                <span :class="css.mergePanel_methodName">{{ shownEmail }}</span>
+                <CommitEmailMenu
+                  v-model:open="emailMenuOpen"
+                  :emails="commitEmails"
+                  :current="shownEmail"
+                  :github-default="settings.viewerDefaultCommitEmail"
+                  :resolved="commitEmail"
+                  :owner="pr.repository.owner"
+                  :rememberable="tracked === true"
+                  @pick="pickEmail"
+                  @close-auto-focus="onEmailMenuClosed"
+                >
+                  <template #trigger>
+                    <button
+                      type="button"
+                      :class="css.mergePanel_emailTrigger"
+                    >
+                      <span :class="css.mergePanel_methodName">{{ shownEmail }}</span>
+                      <ChevronDown
+                        :class="css.mergePanel_emailChevron"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </template>
+                </CommitEmailMenu>
                 <span :class="css.mergePanel_note">{{ t(l.emailMore, { count: commitEmails.length - 1 }) }}</span>
+                <span
+                  v-if="emailNote"
+                  :class="css.mergePanel_note"
+                  >{{ t(l.emailSource, { source: emailNote }) }}</span
+                >
                 <span :class="css.mergePanel_spacer" />
                 <Button
                   variant="ghost"
                   size="sm"
                   kbd="Y"
                   keyshortcuts="Y"
-                  @click="nextEmail()"
+                  @click="emailMenuOpen = true"
                   >{{ t(l.changeEmail) }}</Button
                 >
+              </div>
+              <div
+                v-if="emailSaved"
+                :class="css.mergePanel_emailSaved"
+              >
+                <Check
+                  :class="css.mergePanel_emailSavedIcon"
+                  aria-hidden="true"
+                />
+                {{ t(l.emailSaved) }}
               </div>
             </dd>
           </div>
@@ -2521,6 +2636,43 @@ function onOpenFocus(event: Event) {
   text-overflow: ellipsis;
   font-size: $font-size-xs;
   color: $color-fg-dim;
+}
+
+.mergePanel_emailTrigger {
+  @include focus-ring;
+
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-4;
+  align-items: center;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: $radius-sm;
+}
+
+.mergePanel_emailChevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: $color-fg-dim;
+}
+
+.mergePanel_emailSaved {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $color-fg-2;
+}
+
+.mergePanel_emailSavedIcon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: $color-green;
 }
 
 .mergePanel_spacer {
