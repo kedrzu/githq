@@ -26,7 +26,7 @@ const props = defineProps<{
 
 const t = useTranslate();
 const commitsRef = useTemplateRef<HTMLElement>('commits');
-const isCurrent = useReadingStops();
+const getStopState = useReadingStops();
 const expanded = ref(false);
 
 const who = computed(() => props.push.actor?.login ?? props.push.authorName ?? '');
@@ -77,10 +77,13 @@ async function showMore() {
         <li
           v-for="commit in shown"
           :key="commit.id"
-          :class="[css.itemThreadPush_commit, isCurrent(getStopKey(commit)) && css.itemThreadPush_commit_current]"
+          :class="[
+            css.itemThreadPush_commit,
+            getStopState(getStopKey(commit)) === 'current' && css.itemThreadPush_commit_current,
+          ]"
           :data-reading-stop="getStopKey(commit)"
           data-reading-stop-kind="row"
-          :aria-current="isCurrent(getStopKey(commit)) || undefined"
+          :aria-current="getStopState(getStopKey(commit)) === 'current' || undefined"
         >
           <GitCommitHorizontal
             :class="css.itemThreadPush_commitIcon"

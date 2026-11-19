@@ -9,7 +9,7 @@ export function withReadingCursor(key: string): Decorator {
         const Story = story();
         return defineComponent({
             setup() {
-                provideReadingCursor(ref({ key, offset: 0 }));
+                provideReadingCursor(ref({ key, offset: 0, path: [key] }));
                 return () => h(Story);
             },
         });

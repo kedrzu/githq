@@ -49,7 +49,7 @@ const emit = defineEmits<{
 const t = useTranslate();
 const getCommentFailureText = useCommentFailureText();
 const getResolveFailureText = useResolveFailureText();
-const isCurrent = useReadingStops();
+const getStopState = useReadingStops();
 
 /** One of its comments is the one the address names. */
 const linked = computed(() => holdsAnchor(props.thread, props.linkedAnchor));
@@ -156,10 +156,10 @@ function onFocusOut(event: FocusEvent) {
         :id="getUrlAnchor(comment.url)"
         :key="comment.id"
         :comment="comment"
-        :class="isCurrent(comment.id) && css.itemThreadCodeThread_current"
+        :class="getStopState(comment.id) === 'current' && css.itemThreadCodeThread_current"
         :data-reading-stop="comment.id"
         data-reading-stop-kind="comment"
-        :aria-current="isLinked(comment) ? 'location' : isCurrent(comment.id) || undefined"
+        :aria-current="isLinked(comment) ? 'location' : getStopState(comment.id) === 'current' || undefined"
       />
       <ReviewSentComment
         v-for="sent in reply?.sent ?? []"
