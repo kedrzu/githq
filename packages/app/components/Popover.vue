@@ -16,6 +16,11 @@ withDefaults(
   { align: 'start', side: 'bottom', flush: false },
 );
 
+const emit = defineEmits<{
+  /** Closed, about to give the focus back to the trigger; `preventDefault()` to put it elsewhere. */
+  closeAutoFocus: [event: Event];
+}>();
+
 defineSlots<{
   /** The trigger: one button, which gets the popover's handlers and ARIA. */
   trigger(): unknown;
@@ -50,6 +55,7 @@ function nameByLabel(event: Event) {
         :side-offset="4"
         :collision-padding="8"
         @open-auto-focus="nameByLabel"
+        @close-auto-focus="emit('closeAutoFocus', $event)"
       >
         <slot />
       </PopoverContent>

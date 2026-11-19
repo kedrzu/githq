@@ -1,10 +1,11 @@
-<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another section of the column, or its key, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it; Esc on the add field reached so, nothing typed, goes back too. On a phone (`PhoneLayout.active`, mobile D35, MB152) a screen of its own with no column of the sections: back "‹ Repositories" goes back where the user came from, else to Repositories at its own address (`?tab=repositories`), where Stop tracking and one not tracked settle too. -->
+<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another section of the column, or its key, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. The default commit email for its owner and for it (T24, T25) is saved as it is picked (`TrackingStore.setOwnerCommitEmail`, `setRepositoryCommitEmail`), offered from the addresses GitHub offers for it (`RepositoryStore.ensure`, read when the page opens; nothing to pick until then). Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it; Esc on the add field reached so, nothing typed, goes back too. On a phone (`PhoneLayout.active`, mobile D35, MB152) a screen of its own with no column of the sections: back "‹ Repositories" goes back where the user came from, else to Repositories at its own address (`?tab=repositories`), where Stop tracking and one not tracked settle too. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { useNow } from '@/services/useNow.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
@@ -30,6 +31,7 @@ const tracking = useService(TrackingStore);
 const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const workflows = useService(WorkflowStore);
+const repositories = useService(RepositoryStore);
 const phone = useService(PhoneLayout);
 const route = useRoute();
 const router = useRouter();
@@ -52,6 +54,17 @@ const status = computed(() => {
   const target = { kind: 'repository', nameWithOwner: nameWithOwner.value } as const;
   return getTrackedStatus(tracking.getProgress(target), tracking.getSyncState(target));
 });
+
+// The commit emails GitHub offers for it: read once shown, the copy in memory while fresh.
+watch(
+  () => repository.value?.nameWithOwner,
+  name => {
+    if (name) {
+      void repositories.ensure(name);
+    }
+  },
+  { immediate: true },
+);
 
 // Untracked here or elsewhere, or never tracked: its section of Settings, in place of this page. On a cold load
 // nothing is tracked until the kept settings are read. Leaving, the address already names another screen: not this
@@ -116,11 +129,15 @@ const isPrivate = computed(() => {
       :open-count="trackedItems.getOpenCount({ kind: 'repository', nameWithOwner: repository.nameWithOwner })"
       :workflows="workflows.get(repository.nameWithOwner)"
       :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
+      :commit-email="tracking.commitEmailChoices(repository.nameWithOwner)"
+      :commit-email-settings="repositories.get(repository.nameWithOwner) ?? null"
       :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
       :phone="phone.active"
       @back="goBack(router, repositoriesPath)"
       @untrack="untrack"
       @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"
+      @owner-commit-email="tracking.setOwnerCommitEmail"
+      @repository-commit-email="tracking.setRepositoryCommitEmail(repository.nameWithOwner, $event)"
     />
   </SettingsFrame>
 </template>

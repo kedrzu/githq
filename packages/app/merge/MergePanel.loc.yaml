@@ -357,6 +357,10 @@ emailMore:
   en: '{count} more'
 changeEmail:
   en: Change
+emailSource:
+  en: · {source}
+emailSaved:
+  en: Saved as this repository's default
 updateByRebase:
   en: Update by rebase
 branchStillThere:

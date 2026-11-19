@@ -64,6 +64,8 @@ export type EditRequest =
           readonly method: PullRequestMergeMethod;
           readonly title?: string;
           readonly body?: string;
+          /** The commit's author, only when the user chose another than their default (`MergeRequest.authorEmail`). */
+          readonly authorEmail?: string;
       }
     | { readonly kind: 'disableAutoMerge' }
     /** To the front of the merge queue (PM14); adding it the usual way is a merge (`createMergeEdits`). */

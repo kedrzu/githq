@@ -50,9 +50,16 @@ const meta = {
         openCount: 142,
         workflows: WORKFLOWS,
         workflowSettings: { defaultBranch: true, refs: [] },
+        commitEmail: { owner: 'michal@fitloop.dev', repository: undefined },
+        commitEmailSettings: {
+            viewerDefaultCommitEmail: 'michal@kedrzu.dev',
+            viewerPossibleCommitEmails: ['michal@kedrzu.dev', 'michal@fitloop.dev'],
+        },
         onBack: fn(),
         onUntrack: fn(),
         onWorkflowSettings: fn(),
+        onOwnerCommitEmail: fn(),
+        onRepositoryCommitEmail: fn(),
     },
     // As tall as Settings' section, like in the app.
     render: args => ({
@@ -66,7 +73,10 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** T16: a private repository, synced 14s ago; workflow alerts on the default: its default branch alone. */
+/**
+ * T16, T24: a private repository, synced 14s ago; commits as the owner's address; workflow alerts on the default: its
+ * default branch alone.
+ */
 export const Synced: Story = {};
 
 /** W7: main plus `v*`, which catches the branch v2-experiment beside the release candidates. */
@@ -105,7 +115,10 @@ export const Refused: Story = { args: { status: { kind: 'refused' } } };
 /** GitHub no longer shows it (amber). */
 export const Hidden: Story = { args: { status: { kind: 'hidden' } } };
 
-/** MB152: on a phone, one column in the screen's scroll: its head, Tracking with Stop tracking, then Workflow alerts. */
+/**
+ * MB152: on a phone, one column in the screen's scroll: its head, Tracking with Stop tracking, Commit email, then
+ * Workflow alerts.
+ */
 export const Phone: Story = {
     args: { phone: true, workflowSettings: { defaultBranch: true, refs: ['v*'] } },
     render: args => ({

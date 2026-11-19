@@ -96,3 +96,10 @@ first and third entries.
   after "docs", not after "sync.md".
 - [x] CR29 (`GOlGu`), Finding (`d8lKcb`): new row "Go to file ⌘P" (`rHFUT`, a copy of "Find in the diff"), right after
   "Find in the diff ⌘F". The column is now as tall as Moving and Files, so the sheet keeps its size.
+
+## Round 4 · merge with `main` (`3a3e3a19`, commit email defaults)
+
+Both sides moved the frames below their growth down; the 13 frames both moved got the sum of both moves. No overlaps.
+
+- [x] `rV6qN`, `ohwJa`, `Ri8IR`, `jy6bO`: `y` 91631 (ours) / 90375 (theirs) → 92650.
+- [x] `JJOFX`, `ucqck`, `XCfAD`, `S5J7kt`, `nCTdq`, `PiKGF`, `jv9Tp`, `ykYxo`, `I5wWZ`: `y` 133926 / 132670 → 134945.

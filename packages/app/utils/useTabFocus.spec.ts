@@ -210,7 +210,7 @@ test('a field is never held: Escape and typing there stay its own', async () => 
     await expect.element(field).toHaveFocus();
 });
 
-test('⌘B runs from a one-line field, never from a textarea, where the user writes', async () => {
+test('⌘B runs from a one-line field and from a textarea: it is never typing (commands D15)', async () => {
     const { run } = mountScreen();
 
     await userEvent.click(page.getByRole('textbox', { name: 'A field' }));
@@ -220,7 +220,7 @@ test('⌘B runs from a one-line field, never from a textarea, where the user wri
     run.mockClear();
     await userEvent.click(page.getByRole('textbox', { name: 'A text' }));
     await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
-    expect(run).not.toHaveBeenCalled();
+    expect(run.mock.calls.map(([id]) => id)).toEqual(['app.sidebar']);
 });
 
 test('a dialog keeps its keys: Tab in it holds nothing, and Escape closes it at once', async () => {
