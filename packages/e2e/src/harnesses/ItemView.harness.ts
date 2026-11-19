@@ -174,7 +174,10 @@ export class ItemViewHarness {
      * panel. Its key is `data-reading-stop`: `description`, a comment's id, `fold`…
      */
     get readingCursor(): Locator {
-        return this.root.locator('[data-reading-stop][aria-current="true"]');
+        // The innermost of those marked: the stops around it (a comment's code thread, its review) are marked too.
+        return this.root.locator(
+            '[data-reading-stop][aria-current="true"]:not(:has([data-reading-stop][aria-current="true"]))',
+        );
     }
 
     /** A comment or a reviewer's line holding `text`. */

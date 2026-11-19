@@ -787,22 +787,13 @@ function getStopActions(): ThreadStopActions | null {
   return threadRef.value?.getStopActions(at.key, getCursorThread()) ?? null;
 }
 
-/** The code thread holding the cursor's place, by its box — not its stop: a review's head is in no thread. */
+/** The code thread the cursor's stop is or is in — its card, its row, one of its comments; a review's own card is in none. */
 function getCursorThread() {
   const scroller = getScroller();
-  const top = scroller && cursor.value ? getReadingCursorTop(scroller, cursor.value) : null;
-  if (!scroller || top === null) {
-    return null;
-  }
-
-  for (const card of scroller.querySelectorAll<HTMLElement>('[data-code-thread]')) {
-    const box = card.getBoundingClientRect();
-    if (box.top <= top && top < box.bottom) {
-      return card.dataset.codeThread ?? null;
-    }
-  }
-
-  return null;
+  const key = cursor.value?.key;
+  const stop =
+    scroller && key !== undefined ? scroller.querySelector(`[data-reading-stop="${CSS.escape(key)}"]`) : null;
+  return stop?.closest<HTMLElement>('[data-code-thread]')?.dataset.codeThread ?? null;
 }
 
 /** As the item opens: on the stop of the comment the address links to, once drawn, else on the first one on screen. */
