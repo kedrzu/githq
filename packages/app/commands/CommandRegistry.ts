@@ -9,6 +9,7 @@ import { isScreenCovered } from '@/utils/isScreenCovered.js';
 
 import type { BoundCommand, Command, CommandKeySheet, CommandParts, CommandSubject } from './CommandTypes.js';
 import type { AnyAppCommand } from './defineAppCommand.js';
+import { couldBeTyped } from './couldBeTyped.js';
 import { commandMenu } from './definitions/index.js';
 import { keyOf } from './keyOf.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
@@ -34,14 +35,12 @@ export interface CommandMenuRequest {
 /** What the command menu names in its chips and the user may take out of it (⌫). */
 export type CommandContextPart = 'subject' | 'repository';
 
-/** Where writing happens: ⌘K there is the field's (a markdown editor's "insert link"), never the menu's. */
-const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
-
 /**
  * The app's actions (D9): every component registers the ones it offers while it is shown (`useCommands`), and
  * this one registry feeds the command menu (⌘K), the keys and the help sheet (`?`). It runs an action's key
- * itself: outside fields for a single key, also in a one-line field for a `Mod` key; never while the menu or the help
- * is open, except that the menu's own key closes it. Two actions on one key: the first by
+ * itself, in a field too unless the key could be the field's ({@link couldBeTyped}, commands D15); never while the help
+ * is open. With the menu open its key closes it, an action with a level of its own moves the menu there, and any other
+ * closes the menu and runs. Two actions on one key: the first by
  * {@link orderByKeyPrecedence} runs — the one whose place has the keyboard, else whose section comes first.
  */
 export type CommandRegistry = Resolved<typeof CommandRegistry>;
@@ -157,6 +156,7 @@ export const CommandRegistry = defineService({
             }
         }
 
+        /** Opens the menu, or moves the open one to the action's level: a fresh request each time, which the menu watches. */
         function openMenu(commandId: string | null = null) {
             helpRef.value = false;
             menuRef.value = { commandId, parts: null };
@@ -202,21 +202,33 @@ export const CommandRegistry = defineService({
                 return;
             }
 
-            if (menuRef.value || helpRef.value) {
+            if (helpRef.value) {
                 return;
             }
 
+            const menuOpen = menuRef.value !== null;
             const command = findCommand(candidate =>
                 [...(candidate.key === undefined ? [] : [candidate.key]), ...(candidate.otherKeys ?? [])].some(
-                    key => matchesCommandKey(event, key) && isFreeTarget(event.target, candidate, key),
+                    key =>
+                        matchesCommandKey(event, key) &&
+                        isFreeTarget({ target: event.target, command: candidate, key, menuOpen }),
                 ),
             );
-            if (command) {
-                event.preventDefault();
-                if (!event.repeat || !command.once) {
-                    run(command);
-                }
+            if (!command) {
+                return;
             }
+
+            event.preventDefault();
+            if (event.repeat && command.once) {
+                return;
+            }
+
+            // An action with a level and nothing to run moves the open menu there (`openMenu`); any other leaves it.
+            if (menuOpen && command.run) {
+                closeMenu();
+            }
+
+            run(command);
         }
 
         /** The first action, by {@link orderByKeyPrecedence}, that can run and `matches`. */
@@ -234,22 +246,33 @@ export const CommandRegistry = defineService({
     },
 });
 
+/** What {@link isFreeTarget} decides on: a key event's target, a command matching its key, and the menu. */
+interface IsFreeTargetParams {
+    readonly target: EventTarget | null;
+    readonly command: BoundCommand;
+    readonly key: string;
+    /** The command menu is open: its field has the keys, wherever the focus is in it. */
+    readonly menuOpen: boolean;
+}
+
 /**
- * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
- * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
- * the items behind it), nor from an open menu, which would stay open over wherever the key went. Enter and Space are a
- * focused button's, link's or summary's own (commands D4). A single key acting on a subject doesn't run from what Tab
- * focused outside the list (`data-tab-focus`): the keyboard isn't on the subject. A screen's key (one with a place but
- * `app`) doesn't run while a layer covers the screen (`isScreenCovered`), and its Escape not while a picker, menu or
- * tooltip is open (`isLayerOpen`): that Escape closes it.
+ * In a field — a one-line field, a text area, rich text, the open command menu — a key is the field's whenever it could
+ * be typing or editing ({@link couldBeTyped}, commands D15); any other `Mod` key runs from there. Nothing runs from
+ * inside a layer that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys
+ * would act on the items behind it), nor from an open dropdown menu, which would stay open over wherever the key went.
+ * Enter and Space are a focused button's, link's or summary's own (commands D4). A single key acting on a subject
+ * doesn't run from what Tab focused outside the list (`data-tab-focus`): the keyboard isn't on the subject. A screen's
+ * key (one with a place but `app`) doesn't run while a layer covers the screen (`isScreenCovered`; the command menu
+ * closes as the key runs, so it does not count), and its Escape not while a picker, menu or tooltip is open
+ * (`isLayerOpen`): that Escape closes it.
  */
-function isFreeTarget(target: EventTarget | null, command: BoundCommand, key: string) {
+function isFreeTarget({ target, command, key, menuOpen }: IsFreeTargetParams) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 
     const screen = command.place !== 'app';
-    if (screen && (isScreenCovered() || (key === 'Escape' && isLayerOpen()))) {
+    if (screen && (isScreenCovered({ exceptCommandMenu: true }) || (key === 'Escape' && isLayerOpen()))) {
         return false;
     }
 
@@ -257,15 +280,15 @@ function isFreeTarget(target: EventTarget | null, command: BoundCommand, key: st
         return false;
     }
 
+    if (menuOpen || isEditableTarget(target)) {
+        return !couldBeTyped(key);
+    }
+
     if (key.includes('Mod+')) {
-        return !(target instanceof Element && target.closest(WRITING) !== null);
+        return true;
     }
 
-    if (target instanceof Element && target.closest('[data-tab-focus]') !== null && actsOnSubject(command)) {
-        return false;
-    }
-
-    return !isEditableTarget(target);
+    return !(target instanceof Element && target.closest('[data-tab-focus]') !== null && actsOnSubject(command));
 }
 
 /** On the selection, the opened item or a list's selected row; other actions of a view are about the view. */

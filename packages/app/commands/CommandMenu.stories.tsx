@@ -351,8 +351,7 @@ const Harness = defineComponent({
                     subject={registry.subject}
                     repository={props.repository}
                     navigation={navigation}
-                    startCommandId={registry.menu?.commandId ?? null}
-                    parts={registry.menu?.parts ?? null}
+                    request={registry.menu}
                     onNavigate={navigate}
                 />
             </div>
@@ -851,9 +850,9 @@ function createLevelCommands(say: (text: string) => void, t: Translator): BoundC
             },
             t,
         ),
-        bindStory(
-            'follow',
-            'app',
+        // A screen's action with a key and a level of its own, as the review's Go to file (commands D15).
+        bindCommand(
+            defineAppCommand({ id: 'follow', title: () => 'Follow people…', key: 'Mod+P', places: ['review'] }),
             {
                 title: 'Follow people…',
                 section: 'app',

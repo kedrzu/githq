@@ -169,15 +169,38 @@ test('E4: the selection\'s actions say "2 of 3 editable"; its key runs the same 
         );
 });
 
-test("⌘K opens the menu; a key typed in it is text, and no action's key runs from it", async () => {
+test("D15: ⌘K opens the menu; a key that could be typing is text there, any other action's key closes it and runs", async () => {
     await Closed.run();
+    const field = page.getByRole('textbox', { name: 'Type a command or search…' });
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
-    await userEvent.keyboard('[[');
-    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveValue('[');
-    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    await expect.element(field).toHaveFocus();
+    await userEvent.keyboard('[[{ControlOrMeta>}a{/ControlOrMeta}');
+    await expect.element(field).toHaveValue('[');
     await expect.element(page.getByTestId('sidebar')).toHaveTextContent('expanded');
+
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sidebar')).toHaveTextContent('collapsed');
+    await expect.element(field).not.toBeInTheDocument();
+});
+
+test("D15: an action's key with a level moves the open menu to it; pressed there it keeps the text", async () => {
+    await runWithPointerAway(Levels);
+    const level = page.getByRole('listbox', { name: 'Follow people…' });
+
+    await userEvent.keyboard('gr{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(level).toBeInTheDocument();
+    const field = page.getByRole('dialog', { name: 'Command menu' }).getByRole('textbox');
+    await expect.element(field).toHaveValue('');
+
+    await userEvent.keyboard('gr{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(field).toHaveValue('gr');
+
+    // Back at the top, the same key enters it again.
+    await userEvent.keyboard('{Backspace}{Backspace}{Backspace}');
+    await expect.element(level).not.toBeInTheDocument();
+    await userEvent.keyboard('{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(level).toBeInTheDocument();
 });
 
 test('⌘K closes the open menu and opens it again; held down it does either once', async () => {
