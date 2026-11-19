@@ -6,11 +6,3 @@ resolved:
   en: Resolved
 hide:
   en: Hide
-reply:
-  en: Reply…
-resolve:
-  en: Resolve thread
-unresolve:
-  en: Unresolve
-resolvedBy:
-  en: '{who} marked this thread as resolved.'

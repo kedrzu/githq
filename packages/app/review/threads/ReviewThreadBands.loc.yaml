@@ -1,0 +1,10 @@
+ghost:
+  en: ghost
+reply:
+  en: Reply…
+resolve:
+  en: Resolve thread
+unresolve:
+  en: Unresolve
+resolvedBy:
+  en: '{who} marked this thread as resolved.'

@@ -39,31 +39,31 @@ thread changes, settle the variants.
 
 Components (`Components · Code review`, `crvke` → `Thread parts`, `SSotp`):
 
-- [ ] Review / Comment (`IHFo8`): meta line (`y516VN`) full width, 20 px high, with hidden `Edited` (`C1OFHW`), a
+- [x] Review / Comment (`IHFo8`): meta line (`y516VN`) full width, 20 px high, with hidden `Edited` (`C1OFHW`), a
   spacer (`GZVAJ`) and a hidden ⋯ `More` (`So5NZ`); new `Body` (`AdsFm`) holding the text (`o6hbQ`) and a hidden bold
   `Lead` (`ca6WN`); the text `$fg-2` → `$fg`. `· current` (`fNNF4`) and `· pending` (`znW1W`) inherit it.
-- [ ] Review / Comment · hovered (`p5QdYW`): new, the ⋯ shown.
-- [ ] Review / Comment · editing (`n2U14`): new, the comment's editor in place.
-- [ ] Review / Thread (`ce2EO`): `$bg-2` → `$bg`, clipped, padding 12/14 → 0, gap 12 → 0; `Head` (`XKVAM`) a band with
+- [x] Review / Comment · hovered (`p5QdYW`): new, the ⋯ shown.
+- [x] Review / Comment · editing (`n2U14`): new, the comment's editor in place.
+- [x] Review / Thread (`ce2EO`): `$bg-2` → `$bg`, clipped, padding 12/14 → 0, gap 12 → 0; `Head` (`XKVAM`) a band with
   a `$border` bottom edge, padding 9/14; new `Body` (`jHOqT`, gap 14, padding 12) holding the comments; the one-row
   `Reply row` (`q5hSO`) → `Reply band` (`ZzJy7`) and `Resolve band` (`v5HOc6`). `· outdated` (`Ypl9I`) inherits.
-- [ ] Review / Thread · focused (`M54IUE`): its Reply band `· focused` (`j2Jk9`): `R` shows only when focused.
-- [ ] Review / Thread · replying: `eS728` → `Bc2hQ` (in `AeXsY`), the editor in the Reply band (`pfV9R`).
-- [ ] Review / Thread · replying, tools folded: `r4Ect` → `N6qt3` (in `E3gaOM`), 490 px, the tools folded (`nQNFg`).
-- [ ] Activity / Code thread (`BGMhn`): body gap 10 → 14; the reply field (`CIpJY`) → `Thread / Reply field`
+- [x] Review / Thread · focused (`M54IUE`): its Reply band `· focused` (`j2Jk9`): `R` shows only when focused.
+- [x] Review / Thread · replying: `eS728` → `Bc2hQ` (in `AeXsY`), the editor in the Reply band (`pfV9R`).
+- [x] Review / Thread · replying, tools folded: `r4Ect` → `N6qt3` (in `E3gaOM`), 490 px, the tools folded (`nQNFg`).
+- [x] Activity / Code thread (`BGMhn`): body gap 10 → 14; the reply field (`CIpJY`) → `Thread / Reply field`
   (`KOQJ3`); its comments follow `Review / Comment`. `· replying` (`phPkk`), `· resolved` (`GlhsY`), `· outdated`
   (`Tc0aE`) inherit.
-- [ ] Thread bands (`p5ar1V`): new `Thread / Reply field` (`vnbLu`), `Thread / Reply band` (`FUkob`, `· focused`
+- [x] Thread bands (`p5ar1V`): new `Thread / Reply field` (`vnbLu`), `Thread / Reply band` (`FUkob`, `· focused`
   `bqocN`, `· writing` `OMVhL`), `Thread / Resolve band` (`AUF6R`).
 - [x] `Review / Thread · resolved` (`oAPPV`): unchanged.
 
 Screens:
 
-- [ ] CR74: the thread (`B3QDc` → `NSGDI`, `· replying`) holds the reply in its band; the separate `Gap` (`pHW0Q`) and
+- [x] CR74: the thread (`B3QDc` → `NSGDI`, `· replying`) holds the reply in its band; the separate `Gap` (`pHW0Q`) and
   `Comment box` (`c03aJZ`) removed. CR92 (`h3Uxe` → `LkOZF`), CR117 (`ChQ5X` → `I0fA5t`), CR118 (`UYwrs` → `UfmC2`)
   re-pointed to the new replying thread; `RHUdU`, `rW0Ci`, `rjGyc` (CR75, CR76, "Add to your draft…") onto the new
   bands.
-- [ ] New group header `Review threads` (`ncwzm`) and row (`CYNao`) where the variants were: `CR151 · A thread in the
+- [x] New group header `Review threads` (`ncwzm`) and row (`CYNao`) where the variants were: `CR151 · A thread in the
   diff, open` (`wpBQo`), `CR152 · Replying, and a comment edited in place` (`A0xTx`), `F33 · The code thread on a pull
   request's thread` (`uqo52`), rebuilt from the real components.
 - [x] Removed: the variants frame (`a2TAL`), `Components · Review threads` (`ofln3`) and every `Thread / …` component
