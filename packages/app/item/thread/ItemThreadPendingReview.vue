@@ -1,4 +1,4 @@
-<!-- The viewer's own draft review on an item's thread (`Activity / Review · pending`, F14), last before the composer: an amber card, "Your review · pending" and when it was started, the threads it starts (`ItemThreadCodeThread`, their comments marked "Pending", no reply or resolve), and code review's own pending toolbar (`ReviewPendingToolbar`) at its foot: Discard review and Submit review (⇧S, also in the command menu) open code review's dialogs, and finish the draft through the same writing as code review (`ReviewWriting`), so a refusal shows here as it does there. The card is a stop of the reading cursor (`draftReview`), each comment of its threads one inside it; the cursor on the card tints its head and leaves the amber border (`Activity / Review · pending, current`). -->
+<!-- The viewer's own draft review on an item's thread (`Activity / Review · pending`, F14), last before the composer: an amber card, "Your review · pending" and when it was started, the threads it starts (`ItemThreadCodeThread`, their comments marked "Pending" with their ⋯ — Edit, Copy link, Delete, no Quote reply — and no reply or resolve), and code review's own pending toolbar (`ReviewPendingToolbar`) at its foot: Discard review and Submit review (⇧S, also in the command menu) open code review's dialogs, and finish the draft through the same writing as code review (`ReviewWriting`), so a refusal shows here as it does there. The card is a stop of the reading cursor (`draftReview`), each comment of its threads one inside it; the cursor on the card tints its head and leaves the amber border (`Activity / Review · pending, current`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -8,6 +8,7 @@ import { discardReview, submitReview } from '@/commands/definitions/index.js';
 import { useCommands } from '@/commands/useCommands.js';
 import CommentCard from '@/comments/CommentCard.vue';
 import ReviewPendingToolbar from '@/review/ReviewPendingToolbar.vue';
+import type { ReviewCommentActions } from '@/review/threads/ReviewCommentActions.js';
 import type { PendingComment } from '@/review/writing/getPendingComments.js';
 import ReviewDiscardDialog from '@/review/writing/ReviewDiscardDialog.vue';
 import ReviewSubmitDialog from '@/review/writing/ReviewSubmitDialog.vue';
@@ -31,6 +32,8 @@ const props = defineProps<{
   writing: ReviewWriting | null;
   /** The draft's comments, its replies on other threads among them, as the dialogs list them. */
   comments: readonly PendingComment[];
+  /** What its threads' comments do from their ⋯: Edit, Copy link, Delete — no Quote reply, nothing to reply in. */
+  commentActions?: ReviewCommentActions | null;
 }>();
 
 const t = useTranslate();
@@ -105,6 +108,8 @@ function discard() {
           :thread="thread"
           :viewer="viewer"
           draft
+          :delete-failure="writing?.getDeleteFailure(thread.id) ?? null"
+          :comment-actions="commentActions"
         />
       </div>
     </template>

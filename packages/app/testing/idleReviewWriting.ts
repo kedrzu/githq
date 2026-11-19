@@ -30,4 +30,10 @@ export const idleReviewWriting: ReviewWriting = {
     dismiss: () => {},
     setResolved: () => {},
     getResolveFailure: () => null,
+    editComment: () => {},
+    getCommentEdit: () => null,
+    failedEdits: [],
+    discardFailedEdit: () => {},
+    deleteComment: () => {},
+    getDeleteFailure: () => null,
 };

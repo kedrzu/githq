@@ -638,8 +638,8 @@ test("C on a thread takes the thread's own line; a scroll keeping the thread on 
     await expect(review.focusedThread).toContainText('Look here');
 
     // Up by more than half a screen, which ends N's hold: the thread a quarter down is still on screen, the cursor on it.
-    await review.diff.evaluate(element => element.scrollBy(0, -(element.clientHeight / 2 + 40)));
-    await expect(review.thread('Look here')).toBeInViewport();
+    await review.diff.evaluate(element => element.scrollBy(0, -(element.clientHeight / 2 + 8)));
+    await expect(review.thread('Look here')).toBeInViewport({ ratio: 1 });
     await expect(review.focusedThread).toContainText('Look here');
     await expect(review.currentFileRow).toContainText('threaded.ts');
 
