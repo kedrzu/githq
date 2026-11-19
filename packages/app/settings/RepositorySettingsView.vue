@@ -1,13 +1,17 @@
-<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock`: Tracking, and Workflow alerts (`WorkflowAlertsBlock`). On a phone (`phone`, mobile MB152) one column in the screen's scroll: its head (`PhoneTrackedHead`; back is the screen's top bar's), Tracking with Stop tracking, then Workflow alerts. -->
+<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock`: Tracking, Commit email (`CommitEmailBlock`, T24, T25: the default commit email for its owner and for it) and Workflow alerts (`WorkflowAlertsBlock`). On a phone (`phone`, mobile MB152) one column in the screen's scroll: its head (`PhoneTrackedHead`; back is the screen's top bar's), Tracking with Stop tracking, Commit email, then Workflow alerts. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import type { MergeSettings } from '@/merge/getMergeMethods.js';
+import type { CommitEmailChoices } from '@/tracking/TrackingStore.js';
 import type { TrackedStatus } from '@/tracking/TrackingTypes.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import WorkflowAlertsBlock from '@/workflows/WorkflowAlertsBlock.vue';
 import type { RepositoryWorkflows, WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
+import CommitEmailBlock from './CommitEmailBlock.vue';
 import PhoneTrackedHead from './PhoneTrackedHead.vue';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import SettingsPageHead from './SettingsPageHead.vue';
@@ -27,6 +31,10 @@ const props = defineProps<{
   workflows?: RepositoryWorkflows;
   /** Which refs raise its workflow alerts. */
   workflowSettings: WorkflowRefSettings;
+  /** The default commit email stored for it and for its owner. */
+  commitEmail: CommitEmailChoices;
+  /** The commit emails GitHub offers for it; `null` until its metadata is read. */
+  commitEmailSettings: Pick<MergeSettings, 'viewerDefaultCommitEmail' | 'viewerPossibleCommitEmails'> | null;
   /** The page was opened on Workflow alerts' add field by its address. */
   openedOnAddField?: boolean;
   /** On a phone: one column in the screen's scroll, with no head of Settings. */
@@ -38,9 +46,14 @@ const emit = defineEmits<{
   untrack: [];
   /** Workflow alerts as the user just changed them. */
   workflowSettings: [settings: WorkflowRefSettings];
+  /** The owner's default commit email picked: an address, `null` for GitHub's default. */
+  ownerCommitEmail: [owner: string, email: string | null];
+  /** Its default commit email picked: an address, `null` for GitHub's default, `undefined` for the owner's. */
+  repositoryCommitEmail: [email: string | null | undefined];
 }>();
 
 const t = useTranslate();
+const owner = computed(() => parseRepositoryName(props.nameWithOwner).owner);
 
 const meta = computed(() => {
   if (props.isPrivate === null) {
@@ -72,6 +85,14 @@ const meta = computed(() => {
       phone
       @untrack="emit('untrack')"
     />
+    <CommitEmailBlock
+      :owner="owner"
+      :choices="commitEmail"
+      :settings="commitEmailSettings"
+      phone
+      @owner="emit('ownerCommitEmail', owner, $event)"
+      @repository="emit('repositoryCommitEmail', $event)"
+    />
     <WorkflowAlertsBlock
       :name-with-owner="nameWithOwner"
       :stored="workflows"
@@ -102,6 +123,13 @@ const meta = computed(() => {
       :now="now"
       :open-count="openCount"
       @untrack="emit('untrack')"
+    />
+    <CommitEmailBlock
+      :owner="owner"
+      :choices="commitEmail"
+      :settings="commitEmailSettings"
+      @owner="emit('ownerCommitEmail', owner, $event)"
+      @repository="emit('repositoryCommitEmail', $event)"
     />
     <WorkflowAlertsBlock
       :name-with-owner="nameWithOwner"

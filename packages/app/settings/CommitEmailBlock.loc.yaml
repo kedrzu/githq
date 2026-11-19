@@ -1,0 +1,22 @@
+title:
+  en: Commit email
+description:
+  en: The address a merge in this repository commits under, unless you change it in the merge panel.
+forOwner:
+  en: For all of {owner}
+forRepository:
+  en: For this repository
+sameAsOwner:
+  en: Same as {owner}
+githubDefault:
+  en: GitHub default
+ownerNote:
+  en: unless a repository sets its own
+commitsAs:
+  en: commits as {email}
+commitsAsGithubDefault:
+  en: commits as {email}, GitHub's default
+notOffered:
+  en: not offered here
+affects:
+  en: Used when you merge or turn on auto-merge. Rebase, merge queues, stacks and bypass always commit with GitHub's default.
