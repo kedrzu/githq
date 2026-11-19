@@ -72,6 +72,7 @@ export function useReviewKeySheet(): void {
                     title: t(l.finding),
                     rows: [
                         { keys: [keyOf(definitions.find)], label: t(l.find) },
+                        { keys: [keyOf(definitions.goToFile)], label: t(definitions.goToFile.title) },
                         { keys: [keyOf(definitions.findNext), keyOf(definitions.findPrevious)], label: t(l.findSteps) },
                         {
                             keys: [

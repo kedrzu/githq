@@ -1,0 +1,20 @@
+placeholder:
+  en: Go to file…
+viewed:
+  en: Viewed
+nothing:
+  en: No file matches “{text}”
+files:
+  plural: count
+  en:
+    one: 1 file
+    many: '{count} files'
+typeToFind:
+  plural: count
+  en:
+    one: 1 file · type to find one
+    many: '{count} files · type to find one'
+reading:
+  en: Reading the files… {count} of {total}
+readingSoFar:
+  en: Reading the files… {count}

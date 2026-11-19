@@ -1,5 +1,7 @@
 goToStackPullRequest:
   en: Go to a pull request of the stack
+goToFile:
+  en: Go to file
 nextThread:
   en: Next thread
 previousThread:
