@@ -513,7 +513,7 @@ Settled while building it (PR #82, 2026-11-02):
 ### D25
 
 Settings lists **only what is tracked**, and adding is a **separate picker** (owner, 2026-11-02). Repositories and
-Projects each show the tracked ones grouped by owner, without ticks or an owner filter (the list is short), and a row
+Projects each show the tracked ones grouped by owner (since 2026-11-19 flat, in the user's order: [D44](#d44)), without ticks or an owner filter (the list is short), and a row
 opens that repository's or project's settings page (T16), because each now has settings of its own. Each row untracks
 with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
 owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
@@ -966,6 +966,28 @@ the same rules on both screens are one thing to learn.
 **Rejected** (the owner's pick of Variant A, round 2 of the log). Variant B: a lit segment beside the comment on the
 rail and a faint tint. Variant C: Variant A plus a caret in the gutter for the cursor's place in a tall comment. A 2 px
 mark on the left edge of a code thread's current comment, drawn in round 1.
+
+### D44
+
+**The user orders their tracked projects and repositories by dragging, and Settings lists them in that order.** (owner,
+2026-11-19.) Drawn in `githq.pen`, App · Settings: T26, T27, G8, T17; the design log is `changelog/reorder-tracked.md`.
+
+- **In the sidebar,** expanded on a computer, a project is dragged among the projects and a repository among the
+  repositories, never across. A 2 px accent line shows where it lands; its old place dims while it is dragged. The rail
+  and a phone don't reorder.
+- **In Settings,** Repositories (G8) and Projects (T17) are one flat list each, in the sidebar's order, not grouped by
+  owner: the owner stands in grey before the name. A row is dragged as in the sidebar, or the selected one moved with
+  ⌥↑ ⌥↓. The owner headers go, with their "Track more" and "N of M tracked"; the list's "Track repositories" stays. A
+  phone shows the flat list without reordering.
+- **One order everywhere.** It is the settings file's order, so it reaches the other tabs and devices, and it is D12's
+  precedence. A reorder on this device survives a sync unless the file was reordered meanwhile, when the file's wins
+  (settings-sync D11).
+
+**Why.** "In the user's order" meant the order things were tracked in, with no way to change it; the sidebar is where
+the order is seen, so that is where it is set. Grouping Settings by owner would show a second order beside it.
+
+**Rejected.** Keyboard reordering in the sidebar (the owner: the mouse is enough there; Settings has the keys). A
+separate "order" block in Settings beside the owner groups: two lists of the same things.
 
 ## Open questions
 
