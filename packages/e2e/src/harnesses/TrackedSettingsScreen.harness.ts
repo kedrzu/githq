@@ -51,4 +51,23 @@ export class TrackedSettingsScreenHarness {
     pattern(pattern: string): Locator {
         return this.workflowAlerts.locator(`[data-alert-key="pattern:${pattern}"]`);
     }
+
+    /** A repository's Commit email section (`CommitEmailBlock.vue`, T24, T25). */
+    get commitEmail(): Locator {
+        return this.root.getByRole('region', { name: 'Commit email', exact: true });
+    }
+
+    /** Commit email's select of a row: "For all of <owner>" (`owner`) or "For this repository". */
+    commitEmailSelect(row: string): Locator {
+        const label = row === 'this repository' ? 'For\\s+this\\s+repository' : `For\\s+all\\s+of\\s+${row}`;
+        return this.commitEmail.getByRole('button', { name: new RegExp(`^${label}`, 'u') });
+    }
+
+    /** Opens `select` and picks the option that starts with `option` (an address, "GitHub default", "Same as …"). */
+    async chooseCommitEmail(select: Locator, option: string): Promise<void> {
+        await select.click();
+        await this.page
+            .getByRole('menuitemradio', { name: new RegExp(`^${option.replaceAll(' ', '\\s')}`, 'u') })
+            .click();
+    }
 }
