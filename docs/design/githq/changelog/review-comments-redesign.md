@@ -69,3 +69,15 @@ Screens:
 - [x] Removed: the variants frame (`a2TAL`), `Components · Review threads` (`ofln3`) and every `Thread / …` component
   of round 1, CR149, CR150, F32, CR153, CR154, F34.
 - [x] Canvas: the 25 frames from `App · Command menu` down moved 5636 px up, 1200 px below `App · Code review` again.
+
+## Round 3 · implementation
+
+Built in `packages/app/review/threads/` (`ReviewComment`, `ReviewThreadBands`, `ReviewThreadBox`,
+`useReviewCommentActions`) and `item/thread/ItemThreadCodeThread`. Forced by the shipped code: a comment's text keeps
+the app's comment size (`$font-size-md`, 20 px lines), and the reading cursor's tint reaches half of the thread
+body's 14 px gap.
+
+- [x] Review / Comment (`IHFo8`): `Text` (`o6hbQ`) and the hidden `Lead` (`ca6WN`) 12.5 / 1.5 → 13 / 20 px.
+- [x] Review / Comment · current (`fNNF4`): the cursor tint 5 → 7 px above and below.
+- [x] Activity / Code thread · replying (`phPkk`): its reply row (`Ba4gT`, in place of `L2zdM`) padding 10/12 → 8/12,
+  as every reply band.

@@ -46806,7 +46806,7 @@
                       },
                       "gap": 10,
                       "padding": [
-                        10,
+                        8,
                         12
                       ],
                       "children": [
@@ -353578,9 +353578,9 @@
                                   "textGrowth": "fixed-width",
                                   "width": "fill_container(0)",
                                   "content": "Does replayQueue stop at the first conflict?",
-                                  "lineHeight": 1.5,
+                                  "lineHeight": 1.5385,
                                   "fontFamily": "$font",
-                                  "fontSize": 12.5,
+                                  "fontSize": 13,
                                   "fontWeight": "600"
                                 },
                                 {
@@ -353591,9 +353591,9 @@
                                   "textGrowth": "fixed-width",
                                   "width": "fill_container",
                                   "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
-                                  "lineHeight": 1.5,
+                                  "lineHeight": 1.5385,
                                   "fontFamily": "$font",
-                                  "fontSize": 12.5,
+                                  "fontSize": 13,
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -353613,9 +353613,9 @@
                       "stroke": "#7B87F71A",
                       "strokeAlignment": "outer",
                       "strokeWidth": {
-                        "top": 5,
+                        "top": 7,
                         "right": 12,
-                        "bottom": 5,
+                        "bottom": 7,
                         "left": 12
                       }
                     },
