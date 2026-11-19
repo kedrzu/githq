@@ -63341,6 +63341,19 @@
                       "fontWeight": "normal"
                     },
                     {
+                      "type": "icon",
+                      "id": "Wn3mD",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Chosen",
+                      "enabled": false,
+                      "width": 13,
+                      "height": 13,
+                      "icon": "check",
+                      "library": "lucide",
+                      "fill": "$fg-2"
+                    },
+                    {
                       "type": "frame",
                       "id": "LQlb7",
                       "name": "spacer",
@@ -371740,6 +371753,46 @@
                                 },
                                 {
                                   "type": "frame",
+                                  "id": "rHFUT",
+                                  "name": "Go to file",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "X5WMq0",
+                                      "name": "Keys",
+                                      "width": 78,
+                                      "gap": 3,
+                                      "children": [
+                                        {
+                                          "id": "kYFQJ",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd ⌘P",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "⌘P"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "bpQqr",
+                                      "name": "Label",
+                                      "fill": "$fg-2",
+                                      "content": "Go to file",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
                                   "id": "dWpRW",
                                   "name": "Next and previous match",
                                   "width": "fill_container",
@@ -437730,10 +437783,13 @@
                                   "content": "sync.md"
                                 },
                                 "nsltD": {
-                                  "enabled": true
+                                  "enabled": false
                                 },
                                 "MXfcN": {
                                   "content": "docs"
+                                },
+                                "Wn3mD": {
+                                  "enabled": true
                                 }
                               }
                             },
@@ -438693,10 +438749,13 @@
                                   ]
                                 },
                                 "nsltD": {
-                                  "enabled": true
+                                  "enabled": false
                                 },
                                 "MXfcN": {
                                   "content": "docs"
+                                },
+                                "Wn3mD": {
+                                  "enabled": true
                                 }
                               }
                             },
@@ -441154,10 +441213,13 @@
                                   "content": "sync.md"
                                 },
                                 "nsltD": {
-                                  "enabled": true
+                                  "enabled": false
                                 },
                                 "MXfcN": {
                                   "content": "docs"
+                                },
+                                "Wn3mD": {
+                                  "enabled": true
                                 }
                               }
                             },

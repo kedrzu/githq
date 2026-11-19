@@ -71,10 +71,28 @@ needs a row "Go to file" under Files or Finding.
 Built as the menu's option row (`CommandOption`: `lead`, `detail`, `chosen`, `aside`, `match`) and its footer hint,
 with these differences from the drawing, for the design to follow:
 
-- [ ] `Command / Result · file` (`mgDWw`): the current file's check sits after the folder, where the menu's option row
+- [x] `Command / Result · file` (`mgDWw`): the current file's check sits after the folder, where the menu's option row
   draws a chosen mark, not right after the name.
-- [ ] CR144–CR147 footer note: with nothing typed it says "N files", and adds "· type to find one" only past 100 files
+- [x] CR144–CR147 footer note: with nothing typed it says "N files", and adds "· type to find one" only past 100 files
   (CR144's "312 files · type to find one" is that case); typed, it says how many were found, "N files" (CR145's "14
   files").
-- [ ] CR29 (`GOlGu`): the key sheet lists "Go to file ⌘P" under Finding, right after "Find in the diff ⌘F"; the drawing
+- [x] CR29 (`GOlGu`): the key sheet lists "Go to file ⌘P" under Finding, right after "Find in the diff ⌘F"; the drawing
   still lacks the row.
+
+## Round 3 · agent brief
+
+Asked (`.context/go-to-file-brief-2.md`): bring the drawing in line with round 2: the file row's check after the
+folder, and CR29's key sheet listing Go to file. The footer note needed no change. Changed: one hidden node in the
+menu's result row, the check moved in three instances, one row in CR29. With these the drawing follows round 2's
+first and third entries.
+
+- [x] `Command / Result` (`k3mGr`): new hidden `Chosen` (`Wn3mD`: lucide `check`, 13 px, `$fg-2`) after Sub, before
+  the spacer, where `CommandMenu.vue` draws a chosen mark (after the detail, in the row's 10 px gap). Hidden, so
+  nothing else that uses the row changes. Pen couldn't replace a descendant inside `Command / Result · file`, so the
+  slot went on the base row.
+- [x] `Command / Result · file` (`mgDWw`) and `· file, selected` (`K1FT9`): the chosen mark is `Chosen` (`Wn3mD`), after
+  the folder; the old one after the name (`nsltD`) stays hidden.
+- [x] CR144 (`Ry0a5`), CR145 (`KYjhr`), CR147 (`trJ7X`), sync.md's row: `Wn3mD` shown, `nsltD` hidden. The check sits
+  after "docs", not after "sync.md".
+- [x] CR29 (`GOlGu`), Finding (`d8lKcb`): new row "Go to file ⌘P" (`rHFUT`, a copy of "Find in the diff"), right after
+  "Find in the diff ⌘F". The column is now as tall as Moving and Files, so the sheet keeps its size.
