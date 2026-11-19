@@ -1,5 +1,7 @@
 import type { PullRequestReviewEvent } from '@githq/github/generated.gen.js';
 
+import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
+
 import type { DiffLineSide } from '../diff/buildDiffRows.js';
 
 /** Where a comment goes in the code. Stays the same while it is written, so that its row does not move on a key press. */
@@ -145,6 +147,24 @@ export interface ReviewWriting {
     setResolved(threadId: string, resolved: boolean): void;
     /** Why the last change of the thread's state didn't go through; it shows as it was again. */
     getResolveFailure(threadId: string): ReviewWriteFailure | null;
+    /**
+     * Edits a comment's Markdown: on its way it shows as {@link getCommentEdit}, then as GitHub answered until the threads read
+     * again have it. Nothing while an edit of the same comment is on its way.
+     */
+    editComment(commentId: string, body: string): void;
+    /** The Markdown of the comment's edit on its way to GitHub, shown dimmed as being sent; `null` with none. */
+    getCommentEdit(commentId: string): string | null;
+    /** The edits GitHub did not take, each with its text and why: its editor opens again with them, on the pull request's id. */
+    readonly failedEdits: readonly FailedTextEdit[];
+    /** The edit GitHub did not take was let go (Cancel, Discard): the comment's editor no longer opens with it. */
+    discardFailedEdit(commentId: string): void;
+    /**
+     * Deletes a comment: gone at once, its thread with its last one. One of the draft counts out of it at once, and the draft's
+     * last one takes the emptied draft with it, which would only block what is written next (D17).
+     */
+    deleteComment(commentId: string): void;
+    /** Why the last deletion of a comment of the thread didn't go through; the comment shows again. */
+    getDeleteFailure(threadId: string): ReviewWriteFailure | null;
 }
 
 /** The submit dialog before anything is chosen, and the second key's review (D22): a comment, with no text of its own. */

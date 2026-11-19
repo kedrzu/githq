@@ -10,6 +10,8 @@ import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { computed, shallowRef, watch } from 'vue';
 
+import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
+import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { PullRequestPendingReview } from '@/store/ItemTypes.js';
@@ -18,7 +20,7 @@ import type { DiffLineSide } from '../diff/buildDiffRows.js';
 import { getFailureText } from '../utils/getFailureText.js';
 import { ReviewBlobStore } from '../ReviewBlobStore.js';
 import type { ReviewKeptCommentBox } from '../ReviewBlobStore.js';
-import type { ReviewThread } from '../threads/ReviewThread.js';
+import type { ReviewThread, ReviewThreadComment } from '../threads/ReviewThread.js';
 import { NO_REVIEW_SUBMISSION, REVIEW_FINISH_IDLE } from './ReviewWriting.js';
 import type {
     ReviewCommentFailure,
@@ -71,7 +73,7 @@ const COMMENT_REVIEW: ReviewFinish = { kind: 'submit', choice: NO_REVIEW_SUBMISS
 const SIDES: Readonly<Record<DiffLineSide, DiffSide>> = { before: 'LEFT', after: 'RIGHT' };
 
 /**
- * Writing in a pull request's review (D1, D17, D22, D28, D33): comments, replies and resolving. A comment shows at once and its text stays, in memory and on
+ * Writing in a pull request's review (D1, D17, D22, D28, D33): comments, replies, resolving, and editing and deleting comments. A comment shows at once and its text stays, in memory and on
  * disk, until GitHub has taken it: a failure puts the box back with GitHub's words and a reload brings it back. Writes go
  * one at a time, in order, for a comment may need the draft the one before it starts.
  *
@@ -101,22 +103,43 @@ export const ReviewWritingFactory = defineFactory({
         /** By thread: the state it shows, and who resolved it, until the threads read again say so themselves. */
         const resolvedRef = shallowRef<ReadonlyMap<string, ThreadResolution>>(new Map());
         const resolveFailuresRef = shallowRef<ReadonlyMap<string, ReviewWriteFailure>>(new Map());
+        /** By comment: an edit or a deletion drawn over the threads read, until GitHub refuses it or the threads read again have it. */
+        const commentWritesRef = shallowRef<ReadonlyMap<string, CommentWrite>>(new Map());
+        /** By comment: the edit GitHub did not take, until it is let go, made again or the comment is deleted. */
+        const editFailuresRef = shallowRef<ReadonlyMap<string, FailedReviewEdit>>(new Map());
+        /** By thread: why the last deletion of one of its comments didn't go through. */
+        const deleteFailuresRef = shallowRef<ReadonlyMap<string, ReviewWriteFailure>>(new Map());
         /** A draft was discarded here and none is open since: a read right after can still list its comments. */
         const draftDiscardedRef = shallowRef(false);
         const threads = computed(() => {
             const read = withoutDiscarded(params.getThreads());
-            return resolvedRef.value.size === 0
-                ? read
-                : read.map(thread => {
-                      const resolution = resolvedRef.value.get(thread.id);
-                      return resolution ? { ...thread, ...resolution } : thread;
-                  });
+            const resolved =
+                resolvedRef.value.size === 0
+                    ? read
+                    : read.map(thread => {
+                          const resolution = resolvedRef.value.get(thread.id);
+                          return resolution ? { ...thread, ...resolution } : thread;
+                      });
+            return withCommentWrites(resolved);
+        });
+        const failedEdits = computed(() => {
+            const itemId = params.getPullRequestId();
+            return itemId === null
+                ? []
+                : [...editFailuresRef.value].map(([commentId, { body, failure }]): FailedTextEdit => ({
+                      itemId,
+                      commentId,
+                      body,
+                      reason: toFailedEditReason(failure),
+                  }));
         });
 
         let dropped = false;
         let writes: Promise<void> = Promise.resolve();
         /** The threads whose state is on its way to GitHub. What shows of them may stay longer: until the threads read say so. */
         const resolvesInFlight = new Set<string>();
+        /** The comments whose edit or deletion is on its way to GitHub: one at a time for each. */
+        const commentWritesInFlight = new Set<string>();
 
         return {
             writing: {
@@ -167,6 +190,17 @@ export const ReviewWritingFactory = defineFactory({
                 dismiss,
                 setResolved,
                 getResolveFailure: id => resolveFailuresRef.value.get(id) ?? null,
+                editComment,
+                getCommentEdit(commentId) {
+                    const write = commentWritesRef.value.get(commentId);
+                    return write?.kind === 'editing' ? write.body : null;
+                },
+                get failedEdits() {
+                    return failedEdits.value;
+                },
+                discardFailedEdit: commentId => setInMap(editFailuresRef, commentId, null),
+                deleteComment,
+                getDeleteFailure: threadId => deleteFailuresRef.value.get(threadId) ?? null,
             },
             restoreBoxes,
             restoreSubmission(submission) {
@@ -179,6 +213,7 @@ export const ReviewWritingFactory = defineFactory({
             isSending: () =>
                 finishRef.value.kind === 'sending' ||
                 resolvesInFlight.size > 0 ||
+                commentWritesInFlight.size > 0 ||
                 [...statusesRef.value.values()].some(({ kind }) => kind === 'sending'),
             drop,
         };
@@ -200,6 +235,38 @@ export const ReviewWritingFactory = defineFactory({
                     return [thread];
                 }
 
+                return comments.length > 0 ? [{ ...thread, comments }] : [];
+            });
+        }
+
+        function withCommentWrites(read: readonly ReviewThread[]) {
+            const overlays = commentWritesRef.value;
+            if (overlays.size === 0) {
+                return read;
+            }
+
+            return read.flatMap(thread => {
+                if (!thread.comments.some(({ id }) => overlays.has(id))) {
+                    return [thread];
+                }
+
+                const comments = thread.comments.flatMap(comment => {
+                    const write = overlays.get(comment.id);
+                    if (!write) {
+                        return [comment];
+                    }
+
+                    switch (write.kind) {
+                        case 'editing':
+                            return [{ ...comment, body: write.body }];
+                        case 'edited':
+                            return [write.comment];
+                        case 'deleted':
+                            return [];
+                        default:
+                            return assertNever(write);
+                    }
+                });
                 return comments.length > 0 ? [{ ...thread, comments }] : [];
             });
         }
@@ -611,6 +678,147 @@ export const ReviewWritingFactory = defineFactory({
             });
         }
 
+        function editComment(commentId: string, body: string) {
+            if (dropped || commentWritesInFlight.has(commentId)) {
+                return;
+            }
+
+            commentWritesInFlight.add(commentId);
+            setInMap(commentWritesRef, commentId, { kind: 'editing', body });
+            setInMap(editFailuresRef, commentId, null);
+            enqueue(async () => {
+                const failure = await catchWrite(async () => {
+                    const answer = await sdk.UpdatePullRequestReviewComment({ id: commentId, body });
+                    const comment = answer.updatePullRequestReviewComment?.pullRequestReviewComment;
+                    if (!comment) {
+                        throw new NothingAnsweredError();
+                    }
+
+                    if (!dropped) {
+                        setInMap(commentWritesRef, commentId, { kind: 'edited', comment });
+                    }
+                }, toWriteFailure);
+                commentWritesInFlight.delete(commentId);
+                if (dropped) {
+                    return;
+                }
+
+                if (failure) {
+                    setInMap(commentWritesRef, commentId, null);
+                    setInMap(editFailuresRef, commentId, { body, failure });
+                    // No answer may still have got there: the comment shows what GitHub holds, and then nothing failed.
+                    await params.readThreadsAgain();
+                    if (!dropped && findReadComment(commentId)?.body === body) {
+                        setInMap(editFailuresRef, commentId, null);
+                    }
+
+                    return;
+                }
+
+                const edited = commentWritesRef.value.get(commentId);
+                afterRead(await params.readThreadsAgain(), () => {
+                    // An edit since draws over the threads until its own read.
+                    if (commentWritesRef.value.get(commentId) === edited) {
+                        setInMap(commentWritesRef, commentId, null);
+                    }
+                });
+            });
+        }
+
+        function deleteComment(commentId: string) {
+            const thread = threads.value.find(({ comments }) => comments.some(({ id }) => id === commentId));
+            const comment = thread?.comments.find(({ id }) => id === commentId);
+            if (dropped || !thread || !comment || commentWritesInFlight.has(commentId)) {
+                return;
+            }
+
+            const threadId = thread.id;
+            const pending = comment.state === 'PENDING';
+            commentWritesInFlight.add(commentId);
+            setInMap(commentWritesRef, commentId, { kind: 'deleted' });
+            setInMap(deleteFailuresRef, threadId, null);
+            if (pending) {
+                countInDraft(-1);
+            }
+
+            enqueue(async () => {
+                const failure = await catchWrite(async () => {
+                    await sdk.DeletePullRequestReviewComment({ id: commentId });
+                }, toWriteFailure);
+                commentWritesInFlight.delete(commentId);
+                if (dropped) {
+                    // Nothing else goes out now but this: left empty, the draft would block the pull request.
+                    if (!failure && pending) {
+                        await deleteDraftIfEmpty();
+                    }
+
+                    return;
+                }
+
+                if (failure) {
+                    setInMap(commentWritesRef, commentId, null);
+                    setInMap(deleteFailuresRef, threadId, failure);
+                    if (pending) {
+                        countInDraft(1);
+                    }
+
+                    // No answer may still have got there: gone from the threads read again, nothing failed.
+                    await (pending ? readAgain() : params.readThreadsAgain());
+                    if (!dropped && !findReadComment(commentId)) {
+                        setInMap(deleteFailuresRef, threadId, null);
+                    }
+
+                    return;
+                }
+
+                setInMap(editFailuresRef, commentId, null);
+                if (pending) {
+                    await deleteDraftIfEmpty();
+                }
+
+                const threadsRead = await (pending ? readAgain() : params.readThreadsAgain());
+                if (!dropped) {
+                    afterRead(threadsRead, () => setInMap(commentWritesRef, commentId, null));
+                }
+            });
+        }
+
+        function findReadComment(commentId: string) {
+            for (const thread of params.getThreads()) {
+                const comment = thread.comments.find(({ id }) => id === commentId);
+                if (comment) {
+                    return comment;
+                }
+            }
+
+            return null;
+        }
+
+        /** Shown at once as one more or one less in the draft, as the toolbar counts. */
+        function countInDraft(change: number) {
+            const draft = readDraft();
+            if (draft) {
+                setDraft({ ...draft, commentCount: Math.max(0, draft.commentCount + change) });
+            }
+        }
+
+        /**
+         * After its last comment is deleted: empty, the draft would only block what is written next (D17). GitHub is asked how
+         * many it holds first, for the model may be late (D21) and a comment written elsewhere would go with the draft.
+         */
+        async function deleteDraftIfEmpty() {
+            const pullRequestId = params.getPullRequestId();
+            if (pullRequestId === null || countSending(way => way !== 'single') > 0) {
+                return;
+            }
+
+            await details.readAgain(pullRequestId);
+            const draft = readDraft();
+            if (draft?.commentCount === 0 && countSending(way => way !== 'single') === 0) {
+                await deleteEmptyDraft(draft.id);
+            }
+        }
+
         function finishDraft(finish: ReviewFinish) {
             if (finishRef.value.kind === 'sending') {
                 return;
@@ -819,6 +1027,10 @@ export const ReviewWritingFactory = defineFactory({
             resolvedRef.value = new Map();
             resolveFailuresRef.value = new Map();
             resolvesInFlight.clear();
+            commentWritesRef.value = new Map();
+            editFailuresRef.value = new Map();
+            deleteFailuresRef.value = new Map();
+            commentWritesInFlight.clear();
         }
     },
 });
@@ -829,7 +1041,24 @@ interface ThreadResolution {
     readonly resolvedBy: ReviewThread['resolvedBy'];
 }
 
+/** What is drawn over a comment read. */
+type CommentWrite =
+    /** Its Markdown on its way to GitHub. */
+    | { readonly kind: 'editing'; readonly body: string }
+    /** As GitHub answered the edit, until the threads read again have it. */
+    | { readonly kind: 'edited'; readonly comment: ReviewThreadComment }
+    | { readonly kind: 'deleted' };
+
+/** An edit GitHub did not take: its text and why. */
+interface FailedReviewEdit {
+    readonly body: string;
+    readonly failure: ReviewWriteFailure;
+}
+
 class NoDraftError extends Error {}
+
+/** GitHub answered a write with nothing of what it wrote: it dropped it without a word (D14). */
+class NothingAnsweredError extends Error {}
 
 class DraftFoundError extends Error {}
 
@@ -846,6 +1075,10 @@ function toCommentFailure(error: unknown): ReviewCommentFailure {
 }
 
 function toWriteFailure(error: unknown): ReviewWriteFailure {
+    if (error instanceof NothingAnsweredError) {
+        return { kind: 'refused', message: null };
+    }
+
     if (!(error instanceof GitHubApiError)) {
         return { kind: 'notReached' };
     }
@@ -853,6 +1086,18 @@ function toWriteFailure(error: unknown): ReviewWriteFailure {
     // Live: an answer of errors whose messages are all empty.
     const wordless = error.errors.length > 0 && error.errors.every(({ message }) => message.trim() === '');
     return { kind: 'refused', message: wordless ? null : getFailureText(error) };
+}
+
+/** What a comment's editor says of a refused edit: GitHub refusing without a word is a change it dropped (D14). */
+function toFailedEditReason(failure: ReviewWriteFailure): EditFailureReason {
+    switch (failure.kind) {
+        case 'notReached':
+            return { kind: 'offline' };
+        case 'refused':
+            return failure.message === null ? { kind: 'dropped' } : { kind: 'refused', message: failure.message };
+        default:
+            return assertNever(failure);
+    }
 }
 
 function toThread(target: ReviewCommentTarget, body: string) {
