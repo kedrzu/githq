@@ -1280,7 +1280,11 @@ function measureCharacterWidth() {
   outline: none;
 }
 
+// As wide as the widest line: a sticky row is held only within its parent, so a list as wide as the view lets the
+// step rows, gaps and the end slide away with the text. Wrapped, it is the view's width, which the lines wrap at.
 .workflowJobLog_list {
+  width: max-content;
+  min-width: 100%;
   margin: 0;
   font-family: $font-family-mono;
   font-size: $font-size-xs;
@@ -1302,6 +1306,10 @@ function measureCharacterWidth() {
   min-width: 100%;
   height: 18px;
   background: $color-bg;
+}
+
+.workflowJobLog_list_wrapped {
+  width: auto;
 }
 
 .workflowJobLog_list_wrapped .workflowJobLog_line {
