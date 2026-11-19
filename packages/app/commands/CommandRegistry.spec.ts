@@ -80,10 +80,89 @@ test('a key held down runs a `once` command on its first keydown only, any other
     expect(ran).toEqual(['signIn:Enter', 'list:J', 'list:J', 'list:J']);
 });
 
+test('D15: in a one-line field, a text area or rich text, a Mod key runs unless it edits text; no single key runs', async () => {
+    const ran: string[] = [];
+    register([
+        listCommand('Mod+P', ran),
+        listCommand('Shift+Mod+G', ran),
+        appCommand('Mod+Z', ran),
+        listCommand('Mod+A', ran),
+        listCommand('J', ran),
+        listCommand('Shift+A', ran),
+        listCommand('Alt+A', ran),
+    ]);
+
+    for (const tag of ['input', 'textarea', 'div']) {
+        const field = prepend(tag, element => {
+            element.textContent = '';
+            if (tag === 'div') {
+                element.contentEditable = 'true';
+            }
+        });
+        field.focus();
+        ran.length = 0;
+
+        await userEvent.keyboard('j{Shift>}a{/Shift}{Alt>}a{/Alt}');
+        await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}{ControlOrMeta>}z{/ControlOrMeta}');
+        await userEvent.keyboard('{ControlOrMeta>}p{/ControlOrMeta}{Shift>}{ControlOrMeta>}g{/ControlOrMeta}{/Shift}');
+        expect({ tag, ran }).toEqual({ tag, ran: ['list:Mod+P', 'list:Shift+Mod+G'] });
+        field.remove();
+    }
+
+    // Outside a field ⌘Z and ⌘A are the commands', and single keys too.
+    await userEvent.keyboard('{ControlOrMeta>}z{/ControlOrMeta}{ControlOrMeta>}a{/ControlOrMeta}j');
+    expect(ran).toEqual(['list:Mod+P', 'list:Shift+Mod+G', 'app:Mod+Z', 'list:Mod+A', 'list:J']);
+});
+
+test("D15: with the menu open a screen's Mod key closes it and runs, one with a level moves the menu there; another layer still covers", async () => {
+    const ran: string[] = [];
+    const levelDefinition = defineAppCommand({ id: 'goTo', title: () => 'Go to', key: 'Mod+P', places: ['review'] });
+    const level = bindCommand(levelDefinition, { section: 'view', options: () => ({ options: [] }) }, t);
+    const registry = register([
+        level,
+        listCommand('Mod+F', ran),
+        listCommand('J', ran),
+        listCommand('Mod+Z', ran),
+        listCommand('Enter', ran),
+        listCommand('ArrowDown', ran),
+    ]);
+    const menu = prepend('div', element => {
+        element.dataset.layer = 'command-menu';
+        element.append(document.createElement('input'));
+    });
+    const field = menu.querySelector('input')!;
+
+    registry.openMenu();
+    const opened = registry.menu;
+    field.focus();
+    await userEvent.keyboard('j{ArrowDown}{Enter}{ControlOrMeta>}z{/ControlOrMeta}');
+    expect(ran).toEqual([]);
+
+    await userEvent.keyboard('{ControlOrMeta>}p{/ControlOrMeta}');
+    expect(registry.menu?.commandId).toBe('review.goTo');
+    expect(registry.menu).not.toBe(opened);
+
+    await userEvent.keyboard('{ControlOrMeta>}f{/ControlOrMeta}');
+    expect(ran).toEqual(['list:Mod+F']);
+    expect(registry.menu).toBeNull();
+
+    // The help sheet, or any other layer, covers the screen: its key does not run.
+    const sheet = prepend('div', element => {
+        element.dataset.layer = '';
+    });
+    registry.openMenu();
+    field.focus();
+    await userEvent.keyboard('{ControlOrMeta>}f{/ControlOrMeta}');
+    expect(ran).toEqual(['list:Mod+F']);
+    expect(registry.menu).not.toBeNull();
+    sheet.remove();
+});
+
 /** The registry of a fresh container, with these commands registered for the test. */
 function register(commands: readonly BoundCommand[]) {
     const registry = createContainer().resolve(CommandRegistry);
     onTestFinished(registry.register({ commands, subject: null }));
+    return registry;
 }
 
 /** A list's command on a test definition, noting `list:<its key>`. */

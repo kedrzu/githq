@@ -1,4 +1,9 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). With nothing typed at the top it lists what is in context, "Recent" — up to five projects, repositories and items opened lately, newest first, not the screen shown or the item opened (`navigation.recent`) — and "Go to", which ends with "Repositories" and "Projects", each with its count, whose levels list the tracked ones alphabetically; the tracked repositories, the projects and the app's actions — but what the app offers now (`proposed`, D36) — are otherwise found by typing. At most 600px tall on a desktop, its rows scrolling. Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about), a level the chip or a crumb already names not named again. ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject) — kept by the caller (`CommandRegistry`), so the actions that start from them, "Run workflow" and New issue, then start from neither; Esc steps back one level, or closes. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). With nothing typed at the top it lists what is in context, "Recent" — up to five projects, repositories and items opened lately, newest first, not the screen shown or the item opened (`navigation.recent`) — and "Go to", which ends with "Repositories" and "Projects", each with its count, whose levels list the tracked ones alphabetically; the tracked repositories, the projects and the app's actions — but what the app offers now (`proposed`, D36) — are otherwise found by typing. At most 600px tall on a desktop, its rows scrolling. Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about), a level the chip or a crumb already names not named again. ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject) — kept by the caller (`CommandRegistry`), so the actions that start from them, "Run workflow" and New issue, then start from neither; Esc steps back one level, or closes. A command's key that can't be typing runs while it is open (commands D15): one with a level of its own moves the menu to it, unless it is the level shown, and any other closes the menu and runs. Opened from the phone's command line on a list (`parts`), the top lists the place's parts first under the place's name (mobile D17) — a repository's sections, a project's saved views, My work and its groups, the same rows the menu has elsewhere, then left out there — each with its count, a dot when changed on this device (D49), ↗ when it leaves for github.com (D21) and a check on the one shown; typing finds them where it always does. On a phone (`PhoneLayout.active`, mobile D16) it rises from below as a sheet, its field at the bottom — ⌘, the chip (opened from the command line on a list, that line's own: the part shown, `PhonePartChip`), "Do or find…", × — with no keyboard until the field is tapped (the list holds the focus; a hardware keyboard's keys still type into the field): the groups stack upwards, the first nearest the field, each read downwards, and once something is typed the whole list runs upwards, the best match nearest the field; ↑/↓ follow the screen, and the row nearest the field is highlighted. Inside a level (a picker, MB40) the field finds only what the level holds: a magnifier in it, and over the rows the way back, what the actions act on and the level's title. Its rows and field are at a phone's sizes. No keys are shown there, on the rows or in a footer (D52); while it is open the command line steps aside (D18, the sheet's). -->
+<script lang="ts">
+/** The most options a submenu draws: one may offer every item of the local copy; typing finds the rest. */
+export const SUBMENU_LIMIT = 100;
+</script>
+
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assert } from '@nzyme/utils/assert.js';
@@ -25,6 +30,7 @@ import {
 } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
 import { computed, ref, shallowRef, watch } from 'vue';
+import type { VNodeChild } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Dialog from '@/components/Dialog.vue';
@@ -47,14 +53,8 @@ import type { CommandCrumb } from './CommandCrumbs.vue';
 import CommandForm from './CommandForm.vue';
 import * as l from './CommandMenu.loc.js';
 import CommandMenuItem from './CommandMenuItem.vue';
-import type {
-  Command,
-  CommandFormValues,
-  CommandMarks,
-  CommandOption,
-  CommandParts,
-  CommandSubject,
-} from './CommandTypes.js';
+import type { CommandMenuRequest } from './CommandRegistry.js';
+import type { Command, CommandFormValues, CommandMarks, CommandOption, CommandSubject } from './CommandTypes.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 
@@ -68,12 +68,14 @@ const props = withDefaults(
     repository?: string | null;
     /** Where places and items are found. */
     navigation: NavigationData;
-    /** Opens in this action's submenu (its key was pressed, and it has no other way to run). */
-    startCommandId?: string | null;
-    /** The place's parts, listed first under their own heading (the phone's command line, mobile D17). */
-    parts?: (() => CommandParts) | null;
+    /**
+     * How it was asked to open: in an action's submenu (its key was pressed, and it has no other way to run), or with
+     * the place's parts first under their own heading (the phone's command line, mobile D17). A new request while
+     * open moves it to that action's level (commands D15).
+     */
+    request?: CommandMenuRequest | null;
   }>(),
-  { subject: null, repository: null, startCommandId: null, parts: null },
+  { subject: null, repository: null, request: null },
 );
 
 const emit = defineEmits<{
@@ -90,6 +92,8 @@ const repositoryRemoved = defineModel<boolean>('repositoryRemoved', { default: f
 /** A line of the list as drawn. */
 interface Row extends FilterListRow {
   readonly icon: LucideIcon | null;
+  /** Drawn in the icon's place when there is none: a search's option's own mark. */
+  readonly lead?: () => VNodeChild;
   readonly title: string;
   /** In a line found deeper: the levels above it ("Set status"), each before an arrow. */
   readonly ancestors?: readonly CommandMenuAncestor[];
@@ -125,9 +129,6 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   settings: Settings,
 };
 
-/** The most options a submenu draws: one may offer every item of the local copy; typing finds the rest. */
-const SUBMENU_LIMIT = 100;
-
 const t = useTranslate();
 const phoneLayout = useService(PhoneLayout);
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
@@ -139,7 +140,7 @@ const highlighted = shallowRef<string | null>(null);
 const formValues = shallowRef<Readonly<Record<string, CommandFormValues>>>({});
 
 /** The place's parts while the menu is open: read as it draws, a count is worked out only then. */
-const parts = computed(() => (open.value ? (props.parts?.() ?? null) : null));
+const parts = computed(() => (open.value ? (props.request?.parts?.() ?? null) : null));
 /** What the actions act on: `null` once the user took it out (⌫). */
 const subject = computed(() => (subjectRemoved.value ? null : props.subject));
 /** The repository the actions belong to: `null` once the user took it out (⌫). */
@@ -162,7 +163,7 @@ const chip = computed(() => {
   return repository.value ? { icon: BookMarked, label: repository.value } : null;
 });
 /** On a phone, opened from the command line on a list: that line's chip, the part shown, at the top level. */
-const partChip = computed(() => (phoneLayout.active && props.parts && !step.value ? phoneLayout.part : null));
+const partChip = computed(() => (phoneLayout.active && props.request?.parts && !step.value ? phoneLayout.part : null));
 /** The action whose picker is shown; a level of rows has none. */
 const submenu = computed(() => {
   const command = step.value?.command;
@@ -209,8 +210,10 @@ const groups = computed((): FilterListGroup<Row>[] => {
   const command = submenu.value;
   const options = submenuOptions.value;
   if (command && options) {
-    // What a search offers is what it answered, whether or not the typed letters are in it (`org:acme`).
-    const found = filterOptions(command.search ? '' : query.value, options.options).slice(0, SUBMENU_LIMIT);
+    // What a search offers is what it answered, whether or not the typed letters are in it (`org:acme`), marked by it.
+    const found = command.search
+      ? options.options.slice(0, SUBMENU_LIMIT).map(toFoundAnswer)
+      : filterOptions(query.value, options.options).slice(0, SUBMENU_LIMIT);
     return groupOptions(command, found, options.heading ?? null);
   }
 
@@ -306,12 +309,24 @@ watch(
       repositoryRemoved.value = false;
       path.value = [];
       formValues.value = {};
-      if (props.startCommandId) {
-        enterLevel([props.startCommandId]);
+      const start = props.request?.commandId;
+      if (start) {
+        enterLevel([start]);
       }
     }
   },
   { immediate: true },
+);
+
+// An action's key pressed while open (commands D15): its level, unless that is the one shown, whose text stays.
+watch(
+  () => props.request,
+  (request, before) => {
+    const start = request?.commandId;
+    if (open.value && before && start && !(path.value.length === 1 && path.value[0] === start)) {
+      enterLevel([start]);
+    }
+  },
 );
 
 // What a level offers may still have to be read, coming back to it too; a registration recomputing is no new level.
@@ -491,6 +506,7 @@ function groupOptions(
       value: `option:${option.value}`,
       // A repository's visibility; another action's options stay without theirs, as they always were here.
       icon: command.search ? (option.icon ?? null) : null,
+      lead: command.search ? option.lead : undefined,
       title: option.label,
       detail: option.detail,
       aside: option.aside,
@@ -509,6 +525,10 @@ function groupOptions(
   }
 
   return grouped;
+}
+
+function toFoundAnswer(option: CommandOption): FoundOption<CommandOption> {
+  return { option, score: 0, field: option.match?.field ?? null, ranges: option.match?.ranges ?? null };
 }
 
 function toOptionMatch({ option, field, ranges }: FoundOption<CommandOption>): CommandMenuMatch | null {
@@ -676,7 +696,7 @@ function onEscape(event: KeyboardEvent) {
       :from-below="phoneLayout.active"
       :class="phoneLayout.active && css.commandMenu_phone"
       size="lg"
-      data-layer
+      data-layer="command-menu"
       @update:model-value="activate"
       @filter-keydown="onFilterKeydown"
     >
@@ -746,6 +766,12 @@ function onEscape(event: KeyboardEvent) {
             :class="css.commandMenu_icon"
             aria-hidden="true"
           />
+          <span
+            v-else-if="row.lead"
+            :class="css.commandMenu_lead"
+          >
+            <component :is="row.lead" />
+          </span>
           <span
             v-if="row.color"
             :class="css.commandMenu_dot"
@@ -905,6 +931,13 @@ function onEscape(event: KeyboardEvent) {
   width: 14px;
   height: 14px;
   color: $color-fg-2;
+}
+
+.commandMenu_lead {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  width: 14px;
 }
 
 .commandMenu_dot {

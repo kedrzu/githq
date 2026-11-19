@@ -149,6 +149,7 @@ import { findLinkedThread, parseThreadAnchor } from './threads/findLinkedThread.
 import { findOpenThreadFrom, findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
+import { useGoToFileCommand } from './useGoToFileCommand.js';
 import { useReviewKeySheet } from './useReviewKeySheet.js';
 import { useReviewCursor } from './useReviewCursor.js';
 import { useReviewPosition } from './useReviewPosition.js';
@@ -434,9 +435,11 @@ const filterOn = computed(() => filter.value.kind === 'on');
 const listGroups = computed((): readonly ReviewFileGroup[] =>
   filterOn.value && ordered.value.length > 0 ? [{ kind: 'root', files: ordered.value }] : groups.value,
 );
-const allPaths = computed(() =>
-  groupReviewFiles([...allFiles.value, ...goneFiles.value]).flatMap(group => group.files.map(file => file.path)),
+/** Every file in the list's order, whatever a filter or hidden viewed files hold back. */
+const allListed = computed(() =>
+  groupReviewFiles([...allFiles.value, ...goneFiles.value]).flatMap(group => group.files),
 );
+const allPaths = computed(() => allListed.value.map(file => file.path));
 const filterPattern = computed({
   get: () => filterInput.value.pattern,
   set: pattern => files.value?.setFilter({ pattern, regex: filterInput.value.regex }),
@@ -933,6 +936,13 @@ onWindowEvent('focus', () => {
 });
 
 useReviewKeySheet();
+const goToFileCommand = useGoToFileCommand({
+  files: allListed,
+  currentPath,
+  listComplete: () => files.value?.listComplete ?? false,
+  total: () => files.value?.changedFiles ?? null,
+  reveal: path => void goToFile(path),
+});
 
 /**
  * The pull request reviewed, while its actions are the keys' and the menu's: not with an item opened over the review,
@@ -959,6 +969,7 @@ useCommands(
 );
 
 useCommands(() => [
+  goToFileCommand(),
   bindCommand(
     definitions.next,
     {
@@ -1589,6 +1600,20 @@ async function jumpToReviewThreads(reviewId: string) {
   } else if (own.paths[0] !== undefined) {
     selectFile(own.paths[0]);
   }
+}
+
+/**
+ * Go to file's pick (⌘P): as a click in the file list, once the menu has let go of the focus. A filter or hidden viewed
+ * files holding it back give way, as for a linked thread.
+ */
+async function goToFile(path: string) {
+  if (isHeldBack(path)) {
+    filterPattern.value = '';
+    hideViewed.value = false;
+  }
+
+  await nextTick();
+  selectFile(path);
 }
 
 /** Whether the filter or hidden viewed files are what keeps the file out of the diff. */

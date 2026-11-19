@@ -94,6 +94,12 @@ the list of keys can never show one thing while another runs. Only the keys a co
 in a field or Tab, stay with the control, and so do a dialog's keys: the merge panel runs its own, its method numbers
 read from their definition. [Why](DECISIONS.md#d11).
 
+Where text is typed (a comment box, a one-line field, the command menu's own field) a command's key still runs,
+unless it could be the field's: any key without ⌘, and ⌘ with a text-editing key (A, C, V, X, Z, Y, an arrow,
+Backspace, Delete, Home, End, Enter). So ⌘P or ⌘B work from a comment box, while ⌘Z there undoes the typing. With the
+command menu open the same rule holds: ⌘K closes it, a command with a level of its own moves the menu there, and any
+other closes the menu and runs. [Why](DECISIONS.md#d15).
+
 ## What comes first in the command menu
 
 Each command says how much it matters, and the command menu lists the more important ones first within each group.

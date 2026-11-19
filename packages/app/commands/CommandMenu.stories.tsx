@@ -7,7 +7,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import type { LucideIcon } from 'lucide-vue-next';
 import { CircleDot, Eye, GitCommitHorizontal, GitPullRequest, Link, Play, Workflow } from 'lucide-vue-next';
-import { userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 
@@ -15,6 +15,8 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { getEditPermissions } from '@/edits/getEditPermissions.js';
 import type { ItemEditing } from '@/item/ItemEditing.js';
 import ItemView from '@/item/ItemView.vue';
+import type { ReviewFile } from '@/review/ReviewFiles.js';
+import { useGoToFileCommand } from '@/review/useGoToFileCommand.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
@@ -158,6 +160,17 @@ const MOBILE_METADATA: RepositoryMetadata = {
     viewerPermission: 'READ',
 };
 
+/** A pull request's files for Go to file (CR144–CR147), in the file list's order. */
+const REVIEW_FILES: readonly ReviewFile[] = [
+    reviewFile('README.md', 'MODIFIED', 'VIEWED'),
+    reviewFile('docs/sync.md', 'ADDED', 'UNVIEWED'),
+    reviewFile('packages/app/review/ReviewFileList.vue', 'MODIFIED', 'UNVIEWED'),
+    reviewFile('packages/app/review/ReviewFileRow.vue', 'RENAMED', 'VIEWED'),
+    reviewFile('src/components/SyncBadge.tsx', 'MODIFIED', 'UNVIEWED'),
+    reviewFile('src/sync/engine.ts', 'DELETED', 'UNVIEWED'),
+    reviewFile('src/sync/index.ts', 'MODIFIED', 'UNVIEWED'),
+];
+
 /** What GitHub's search answers in E8. */
 const FOUND_REPOSITORIES: RepositoryBrowseSearchQuery = {
     search: {
@@ -218,6 +231,8 @@ const Harness = defineComponent({
         parts: { type: String as PropType<PhonePlace | null>, default: null },
         /** A project, an issue, a repository and a pull request opened lately, as kept (`RecentVisitsStore`). */
         recent: { type: Boolean, default: false },
+        /** A review's Go to file (⌘P) over {@link REVIEW_FILES}, all listed or 3 of 7 arrived; what it reveals is in `asked`. */
+        reviewFiles: { type: String as PropType<'listed' | 'arriving' | null>, default: null },
     },
     setup(props) {
         // The open item keeps what the user chose in their settings, which are kept in the local copy.
@@ -245,6 +260,18 @@ const Harness = defineComponent({
 
         if (props.repositoryWorkflows) {
             useCommands(() => createRepositoryWorkflowCommands(say, t));
+        }
+
+        if (props.reviewFiles !== null) {
+            const arriving = props.reviewFiles === 'arriving';
+            const goToFile = useGoToFileCommand({
+                files: arriving ? REVIEW_FILES.slice(0, 3) : REVIEW_FILES,
+                currentPath: 'docs/sync.md',
+                listComplete: !arriving,
+                total: REVIEW_FILES.length,
+                reveal: path => say(`Revealed ${path}`),
+            });
+            useCommands(() => [goToFile()]);
         }
 
         useCommands(() => [
@@ -351,8 +378,7 @@ const Harness = defineComponent({
                     subject={registry.subject}
                     repository={props.repository}
                     navigation={navigation}
-                    startCommandId={registry.menu?.commandId ?? null}
-                    parts={registry.menu?.parts ?? null}
+                    request={registry.menu}
                     onNavigate={navigate}
                 />
             </div>
@@ -432,6 +458,22 @@ export const FoundItems: Story = {
         await userEvent.keyboard('cal');
     },
 };
+
+/** CR144: Go to file (⌘P) on a review, nothing typed: every file in the list's order, the cursor's checked. */
+export const GoToFile: Story = { args: { subject: 'none', reviewFiles: 'listed', startCommandId: 'review.goToFile' } };
+
+/** CR145: matches in a name first, then those in a folder alone, the letters marked. */
+export const GoToFileTyped: Story = {
+    args: { ...GoToFile.args },
+    play: async () => {
+        await userEvent.keyboard('snc');
+        // Marked once the search has answered.
+        await waitFor(() => expect(document.querySelector('[role="option"] mark')).not.toBeNull());
+    },
+};
+
+/** CR147: the list of files still arriving: what has arrived, and the footer says how far. */
+export const GoToFileArriving: Story = { args: { ...GoToFile.args, reviewFiles: 'arriving' } };
 
 /** E7: "Search repositories" opened, before typing. */
 export const SearchBeforeTyping: Story = {
@@ -851,9 +893,9 @@ function createLevelCommands(say: (text: string) => void, t: Translator): BoundC
             },
             t,
         ),
-        bindStory(
-            'follow',
-            'app',
+        // A screen's action with a key and a level of its own, as the review's Go to file (commands D15).
+        bindCommand(
+            defineAppCommand({ id: 'follow', title: () => 'Follow people…', key: 'Mod+P', places: ['review'] }),
             {
                 title: 'Follow people…',
                 section: 'app',
@@ -1026,4 +1068,8 @@ interface StoryParts {
 /** A command of the story, on a definition of its own made for it: the registry takes only bound commands. */
 function bindStory(id: string, place: CommandPlace, binding: StoryBinding, t: Translator): BoundCommand {
     return bindCommand(defineAppCommand({ id, title: () => binding.title, places: [place] }), binding, t);
+}
+
+function reviewFile(path: string, changeType: ReviewFile['changeType'], viewed: ReviewFile['viewed']): ReviewFile {
+    return { path, previousPath: null, changeType, additions: 1, deletions: 1, viewed };
 }

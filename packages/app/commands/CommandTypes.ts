@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-vue-next';
+import type { VNodeChild } from 'vue';
 
 import type { AnyAppCommand } from './defineAppCommand.js';
 import type { NavigationPlace } from './searchNavigation.js';
@@ -393,5 +394,23 @@ export interface CommandOption {
     /** Only some of the items edited together have it (a dash); picking it gives it to all of them. */
     readonly mixed?: boolean;
     readonly icon?: LucideIcon;
+    /**
+     * Drawn in place of {@link icon}, before the label, when a mark of the option's own domain says more than an icon (a
+     * file's change letter, Go to file); a search's options only, as their icons are. Names nothing for a screen reader
+     * unless it says so itself.
+     */
+    readonly lead?: () => VNodeChild;
+    /**
+     * What a search found in it, to be marked: a search's options are its answers, which the menu shows as given and
+     * does not filter or mark itself (Go to file's paths).
+     */
+    readonly match?: CommandOptionMatch;
     pick(): void;
+}
+
+/** The typed letters a search found in one of its options. */
+export interface CommandOptionMatch {
+    readonly field: 'label' | 'detail';
+    /** Offsets `[start, end, start, end…]` in that text. */
+    readonly ranges: readonly number[];
 }

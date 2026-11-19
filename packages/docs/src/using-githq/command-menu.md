@@ -8,8 +8,7 @@ The command menu finds any action, place, issue or pull request in githq, and ru
 Press <kbd>⌘</kbd> <kbd>K</kbd>, or click **Search or jump to…** at the top of the sidebar. Press it again, or
 <kbd>Esc</kbd>, to close it.
 
-In a comment box or another field where you write text, <kbd>⌘</kbd> <kbd>K</kbd> belongs to the field. Leave the field
-first.
+It opens from a comment box or another field where you write text too, and what you wrote stays as it was.
 
 ## What's at the top
 
@@ -59,6 +58,10 @@ and actions. An action such as **Assign** or **Set status** holds a picker of it
 |<kbd>←</kbd> or <kbd>⌫</kbd>|Step back a level, with the field empty|
 |<kbd>Esc</kbd>|Step back a level, or close|
 
+Some actions open the menu straight at their level with their key: in a code review, **Go to file** (<kbd>⌘</kbd>
+<kbd>P</kbd>) lists the pull request's files. Pressed while the menu is open, such a key moves the menu to that level,
+and the key of any other action closes the menu and runs it.
+
 In a picker, the current values are checked. A value only some of the selected items have is marked half, and picking
 it gives it to all of them. Typing filters the options.
 
@@ -81,7 +84,9 @@ right-clicking a row.
 |<kbd>⌘</kbd> <kbd>B</kbd>|Collapse or expand the sidebar|
 
 Letter keys work without <kbd>Shift</kbd> unless <kbd>Shift</kbd> is shown. Single keys don't act while you type in a
-field.
+field, and neither do the editing keys there, such as <kbd>⌘</kbd> <kbd>A</kbd>, <kbd>⌘</kbd> <kbd>C</kbd>,
+<kbd>⌘</kbd> <kbd>V</kbd> or <kbd>⌘</kbd> <kbd>Z</kbd>. Any other key with <kbd>⌘</kbd> works from a field as it does
+anywhere else.
 
 The keys of lists, items and reviews are on the pages about them: [My work](./my-work.md#act-from-the-list),
 [Repositories](./repositories.md#commits) and [Pull requests and reviews](./pull-requests-and-reviews.md).

@@ -275,3 +275,27 @@ definition, like the title, since a command matters the same wherever it is offe
 **Rejected.**
 
 - Order of registration alone — today's state; it puts whatever a component happens to register first on top.
+
+## D15
+
+**In a field — a text area, a one-line field, rich text, the open command menu's field — a command's key runs unless it
+could be the field's: a key without `Mod`, or `Mod` with a text-editing key (A, C, V, X, Z, Y, an arrow, Backspace,
+Delete, Home, End, Enter, with or without Shift or Alt). Every other `Mod` key runs. While the command menu is open the
+same rule decides: its own key closes it, a command with a level of its own and nothing to run moves the menu to that
+level (nothing changes when it is the level shown), and any other command closes the menu and runs. The help sheet
+keeps every key to itself.** (2026-11-19, owner) Owner: "Cmd is never used while typing text, except the editing
+shortcuts."
+
+**Why.** Go to file (⌘P) has to reach a review from its comment box and from the open menu; before, a `Mod` key never
+ran from a text area or rich text and nothing but ⌘K ran while the menu was open, so ⌘P fell through to the browser's
+print. One rule for every place text is typed replaces the split between one-line fields and text areas, and the
+editing keys stay the field's, so ⌘Z in a comment undoes the typing rather than the toast's action.
+
+**Rejected.**
+
+- Keeping `Mod` keys dead in text areas and rich text — Go to file and the review's panels would be unreachable while
+  writing a comment.
+- A per-command opt-in to run from fields — every command would have to be judged again; the collision is a property
+  of the key, not of the command.
+- Leaving the open menu deaf to every key but ⌘K — a key the user knows would do nothing, or reach the browser, until
+  the menu is closed by hand.

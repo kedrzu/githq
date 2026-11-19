@@ -7,6 +7,7 @@ import {
     Columns2,
     Equal,
     Eye,
+    FileSearch,
     GitPullRequest,
     ListFilter,
     MessageSquare,
@@ -29,6 +30,19 @@ export const goToStackPullRequest = defineAppCommand({
     icon: GitPullRequest,
     numbers: { first: 1, last: 0 },
     places: ['review'],
+});
+
+/**
+ * Finds a file of the pull request by scattered letters of its path and goes to it, as a click in the file list does: its
+ * key opens the command menu at its level. First among the review's commands (commands D14).
+ */
+export const goToFile = defineAppCommand({
+    id: 'goToFile',
+    title: l.goToFile,
+    icon: FileSearch,
+    key: 'Mod+P',
+    places: ['review'],
+    priority: 1,
 });
 
 /** To the next thread on the code, the open ones first, landing held in place and opened. */
