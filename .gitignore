@@ -35,6 +35,3 @@ CLAUDE.local.md
 
 # Agent scratch: specs, plans, research, command logs
 .context/
-
-# The Playwright MCP's page snapshots, written wherever the agent runs
-.playwright-mcp/
