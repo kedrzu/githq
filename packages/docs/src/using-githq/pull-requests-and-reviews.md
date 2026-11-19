@@ -106,12 +106,17 @@ Press <kbd>?</kbd> for **Keys in a review**, all of them on one sheet.
 
 |Key|What it does|
 |-|-|
+|<kbd>⌘</kbd> <kbd>P</kbd>|Go to a file by a few letters of its name|
 |<kbd>]</kbd> / <kbd>[</kbd>|Next or previous file|
 |<kbd>N</kbd> / <kbd>Shift</kbd> <kbd>N</kbd>|Next or previous comment thread, unresolved ones first|
 |<kbd>↓</kbd> / <kbd>↑</kbd>|Line by line|
 |<kbd>J</kbd> / <kbd>K</kbd>|Next or previous pull request of the list you came from|
 |<kbd>Esc</kbd>|Back to the pull request|
 |<kbd>O</kbd>|Open the pull request on GitHub|
+
+<kbd>⌘</kbd> <kbd>P</kbd> opens **Go to file** in the command menu: type a few letters of a file's name in their order, such as
+`rvwfl` for `ReviewFileList.vue`, and press <kbd>Enter</kbd>. It works from a comment box too. A file the path filter or **Hide viewed files**
+keeps out of the diff is shown again when you pick it.
 
 A pull request of a stack shows the stack above the files, and a click on a row opens that pull request's review.
 

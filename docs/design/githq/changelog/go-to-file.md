@@ -27,7 +27,7 @@ Where it departs from the brief, and why:
 
 Nodes:
 
-- [ ] Components · Command menu (`B7AwZ`): new frame "Parts · File results" (`Q8B4wl`) holding:
+- [x] Components · Command menu (`B7AwZ`): new frame "Parts · File results" (`Q8B4wl`) holding:
   - `Command / Result · file` (`mgDWw`), an instance of `Command / Result` (`k3mGr`). Its icon is replaced by a
     `Change` letter (`ZYEtp`: `$mono` 11, 15 px wide and centred so names line up with the other levels' labels).
     Label (`e2wbth`) is the file name. The chevron slot (`nsltD`) is the chosen mark: lucide `check`, `$fg-2`,
@@ -37,10 +37,10 @@ Nodes:
     stroke of `Command / Result · selected`.
   - A match is drawn as in E5: in an instance, Label or Sub is replaced by a "Text with match" frame of spans, the
     matched letters in `$accent`.
-- [ ] `Command / Footer` (`Tkzk6`): new hidden `spacer` (`SPtaz`, fill width) and `Footer note` (`yuFaw`: `$font`
+- [x] `Command / Footer` (`Tkzk6`): new hidden `spacer` (`SPtaz`, fill width) and `Footer note` (`yuFaw`: `$font`
   11.5, `$fg-dim`) at its end, for a level's quiet hint as in E7's footer. Hidden, so nothing that uses the footer
   changes.
-- [ ] App · Code review (`CEDLB`): new group "Go to file": Group header (`AUu5Y`) with the note, rows `RWQOm` and
+- [x] App · Code review (`CEDLB`): new group "Go to file": Group header (`AUu5Y`) with the note, rows `RWQOm` and
   `o7eS1`. Each screen is a copy of CR20 with the scrim (`#05060899`) and a command menu (680 px, x 380, y 96, the
   menu's card, shadow 0 24 64). The file list's head says 312 files, 9 of 312 viewed. The status bar is the plain one,
   without CR20's "First visit" message.
@@ -60,8 +60,21 @@ Nodes:
     first, then Find in the diff ⌘F, Next file ], Previous file [, Next thread N, Mark as viewed V, Filter by path /,
     Submit review ⇧S, Show unified, Hide the file list ⌘B, Show the conversation ⌥⌘B and Back to the pull request
     Esc. The footer is ⌘K's.
-- [ ] Layout: `CEDLB` grew 2229 px and `D27jC` 46 px. Every top-level frame from the menus row down moved down
+- [x] Layout: `CEDLB` grew 2229 px and `D27jC` 46 px. Every top-level frame from the menus row down moved down
   2229 px, and from the flows row down 2275 px.
 
 Not done: CR29's keys sheet (`GOlGu`) doesn't list ⌘P yet, because the brief said not to change existing screens. It
 needs a row "Go to file" under Files or Finding.
+
+## Round 2 · implementation
+
+Built as the menu's option row (`CommandOption`: `lead`, `detail`, `chosen`, `aside`, `match`) and its footer hint,
+with these differences from the drawing, for the design to follow:
+
+- [ ] `Command / Result · file` (`mgDWw`): the current file's check sits after the folder, where the menu's option row
+  draws a chosen mark, not right after the name.
+- [ ] CR144–CR147 footer note: with nothing typed it says "N files", and adds "· type to find one" only past 100 files
+  (CR144's "312 files · type to find one" is that case); typed, it says how many were found, "N files" (CR145's "14
+  files").
+- [ ] CR29 (`GOlGu`): the key sheet lists "Go to file ⌘P" under Finding, right after "Find in the diff ⌘F"; the drawing
+  still lacks the row.
