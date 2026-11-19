@@ -83,7 +83,6 @@ const options = computed((): ChoiceCardsOption<ReviewCommentChoice>[] => [
   @include settings-screen-column;
 
   gap: $spacing-12;
-  max-width: 560px;
 }
 
 .codeReviewView_title {

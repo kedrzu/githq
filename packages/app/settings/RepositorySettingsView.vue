@@ -109,37 +109,39 @@ const meta = computed(() => {
     :class="css.repositorySettingsView"
     :data-route-scroll="`repository-settings:${nameWithOwner}`"
   >
-    <SettingsPageHead
-      :parent="t(sectionLabels.repositories)"
-      :icon="isPrivate ? Lock : BookMarked"
-      :title="nameWithOwner"
-      :meta="meta"
-      @back="emit('back')"
-    />
-    <TrackingBlock
-      kind="repository"
-      :name="nameWithOwner"
-      :status="status"
-      :now="now"
-      :open-count="openCount"
-      @untrack="emit('untrack')"
-    />
-    <CommitEmailBlock
-      :owner="owner"
-      :choices="commitEmail"
-      :settings="commitEmailSettings"
-      @owner="emit('ownerCommitEmail', owner, $event)"
-      @repository="emit('repositoryCommitEmail', $event)"
-    />
-    <WorkflowAlertsBlock
-      :name-with-owner="nameWithOwner"
-      :stored="workflows"
-      :settings="workflowSettings"
-      :now="now"
-      :opened-on-add-field="openedOnAddField"
-      @back="emit('back')"
-      @change="emit('workflowSettings', $event)"
-    />
+    <div :class="css.repositorySettingsView_column">
+      <SettingsPageHead
+        :parent="t(sectionLabels.repositories)"
+        :icon="isPrivate ? Lock : BookMarked"
+        :title="nameWithOwner"
+        :meta="meta"
+        @back="emit('back')"
+      />
+      <TrackingBlock
+        kind="repository"
+        :name="nameWithOwner"
+        :status="status"
+        :now="now"
+        :open-count="openCount"
+        @untrack="emit('untrack')"
+      />
+      <CommitEmailBlock
+        :owner="owner"
+        :choices="commitEmail"
+        :settings="commitEmailSettings"
+        @owner="emit('ownerCommitEmail', owner, $event)"
+        @repository="emit('repositoryCommitEmail', $event)"
+      />
+      <WorkflowAlertsBlock
+        :name-with-owner="nameWithOwner"
+        :stored="workflows"
+        :settings="workflowSettings"
+        :now="now"
+        :opened-on-add-field="openedOnAddField"
+        @back="emit('back')"
+        @change="emit('workflowSettings', $event)"
+      />
+    </div>
   </div>
 </template>
 
@@ -154,5 +156,9 @@ const meta = computed(() => {
   min-height: 0;
   padding: $spacing-24 32px;
   overflow-y: auto;
+}
+
+.repositorySettingsView_column {
+  max-width: $settings-column-width;
 }
 </style>

@@ -266,6 +266,21 @@ test('W and T persist between logs and sessions, off by default; wrapped lines h
     await expect.element(page.getByTestId('workflow-log-times')).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('scrolled sideways, the lines’ text moves and the step rows stay at the left of the view', async () => {
+    await LongLines.run();
+    await settled();
+    const left = log().getBoundingClientRect().left;
+    const step = page.getByTestId('workflow-log-step').elements()[0];
+    const text = lines().find(line => line.textContent?.includes('much more besides'))?.lastElementChild;
+    const textLeft = text?.getBoundingClientRect().left ?? 0;
+
+    log().scrollLeft = 300;
+    await settled();
+
+    expect(step?.getBoundingClientRect().left).toBe(left);
+    expect(text?.getBoundingClientRect().left).toBe(textLeft - 300);
+});
+
 test('a wrapped line’s height is measured as it shows, and the row’s place follows it', async () => {
     await LongLines.run();
     await settled();
