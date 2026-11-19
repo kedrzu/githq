@@ -23,11 +23,15 @@ import {
     readAnimations,
     readMaxWidth,
     readUsageStatistics,
+    readOwnerCommitEmail,
     readRefSort,
+    readRepositoryCommitEmail,
     readReviewCommentChoice,
     readSettingsDocument,
     readWorkflowRunsGroupBy,
+    writeOwnerCommitEmail,
     writeRefSort,
+    writeRepositoryCommitEmail,
     writeWorkflowRunsGroupBy,
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
@@ -67,6 +71,14 @@ import type {
     TrackingCandidates,
     TrackingProgress,
 } from './TrackingTypes.js';
+
+/** The default commit email chosen for a repository and for its owner. */
+export interface CommitEmailChoices {
+    /** `undefined` inherits the owner's choice, `null` is GitHub's default, a string that address. */
+    readonly repository: string | null | undefined;
+    /** An address, or `null` for GitHub's default. */
+    readonly owner: string | null;
+}
 
 /** What the user chose to track on the tracking screen (G2, G8). */
 export interface TrackingChoice {
@@ -236,6 +248,9 @@ export const TrackingStore = defineService({
             setUsageStatistics,
             setReviewCommentChoice,
             setRefSort,
+            commitEmailChoices,
+            setOwnerCommitEmail,
+            setRepositoryCommitEmail,
             setMaxWidth,
             setWorkflowRunsGroupBy,
             onUntrack,
@@ -340,6 +355,48 @@ export const TrackingStore = defineService({
         function setWorkflowSettings(nameWithOwner: string, settings: WorkflowRefSettings) {
             const written = write(kept => {
                 const document = writeWorkflowSettings({ document: kept.document, nameWithOwner, settings });
+                return document && { ...kept, document };
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The default commit email chosen for the repository and for its owner, as the slot holds them now: `repository`
+         * is `undefined` to inherit the owner's, `null` for GitHub's default; `owner` is `null` for GitHub's default.
+         * Reactive when read in a computed or a render.
+         */
+        function commitEmailChoices(nameWithOwner: string): CommitEmailChoices {
+            const { document } = keptRef.value;
+            const entry = document.repositories.find(repository => repository.nameWithOwner === nameWithOwner);
+            return {
+                repository: readRepositoryCommitEmail(entry),
+                owner: readOwnerCommitEmail(document, getOwnerLogin(nameWithOwner)),
+            };
+        }
+
+        /**
+         * The user's default commit email for an owner's repositories (`null` for GitHub's default), a change made
+         * here: kept, sent to the other tabs and saved. Nothing when the owner reads as that already.
+         */
+        function setOwnerCommitEmail(owner: string, email: string | null) {
+            const written = write(kept => {
+                const document = writeOwnerCommitEmail({ document: kept.document, owner, email });
+                return document && { ...kept, document };
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's default commit email for a repository: `undefined` inherits the owner's, `null` is GitHub's
+         * default, a string that address. Nothing when the settings hold no entry of it, or that choice already.
+         */
+        function setRepositoryCommitEmail(nameWithOwner: string, email: string | null | undefined) {
+            const written = write(kept => {
+                const document = writeRepositoryCommitEmail({ document: kept.document, nameWithOwner, email });
                 return document && { ...kept, document };
             });
             if (written) {
@@ -954,6 +1011,10 @@ export const TrackingStore = defineService({
         }
     },
 });
+
+function getOwnerLogin(nameWithOwner: string) {
+    return nameWithOwner.split('/')[0] ?? nameWithOwner;
+}
 
 function startRepositoryState(nameWithOwner: string): RepositorySyncState {
     return {

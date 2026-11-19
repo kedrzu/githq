@@ -112,6 +112,21 @@ test('fields this build does not know merge key by key like the known ones, and 
     });
 });
 
+test('commit emails merge per D11: the owner map as one value, a repository’s choice key by key, a removal staying removed', () => {
+    const base = { ...documentOf([WEB, { ...API, commitEmail: 'a@x.test' }], []), commitEmails: { acme: 'w@x.test' } };
+    // Here: GitHub's default for web, API back to inheriting, the owner's choice removed.
+    const { commitEmails: _removed, ...withoutOwners } = base;
+    const local = { ...withoutOwners, repositories: [{ ...WEB, commitEmail: null }, API] };
+    // There: a choice for docs-owner's map only.
+    const remote = { ...base, commitEmails: { acme: 'w@x.test', other: 'o@x.test' } };
+
+    // The owner map changed only there (here it was removed): both sides changed, so the file's value wins.
+    expect(mergeSettings({ local, remote, base })).toEqual({
+        ...documentOf([{ ...WEB, commitEmail: null }, API], []),
+        commitEmails: { acme: 'w@x.test', other: 'o@x.test' },
+    });
+});
+
 function documentOf(repositories: SettingsRepository[], projects: SettingsProject[]): SettingsDocument {
     return { version: 1, repositories, projects };
 }
