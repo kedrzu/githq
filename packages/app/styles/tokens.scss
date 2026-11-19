@@ -247,8 +247,9 @@ $item-reading-width: 920px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;
-// The column a screen of Settings keeps its content in.
-$settings-column-width: 680px;
+// The column every page of Settings keeps its content in, from the left: as wide as a repository's own settings need
+// (`SettingsBlock`: its 280px description, the 40px gap and its 640px content).
+$settings-column-width: 960px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
 
