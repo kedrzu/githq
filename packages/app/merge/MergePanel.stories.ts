@@ -1,7 +1,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, screen, userEvent, waitFor } from 'storybook/test';
-import { defineComponent, h, ref, shallowRef } from 'vue';
+import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
 import type { PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
@@ -10,6 +10,7 @@ import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
+import { resolveCommitEmail } from './resolveCommitEmail.js';
 import type {
     MergeOptions,
     MergeRecord,
@@ -122,7 +123,9 @@ interface HarnessReread {
  * read is on its way until the hidden `arrive` button is clicked. A step is on its way until the hidden `stepped`
  * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it. With
  * `settingsLater` the repository's settings are on their way until the hidden `settingsArrive` button is clicked, or
- * `settingsLost`: their read ended with none.
+ * `settingsLost`: their read ended with none. The commit email resolves from `ownerEmail` and `repositoryEmail` as the
+ * app's do; with `defaultsLater` the stored defaults are read only when the hidden `defaultsArrive` button is clicked.
+ * An address remembered from the panel becomes the repository's, written out under it (`remembered`).
  */
 const Harness = defineComponent({
     props: {
@@ -145,6 +148,12 @@ const Harness = defineComponent({
         viewerLogin: { type: String as PropType<string | null>, default: null },
         /** Its ordinary commands that apply. */
         commands: { type: Array as PropType<readonly PullRequestCommand[]>, default: () => [] },
+        /** The user's default commit email for the repository's owner; `null` for GitHub's. */
+        ownerEmail: { type: String as PropType<string | null>, default: null },
+        /** The repository's: `undefined` inherits the owner's, `null` is GitHub's. */
+        repositoryEmail: { type: String as PropType<string | null | undefined>, default: undefined },
+        tracked: { type: Boolean, default: true },
+        defaultsLater: { type: Boolean, default: false },
     },
     setup(props) {
         const open = ref(true);
@@ -158,10 +167,28 @@ const Harness = defineComponent({
         const sending = ref(false);
         const advancing = ref<MergeAdvancing | null>(props.advancing);
         const current = shallowRef(props.pr);
+        const defaultsIn = ref(!props.defaultsLater);
+        const repositoryEmail = shallowRef(props.repositoryEmail);
+        const remembered = ref('Nothing remembered');
+        const commitEmail = computed(() =>
+            defaultsIn.value && settingsIn.value
+                ? resolveCommitEmail({
+                      repository: repositoryEmail.value,
+                      owner: props.ownerEmail,
+                      settings: props.settings,
+                  })
+                : null,
+        );
 
         return () =>
             h('div', { style: { padding: '16px' } }, [
                 h('p', [h('span', { tid: 'sent' }, sent.value)]),
+                h('p', [h('span', { tid: 'remembered' }, remembered.value)]),
+                h(
+                    'button',
+                    { type: 'button', tid: 'defaultsArrive', hidden: true, onClick: () => (defaultsIn.value = true) },
+                    'The stored defaults are read',
+                ),
                 h(
                     'button',
                     { type: 'button', tid: 'arrive', hidden: true, onClick: () => (arrived.value = true) },
@@ -233,6 +260,12 @@ const Harness = defineComponent({
                     now: NOW,
                     viewerLogin: props.viewerLogin,
                     commands: props.commands,
+                    commitEmail: commitEmail.value,
+                    tracked: props.tracked,
+                    onRememberEmail: (email: string | null) => {
+                        remembered.value = `Remembered: ${JSON.stringify(email)}`;
+                        repositoryEmail.value = email;
+                    },
                     onBypass: (submission: MergeSubmission) => {
                         sent.value = `Bypass: ${JSON.stringify(submission.request)}`;
                         const merge: SentMerge = { ...submission, head: current.value.headRefOid };
@@ -952,7 +985,7 @@ export const AdminConflicts: Story = {
     args: { pr: { ...NOT_APPROVED, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' }, options: ADMIN_OPTIONS },
 };
 
-/** PM6: a squash by the pull request's author with several addresses: the line, on the default; `Y` moves on. */
+/** PM6: a squash by the pull request's author with several addresses: the line, on GitHub's default; `Y` opens the menu. */
 export const EmailSquashByAuthor: Story = { args: { settings: WITH_EMAILS, viewerLogin: PR.author?.login ?? null } };
 
 /** PM6: a merge commit takes an email from anyone with several addresses. */
@@ -993,3 +1026,66 @@ export const EmailSentReopened: Story = {
         sent: { request: { method: 'SQUASH', authorEmail: 'mikko@laine.fi' }, edited: null, head: PR.headRefOid },
     },
 };
+
+/** A merge commit, which takes an email from anyone, with the owner's default set to another address. */
+const OWNER_DEFAULT = {
+    settings: { ...WITH_EMAILS, viewerDefaultMergeMethod: 'MERGE' } satisfies MergeSettings,
+    viewerLogin: 'mlaine',
+    ownerEmail: 'mikko@laine.fi',
+};
+
+/** PM50: at rest on the owner's default, saying whose. */
+export const EmailOwnerDefault: Story = { args: OWNER_DEFAULT };
+
+/** PM48: `Y` opens the menu — the owner's default first and ticked, GitHub's default, the rest; the cursor on the one in use. */
+export const EmailMenuOpen: Story = {
+    args: OWNER_DEFAULT,
+    play: async () => {
+        await openPanelKey('y');
+        await waitFor(() => expect(screen.getByRole('menu', { name: 'Commit as' })).toBeVisible());
+    },
+};
+
+/** PM51: `⇧Y` turned "Remember for this repository" on and `J` moved to GitHub's default; the tick stays on the one in use. */
+export const EmailMenuRemember: Story = {
+    args: OWNER_DEFAULT,
+    play: async () => {
+        await openPanelKey('y');
+        await waitFor(() => expect(screen.getByRole('menu', { name: 'Commit as' })).toHaveFocus());
+        await userEvent.keyboard('{Shift>}Y{/Shift}j');
+    },
+};
+
+/** PM52: right after picking with "Remember" on, the line says so once, the address now this repository's default. */
+export const EmailRemembered: Story = {
+    args: OWNER_DEFAULT,
+    play: async () => {
+        await openPanelKey('y');
+        await waitFor(() => expect(screen.getByRole('menu', { name: 'Commit as' })).toHaveFocus());
+        await userEvent.keyboard('{Shift>}Y{/Shift}j{Enter}');
+        await waitFor(() => expect(screen.getByText("Saved as this repository's default")).toBeVisible());
+    },
+};
+
+/** An untracked repository: the menu has no "Remember for this repository". */
+export const EmailMenuUntracked: Story = {
+    args: { ...OWNER_DEFAULT, tracked: false },
+    play: EmailMenuOpen.play,
+};
+
+/** PM53: turning auto-merge on is the way forward: the same line and the same menu. */
+export const EmailAutoMerge: Story = {
+    args: {
+        pr: NOT_MET,
+        settings: { ...AUTO_MERGE_SETTINGS, ...EMAILS, viewerDefaultMergeMethod: 'MERGE' },
+        options: AUTO_MERGE_OPTIONS,
+        viewerLogin: 'mlaine',
+        ownerEmail: 'mikko@laine.fi',
+    },
+};
+
+/** An owner's default GitHub doesn't offer for this repository is skipped: GitHub's default, said so. */
+export const EmailOwnerNotOffered: Story = { args: { ...OWNER_DEFAULT, ownerEmail: 'gone@laine.fi' } };
+
+/** The stored defaults not read yet: no line, and `⌘↵` waits for them. */
+export const EmailDefaultsLater: Story = { args: { ...OWNER_DEFAULT, defaultsLater: true } };

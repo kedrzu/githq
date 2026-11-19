@@ -10,10 +10,13 @@ export interface ResolveCommitEmailParams {
     readonly settings: Pick<MergeSettings, 'viewerDefaultCommitEmail' | 'viewerPossibleCommitEmails'> | null;
 }
 
+/** The level whose choice a merge's commit email is. */
+export type CommitEmailSource = 'repository' | 'owner' | 'github';
+
 /** The address a merge starts on, and the level that chose it. */
 export interface ResolvedCommitEmail {
     readonly email: string;
-    readonly source: 'repository' | 'owner' | 'github';
+    readonly source: CommitEmailSource;
 }
 
 /**
