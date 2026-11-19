@@ -1,10 +1,12 @@
 import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
+
+import { sampleThread } from '@/testing/sampleThreads.js';
 
 import * as stories from './ReviewThreadBox.stories.js';
 
-const { DeleteRefused, Focused, Open, Outdated } = composeStories(stories);
+const { DeleteRefused, Focused, Open, Outdated, WithMenu } = composeStories(stories);
 
 /** `$color-fg`: the card text colour. */
 const FG = 'rgb(240, 246, 252)';
@@ -57,4 +59,16 @@ test('a deletion GitHub didn’t take says why in the resolve band', async () =>
         .element(page.getByRole('alert'))
         .toHaveTextContent("Couldn't delete the comment: GitHub wasn't reached.");
     expect(resolveBand?.contains(page.getByRole('alert').element())).toBe(true);
+});
+
+test('a comment offers Quote reply only where its thread takes a reply', async () => {
+    await WithMenu.run();
+    await userEvent.click(page.getByRole('button', { name: 'Comment actions' }).first());
+    await expect.element(page.getByRole('menuitem', { name: 'Quote reply' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+
+    await WithMenu.run({ args: { thread: { ...sampleThread(), viewerCanReply: false } } });
+    await userEvent.click(page.getByRole('button', { name: 'Comment actions' }).first());
+    await expect.element(page.getByRole('menuitem', { name: 'Copy link' })).toBeVisible();
+    expect(page.getByRole('menuitem', { name: 'Quote reply' }).query()).toBeNull();
 });

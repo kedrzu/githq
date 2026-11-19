@@ -1,4 +1,4 @@
-<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, the avatar, then a meta line — who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — and what it says under that in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the meta line, shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the meta line (`Review / Comment · editing`, `CommentEditor`), then Quote reply, Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. Its attributes (an anchor's `id`, a reading stop's) go on its root, which the editor stays inside. -->
+<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, the avatar, then a meta line — who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — and what it says under that in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the meta line, shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the meta line (`Review / Comment · editing`, `CommentEditor`), then Quote reply (into its thread's reply, where the thread takes one: `canQuote`), Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. Its attributes (an anchor's `id`, a reading stop's) go on its root, which the editor stays inside. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -47,6 +47,8 @@ const props = defineProps<{
   canEdit?: boolean;
   /** GitHub says the viewer may delete it. */
   canDelete?: boolean;
+  /** Its thread takes a reply (not one of the viewer's draft review): Quote reply is offered, into that reply. */
+  canQuote?: boolean;
 }>();
 
 /** How often "12m" moves on. */
@@ -146,10 +148,10 @@ watchPostEffect(() => {
               </template>
               <CommentMenu
                 :can-edit="canEdit ?? false"
-                :can-quote="menu.canQuote"
+                :can-quote="canQuote ?? false"
                 :can-delete="canDelete"
                 @edit="menu.actions.startEdit(menu.id, menu.body)"
-                @quote-reply="menu.actions.quote(menu.body)"
+                @quote-reply="menu.quote(menu.id, menu.body)"
                 @copy-link="url !== undefined && menu.actions.copyLink(url)"
                 @delete="menu.actions.askDelete(menu.id)"
               />
@@ -191,10 +193,10 @@ watchPostEffect(() => {
       <CommentMenu
         v-if="menu"
         :can-edit="canEdit ?? false"
-        :can-quote="menu.canQuote"
+        :can-quote="canQuote ?? false"
         :can-delete="canDelete"
         @edit="menu.actions.startEdit(menu.id, menu.body)"
-        @quote-reply="menu.actions.quote(menu.body)"
+        @quote-reply="menu.quote(menu.id, menu.body)"
         @copy-link="url !== undefined && menu.actions.copyLink(url)"
         @delete="menu.actions.askDelete(menu.id)"
       />

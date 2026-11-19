@@ -24,9 +24,9 @@ export function useSampleReviewCommentActions(
 
     return {
         actions,
-        canQuote: true,
         repository: 'fitloop/webapp',
         itemNumber: 1202,
         getEdit: commentId => options.edits?.[commentId] ?? null,
+        quote: (_commentId, body) => actions.quote(body),
     };
 }

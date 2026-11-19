@@ -1,17 +1,25 @@
-import { composeStories } from '@storybook/vue3';
+import { composeStories, composeStory } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { shallowReactive } from 'vue';
+import { onMounted, shallowReactive, useTemplateRef } from 'vue';
 
 import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
-import type { ItemComment, ItemDetail } from '@/store/ItemDetailTypes.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import type { ItemComment, ItemDetail, PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import type { FakeReviewWritingOptions } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
-import { DB_THREAD, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
+import {
+    CHANGES_REQUESTED_REVIEW,
+    DB_THREAD,
+    DRAFT_THREAD,
+    REVIEW_VIEWER,
+    SCHEMA_THREAD,
+} from '@/testing/sampleReviews.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
 
+import ItemThread from './ItemThread.vue';
 import * as stories from './ItemThread.stories.js';
 
 const {
@@ -929,4 +937,176 @@ function getStops() {
         key: stop.getAttribute('data-reading-stop') ?? '',
         kind: stop.getAttribute('data-reading-stop-kind'),
     }));
+}
+
+/** What the item's view reaches in the thread (`defineExpose`), once {@link ViewedCodeThreads} drew it. */
+let drawn: InstanceType<typeof ItemThread> | null = null;
+
+/** The code threads story, the thread held as the item's view holds it: its keys, leaving and holding the panel. */
+const ViewedCodeThreads = composeStory(
+    {
+        ...stories.CodeThreads,
+        render: args => ({
+            components: { ItemThread },
+            setup() {
+                const thread = useTemplateRef<InstanceType<typeof ItemThread>>('thread');
+                onMounted(() => {
+                    drawn = thread.value;
+                });
+                return { args };
+            },
+            template: '<div style="width: 760px"><ItemThread ref="thread" v-bind="args" /></div>',
+        }),
+    },
+    stories.default,
+);
+
+/** {@link ViewedCodeThreads} with `reviewThreads`, written through a fresh writing. */
+async function openViewedThreads(reviewThreads: readonly ReviewThread[], detail?: PullRequestDetail) {
+    const writing = new FakeReviewWriting({ itemId: CodeThreads.args.item?.id });
+    const args = shallowReactive({
+        ...CodeThreads.args,
+        reviewThreads,
+        reviewWriting: writing,
+        ...(detail ? { detail } : {}),
+    });
+    drawn = null;
+    await ViewedCodeThreads.run({ args });
+    return { writing, view: drawn! };
+}
+
+/** `thread` with the viewer's comments theirs to edit and delete, as GitHub says of their own. */
+function withOwnComments(thread: ReviewThread): ReviewThread {
+    return {
+        ...thread,
+        comments: thread.comments.map(comment =>
+            comment.author?.login === REVIEW_VIEWER.login
+                ? { ...comment, viewerCanUpdate: true, viewerCanDelete: true }
+                : comment,
+        ),
+    };
+}
+
+/** A day, in ms. */
+const DAY = 24 * 60 * 60_000;
+
+/** sofiab's first comment on `src/store/db.ts`, quoted. */
+const DB_QUOTE = `> ${DB_THREAD.comments[0]!.body}\n\n`;
+
+test("a code thread's comment has the cards' ⋯: Edit and Delete on the viewer's own only, Quote reply into its thread's reply box", async () => {
+    const { writing } = await openViewedThreads([withOwnComments(DB_THREAD), SCHEMA_THREAD]);
+    const menus = dbThread().getByRole('button', { name: 'Comment actions' });
+
+    await userEvent.click(menus.nth(1));
+    await expect.element(page.getByRole('menuitem', { name: 'Edit' })).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.click(menus.nth(0));
+    await expect.element(page.getByRole('menuitem', { name: 'Copy link' })).toBeVisible();
+    expect(page.getByRole('menuitem', { name: 'Edit' }).query()).toBeNull();
+    expect(page.getByRole('menuitem', { name: 'Delete' }).query()).toBeNull();
+    await userEvent.click(page.getByRole('menuitem', { name: 'Quote reply' }));
+
+    const field = dbThread().getByRole('textbox', { name: 'Reply' });
+    await expect.element(field).toHaveValue(DB_QUOTE);
+    await expect.element(field).toHaveFocus();
+    expect(writing.targets).toEqual([expect.objectContaining({ threadId: DB_THREAD.id })]);
+});
+
+test("on a code thread's comment under the reading cursor, . opens its menu, Q quotes it into its thread's reply box and W edits the viewer's own", async () => {
+    const { view } = await openViewedThreads([withOwnComments(DB_THREAD)]);
+    const theirs = view.getStopActions(DB_THREAD.comments[0]!.id, DB_THREAD.id);
+    const own = view.getStopActions(DB_THREAD.comments[1]!.id, DB_THREAD.id);
+    expect(theirs.edit).toBeNull();
+    expect(own.edit).not.toBeNull();
+
+    theirs.menu?.();
+    await expect.element(page.getByRole('menuitem', { name: 'Quote reply' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+
+    theirs.quote?.();
+    const field = dbThread().getByRole('textbox', { name: 'Reply' });
+    await expect.element(field).toHaveValue(DB_QUOTE);
+    await expect.element(field).toHaveFocus();
+
+    own.edit?.();
+    await expect
+        .element(dbThread().getByRole('textbox', { name: 'Edit comment' }))
+        .toHaveValue(DB_THREAD.comments[1]!.body);
+    // Edited, its menu is the editor's place: none to open.
+    expect(view.getStopActions(DB_THREAD.comments[1]!.id, DB_THREAD.id).menu).toBeNull();
+});
+
+test("the draft's comments have the ⋯ too, without Quote reply: there is no reply to quote into, by the menu or by Q", async () => {
+    const { view } = await openViewedThreads([SCHEMA_THREAD, withOwnComments(DRAFT_THREAD)]);
+    const draft = page.getByRole('group', { name: 'Thread by mlaine on src/store/db.ts' });
+
+    await userEvent.click(draft.getByRole('button', { name: 'Comment actions' }));
+    await expect.element(page.getByRole('menuitem', { name: 'Edit' })).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    expect(page.getByRole('menuitem', { name: 'Quote reply' }).query()).toBeNull();
+    await userEvent.keyboard('{Escape}');
+
+    const keys = view.getStopActions(DRAFT_THREAD.comments[0]!.id, DRAFT_THREAD.id);
+    expect(keys.menu).not.toBeNull();
+    expect(keys.quote).toBeNull();
+});
+
+test("an edit of a code thread's comment holds the item, and once changed asks before the item is left, Discard going on", async () => {
+    const { view } = await openViewedThreads([withOwnComments(DB_THREAD)]);
+    const go = vi.fn();
+    expect(view.hasOpenEditor).toBe(false);
+
+    view.getStopActions(DB_THREAD.comments[1]!.id, DB_THREAD.id).edit?.();
+    const editor = dbThread().getByRole('textbox', { name: 'Edit comment' });
+    await expect.element(editor).toHaveFocus();
+    expect(view.hasOpenEditor).toBe(true);
+    expect(view.askToLeave(go)).toBe(false);
+
+    await userEvent.type(editor, ' Typed away.');
+    expect(view.askToLeave(go)).toBe(true);
+    await expect.element(dbThread().getByRole('status')).toHaveTextContent('Discard your changes to this comment?');
+    expect(go).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(editor).not.toBeInTheDocument();
+    expect(go).toHaveBeenCalledOnce();
+    expect(view.hasOpenEditor).toBe(false);
+});
+
+test("a refused edit of a code thread's comment opens again in a resolved thread folded in a long middle, which stays shown", async () => {
+    const own = SCHEMA_THREAD.comments[1]!;
+    const { writing } = await openViewedThreads([withOwnComments(SCHEMA_THREAD)], withLaterComments());
+    const folded = page.getByRole('button', { name: /^Show \d+ earlier/u });
+    await expect.element(folded).toBeInTheDocument();
+    // dkim's resolved thread on its own, folded away with the middle.
+    expect(page.getByRole('button', { name: /^Resolved/u }).query()).toBeNull();
+
+    writing.editComment(own.id, 'Moved it in 0c94d7e, with a test.');
+    writing.answerEdit(own.id, { kind: 'offline' });
+
+    await expect
+        .element(page.getByRole('textbox', { name: 'Edit comment' }))
+        .toHaveValue('Moved it in 0c94d7e, with a test.');
+    await expect.element(folded).toBeInTheDocument();
+});
+
+/** The code threads story's pull request with 16 more comments: eight a day before dkim's code comment, eight a day after. */
+function withLaterComments(): PullRequestDetail {
+    const detail = F1_PULL_REQUEST_DETAIL;
+    const [template] = detail.comments.nodes;
+    const more = Array.from({ length: 16 }, (_, index): ItemComment => ({
+        ...template!,
+        id: `C_LATER_${index + 1}`,
+        bodyHtml: `<p>Later ${index + 1}.</p>`,
+        createdAt: new Date(SAMPLE_NOW - (index < 8 ? 3 : 1) * DAY + index * 60_000).toISOString(),
+    }));
+    const { comments } = detail;
+    return {
+        ...detail,
+        reviewSummaries: [...detail.reviewSummaries, CHANGES_REQUESTED_REVIEW.review],
+        comments: { ...comments, totalCount: comments.nodes.length + 16, nodes: [...comments.nodes, ...more] },
+    };
 }

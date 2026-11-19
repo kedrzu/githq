@@ -180,8 +180,8 @@ export const discardReview = defineAppCommand({
 });
 
 /**
- * Opens the menu (⋯) of the card the reading cursor is on, on an opened item's page: the description, a comment or a
- * review. Not offered on a stop with no menu (a commit, an event, a comment of a code thread).
+ * Opens the menu (⋯) of the card the reading cursor is on, on an opened item's page: the description, a comment, a
+ * review or a comment of a code thread. Not offered on a stop with no menu (a commit, an event, a comment on its way).
  */
 export const commentMenu = defineAppCommand({
     id: 'commentMenu',
@@ -191,7 +191,10 @@ export const commentMenu = defineAppCommand({
     places: ['item'],
 });
 
-/** Quotes the card the reading cursor is on into the composer, as its menu's Quote reply does, on an item's page. */
+/**
+ * Quotes the card the reading cursor is on into the composer, as its menu's Quote reply does, on an item's page; a code
+ * thread's comment into its thread's reply box.
+ */
 export const quoteComment = defineAppCommand({
     id: 'quoteComment',
     title: l.quoteComment,

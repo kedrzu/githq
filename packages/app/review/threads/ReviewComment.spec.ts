@@ -18,7 +18,9 @@ function getMoreOpacity() {
 
 test('the ⋯ is out of sight until the comment is hovered or the focus is in it, and absent without actions', async () => {
     await WithMenu.run();
-    expect(getMoreOpacity()).toBe('0');
+    // The pointer may still be where the test before left it, over the comment.
+    await userEvent.unhover(page.getByText('sofiab', { exact: true }));
+    await expect.poll(getMoreOpacity).toBe('0');
 
     await userEvent.hover(page.getByText('sofiab', { exact: true }));
     await expect.poll(getMoreOpacity).toBe('1');
