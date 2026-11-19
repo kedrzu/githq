@@ -284,6 +284,7 @@ function onRowClick(event: MouseEvent, row: T) {
   display: flex;
   flex-direction: column;
   gap: $spacing-12;
+  max-width: $settings-column-width;
 }
 
 .trackedListView_group {

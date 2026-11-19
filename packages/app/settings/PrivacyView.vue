@@ -68,7 +68,5 @@ const t = useTranslate();
 
 .privacyView_column {
   @include settings-screen-column;
-
-  max-width: 560px;
 }
 </style>

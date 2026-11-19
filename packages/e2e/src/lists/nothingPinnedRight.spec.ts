@@ -19,6 +19,8 @@ import { createSampleTrackedWork, SAMPLE_PROJECT_PATH, SAMPLE_REPOSITORY } from 
 const MAX_GAP = 16;
 /** How near the row's right edge a piece may be: a piece that follows the title is nowhere near it at 2560 px. */
 const MIN_FROM_RIGHT_EDGE = 800;
+/** The same for a row of Settings, which keeps to its column (`$settings-column-width`, 960 px) at any window. */
+const MIN_FROM_SETTINGS_RIGHT_EDGE = 400;
 
 test.use({ viewport: { width: 2560, height: 1440 } });
 
@@ -185,19 +187,19 @@ test("a tracked repository's row in Settings keeps its counts right after its na
 
     // The name, the badge saying who may see it, then the counts.
     const badge = row.getByText('public', { exact: true });
-    await expectFollows(badge, row.getByText(name, { exact: true }), row);
-    await expectFollows(row.getByText(/\d+ open/u), badge, row);
+    await expectFollows(badge, row.getByText(name, { exact: true }), row, MIN_FROM_SETTINGS_RIGHT_EDGE);
+    await expectFollows(row.getByText(/\d+ open/u), badge, row, MIN_FROM_SETTINGS_RIGHT_EDGE);
 });
 
 /**
  * `info` sits right after `before` (within the row's gap, not before it) and nowhere near the row's right edge.
  * Polled: a row settles after its marks and pictures arrive.
  */
-async function expectFollows(info: Locator, before: Locator, row: Locator) {
-    await expect.poll(() => measure(info, before, row)).toEqual({ follows: true, farFromEdge: true });
+async function expectFollows(info: Locator, before: Locator, row: Locator, minFromRightEdge = MIN_FROM_RIGHT_EDGE) {
+    await expect.poll(() => measure(info, before, row, minFromRightEdge)).toEqual({ follows: true, farFromEdge: true });
 }
 
-async function measure(info: Locator, before: Locator, row: Locator) {
+async function measure(info: Locator, before: Locator, row: Locator, minFromRightEdge: number) {
     const [infoBox, beforeBox, rowBox] = await Promise.all([
         info.boundingBox(),
         before.boundingBox(),
@@ -210,7 +212,7 @@ async function measure(info: Locator, before: Locator, row: Locator) {
     const gap = infoBox.x - (beforeBox.x + beforeBox.width);
     return {
         follows: gap >= -1 && gap <= MAX_GAP,
-        farFromEdge: rowBox.x + rowBox.width - (infoBox.x + infoBox.width) > MIN_FROM_RIGHT_EDGE,
+        farFromEdge: rowBox.x + rowBox.width - (infoBox.x + infoBox.width) > minFromRightEdge,
     };
 }
 
