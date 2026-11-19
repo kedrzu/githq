@@ -10,6 +10,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import type { ReviewThreadRow } from '../buildReviewRows.js';
 import type { ReviewCommentTarget, ReviewWriteFailure } from '../writing/ReviewWriting.js';
 import { parseDiffHunk } from './parseDiffHunk.js';
+import type { ReviewCommentActions } from './ReviewCommentActions.js';
 import ReviewRowInset from './ReviewRowInset.vue';
 import ReviewThreadBox from './ReviewThreadBox.vue';
 import type { ReviewThreadReplies } from './ReviewThreadBox.vue';
@@ -27,6 +28,10 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** Why resolving it or opening it again didn't go through. */
   resolveFailure?: ReviewWriteFailure | null;
+  /** Why deleting one of its comments didn't go through. */
+  deleteFailure?: ReviewWriteFailure | null;
+  /** What the view does with its comments, from their ⋯; none, no ⋯. */
+  commentActions?: ReviewCommentActions | null;
 }>();
 
 const emit = defineEmits<{
@@ -126,6 +131,8 @@ const codeLabel = computed(() => {
       :replies="replies"
       :viewer="viewer"
       :resolve-failure="resolveFailure"
+      :delete-failure="deleteFailure"
+      :comment-actions="commentActions"
       @toggle="emit('toggle')"
       @reply="emit('reply')"
       @set-resolved="emit('setResolved', $event)"

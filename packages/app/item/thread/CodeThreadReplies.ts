@@ -18,6 +18,8 @@ export interface CodeThreadReplies {
     get(threadId: string): CodeThreadReply | null;
     /** Why the thread's last change of state didn't go through; it shows as it was again. */
     getResolveFailure(threadId: string): ReviewWriteFailure | null;
+    /** Why deleting one of the thread's comments didn't go through; it shows again. */
+    getDeleteFailure(threadId: string): ReviewWriteFailure | null;
     setText(threadId: string, text: string): void;
     /** The reply box's footer asks whether to discard it, or stops asking. */
     setAsking(threadId: string, asking: boolean): void;

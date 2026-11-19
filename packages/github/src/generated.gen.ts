@@ -8566,7 +8566,11 @@ export type PullRequestReviewThreadsQuery = {
                         nodes: Array<{
                             id: string;
                             bodyHTML: string;
+                            body: string;
                             createdAt: string;
+                            lastEditedAt: string | null;
+                            viewerCanUpdate: boolean;
+                            viewerCanDelete: boolean;
                             url: string;
                             diffHunk: string;
                             outdated: boolean;
@@ -9343,7 +9347,11 @@ export type ReviewThreadCommentsQuery = {
                   nodes: Array<{
                       id: string;
                       bodyHTML: string;
+                      body: string;
                       createdAt: string;
+                      lastEditedAt: string | null;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       url: string;
                       diffHunk: string;
                       outdated: boolean;
@@ -15317,7 +15325,11 @@ export type ReviewPageFieldsFragment = {
 export type ReviewThreadCommentFieldsFragment = {
     id: string;
     bodyHTML: string;
+    body: string;
     createdAt: string;
+    lastEditedAt: string | null;
+    viewerCanUpdate: boolean;
+    viewerCanDelete: boolean;
     url: string;
     diffHunk: string;
     outdated: boolean;
@@ -16953,6 +16965,14 @@ export type DeletePullRequestReviewMutation = {
     deletePullRequestReview: { pullRequestReview: { id: string } | null } | null;
 };
 
+export type DeletePullRequestReviewCommentMutationVariables = Exact<{
+    id: string;
+}>;
+
+export type DeletePullRequestReviewCommentMutation = {
+    deletePullRequestReviewComment: { clientMutationId: string | null } | null;
+};
+
 export type DeleteRefMutationVariables = Exact<{
     refId: string;
 }>;
@@ -17498,6 +17518,38 @@ export type UpdatePullRequestMilestoneMutation = {
             id: string;
             updatedAt: string;
             milestone: { id: string; title: string; dueOn: string | null } | null;
+        } | null;
+    } | null;
+};
+
+export type UpdatePullRequestReviewCommentMutationVariables = Exact<{
+    id: string;
+    body: string;
+}>;
+
+export type UpdatePullRequestReviewCommentMutation = {
+    updatePullRequestReviewComment: {
+        pullRequestReviewComment: {
+            id: string;
+            bodyHTML: string;
+            body: string;
+            createdAt: string;
+            lastEditedAt: string | null;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
+            url: string;
+            diffHunk: string;
+            outdated: boolean;
+            state: PullRequestReviewCommentState;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+            originalCommit: { oid: string; abbreviatedOid: string } | null;
+            pullRequestReview: { id: string } | null;
         } | null;
     } | null;
 };
@@ -21587,7 +21639,11 @@ export const ReviewThreadCommentFieldsFragmentDoc = new TypedDocumentString(
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -25579,7 +25635,11 @@ export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -26564,7 +26624,11 @@ export const ReviewThreadCommentsDocument = new TypedDocumentString(`
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -28144,6 +28208,13 @@ export const DeletePullRequestReviewDocument = new TypedDocumentString(`
   }
 }
     `);
+export const DeletePullRequestReviewCommentDocument = new TypedDocumentString(`
+    mutation DeletePullRequestReviewComment($id: ID!) {
+  deletePullRequestReviewComment(input: {id: $id}) {
+    clientMutationId
+  }
+}
+    `);
 export const DeleteRefDocument = new TypedDocumentString(`
     mutation DeleteRef($refId: ID!) {
   deleteRef(input: {refId: $refId}) {
@@ -28769,6 +28840,40 @@ export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
   title
   dueOn
 }`);
+export const UpdatePullRequestReviewCommentDocument = new TypedDocumentString(`
+    mutation UpdatePullRequestReviewComment($id: ID!, $body: String!) {
+  updatePullRequestReviewComment(
+    input: {pullRequestReviewCommentId: $id, body: $body}
+  ) {
+    pullRequestReviewComment {
+      ...ReviewThreadCommentFields
+    }
+  }
+}
+    fragment ReviewThreadCommentFields on PullRequestReviewComment {
+  id
+  author {
+    login
+    avatarUrl
+  }
+  bodyHTML
+  body
+  createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
+  url
+  diffHunk
+  outdated
+  state
+  originalCommit {
+    oid
+    abbreviatedOid
+  }
+  pullRequestReview {
+    id
+  }
+}`);
 export type Requester<C = {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>;
 export function getSdk<C>(requester: Requester<C>) {
     return {
@@ -29286,6 +29391,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<DeletePullRequestReviewMutation>;
         },
+        DeletePullRequestReviewComment(
+            variables: DeletePullRequestReviewCommentMutationVariables,
+            options?: C,
+        ): Promise<DeletePullRequestReviewCommentMutation> {
+            return requester<DeletePullRequestReviewCommentMutation, DeletePullRequestReviewCommentMutationVariables>(
+                DeletePullRequestReviewCommentDocument,
+                variables,
+                options,
+            ) as Promise<DeletePullRequestReviewCommentMutation>;
+        },
         DeleteRef(variables: DeleteRefMutationVariables, options?: C): Promise<DeleteRefMutation> {
             return requester<DeleteRefMutation, DeleteRefMutationVariables>(
                 DeleteRefDocument,
@@ -29521,6 +29636,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<UpdatePullRequestMilestoneMutation>;
+        },
+        UpdatePullRequestReviewComment(
+            variables: UpdatePullRequestReviewCommentMutationVariables,
+            options?: C,
+        ): Promise<UpdatePullRequestReviewCommentMutation> {
+            return requester<UpdatePullRequestReviewCommentMutation, UpdatePullRequestReviewCommentMutationVariables>(
+                UpdatePullRequestReviewCommentDocument,
+                variables,
+                options,
+            ) as Promise<UpdatePullRequestReviewCommentMutation>;
         },
     };
 }

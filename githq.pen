@@ -44872,7 +44872,7 @@
                       "name": "Body",
                       "width": "fill_container",
                       "layout": "vertical",
-                      "gap": 10,
+                      "gap": 14,
                       "padding": 12,
                       "children": [
                         {
@@ -44950,52 +44950,11 @@
                           }
                         },
                         {
-                          "type": "frame",
-                          "id": "CIpJY",
+                          "id": "KOQJ3",
+                          "type": "ref",
+                          "ref": "vnbLu",
                           "name": "Reply",
-                          "width": "fill_container",
-                          "height": 30,
-                          "fill": "$bg",
-                          "cornerRadius": 6,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "padding": [
-                            0,
-                            8,
-                            0,
-                            10
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "uxlb9",
-                              "name": "Placeholder",
-                              "fill": "$fg-dim",
-                              "content": "Reply…",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "lIqUP",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "id": "i8NWhP",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd R",
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "R"
-                                }
-                              }
-                            }
-                          ]
+                          "width": "fill_container"
                         }
                       ]
                     },
@@ -46847,7 +46806,7 @@
                       },
                       "gap": 10,
                       "padding": [
-                        10,
+                        8,
                         12
                       ],
                       "children": [
@@ -61133,7 +61092,7 @@
                                   "width": "fill_container",
                                   "descendants": {
                                     "B8zor/Rbrqs": {
-                                      "id": "EmhZd",
+                                      "id": "eEZBS",
                                       "type": "ref",
                                       "ref": "fNNF4",
                                       "name": "Comment 1",
@@ -63224,7 +63183,7 @@
       "type": "frame",
       "id": "D27jC",
       "x": 0,
-      "y": 72026,
+      "y": 73604,
       "name": "App · Command menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -79175,7 +79134,7 @@
       "type": "frame",
       "id": "uWch5",
       "x": 8080,
-      "y": 72026,
+      "y": 73604,
       "name": "App · Context menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -84585,7 +84544,7 @@
       "type": "frame",
       "id": "xgYRz",
       "x": 14640,
-      "y": 72026,
+      "y": 73604,
       "name": "App · Item menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -87378,7 +87337,7 @@
       "type": "frame",
       "id": "pgCGV",
       "x": 18160,
-      "y": 72026,
+      "y": 73604,
       "name": "App · Repository and project menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -93074,7 +93033,7 @@
       "type": "frame",
       "id": "Zk4sa",
       "x": 0,
-      "y": 78874,
+      "y": 80452,
       "name": "App · First sign-in and choosing what to track",
       "fill": "#08090B",
       "layout": "vertical",
@@ -101448,7 +101407,7 @@
       "type": "frame",
       "id": "gvCqI",
       "x": 5040,
-      "y": 78874,
+      "y": 80452,
       "name": "App · Creating an issue",
       "fill": "#08090B",
       "layout": "vertical",
@@ -112727,7 +112686,7 @@
       "type": "frame",
       "id": "epLfx",
       "x": 18672,
-      "y": 78874,
+      "y": 80452,
       "name": "App · States",
       "fill": "#08090B",
       "layout": "vertical",
@@ -121918,7 +121877,7 @@
       "type": "frame",
       "id": "iZkBN",
       "x": 23712,
-      "y": 78874,
+      "y": 80452,
       "name": "App · Freshness",
       "fill": "#08090B",
       "layout": "vertical",
@@ -125343,7 +125302,7 @@
       "type": "frame",
       "id": "rV6qN",
       "x": 0,
-      "y": 92650,
+      "y": 94228,
       "name": "Desktop · Sign in with a device code",
       "fill": "#08090B",
       "layout": "vertical",
@@ -127311,7 +127270,7 @@
       "type": "frame",
       "id": "ohwJa",
       "x": 6560,
-      "y": 92650,
+      "y": 94228,
       "name": "Desktop · Updates",
       "fill": "#08090B",
       "layout": "vertical",
@@ -139377,7 +139336,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 134945,
+      "y": 136523,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -147266,7 +147225,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 134945,
+      "y": 136523,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -155389,7 +155348,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 134945,
+      "y": 136523,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -156022,7 +155981,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 134945,
+      "y": 136523,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -159307,7 +159266,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 134945,
+      "y": 136523,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -161157,7 +161116,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 134945,
+      "y": 136523,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -244742,7 +244701,7 @@
       "type": "frame",
       "id": "i3VkT",
       "x": 10080,
-      "y": 78874,
+      "y": 80452,
       "name": "App · Settings",
       "fill": "#08090B",
       "layout": "vertical",
@@ -345042,7 +345001,7 @@
       "type": "frame",
       "id": "Ri8IR",
       "x": 16160,
-      "y": 92650,
+      "y": 94228,
       "name": "Desktop · Commits",
       "fill": "#08090B",
       "layout": "vertical",
@@ -353515,6 +353474,8 @@
                               "type": "frame",
                               "id": "y516VN",
                               "name": "Comment meta",
+                              "width": "fill_container",
+                              "height": 20,
                               "gap": 6,
                               "alignItems": "center",
                               "children": [
@@ -353534,6 +353495,19 @@
                                   "name": "When",
                                   "fill": "$fg-dim",
                                   "content": "2h",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "C1OFHW",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Edited",
+                                  "enabled": false,
+                                  "fill": "$fg-dim",
+                                  "content": "· edited",
                                   "fontFamily": "$font",
                                   "fontSize": 12,
                                   "fontWeight": "normal"
@@ -353563,21 +353537,66 @@
                                       "fontWeight": "500"
                                     }
                                   ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GZVAJ",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "So5NZ",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "More",
+                                  "enabled": false,
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "ellipsis",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
                                 }
                               ]
                             },
                             {
-                              "type": "text",
-                              "id": "o6hbQ",
-                              "name": "Text",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
+                              "type": "frame",
+                              "id": "AdsFm",
+                              "name": "Body",
                               "width": "fill_container",
-                              "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
-                              "lineHeight": 1.5,
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ca6WN",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Lead",
+                                  "enabled": false,
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container(0)",
+                                  "content": "Does replayQueue stop at the first conflict?",
+                                  "lineHeight": 1.5385,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "o6hbQ",
+                                  "name": "Text",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
+                                  "lineHeight": 1.5385,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -353594,9 +353613,9 @@
                       "stroke": "#7B87F71A",
                       "strokeAlignment": "outer",
                       "strokeWidth": {
-                        "top": 5,
+                        "top": 7,
                         "right": 12,
-                        "bottom": 5,
+                        "bottom": 7,
                         "left": 12
                       }
                     },
@@ -353625,6 +353644,95 @@
                           "enabled": true
                         }
                       }
+                    },
+                    {
+                      "id": "p5QdYW",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "IHFo8",
+                      "name": "Review / Comment · hovered",
+                      "width": "fill_container",
+                      "descendants": {
+                        "So5NZ": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "n2U14",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "IHFo8",
+                      "name": "Review / Comment · editing",
+                      "width": "fill_container",
+                      "descendants": {
+                        "J1oko": {
+                          "fill": "#7B87F7"
+                        },
+                        "J1oko/zeZzP": {
+                          "content": "MK"
+                        },
+                        "m8e7t": {
+                          "content": "kedrzu"
+                        },
+                        "LkH3H": {
+                          "content": "1d"
+                        },
+                        "C1OFHW": {
+                          "enabled": true
+                        },
+                        "AdsFm": {
+                          "type": "frame",
+                          "id": "QfnaY",
+                          "name": "Editing",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            4,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "id": "WZSfd",
+                              "type": "ref",
+                              "ref": "OXAXr",
+                              "name": "Editor",
+                              "width": "fill_container",
+                              "stroke": "$accent",
+                              "descendants": {
+                                "ro5XW": {
+                                  "id": "SOGFe",
+                                  "type": "ref",
+                                  "ref": "xvz0F",
+                                  "name": "Format",
+                                  "height": "fill_container"
+                                },
+                                "mnTU1": {
+                                  "fill": "$fg",
+                                  "content": "**Does replayQueue stop at the first conflict?** It sets the conflicting item aside and carries on, so a later edit to the same issue can land before the one it depends on. I'd stop the batch at the first conflict and leave the rest queued."
+                                },
+                                "wYaxO/Js7vW": {
+                                  "enabled": false
+                                },
+                                "wYaxO/hqldH": {
+                                  "content": "Cancel"
+                                },
+                                "wYaxO/ZBaFq/luKkY": {
+                                  "content": "Esc"
+                                },
+                                "gAIL0": {
+                                  "opacity": 1
+                                },
+                                "gAIL0/hqldH": {
+                                  "content": "Update comment"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
                     }
                   ]
                 },
@@ -353641,17 +353749,13 @@
                       "id": "ce2EO",
                       "name": "Review / Thread",
                       "reusable": true,
+                      "clip": true,
                       "width": "fill_container",
-                      "fill": "$bg-2",
+                      "fill": "$bg",
                       "cornerRadius": 8,
                       "stroke": "$border-2",
                       "strokeWidth": 1,
                       "layout": "vertical",
-                      "gap": 12,
-                      "padding": [
-                        12,
-                        14
-                      ],
                       "children": [
                         {
                           "type": "frame",
@@ -353661,7 +353765,15 @@
                           "name": "Head",
                           "enabled": false,
                           "width": "fill_container(0)",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
                           "gap": 6,
+                          "padding": [
+                            9,
+                            14
+                          ],
                           "alignItems": "center",
                           "children": [
                             {
@@ -353697,107 +353809,62 @@
                           ]
                         },
                         {
-                          "id": "WFYVj",
-                          "type": "ref",
-                          "ref": "IHFo8",
-                          "name": "Comment 1",
-                          "width": "fill_container"
-                        },
-                        {
-                          "id": "qrcqS",
-                          "type": "ref",
-                          "ref": "IHFo8",
-                          "name": "Comment 2",
-                          "width": "fill_container(0)",
-                          "enabled": false,
-                          "fill": "#00000000",
-                          "descendants": {
-                            "J1oko": {
-                              "fill": "#D97757"
-                            },
-                            "J1oko/zeZzP": {
-                              "content": "CL"
-                            },
-                            "m8e7t": {
-                              "content": "claude[bot]"
-                            },
-                            "LkH3H": {
-                              "content": "1h"
-                            },
-                            "o6hbQ": {
-                              "content": "Both are kept on purpose: the server resolves them in order. I'll add a test for it."
-                            }
-                          }
-                        },
-                        {
                           "type": "frame",
-                          "id": "q5hSO",
-                          "name": "Reply row",
+                          "id": "jHOqT",
+                          "name": "Body",
                           "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": 12,
                           "children": [
                             {
-                              "type": "frame",
-                              "id": "DJ9qp",
-                              "name": "Reply",
-                              "width": "fill_container",
-                              "height": 28,
-                              "fill": "$bg",
-                              "cornerRadius": 6,
-                              "stroke": "$border",
-                              "strokeWidth": 1,
-                              "gap": 8,
-                              "padding": [
-                                0,
-                                8,
-                                0,
-                                10
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "e5CTIl",
-                                  "name": "Placeholder",
-                                  "fill": "$fg-dim",
-                                  "content": "Reply…",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "IdbKh",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "IhOqo",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd R",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "R"
-                                    }
-                                  }
-                                }
-                              ]
+                              "id": "WFYVj",
+                              "type": "ref",
+                              "ref": "IHFo8",
+                              "name": "Comment 1",
+                              "width": "fill_container"
                             },
                             {
-                              "id": "ahjye",
+                              "id": "qrcqS",
                               "type": "ref",
-                              "ref": "gQ61z",
-                              "name": "Resolve",
+                              "ref": "IHFo8",
+                              "name": "Comment 2",
+                              "width": "fill_container(0)",
+                              "enabled": false,
+                              "fill": "#00000000",
                               "descendants": {
-                                "tzW1W": {
-                                  "content": "Resolve"
+                                "J1oko": {
+                                  "fill": "#D97757"
+                                },
+                                "J1oko/zeZzP": {
+                                  "content": "CL"
+                                },
+                                "m8e7t": {
+                                  "content": "claude[bot]"
+                                },
+                                "LkH3H": {
+                                  "content": "1h"
+                                },
+                                "o6hbQ": {
+                                  "content": "Both are kept on purpose: the server resolves them in order. I'll add a test for it."
                                 }
                               }
                             }
                           ]
+                        },
+                        {
+                          "id": "ZzJy7",
+                          "type": "ref",
+                          "ref": "FUkob",
+                          "name": "Reply band",
+                          "width": "fill_container"
+                        },
+                        {
+                          "id": "v5HOc6",
+                          "type": "ref",
+                          "ref": "AUF6R",
+                          "name": "Resolve band",
+                          "width": "fill_container"
                         }
                       ]
                     },
@@ -353821,7 +353888,16 @@
                       "ref": "ce2EO",
                       "name": "Review / Thread · focused",
                       "width": "fill_container",
-                      "stroke": "$accent"
+                      "stroke": "$accent",
+                      "descendants": {
+                        "ZzJy7": {
+                          "id": "j2Jk9",
+                          "type": "ref",
+                          "ref": "bqocN",
+                          "name": "Reply band",
+                          "width": "fill_container"
+                        }
+                      }
                     },
                     {
                       "type": "frame",
@@ -353919,6 +353995,192 @@
                           "icon": "chevron-down",
                           "library": "lucide",
                           "fill": "$fg-3"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p5ar1V",
+                  "name": "Thread bands",
+                  "width": 520,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vnbLu",
+                      "name": "Thread / Reply field",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "height": 30,
+                      "fill": "$bg",
+                      "cornerRadius": 6,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        8,
+                        0,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "nV5hq",
+                          "name": "Placeholder",
+                          "fill": "$fg-dim",
+                          "content": "Reply…",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Vx7QE",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "id": "ODSnh",
+                          "type": "ref",
+                          "ref": "w9kS9",
+                          "name": "Kbd R",
+                          "enabled": false,
+                          "descendants": {
+                            "luKkY": {
+                              "content": "R"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FUkob",
+                      "name": "Thread / Reply band",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "fill": "$bg-2",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 10,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "O69cp",
+                          "name": "Rail",
+                          "width": 20,
+                          "height": 30,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "n4gN5",
+                              "type": "ref",
+                              "ref": "of5Pp",
+                              "name": "Avatar",
+                              "fill": "#7B87F7",
+                              "descendants": {
+                                "zeZzP": {
+                                  "content": "MK"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "id": "LBJjx",
+                          "type": "ref",
+                          "ref": "vnbLu",
+                          "name": "Reply",
+                          "width": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "bqocN",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "FUkob",
+                      "name": "Thread / Reply band · focused",
+                      "width": "fill_container",
+                      "descendants": {
+                        "LBJjx/ODSnh": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "OMVhL",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "FUkob",
+                      "name": "Thread / Reply band · writing",
+                      "width": "fill_container",
+                      "descendants": {
+                        "LBJjx": {
+                          "id": "Vmijc",
+                          "type": "ref",
+                          "ref": "SAmev",
+                          "name": "Reply",
+                          "width": "fill_container",
+                          "descendants": {
+                            "l9iHy": {
+                              "content": "Reply to sofiab"
+                            },
+                            "Lu92c/mnTU1": {
+                              "content": "Good, that covers it. I'll re-review once 4a1c9e2 is green."
+                            },
+                            "auMHj/hqldH": {
+                              "content": "Reply"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AUF6R",
+                      "name": "Thread / Resolve band",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 10,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "nbygz",
+                          "type": "ref",
+                          "ref": "TH5d7",
+                          "name": "Resolve",
+                          "descendants": {
+                            "Js7vW": {
+                              "fill": "$green"
+                            },
+                            "hqldH": {
+                              "content": "Resolve thread"
+                            },
+                            "ZBaFq": {
+                              "enabled": false
+                            }
+                          }
                         }
                       ]
                     }
@@ -355176,57 +355438,48 @@
                       }
                     },
                     {
-                      "id": "eS728",
+                      "id": "Bc2hQ",
                       "type": "ref",
                       "reusable": true,
-                      "ref": "phPkk",
+                      "ref": "M54IUE",
                       "name": "Review / Thread · replying",
                       "width": "fill_container",
                       "descendants": {
-                        "hmTwe": {
-                          "enabled": false
+                        "WFYVj/o6hbQ": {
+                          "content": "Clearing the pulls store drops every pull request whose base lives in another repository. That's what the e2e trips on."
                         },
-                        "Ba4gT": {
-                          "type": "frame",
-                          "id": "KNJ9E",
-                          "name": "Reply row",
+                        "qrcqS": {
+                          "enabled": true
+                        },
+                        "qrcqS/J1oko": {
+                          "fill": "#C9A26B"
+                        },
+                        "qrcqS/J1oko/zeZzP": {
+                          "content": "ML"
+                        },
+                        "qrcqS/m8e7t": {
+                          "content": "mlaine"
+                        },
+                        "qrcqS/LkH3H": {
+                          "content": "1d"
+                        },
+                        "qrcqS/o6hbQ": {
+                          "content": "Right, migrating now instead of clearing. Pushed in e81f0a3."
+                        },
+                        "j2Jk9": {
+                          "id": "pfV9R",
+                          "type": "ref",
+                          "ref": "OMVhL",
+                          "name": "Reply band",
                           "width": "fill_container",
-                          "fill": "$bg-2",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 10,
-                          "padding": [
-                            10,
-                            12
-                          ],
-                          "children": [
-                            {
-                              "id": "H0SplX",
-                              "type": "ref",
-                              "ref": "of5Pp",
-                              "name": "Avatar"
+                          "descendants": {
+                            "Vmijc/l9iHy": {
+                              "content": "Reply to sofiab and mlaine"
                             },
-                            {
-                              "id": "PAIjv",
-                              "type": "ref",
-                              "ref": "SAmev",
-                              "name": "Reply",
-                              "width": "fill_container",
-                              "descendants": {
-                                "l9iHy": {
-                                  "content": "Reply to sofiab and mlaine"
-                                },
-                                "Lu92c/mnTU1": {
-                                  "content": "And 4a1c9e2 adds a base in another repository to the e2e, so it can't come back."
-                                },
-                                "auMHj/hqldH": {
-                                  "content": "Reply"
-                                }
-                              }
+                            "Vmijc/Lu92c/mnTU1": {
+                              "content": "And 4a1c9e2 adds a base in another repository to the e2e, so it can't come back."
                             }
-                          ]
+                          }
                         }
                       }
                     }
@@ -355358,15 +355611,15 @@
                       }
                     },
                     {
-                      "id": "r4Ect",
+                      "id": "N6qt3",
                       "type": "ref",
                       "reusable": true,
-                      "ref": "eS728",
+                      "ref": "Bc2hQ",
                       "name": "Review / Thread · replying, tools folded",
                       "width": 490,
                       "descendants": {
-                        "PAIjv/Lu92c/lsh7O": {
-                          "id": "ypzdt",
+                        "pfV9R/Vmijc/Lu92c/lsh7O": {
+                          "id": "nQNFg",
                           "type": "ref",
                           "ref": "niV8c",
                           "name": "Format",
@@ -378849,10 +379102,10 @@
                                                       "name": "Thread",
                                                       "width": "fill_container",
                                                       "descendants": {
-                                                        "e5CTIl": {
+                                                        "ZzJy7/LBJjx/nV5hq": {
                                                           "content": "Add to your draft…"
                                                         },
-                                                        "ahjye": {
+                                                        "v5HOc6": {
                                                           "enabled": false
                                                         }
                                                       }
@@ -395634,46 +395887,35 @@
                                               ],
                                               "children": [
                                                 {
-                                                  "id": "B3QDc",
+                                                  "id": "NSGDI",
                                                   "type": "ref",
-                                                  "ref": "ce2EO",
+                                                  "ref": "Bc2hQ",
                                                   "name": "Thread",
                                                   "width": "fill_container",
-                                                  "stroke": "$accent",
                                                   "descendants": {
-                                                    "qrcqS": {
-                                                      "enabled": true
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "What happens when the same workout is edited twice offline? Looks like we push both edits."
                                                     },
-                                                    "q5hSO": {
-                                                      "enabled": true
+                                                    "qrcqS/J1oko": {
+                                                      "fill": "#D97757"
                                                     },
-                                                    "DJ9qp": {
-                                                      "enabled": false
-                                                    }
-                                                  }
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "pHW0Q",
-                                                  "name": "Gap",
-                                                  "width": 1,
-                                                  "height": 8
-                                                },
-                                                {
-                                                  "id": "c03aJZ",
-                                                  "type": "ref",
-                                                  "ref": "SAmev",
-                                                  "name": "Comment box",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "l9iHy": {
+                                                    "qrcqS/J1oko/zeZzP": {
+                                                      "content": "CL"
+                                                    },
+                                                    "qrcqS/m8e7t": {
+                                                      "content": "claude[bot]"
+                                                    },
+                                                    "qrcqS/LkH3H": {
+                                                      "content": "1h"
+                                                    },
+                                                    "qrcqS/o6hbQ": {
+                                                      "content": "Both are kept on purpose: the server resolves them in order. I'll add a test for it."
+                                                    },
+                                                    "pfV9R/Vmijc/l9iHy": {
                                                       "content": "Reply to sofiab and claude[bot]"
                                                     },
-                                                    "Lu92c/mnTU1": {
+                                                    "pfV9R/Vmijc/Lu92c/mnTU1": {
                                                       "content": "Fine with keeping both. Please add the test before #1203 builds on it."
-                                                    },
-                                                    "auMHj/hqldH": {
-                                                      "content": "Reply"
                                                     }
                                                   }
                                                 }
@@ -396538,10 +396780,10 @@
                                                       "name": "Thread",
                                                       "width": "fill_container",
                                                       "descendants": {
-                                                        "e5CTIl": {
+                                                        "ZzJy7/LBJjx/nV5hq": {
                                                           "content": "Add to your draft…"
                                                         },
-                                                        "ahjye": {
+                                                        "v5HOc6": {
                                                           "enabled": false
                                                         }
                                                       }
@@ -398216,10 +398458,10 @@
                                                       "name": "Thread",
                                                       "width": "fill_container",
                                                       "descendants": {
-                                                        "e5CTIl": {
+                                                        "ZzJy7/LBJjx/nV5hq": {
                                                           "content": "Add to your draft…"
                                                         },
-                                                        "ahjye": {
+                                                        "v5HOc6": {
                                                           "enabled": false
                                                         }
                                                       }
@@ -403491,11 +403733,11 @@
                               ],
                               "children": [
                                 {
-                                  "id": "h3Uxe",
+                                  "id": "LkOZF",
                                   "type": "ref",
-                                  "ref": "eS728",
-                                  "width": "fill_container",
-                                  "name": "Thread"
+                                  "ref": "Bc2hQ",
+                                  "name": "Thread",
+                                  "width": "fill_container"
                                 }
                               ]
                             }
@@ -404768,9 +405010,9 @@
                               ],
                               "children": [
                                 {
-                                  "id": "ChQ5X",
+                                  "id": "I0fA5t",
                                   "type": "ref",
-                                  "ref": "r4Ect",
+                                  "ref": "N6qt3",
                                   "name": "Thread",
                                   "width": "fill_container"
                                 }
@@ -405072,13 +405314,13 @@
                               ],
                               "children": [
                                 {
-                                  "id": "UYwrs",
+                                  "id": "UfmC2",
                                   "type": "ref",
-                                  "ref": "r4Ect",
+                                  "ref": "N6qt3",
                                   "name": "Thread",
                                   "width": "fill_container",
                                   "descendants": {
-                                    "ypzdt/DLIm0": {
+                                    "nQNFg/DLIm0": {
                                       "fill": "$bg-3"
                                     }
                                   }
@@ -447818,6 +448060,1978 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "ncwzm",
+          "name": "Group header",
+          "width": 1400,
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            40,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "gAxya",
+              "name": "Group title",
+              "fill": "$fg",
+              "content": "Review threads",
+              "fontFamily": "$font",
+              "fontSize": 22,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "uAwaD",
+              "name": "Group note",
+              "fill": "$fg-2",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "A review thread looks like the code thread on a pull request, in the diff and on the pull request's thread alike (owner's pick, 2026-11-19). On the page's colour with the card's border; comments flat (avatar, login, age), their text in the card body's colour, ⋯ at the end of a comment's meta line on hover, for Edit in place, Quote reply, Copy link and Delete where GitHub allows; then the Reply band (your avatar and Reply…, R when the thread has the cursor), which opens the editor in place, and the Resolve thread band. A resolved thread stays folded to its one line in the diff.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "CYNao",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "MQ1Ub",
+              "name": "Slot · CR151 · A thread in the diff, open",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "z7lxMQ",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CjI7s",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR151 · A thread in the diff, open",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mJhEx",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The focused thread under line 47: flat comments on the page's colour, text in the card body's colour, R on Reply…. The pointer is over your comment, so its ⋯ shows at the end of the meta line, and it is open. Below, an outdated thread with its amber band.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wpBQo",
+                  "name": "CR151 · A thread in the diff, open",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ns8l0",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "uJIPd",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fKKnt",
+                          "name": "Review",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "nmahG",
+                              "type": "ref",
+                              "ref": "Tt0Pa",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "sBhjP": {
+                                  "content": "Sync: queue edits made offline"
+                                },
+                                "GeDgn": {
+                                  "fill": "#00000000"
+                                },
+                                "kEZim": {
+                                  "fill": "$fg-3"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fmUH0",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "cBjwA",
+                                  "name": "Left column",
+                                  "clip": true,
+                                  "width": 300,
+                                  "height": "fill_container",
+                                  "fill": "$bg",
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "right": 1
+                                  },
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "a2Z8mc",
+                                      "type": "ref",
+                                      "ref": "d1GzBA",
+                                      "name": "Stack",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "gYip1",
+                                      "type": "ref",
+                                      "ref": "SgpvP",
+                                      "name": "File list",
+                                      "height": "fill_container",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "U2xEP",
+                                  "name": "Diff",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "dqwTq",
+                                      "name": "File engine.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "#7B87F799",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "B0vPjQ",
+                                          "type": "ref",
+                                          "ref": "GwweZ",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "pKyDw": {
+                                              "enabled": true
+                                            },
+                                            "FPmJu": {
+                                              "content": "1 open · 1 outdated · 1 resolved"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "SNCCS",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 39",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "38"
+                                            },
+                                            "G99RqR": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "39"
+                                            },
+                                            "ARXsN": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "axmrL",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 40",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "39"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    if (this.running) return"
+                                            },
+                                            "NIdDm": {
+                                              "content": "40"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    if (this.running) return"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "NyKGk",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 41",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "40"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    this.running = true"
+                                            },
+                                            "NIdDm": {
+                                              "content": "41"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    this.running = true"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "T8tW2z",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 42",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "41"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    const items = await this.pending.all()"
+                                            },
+                                            "NIdDm": {
+                                              "content": "42"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    const items = await this.outbox.take(MAX_BATCH)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "CZwMZ",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "42"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    try {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "43"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    try {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "xgkB0",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "43"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      for (const item of items) {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "44"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      const result = await replayQueue(items, {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "ajFPx",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "44"
+                                            },
+                                            "G99RqR": {
+                                              "content": "        await this.send(item)"
+                                            },
+                                            "NIdDm": {
+                                              "content": "45"
+                                            },
+                                            "ARXsN": {
+                                              "content": "        send: (item) => this.send(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "lVh8E",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 46",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "45"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "46"
+                                            },
+                                            "ARXsN": {
+                                              "content": "        onConflict: (item) => this.conflicts.push(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "rzUSW",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "47"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      })"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ttrx7",
+                                          "name": "Thread on line 47",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "dsby7",
+                                              "name": "Before side",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "UOPD6",
+                                              "name": "After side",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "A4e4hN",
+                                                  "type": "ref",
+                                                  "ref": "M54IUE",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#7B87F7"
+                                                    },
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "MK"
+                                                    },
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "kedrzu"
+                                                    },
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "1d"
+                                                    },
+                                                    "WFYVj/C1OFHW": {
+                                                      "enabled": true
+                                                    },
+                                                    "WFYVj/So5NZ": {
+                                                      "enabled": true
+                                                    },
+                                                    "WFYVj/ca6WN": {
+                                                      "enabled": true,
+                                                      "content": "Does replayQueue stop at the first conflict?"
+                                                    },
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "It sets the conflicting item aside and carries on, so a later edit to the same issue can land before the one it depends on. I'd stop the batch at the first conflict and leave the rest queued."
+                                                    },
+                                                    "qrcqS": {
+                                                      "enabled": true
+                                                    },
+                                                    "qrcqS/J1oko": {
+                                                      "fill": "#7FB3D5"
+                                                    },
+                                                    "qrcqS/J1oko/zeZzP": {
+                                                      "content": "SB"
+                                                    },
+                                                    "qrcqS/m8e7t": {
+                                                      "content": "sofiab"
+                                                    },
+                                                    "qrcqS/LkH3H": {
+                                                      "content": "2h"
+                                                    },
+                                                    "qrcqS/o6hbQ": {
+                                                      "content": "It stops now: onConflict returns false and the rest stay queued. Pushed in 4a1c9e2."
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "thNKu",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 48",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "48"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      await this.outbox.ack(result.sent)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "tXFlg",
+                                          "name": "Thread on line 48",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "NnWOY",
+                                              "name": "Before side",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "MzFo6",
+                                              "name": "After side",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "p6vEZk",
+                                                  "type": "ref",
+                                                  "ref": "Ypl9I",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "1d"
+                                                    },
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "If ack throws after a partial send, the next flush sends those items again. Is the endpoint idempotent?"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "fvco9",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 49",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "46"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    } catch (error) {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "49"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    } catch (error) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "j9bsmI",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 50",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "47"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      setTimeout(() => this.flush(), RETRY_DELAY_MS)"
+                                            },
+                                            "NIdDm": {
+                                              "content": "50"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      this.scheduleRetry(error)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "npHUH",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 51",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "48"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    } finally {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "51"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    } finally {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "edUAD",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 52",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "49"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      this.running = false"
+                                            },
+                                            "NIdDm": {
+                                              "content": "52"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      this.running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "xqm5G",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 53",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "50"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "53"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "xNkhh",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 54",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "51"
+                                            },
+                                            "G99RqR": {
+                                              "content": "  }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "54"
+                                            },
+                                            "ARXsN": {
+                                              "content": "  }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "W7Zjc",
+                                          "type": "ref",
+                                          "ref": "YaZfl",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "F6fibT": {
+                                              "content": "64 lines below"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Me2RS",
+                                      "name": "File engine.test.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "$border",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "QIpQt",
+                                          "type": "ref",
+                                          "ref": "pAbDY",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GyXLB": {
+                                              "content": "engine.test.ts"
+                                            },
+                                            "x8dPO": {
+                                              "content": "+40"
+                                            },
+                                            "yHDS8": {
+                                              "content": "−6"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "SKM2D",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "1"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { describe, expect, it, vi } from 'vitest'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "1"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { describe, expect, it, vi } from 'vitest'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "L5zeW",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "2"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { PendingStore } from '../sync/pending'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "2"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { Outbox } from './outbox'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "o3ckO",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 3",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "3"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { SyncEngine } from './engine'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "3"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { SyncEngine } from './engine'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "UN16e",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 4",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "4"
+                                            },
+                                            "G99RqR": {
+                                              "content": ""
+                                            },
+                                            "NIdDm": {
+                                              "content": "4"
+                                            },
+                                            "ARXsN": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "uAncT",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "5"
+                                            },
+                                            "ARXsN": {
+                                              "content": "vi.mock('./queue')"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "w9GZI",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 6",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "5"
+                                            },
+                                            "G99RqR": {
+                                              "content": ""
+                                            },
+                                            "NIdDm": {
+                                              "content": "6"
+                                            },
+                                            "ARXsN": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Kh8hA",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 7",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "6"
+                                            },
+                                            "G99RqR": {
+                                              "content": "describe('SyncEngine', () => {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "7"
+                                            },
+                                            "ARXsN": {
+                                              "content": "describe('SyncEngine', () => {"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "M4gcd",
+                                  "type": "ref",
+                                  "ref": "sf3K6",
+                                  "name": "Conversation",
+                                  "height": "fill_container(790)",
+                                  "enabled": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "gxZg2",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "ExrsD",
+                      "type": "ref",
+                      "ref": "nS2AY",
+                      "name": "Comment menu",
+                      "layoutPosition": "absolute",
+                      "x": 1178,
+                      "y": 263
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bZjbB",
+              "name": "Slot · CR152 · Replying, and a comment edited in place",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wHwXf",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "x0xuh8",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR152 · Replying, and a comment edited in place",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Bexuw",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "R pressed: the Reply band opens the shared editor (Reply to sofiab; Cancel, Start a review, Reply). Your first comment, chosen Edit from its ⋯, keeps its avatar and meta line and turns its text into the editor, in place. Further down, an outdated thread and, on line 52, a resolved thread folded to its one line, kept as it is.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A0xTx",
+                  "name": "CR152 · Replying, and a comment edited in place",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 1340,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ARIhf",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "fEEqz",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "jLHHC",
+                          "name": "Review",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "mTkkG",
+                              "type": "ref",
+                              "ref": "Tt0Pa",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "sBhjP": {
+                                  "content": "Sync: queue edits made offline"
+                                },
+                                "GeDgn": {
+                                  "fill": "#00000000"
+                                },
+                                "kEZim": {
+                                  "fill": "$fg-3"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bbujH",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "KOQbR",
+                                  "name": "Left column",
+                                  "clip": true,
+                                  "width": 300,
+                                  "height": "fill_container",
+                                  "fill": "$bg",
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "right": 1
+                                  },
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "VP5li",
+                                      "type": "ref",
+                                      "ref": "d1GzBA",
+                                      "name": "Stack",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "iweCX",
+                                      "type": "ref",
+                                      "ref": "SgpvP",
+                                      "name": "File list",
+                                      "height": "fill_container",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "NG6fc",
+                                  "name": "Diff",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "N62Zbx",
+                                      "name": "File engine.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "#7B87F799",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "RPuX6",
+                                          "type": "ref",
+                                          "ref": "GwweZ",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "pKyDw": {
+                                              "enabled": true
+                                            },
+                                            "FPmJu": {
+                                              "content": "1 open · 1 outdated · 1 resolved"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "N4focj",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 39",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "38"
+                                            },
+                                            "G99RqR": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "39"
+                                            },
+                                            "ARXsN": {
+                                              "content": "  async flush(): Promise<void> {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "e7FfSM",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 40",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "39"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    if (this.running) return"
+                                            },
+                                            "NIdDm": {
+                                              "content": "40"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    if (this.running) return"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "VzCqD",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 41",
+                                          "width": "fill_container(1052)",
+                                          "enabled": false,
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "40"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    this.running = true"
+                                            },
+                                            "NIdDm": {
+                                              "content": "41"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    this.running = true"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "vlwNs",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 42",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "41"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    const items = await this.pending.all()"
+                                            },
+                                            "NIdDm": {
+                                              "content": "42"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    const items = await this.outbox.take(MAX_BATCH)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "e6XD6w",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 43",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "42"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    try {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "43"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    try {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Na4Ej",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 44",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "43"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      for (const item of items) {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "44"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      const result = await replayQueue(items, {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "A3QRJ",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 45",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "44"
+                                            },
+                                            "G99RqR": {
+                                              "content": "        await this.send(item)"
+                                            },
+                                            "NIdDm": {
+                                              "content": "45"
+                                            },
+                                            "ARXsN": {
+                                              "content": "        send: (item) => this.send(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Zpwi8",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 46",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "45"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "46"
+                                            },
+                                            "ARXsN": {
+                                              "content": "        onConflict: (item) => this.conflicts.push(item),"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "j5qfw",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 47",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "47"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      })"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "XsMS1",
+                                          "name": "Thread on line 47",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "ag4pC",
+                                              "name": "Before side",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Cd57H",
+                                              "name": "After side",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "OvKgC",
+                                                  "type": "ref",
+                                                  "ref": "Bc2hQ",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "WFYVj": {
+                                                      "id": "ng3dj",
+                                                      "type": "ref",
+                                                      "ref": "n2U14",
+                                                      "name": "Comment 1",
+                                                      "width": "fill_container"
+                                                    },
+                                                    "qrcqS/J1oko": {
+                                                      "fill": "#7FB3D5"
+                                                    },
+                                                    "qrcqS/J1oko/zeZzP": {
+                                                      "content": "SB"
+                                                    },
+                                                    "qrcqS/m8e7t": {
+                                                      "content": "sofiab"
+                                                    },
+                                                    "qrcqS/LkH3H": {
+                                                      "content": "2h"
+                                                    },
+                                                    "qrcqS/o6hbQ": {
+                                                      "content": "It stops now: onConflict returns false and the rest stay queued. Pushed in 4a1c9e2."
+                                                    },
+                                                    "pfV9R/Vmijc/l9iHy": {
+                                                      "content": "Reply to sofiab"
+                                                    },
+                                                    "pfV9R/Vmijc/Lu92c/mnTU1": {
+                                                      "content": "Good, that covers it. I'll re-review once 4a1c9e2 is green."
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "Zn5zz",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 48",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "48"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      await this.outbox.ack(result.sent)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "F1BMr",
+                                          "name": "Thread on line 48",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "cmGKb",
+                                              "name": "Before side",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "nzTeN",
+                                              "name": "After side",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "dfSfk",
+                                                  "type": "ref",
+                                                  "ref": "Ypl9I",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "WFYVj/J1oko": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "WFYVj/J1oko/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "WFYVj/m8e7t": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "WFYVj/LkH3H": {
+                                                      "content": "1d"
+                                                    },
+                                                    "WFYVj/o6hbQ": {
+                                                      "content": "If ack throws after a partial send, the next flush sends those items again. Is the endpoint idempotent?"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "K27G2j",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 49",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "46"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    } catch (error) {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "49"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    } catch (error) {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "I88M5",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 50",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "47"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      setTimeout(() => this.flush(), RETRY_DELAY_MS)"
+                                            },
+                                            "NIdDm": {
+                                              "content": "50"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      this.scheduleRetry(error)"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "LJoxB",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 51",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "48"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    } finally {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "51"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    } finally {"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "MWoQt",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 52",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "49"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      this.running = false"
+                                            },
+                                            "NIdDm": {
+                                              "content": "52"
+                                            },
+                                            "ARXsN": {
+                                              "content": "      this.running = false"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "FsVbj",
+                                          "name": "Thread on line 52",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            8,
+                                            14,
+                                            8,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "R6s2hL",
+                                              "name": "Before side",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "BQxY4",
+                                              "name": "After side",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "Ty4Eb",
+                                                  "type": "ref",
+                                                  "ref": "oAPPV",
+                                                  "name": "Thread",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "qfwI7": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "qfwI7/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "rQuRH": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "zaptp": {
+                                                      "content": "MAX_BATCH could live in config."
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "G9qkta",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 53",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "50"
+                                            },
+                                            "G99RqR": {
+                                              "content": "    }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "53"
+                                            },
+                                            "ARXsN": {
+                                              "content": "    }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "CMth3",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 54",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "51"
+                                            },
+                                            "G99RqR": {
+                                              "content": "  }"
+                                            },
+                                            "NIdDm": {
+                                              "content": "54"
+                                            },
+                                            "ARXsN": {
+                                              "content": "  }"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "pHa5E",
+                                          "type": "ref",
+                                          "ref": "YaZfl",
+                                          "name": "Gap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
+                                            "h3RAg": {
+                                              "enabled": false
+                                            },
+                                            "F6fibT": {
+                                              "content": "64 lines below"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "tvkib",
+                                      "name": "File engine.test.ts",
+                                      "clip": true,
+                                      "width": "fill_container",
+                                      "cornerRadius": 6,
+                                      "stroke": "$border",
+                                      "strokeWidth": 1,
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "id": "JYL7V",
+                                          "type": "ref",
+                                          "ref": "pAbDY",
+                                          "name": "Header",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GyXLB": {
+                                              "content": "engine.test.ts"
+                                            },
+                                            "x8dPO": {
+                                              "content": "+40"
+                                            },
+                                            "yHDS8": {
+                                              "content": "−6"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "rCwEy",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "1"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { describe, expect, it, vi } from 'vitest'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "1"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { describe, expect, it, vi } from 'vitest'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "fvDWo",
+                                          "type": "ref",
+                                          "ref": "SZHhU",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "2"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { PendingStore } from '../sync/pending'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "2"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { Outbox } from './outbox'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "A5lle",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 3",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "3"
+                                            },
+                                            "G99RqR": {
+                                              "content": "import { SyncEngine } from './engine'"
+                                            },
+                                            "NIdDm": {
+                                              "content": "3"
+                                            },
+                                            "ARXsN": {
+                                              "content": "import { SyncEngine } from './engine'"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "L1Cave",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 4",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "4"
+                                            },
+                                            "G99RqR": {
+                                              "content": ""
+                                            },
+                                            "NIdDm": {
+                                              "content": "4"
+                                            },
+                                            "ARXsN": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Llzs4",
+                                          "type": "ref",
+                                          "ref": "V6xqDv",
+                                          "name": "Line 5",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "NIdDm": {
+                                              "content": "5"
+                                            },
+                                            "ARXsN": {
+                                              "content": "vi.mock('./queue')"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "jECNY",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 6",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "5"
+                                            },
+                                            "G99RqR": {
+                                              "content": ""
+                                            },
+                                            "NIdDm": {
+                                              "content": "6"
+                                            },
+                                            "ARXsN": {
+                                              "content": ""
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "rMX8m",
+                                          "type": "ref",
+                                          "ref": "qKwyX",
+                                          "name": "Line 7",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "6"
+                                            },
+                                            "G99RqR": {
+                                              "content": "describe('SyncEngine', () => {"
+                                            },
+                                            "NIdDm": {
+                                              "content": "7"
+                                            },
+                                            "ARXsN": {
+                                              "content": "describe('SyncEngine', () => {"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "V3LfUj",
+                                  "type": "ref",
+                                  "ref": "sf3K6",
+                                  "name": "Conversation",
+                                  "height": "fill_container(790)",
+                                  "enabled": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "M8UjLG",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SMen6",
+              "name": "Slot · F33 · The code thread on a pull request's thread",
+              "width": 900,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BsdA2",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "I8V2C",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F33 · The code thread on a pull request's thread",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cbSeL",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Activity / Code thread between two ordinary comment cards: the excerpt, then the same flat comments as in the diff, with the text in the card body's colour and ⋯ on hover at the end of each meta line, then the Reply and Resolve thread bands.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uqo52",
+                  "name": "F33 · The code thread on a pull request's thread",
+                  "clip": true,
+                  "width": 900,
+                  "fill": "$bg-item",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "id": "vZR1y",
+                      "type": "ref",
+                      "ref": "WHy4W",
+                      "name": "Comment · sofiab",
+                      "width": "fill_container",
+                      "descendants": {
+                        "N5FNN": {
+                          "fill": "#7FB3D5"
+                        },
+                        "N5FNN/zeZzP": {
+                          "content": "SB"
+                        },
+                        "my8kv": {
+                          "content": "sofiab"
+                        },
+                        "bCJbH": {
+                          "content": "2d"
+                        },
+                        "BujgM": {
+                          "content": "Rewrote the flush: it takes a batch from the outbox and replays it, instead of sending everything pending one by one. A long offline session no longer sends 400 requests in a row."
+                        }
+                      }
+                    },
+                    {
+                      "id": "dTNAd",
+                      "type": "ref",
+                      "ref": "cwCtr",
+                      "name": "Code comment · kedrzu",
+                      "width": "fill_container",
+                      "descendants": {
+                        "W7MXty": {
+                          "fill": "#7B87F7"
+                        },
+                        "W7MXty/zeZzP": {
+                          "content": "MK"
+                        },
+                        "Y61K1R": {
+                          "content": "kedrzu"
+                        },
+                        "cI4go": {
+                          "content": "src/sync/engine.ts"
+                        },
+                        "E4uiz": {
+                          "content": "1d"
+                        }
+                      }
+                    },
+                    {
+                      "id": "O0fGto",
+                      "type": "ref",
+                      "ref": "WHy4W",
+                      "name": "Comment · mlaine",
+                      "width": "fill_container",
+                      "descendants": {
+                        "N5FNN": {
+                          "fill": "#C9A26B"
+                        },
+                        "N5FNN/zeZzP": {
+                          "content": "ML"
+                        },
+                        "my8kv": {
+                          "content": "mlaine"
+                        },
+                        "bCJbH": {
+                          "content": "9m"
+                        },
+                        "BujgM": {
+                          "content": "Retested offline with two tabs editing the same issue: the conflicts land in order now. Approving once CI is green."
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -447825,7 +450039,7 @@
       "type": "text",
       "id": "BnN7r",
       "x": 17870.178661448972,
-      "y": 79937.65929019575,
+      "y": 81515.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
       "fontFamily": "Inter",
@@ -447836,7 +450050,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 134945,
+      "y": 136523,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -451268,7 +453482,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 134945,
+      "y": 136523,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -451609,7 +453823,7 @@
       "type": "frame",
       "id": "O6Vuj8",
       "x": 25712,
-      "y": 78874,
+      "y": 80452,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -463116,7 +465330,7 @@
       "type": "frame",
       "id": "Sz7Bf",
       "x": 32964,
-      "y": 78874,
+      "y": 80452,
       "name": "App · Toasts",
       "fill": "#08090B",
       "layout": "vertical",
@@ -467121,7 +469335,7 @@
       "type": "frame",
       "id": "jy6bO",
       "x": 19680,
-      "y": 92650,
+      "y": 94228,
       "name": "App · Mobile",
       "fill": "#08090B",
       "layout": "vertical",
@@ -485094,9 +487308,6 @@
                                 },
                                 "B8zor/GPAiR/zeZzP": {
                                   "content": "ML"
-                                },
-                                "B8zor/i8NWhP": {
-                                  "enabled": false
                                 },
                                 "HlBSD": {
                                   "enabled": false
@@ -513304,7 +515515,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 134945,
+      "y": 136523,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",

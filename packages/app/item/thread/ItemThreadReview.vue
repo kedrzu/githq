@@ -1,4 +1,4 @@
-<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. Its card is a stop of the reading cursor, keyed by the review's id — a row when folded dismissed to its head — and each comment of its open threads one inside it (`ItemThreadCodeThread`), each resolved thread's row another (`ItemThreadResolvedRow`), marked while the cursor is on them. -->
+<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, or while a reply or an edit of one of its comments is written in it, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. Its card is a stop of the reading cursor, keyed by the review's id — a row when folded dismissed to its head — and each comment of its open threads one inside it (`ItemThreadCodeThread`), each resolved thread's row another (`ItemThreadResolvedRow`), marked while the cursor is on them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -8,6 +8,7 @@ import CommentMenu from '@/comments/CommentMenu.vue';
 import CommentVerdict from '@/comments/CommentVerdict.vue';
 import type { CommentActions } from '@/comments/useCommentActions.js';
 import Button from '@/components/Button.vue';
+import type { ReviewCommentActions } from '@/review/threads/ReviewCommentActions.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
@@ -34,6 +35,8 @@ const props = defineProps<{
   actions?: CommentActions | null;
   /** The composer takes a comment: Quote reply is offered. */
   canQuote?: boolean;
+  /** What its threads' comments do from their ⋯; a resolved thread with one edited shows opened. */
+  commentActions?: ReviewCommentActions | null;
 }>();
 
 const emit = defineEmits<{
@@ -88,18 +91,19 @@ const bodyShown = computed(() => {
     return false;
   }
 
-  return (
-    !dismissed.value ||
-    shown.value ||
-    [...threads, ...resolved].some(
-      thread => props.replies?.get(thread.id) != null || holdsAnchor(thread, props.linkedAnchor),
-    )
-  );
+  return !dismissed.value || shown.value || [...threads, ...resolved].some(isWanted);
 });
 
 function isOpened(thread: ReviewThread) {
+  return opened.value.get(thread.id) ?? isWanted(thread);
+}
+
+/** A reply or an edit is written in it, or the address names one of its comments: it shows, folded or dismissed. */
+function isWanted(thread: ReviewThread) {
   return (
-    opened.value.get(thread.id) ?? (props.replies?.get(thread.id) != null || holdsAnchor(thread, props.linkedAnchor))
+    props.replies?.get(thread.id) != null ||
+    thread.comments.some(({ id }) => props.commentActions?.actions.editors.has(id)) ||
+    holdsAnchor(thread, props.linkedAnchor)
   );
 }
 
@@ -175,6 +179,8 @@ function toggle(threadId: string, open: boolean) {
           :viewer="viewer"
           :replies="replies"
           :linked-anchor="linkedAnchor"
+          :delete-failure="replies?.getDeleteFailure(thread.id) ?? null"
+          :comment-actions="commentActions"
           @reply="emit('reply', thread.id)"
           @set-resolved="setResolved(thread.id, $event)"
         />
@@ -188,6 +194,8 @@ function toggle(threadId: string, open: boolean) {
             :viewer="viewer"
             :replies="replies"
             :linked-anchor="linkedAnchor"
+            :delete-failure="replies?.getDeleteFailure(thread.id) ?? null"
+            :comment-actions="commentActions"
             @hide="toggle(thread.id, false)"
             @reply="emit('reply', thread.id)"
             @set-resolved="setResolved(thread.id, $event)"

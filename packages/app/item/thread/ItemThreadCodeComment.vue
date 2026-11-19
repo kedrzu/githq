@@ -1,4 +1,4 @@
-<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it — the file a link to the thread in the pull request's review, underlined under the pointer, marked ↗ on a phone, which hands the review off to github.com (mobile D3, D11) — and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
+<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it — the file a link to the thread in the pull request's review, underlined under the pointer, marked ↗ on a phone, which hands the review off to github.com (mobile D3, D11) — and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments or one of them is edited, Hide folding it again. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -7,6 +7,7 @@ import { RouterLink } from 'vue-router';
 import Avatar from '@/components/Avatar.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import { getReviewCommentPath } from '@/item/itemRoutes.js';
+import type { ReviewCommentActions } from '@/review/threads/ReviewCommentActions.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
@@ -27,6 +28,8 @@ const props = defineProps<{
   replies?: CodeThreadReplies | null;
   /** The anchor the address's fragment names: resolved, the thread shows opened while it holds that comment. */
   linkedAnchor?: string;
+  /** What the thread's comments do from their ⋯; resolved, with one edited, it shows opened. */
+  commentActions?: ReviewCommentActions | null;
 }>();
 
 const emit = defineEmits<{
@@ -55,7 +58,9 @@ const folded = computed(
     props.entry.thread.isResolved &&
     !(
       opened.value ??
-      (props.replies?.get(props.entry.thread.id) != null || holdsAnchor(props.entry.thread, props.linkedAnchor))
+      (props.replies?.get(props.entry.thread.id) != null ||
+        props.entry.thread.comments.some(({ id }) => props.commentActions?.actions.editors.has(id)) ||
+        holdsAnchor(props.entry.thread, props.linkedAnchor))
     ),
 );
 const age = computed(() => (first.value ? formatAge(Date.parse(first.value.createdAt), props.now) : ''));
@@ -113,6 +118,8 @@ function toggle(open: boolean) {
         :viewer="viewer"
         :replies="replies"
         :linked-anchor="linkedAnchor"
+        :delete-failure="replies?.getDeleteFailure(entry.thread.id) ?? null"
+        :comment-actions="commentActions"
         @hide="toggle(false)"
         @reply="emit('reply')"
         @set-resolved="setResolved"

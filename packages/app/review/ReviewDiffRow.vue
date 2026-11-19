@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, a submodule's pointer change with what lies between the two commits (`ReviewSubmoduleBlock`), failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. A line's code has find's matches marked (D47). The row holding the line cursor shows it (D44), and every row names the cursor stop it is part of (`data-cursor-key`), the cursor's own also `data-cursor`. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it and its comments' ⋯ (`commentActions`), and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, a submodule's pointer change with what lies between the two commits (`ReviewSubmoduleBlock`), failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. A line's code has find's matches marked (D47). The row holding the line cursor shows it (D44), and every row names the cursor stop it is part of (`data-cursor-key`), the cursor's own also `data-cursor`. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -40,6 +40,7 @@ import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
 import type { RowMarks } from './find/RowMarks.js';
 import type { ReviewFile, ReviewFileSizes } from './ReviewFiles.js';
+import type { ReviewCommentActions } from './threads/ReviewCommentActions.js';
 import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
 import ReviewDistanceRow from './threads/ReviewDistanceRow.vue';
 import ReviewRowInset from './threads/ReviewRowInset.vue';
@@ -69,6 +70,10 @@ const props = withDefaults(
     viewer?: ItemUser | null;
     /** Why resolving the thread on this row or opening it again didn't go through. */
     threadFailure?: ReviewWriteFailure | null;
+    /** Why deleting a comment of the thread on this row didn't go through. */
+    threadDeleteFailure?: ReviewWriteFailure | null;
+    /** What the view does with the comments of the thread on this row, from their ⋯. */
+    commentActions?: ReviewCommentActions | null;
     /** The lines of the file a comment is being written on. */
     commented?: CommentedLines;
     /** The layout being read, which a file still on its way with no patch is drawn in. */
@@ -282,6 +287,8 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         :replies="threadReplies"
         :viewer="viewer"
         :resolve-failure="threadFailure"
+        :delete-failure="threadDeleteFailure"
+        :comment-actions="commentActions"
         @toggle="emit('toggleThread', row.placement.thread.id)"
         @reply="emit('replyInThread', row)"
         @set-resolved="emit('setThreadResolved', row, $event)"

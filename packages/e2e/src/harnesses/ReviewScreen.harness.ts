@@ -340,6 +340,18 @@ export class ReviewScreenHarness {
         return this.diff.getByRole('group', { name: /^Thread/ }).filter({ hasText: text });
     }
 
+    /**
+     * The comment holding `text` in a thread of the diff (`ReviewComment`), by its ⋯: the box beside its avatar, its meta
+     * line on top. While edited or on its way to GitHub it has no ⋯, and this finds nothing.
+     */
+    comment(text: string): Locator {
+        return this.diff
+            .locator('div')
+            .filter({ hasText: text })
+            .filter({ has: this.page.getByRole('button', { name: 'Comment actions' }) })
+            .last();
+    }
+
     /** The thread N and ⇧N are at. */
     get focusedThread(): Locator {
         return this.diff.locator('[role="group"][aria-current="true"]');

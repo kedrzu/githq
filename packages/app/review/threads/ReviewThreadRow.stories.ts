@@ -228,7 +228,7 @@ export const WithActions: Story = {
     play: async ({ args, canvas }) => {
         await userEvent.click(canvas.getByRole('button', { name: 'Reply…' }));
         await expect(args.onReply).toHaveBeenCalledOnce();
-        await userEvent.click(canvas.getByRole('button', { name: 'Resolve' }));
+        await userEvent.click(canvas.getByRole('button', { name: 'Resolve thread' }));
         await expect(args.onSetResolved).toHaveBeenCalledWith(true);
     },
 };
@@ -276,7 +276,7 @@ export const NothingAllowed: Story = {
     },
     play: async ({ canvas }) => {
         await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
-        await expect(canvas.queryByRole('button', { name: 'Resolve' })).toBeNull();
+        await expect(canvas.queryByRole('button', { name: 'Resolve thread' })).toBeNull();
     },
 };
 

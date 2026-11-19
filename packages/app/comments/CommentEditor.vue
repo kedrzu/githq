@@ -1,4 +1,4 @@
-<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. A reply in a code thread (`Activity / Code thread · replying`, F10) is the same editor without the gutter, in the thread's reply band: Cancel and Reply. One GitHub did not take opens again with the text and why, under the editor. Left with its text changed, it asks first in its footer (`Activity / Comment · editing, discard?`), as `MarkdownEditor` asks: Keep editing (`Escape`) or Discard (`Enter`). -->
+<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. A reply in a code thread (`Activity / Code thread · replying`, F10) is the same editor without the gutter, in the thread's reply band: Cancel and Reply; a code thread's comment edited in place (`Review / Comment · editing`, `inline`) has none either, under the comment's own avatar and meta line. One GitHub did not take opens again with the text and why, under the editor. Left with its text changed, it asks first in its footer (`Activity / Comment · editing, discard?`), as `MarkdownEditor` asks: Keep editing (`Escape`) or Discard (`Enter`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert } from 'lucide-vue-next';
@@ -36,6 +36,8 @@ const props = defineProps<{
   autofocus?: boolean;
   /** Its text is not what the edit started with, or GitHub did not take it: leaving it asks first. */
   changed?: boolean;
+  /** In place under a code thread's comment's meta line, which has the avatar already: no gutter of its own. */
+  inline?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -100,9 +102,9 @@ function onEscape(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div :class="kind === 'reply' ? css.commentEditor_reply : css.commentEditor">
+  <div :class="kind === 'reply' || inline ? css.commentEditor_reply : css.commentEditor">
     <div
-      v-if="kind !== 'reply'"
+      v-if="kind !== 'reply' && !inline"
       :class="css.commentEditor_gutter"
     >
       <Avatar

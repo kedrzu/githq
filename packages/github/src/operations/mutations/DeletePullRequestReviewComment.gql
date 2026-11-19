@@ -1,0 +1,6 @@
+# Deletes a review comment; GitHub answers with the pull request review, nothing of the comment, and keeps no copy.
+mutation DeletePullRequestReviewComment($id: ID!) {
+    deletePullRequestReviewComment(input: { id: $id }) {
+        clientMutationId
+    }
+}

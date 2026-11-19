@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. Where what others did since the viewer last looked at the item starts, a line says how many there are (`ItemThreadNewSince`, F5), before the same item until another item opens, whatever the viewer posts meanwhile; the fold never hides that item. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`CommentEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`CommentEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment, review and comment on the code GitHub has carries GitHub's anchor (`issuecomment-<id>`, `pullrequestreview-<id>`, `discussion_r<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it, a resolved code thread or a dismissed review opened — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Every part a reader stops at is a stop of the reading cursor the item's view provides (`data-reading-stop`, `useReadingStop`), the innermost holding it: the description (`description`), each comment and review (their ids), each comment of a code thread (its id), the draft review (`draftReview`) — comments, `[` `]` step between them — and each commit (`commit:<hash>`), event line (`events:<id>`), resolved thread's row (`thread:<id>`) and the fold (`fold`), rows; the line of what is new and a comment GitHub did not take are none. The stop under the cursor is marked in its own way and is `aria-current`; a linked comment's `<li>` stays the location. The view's keys act on where the cursor is through `getStopActions`: the card's menu, Quote reply and Edit as its menu offers them, and the reply and resolving of the code thread holding it; `showFolded` unfolds the middle for `]`. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. Where what others did since the viewer last looked at the item starts, a line says how many there are (`ItemThreadNewSince`, F5), before the same item until another item opens, whatever the viewer posts meanwhile; the fold never hides that item. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`CommentEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`CommentEditor`) — also when the user leaves the item (`askToLeave`). A code thread's comments — the draft's too — have the same menu (`ReviewComment`), written through code review's writing (`useReviewCommentActions`): Quote reply goes into that thread's reply box, where it takes one; an edit of one, open or refused, is never folded away, holds the item where it is (`hasOpenEditor`) and asks before the item is left, as a card's. A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment, review and comment on the code GitHub has carries GitHub's anchor (`issuecomment-<id>`, `pullrequestreview-<id>`, `discussion_r<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it, a resolved code thread or a dismissed review opened — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Every part a reader stops at is a stop of the reading cursor the item's view provides (`data-reading-stop`, `useReadingStop`), the innermost holding it: the description (`description`), each comment and review (their ids), each comment of a code thread (its id), the draft review (`draftReview`) — comments, `[` `]` step between them — and each commit (`commit:<hash>`), event line (`events:<id>`), resolved thread's row (`thread:<id>`) and the fold (`fold`), rows; the line of what is new and a comment GitHub did not take are none. The stop under the cursor is marked in its own way and is `aria-current`; a linked comment's `<li>` stays the location. The view's keys act on where the cursor is through `getStopActions`: the card's menu, Quote reply and Edit as its menu offers them — a code thread's comment's likewise — and the reply and resolving of the code thread holding it; `showFolded` unfolds the middle for `]`. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
 <script lang="ts">
 /**
  * What the item's keys can do with the reading cursor where it is (`getStopActions`): each `null` where there is
@@ -9,11 +9,11 @@ export interface ThreadStopActions {
   readonly reply: (() => void) | null;
   /** `H`: the code thread the cursor is in resolved or unresolved. */
   readonly resolve: ThreadResolveAction | null;
-  /** `.`: the card's menu (⋯). */
+  /** `.`: the card's menu (⋯), or the code thread's comment's. */
   readonly menu: (() => void) | null;
-  /** `Q`: the card quoted into the composer. */
+  /** `Q`: the card quoted into the composer, or the code thread's comment into its thread's reply box. */
   readonly quote: (() => void) | null;
-  /** `W`: the comment or the description edited in place, or its open editor focused again. */
+  /** `W`: the comment — a code thread's too — or the description edited in place, or its open editor focused again. */
   readonly edit: (() => void) | null;
 }
 
@@ -43,10 +43,12 @@ import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
 import CommentEntry from '@/comments/CommentEntry.vue';
 import CommentFailedCard from '@/comments/CommentFailedCard.vue';
+import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import { useCommentActions } from '@/comments/useCommentActions.js';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
-import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import type { ReviewThread, ReviewThreadComment } from '@/review/threads/ReviewThread.js';
+import { useReviewCommentActions } from '@/review/threads/useReviewCommentActions.js';
 import { getCommentWays } from '@/review/writing/getCommentWays.js';
 import { getPendingComments } from '@/review/writing/getPendingComments.js';
 import { getReplyTarget } from '@/review/writing/getReplyTarget.js';
@@ -159,6 +161,16 @@ const actions = useCommentActions({
   onDiscardEdit: commentId => emit('discardEdit', commentId),
   onQuote: body => emit('quoteReply', body),
 });
+/** What the code threads' comments do from their ⋯ — the draft's too — written through code review's writing. */
+const reviewActions = useReviewCommentActions({
+  subject: () => props.item.id,
+  writing: () => props.reviewWriting ?? null,
+  threads: () => props.reviewThreads ?? [],
+  repository: () => props.item.repository.nameWithOwner,
+  itemNumber: () => props.item.number,
+  people: () => props.people,
+  onQuote: quoteIntoReply,
+});
 /** Where the user was going when leaving the item asked a reply box: Discard goes on there, Keep editing forgets it. */
 let leaving: (() => void) | null = null;
 /** The code thread whose reply box asks whether to discard the reply. */
@@ -208,6 +220,7 @@ const replies = computed((): CodeThreadReplies | null => {
     saveLabel: getReplyLabel(),
     get: getReply,
     getResolveFailure: threadId => writing.getResolveFailure(threadId),
+    getDeleteFailure: threadId => writing.getDeleteFailure(threadId),
     setText: (threadId, text) => {
       const box = replyBoxes.value.get(threadId)?.box;
       if (box) {
@@ -224,6 +237,12 @@ const draftThreads = computed(
   () =>
     new Set(entries.value.flatMap(entry => (entry.kind === 'pendingReview' ? entry.threads : [])).map(({ id }) => id)),
 );
+/** The code threads with a comment edited in place, or refused: never folded away, as an edited card. */
+const editedThreads = computed(() =>
+  (props.reviewThreads ?? [])
+    .filter(thread => thread.comments.some(({ id }) => reviewActions.actions.editors.has(id)))
+    .map(({ id }) => id),
+);
 /** Everything after the description, in the thread's order: an edited comment is never folded away. */
 const entries = computed(() =>
   props.detail
@@ -231,7 +250,11 @@ const entries = computed(() =>
         detail: props.detail,
         failedComments: props.failedComments,
         unfolded: unfolded.value,
-        keepShown: new Set([...[...actions.editors.keys()].filter(id => id !== null), ...replyBoxes.value.keys()]),
+        keepShown: new Set([
+          ...[...actions.editors.keys()].filter(id => id !== null),
+          ...replyBoxes.value.keys(),
+          ...editedThreads.value,
+        ]),
         reviewThreads: props.reviewThreads ?? [],
         pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
         viewerLogin: props.viewer?.login ?? null,
@@ -263,10 +286,12 @@ watch(() => [props.linkedAnchor, props.detail, props.reviewThreads] as const, re
 
 defineExpose({
   /**
-   * An edit is open in the thread — a card edited in place or a code thread's reply box — whether changed or not: what
-   * moving the item elsewhere would close.
+   * An edit is open in the thread — a card or a code thread's comment edited in place, or a code thread's reply box —
+   * whether changed or not: what moving the item elsewhere would close.
    */
-  hasOpenEditor: computed(() => actions.editors.size > 0 || replyBoxes.value.size > 0),
+  hasOpenEditor: computed(
+    () => actions.editors.size > 0 || reviewActions.actions.editors.size > 0 || replyBoxes.value.size > 0,
+  ),
   /**
    * Before the user leaves the item: the first editor, in the thread's order, whose text was changed asks whether to
    * discard it, in view and with the cursor in it; its Discard then calls `go`, the way the user was leaving. `false`
@@ -283,32 +308,54 @@ defineExpose({
 });
 
 function askToLeave(go: () => void) {
-  const changed = getAskables().find(askable =>
-    askable.kind === 'editor' ? actions.isChanged(askable.id) : isReplyChanged(askable.threadId),
-  );
+  const changed = getAskables().find(isAskableChanged);
   if (changed === undefined) {
     return false;
   }
 
-  if (changed.kind === 'editor') {
-    askingReply.value = null;
-    leaving = null;
-    actions.askToLeave(changed.id, go);
-  } else {
-    actions.stopAsking();
-    leaving = go;
-    askAgain(changed.threadId);
+  switch (changed.kind) {
+    case 'editor':
+      askingReply.value = null;
+      leaving = null;
+      reviewActions.actions.stopAsking();
+      actions.askToLeave(changed.id, go);
+      break;
+    case 'codeEditor':
+      askingReply.value = null;
+      leaving = null;
+      actions.stopAsking();
+      reviewActions.actions.askToLeave(changed.id, go);
+      break;
+    case 'reply':
+      actions.stopAsking();
+      reviewActions.actions.stopAsking();
+      leaving = go;
+      askAgain(changed.threadId);
+      break;
+    default:
+      assertNever(changed);
   }
 
   return true;
 }
 
+function isAskableChanged(askable: Askable) {
+  switch (askable.kind) {
+    case 'editor':
+      return actions.isChanged(askable.id);
+    case 'codeEditor':
+      return reviewActions.actions.isChanged(askable.id);
+    case 'reply':
+      return isReplyChanged(askable.threadId);
+    default:
+      return assertNever(askable);
+  }
+}
+
 function getStopActions(key: string, threadId: string | null): ThreadStopActions {
-  const card = findCard(key);
   const thread = threadId === null ? undefined : (props.reviewThreads ?? []).find(({ id }) => id === threadId);
   const writable = thread !== undefined && props.reviewWriting != null && !draftThreads.value.has(thread.id);
-  const canQuote = card?.menu === true && (props.canQuote ?? false) && (card.kind === 'comment' || card.body !== '');
-  return {
+  const threadActions = {
     reply: writable && thread.viewerCanReply ? () => void openReply(thread.id) : null,
     resolve:
       writable && (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve)
@@ -318,9 +365,39 @@ function getStopActions(key: string, threadId: string | null): ThreadStopActions
             run: () => setResolved(thread.id, !thread.isResolved),
           }
         : null,
+  };
+  const comment = thread?.comments.find(({ id }) => id === key);
+  if (thread && comment) {
+    return { ...threadActions, ...getCodeCommentActions(thread, comment, threadActions.reply !== null) };
+  }
+
+  const card = findCard(key);
+  const canQuote = card?.menu === true && (props.canQuote ?? false) && (card.kind === 'comment' || card.body !== '');
+  return {
+    ...threadActions,
     menu: card?.menu ? () => actions.setMenuOpen(card.id, true) : null,
     quote: canQuote ? () => emit('quoteReply', card.body) : null,
     edit: card?.kind === 'comment' && card.canEdit ? () => void actions.editByKey(card.id, card.body) : null,
+  };
+}
+
+/**
+ * A code thread's comment's menu, Quote reply and Edit, as its ⋯ offers them: none of them while its edit is on its way,
+ * GitHub having nothing to act on yet; no menu while edited, the editor in its place; Quote reply where its thread
+ * takes a reply.
+ */
+function getCodeCommentActions(
+  thread: ReviewThread,
+  comment: ReviewThreadComment,
+  canReply: boolean,
+): Pick<ThreadStopActions, 'menu' | 'quote' | 'edit'> {
+  const { actions: commentActions } = reviewActions;
+  const onItsWay = reviewActions.getEdit(comment.id) !== null;
+  const menu = !onItsWay && !commentActions.editors.has(comment.id);
+  return {
+    menu: menu ? () => commentActions.setMenuOpen(comment.id, true) : null,
+    quote: menu && canReply ? () => quoteIntoReply(thread, comment.body) : null,
+    edit: !onItsWay && comment.viewerCanUpdate ? () => void commentActions.editByKey(comment.id, comment.body) : null,
   };
 }
 
@@ -356,7 +433,10 @@ function findCard(key: string): ThreadCard | null {
   return null;
 }
 
-/** What may ask before the item is left, in the thread's order: the editors, and the reply boxes of the code threads. */
+/**
+ * What may ask before the item is left, in the thread's order: the cards' editors, and the code threads' — those of the
+ * draft too — each comment's editor, then its reply box.
+ */
 function getAskables(): Askable[] {
   const askables: Askable[] = [{ kind: 'editor', id: null }];
   for (const entry of entries.value) {
@@ -365,13 +445,13 @@ function getAskables(): Askable[] {
         askables.push({ kind: 'editor', id: entry.id });
         break;
       case 'review':
-        for (const { id } of [...entry.threads, ...entry.resolved]) {
-          askables.push({ kind: 'reply', threadId: id });
-        }
-
+        askables.push(...[...entry.threads, ...entry.resolved].flatMap(getThreadAskables));
         break;
       case 'codeComment':
-        askables.push({ kind: 'reply', threadId: entry.thread.id });
+        askables.push(...getThreadAskables(entry.thread));
+        break;
+      case 'pendingReview':
+        askables.push(...entry.threads.flatMap(getThreadAskables));
         break;
       default:
         break;
@@ -379,6 +459,28 @@ function getAskables(): Askable[] {
   }
 
   return askables;
+}
+
+function getThreadAskables(thread: ReviewThread): Askable[] {
+  return [
+    ...thread.comments.map(({ id }): Askable => ({ kind: 'codeEditor', id })),
+    { kind: 'reply', threadId: thread.id },
+  ];
+}
+
+/**
+ * Quote reply on a code thread's comment, from its ⋯ or `Q`: at the end of the thread's reply box, opened as Reply…
+ * opens it, which takes the cursor. None where the thread takes no reply, the draft's among them.
+ */
+function quoteIntoReply(thread: ReviewThread, body: string) {
+  const writing = props.reviewWriting;
+  if (!writing || !thread.viewerCanReply || draftThreads.value.has(thread.id)) {
+    return;
+  }
+
+  const box = writing.open({ path: thread.path, ...getReplyTarget(thread) });
+  writing.setText(box.id, quoteIntoDraft(body, writing.getText(box.id)));
+  void openReply(thread.id);
 }
 
 /** Asked already: asked again a tick on, so that it comes back into view and takes the cursor again. */
@@ -686,9 +788,13 @@ type ThreadCard =
     }
   | { readonly kind: 'review'; readonly id: string; readonly body: string; readonly menu: true };
 
-/** What asks before the item is left: an editor, by its comment (`null` the description), or a code thread's reply box. */
+/**
+ * What asks before the item is left: a card's editor, by its comment (`null` the description), a code thread's comment's
+ * editor, or a code thread's reply box.
+ */
 type Askable =
   | { readonly kind: 'editor'; readonly id: string | null }
+  | { readonly kind: 'codeEditor'; readonly id: string }
   | { readonly kind: 'reply'; readonly threadId: string };
 </script>
 
@@ -796,6 +902,7 @@ type Askable =
             :linked-anchor="linkedAnchor"
             :actions="actions"
             :can-quote="canQuote"
+            :comment-actions="reviewActions"
             @reply="openReply"
             @set-resolved="setResolved"
             @toggled="focusThread"
@@ -807,6 +914,7 @@ type Askable =
             :viewer="viewer"
             :replies="replies"
             :linked-anchor="linkedAnchor"
+            :comment-actions="reviewActions"
             @reply="openReply(entry.thread.id)"
             @set-resolved="setResolved(entry.thread.id, $event)"
             @toggled="focusThread(entry.thread.id)"
@@ -829,6 +937,7 @@ type Askable =
             :number="item.number"
             :writing="reviewWriting ?? null"
             :comments="pendingComments"
+            :comment-actions="reviewActions"
           />
         </li>
       </ol>
@@ -838,6 +947,11 @@ type Askable =
       :open="actions.deletingId !== null"
       @update:open="actions.cancelDelete()"
       @delete="actions.confirmDelete()"
+    />
+    <CommentDeleteDialog
+      :open="reviewActions.actions.deletingId !== null"
+      @update:open="reviewActions.actions.cancelDelete()"
+      @delete="reviewActions.actions.confirmDelete()"
     />
   </div>
 </template>

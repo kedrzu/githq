@@ -933,3 +933,21 @@ their own field, so the search is one more level, not a new component.
   finds, and a path is not what ⌘K is asked for.
 - A separate quick-open dialog — a second menu with its own keys and look beside the command menu.
 - Recently opened files first — no history of visited files exists.
+
+## D49
+
+**A thread in the diff looks like a code thread on a pull request's thread: the page's colour, each comment flat with
+its text in the card text colour, a ⋯ on its meta line, then a Reply band and a Resolve thread band. Every review
+comment, there and on a pull request's thread, has the comment cards' menu — Edit in place, Quote reply into its
+thread's reply box, Copy link, Delete after asking — each only where GitHub allows. Deleting the draft's last pending
+comment discards the emptied draft.** (2026-11-19, owner's pick of Variant B of three; CR151, CR152, F33)
+
+**Why.** The grey bubble with Reply… and Resolve in one row looked unlike a comment anywhere else, and review comments
+could be neither edited nor deleted in githq. An empty draft only blocks what is written next (D17).
+
+**Rejected.**
+
+- One card with a head band per comment, and a card per comment — further from the code thread the pull request's
+  thread already has; the second breaks the thread into pieces in the diff.
+- A comment-level key in code review — its cursor stops on lines and threads, not comments; pointer and Tab reach the
+  ⋯ there, and `.` and `Q` reach it on a pull request's thread.

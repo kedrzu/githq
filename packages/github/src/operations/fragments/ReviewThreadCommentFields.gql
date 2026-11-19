@@ -6,7 +6,12 @@ fragment ReviewThreadCommentFields on PullRequestReviewComment {
         avatarUrl
     }
     bodyHTML
+    # The Markdown source, for editing and quoting.
+    body
     createdAt
+    lastEditedAt
+    viewerCanUpdate
+    viewerCanDelete
     url
     diffHunk
     outdated

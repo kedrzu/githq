@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import { DB_THREAD, DRAFT_THREAD, REVIEW_VIEWER, SCHEMA_THREAD, sampleReviewThread } from '@/testing/sampleReviews.js';
+import { useSampleReviewCommentActions } from '@/testing/useSampleReviewCommentActions.js';
 import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
@@ -18,12 +19,13 @@ const meta = {
         onReply: fn(),
         onSetResolved: fn(),
     },
-    render: args => ({
+    // With the view's comment actions (`parameters.menu`).
+    render: (args, { parameters }) => ({
         components: { ItemThreadCodeThread },
-        setup: () => ({ args }),
+        setup: () => ({ args, commentActions: parameters.menu ? useSampleReviewCommentActions() : null }),
         template: `
           <div style="width: ${IN_REVIEW}px; padding: 16px; background: #0d1117">
-            <ItemThreadCodeThread v-bind="args" />
+            <ItemThreadCodeThread v-bind="args" :comment-actions="commentActions" />
           </div>`,
     }),
 } satisfies Meta<typeof ItemThreadCodeThread>;
@@ -79,3 +81,6 @@ export const CurrentLinkedComment: Story = {
     args: { linkedAnchor: 'discussion_T_db_1' },
     decorators: [withReadingCursor('T_db_1')],
 };
+
+/** With the view's actions: each comment has its ⋯, shown on hover. */
+export const WithCommentActions: Story = { parameters: { menu: true } };
