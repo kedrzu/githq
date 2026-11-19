@@ -164,6 +164,11 @@ export class ItemViewHarness {
             .filter({ has: this.page.getByRole('button', { name: 'Comment actions' }) });
     }
 
+    /** A code thread's comment holding `text` (`ReviewComment`): a stop of the reading cursor, its meta line on top. */
+    codeComment(text: string): Locator {
+        return this.root.locator('[data-code-thread] [data-reading-stop]').filter({ hasText: text });
+    }
+
     /** The comment the address's fragment names, marked as the current location (`aria-current="location"`). */
     get linkedComment(): Locator {
         return this.comments.and(this.root.locator('[aria-current="location"]'));

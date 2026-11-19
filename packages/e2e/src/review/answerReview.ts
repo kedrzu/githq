@@ -73,14 +73,28 @@ export interface SampleReviewThread {
     readonly subjectType?: 'LINE' | 'FILE';
     /** Empty on a `FILE` thread. */
     readonly diffHunk?: string;
-    /** `bodyHTML` of each comment. */
-    readonly comments: readonly string[];
+    /** Each comment: its `bodyHTML`, or more of it. */
+    readonly comments: readonly (string | SampleReviewComment)[];
     /** The review its first comment came in; none by default. */
     readonly reviewId?: string;
     /** Its comments are in a draft review: the viewer's when {@link author} is the viewer. */
     readonly pending?: boolean;
     /** Who wrote its comments; sofiab by default. */
     readonly author?: string;
+}
+
+/** A comment of a {@link SampleReviewThread} when more than its `bodyHTML` matters. */
+export interface SampleReviewComment {
+    /** `<thread id>_<its index>` by default; given, it stays as comments before it go. */
+    readonly id?: string;
+    readonly bodyHTML: string;
+    /** Its Markdown, what Edit starts from and Quote reply quotes; its {@link bodyHTML} by default. */
+    readonly body?: string;
+    /** The thread's author by default. */
+    readonly author?: string;
+    /** GitHub lets the viewer edit and delete it, as their own; not by default. */
+    readonly editable?: boolean;
+    readonly edited?: boolean;
 }
 
 export interface AnswerReviewParams {
@@ -451,23 +465,31 @@ function toThreadNode(thread: SampleReviewThread) {
         resolvedBy: thread.isResolved ? { login: thread.resolvedBy ?? 'mlaine' } : null,
         comments: {
             pageInfo: { hasNextPage: false, endCursor: null },
-            nodes: thread.comments.map((bodyHTML, index) => ({
-                id: `${thread.id}_${index}`,
-                author: { login: thread.author ?? 'sofiab', avatarUrl: '' },
-                bodyHTML,
-                body: bodyHTML,
-                createdAt: '2026-01-01T00:00:00Z',
-                lastEditedAt: null,
-                viewerCanUpdate: false,
-                viewerCanDelete: false,
-                url: `https://github.com/acme/web/pull/15#discussion_${thread.id}_${index}`,
-                diffHunk: thread.diffHunk ?? '',
-                outdated: thread.isOutdated ?? false,
-                state: thread.pending ? ('PENDING' as const) : ('SUBMITTED' as const),
-                originalCommit: { oid: 'a91d03b00000', abbreviatedOid: 'a91d03b' },
-                pullRequestReview: index === 0 && thread.reviewId !== undefined ? { id: thread.reviewId } : null,
-            })),
+            nodes: thread.comments.map((_, index) => toReviewCommentNode(thread, index)),
         },
+    };
+}
+
+/** A thread's comment at `index` as GitHub answers it (`ReviewThreadCommentFields`): in the threads read, or an edit's answer. */
+export function toReviewCommentNode(thread: SampleReviewThread, index: number) {
+    const comment = thread.comments[index] ?? '';
+    const sample: SampleReviewComment = typeof comment === 'string' ? { bodyHTML: comment } : comment;
+    const id = sample.id ?? `${thread.id}_${index}`;
+    return {
+        id,
+        author: { login: sample.author ?? thread.author ?? 'sofiab', avatarUrl: '' },
+        bodyHTML: sample.bodyHTML,
+        body: sample.body ?? sample.bodyHTML,
+        createdAt: '2026-01-01T00:00:00Z',
+        lastEditedAt: sample.edited ? '2026-01-02T00:00:00Z' : null,
+        viewerCanUpdate: sample.editable ?? false,
+        viewerCanDelete: sample.editable ?? false,
+        url: `https://github.com/acme/web/pull/15#discussion_${id}`,
+        diffHunk: thread.diffHunk ?? '',
+        outdated: thread.isOutdated ?? false,
+        state: thread.pending ? ('PENDING' as const) : ('SUBMITTED' as const),
+        originalCommit: { oid: 'a91d03b00000', abbreviatedOid: 'a91d03b' },
+        pullRequestReview: index === 0 && thread.reviewId !== undefined ? { id: thread.reviewId } : null,
     };
 }
 
