@@ -1558,7 +1558,7 @@ function bypass() {
  */
 function pickEmail(email: string, remember: boolean) {
   chosenEmail.value = email;
-  emailSaved.value = remember && props.tracked === true;
+  emailSaved.value = remember;
   if (emailSaved.value) {
     emit('rememberEmail', email === props.settings?.viewerDefaultCommitEmail ? null : email);
   }

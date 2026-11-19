@@ -49,6 +49,7 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import type { WorkflowRefSettings, WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
 
 import { TrackingPersistence } from './TrackingPersistence.js';
@@ -372,7 +373,7 @@ export const TrackingStore = defineService({
             const entry = document.repositories.find(repository => repository.nameWithOwner === nameWithOwner);
             return {
                 repository: readRepositoryCommitEmail(entry),
-                owner: readOwnerCommitEmail(document, getOwnerLogin(nameWithOwner)),
+                owner: readOwnerCommitEmail(document, parseRepositoryName(nameWithOwner).owner),
             };
         }
 
@@ -1011,10 +1012,6 @@ export const TrackingStore = defineService({
         }
     },
 });
-
-function getOwnerLogin(nameWithOwner: string) {
-    return nameWithOwner.split('/')[0] ?? nameWithOwner;
-}
 
 function startRepositoryState(nameWithOwner: string): RepositorySyncState {
     return {

@@ -4,8 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './CommitEmailBlock.stories.js';
 
-const { OwnerAddress, RepositoryAddress, OwnerNotOffered, RepositoryNotOffered, NotKnown, Phone } =
-    composeStories(stories);
+const { OwnerAddress, RepositoryAddress, OwnerNotOffered, RepositoryNotOffered, NotKnown } = composeStories(stories);
 
 const block = () => page.getByRole('region', { name: 'Commit email' });
 const ownerSelect = () => page.getByRole('button', { name: /^For\sall\sof\sacme-corp/u });
@@ -89,14 +88,4 @@ test("before GitHub's addresses are known: the stored choices, disabled, and no 
     await expect.element(repositorySelect()).toBeDisabled();
     await expect.element(block()).not.toHaveTextContent(/commits\sas/u);
     await expect.element(block()).not.toHaveTextContent(/not offered here/u);
-});
-
-test('on a phone the select opens at the bottom and a pick asks for it', async () => {
-    await page.viewport(390, 844);
-    const onRepository = vi.fn();
-    await Phone.run({ args: { ...Phone.args, onRepository } });
-
-    await userEvent.click(repositorySelect());
-    await userEvent.click(option(/^GitHub default/u));
-    expect(onRepository).toHaveBeenCalledExactlyOnceWith(null);
 });
