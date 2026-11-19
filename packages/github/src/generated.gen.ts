@@ -17054,6 +17054,7 @@ export type EnablePullRequestAutoMergeMutationVariables = Exact<{
     mergeMethod: PullRequestMergeMethod;
     commitHeadline?: string | null | undefined;
     commitBody?: string | null | undefined;
+    authorEmail?: string | null | undefined;
     expectedHeadOid: string;
 }>;
 
@@ -28261,9 +28262,9 @@ fragment PullRequestStatusFields on PullRequest {
   ...PullRequestPendingReviewFields
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
-    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
+    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $authorEmail: String, $expectedHeadOid: GitObjectID!) {
   enablePullRequestAutoMerge(
-    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, expectedHeadOid: $expectedHeadOid}
+    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, authorEmail: $authorEmail, expectedHeadOid: $expectedHeadOid}
   ) {
     pullRequest {
       ...PullRequestStatusFields
