@@ -132,7 +132,7 @@ function onEscape(event: KeyboardEvent) {
       >
         <template #footer>
           <Button
-            size="compact"
+            size="md"
             kbd="Escape"
             keyshortcuts="Escape"
             @click="leave"
@@ -140,7 +140,7 @@ function onEscape(event: KeyboardEvent) {
             {{ t(l.cancel) }}
           </Button>
           <Button
-            size="compact"
+            size="md"
             variant="primary"
             :kbd="SAVE_KEY"
             :keyshortcuts="formatAriaKeyShortcuts(SAVE_KEY)"

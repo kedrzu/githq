@@ -618,7 +618,7 @@ interface RenderedPreview {
       <div :class="css.markdownEditor_actions">
         <template v-if="asking">
           <Button
-            size="compact"
+            size="md"
             kbd="Escape"
             keyshortcuts="Escape"
             @click="keepWriting"
@@ -626,7 +626,7 @@ interface RenderedPreview {
             {{ keepLabel }}
           </Button>
           <Button
-            size="compact"
+            size="md"
             variant="destructive"
             kbd="Enter"
             keyshortcuts="Enter"

@@ -55,14 +55,14 @@ const editTexts = useEditTexts();
         >
         <span :class="css.commentFailedCard_buttons">
           <Button
-            size="compact"
+            size="md"
             @click="emit('discard')"
           >
             {{ t(l.discard) }}
           </Button>
           <Button
             v-if="canRetry"
-            size="compact"
+            size="md"
             :icon="RotateCw"
             @click="emit('retry')"
           >

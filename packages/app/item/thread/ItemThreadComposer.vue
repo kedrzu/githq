@@ -174,7 +174,7 @@ function close(reason: CloseReason) {
         <Button
           v-else-if="stateAction === 'close'"
           :class="css.itemThreadComposer_closed"
-          size="compact"
+          size="md"
           :icon="GitPullRequestClosed"
           :kbd="keyOf(state)"
           :keyshortcuts="keyOf(state)"
@@ -185,7 +185,7 @@ function close(reason: CloseReason) {
         <Button
           v-else-if="stateAction === 'reopen'"
           :class="css.itemThreadComposer_open"
-          size="compact"
+          size="md"
           :icon="item.kind === 'issue' ? CircleDot : GitPullRequest"
           :kbd="keyOf(state)"
           :keyshortcuts="keyOf(state)"
@@ -194,7 +194,7 @@ function close(reason: CloseReason) {
           {{ item.kind === 'issue' ? t(l.reopenIssue) : t(l.reopenPullRequest) }}
         </Button>
         <Button
-          size="compact"
+          size="md"
           variant="primary"
           :kbd="SUBMIT_KEY"
           :keyshortcuts="formatAriaKeyShortcuts(SUBMIT_KEY)"

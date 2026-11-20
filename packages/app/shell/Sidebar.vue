@@ -518,7 +518,7 @@ function getProjectMark(title: string) {
       </div>
       <IconButton
         v-if="!railForced"
-        size="md"
+        size="rail"
         :icon="PanelLeftOpen"
         :label="t(l.expand)"
         :kbd="keyOf(sidebar)"
@@ -526,7 +526,7 @@ function getProjectMark(title: string) {
         @click="emit('toggle')"
       />
       <IconButton
-        size="md"
+        size="rail"
         :icon="Search"
         :label="t(l.search)"
         :kbd="keyOf(commandMenu)"

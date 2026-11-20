@@ -251,7 +251,7 @@ function getRangeStep(event: KeyboardEvent) {
     >
       <template #footer>
         <Button
-          size="compact"
+          size="md"
           kbd="Escape"
           keyshortcuts="Escape"
           @click="leave"
@@ -259,7 +259,7 @@ function getRangeStep(event: KeyboardEvent) {
           {{ t(l.cancel) }}
         </Button>
         <Button
-          size="compact"
+          size="md"
           :disabled="!hasText"
           :kbd="COMMENT_BOX_KEYS.sendSecond"
           :keyshortcuts="formatAriaKeyShortcuts(COMMENT_BOX_KEYS.sendSecond)"
@@ -268,7 +268,7 @@ function getRangeStep(event: KeyboardEvent) {
           {{ second.label }}
         </Button>
         <Button
-          size="compact"
+          size="md"
           variant="primary"
           :disabled="!hasText"
           :kbd="COMMENT_BOX_KEYS.sendFirst"

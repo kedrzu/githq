@@ -427,7 +427,7 @@ const footerDetail = computed(() => {
 });
 /** A phone's group action ("Select none", "Show all"): a text link in the accent, a finger's height. */
 const groupActionLook = computed((): GroupActionLook =>
-  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'framed', size: 'sm' },
+  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'outline', size: 'sm' },
 );
 // What the filter names, once nothing listed matches it: not while the lists are first read — after reading them
 // failed it still is — and not under an owner picked that it doesn't name. G10 looks a project's address up too.

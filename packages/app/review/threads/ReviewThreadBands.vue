@@ -64,7 +64,7 @@ const t = useTranslate();
       v-else
       :class="css.reviewThreadBands_field"
       variant="field"
-      size="compact"
+      size="md"
       block
       :kbd="replyKey"
       :keyshortcuts="replyKey"
@@ -80,7 +80,7 @@ const t = useTranslate();
     <Button
       v-if="canToggle"
       :class="!resolved && css.reviewThreadBands_resolveButton"
-      size="compact"
+      size="md"
       :icon="resolved ? RotateCcw : CircleCheck"
       @click="emit('setResolved', !resolved)"
     >

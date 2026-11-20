@@ -111,7 +111,7 @@ const links = computed(() => [
           <IconButton
             :icon="menuOpen ? X : Menu"
             :label="t(l.menu)"
-            size="md"
+            size="rail"
             :aria-expanded="menuOpen"
             :aria-controls="menuId"
             @click="menuOpen = !menuOpen"

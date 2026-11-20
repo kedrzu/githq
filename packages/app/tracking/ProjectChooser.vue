@@ -94,7 +94,7 @@ const phoneLayout = useService(PhoneLayout);
 const phone = computed(() => phoneLayout.active);
 /** A phone's group action ("Select all", "Show"): a text link in the accent, a finger's height. */
 const groupActionLook = computed(() =>
-  phone.value ? ({ variant: 'link', tone: 'accent' } as const) : ({ variant: 'framed', size: 'sm' } as const),
+  phone.value ? ({ variant: 'link', tone: 'accent' } as const) : ({ variant: 'outline', size: 'sm' } as const),
 );
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
@@ -600,7 +600,7 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
         >
           {{ closedText(group) }}
           <Button
-            variant="framed"
+            variant="outline"
             size="sm"
             @click="closedShown = addTo(closedShown, group.login)"
           >

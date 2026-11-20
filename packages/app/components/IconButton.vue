@@ -1,11 +1,14 @@
-<!-- A square button showing only a glyph — a lucide icon, or the default slot (an avatar) — on nzyme's `useButton`, so an async action keeps it busy and ignores clicks meanwhile. Its `label` is its accessible name and its tooltip, with its key when it has one. -->
+<!-- A square button showing only a glyph — a lucide icon, or the default slot (an avatar) — on nzyme's `useButton`, so an async action keeps it busy and ignores clicks meanwhile. Its `label` is its accessible name and its tooltip, with its key when it has one. Which size where: `docs/design/githq/buttons.md`. -->
 <script lang="ts">
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { defineProp } from '@nzyme/vue-utils/defineProp.js';
 import type { LucideIcon } from 'lucide-vue-next';
 
-/** `sm` (22px) in a header next to text, `md` (38×34) on the sidebar's rail. */
-export type IconButtonSize = 'md' | 'sm';
+/**
+ * On the buttons' scale: `sm` (24 × 24) beside `sm` buttons and in headers, `md` (32 × 32) beside `md` ones; `rail`
+ * (38 × 34) on the sidebar's rail.
+ */
+export type IconButtonSize = 'md' | 'rail' | 'sm';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`), the glyph, its label and the size. */
 export const IconButtonProps = {
@@ -49,7 +52,9 @@ const { Button, busy, disabled } = useButton();
     :kbd="kbd ?? undefined"
     side="right"
   >
+    <!-- Before the attributes: a caller's `data-button-size` (a split button's chevron) wins. -->
     <Button
+      :data-button-size="size ?? 'sm'"
       v-bind="$attrs"
       :class="[css.iconButton, css[`iconButton_${size ?? 'sm'}`], busy && css.iconButton_busy]"
       :aria-label="label"
@@ -109,20 +114,31 @@ const { Button, busy, disabled } = useButton();
   }
 }
 
-// A caller sizes it with `--icon-button-width` and `--icon-button-height` (`auto`: as tall as what it is joined to).
-.iconButton_sm {
-  width: var(--icon-button-width, 22px);
-  height: var(--icon-button-height, 22px);
-  border-radius: var(--icon-button-radius, 5px);
+// A caller sizes an `sm` or `md` one with `--icon-button-width` and `--icon-button-height` (`auto`: as tall as what it is
+// joined to), its corners with `--icon-button-radius` and its glyph with `--icon-button-glyph-size` (a split button's
+// chevron). The rail's keeps its own.
+.iconButton_glyph {
+  width: var(--icon-button-glyph-size, var(--icon-button-size-glyph));
+  height: var(--icon-button-glyph-size, var(--icon-button-size-glyph));
+}
 
-  // A caller sizes the glyph with `--icon-button-glyph-size` (a split button's chevron).
-  .iconButton_glyph {
-    width: var(--icon-button-glyph-size, 15px);
-    height: var(--icon-button-glyph-size, 15px);
-  }
+.iconButton_sm {
+  --icon-button-size-glyph: 14px;
+
+  width: var(--icon-button-width, 24px);
+  height: var(--icon-button-height, 24px);
+  border-radius: var(--icon-button-radius, #{$radius-md});
 }
 
 .iconButton_md {
+  --icon-button-size-glyph: 16px;
+
+  width: var(--icon-button-width, 32px);
+  height: var(--icon-button-height, 32px);
+  border-radius: var(--icon-button-radius, 7px);
+}
+
+.iconButton_rail {
   width: 38px;
   height: 34px;
   border-radius: 7px;
