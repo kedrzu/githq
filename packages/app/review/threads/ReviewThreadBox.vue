@@ -19,6 +19,7 @@ import { computed } from 'vue';
 import { comment as commentCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
+import MotionList from '@/components/MotionList.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
@@ -140,7 +141,11 @@ const failureTexts = computed(() => {
         <span :class="css.reviewThreadBox_outdated">{{ t(l.outdated) }}</span>
         <span :class="css.reviewThreadBox_note">{{ outdatedNote }}</span>
       </p>
-      <div :class="css.reviewThreadBox_body">
+      <!-- A reply arriving fades in; one sent, on its way, gives its place to GitHub's comment. -->
+      <MotionList
+        tag="div"
+        :class="css.reviewThreadBox_body"
+      >
         <ReviewComment
           v-for="comment in thread.comments"
           :key="comment.id"
@@ -166,7 +171,7 @@ const failureTexts = computed(() => {
             :target="sent"
           />
         </template>
-      </div>
+      </MotionList>
       <ReviewThreadBands
         :viewer="viewer"
         :can-reply="thread.viewerCanReply"
