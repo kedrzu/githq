@@ -5,7 +5,7 @@ import { expect, test } from 'bun:test';
 import { createGitHubRequester } from './createGitHubRequester.js';
 import { getSdk } from './generated.gen.js';
 import { GitHubApiError } from './GitHubApiError.js';
-import { listCommitSubjects } from './listCommitSubjects.js';
+import { listCommits } from './listCommits.js';
 
 const PARAMS = { owner: 'kedrzu', name: 'githq', from: 'main', stopAt: new Set<string>(), maxPages: 3 };
 
@@ -21,8 +21,11 @@ test('stops at the first commit it is told to, across pages, without listing it,
         },
     ]);
 
-    expect(await listCommitSubjects(sdk, { ...PARAMS, stopAt: new Set(['other', 'tagged']) })).toEqual({
-        subjects: ['feat: a (#2)', 'fix: b'],
+    expect(await listCommits(sdk, { ...PARAMS, stopAt: new Set(['other', 'tagged']) })).toEqual({
+        commits: [
+            { subject: 'feat: a (#2)', author: null },
+            { subject: 'fix: b', author: null },
+        ],
         stoppedAt: 'tagged',
         limited: false,
     });
@@ -36,8 +39,12 @@ test('with nothing to stop at, the cap ends the walk and says more is behind it'
     const page = { next: 'more', commits: [{ oid: 'a', message: 'feat: a' }] };
     const { sdk, asked } = answeringPages([page, page, page, page]);
 
-    expect(await listCommitSubjects(sdk, PARAMS)).toEqual({
-        subjects: ['feat: a', 'feat: a', 'feat: a'],
+    expect(await listCommits(sdk, PARAMS)).toEqual({
+        commits: [
+            { subject: 'feat: a', author: null },
+            { subject: 'feat: a', author: null },
+            { subject: 'feat: a', author: null },
+        ],
         stoppedAt: null,
         limited: true,
     });
@@ -47,17 +54,41 @@ test('with nothing to stop at, the cap ends the walk and says more is behind it'
 test('the history running out is neither a stop nor limited', async () => {
     const { sdk } = answeringPages([{ commits: [{ oid: 'a', message: 'feat: a' }] }]);
 
-    expect(await listCommitSubjects(sdk, PARAMS)).toEqual({ subjects: ['feat: a'], stoppedAt: null, limited: false });
+    expect(await listCommits(sdk, PARAMS)).toEqual({
+        commits: [{ subject: 'feat: a', author: null }],
+        stoppedAt: null,
+        limited: false,
+    });
+});
+
+test('an author linked to a GitHub account is its login; one linked to none, or with no author at all, is null', async () => {
+    const { sdk } = answeringPages([
+        {
+            commits: [
+                { oid: 'a', message: 'feat: a', author: { user: { login: 'octocat' } } },
+                { oid: 'b', message: 'fix: b', author: { user: null } },
+                { oid: 'c', message: 'fix: c', author: null },
+            ],
+        },
+    ]);
+
+    const { commits } = await listCommits(sdk, PARAMS);
+
+    expect(commits).toEqual([
+        { subject: 'feat: a', author: 'octocat' },
+        { subject: 'fix: b', author: null },
+        { subject: 'fix: c', author: null },
+    ]);
 });
 
 test('a commit GitHub does not have is a failure', async () => {
     const fetch: Fetch = () => Promise.resolve(Response.json({ data: { repository: { object: null } } }));
     const sdk = getSdk(createGitHubRequester({ getToken: () => 'token', fetch }));
 
-    await expect(listCommitSubjects(sdk, PARAMS)).rejects.toBeInstanceOf(GitHubApiError);
+    await expect(listCommits(sdk, PARAMS)).rejects.toBeInstanceOf(GitHubApiError);
 });
 
-function answeringPages(pages: readonly { next?: string; commits: readonly { oid: string; message: string }[] }[]) {
+function answeringPages(pages: readonly AnsweredPage[]) {
     const asked: unknown[] = [];
     const fetch: Fetch = (_, init) => {
         const body: unknown = JSON.parse(typeof init?.body === 'string' ? init.body : '{}');
@@ -80,4 +111,9 @@ function answeringPages(pages: readonly { next?: string; commits: readonly { oid
     };
 
     return { asked, sdk: getSdk(createGitHubRequester({ getToken: () => 'token', fetch })) };
+}
+
+interface AnsweredPage {
+    readonly next?: string;
+    readonly commits: readonly { oid: string; message: string; author?: { user: { login: string } | null } | null }[];
 }

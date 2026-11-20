@@ -381,7 +381,9 @@ test('a Development build lists its commits since the last Stable, and O opens t
     await expect(page.getByText("1 change you'd notice, out of 2 commits.")).toBeVisible();
     // Its pull requests open in githq.
     await expect(page.getByRole('link', { name: '#7' })).toHaveAttribute('href', '/kedrzu/githq/pull/7');
-    expect(github.graphqlCalls.find(call => call.name === 'CommitSubjects')?.variables.from).toBe('abc1234');
+    // Its authors, read with the commits, link to them on GitHub.
+    await expect(page.getByRole('link', { name: '@octocat' })).toHaveAttribute('href', 'https://github.com/octocat');
+    expect(github.graphqlCalls.find(call => call.name === 'Commits')?.variables.from).toBe('abc1234');
 
     await page.keyboard.press('o');
     await expect.poll(() => native.opened).toEqual(['https://github.com/kedrzu/githq/commits/abc1234']);
@@ -443,15 +445,15 @@ function answerChangelog(github: GitHubMock) {
             },
         },
     });
-    github.graphql('CommitSubjects', {
+    github.graphql('Commits', {
         repository: {
             object: {
                 history: {
                     pageInfo: { hasNextPage: false, endCursor: null },
                     nodes: [
-                        { oid: 'abc1234', message: 'feat: add a thing (#7)' },
-                        { oid: 'def5678', message: 'chore: tidy (#6)' },
-                        { oid: 'tagged', message: 'chore: the last Stable' },
+                        { oid: 'abc1234', message: 'feat: add a thing (#7)', author: { user: { login: 'octocat' } } },
+                        { oid: 'def5678', message: 'chore: tidy (#6)', author: { user: null } },
+                        { oid: 'tagged', message: 'chore: the last Stable', author: null },
                     ],
                 },
             },

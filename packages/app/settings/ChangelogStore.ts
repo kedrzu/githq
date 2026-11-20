@@ -1,5 +1,5 @@
 import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
-import { listCommitSubjects } from '@githq/github/listCommitSubjects.js';
+import { listCommits } from '@githq/github/listCommits.js';
 import { listReleases } from '@githq/github/listReleases.js';
 import type { GitHubRelease } from '@githq/github/listReleases.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
@@ -129,7 +129,7 @@ export const ChangelogStore = defineService({
             releases: readonly GitHubRelease[],
             commit: string | null,
         ): Promise<DevelopmentCommits> {
-            const { subjects, stoppedAt, limited } = await listCommitSubjects(sdk, {
+            const { commits, stoppedAt, limited } = await listCommits(sdk, {
                 ...GITHQ_REPOSITORY,
                 from: commit ?? 'main',
                 stopAt: new Set(releases.flatMap(({ tagCommit }) => tagCommit ?? [])),
@@ -137,7 +137,7 @@ export const ChangelogStore = defineService({
             });
             const since = stoppedAt === null ? null : findStableAt(releases, stoppedAt);
 
-            return { since: since && getReleaseVersion(since), subjects, limited };
+            return { since: since && getReleaseVersion(since), commits, limited };
         }
     },
 });

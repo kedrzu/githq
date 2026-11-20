@@ -2,13 +2,14 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-import type { ReleaseMode } from './releasePlan.js';
+import type { ReleaseCommit, ReleaseMode } from './releasePlan.js';
 import {
     checkTitle,
     composeUpdaterManifest,
     developmentVersion,
     findLastStableTag,
     hasNoCode,
+    isUserVisibleSubject,
     planRelease,
     renderNotes,
 } from './releasePlan.js';
@@ -22,8 +23,9 @@ import {
 //     only when the changed paths are all documentation.
 //   release.ts updater-manifest --version <version> --download-url <url> --assets <file> --signatures <dir> --out <file>
 //     <file> is the release's assets as GitHub lists them, <dir> holds its `.sig` files. Writes `latest.json` to --out.
-// It reads local git, its arguments and the files it is given only. Git is spawned with an argument array, never through
-// a shell, so a title or a commit subject stays data.
+// It reads local git, its arguments and the files it is given; `plan` also asks GitHub, through `gh` and its GH_TOKEN,
+// for the login of each user-visible commit's author. Git and gh are spawned with an argument array, never through a
+// shell, so a title or a commit subject stays data.
 
 const MODES: string[] = ['preview', 'stable'];
 const USAGE =
@@ -70,7 +72,12 @@ function plan(args: string[]) {
     // The version grows from the last stable tag HEAD contains.
     const mergedTags = git('tag', '-l', 'v*', '--merged', 'HEAD');
     const lastStable = findLastStableTag(mergedTags);
-    const subjects = git('log', '--format=%s', lastStable ? `${lastStable}..HEAD` : 'HEAD');
+    // A subject is one line, so the first NUL splits each line into the hash and the subject.
+    const log = git('log', '--format=%H%x00%s', lastStable ? `${lastStable}..HEAD` : 'HEAD').map(line => {
+        const separator = line.indexOf('\0');
+        return { sha: line.slice(0, separator), subject: line.slice(separator + 1) };
+    });
+    const subjects = log.map(({ subject }) => subject);
 
     const result = planRelease({ subjects, tags: mergedTags });
     if (result.kind === 'nothing') {
@@ -82,8 +89,14 @@ function plan(args: string[]) {
         fail(reason);
     }
 
-    const policyUrl = `https://github.com/${process.env.GITHUB_REPOSITORY ?? 'kedrzu/githq'}#code-signing-policy`;
-    const notes = renderNotes({ subjects, policyUrl });
+    const repository = process.env.GITHUB_REPOSITORY ?? 'kedrzu/githq';
+    const policyUrl = `https://github.com/${repository}#code-signing-policy`;
+    // Only the commits the notes list are worth a request.
+    const commits: ReleaseCommit[] = log.map(({ sha, subject }) => ({
+        subject,
+        author: isUserVisibleSubject(subject) ? readAuthor(repository, sha) : null,
+    }));
+    const notes = renderNotes({ commits, policyUrl });
     writeFileSync(notesFile, notes);
 
     report(`Next release: ${result.tag}\n\n${notes}`);
@@ -91,6 +104,22 @@ function plan(args: string[]) {
     if (mode !== 'preview' && process.env.GITHUB_OUTPUT) {
         appendFileSync(process.env.GITHUB_OUTPUT, `tag=${result.tag}\n`);
     }
+}
+
+/**
+ * The GitHub login of a commit's author, `null` when GitHub links the commit to no account. A failing call fails the run
+ * rather than leaving holes in the notes.
+ */
+function readAuthor(repository: string, sha: string): string | null {
+    let login: string;
+    try {
+        login = execFileSync('gh', ['api', `repos/${repository}/commits/${sha}`, '--jq', '.author.login // ""'], {
+            encoding: 'utf8',
+        }).trim();
+    } catch {
+        fail(`could not read the author of ${sha} from GitHub`);
+    }
+    return login === '' ? null : login;
 }
 
 function main(args: string[]) {

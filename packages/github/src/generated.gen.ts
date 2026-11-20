@@ -990,27 +990,6 @@ export type CommitStatesQuery = {
     >;
 };
 
-export type CommitSubjectsQueryVariables = Exact<{
-    owner: string;
-    name: string;
-    from: string;
-    after?: string | null | undefined;
-}>;
-
-export type CommitSubjectsQuery = {
-    repository: {
-        object:
-            | {
-                  history: {
-                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
-                      nodes: Array<{ oid: string; message: string } | null> | null;
-                  };
-              }
-            | Record<PropertyKey, never>
-            | null;
-    } | null;
-};
-
 export type CommitSubmodulesQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -1021,6 +1000,31 @@ export type CommitSubmodulesQuery = {
     repository: {
         object:
             | { submodules: { nodes: Array<{ path: string; gitUrl: string } | null> | null } }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
+export type CommitsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    from: string;
+    after?: string | null | undefined;
+}>;
+
+export type CommitsQuery = {
+    repository: {
+        object:
+            | {
+                  history: {
+                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                      nodes: Array<{
+                          oid: string;
+                          message: string;
+                          author: { user: { login: string } | null } | null;
+                      } | null> | null;
+                  };
+              }
             | Record<PropertyKey, never>
             | null;
     } | null;
@@ -21911,8 +21915,24 @@ export const CommitStatesDocument = new TypedDocumentString(`
     state
   }
 }`);
-export const CommitSubjectsDocument = new TypedDocumentString(`
-    query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
+export const CommitSubmodulesDocument = new TypedDocumentString(`
+    query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
+  repository(owner: $owner, name: $name) {
+    object(oid: $oid) {
+      ... on Commit {
+        submodules(first: 100) {
+          nodes {
+            path
+            gitUrl
+          }
+        }
+      }
+    }
+  }
+}
+    `);
+export const CommitsDocument = new TypedDocumentString(`
+    query Commits($owner: String!, $name: String!, $from: String!, $after: String) {
   repository(owner: $owner, name: $name) {
     object(expression: $from) {
       ... on Commit {
@@ -21924,22 +21944,11 @@ export const CommitSubjectsDocument = new TypedDocumentString(`
           nodes {
             oid
             message
-          }
-        }
-      }
-    }
-  }
-}
-    `);
-export const CommitSubmodulesDocument = new TypedDocumentString(`
-    query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
-  repository(owner: $owner, name: $name) {
-    object(oid: $oid) {
-      ... on Commit {
-        submodules(first: 100) {
-          nodes {
-            path
-            gitUrl
+            author {
+              user {
+                login
+              }
+            }
           }
         }
       }
@@ -28912,19 +28921,19 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CommitStatesQuery>;
         },
-        CommitSubjects(variables: CommitSubjectsQueryVariables, options?: C): Promise<CommitSubjectsQuery> {
-            return requester<CommitSubjectsQuery, CommitSubjectsQueryVariables>(
-                CommitSubjectsDocument,
-                variables,
-                options,
-            ) as Promise<CommitSubjectsQuery>;
-        },
         CommitSubmodules(variables: CommitSubmodulesQueryVariables, options?: C): Promise<CommitSubmodulesQuery> {
             return requester<CommitSubmodulesQuery, CommitSubmodulesQueryVariables>(
                 CommitSubmodulesDocument,
                 variables,
                 options,
             ) as Promise<CommitSubmodulesQuery>;
+        },
+        Commits(variables: CommitsQueryVariables, options?: C): Promise<CommitsQuery> {
+            return requester<CommitsQuery, CommitsQueryVariables>(
+                CommitsDocument,
+                variables,
+                options,
+            ) as Promise<CommitsQuery>;
         },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(
