@@ -21,11 +21,11 @@
         "preview": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker preview --port 8787",
         "deploy": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker deploy",
         "build:desktop": "bun run build && bun --cwd packages/desktop tauri build",
-        "build:desktop:signed": "bun run build && GITHQ_ENV=prod bun nzyme secrets run -- bun --cwd packages/desktop tauri build --config '{\"bundle\":{\"createUpdaterArtifacts\":true}}'",
+        "build:desktop:signed": "bun run build && GITHQ_ENV=prod bun githq secrets run -- bun --cwd packages/desktop tauri build --config '{\"bundle\":{\"createUpdaterArtifacts\":true}}'",
         "storybook": "bun --cwd packages/app storybook",
         "lighthouse": "bun --cwd packages/app lighthouse",
-        "lint": "oxlint --type-aware --quiet --disable-nested-config --fix . && eslint --fix . && bun nzyme pen check",
-        "lint:check": "oxlint --type-aware --quiet --disable-nested-config . && eslint . && bun nzyme pen check",
+        "lint": "oxlint --type-aware --quiet --disable-nested-config --fix . && eslint --fix . && bun githq pen check",
+        "lint:check": "oxlint --type-aware --quiet --disable-nested-config . && eslint . && bun githq pen check",
         "lint:warnings": "oxlint --type-aware --disable-nested-config .",
         "format": "oxfmt --disable-nested-config . > /dev/null && bun run format:md",
         "format:check": "oxfmt --check --disable-nested-config . && bun run format:md:check",
@@ -43,13 +43,9 @@
         "format:md:check": "eslint \"**/*.md\""
     },
     "devDependencies": {
-        "@nzyme/bitwarden": "workspace:*",
+        "@githq/cli": "workspace:*",
         "@nzyme/cli": "workspace:*",
-        "@nzyme/cli-core": "workspace:*",
         "@nzyme/eslint": "workspace:*",
-        "@nzyme/ioc": "workspace:*",
-        "@nzyme/pen": "workspace:*",
-        "@nzyme/secrets": "workspace:*",
         "@nzyme/tsconfig": "workspace:*",
         "@pen.dev/cli": "0.3.15",
         "@types/bun": "1.4.4",
@@ -73,12 +69,6 @@
     "packageManager": "bun@1.4.4",
     "nx": {
         "includedScripts": []
-    },
-    "nzyme": {
-        "plugins": [
-            "./scripts/secrets.ts",
-            "./scripts/pen.ts"
-        ]
     },
     "patchedDependencies": {
         "bun-types@1.4.4": "patches/bun-types@1.4.4.patch"
