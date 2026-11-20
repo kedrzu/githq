@@ -19,7 +19,7 @@ interface ButtonSizeOffender {
  * Checks every visible button of the app (`Button`, `IconButton`, `SplitButton`: `data-button-size` on the rendered
  * `<button>` or `<a>`) against the scale of `docs/design/githq/buttons.md`: a `Button` is 24, 32, 40 or 48 px tall
  * (`sm`–`xl`), an `IconButton` 24 × 24 or 32 × 32 (`sm`, `md`) and 34 tall on the rail. A `link` button takes its text's
- * height and a split button's chevron its button's, so neither is measured; on a phone an `IconButton` in a phone's bar
+ * height, a split button's chevron its button's and a toggle (`aria-pressed`) its own, so none is measured; on a phone an `IconButton` in a phone's bar
  * may be a finger's square of 44 to 48 instead (`touch-icon-buttons`, the command line's menu). Soft, one message per button, so a walk reports every one at once.
  *
  * @param within A CSS selector: only the buttons inside it are checked (a menu over the page).
@@ -42,7 +42,13 @@ export async function expectButtonSizes(page: Page, state: string, within?: stri
                 for (const element of root.querySelectorAll<HTMLElement>('[data-button-size]')) {
                     const size = element.dataset.buttonSize ?? '';
                     const variant = element.dataset.buttonVariant;
-                    if (size === 'split' || variant === 'link' || !element.checkVisibility()) {
+                    // A toggle (`aria-pressed`) is outside the guideline: it keeps its design's own size.
+                    if (
+                        size === 'split' ||
+                        variant === 'link' ||
+                        element.hasAttribute('aria-pressed') ||
+                        !element.checkVisibility()
+                    ) {
                         continue;
                     }
 

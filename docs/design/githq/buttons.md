@@ -22,7 +22,7 @@ Four heights. The rule is what a place is for: a mouse aims at an action, so a p
 - **A split button** (an action with its other ways in a joined menu: Close issue ▾) is `md`, `lg` in a phone's docked
   composer; all of them sit in footers.
 - **Icon-only buttons are on the same scale:** `sm` 24 × 24 beside `sm` buttons and in headers, `md` 32 × 32 beside
-  `md` ones. The sidebar's rail has its own `rail`, 38 × 34.
+  `md` ones. The sidebar's rail has its own `rail`, 38 × 34, which the landing's menu button shares.
 - **On a phone** the actions a screen is for are `lg`: the merge card's, the docked composer's, a page's call to
   action. Chrome a phone enlarges for a finger (a toast's actions, a toolbar control, a settings field) is `md`, and an
   empty state's actions stay `md`. Phone-only components (the top bar, the command line, pills) and icon buttons that
@@ -61,5 +61,5 @@ Each variant means one thing.
 
 ## Out of this guideline
 
-Elements that act on a click but are not drawn as buttons: rows, tabs, toggles, segmented controls, disclosure rows,
+Elements that act on a click but are not drawn as buttons: rows, tabs, toggles (`aria-pressed`, a 20 px one inside a field included), segmented controls, disclosure rows,
 swipe tiles, pills, the diff's line numbers and comment affordances; the landing page's navigation.

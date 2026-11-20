@@ -384,7 +384,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         </div>
         <Button
           v-if="row.notice !== 'empty'"
-          size="sm"
+          size="md"
           variant="secondary"
           :link="fileUrl"
           target="_blank"
@@ -423,7 +423,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           </p>
         </div>
         <Button
-          size="sm"
+          size="md"
           variant="secondary"
           :link="fileUrl"
           target="_blank"
@@ -445,14 +445,14 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           <p :class="css.reviewDiffRow_noticeDetail">{{ getFailureText(row.error) }}</p>
         </div>
         <Button
-          size="sm"
+          size="md"
           variant="secondary"
           @click="emit('retry', row.file.path)"
         >
           {{ t(l.tryAgain) }}
         </Button>
         <Button
-          size="sm"
+          size="md"
           variant="secondary"
           :link="fileUrl"
           target="_blank"
