@@ -128115,6 +128115,16 @@
                       "fontFamily": "$font",
                       "fontSize": 12.5,
                       "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nMZKa",
+                      "name": "Author",
+                      "fill": "$fg-dim",
+                      "content": "by @kedrzu",
+                      "fontFamily": "$font",
+                      "fontSize": 12.5,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -128231,6 +128241,9 @@
                             },
                             "Gbb45": {
                               "content": "#104"
+                            },
+                            "nMZKa": {
+                              "content": "by @octocat"
                             }
                           }
                         },
@@ -128609,6 +128622,9 @@
                             },
                             "Gbb45": {
                               "content": "#115"
+                            },
+                            "nMZKa": {
+                              "content": "by @octocat"
                             }
                           }
                         }
@@ -128988,12 +129004,16 @@
                         "wFBLn": {
                           "enabled": true
                         },
-                        "upOKl": {
-                          "id": "qepor",
-                          "type": "ref",
-                          "ref": "ofOJx",
-                          "name": "Content",
-                          "width": "fill_container"
+                        "P9sAU": {
+                          "children": [
+                            {
+                              "id": "qepor",
+                              "type": "ref",
+                              "ref": "ofOJx",
+                              "name": "Content",
+                              "width": "fill_container"
+                            }
+                          ]
                         }
                       }
                     },
@@ -131382,17 +131402,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "jIziF",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "m3CnDG",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -131875,12 +131899,16 @@
                                     "J3brH": {
                                       "content": "November 3, 2026"
                                     },
-                                    "upOKl": {
-                                      "id": "chkxD",
-                                      "type": "ref",
-                                      "ref": "ofOJx",
-                                      "name": "Content",
-                                      "width": "fill_container"
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "j1RDRM",
+                                          "type": "ref",
+                                          "ref": "ofOJx",
+                                          "name": "Content",
+                                          "width": "fill_container"
+                                        }
+                                      ]
                                     }
                                   }
                                 },
@@ -132126,12 +132154,16 @@
                                     "J3brH": {
                                       "content": "November 3, 2026"
                                     },
-                                    "upOKl": {
-                                      "id": "cXKH3",
-                                      "type": "ref",
-                                      "ref": "ofOJx",
-                                      "name": "Content",
-                                      "width": "fill_container"
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "m4mKG9",
+                                          "type": "ref",
+                                          "ref": "ofOJx",
+                                          "name": "Content",
+                                          "width": "fill_container"
+                                        }
+                                      ]
                                     }
                                   }
                                 },
@@ -133080,17 +133112,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "R5PVS",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "OlZDh",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -133320,17 +133356,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "yJkFU",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "b6GlN",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -133564,17 +133604,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "mO0Dk",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "StBRd",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -134300,17 +134344,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "TuIJP",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "pt297",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -136893,12 +136941,16 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "Bt8EC",
-                                      "type": "ref",
-                                      "ref": "ofOJx",
-                                      "name": "Content",
-                                      "width": "fill_container"
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "e6PnvN",
+                                          "type": "ref",
+                                          "ref": "ofOJx",
+                                          "name": "Content",
+                                          "width": "fill_container"
+                                        }
+                                      ]
                                     }
                                   }
                                 },
@@ -137147,12 +137199,16 @@
                                     "J3brH": {
                                       "content": "October 14, 2026"
                                     },
-                                    "upOKl": {
-                                      "id": "u5boia",
-                                      "type": "ref",
-                                      "ref": "c9dRl",
-                                      "name": "Content",
-                                      "width": "fill_container"
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "EWm3a",
+                                          "type": "ref",
+                                          "ref": "c9dRl",
+                                          "name": "Content",
+                                          "width": "fill_container"
+                                        }
+                                      ]
                                     }
                                   }
                                 },
@@ -137348,17 +137404,21 @@
                                     "wFBLn": {
                                       "enabled": true
                                     },
-                                    "upOKl": {
-                                      "id": "tZsQF",
-                                      "type": "ref",
-                                      "ref": "n6TPY",
-                                      "name": "Content",
-                                      "width": "fill_container",
-                                      "descendants": {
-                                        "GKGz7": {
-                                          "content": "4 changes you'd notice, out of 7 commits."
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "goyji",
+                                          "type": "ref",
+                                          "ref": "n6TPY",
+                                          "name": "Content",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "GKGz7": {
+                                              "content": "4 changes you'd notice, out of 7 commits."
+                                            }
+                                          }
                                         }
-                                      }
+                                      ]
                                     }
                                   }
                                 },
@@ -138856,12 +138916,16 @@
                                     "J3brH": {
                                       "content": "November 3, 2026"
                                     },
-                                    "upOKl": {
-                                      "id": "vWQdF",
-                                      "type": "ref",
-                                      "ref": "ofOJx",
-                                      "name": "Content",
-                                      "width": "fill_container"
+                                    "P9sAU": {
+                                      "children": [
+                                        {
+                                          "id": "Od2O6",
+                                          "type": "ref",
+                                          "ref": "ofOJx",
+                                          "name": "Content",
+                                          "width": "fill_container"
+                                        }
+                                      ]
                                     }
                                   }
                                 },
