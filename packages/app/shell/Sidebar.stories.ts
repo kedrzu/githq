@@ -120,6 +120,12 @@ export const LongLogin: Story = {
  */
 export const SyncStopped: Story = { args: { settingsSyncStopped: true }, decorators: [showingRoute()] };
 
+/**
+ * D44: a project dragged among the projects or a repository among the repositories, the row moving under the pointer
+ * and the others making room as it goes. The address a click went to is on the wrapper's `data-route`.
+ */
+export const Reordering: Story = { args: { onMove: fn() }, decorators: [showingRoute()] };
+
 /** The same on the rail. */
 export const CollapsedSyncStopped: Story = {
     args: { collapsed: true, settingsSyncStopped: true },

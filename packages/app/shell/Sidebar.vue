@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button (⌘B, as its tooltip says), then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); the open place's row (`open`, also while one of its items is open) is the current one — its sections or saved views are the header's tabs (git-client D27); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user; there tapping a place with rows (`SidebarSubRows`, from `getChildren`: a repository's sections with their tabs' counts, a project's saved views) shows or hides them in place, sliding open and closed while `animate`, the panel staying open — the open place's shown to begin with, one place's at a time, its current row marked instead of the place's —, and tapping one of them goes there. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button (⌘B, as its tooltip says), then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); the open place's row (`open`, also while one of its items is open) is the current one — its sections or saved views are the header's tabs (git-client D27); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Expanded on a computer, a tracked project is dragged among the projects and a repository among the repositories into the user's order (`move`, D44, `useSortableRows`): the row moves under the pointer and the others make room, sliding while `animate`; nothing marks where it lands, and a click without a drag still goes to it. Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. On a phone it is the places panel's content (`phone`, mobile D19): never the rail, its button closing the panel, no search, no "Draft reviews" nor "Broken workflows" nor a repository's workflow marker, each group of "my work" with an icon, rows a finger's height, and how fresh the app is (`status`) above the user; there tapping a place with rows (`SidebarSubRows`, from `getChildren`: a repository's sections with their tabs' counts, a project's saved views) shows or hides them in place, sliding open and closed while `animate`, the panel staying open — the open place's shown to begin with, one place's at a time, its current row marked instead of the place's —, and tapping one of them goes there. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -39,6 +39,12 @@ export interface SidebarTrackedEntry {
   readonly expandable?: boolean;
 }
 
+/** Where a tracked project or repository dragged in the sidebar lands: right before or after another of its kind. */
+export interface SidebarMovePlace {
+  readonly anchor: TrackedTarget;
+  readonly side: 'before' | 'after';
+}
+
 /** The tracked projects and repositories, in the user's order. */
 export interface SidebarTracked {
   readonly projects: readonly SidebarTrackedEntry[];
@@ -67,7 +73,8 @@ import {
   Workflow,
 } from 'lucide-vue-next';
 import Reveal from '@nzyme/vue/components/Reveal.vue';
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, ref, useCssModule, useTemplateRef } from 'vue';
+import { VueDraggable } from 'vue-draggable-plus';
 import { RouterLink } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -85,6 +92,7 @@ import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { BROKEN_WORKFLOWS_PATH } from '@/tracking/trackingRoutes.js';
+import { useSortableRows } from '@/tracking/useSortableRows.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { moveTabFocus } from '@/utils/useTabFocus.js';
 
@@ -122,7 +130,10 @@ const props = defineProps<{
    * tapped open; none without it.
    */
   getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
-  /** The rows under a place slide open and closed (`Reveal`): the app's animations on, and no reduced motion asked for. */
+  /**
+   * The rows under a place slide open and closed (`Reveal`), and the rows make room for a dragged one by sliding: the
+   * app's animations on, and no reduced motion asked for.
+   */
   animate?: boolean;
 }>();
 
@@ -132,6 +143,8 @@ const emit = defineEmits<{
   /** "Search or jump to…": the command menu. */
   search: [];
   signOut: [];
+  /** A tracked project or repository was dragged to another place among its kind (D44). */
+  move: [target: TrackedTarget, place: SidebarMovePlace];
 }>();
 
 defineSlots<{
@@ -150,6 +163,7 @@ const GROUP_ICONS: Readonly<Record<MyWorkGroup, LucideIcon>> = {
 };
 
 const t = useTranslate();
+const css = useCssModule('css');
 const navRef = useTemplateRef<HTMLElement>('nav');
 
 const projects = computed(() => props.tracked?.projects ?? []);
@@ -157,12 +171,19 @@ const repositories = computed(() => props.tracked?.repositories ?? []);
 const places = computed(() => [...projects.value, ...repositories.value]);
 const placeGroups = computed(() =>
   [
-    { key: 'projects', heading: t(l.projects), entries: projects.value },
-    { key: 'repositories', heading: t(l.repositories), entries: repositories.value },
+    { key: 'projects', heading: t(l.projects), entries: [...projects.value] },
+    { key: 'repositories', heading: t(l.repositories), entries: [...repositories.value] },
   ].filter(group => group.entries.length > 0),
 );
 const rail = computed(() => props.collapsed && !props.phone);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
+// A row dropped elsewhere among its kind (D44); the store's new order comes back through `tracked`.
+const sortable = useSortableRows<SidebarTrackedEntry>({
+  animate: () => props.animate,
+  ghostClass: css.sidebar_dragged,
+  floatingClass: css.sidebar_floating,
+  move: (entry, place) => emit('move', entry.target, { anchor: place.anchor.target, side: place.side }),
+});
 /** On a phone, the place tapped open — the open one to begin with; it is this panel's own, gone once it closes. */
 const phoneExpandedKey = ref(props.phone ? (places.value.find(place => place.open)?.key ?? null) : null);
 /** On a phone, the one place tapped open, with its rows; none for a place without rows. */
@@ -378,7 +399,15 @@ function getProjectMark(title: string) {
           :key="group.key"
         >
           <h2 :class="css.sidebar_section">{{ group.heading }}</h2>
-          <ul :class="css.sidebar_list">
+          <!-- A list of its own (`group`): a project is never dropped among the repositories, nor the reverse. -->
+          <VueDraggable
+            :model-value="group.entries"
+            tag="ul"
+            :class="css.sidebar_list"
+            :group="group.key"
+            :disabled="phone"
+            v-bind="sortable.bind(group.key, group.entries)"
+          >
             <li
               v-for="place in group.entries"
               :key="place.key"
@@ -447,7 +476,7 @@ function getProjectMark(title: string) {
                 :entries="expanded.children"
               />
             </li>
-          </ul>
+          </VueDraggable>
         </template>
 
         <div
@@ -774,6 +803,26 @@ function getProjectMark(title: string) {
 .sidebar_item_open {
   font-weight: $font-weight-medium;
   color: $color-fg;
+}
+
+// The dragged row's own place in its list while a copy of it moves under the pointer: left empty, for nothing to mark
+// where it will land (D44).
+.sidebar_dragged {
+  opacity: 0;
+}
+
+// The row moving under the pointer: Sortable's copy of it, on `<body>`, out of the list and the sidebar, so it takes
+// their look along. `!important` beats the inline `pointer-events: auto` Reka's context menu trigger puts on the link,
+// which would hide from Sortable the rows the copy is over.
+.sidebar_floating {
+  list-style: none;
+  background: $color-bg-2;
+  border-radius: $radius-md;
+}
+
+.sidebar_floating,
+.sidebar_floating * {
+  pointer-events: none !important;
 }
 
 // Amber all the time: it's the one thing here that blocks someone else (code review D28).

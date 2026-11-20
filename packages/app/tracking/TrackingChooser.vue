@@ -134,8 +134,6 @@ const props = defineProps<{
   tracked?: readonly TrackedRepositoryEntry[];
   /** The picker: `candidates` are being read — the list says so. */
   reading?: boolean;
-  /** The picker: the owner it opens on (a group's "Track more"); all owners when not given or GitHub doesn't list it. */
-  initialOwner?: string;
 }>();
 
 defineSlots<{
@@ -167,7 +165,7 @@ const phoneLayout = useService(PhoneLayout);
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
-const owner = ref<string>(props.initialOwner ?? 'all');
+const owner = ref<string>('all');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const projectsUnfolded = ref(false);
 /** The segment a phone shows. */
@@ -519,7 +517,7 @@ watch(filter, () => {
   repositoryAnchor.value = null;
 });
 
-// The owner it opened on turns out not to be one GitHub lists (someone else's group's "Track more"): all of them.
+// The owner picked is not one GitHub lists, as its lists are read again: all of them.
 watch(
   () => props.candidates,
   candidates => {

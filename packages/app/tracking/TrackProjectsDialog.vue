@@ -1,4 +1,4 @@
-<!-- Picking projects to track (T22, D25): the project chooser (`ProjectChooser`) in the repository picker's modal (T18), 1040 wide. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N projects" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on an owner (a group's "Track more") or a search (`?tab=projects&q=`, from an untracked project's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s; on a phone a screen of its own, back naming Projects (mobile D35). -->
+<!-- Picking projects to track (T22, D25): the project chooser (`ProjectChooser`) in the repository picker's modal (T18), 1040 wide. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N projects" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on a search (`?tab=projects&q=`, from an untracked project's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s; on a phone a screen of its own, back naming Projects (mobile D35). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -20,8 +20,6 @@ import type { CandidateProject } from './TrackingTypes.js';
 const TICK_MS = 60_000;
 
 const props = defineProps<{
-  /** The owner it opens on: a group's "Track more". */
-  owner?: string;
   /** What its filter holds when it opens: `?q=`, from an untracked project's screen. */
   search?: string;
 }>();
@@ -136,7 +134,6 @@ function track() {
       v-model:filter="filter"
       :tracked="pendingUntracks.projects"
       :reading="reading"
-      :initial-owner="owner"
       :candidates="tracking.candidates"
       :now="now"
       :found="found"

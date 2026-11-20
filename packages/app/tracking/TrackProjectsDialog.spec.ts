@@ -34,7 +34,6 @@ interface OpenParams {
     readonly tracked?: readonly string[];
     /** Pending untrack by the time it opens, as `owner/number`. */
     readonly pending?: readonly string[];
-    readonly owner?: string;
     readonly search?: string;
     readonly github?: Partial<AnswerTrackingCandidatesOptions>;
     readonly screenKey?: () => void;
@@ -270,14 +269,9 @@ test('⌘↵ with nothing picked neither tracks nor closes', async () => {
     await expect.element(dialog()).toBeInTheDocument();
 });
 
-test('it opens on an owner (Track more); the hidden one explains itself', async () => {
-    await open({ tracked: [], owner: 'fitloop' });
+test('the owner hiding its projects explains itself', async () => {
+    await open({ tracked: [] });
 
-    await expect.element(owner('fitloop')).toBeChecked();
-    await expect.element(dialog().getByRole('heading', { name: 'mlaine', exact: true })).not.toBeInTheDocument();
-    await expect.element(row('Bug triage')).toBeInTheDocument();
-
-    await userEvent.click(owner('All owners'));
     await userEvent.click(dialog().getByRole('button', { name: 'Why, and how to fix' }));
     await expect.element(owner('acme-health')).toBeChecked();
     await expect
@@ -401,7 +395,6 @@ async function open(params: OpenParams) {
                 return () =>
                     h(TrackProjectsDialog, {
                         open: opened.value,
-                        owner: params.owner,
                         search: params.search,
                         'onUpdate:open': value => {
                             opened.value = value;

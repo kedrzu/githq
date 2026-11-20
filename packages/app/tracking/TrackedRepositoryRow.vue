@@ -1,4 +1,4 @@
-<!-- A tracked repository's row in Settings' Repositories (G8 `CqvD4`, selected `Dht0d`): its name without the owner (the group names it), public or private — no tag while nothing tells — how many of its items are open, how it stands, and Untrack (`TrackedRow`); on a phone its owner before its name, and no Untrack (MB151). -->
+<!-- A tracked repository's row in Settings' Repositories (G8 `CqvD4`, selected `Dht0d`, D44): its owner in grey before its name (`mlaine/tasklet`), public or private — no tag while nothing tells — how many of its items are open, how it stands, and Untrack (`TrackedRow`); on a phone no Untrack (MB151). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
@@ -46,7 +46,7 @@ const badge = computed(() => {
   <TrackedRow
     :icon="isPrivate ? Lock : BookMarked"
     :title="parseRepositoryName(nameWithOwner).name"
-    :owner="phone ? parseRepositoryName(nameWithOwner).owner : undefined"
+    :owner="parseRepositoryName(nameWithOwner).owner"
     :phone="phone"
     :badge="badge"
     :count="t(l.open, { count: numbers.format(openCount) })"

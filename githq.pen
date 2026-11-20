@@ -245664,14 +245664,32 @@
                       "fill": "$fg-3"
                     },
                     {
-                      "type": "text",
-                      "id": "xEjfJ",
-                      "name": "Repo name",
-                      "fill": "$fg",
-                      "content": "tasklet",
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "500"
+                      "type": "frame",
+                      "id": "mRGB7",
+                      "name": "Name",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Hwy5K",
+                          "name": "Owner",
+                          "fill": "$fg-dim",
+                          "content": "mlaine/",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xEjfJ",
+                          "name": "Repo name",
+                          "fill": "$fg",
+                          "content": "tasklet",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
                     },
                     {
                       "type": "frame",
@@ -245821,6 +245839,16 @@
                       "gap": 6,
                       "alignItems": "center",
                       "children": [
+                        {
+                          "type": "text",
+                          "id": "UPlz7",
+                          "name": "Owner",
+                          "fill": "$fg-dim",
+                          "content": "mlaine /",
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
                         {
                           "type": "text",
                           "id": "wQGJH",
@@ -246068,6 +246096,57 @@
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KkzVQ",
+                      "name": "Move hint",
+                      "gap": 5,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "FqePR",
+                          "type": "ref",
+                          "ref": "guh3O",
+                          "name": "Kbd ⌥↑",
+                          "descendants": {
+                            "q1SXG": {
+                              "name": "Key option",
+                              "icon": "option"
+                            },
+                            "lhKUf": {
+                              "name": "Key arrow-up",
+                              "icon": "arrow-up"
+                            }
+                          }
+                        },
+                        {
+                          "id": "fkgg1",
+                          "type": "ref",
+                          "ref": "guh3O",
+                          "name": "Kbd ⌥↓",
+                          "descendants": {
+                            "q1SXG": {
+                              "name": "Key option",
+                              "icon": "option"
+                            },
+                            "lhKUf": {
+                              "name": "Key arrow-down",
+                              "icon": "arrow-down"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "Owtyz",
+                          "name": "Move",
+                          "fill": "$fg-dim",
+                          "content": "Move",
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
                           "fontWeight": "normal"
                         }
                       ]
@@ -247371,7 +247450,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Only what is tracked, grouped by owner (your own first, then organisations, then owners you aren't a member of), alphabetical inside a group. No ticks. Owners on the left, the same column as the picker (T18), with tracked counts; choosing one filters the list to it. Under it, \"Missing an organisation?\" with Grant access on GitHub, which opens GitHub's page for githq (github.com/settings/connections/applications/<client id>, getApprovalUrl), where an organisation githq can't see is granted (owner) or requested (member). Once granted, the organisation appears on the next read of the lists. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; it acts at once, with Undo (T20). Adding is a separate step: Track repositories (A) opens the picker (T18); a group's Track more opens it filtered to that owner, and is hidden when the owner has nothing left to track or can't be listed. Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
+                      "content": "Only what is tracked, as one list in your order: the order of the sidebar's Repositories, set by dragging there or here. A newly tracked repository joins at the end. Each row names its owner in grey before the repository, so the list reads without owner headers, and there is no owner filter here: only the picker (T18) filters by owner. Drag a row and it moves as you drag, the rows around it making room; or move the selected row with ⌥↑ and ⌥↓. The sidebar follows at once. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; it acts at once, with Undo (T20). Adding is a separate step: Track repositories (A) opens the picker (T18). Keys: J and K move, ⌥↑ and ⌥↓ reorder, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -247468,40 +247547,13 @@
                               "name": "Body",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "gap": 24,
+                              "layout": "vertical",
+                              "gap": 16,
                               "padding": [
                                 16,
                                 12
                               ],
                               "children": [
-                                {
-                                  "id": "yFFiZ",
-                                  "type": "ref",
-                                  "ref": "R7QiuW",
-                                  "name": "Owners",
-                                  "descendants": {
-                                    "dBULj": {
-                                      "content": "15"
-                                    },
-                                    "bNxkL": {
-                                      "content": "12"
-                                    },
-                                    "k63UtE": {
-                                      "content": "2"
-                                    },
-                                    "Y4APQ": {
-                                      "icon": "building-2",
-                                      "fill": "$fg-3"
-                                    },
-                                    "ZLojM": {
-                                      "content": "nuxt"
-                                    },
-                                    "hsymZ": {
-                                      "content": "1",
-                                      "fill": "$fg-dim"
-                                    }
-                                  }
-                                },
                                 {
                                   "type": "frame",
                                   "id": "eBezp",
@@ -247516,22 +247568,236 @@
                                       "name": "List head"
                                     },
                                     {
-                                      "id": "ZaIOI",
+                                      "id": "hqs4y",
                                       "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group mlaine",
+                                      "ref": "CqvD4",
+                                      "name": "Repo tasklet",
                                       "descendants": {
-                                        "piBcu": {
-                                          "icon": "user"
+                                        "w8FwE": {
+                                          "icon": "book-marked"
                                         },
-                                        "y4HhD": {
-                                          "content": "mlaine"
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
-                                        "WoxAZ": {
-                                          "content": "your repositories · 12 of 12 tracked"
+                                        "xEjfJ": {
+                                          "content": "tasklet"
                                         },
-                                        "KSeXE": {
-                                          "enabled": false
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "18 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Zc953",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo mdlint",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "mdlint"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "7 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "WFXuk",
+                                      "type": "ref",
+                                      "ref": "Dht0d",
+                                      "name": "Repo webapp",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "fitloop/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "webapp"
+                                        },
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "142 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "O33Pi",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo api",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "fitloop/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "api"
+                                        },
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "96 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "HeM8J",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo notes",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "notes"
+                                        },
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "3 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "NBAkv",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo nuxt",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "nuxt/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "nuxt"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "812 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 1m ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "qMFph",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo dotfiles",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "dotfiles"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "1 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "MNNNZ",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo skills",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "skills"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "11 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Z2zJd0",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo githq-settings",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "githq-settings"
+                                        },
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "0 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 2m ago"
                                         }
                                       }
                                     },
@@ -247543,6 +247809,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
                                         "xEjfJ": {
                                           "content": "advent-2025"
@@ -247567,6 +247836,9 @@
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
                                         "xEjfJ": {
                                           "content": "blog"
                                         },
@@ -247582,190 +247854,6 @@
                                       }
                                     },
                                     {
-                                      "id": "M9xh3",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo cli-tools",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "cli-tools"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "5 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "qMFph",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo dotfiles",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "dotfiles"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "1 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "Z2zJd0",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo githq-settings",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "githq-settings"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 2m ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "J5V71v",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo homebrew-tap",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "homebrew-tap"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "Zc953",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo mdlint",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "mdlint"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "7 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "wncIe",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo mlaine.github.io",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "mlaine.github.io"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "1 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "HeM8J",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo notes",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "notes"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "3 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "MNNNZ",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo skills",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "skills"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "11 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
                                       "id": "W9X3J",
                                       "type": "ref",
                                       "ref": "CqvD4",
@@ -247773,6 +247861,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
                                         "xEjfJ": {
                                           "content": "talks"
@@ -247789,22 +247880,25 @@
                                       }
                                     },
                                     {
-                                      "id": "hqs4y",
+                                      "id": "M9xh3",
                                       "type": "ref",
                                       "ref": "CqvD4",
-                                      "name": "Repo tasklet",
+                                      "name": "Repo cli-tools",
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
                                         "xEjfJ": {
-                                          "content": "tasklet"
+                                          "content": "cli-tools"
                                         },
                                         "xpvMy": {
                                           "content": "public"
                                         },
                                         "L6OsQ": {
-                                          "content": "18 open"
+                                          "content": "5 open"
                                         },
                                         "RvPJ3": {
                                           "content": "synced 14s ago"
@@ -247812,111 +247906,54 @@
                                       }
                                     },
                                     {
-                                      "id": "l54WU",
-                                      "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group fitloop",
-                                      "descendants": {
-                                        "piBcu": {
-                                          "icon": "building-2"
-                                        },
-                                        "y4HhD": {
-                                          "content": "fitloop"
-                                        },
-                                        "WoxAZ": {
-                                          "content": "organisation · 2 of 312 tracked"
-                                        },
-                                        "KSeXE": {
-                                          "enabled": true
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "O33Pi",
+                                      "id": "J5V71v",
                                       "type": "ref",
                                       "ref": "CqvD4",
-                                      "name": "Repo api",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "api"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "96 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "WFXuk",
-                                      "type": "ref",
-                                      "ref": "Dht0d",
-                                      "name": "Repo webapp",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "webapp"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "142 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "UTDPc",
-                                      "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group nuxt",
-                                      "descendants": {
-                                        "piBcu": {
-                                          "icon": "building-2"
-                                        },
-                                        "y4HhD": {
-                                          "content": "nuxt"
-                                        },
-                                        "WoxAZ": {
-                                          "content": "not a member · 1 tracked"
-                                        },
-                                        "KSeXE": {
-                                          "enabled": false
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "NBAkv",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo nuxt",
+                                      "name": "Repo homebrew-tap",
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
                                         "xEjfJ": {
-                                          "content": "nuxt"
+                                          "content": "homebrew-tap"
                                         },
                                         "xpvMy": {
                                           "content": "public"
                                         },
                                         "L6OsQ": {
-                                          "content": "812 open"
+                                          "content": "0 open"
                                         },
                                         "RvPJ3": {
-                                          "content": "synced 1m ago"
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "wncIe",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo mlaine.github.io",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "mlaine.github.io"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "1 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
                                         }
                                       }
                                     }
@@ -248910,7 +248947,12 @@
                                       "id": "YD0qZ",
                                       "type": "ref",
                                       "ref": "QpXtY",
-                                      "name": "List head"
+                                      "name": "List head",
+                                      "descendants": {
+                                        "KkzVQ": {
+                                          "enabled": false
+                                        }
+                                      }
                                     },
                                     {
                                       "id": "enu26",
@@ -248941,6 +248983,9 @@
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "advent-2025"
                                         },
@@ -248963,6 +249008,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "blog"
@@ -248987,6 +249035,9 @@
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "cli-tools"
                                         },
@@ -249009,6 +249060,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "dotfiles"
@@ -249033,6 +249087,9 @@
                                         "w8FwE": {
                                           "icon": "lock"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "githq-settings"
                                         },
@@ -249055,6 +249112,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "homebrew-tap"
@@ -249079,6 +249139,9 @@
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "mdlint"
                                         },
@@ -249101,6 +249164,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "mlaine.github.io"
@@ -249125,6 +249191,9 @@
                                         "w8FwE": {
                                           "icon": "lock"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "notes"
                                         },
@@ -249147,6 +249216,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "skills"
@@ -249171,6 +249243,9 @@
                                         "w8FwE": {
                                           "icon": "book-marked"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "talks"
                                         },
@@ -249193,6 +249268,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "tasklet"
@@ -249237,6 +249315,9 @@
                                         "w8FwE": {
                                           "icon": "lock"
                                         },
+                                        "Hwy5K": {
+                                          "enabled": false
+                                        },
                                         "xEjfJ": {
                                           "content": "api"
                                         },
@@ -249259,6 +249340,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "webapp"
@@ -249302,6 +249386,9 @@
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "enabled": false
                                         },
                                         "xEjfJ": {
                                           "content": "nuxt"
@@ -249837,6 +249924,9 @@
                                         "FRn8O": {
                                           "content": "githq keeps every item of these, from any repository, in this browser and syncs it in the background. Open one for its settings."
                                         },
+                                        "KkzVQ": {
+                                          "enabled": false
+                                        },
                                         "a77QJ7/i9UKWn": {
                                           "content": "Track projects"
                                         }
@@ -249868,6 +249958,9 @@
                                       "ref": "L5sxR",
                                       "name": "Project tasklet Roadmap",
                                       "descendants": {
+                                        "UPlz7": {
+                                          "enabled": false
+                                        },
                                         "wQGJH": {
                                           "content": "tasklet Roadmap"
                                         },
@@ -249911,6 +250004,9 @@
                                       "ref": "L5sxR",
                                       "name": "Project Docs revamp",
                                       "descendants": {
+                                        "UPlz7": {
+                                          "enabled": false
+                                        },
                                         "wQGJH": {
                                           "content": "Docs revamp"
                                         },
@@ -249934,6 +250030,9 @@
                                       "ref": "jbKD6",
                                       "name": "Project Platform Q4",
                                       "descendants": {
+                                        "UPlz7": {
+                                          "enabled": false
+                                        },
                                         "wQGJH": {
                                           "content": "Platform Q4"
                                         },
@@ -250987,290 +251086,24 @@
                                       "descendants": {
                                         "JyYd2": {
                                           "content": "14 tracked repositories"
+                                        },
+                                        "KkzVQ": {
+                                          "enabled": true
                                         }
                                       }
                                     },
                                     {
-                                      "id": "bOcXQ",
-                                      "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group mlaine",
-                                      "descendants": {
-                                        "piBcu": {
-                                          "icon": "user"
-                                        },
-                                        "y4HhD": {
-                                          "content": "mlaine"
-                                        },
-                                        "WoxAZ": {
-                                          "content": "your repositories · 12 of 12 tracked"
-                                        },
-                                        "KSeXE": {
-                                          "enabled": false
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "tEl8B",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo advent-2025",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "advent-2025"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "T2LXAT",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo blog",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "blog"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "2 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "Jz6tY",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo cli-tools",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "cli-tools"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "5 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "e05m07",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo dotfiles",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "dotfiles"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "1 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "hkNHl",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo githq-settings",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "githq-settings"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 2m ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "Xhinf",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo homebrew-tap",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "homebrew-tap"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "lImv9",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo mdlint",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "mdlint"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "7 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "ypnPS",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo mlaine.github.io",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "mlaine.github.io"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "1 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "EhNSB",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo notes",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "notes"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "3 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "Pii1S",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo skills",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "skills"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "11 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "z8SRw",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo talks",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "book-marked"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "talks"
-                                        },
-                                        "xpvMy": {
-                                          "content": "public"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "0 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "UrVkc",
+                                      "id": "PtqAR",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo tasklet",
+                                      "width": "fill_container",
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
                                         "xEjfJ": {
                                           "content": "tasklet"
@@ -251287,33 +251120,44 @@
                                       }
                                     },
                                     {
-                                      "id": "w5emu",
+                                      "id": "I22g9",
                                       "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group fitloop",
+                                      "ref": "CqvD4",
+                                      "name": "Repo mdlint",
+                                      "width": "fill_container",
                                       "descendants": {
-                                        "piBcu": {
-                                          "icon": "building-2"
+                                        "w8FwE": {
+                                          "icon": "book-marked"
                                         },
-                                        "y4HhD": {
-                                          "content": "fitloop"
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
-                                        "WoxAZ": {
-                                          "content": "organisation · 1 of 312 tracked"
+                                        "xEjfJ": {
+                                          "content": "mdlint"
                                         },
-                                        "KSeXE": {
-                                          "enabled": true
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "7 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "Eawos",
+                                      "id": "IGjSY",
                                       "type": "ref",
-                                      "ref": "Dht0d",
+                                      "ref": "CqvD4",
                                       "name": "Repo webapp",
+                                      "width": "fill_container",
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "fitloop/"
                                         },
                                         "xEjfJ": {
                                           "content": "webapp"
@@ -251330,33 +251174,44 @@
                                       }
                                     },
                                     {
-                                      "id": "xzWPK",
+                                      "id": "yt0jg",
                                       "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group nuxt",
+                                      "ref": "Dht0d",
+                                      "name": "Repo notes",
+                                      "width": "fill_container",
                                       "descendants": {
-                                        "piBcu": {
-                                          "icon": "building-2"
+                                        "w8FwE": {
+                                          "icon": "lock"
                                         },
-                                        "y4HhD": {
-                                          "content": "nuxt"
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
                                         },
-                                        "WoxAZ": {
-                                          "content": "not a member · 1 tracked"
+                                        "xEjfJ": {
+                                          "content": "notes"
                                         },
-                                        "KSeXE": {
-                                          "enabled": false
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "3 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "WLmXu",
+                                      "id": "WB9GW",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo nuxt",
+                                      "width": "fill_container",
                                       "descendants": {
                                         "w8FwE": {
                                           "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "nuxt/"
                                         },
                                         "xEjfJ": {
                                           "content": "nuxt"
@@ -251369,6 +251224,249 @@
                                         },
                                         "RvPJ3": {
                                           "content": "synced 1m ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "hZcwA",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo dotfiles",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "dotfiles"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "1 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "eZUui",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo skills",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "skills"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "11 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Cds1f",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo githq-settings",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "lock"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "githq-settings"
+                                        },
+                                        "xpvMy": {
+                                          "content": "private"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "0 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 2m ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "fg8gS",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo advent-2025",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "advent-2025"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "0 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "NLQ31",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo blog",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "blog"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "2 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "nYjwx",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo talks",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "talks"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "0 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "W7xxb",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo cli-tools",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "cli-tools"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "5 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Y03Ay",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo homebrew-tap",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "homebrew-tap"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "0 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "rYF9G",
+                                      "type": "ref",
+                                      "ref": "CqvD4",
+                                      "name": "Repo mlaine.github.io",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "w8FwE": {
+                                          "icon": "book-marked"
+                                        },
+                                        "Hwy5K": {
+                                          "content": "mlaine/"
+                                        },
+                                        "xEjfJ": {
+                                          "content": "mlaine.github.io"
+                                        },
+                                        "xpvMy": {
+                                          "content": "public"
+                                        },
+                                        "L6OsQ": {
+                                          "content": "1 open"
+                                        },
+                                        "RvPJ3": {
+                                          "content": "synced 14s ago"
                                         }
                                       }
                                     }
@@ -258697,7 +258795,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Projects work like Repositories (G8): only what is tracked, grouped by owner, no ticks. A row shows where its items come from (a tracked project brings its items even from repositories you don't track, so it says how many of those are tracked), its item count and sync status; no visibility tag, which githq doesn't know for a project. Click or Enter opens the project's settings, a page like T16 for when projects get settings of their own; until then it holds Tracking alone. Untrack on the row, at once with Undo, as in Repositories (T20). Track projects (A) and a group's Track more open the picker (T22). Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections.",
+                      "content": "Projects work like Repositories (G8): only what is tracked, one list in your order (the order of the sidebar's Projects), the owner in grey before the project's title, no ticks. Drag a row to a new place, or move the selected row with ⌥↑ and ⌥↓; the sidebar follows at once. A row shows where its items come from (a tracked project brings its items even from repositories you don't track, so it says how many of those are tracked), its item count and sync status; no visibility tag, which githq doesn't know for a project. Click or Enter opens the project's settings, a page like T16 for when projects get settings of their own; until then it holds Tracking alone. Untrack on the row, at once with Undo, as in Repositories (T20). Track projects (A) opens the picker (T22). Keys: J and K move, ⌥↑ and ⌥↓ reorder, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -258826,22 +258924,28 @@
                                       }
                                     },
                                     {
-                                      "id": "T9agL",
+                                      "id": "M8vJ5",
                                       "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group mlaine",
+                                      "ref": "jbKD6",
+                                      "name": "Project Platform Q4",
                                       "descendants": {
-                                        "piBcu": {
-                                          "icon": "user"
+                                        "UPlz7": {
+                                          "content": "fitloop /"
                                         },
-                                        "y4HhD": {
-                                          "content": "mlaine"
+                                        "wQGJH": {
+                                          "content": "Platform Q4"
                                         },
-                                        "WoxAZ": {
-                                          "content": "your projects · 1 of 1 tracked"
+                                        "whDqI": {
+                                          "content": "#12"
                                         },
-                                        "KSeXE": {
-                                          "enabled": false
+                                        "TgDBQ": {
+                                          "content": "private"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from 4 repositories, 2 tracked"
+                                        },
+                                        "gMM7c": {
+                                          "content": "128 items"
                                         }
                                       }
                                     },
@@ -258851,6 +258955,9 @@
                                       "ref": "L5sxR",
                                       "name": "Project tasklet Roadmap",
                                       "descendants": {
+                                        "UPlz7": {
+                                          "content": "mlaine /"
+                                        },
                                         "wQGJH": {
                                           "content": "tasklet Roadmap"
                                         },
@@ -258869,31 +258976,14 @@
                                       }
                                     },
                                     {
-                                      "id": "SG3nx",
-                                      "type": "ref",
-                                      "ref": "r7z5p0",
-                                      "name": "Group fitloop",
-                                      "descendants": {
-                                        "piBcu": {
-                                          "icon": "building-2"
-                                        },
-                                        "y4HhD": {
-                                          "content": "fitloop"
-                                        },
-                                        "WoxAZ": {
-                                          "content": "organisation · 2 of 6 tracked"
-                                        },
-                                        "KSeXE": {
-                                          "enabled": true
-                                        }
-                                      }
-                                    },
-                                    {
                                       "id": "SnwCp",
                                       "type": "ref",
                                       "ref": "L5sxR",
                                       "name": "Project Docs revamp",
                                       "descendants": {
+                                        "UPlz7": {
+                                          "content": "fitloop /"
+                                        },
                                         "wQGJH": {
                                           "content": "Docs revamp"
                                         },
@@ -258908,29 +258998,6 @@
                                         },
                                         "gMM7c": {
                                           "content": "12 items"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "M8vJ5",
-                                      "type": "ref",
-                                      "ref": "jbKD6",
-                                      "name": "Project Platform Q4",
-                                      "descendants": {
-                                        "wQGJH": {
-                                          "content": "Platform Q4"
-                                        },
-                                        "whDqI": {
-                                          "content": "#12"
-                                        },
-                                        "TgDBQ": {
-                                          "content": "private"
-                                        },
-                                        "bfJHr": {
-                                          "content": "from 4 repositories, 2 tracked"
-                                        },
-                                        "gMM7c": {
-                                          "content": "128 items"
                                         }
                                       }
                                     }
@@ -517918,13 +517985,12 @@
                                               "id": "Irvpl",
                                               "type": "ref",
                                               "ref": "QpXtY",
-                                              "name": "Head"
-                                            },
-                                            {
-                                              "id": "r4s5j",
-                                              "type": "ref",
-                                              "ref": "r7z5p0",
-                                              "name": "Owner"
+                                              "name": "Head",
+                                              "descendants": {
+                                                "KkzVQ": {
+                                                  "enabled": true
+                                                }
+                                              }
                                             },
                                             {
                                               "id": "fcyT4",
@@ -517932,6 +517998,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 1",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "tasklet"
                                                 },
@@ -517946,6 +518015,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 2",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "website"
                                                 },
@@ -517960,6 +518032,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 3",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "dotfiles"
                                                 },
@@ -517974,6 +518049,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 4",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "linkcheck"
                                                 },
@@ -517988,6 +518066,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 5",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "notes-api"
                                                 },
@@ -518005,7 +518086,7 @@
                                       "id": "fEjni",
                                       "name": "Caption",
                                       "fill": "$fg-3",
-                                      "content": "Settings → Tracked lists everything you track, grouped by owner.",
+                                      "content": "Settings → Tracked lists everything you track, in your order.",
                                       "fontFamily": "$font",
                                       "fontSize": 13,
                                       "fontWeight": "normal"
@@ -519394,13 +519475,12 @@
                                               "id": "UnHck",
                                               "type": "ref",
                                               "ref": "QpXtY",
-                                              "name": "Head"
-                                            },
-                                            {
-                                              "id": "aV3Ji",
-                                              "type": "ref",
-                                              "ref": "r7z5p0",
-                                              "name": "Owner"
+                                              "name": "Head",
+                                              "descendants": {
+                                                "KkzVQ": {
+                                                  "enabled": true
+                                                }
+                                              }
                                             },
                                             {
                                               "id": "zjubD",
@@ -519408,6 +519488,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 1",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "tasklet"
                                                 },
@@ -519422,6 +519505,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 2",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "website"
                                                 },
@@ -519436,6 +519522,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 3",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "dotfiles"
                                                 },
@@ -519450,6 +519539,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 4",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "linkcheck"
                                                 },
@@ -519464,6 +519556,9 @@
                                               "ref": "CqvD4",
                                               "name": "Row 5",
                                               "descendants": {
+                                                "Hwy5K": {
+                                                  "enabled": true
+                                                },
                                                 "xEjfJ": {
                                                   "content": "notes-api"
                                                 },
@@ -519481,7 +519576,7 @@
                                       "id": "U1aly",
                                       "name": "Caption",
                                       "fill": "$fg-3",
-                                      "content": "Settings → Tracked lists everything you track, grouped by owner.",
+                                      "content": "Settings → Tracked lists everything you track, in your order.",
                                       "fontFamily": "$font",
                                       "fontSize": 13,
                                       "fontWeight": "normal"

@@ -10,11 +10,12 @@ import {
     SAMPLE_PROJECT_PATH,
     SAMPLE_REPOSITORY,
 } from '../tracking/sampleTrackedWork.js';
+import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
-const REPOSITORY_NAME = SAMPLE_REPOSITORY.split('/')[1] ?? '';
+const DOCS = `${LOGIN}/docs`;
 
-test("Repositories lists what is tracked by owner; ⌫ untracks the selected row and the toast's Undo brings it back", async ({
+test("Repositories lists what is tracked, each row its owner before its name; ⌫ untracks the selected row and the toast's Undo brings it back", async ({
     page,
     github,
 }) => {
@@ -24,12 +25,12 @@ test("Repositories lists what is tracked by owner; ⌫ untracks the selected row
 
     const list = new TrackedListScreenHarness(page);
     await expect(list.heading).toHaveText(/^1\stracked\srepository$/u);
-    await expect(list.groupHeader(LOGIN)).toHaveText(/your\srepositories\s·\s1\sof\s1\stracked$/u);
-    const row = list.row(LOGIN, REPOSITORY_NAME);
+    await expect(list.rows).toHaveText([startsWith(SAMPLE_REPOSITORY)]);
+    const row = list.row(SAMPLE_REPOSITORY);
     await expect(row).toHaveText(/\d+\sopen/u);
 
     await page.keyboard.press('j');
-    await expect(list.selectedRow).toHaveText(new RegExp(`^${REPOSITORY_NAME}`, 'u'));
+    await expect(list.selectedRow).toHaveText(startsWith(SAMPLE_REPOSITORY));
     await page.keyboard.press('Backspace');
 
     await expect(row).toHaveCount(0);
@@ -44,35 +45,59 @@ test("Repositories lists what is tracked by owner; ⌫ untracks the selected row
     await expect(list.heading).toHaveText(/^1\stracked\srepository$/u);
 });
 
-test('A opens the picker, tracking a repository there adds its row, and the row opens its settings', async ({
+test('A opens the picker, tracking a repository there adds its row after the others, and the row opens its settings', async ({
     page,
     github,
 }) => {
     const { world } = createSampleTrackedWork();
     await openTrackedWork(page, github, world);
     // Created after the first sign-in chose what to track: not tracked.
-    world.repository(`${LOGIN}/docs`);
+    world.repository(DOCS);
     await page.goto('/settings');
 
     const list = new TrackedListScreenHarness(page);
-    await expect(list.row(LOGIN, REPOSITORY_NAME)).toBeVisible();
-    await expect(list.groupHeader(LOGIN)).toHaveText(/your\srepositories\s·\s1\sof\s2\stracked\s*Track\smore$/u);
+    await expect(list.rows).toHaveText([startsWith(SAMPLE_REPOSITORY)]);
     await page.keyboard.press('a');
 
     const picker = new TrackingScreenHarness(page);
     await expect(picker.dialog).toBeVisible();
-    await picker.track(`${LOGIN}/docs`);
+    await picker.track(DOCS);
 
-    await expect(list.row(LOGIN, 'docs')).toBeVisible();
+    await expect(list.rows).toHaveText([startsWith(SAMPLE_REPOSITORY), startsWith(DOCS)]);
     await expect(list.heading).toHaveText(/^2\stracked\srepositories$/u);
-    // All of the user's own tracked: nothing more to track of them.
-    await expect(list.groupHeader(LOGIN)).toHaveText(/your\srepositories\s·\s2\sof\s2\stracked$/u);
 
-    await list.row(LOGIN, 'docs').click();
-    await expect(page).toHaveURL(`/${LOGIN}/docs/settings`);
-    await expect(new TrackedSettingsScreenHarness(page).heading(`${LOGIN}/docs`)).toBeVisible();
+    await list.row(DOCS).click();
+    await expect(page).toHaveURL(`/${DOCS}/settings`);
+    await expect(new TrackedSettingsScreenHarness(page).heading(DOCS)).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL('/settings');
+});
+
+test('⌥↓ and ⌥↑ move the selected repository a place, in Settings and in the sidebar alike', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.repository(DOCS);
+    const shell = await openTrackedWork(page, github, world);
+    await page.goto('/settings');
+
+    const list = new TrackedListScreenHarness(page);
+    const sidebar = shell.trackedRows('Repositories');
+    await expect(list.rows).toHaveText([startsWith(SAMPLE_REPOSITORY), startsWith(DOCS)]);
+
+    await page.keyboard.press('j');
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect(list.rows).toHaveText([startsWith(DOCS), startsWith(SAMPLE_REPOSITORY)]);
+    await expect(sidebar).toHaveText([startsWith(DOCS), startsWith(SAMPLE_REPOSITORY)]);
+    // The selection goes along; at the end, nothing moves.
+    await expect(list.selectedRow).toHaveText(startsWith(SAMPLE_REPOSITORY));
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect(list.rows).toHaveText([startsWith(DOCS), startsWith(SAMPLE_REPOSITORY)]);
+
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect(list.rows).toHaveText([startsWith(SAMPLE_REPOSITORY), startsWith(DOCS)]);
+    await expect(sidebar).toHaveText([startsWith(SAMPLE_REPOSITORY), startsWith(DOCS)]);
 });
 
 test("Projects says where a project's items come from and how many it holds; Enter opens its settings", async ({
@@ -84,9 +109,13 @@ test("Projects says where a project's items come from and how many it holds; Ent
 
     const list = new TrackedListScreenHarness(page);
     await expect(list.heading).toHaveText(/^1\stracked\sproject$/u);
-    await expect(list.groupHeader(LOGIN)).toHaveText(/your\sprojects\s·\s1\sof\s1\stracked$/u);
     // Its own repository's issue, three of the untracked acme/web's and a draft; the archived one left out.
-    await expect(list.row(LOGIN, SAMPLE_PROJECT)).toHaveText(/#1\s*from\s2\srepositories,\s1\stracked\s*5\sitems/u);
+    await expect(list.rows).toHaveText([
+        new RegExp(
+            `^${escapeRegExp(`${LOGIN} / ${SAMPLE_PROJECT}`)}\\s*#1\\s*from\\s2\\srepositories,\\s1\\stracked\\s*5\\sitems`,
+            'u',
+        ),
+    ]);
 
     await page.keyboard.press('j');
     await page.keyboard.press('Enter');
@@ -94,3 +123,7 @@ test("Projects says where a project's items come from and how many it holds; Ent
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL('/settings?tab=projects');
 });
+
+function startsWith(name: string) {
+    return new RegExp(`^${escapeRegExp(name)}`, 'u');
+}

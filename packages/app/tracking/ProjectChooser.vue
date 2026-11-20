@@ -74,8 +74,6 @@ const props = defineProps<{
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   /** `candidates` are being read: the list says so. */
   reading?: boolean;
-  /** The owner it opens on (a group's "Track more"); all owners when not given or GitHub doesn't list it. */
-  initialOwner?: string;
 }>();
 
 /** The picked projects, by id. */
@@ -101,7 +99,7 @@ const groupActionLook = computed(() =>
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
-const owner = ref<string>(props.initialOwner ?? 'all');
+const owner = ref<string>('all');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const closedShown = ref<ReadonlySet<string>>(new Set());
 /** The project last clicked: where a Shift+click's range starts. */
@@ -237,7 +235,7 @@ watch(filter, () => {
   anchor.value = null;
 });
 
-// The owner it opened on turns out not to be one GitHub lists (someone else's group's "Track more"): all of them.
+// The owner picked is not one GitHub lists, as its lists are read again: all of them.
 watch(
   () => props.candidates,
   candidates => {
