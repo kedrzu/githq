@@ -1,4 +1,4 @@
-<!-- A tracked project's row in Settings' Projects (T17 `L5sxR`, selected `jbKD6`): its title and `#number`, where its items come from as the local copy holds them — a tracked project brings its items even from repositories that aren't tracked, so with several it says how many of them are — how many items it holds, how it stands, and Untrack (`TrackedRow`); on a phone no Untrack (MB154). -->
+<!-- A tracked project's row in Settings' Projects (T17 `L5sxR`, selected `jbKD6`, D44): its owner in grey, then its title and `#number` (`fitloop / Platform Q4 #12`), where its items come from as the local copy holds them — a tracked project brings its items even from repositories that aren't tracked, so with several it says how many of them are — how many items it holds, how it stands, and Untrack (`TrackedRow`); on a phone no Untrack (MB154). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { SquareKanban } from 'lucide-vue-next';
@@ -11,6 +11,8 @@ import TrackedRow from './TrackedRow.vue';
 import type { TrackedStatus } from './TrackingTypes.js';
 
 const props = defineProps<{
+  /** Its owner's login. */
+  owner: string;
   title: string;
   number: number;
   /** Its items in the local copy, archived ones left out. */
@@ -55,6 +57,8 @@ const source = computed(() => {
 <template>
   <TrackedRow
     :icon="SquareKanban"
+    :owner="owner"
+    spaced-owner
     :title="title"
     :number="number"
     :source="source"

@@ -1,9 +1,10 @@
-<!-- The head of Settings' Repositories and Projects (G8, T17 `QpXtY`): how many are tracked ("15 tracked repositories"), what githq does with them, and the button adding more ("Track repositories A"), which opens the picker. The key itself is the list's (`TrackedListView`). -->
+<!-- The head of Settings' Repositories and Projects (G8, T17 `QpXtY`, D44): how many are tracked ("15 tracked repositories"), what githq does with them, the hint "⌥↑ ⌥↓ Move" for reordering the selected row, and the button adding more ("Track repositories A"), which opens the picker. The keys themselves are the list's (`TrackedListView`). -->
 <script lang="ts" setup>
 import { Plus } from 'lucide-vue-next';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
+import Kbd from '@/components/Kbd.vue';
 
 defineProps<{
   title: string;
@@ -12,6 +13,11 @@ defineProps<{
   addLabel: string;
   /** Its key, in the app's notation. */
   addKey: string;
+  /** "Move", after the keys moving the selected row up and down. */
+  moveLabel: string;
+  /** The keys moving the selected row a place up and down, in the app's notation. */
+  moveUpKey: string;
+  moveDownKey: string;
 }>();
 
 const emit = defineEmits<{
@@ -25,6 +31,14 @@ const emit = defineEmits<{
       <h2 :class="css.trackedListHead_title">{{ title }}</h2>
       <p :class="css.trackedListHead_description">{{ description }}</p>
     </div>
+    <span
+      :class="css.trackedListHead_hint"
+      aria-hidden="true"
+    >
+      <Kbd :keys="moveUpKey" />
+      <Kbd :keys="moveDownKey" />
+      {{ moveLabel }}
+    </span>
     <Button
       variant="outline"
       size="sm"
@@ -42,16 +56,26 @@ const emit = defineEmits<{
 .trackedListHead {
   display: flex;
   gap: $spacing-16;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   padding: 0 $spacing-12;
 }
 
 .trackedListHead_text {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: $spacing-4;
   min-width: 0;
+}
+
+.trackedListHead_hint {
+  display: flex;
+  flex: none;
+  gap: $spacing-5;
+  align-items: center;
+  font-size: $font-size-2xs;
+  color: $color-fg-dim;
+  white-space: nowrap;
 }
 
 .trackedListHead_title {

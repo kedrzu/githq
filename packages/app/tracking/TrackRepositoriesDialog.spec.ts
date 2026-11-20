@@ -31,7 +31,6 @@ const SCREEN_KEYS = ['A', '1', 'Backspace'].map(key =>
 /** How the dialog is opened. */
 interface OpenParams {
     readonly tracked?: readonly string[];
-    readonly owner?: string;
     readonly search?: string;
     readonly github?: Partial<AnswerTrackingCandidatesOptions>;
     /** Pending untrack by the time it opens. */
@@ -216,14 +215,6 @@ test("the keys of the screen beneath don't run while it is open, even after a cl
     await expect.element(dialog()).toBeInTheDocument();
 });
 
-test('it opens on an owner (Track more)', async () => {
-    await open({ tracked: [], owner: 'acme' });
-
-    await expect.element(dialog().getByRole('radio', { name: /^acme/u })).toBeChecked();
-    await expect.element(dialog().getByRole('heading', { name: 'me', exact: true })).not.toBeInTheDocument();
-    await expect.element(row('acme/web')).toBeInTheDocument();
-});
-
 test("it opens with a search (`?q=`): someone else's repository is looked up, picked and tracked", async () => {
     const { tracking } = await open({
         tracked: ['acme/web'],
@@ -317,7 +308,6 @@ async function open(params: OpenParams & { screenKey?: () => void; waitForRows?:
                 return () =>
                     h(TrackRepositoriesDialog, {
                         open: opened.value,
-                        owner: params.owner,
                         search: params.search,
                         'onUpdate:open': value => {
                             opened.value = value;

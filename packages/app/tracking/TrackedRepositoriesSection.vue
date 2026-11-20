@@ -1,12 +1,11 @@
-<!-- Settings' Repositories (G8, D25): what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`); each row says whether it is private (its kept items, else GitHub's lists), its open items and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings (T16); Untrack and ⌫ untrack at once, with Undo (T20); "Track repositories" (A) and a group's "Track more" open the picker (T18), the latter on that owner. `?q=` (from an untracked repository's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
+<!-- Settings' Repositories (G8, D25, D44): what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), one flat list in the user's order (`TrackedListView`); each row names its owner and says whether it is private (its kept items, else GitHub's lists, read once as the section opens), its open items and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive. A row opens its settings (T16); dragged, or moved with ⌥↑ / ⌥↓, it takes another place in the order (`TrackingStore.move`), the sidebar's too; Untrack and ⌫ untrack at once, with Undo (T20); "Track repositories" (A) opens the picker (T18). `?q=` (from an untracked repository's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { AccountSession } from '@/auth/AccountSession.js';
+import { prefersReducedMotion } from '@/landing/prefersReducedMotion.js';
 import { useNow } from '@/services/useNow.js';
-import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { PendingUntracks } from './PendingUntracks.js';
 import TrackedListView from './TrackedListView.vue';
@@ -17,8 +16,8 @@ import { getRepositorySettingsPath } from './trackingRoutes.js';
 import { TrackingStore } from './TrackingStore.js';
 import type { TrackedRepository } from './TrackingTypes.js';
 import TrackRepositoriesDialog from './TrackRepositoriesDialog.vue';
+import type { SortablePlace } from './useSortableRows.js';
 import { getTrackedStatus } from './utils/getTrackedStatus.js';
-import { groupTrackedByOwner } from './utils/groupTrackedByOwner.js';
 
 /** How often "synced 14s ago" moves on. */
 const TICK_MS = 15_000;
@@ -33,12 +32,10 @@ const props = defineProps<{
 const tracking = useService(TrackingStore);
 const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
-const accounts = useService(AccountSession);
 const router = useRouter();
 const now = useNow(TICK_MS);
 
 const pickerOpen = ref(Boolean(props.initialSearch));
-const pickerOwner = ref<string>();
 const pickerSearch = ref(props.initialSearch);
 
 /** What GitHub's lists say of each repository read so far, by `owner/name`. */
@@ -51,24 +48,7 @@ const candidates = computed(
       ]),
     ),
 );
-const groups = computed(() => {
-  const listed = tracking.candidates;
-  return groupTrackedByOwner({
-    entries: pending.repositories,
-    getOwner: repository => parseRepositoryName(repository.nameWithOwner).owner,
-    getName: repository => parseRepositoryName(repository.nameWithOwner).name,
-    login: accounts.current?.login ?? null,
-    listed: listed
-      ? new Map([
-          [listed.login, listed.repositories.totalCount],
-          ...listed.organizations.map((organization): [string, number | null] => [
-            organization.login,
-            organization.repositories?.totalCount ?? null,
-          ]),
-        ])
-      : null,
-  });
-});
+const animate = computed(() => tracking.animations && !prefersReducedMotion());
 
 void tracking.loadCandidates();
 
@@ -89,6 +69,13 @@ function openSettings(repository: TrackedRepository) {
   void router.push(getRepositorySettingsPath(repository.nameWithOwner));
 }
 
+function move(repository: TrackedRepository, place: SortablePlace<TrackedRepository>) {
+  tracking.move(
+    { kind: 'repository', nameWithOwner: repository.nameWithOwner },
+    { anchor: { kind: 'repository', nameWithOwner: place.anchor.nameWithOwner }, side: place.side },
+  );
+}
+
 function untrack(repository: TrackedRepository) {
   pending.untrack({ kind: 'repository', nameWithOwner: repository.nameWithOwner }, repository.nameWithOwner);
 }
@@ -96,8 +83,7 @@ function untrack(repository: TrackedRepository) {
 // A phone's "+" in the screen's top bar opens the picker.
 defineExpose({ add: openPicker });
 
-function openPicker(owner?: string) {
-  pickerOwner.value = owner;
+function openPicker() {
   pickerSearch.value = undefined;
   pickerOpen.value = true;
 }
@@ -106,11 +92,13 @@ function openPicker(owner?: string) {
 <template>
   <TrackedListView
     kind="repositories"
-    :groups="groups"
+    :rows="pending.repositories"
     :get-key="getKey"
     :loaded="tracking.loaded"
     :phone="phone"
+    :animate="animate"
     @open="openSettings"
+    @move="move"
     @untrack="untrack"
     @add="openPicker"
   >
@@ -129,7 +117,6 @@ function openPicker(owner?: string) {
   </TrackedListView>
   <TrackRepositoriesDialog
     v-model:open="pickerOpen"
-    :owner="pickerOwner"
     :search="pickerSearch"
   />
 </template>
