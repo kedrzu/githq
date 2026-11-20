@@ -14,7 +14,7 @@ test('with the animations off, an item removed leaves the list at once', async (
     expect(items()).toHaveLength(2);
 });
 
-test('with the animations on, an item removed fades out, keeping its width, then leaves the list', async () => {
+test('with the animations on, an item removed fades out, keeping its width and hidden from assistive technology, then leaves the list', async () => {
     await Animated.run();
 
     const width = items()[0]?.getBoundingClientRect().width;
@@ -22,6 +22,8 @@ test('with the animations on, an item removed fades out, keeping its width, then
 
     expect(items()).toHaveLength(3);
     expect(items()[0]?.getBoundingClientRect().width).toBe(width);
+    expect(items()[0]?.getAttribute('aria-hidden')).toBe('true');
+    expect(items()[0]?.inert).toBe(true);
     await expect.poll(() => items().length).toBe(2);
 });
 
