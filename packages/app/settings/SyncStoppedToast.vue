@@ -106,10 +106,10 @@ function onOpenChange(open: boolean) {
     @update:open="onOpenChange"
   >
     {{ sentence }} {{ t(l.keepsWorking) }}
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="Settings"
         :kbd="active ? keyOf(openSyncSettings) : undefined"
         :keyshortcuts="active ? keyOf(openSyncSettings) : undefined"

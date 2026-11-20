@@ -93,13 +93,9 @@ const t = useTranslate();
   max-width: 100%;
 }
 
-/* As tall as the toolbar's outlined controls (`Button`'s `sm`), bordered like them. */
+/* `sm`, as tall as the toolbar's outlined controls (`Button`'s `sm`), bordered like them. */
 .listDisplayOptions_icon {
-  --icon-button-width: 26px;
-  --icon-button-height: 24px;
   --icon-button-border: 1px solid #{$color-border};
-  --icon-button-radius: #{$radius-md};
-  --icon-button-glyph-size: 14px;
   --icon-button-hover-background: #{$color-bg-2};
 }
 

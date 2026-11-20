@@ -12,19 +12,21 @@ Four heights. The rule is what a place is for: a mouse aims at an action, so a p
 |Size|Height|Label|Icon|Where|
 |-|-|-|-|-|
 |`sm`|24|12 px|14 px|Dense chrome a mouse rarely aims at: a list's, review's or log's toolbar; a section's or group's header inside an item ("Request" reviewers); a row's inline controls; a diff file's header; a bar inside a pane (pending review, lost viewed); the new issue's field pickers; toasts.|
-|`md`|32|13 px|16 px|Every place whose purpose is an action: a card's actions (the pull request's merge card, a failed comment, a missing thread); an editor's or composer's footer (Comment, Reopen, Close, Cancel, Discard); a thread's Resolve and Reply; the merge panel's footer; a dialog's footer; the actions of an empty or error state ("Nothing to diff"); a settings block; a form. The default.|
-|`lg`|40|14 px|16 px|The single call to action of a page with little else (sign in, choose what to track, desktop hand-off, account) and a phone's screen actions.|
+|`md`|32|13 px|16 px|Every place whose purpose is an action: a card's actions (the pull request's merge card, a failed comment, a missing thread); an editor's or composer's footer (Comment, Reopen, Close, Cancel, Discard); a thread's Resolve and Reply; the merge panel's footer; a dialog's footer; the actions of an empty or error state ("Nothing to diff"); a settings block and the account page; a form. The default.|
+|`lg`|40|14 px|16 px|The single call to action of a page with little else (sign in, choose what to track, desktop hand-off) and, on a phone, the actions a screen is for.|
 |`xl`|48|16 px|18 px|The landing page only.|
 
 - **The default is `md`.** A button in dense chrome names `sm`; one that names nothing is an action.
 - **One row, one size.** All buttons of one action bar share a size. A toolbar never holds an `md` button; a card's
   actions never hold an `sm` one.
-- **A split button** (an action with its other ways in a joined menu: Close issue ▾) is always `md`; all of them sit in
-  footers.
+- **A split button** (an action with its other ways in a joined menu: Close issue ▾) is `md`, `lg` in a phone's docked
+  composer; all of them sit in footers.
 - **Icon-only buttons are on the same scale:** `sm` 24 × 24 beside `sm` buttons and in headers, `md` 32 × 32 beside
   `md` ones. The sidebar's rail has its own `rail`, 38 × 34.
-- **On a phone** a screen's actions are `lg`; chrome a phone enlarges for a finger (a toast's actions, a toolbar
-  control) is `md`. Phone-only components (the top bar, the command line, pills) keep their own 44–48 px targets.
+- **On a phone** the actions a screen is for are `lg`: the merge card's, the docked composer's, a page's call to
+  action. Chrome a phone enlarges for a finger (a toast's actions, a toolbar control, a settings field) is `md`, and an
+  empty state's actions stay `md`. Phone-only components (the top bar, the command line, pills) and icon buttons that
+  a phone's bars enlarge keep their own 44–48 px targets.
 - Rows don't grow for a button: a list's rows and toolbars keep their heights.
 
 ## Variants

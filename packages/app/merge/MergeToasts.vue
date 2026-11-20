@@ -136,11 +136,11 @@ function getLink(failure: EditFailure, itemId: string) {
       @dismiss="queue.dismiss(failure.id)"
     >
       {{ texts.failureDetail(failure) }}
-      <template #actions="{ active }">
+      <template #actions="{ active, size }">
         <Button
           v-if="canGoBack(itemId)"
           variant="secondary"
-          size="sm"
+          :size="size"
           :icon="GitMerge"
           :kbd="active ? keyOf(backToMergeCommand) : undefined"
           :keyshortcuts="active ? keyOf(backToMergeCommand) : undefined"
@@ -151,7 +151,7 @@ function getLink(failure: EditFailure, itemId: string) {
         <Button
           v-if="getLink(failure, itemId)"
           variant="secondary"
-          size="sm"
+          :size="size"
           :icon="ArrowUpRight"
           :link="getLink(failure, itemId)?.url"
           target="_blank"
@@ -173,12 +173,12 @@ function getLink(failure: EditFailure, itemId: string) {
   >
     <template
       v-if="getBranchCommand(confirmation) || getRevertCommand(confirmation)"
-      #actions="{ active }"
+      #actions="{ active, size }"
     >
       <Button
         v-if="getBranchCommand(confirmation)"
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="GitBranch"
         :kbd="active ? keyOf(mergedBranch) : undefined"
         :keyshortcuts="active ? keyOf(mergedBranch) : undefined"
@@ -189,7 +189,7 @@ function getLink(failure: EditFailure, itemId: string) {
       <Button
         v-if="getRevertCommand(confirmation)"
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="Undo2"
         @click="runFollowUp(confirmation, { kind: 'revert' })"
       >
@@ -205,10 +205,10 @@ function getLink(failure: EditFailure, itemId: string) {
     lasts="brief"
     @update:open="!$event && store.dismissRevert(revert.id)"
   >
-    <template #actions>
+    <template #actions="{ size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="ArrowRight"
         @click="openRevert(revert)"
       >
@@ -216,7 +216,7 @@ function getLink(failure: EditFailure, itemId: string) {
       </Button>
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="ArrowUpRight"
         :link="revert.opened.url"
         target="_blank"

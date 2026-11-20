@@ -44,7 +44,6 @@ const t = useTranslate();
       <slot name="action">
         <Button
           variant="secondary"
-          size="sm"
           :icon="FunnelX"
           @click="clear"
         >

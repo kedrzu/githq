@@ -573,10 +573,12 @@ function onPatternClick(event: MouseEvent, pattern: string) {
   color: $color-fg-dim;
 }
 
+// The `sm` 24 px buttons stand 1 px out of the row's padding each way, so the row keeps its 44 px.
 .workflowAlertsBlock_actions {
   display: flex;
   flex: none;
   gap: $spacing-2;
+  margin-block: -1px;
   visibility: hidden;
 
   .workflowAlertsBlock_row:hover &,

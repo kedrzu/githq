@@ -264,7 +264,6 @@ function readMore() {
       >
         <Button
           variant="secondary"
-          size="sm"
           :icon="ArrowLeft"
           @click="arranging.close()"
         >

@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Under 560px — the panel at its default width too — its buttons drop their icons, as on a phone; narrow — an opened item's summary column, a phone — also their key hints and the conditions' asides, and "Merge pull request" says "Merge"; where the buttons still get no room on one line, the last goes under. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Under 560px — the panel at its default width too — its buttons drop their icons, as on a phone; narrow — an opened item's summary column, a phone — also their key hints and the conditions' asides, and "Merge pull request" says "Merge"; where the buttons still get no room on one line, the last goes under. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons and are a phone screen's actions, `lg`. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { branch, merge, openOnGitHub, review, updateBranch } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
+import type { ButtonSize } from '@/components/Button.vue';
 import ExternalMark from '@/components/ExternalMark.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -62,6 +63,8 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const phone = useService(PhoneLayout);
+/** A card's actions (`md`); on a phone a screen's (`lg`). */
+const actionSize = computed((): ButtonSize => (phone.active ? 'lg' : 'md'));
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 const mergeVerdict = usePullRequestVerdict({
@@ -235,7 +238,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-if="branchCommand"
         variant="secondary"
-        size="md"
+        :size="actionSize"
         :icon="GitBranch"
         :kbd="keyOf(branch)"
         :keyshortcuts="keyOf(branch)"
@@ -246,7 +249,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-if="updateCommand"
         variant="secondary"
-        size="md"
+        :size="actionSize"
         :icon="GitPullRequestArrow"
         :kbd="keyOf(updateBranch)"
         :keyshortcuts="keyOf(updateBranch)"
@@ -258,7 +261,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-if="mergeOffered && phone.active"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
-        size="md"
+        :size="actionSize"
         :link="pr.url"
         target="_blank"
         rel="noopener noreferrer"
@@ -273,7 +276,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-else-if="mergeOffered"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
-        size="md"
+        :size="actionSize"
         :icon="GitMerge"
         :kbd="keyOf(merge)"
         :keyshortcuts="keyOf(merge)"
@@ -288,7 +291,7 @@ function refusedAside(reason: EditFailureReason) {
       </Button>
       <Button
         variant="secondary"
-        size="md"
+        :size="actionSize"
         :icon="phone.active ? undefined : Github"
         :link="pr.url"
         :kbd="keyOf(openOnGitHub)"
@@ -301,7 +304,7 @@ function refusedAside(reason: EditFailureReason) {
       <!-- On a phone the address of the review is handed off to github.com's changed files (mobile D3). -->
       <Button
         variant="secondary"
-        size="md"
+        :size="actionSize"
         :icon="phone.active ? undefined : FileDiff"
         :link="reviewPath"
         :kbd="keyOf(review)"

@@ -150,7 +150,8 @@ const approvalUrl = getApprovalUrl(browser.origin);
     </ol>
     <div :class="css.hiddenOrganizationNotice_actions">
       <Button
-        variant="light"
+        variant="primary"
+        size="lg"
         :link="approvalUrl"
         :icon="ArrowUpRight"
         target="_blank"

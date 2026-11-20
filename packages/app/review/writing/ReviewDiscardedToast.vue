@@ -69,10 +69,10 @@ function onOpenChange(open: boolean) {
     @update:open="onOpenChange"
   >
     <span :class="css.reviewDiscardedToast_text">{{ t(l.quoted, { text: discarded.text.trim() }) }}</span>
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(undo) : undefined"
         :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="emit('restore')"

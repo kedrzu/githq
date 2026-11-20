@@ -203,7 +203,6 @@ function onEscape(event: KeyboardEvent) {
 
 .trackPickerDialog_phoneTrack {
   width: 100%;
-  min-height: $touch-target-size;
 }
 
 .trackPickerDialog_summary {

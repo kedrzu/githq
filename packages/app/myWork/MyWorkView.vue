@@ -587,7 +587,6 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           >
             <Button
               variant="secondary"
-              size="sm"
               :icon="LayoutList"
               @click="showAll"
             >

@@ -1,4 +1,4 @@
-<!-- An `md` `Button` (always `md`: `docs/design/githq/buttons.md`) with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s) — on a phone a menu at the bottom, named by `menuTitle`, what it acts on under the name (`menuContext`). Attributes go to the button. -->
+<!-- An `md` `Button` (`docs/design/githq/buttons.md`; `lg` among a phone screen's actions, the docked composer's) with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s) — on a phone a menu at the bottom, named by `menuTitle`, what it acts on under the name (`menuContext`). Attributes go to the button. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronDown } from 'lucide-vue-next';
@@ -22,6 +22,8 @@ defineProps<{
   menuTitle?: string;
   /** On a phone, what the menu acts on, under its name (an item's reference). */
   menuContext?: string;
+  /** `md` when not given; `lg` among a phone screen's actions. */
+  size?: 'md' | 'lg';
   /** The usual action; a promise keeps the button busy until it settles. */
   onClick?: (event: Event) => unknown;
 }>();
@@ -39,7 +41,7 @@ defineSlots<{
     <Button
       v-bind="$attrs"
       :class="css.splitButton_main"
-      size="md"
+      :size="size ?? 'md'"
       :icon="icon"
       :kbd="kbd"
       :keyshortcuts="keyshortcuts"

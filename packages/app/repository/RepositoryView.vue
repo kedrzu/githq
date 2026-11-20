@@ -584,7 +584,7 @@ function getSectionCount(value: RepositorySection) {
                  with a group collapsed: a page gone into it leaves the end where it was, and reading stops until expanded. -->
         <Button
           v-if="status?.hasMore && (listLayout === 'board' || someCollapsed)"
-          variant="outline"
+          variant="ghost"
           size="sm"
           @click="emit('readMore')"
         >

@@ -417,7 +417,6 @@ function isApproved(organization: AccountOrganization) {
               <Button
                 v-if="organization.hiddenPrivate"
                 variant="secondary"
-                size="sm"
                 :icon="ArrowUpRight"
                 :link="approvalUrl"
                 target="_blank"
@@ -516,10 +515,9 @@ function isApproved(organization: AccountOrganization) {
   color: $color-fg-dim;
 }
 
-// A finger's height, the width of the screen's column.
+// A phone's screen action (`lg`), the width of the screen's column.
 .accountView_phoneButton {
   width: 100%;
-  min-height: $touch-target-size;
 }
 
 .accountView_phoneSignOut {

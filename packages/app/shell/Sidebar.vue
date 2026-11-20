@@ -732,7 +732,8 @@ function getProjectMark(title: string) {
   gap: $spacing-8;
   align-items: center;
   justify-content: space-between;
-  padding: 6px $spacing-8;
+  // 34 px: 5 px above and below the `sm` 24 px collapse button.
+  padding: $spacing-5 $spacing-8;
   margin-bottom: $spacing-10;
 }
 

@@ -136,7 +136,7 @@ async function tryAgain() {
       <Button
         v-if="cause.kind === 'failing'"
         :variant="onScreen ? 'secondary' : 'outline'"
-        size="sm"
+        :size="onScreen ? 'md' : 'sm'"
         :icon="onScreen ? RotateCw : undefined"
         :kbd="onScreen ? keyOf(tryAgainCommand) : undefined"
         :keyshortcuts="onScreen ? keyOf(tryAgainCommand) : undefined"
@@ -148,7 +148,7 @@ async function tryAgain() {
       <Button
         v-else
         :variant="onScreen ? 'secondary' : 'outline'"
-        size="sm"
+        :size="onScreen ? 'md' : 'sm'"
         :icon="onScreen ? Github : undefined"
         :kbd="onScreen ? keyOf(openOnGitHub) : undefined"
         :keyshortcuts="onScreen ? keyOf(openOnGitHub) : undefined"

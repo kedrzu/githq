@@ -515,7 +515,7 @@ function onEscape(event: KeyboardEvent) {
               <span>{{ t(l.rejectedDetail, { reason: rejection }) }}</span>
             </div>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               kbd="Alt+R"
               @click="choosingRepository = true"
@@ -542,7 +542,7 @@ function onEscape(event: KeyboardEvent) {
                 <span>{{ entry.why }}</span>
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 :aria-label="t(l.restoreLabel, { title: entry.title })"
                 @click="restore(entry.id)"
@@ -587,7 +587,7 @@ function onEscape(event: KeyboardEvent) {
               <span>{{ t(l[unavailable.why]) }}</span>
             </div>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               kbd="Alt+R"
               @click="choosingRepository = true"
@@ -744,8 +744,7 @@ function onEscape(event: KeyboardEvent) {
           :class="css.newIssueDialog_footer"
         >
           <Button
-            variant="ghost"
-            size="sm"
+            variant="primary"
             :kbd="expanded ? 'Mod+Enter' : 'Enter'"
             :disabled="!canCreate && !canCreateOnceLoaded"
             :busy="createWhenLoaded?.another === false"
@@ -753,8 +752,6 @@ function onEscape(event: KeyboardEvent) {
             >{{ t(l.create) }}</Button
           >
           <Button
-            variant="ghost"
-            size="sm"
             :kbd="expanded ? 'Alt+Mod+Enter' : 'Mod+Enter'"
             :disabled="!canCreate && !canCreateOnceLoaded"
             :busy="createWhenLoaded?.another === true"
@@ -763,8 +760,6 @@ function onEscape(event: KeyboardEvent) {
           >
           <Button
             v-if="!expanded"
-            variant="ghost"
-            size="sm"
             kbd="Tab"
             @click="expand()"
             >{{ t(l.details) }}</Button
@@ -777,8 +772,6 @@ function onEscape(event: KeyboardEvent) {
           >
           <Button
             v-if="templateCount > 0 && !choosingTemplate"
-            variant="ghost"
-            size="sm"
             @click="choosingTemplate = true"
             >{{ t(l.templates, { count: templateCount }) }}</Button
           >
@@ -871,9 +864,6 @@ function onEscape(event: KeyboardEvent) {
 }
 
 .newIssueDialog_repositoryIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
   color: $color-fg-2;
 }
 
@@ -973,7 +963,7 @@ function onEscape(event: KeyboardEvent) {
   display: flex;
   gap: $spacing-8;
   align-items: center;
-  padding: $spacing-6 $spacing-10;
+  padding: $spacing-8 $spacing-10;
   font-size: $font-size-xs;
   border-top: 1px solid $color-border;
 }

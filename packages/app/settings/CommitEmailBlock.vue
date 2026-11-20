@@ -166,7 +166,6 @@ function resolvedNote() {
             <template #trigger>
               <Button
                 variant="outline"
-                :size="phone ? 'md' : 'sm'"
                 :class="css.commitEmailBlock_select"
                 :disabled="!settings"
                 :aria-labelledby="`${idPrefix}-${row.key}-label ${idPrefix}-${row.key}-value`"
@@ -260,9 +259,6 @@ function resolvedNote() {
 }
 
 .commitEmailBlock_chevron {
-  flex: none;
-  width: 14px;
-  height: 14px;
   margin-left: $spacing-4;
   color: $color-fg-dim;
 }

@@ -278,7 +278,6 @@ function focusConfirmButton(event: Event) {
               <p :class="css.updatesView_detail">{{ build }}</p>
             </div>
             <Button
-              size="sm"
               :icon="RefreshCw"
               :kbd="keyOf(checkForUpdates)"
               :keyshortcuts="keyOf(checkForUpdates)"
@@ -317,7 +316,6 @@ function focusConfirmButton(event: Event) {
             </div>
             <Button
               v-if="status.action"
-              size="sm"
               :kbd="keyOf(loadNewVersion)"
               :keyshortcuts="keyOf(loadNewVersion)"
               @click="emit('restart')"
@@ -370,8 +368,6 @@ function focusConfirmButton(event: Event) {
         <p :class="css.updatesView_confirmText">{{ t(l.confirmSync) }}</p>
         <div :class="css.updatesView_confirmButtons">
           <Button
-            variant="outline"
-            size="sm"
             kbd="Escape"
             keyshortcuts="Escape"
             @click="confirming = false"
@@ -380,7 +376,7 @@ function focusConfirmButton(event: Event) {
           </Button>
           <Button
             ref="confirmButton"
-            size="sm"
+            variant="primary"
             kbd="Enter"
             keyshortcuts="Enter"
             @click="confirmSwitch"

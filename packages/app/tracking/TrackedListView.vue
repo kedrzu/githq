@@ -202,8 +202,8 @@ function onRowClick(event: MouseEvent, row: T) {
     >
       <template #action>
         <Button
-          variant="secondary"
-          size="sm"
+          variant="primary"
+          size="lg"
           :icon="Plus"
           :kbd="keyOf(definitions.add)"
           :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.add))"
@@ -292,7 +292,6 @@ function onRowClick(event: MouseEvent, row: T) {
 
 .trackedListView_phoneAdd {
   width: 100%;
-  min-height: $touch-target-size;
 }
 
 .trackedListView {

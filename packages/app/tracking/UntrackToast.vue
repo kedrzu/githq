@@ -49,10 +49,10 @@ function onOpenChange(entry: PendingUntrack, open: boolean) {
     @update:open="onOpenChange(entry, $event)"
   >
     {{ t(l.description) }}
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(undo) : undefined"
         :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="pending.undo(entry.target)"

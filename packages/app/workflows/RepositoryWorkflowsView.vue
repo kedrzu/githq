@@ -295,7 +295,6 @@ function describeGroup(group: RepositoryWorkflowGroup) {
         >
           <Button
             variant="secondary"
-            size="sm"
             :icon="Github"
             :kbd="keyOf(openOnGitHub)"
             :keyshortcuts="keyOf(openOnGitHub)"

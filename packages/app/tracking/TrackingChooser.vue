@@ -1026,6 +1026,7 @@ function projectMeta(project: CandidateProject) {
       <div v-else>
         <Button
           variant="primary"
+          size="lg"
           kbd="Mod+Enter"
           :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :busy="busy"
@@ -1385,6 +1386,7 @@ function projectMeta(project: CandidateProject) {
           <Button
             v-if="!typing"
             :variant="phone ? 'ghost' : undefined"
+            :size="phone ? 'md' : 'lg'"
             :class="css.trackingChooser_onlyMine"
             :unavailable="busy"
             @click="emit('onlyMine')"
@@ -1393,7 +1395,7 @@ function projectMeta(project: CandidateProject) {
           </Button>
           <Button
             variant="primary"
-            :size="phone && !typing ? 'lg' : undefined"
+            :size="typing ? 'md' : 'lg'"
             :class="css.trackingChooser_track"
             kbd="Mod+Enter"
             :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"

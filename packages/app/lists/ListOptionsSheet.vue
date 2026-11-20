@@ -382,9 +382,7 @@ function toOption(choice: ListChoice): SegmentedTabsOption<string> {
 }
 
 .listOptionsSheet_clear {
-  --icon-button-width: 24px;
-  --icon-button-height: 24px;
-  --icon-button-radius: 12px;
+  --icon-button-radius: 50%;
 }
 
 .listOptionsSheet_link {

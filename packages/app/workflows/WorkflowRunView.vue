@@ -631,7 +631,6 @@ function getInvalidFileMessage(): RunMessage {
               <Button
                 v-if="message.retry"
                 variant="secondary"
-                size="sm"
                 :icon="RotateCw"
                 :kbd="keyOf(definitions.tryAgain)"
                 :keyshortcuts="keyOf(definitions.tryAgain)"
@@ -641,7 +640,6 @@ function getInvalidFileMessage(): RunMessage {
               </Button>
               <Button
                 variant="secondary"
-                size="sm"
                 :icon="Github"
                 :kbd="keyOf(definitions.openOnGitHub)"
                 :keyshortcuts="keyOf(definitions.openOnGitHub)"

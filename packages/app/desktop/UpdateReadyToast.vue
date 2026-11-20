@@ -38,10 +38,10 @@ function onOpenChange(open: boolean) {
     @update:open="onOpenChange"
   >
     {{ t(failed ? l.failedDetail : l.readyDetail, { current }) }}
-    <template #actions>
+    <template #actions="{ size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="keyOf(loadNewVersion)"
         :keyshortcuts="keyOf(loadNewVersion)"
         @click="update.restart()"
