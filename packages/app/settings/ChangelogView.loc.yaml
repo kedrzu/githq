@@ -30,6 +30,8 @@ fixes:
   en: Fixes
 performance:
   en: Performance
+by:
+  en: by
 noticedChanges:
   plural: count
   en:

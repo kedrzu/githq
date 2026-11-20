@@ -381,6 +381,8 @@ test('a Development build lists its commits since the last Stable, and O opens t
     await expect(page.getByText("1 change you'd notice, out of 2 commits.")).toBeVisible();
     // Its pull requests open in githq.
     await expect(page.getByRole('link', { name: '#7' })).toHaveAttribute('href', '/kedrzu/githq/pull/7');
+    // Its authors, read with the commits, link to them on GitHub.
+    await expect(page.getByRole('link', { name: '@octocat' })).toHaveAttribute('href', 'https://github.com/octocat');
     expect(github.graphqlCalls.find(call => call.name === 'Commits')?.variables.from).toBe('abc1234');
 
     await page.keyboard.press('o');

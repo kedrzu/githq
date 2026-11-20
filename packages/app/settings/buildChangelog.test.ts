@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test';
 
 import { isNewerVersion } from '@/services/AppUpdate.js';
 
-import { buildChangelog, findStableAt, getCommitsUrl } from './buildChangelog.js';
+import { buildChangelog, findStableAt, getCommitsUrl, markReleaseAuthorBy } from './buildChangelog.js';
 import type { BuildChangelogParams } from './buildChangelog.js';
 
 const RELEASES: GitHubRelease[] = ['v0.1.0', 'v0.2.0', 'v0.1.10', 'v0.1.2'].map(tagName => ({
@@ -80,6 +80,31 @@ test('a Development build has its own fold first, filtered as release notes are'
         groups: [{ kind: 'features', changes: [{ description: 'Add a thing', pullRequest: 3, author: 'octocat' }] }],
     });
     expect(second).toMatchObject({ kind: 'release', version: '0.2.0' });
+});
+
+test("a release's by between a pull request and its author is marked, and no other by", () => {
+    const issueLink = '<a class="issue-link js-issue-link" href="https://github.com/kedrzu/githq/pull/312">#312</a>';
+    const mention = '<a class="user-mention notranslate" href="https://github.com/kedrzu">@kedrzu</a>';
+    const html = [
+        '<p>Written by hand, read by everyone.</p>',
+        `<ul><li>Sort by date ${issueLink} by ${mention}</li>`,
+        `<li>Group by repository by ${mention}</li>`,
+        `<li>Filter by label ${issueLink}</li></ul>`,
+    ].join('');
+
+    const [release] = build({
+        releases: [{ tagName: 'v0.2.0', publishedAt: '2026-11-03T10:00:00Z', bodyHtml: html, tagCommit: 'tagged' }],
+    });
+
+    expect(release).toMatchObject({
+        html: [
+            '<p>Written by hand, read by everyone.</p>',
+            `<ul><li>Sort by date ${issueLink} <span class="changelog-by">by</span> ${mention}</li>`,
+            `<li>Group by repository by ${mention}</li>`,
+            `<li>Filter by label ${issueLink}</li></ul>`,
+        ].join(''),
+    });
+    expect(markReleaseAuthorBy(`${issueLink} by <a href="https://github.com/kedrzu">kedrzu</a>`)).not.toContain('span');
 });
 
 test('the Stable on a commit is the newest by number when a commit has several', () => {

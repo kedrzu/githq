@@ -5,6 +5,13 @@ import { userVisibleChanges } from '@/scripts/releasePlan.js';
 import type { ReleaseCommit, UserVisibleChangeGroup } from '@/scripts/releasePlan.js';
 import { isNewerVersion, isOlderVersion, isPrereleaseVersion } from '@/services/AppUpdate.js';
 
+/**
+ * The ` by ` that `renderNotes` writes between a change's pull request and its author (`#312 by @kedrzu`), as GitHub
+ * renders it: plain text between an issue link and a user mention.
+ */
+const RELEASE_AUTHOR_BY =
+    /(<a\b[^>]*\bclass="[^"]*\bissue-link\b[^"]*"[^>]*>[^<]*<\/a>) by (?=<a\b[^>]*\bclass="[^"]*\buser-mention\b)/g;
+
 /** The repository the app's versions are published in. */
 export const GITHQ_REPOSITORY = { owner: 'kedrzu', name: 'githq' };
 
@@ -74,7 +81,7 @@ export function buildChangelog({
             kind: 'release',
             version: released,
             publishedAt: release.publishedAt,
-            html: release.bodyHtml,
+            html: markReleaseAuthorBy(release.bodyHtml),
             running: released === version,
             isNew: previousVersion !== null && isNewerVersion(released, previousVersion),
         };
@@ -118,6 +125,16 @@ export function getCommitsUrl(version: string, commit: string | null) {
  */
 export function getPullRequestUrl(number: number) {
     return `${REPOSITORY_URL}/pull/${number}`;
+}
+
+/**
+ * A release's HTML with each ` by ` between a change's pull request and its author in a span the Changelog can dim: as
+ * bare text, CSS can't reach it (`ChangelogView` styles `changelog-by`). The word is English baked into the notes by `renderNotes`, for release notes are
+ * English only; a "by" anywhere else, in a description or the summary, stays as it is.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function markReleaseAuthorBy(html: string) {
+    return html.replace(RELEASE_AUTHOR_BY, '$1 <span class="changelog-by">by</span> ');
 }
 
 /**
