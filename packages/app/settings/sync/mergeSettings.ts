@@ -17,7 +17,8 @@ export interface MergeSettingsParams {
  * project's `id`) and merged key by key: a key only one side changed since `base` takes that side's value, one both
  * changed takes the file's. An entry `base` lacks counts as changed on every side holding it, so one both hold is
  * the file's. Nothing is removed — one hand-deleted from the file stays as this device has it. The order is the
- * file's, then the entries only this device has, in its order.
+ * file's, then the entries only this device has, in its order; except when only this device reordered the entries it
+ * shares with `base`, which keeps this device's order, followed by the entries only the file has.
  * @__NO_SIDE_EFFECTS__
  */
 export function mergeSettings({ local, remote, base }: MergeSettingsParams): SettingsDocument {
@@ -68,7 +69,19 @@ interface EntryVersions<T> {
     readonly base: readonly T[];
 }
 
-function mergeEntries<T>({ local, remote, base }: EntryVersions<T>, { keyOf, merge }: EntryKind<T>): T[] {
+function mergeEntries<T>({ local, remote, base }: EntryVersions<T>, kind: EntryKind<T>): T[] {
+    const { keyOf } = kind;
+    const baseKeys = base.map(keyOf);
+    const localReordered = isReordered(local.map(keyOf), baseKeys);
+    const remoteReordered = isReordered(remote.map(keyOf), baseKeys);
+
+    return localReordered && !remoteReordered
+        ? mergeInLocalOrder({ local, remote, base }, kind)
+        : mergeInFileOrder({ local, remote, base }, kind);
+}
+
+/** The file's order, then the entries only this device has, in its order. */
+function mergeInFileOrder<T>({ local, remote, base }: EntryVersions<T>, { keyOf, merge }: EntryKind<T>): T[] {
     const localByKey = new Map(local.map(entry => [keyOf(entry), entry]));
     const baseByKey = new Map(base.map(entry => [keyOf(entry), entry]));
     const remoteKeys = new Set(remote.map(keyOf));
@@ -87,6 +100,42 @@ function mergeEntries<T>({ local, remote, base }: EntryVersions<T>, { keyOf, mer
     }
 
     return merged;
+}
+
+/** This device's order, then the entries only the file has, in its order. */
+function mergeInLocalOrder<T>({ local, remote, base }: EntryVersions<T>, { keyOf, merge }: EntryKind<T>): T[] {
+    const remoteByKey = new Map(remote.map(entry => [keyOf(entry), entry]));
+    const baseByKey = new Map(base.map(entry => [keyOf(entry), entry]));
+    const localKeys = new Set(local.map(keyOf));
+
+    const merged = local.map(localEntry => {
+        const key = keyOf(localEntry);
+        const remoteEntry = remoteByKey.get(key);
+        const baseEntry = baseByKey.get(key);
+        if (!remoteEntry) {
+            return localEntry;
+        }
+
+        return baseEntry ? merge(localEntry, remoteEntry, baseEntry) : remoteEntry;
+    });
+
+    for (const entry of remote) {
+        if (!localKeys.has(keyOf(entry))) {
+            merged.push(entry);
+        }
+    }
+
+    return merged;
+}
+
+/** Whether the keys `keys` shares with `baseKeys` are in another relative order than in `baseKeys`. */
+function isReordered(keys: readonly string[], baseKeys: readonly string[]): boolean {
+    const baseSet = new Set(baseKeys);
+    const keySet = new Set(keys);
+    const shared = keys.filter(key => baseSet.has(key));
+    const sharedInBase = baseKeys.filter(key => keySet.has(key));
+
+    return shared.some((key, index) => key !== sharedInBase[index]);
 }
 
 /**
