@@ -49,8 +49,8 @@ export default defineConfig({
             // The local build (fresh, or Nx's cached copy of the same sources), then the Worker serving it — so the
             // tests never run a stale build or someone else's server. `--host`: the Worker sees the app's origin as
             // this port (`dev.host` in `wrangler.jsonc` says 8787, `bun run dev`'s), so its OAuth callback is this
-            // server's. `--env-file`: the dummy OAuth App of `worker.vars`. Bun has loaded the real `.env` into this
-            // process, and `wrangler dev` prefers its environment to the file, hence `env -u`.
+            // server's. `--env-file`: the dummy OAuth App of `worker.vars`. A real secret in this process's environment
+            // would win over the file (`wrangler dev` prefers its environment), hence `env -u`.
             command: [
                 buildApp('build:local'),
                 [

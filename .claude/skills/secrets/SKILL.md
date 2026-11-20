@@ -66,10 +66,10 @@ machine with no access still works: the token form signs in on the web, and the 
 `wrangler dev` binds only the names under `secrets.required` in `packages/worker/wrangler.jsonc`, so a new secret
 the Worker reads goes there too, which also makes `wrangler deploy` require it in production.
 
-## While `.env` exists
+## No `.env`
 
-Until #118 removes it, a non-empty root `.env` wins: Bun and Nx load it into the environment, and `secrets list`
-reports those names `overridden by environment`. To use the store in a checkout, or to test it, move `.env` aside.
+The repo keeps no env file. A leftover root `.env` still wins over the store (Bun and Nx load it into the
+environment, and `secrets list` reports its names `overridden by environment`): delete it.
 
 Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.
 
