@@ -37,7 +37,7 @@ const emit = defineEmits<{
     >
       <Kbd :keys="moveUpKey" />
       <Kbd :keys="moveDownKey" />
-      {{ moveLabel }}
+      <span>{{ moveLabel }}</span>
     </span>
     <Button
       variant="outline"
