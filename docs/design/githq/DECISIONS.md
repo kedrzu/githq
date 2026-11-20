@@ -991,6 +991,24 @@ the order is seen, so that is where it is set. Grouping Settings by owner would 
 row to move live. Keyboard reordering in the sidebar (the owner: the mouse is enough there; Settings has the keys). A
 separate "order" block in Settings beside the owner groups: two lists of the same things.
 
+### D45
+
+**Buttons follow one guideline, `buttons.md`: four heights, 24 / 32 / 40 / 48 (`sm`, `md`, `lg`, `xl`), chosen by
+what a place is for, and nine variants with one meaning each.** (owner, 2026-11-20.) A place whose purpose is an action
+— a card's, a composer's, a dialog's, the merge panel's, an empty state's — is `md`; dense chrome — toolbars, headers,
+rows, toasts — stays `sm`; a page's single call to action is `lg`. Icon-only buttons share the scale (`sm` 24, `md` 32;
+the rail 38 × 34). One row holds one size and one variant besides its single primary. `compact` (30 px) and `framed`
+are gone; the main action is `primary` everywhere but a sign-in page (`light`). Drawn in `githq.pen`, App ·
+Components (`Button / …`, `Buttons — guideline`); the design log is `changelog/button-system.md`.
+
+**Why.** Sizes had grown screen by screen: five in the code (24, 30, 32, 38, 48), six in the design (22 to 31), and the
+actions clicked most with a mouse — merge, comment, reply — were 24 and 30 px. Primer's 32 for a default control and 40
+for a large one are proven; 24 keeps dense chrome dense.
+
+**Rejected.** 28 / 32 / 40: lists and toolbars lose density for buttons mostly pressed by key. 24 / 36 / 40: an action
+taller than the 32 px fields and dialogs around it. Toasts' actions at `md`: a toast stays light, and its actions are
+pressed by key (⌘Z, Esc); D40's small secondary buttons stand.
+
 ## Open questions
 
 ### D26

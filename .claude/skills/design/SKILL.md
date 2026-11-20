@@ -64,6 +64,8 @@ brief: `docs/design/githq/ui/README.md`.
 - **Navigation is settled:** `docs/design/githq/navigation.md` — the levels (list, panel, full screen, a page inside an
   item) and what `↵`, `⇧↵`, `Esc`, `j`/`k` and Back do. A new screen fits into it; a screen that needs otherwise
   changes that document first.
+- **Buttons follow `docs/design/githq/buttons.md`** (D45): 24 / 32 / 40 px by what a place is for, one meaning per
+  variant, drawn with the `Button / …` family in App · Components. A new screen takes its buttons from there.
 - **The logo is settled.** The brandbook is the frame `Logo — git/hq` (`S5J7kt`): the wordmark `git/hq` and the
   sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the slash alone. One of them in a given
   place, never both side by side, placed through `Brand / Wordmark` and `Brand / Sygnet`. Don't change it.
