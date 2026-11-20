@@ -89,6 +89,11 @@ export class AppShellHarness {
         await this.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
         await this.page.mouse.down();
         await this.page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });
+        // Sortable passes over a row still sliding out of the way: once they all stand, move over the target again, so
+        // the last place it took is the target's, however slow the machine.
+        await expect(this.sidebar.locator('li[style*="translate"]')).toHaveCount(0);
+        await this.page.mouse.move(to.x + to.width / 2, to.y + to.height / 2 + 1);
+        await expect(this.sidebar.locator('li[style*="translate"]')).toHaveCount(0);
         await this.page.mouse.up();
     }
 
