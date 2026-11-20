@@ -14,12 +14,15 @@
         "preview": "touch ../../.env && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --env-file ../../.env",
         "deploy": "wrangler deploy && wrangler deploy --config wrangler.www.jsonc",
         "secrets:put:prod": "env -u GITHUB_CLIENT_SECRET GITHQ_ENV=prod bun githq secrets run GITHUB_CLIENT_SECRET -- sh -c 'printf %s \"$GITHUB_CLIENT_SECRET\" | wrangler secret put GITHUB_CLIENT_SECRET'",
-        "stats": "GITHQ_ENV=stats bun githq secrets run -- bun scripts/stats.ts",
+        "stats": "GITHQ_ENV=stats bun scripts/stats.ts",
         "bundle": "mkdir -p ../app/.output/public && wrangler deploy --dry-run --outdir .wrangler/dist",
         "test": "TZ=UTC bun test"
     },
     "dependencies": {
-        "@githq/github": "workspace:*"
+        "@githq/github": "workspace:*",
+        "@githq/secrets": "workspace:*",
+        "@nzyme/config": "workspace:*",
+        "@nzyme/ioc": "workspace:*"
     },
     "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",

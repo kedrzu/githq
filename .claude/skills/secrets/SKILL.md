@@ -16,9 +16,11 @@ API: `nzyme/packages/secrets/README.md`; the store's setup:
 ## Paths
 
 - Every secret, declared with `defineSecret`, a description each and the environments it is enabled in:
-  `packages/cli/src/secrets/secrets.ts`.
-- The provider, with the project id and the prefix: `packages/cli/src/secrets/GithqSecrets.ts`.
-- The commands: the `githq` CLI, `packages/cli/src/cli.ts` (`bun githq …`).
+  `packages/secrets/src/secrets.ts`. Nothing else lives in that module: the Worker bundles it.
+- The store, with the project id and the prefix: `packages/secrets/src/GithqSecretStore.ts`; `GITHQ_ENV` in
+  `packages/secrets/src/githqEnv.ts`.
+- The loader a Bun script calls: `packages/secrets/src/loadGithqConfig.ts`.
+- The commands: the `githq` CLI, `packages/cli/src/cli.ts` (`bun githq …`), its provider `packages/cli/src/GithqSecrets.ts`.
 - The fallback wrapper: `scripts/withSecrets.sh`.
 
 ## Store
@@ -32,7 +34,7 @@ not secrets: `packages/github/src/oauthClientIds.json`.
 
 The updater's signing key and its password, and the Apple certificate and notarization credentials (`APPLE_*`), are enabled with `GITHQ_ENV=prod` only, so no development command holds them. `bun run build:desktop:signed` reads them from the store; the Release action signs with repository secrets set from it (`docs/desktop/RELEASING.md`).
 
-The usage statistics token, `CLOUDFLARE_ANALYTICS_TOKEN`, has an environment of its own, `GITHQ_ENV=stats`, with that one secret (key `GITHQ_STATS_CLOUDFLARE_ANALYTICS_TOKEN`). `secrets run` refuses to start when an enabled secret is missing, so keeping it out of `dev` and `prod` leaves `bun run dev`, `build:desktop:signed` and `secrets:put:prod` working before it is stored, and out of release builds' environment. The owner creates a Cloudflare API token (Account → Account Analytics → Read) and stores it once, through the masked dialog: `GITHQ_ENV=stats bun secrets set CLOUDFLARE_ANALYTICS_TOKEN --prompt="Cloudflare API token with Account Analytics: Read"`. Then `bun --cwd packages/worker stats` prints the last 30 days of usage counts.
+The usage statistics token, `CLOUDFLARE_ANALYTICS_TOKEN`, has an environment of its own, `GITHQ_ENV=stats`, with that one secret (key `GITHQ_STATS_CLOUDFLARE_ANALYTICS_TOKEN`). `secrets run` refuses to start when an enabled secret is missing, so keeping it out of `dev` and `prod` leaves `bun run dev`, `build:desktop:signed` and `secrets:put:prod` working before it is stored, and out of release builds' environment. The owner creates a Cloudflare API token (Account → Account Analytics → Read) and stores it once, through the masked dialog: `GITHQ_ENV=stats bun secrets set CLOUDFLARE_ANALYTICS_TOKEN --prompt="Cloudflare API token with Account Analytics: Read"`. Then `bun --cwd packages/worker stats` prints the last 30 days of usage counts; it reads the token from the store itself.
 
 ## Commands
 
@@ -45,6 +47,16 @@ The usage statistics token, `CLOUDFLARE_ANALYTICS_TOKEN`, has an environment of 
   `bun secrets refresh`.
 
 ## What runs with them
+
+Code resolves a secret through the container, never from `process.env` or `env`: `container.resolve(SECRET)` with
+the declaration from `@githq/secrets/secrets.js`.
+
+- A Bun script creates a container and calls `await loadGithqConfig(container)` (an environment variable wins over the
+  store; with `CI` set the store is not read). It needs no `bun secrets run` wrapper: `packages/worker/scripts/stats.ts`.
+- The Worker builds its container from its bindings (`packages/worker/src/workerContainer.ts`) and resolves
+  `GITHUB_CLIENT_SECRET` with `resolveOptionalSecret`, since it runs without it.
+- Only external tools get secrets as environment variables, through `bun secrets run`: wrangler (`scripts/withSecrets.sh`,
+  `secrets:put:prod`), the Tauri build (`build:desktop:signed`).
 
 `scripts/withSecrets.sh` wraps the Worker's `dev` and `preview`; the desktop app needs no secret. It uses `secrets run`, or warns and runs the command without the store when the store cannot be read or lacks a
 secret, so a
