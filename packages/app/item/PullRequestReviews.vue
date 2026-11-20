@@ -10,6 +10,7 @@ import { reviewers } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
+import MotionList from '@/components/MotionList.vue';
 import Picker from '@/components/Picker.vue';
 import type { PickerOption } from '@/components/Picker.vue';
 import { getReviewRequestName } from '@/store/getReviewRequestName.js';
@@ -150,7 +151,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
     >
       {{ t(l.none) }}
     </p>
-    <ul
+    <MotionList
       v-else
       :class="css.pullRequestReviews_list"
     >
@@ -187,7 +188,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
           >{{ formatAge(Date.parse(line.at), now) }}</time
         >
       </li>
-    </ul>
+    </MotionList>
   </section>
 </template>
 

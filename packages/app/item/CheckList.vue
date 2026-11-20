@@ -6,6 +6,7 @@ import { computed, ref } from 'vue';
 
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
+import MotionList from '@/components/MotionList.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemCheck } from '@/store/ItemDetailTypes.js';
 import { getWorkflowRunPathOfUrl } from '@/tracking/trackingRoutes.js';
@@ -69,7 +70,7 @@ function getLogLink(url: string) {
 
 <template>
   <div :class="css.checkList">
-    <ul :class="css.checkList_list">
+    <MotionList :class="css.checkList_list">
       <li
         v-for="check in attention"
         :key="check.id"
@@ -96,6 +97,7 @@ function getLogLink(url: string) {
       </li>
       <li
         v-if="settled.length > 0"
+        key="settled"
         :class="css.checkList_check"
       >
         <CircleCheck
@@ -136,7 +138,7 @@ function getLogLink(url: string) {
           </Button>
         </li>
       </template>
-    </ul>
+    </MotionList>
     <Button
       v-if="more > 0"
       variant="link"
