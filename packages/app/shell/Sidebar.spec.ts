@@ -553,6 +553,17 @@ test('a repository dragged up lands before the row it took the place of', async 
     expect(placeAddresses('Repositories')).toEqual(REPOSITORY_ADDRESSES);
 });
 
+test('a project dragged up lands before the project it took the place of', async () => {
+    const onMove = vi.fn();
+    await Reordering.run({ args: { ...Reordering.args, onMove } });
+
+    await dragRow('Docs revamp', 'Platform Q4');
+
+    const target: TrackedTarget = { kind: 'project', id: 'PVT_3' };
+    const place: SidebarMovePlace = { anchor: { kind: 'project', id: 'PVT_1' }, side: 'before' };
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(target, place);
+});
+
 test('a project is not dropped among the repositories', async () => {
     const onMove = vi.fn();
     await Reordering.run({ args: { ...Reordering.args, onMove } });

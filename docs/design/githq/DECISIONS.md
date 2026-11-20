@@ -515,7 +515,7 @@ Settled while building it (PR #82, 2026-11-02):
 Settings lists **only what is tracked**, and adding is a **separate picker** (owner, 2026-11-02). Repositories and
 Projects each show the tracked ones grouped by owner (since 2026-11-19 flat, in the user's order: [D44](#d44)), without ticks or an owner filter (the list is short), and a row
 opens that repository's or project's settings page (T16), because each now has settings of its own. Each row untracks
-with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
+with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more" (gone with the groups, D44), opens a picker with search,
 owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
 gone from Settings. First sign-in keeps its chooser (G2). Replaces the Settings half of D24. Screens G8, T17.
 The picker is **the first sign-in chooser in a modal of its own** (owner, 2026-11-02), not a palette shaped like the
