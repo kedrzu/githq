@@ -1186,251 +1186,6 @@
                             },
                             {
                               "type": "frame",
-                              "id": "n73Aps",
-                              "name": "Button / icon, label, key",
-                              "reusable": true,
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "O9dWyI",
-                                  "name": "icon arrow-up-right",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "arrow-up-right",
-                                  "library": "lucide",
-                                  "fill": "$fg"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "i9UKWn",
-                                  "name": "Label",
-                                  "fill": "$fg",
-                                  "content": "Open labels on GitHub",
-                                  "lineHeight": 1.3333333333333333,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "id": "I9KkTl",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd O",
-                                  "height": 16,
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "O"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "id": "m1uQkH",
-                              "type": "ref",
-                              "reusable": true,
-                              "ref": "n73Aps",
-                              "name": "Button / icon, label, no key",
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "descendants": {
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                },
-                                "I9KkTl": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "JOjbe",
-                              "name": "Button / label, key",
-                              "reusable": true,
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "KpHhX",
-                                  "name": "Label",
-                                  "fill": "$fg",
-                                  "content": "Dismiss",
-                                  "lineHeight": 1.3333333333333333,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "id": "oCNhh",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd Esc",
-                                  "height": 16,
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "Esc"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "id": "Dhiuj",
-                              "type": "ref",
-                              "reusable": true,
-                              "ref": "JOjbe",
-                              "name": "Button / label, no key",
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "content": "Revert"
-                                },
-                                "oCNhh": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "EoODS",
-                              "name": "Button / icon, label",
-                              "reusable": true,
-                              "fill": "$fg",
-                              "cornerRadius": 7,
-                              "stroke": "#00000000",
-                              "strokeWidth": 1,
-                              "gap": 7,
-                              "padding": [
-                                7,
-                                12
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "F9mRc",
-                                  "name": "icon arrow-up-right",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "arrow-up-right",
-                                  "library": "lucide",
-                                  "fill": "#0D1117"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Cenjq",
-                                  "name": "Label",
-                                  "fill": "#0D1117",
-                                  "content": "Request approval on GitHub",
-                                  "lineHeight": 1.3846153846153846,
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "syf0m",
-                              "name": "Button / label",
-                              "reusable": true,
-                              "fill": "$bg-3",
-                              "cornerRadius": 7,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 7,
-                              "padding": [
-                                7,
-                                12
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "SofV5",
-                                  "name": "Label",
-                                  "fill": "$fg",
-                                  "content": "Only my repositories",
-                                  "lineHeight": 1.3846153846153846,
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "vAXUD",
-                              "name": "Button / label, icon key",
-                              "reusable": true,
-                              "fill": "#00000000",
-                              "cornerRadius": 6,
-                              "stroke": "#00000000",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "G36gb",
-                                  "name": "Label",
-                                  "fill": "$fg-2",
-                                  "content": "Re-run",
-                                  "lineHeight": 1.3333333333333333,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "id": "E6FRCf",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd ⇧E",
-                                  "height": 16,
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "⇧E"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
                               "id": "pDA7j",
                               "name": "Chip",
                               "reusable": true,
@@ -1562,28 +1317,6 @@
                                   "fill": "#FFFFFF",
                                   "width": 12,
                                   "height": 12
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "HtcJe",
-                              "name": "Button / icon",
-                              "reusable": true,
-                              "cornerRadius": 5,
-                              "padding": 5,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "ypRNu",
-                                  "name": "Icon",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "pencil",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
                                 }
                               ]
                             }
@@ -4167,23 +3900,15 @@
                           "height": 1
                         },
                         {
-                          "type": "frame",
-                          "id": "hndIV",
+                          "id": "s0ghhc",
+                          "type": "ref",
+                          "ref": "GRpic",
                           "name": "Collapse",
-                          "cornerRadius": 5,
-                          "padding": 3,
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "s72Sd",
-                              "name": "icon panel-left-close",
-                              "width": 15,
-                              "height": 15,
-                              "icon": "panel-left-close",
-                              "library": "lucide",
-                              "fill": "$fg-2"
+                          "descendants": {
+                            "AfFM0": {
+                              "icon": "panel-left-close"
                             }
-                          ]
+                          }
                         }
                       ]
                     },
@@ -5829,7 +5554,7 @@
                   "type": "frame",
                   "id": "Pstd6",
                   "name": "Item sections",
-                  "width": 460,
+                  "width": 480,
                   "layout": "vertical",
                   "gap": 24,
                   "children": [
@@ -7192,40 +6917,26 @@
                           "name": "Arrangement"
                         },
                         {
-                          "type": "frame",
-                          "id": "ozgMo",
+                          "id": "w8fjd",
+                          "type": "ref",
+                          "ref": "GRpic",
                           "name": "Open on GitHub",
-                          "padding": 3,
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "s6YoP",
-                              "name": "icon github",
-                              "width": 15,
-                              "height": 15,
-                              "icon": "github",
-                              "library": "lucide",
-                              "fill": "$fg-2"
+                          "descendants": {
+                            "AfFM0": {
+                              "icon": "github"
                             }
-                          ]
+                          }
                         },
                         {
-                          "type": "frame",
-                          "id": "dxRh4",
+                          "id": "JPBzJ",
+                          "type": "ref",
+                          "ref": "GRpic",
                           "name": "Close",
-                          "padding": 3,
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "jwLLq",
-                              "name": "icon x",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-2"
+                          "descendants": {
+                            "AfFM0": {
+                              "icon": "x"
                             }
-                          ]
+                          }
                         }
                       ]
                     },
@@ -7669,153 +7380,89 @@
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "frame",
-                              "id": "SRALN",
-                              "name": "Primary Merge",
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "Lxodb",
-                                  "name": "Merge icon",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "git-merge",
-                                  "library": "lucide",
-                                  "fill": "$fg"
+                              "id": "wqQfi",
+                              "type": "ref",
+                              "ref": "MHAI5",
+                              "name": "Merge",
+                              "descendants": {
+                                "JGIqs": {
+                                  "enabled": false,
+                                  "icon": "git-merge"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "lsKaS",
-                                  "name": "Merge label",
-                                  "fill": "$fg",
-                                  "content": "Merge pull request",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "500"
+                                "IJGA7": {
+                                  "content": "Merge pull request"
                                 },
-                                {
-                                  "id": "iICyO",
-                                  "type": "ref",
-                                  "ref": "L44zw",
-                                  "name": "Kbd ⇧M",
-                                  "descendants": {
-                                    "pINSd": {
-                                      "name": "Key arrow-big-up",
-                                      "icon": "arrow-big-up"
-                                    },
-                                    "Q8v43": {
-                                      "content": "M"
-                                    }
-                                  }
+                                "yJS6O": {
+                                  "enabled": true
+                                },
+                                "yJS6O/luKkY": {
+                                  "content": "⇧M"
                                 }
-                              ]
+                              }
                             },
                             {
-                              "type": "frame",
-                              "id": "aUP2E",
-                              "name": "Primary Open on GitHub",
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "iafrM",
-                                  "name": "Primary icon",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "github",
-                                  "library": "lucide",
-                                  "fill": "$fg"
+                              "id": "D1N17",
+                              "type": "ref",
+                              "ref": "PmKqy",
+                              "name": "Merge · primary",
+                              "enabled": false,
+                              "descendants": {
+                                "JGIqs": {
+                                  "enabled": false,
+                                  "icon": "git-merge"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "M3KrGu",
-                                  "name": "Primary label",
-                                  "fill": "$fg",
-                                  "content": "Open on GitHub",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "500"
+                                "IJGA7": {
+                                  "content": "Merge pull request"
                                 },
-                                {
-                                  "id": "gynBw",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd O",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "O"
-                                    }
-                                  }
+                                "yJS6O": {
+                                  "enabled": true
+                                },
+                                "yJS6O/luKkY": {
+                                  "content": "⇧M"
                                 }
-                              ]
+                              }
                             },
                             {
-                              "type": "frame",
-                              "id": "nr4kB",
-                              "name": "Files changed",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "f4m6j",
-                                  "name": "icon file-diff",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "file-diff",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
+                              "id": "zZZb7",
+                              "type": "ref",
+                              "ref": "MHAI5",
+                              "name": "Open on GitHub",
+                              "descendants": {
+                                "JGIqs": {
+                                  "enabled": false,
+                                  "icon": "github"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "GMsWF",
-                                  "name": "Files label",
-                                  "fill": "$fg-2",
-                                  "content": "Review files",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
+                                "IJGA7": {
+                                  "content": "Open on GitHub"
                                 },
-                                {
-                                  "id": "JjFn3",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd D",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "D"
-                                    }
-                                  }
+                                "yJS6O": {
+                                  "enabled": true
+                                },
+                                "yJS6O/luKkY": {
+                                  "content": "O"
                                 }
-                              ]
+                              }
+                            },
+                            {
+                              "id": "WWa4u",
+                              "type": "ref",
+                              "ref": "MHAI5",
+                              "name": "Review files",
+                              "descendants": {
+                                "JGIqs": {
+                                  "enabled": false,
+                                  "icon": "file-diff"
+                                },
+                                "IJGA7": {
+                                  "content": "Review files"
+                                },
+                                "yJS6O": {
+                                  "enabled": true
+                                },
+                                "yJS6O/luKkY": {
+                                  "content": "D"
+                                }
+                              }
                             },
                             {
                               "type": "text",
@@ -8540,16 +8187,34 @@
                             "CowyG": {
                               "enabled": false
                             },
-                            "lsKaS": {
+                            "wqQfi/JGIqs": {
+                              "enabled": false
+                            },
+                            "wqQfi/IJGA7": {
                               "content": "Merge"
                             },
-                            "iICyO": {
+                            "wqQfi/yJS6O": {
                               "enabled": false
                             },
-                            "gynBw": {
+                            "D1N17/JGIqs": {
                               "enabled": false
                             },
-                            "JjFn3": {
+                            "D1N17/IJGA7": {
+                              "content": "Merge"
+                            },
+                            "D1N17/yJS6O": {
+                              "enabled": false
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": false
+                            },
+                            "zZZb7/yJS6O": {
+                              "enabled": false
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": false
+                            },
+                            "WWa4u/yJS6O": {
                               "enabled": false
                             }
                           }
@@ -9567,74 +9232,34 @@
                               "height": 1
                             },
                             {
-                              "type": "frame",
-                              "id": "A0i5R",
-                              "name": "Display",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "QXQwC",
-                                  "name": "icon list-filter",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "list-filter",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
+                              "id": "IizNh",
+                              "type": "ref",
+                              "ref": "oHOZZ",
+                              "name": "Filter",
+                              "descendants": {
+                                "MiiSN": {
+                                  "enabled": true,
+                                  "icon": "list-filter"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "omOBZ",
-                                  "name": "Filter",
-                                  "fill": "$fg-2",
-                                  "content": "Filter",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                "fThUd": {
+                                  "content": "Filter"
                                 }
-                              ]
+                              }
                             },
                             {
-                              "type": "frame",
-                              "id": "cOEHe",
+                              "id": "qoRJj",
+                              "type": "ref",
+                              "ref": "oHOZZ",
                               "name": "Group",
-                              "cornerRadius": 6,
-                              "stroke": "$border",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "POZV9",
-                                  "name": "icon rows-3",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "rows-3",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
+                              "descendants": {
+                                "MiiSN": {
+                                  "enabled": true,
+                                  "icon": "rows-3"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "EytYH",
-                                  "name": "Group: Reason",
-                                  "fill": "$fg-2",
-                                  "content": "Group: Reason",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                "fThUd": {
+                                  "content": "Group: Reason"
                                 }
-                              ]
+                              }
                             },
                             {
                               "type": "frame",
@@ -9797,74 +9422,34 @@
                               "height": 1
                             },
                             {
-                              "type": "frame",
-                              "id": "r7icv",
+                              "id": "neVUh",
+                              "type": "ref",
+                              "ref": "oHOZZ",
                               "name": "Filter",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "Y55LI",
-                                  "name": "icon list-filter",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "list-filter",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
+                              "descendants": {
+                                "MiiSN": {
+                                  "enabled": true,
+                                  "icon": "list-filter"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "ymDl1",
-                                  "name": "Filter",
-                                  "fill": "$fg-2",
-                                  "content": "Filter",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                "fThUd": {
+                                  "content": "Filter"
                                 }
-                              ]
+                              }
                             },
                             {
-                              "type": "frame",
-                              "id": "twOBn",
+                              "id": "kYgnt",
+                              "type": "ref",
+                              "ref": "oHOZZ",
                               "name": "Group",
-                              "cornerRadius": 6,
-                              "stroke": "$border",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "qCJZa",
-                                  "name": "icon rows-3",
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "rows-3",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
+                              "descendants": {
+                                "MiiSN": {
+                                  "enabled": true,
+                                  "icon": "rows-3"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "x4f2K",
-                                  "name": "Group: Reason",
-                                  "fill": "$fg-2",
-                                  "content": "Group: Reason",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                "fThUd": {
+                                  "content": "Group: Reason"
                                 }
-                              ]
+                              }
                             },
                             {
                               "type": "frame",
@@ -10440,48 +10025,25 @@
                               ]
                             },
                             {
-                              "type": "frame",
-                              "id": "cVeqZ",
+                              "id": "iJRbC",
+                              "type": "ref",
+                              "ref": "kl53W",
                               "name": "Add filter",
-                              "gap": 5,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "ueOrU",
-                                  "name": "icon plus",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "plus",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
+                              "descendants": {
+                                "MiiSN": {
+                                  "enabled": true,
+                                  "icon": "plus"
                                 },
-                                {
-                                  "type": "text",
-                                  "id": "Ckdka",
-                                  "name": "Filter",
-                                  "fill": "$fg-dim",
-                                  "content": "Filter",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                "fThUd": {
+                                  "content": "Filter"
                                 },
-                                {
-                                  "id": "JiMp2",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd F",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "F"
-                                    }
-                                  }
+                                "yFmU6": {
+                                  "enabled": true
+                                },
+                                "yFmU6/luKkY": {
+                                  "content": "F"
                                 }
-                              ]
+                              }
                             },
                             {
                               "type": "text",
@@ -10941,7 +10503,21 @@
                                   "type": "ref",
                                   "ref": "BioKQ",
                                   "name": "PR merge",
-                                  "width": "fill_container"
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "wqQfi/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "D1N17/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "zZZb7/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "WWa4u/JGIqs": {
+                                      "enabled": false
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "Yw1Y1",
@@ -16878,9 +16454,6 @@
                                   "name": "List header",
                                   "width": "fill_container",
                                   "descendants": {
-                                    "A0i5R": {
-                                      "name": "Filter"
-                                    },
                                     "fqtcl": {
                                       "gap": 0
                                     },
@@ -20623,41 +20196,19 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "Qw5ZS",
-                                  "name": "Display button",
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    9
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "cMgOL",
-                                      "name": "icon sliders-horizontal",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "sliders-horizontal",
-                                      "library": "lucide",
-                                      "fill": "$fg"
+                                  "id": "gSirg",
+                                  "type": "ref",
+                                  "ref": "oHOZZ",
+                                  "name": "Display",
+                                  "descendants": {
+                                    "MiiSN": {
+                                      "enabled": true,
+                                      "icon": "sliders-horizontal"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "gqovC",
-                                      "name": "Display",
-                                      "fill": "$fg",
-                                      "content": "Display",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                    "fThUd": {
+                                      "content": "Display"
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             },
@@ -20849,48 +20400,25 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "z6OwTj",
+                                  "id": "cuBsl",
+                                  "type": "ref",
+                                  "ref": "kl53W",
                                   "name": "Add filter",
-                                  "gap": 5,
-                                  "padding": [
-                                    3,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "r85Cc",
-                                      "name": "icon plus",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "plus",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
+                                  "descendants": {
+                                    "MiiSN": {
+                                      "enabled": true,
+                                      "icon": "plus"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "l7yYFA",
-                                      "name": "Filter",
-                                      "fill": "$fg-dim",
-                                      "content": "Filter",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                    "fThUd": {
+                                      "content": "Filter"
                                     },
-                                    {
-                                      "id": "nlClm",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd F",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "F"
-                                        }
-                                      }
+                                    "yFmU6": {
+                                      "enabled": true
+                                    },
+                                    "yFmU6/luKkY": {
+                                      "content": "F"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
                                   "type": "frame",
@@ -22818,27 +22346,15 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "Dwro9",
+                                  "id": "o3vVkO",
+                                  "type": "ref",
+                                  "ref": "GRpic",
                                   "name": "Reset view",
-                                  "cornerRadius": 6,
-                                  "padding": [
-                                    4,
-                                    6
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "KJ5UY",
-                                      "name": "icon rotate-ccw",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "rotate-ccw",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
+                                  "descendants": {
+                                    "AfFM0": {
+                                      "icon": "rotate-ccw"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
                                   "type": "frame",
@@ -22895,44 +22411,20 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "vf330",
-                                  "name": "Display button",
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 6,
-                                  "stroke": "$border",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    6
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "g8wfj",
-                                      "name": "icon sliders-horizontal",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "sliders-horizontal",
-                                      "library": "lucide",
-                                      "fill": "$fg"
+                                  "id": "avOax",
+                                  "type": "ref",
+                                  "ref": "oHOZZ",
+                                  "name": "Display",
+                                  "descendants": {
+                                    "MiiSN": {
+                                      "enabled": true,
+                                      "icon": "sliders-horizontal"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "HnJNI",
-                                      "x": 29,
-                                      "y": 4,
-                                      "name": "Display",
-                                      "enabled": false,
-                                      "fill": "$fg",
+                                    "fThUd": {
                                       "content": "Display",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                      "enabled": false
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             },
@@ -23124,48 +22616,25 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "R1Tv2",
+                                  "id": "x5b9P2",
+                                  "type": "ref",
+                                  "ref": "kl53W",
                                   "name": "Add filter",
-                                  "gap": 5,
-                                  "padding": [
-                                    3,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "iu1Zt",
-                                      "name": "icon plus",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "plus",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
+                                  "descendants": {
+                                    "MiiSN": {
+                                      "enabled": true,
+                                      "icon": "plus"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "ELlWN",
-                                      "name": "Filter",
-                                      "fill": "$fg-dim",
-                                      "content": "Filter",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                    "fThUd": {
+                                      "content": "Filter"
                                     },
-                                    {
-                                      "id": "Ivgkg",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd F",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "F"
-                                        }
-                                      }
+                                    "yFmU6": {
+                                      "enabled": true
+                                    },
+                                    "yFmU6/luKkY": {
+                                      "content": "F"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
                                   "type": "frame",
@@ -29029,12 +28498,12 @@
                               ]
                             },
                             {
-                              "id": "DZXQX",
+                              "id": "Xxg3S",
                               "type": "ref",
-                              "ref": "HtcJe",
+                              "ref": "GRpic",
                               "name": "Open on GitHub",
                               "descendants": {
-                                "ypRNu": {
+                                "AfFM0": {
                                   "icon": "github"
                                 }
                               }
@@ -29775,8 +29244,7 @@
                           "name": "List header",
                           "width": "fill_container",
                           "descendants": {
-                            "EytYH": {
-                              "name": "Group: Repository",
+                            "qoRJj/fThUd": {
                               "content": "Group: Repository"
                             }
                           }
@@ -32686,7 +32154,7 @@
                         "jM9cC": {
                           "enabled": false
                         },
-                        "cOEHe": {
+                        "qoRJj": {
                           "enabled": false
                         }
                       }
@@ -36720,7 +36188,7 @@
                             "C9kwW": {
                               "enabled": false
                             },
-                            "gqovC": {
+                            "gSirg/fThUd": {
                               "enabled": false
                             }
                           }
@@ -36997,7 +36465,7 @@
                             "C9kwW": {
                               "enabled": false
                             },
-                            "gqovC": {
+                            "gSirg/fThUd": {
                               "enabled": false
                             }
                           }
@@ -37719,28 +37187,15 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "HcPlj",
-                      "name": "github",
-                      "cornerRadius": 6,
-                      "gap": 6,
-                      "padding": [
-                        4,
-                        8
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "F29FYY",
-                          "name": "icon github",
-                          "width": 14,
-                          "height": 14,
-                          "icon": "github",
-                          "library": "lucide",
-                          "fill": "$fg-2"
+                      "id": "NcKAK",
+                      "type": "ref",
+                      "ref": "GRpic",
+                      "name": "Open on GitHub",
+                      "descendants": {
+                        "AfFM0": {
+                          "icon": "github"
                         }
-                      ]
+                      }
                     }
                   ]
                 },
@@ -43589,7 +43044,7 @@
                       "x": 0,
                       "y": 0,
                       "descendants": {
-                        "hndIV": {
+                        "s0ghhc": {
                           "fill": "$bg-3"
                         }
                       }
@@ -46209,7 +45664,7 @@
                                 "nEbGC": {
                                   "enabled": false
                                 },
-                                "HcPlj": {
+                                "NcKAK": {
                                   "enabled": false
                                 }
                               }
@@ -47862,37 +47317,28 @@
                               "fontWeight": "normal"
                             },
                             {
-                              "id": "AQsyM",
+                              "id": "C7wjCV",
                               "type": "ref",
-                              "ref": "TH5d7",
+                              "ref": "MHAI5",
                               "name": "Discard",
                               "descendants": {
-                                "Js7vW": {
-                                  "enabled": false
-                                },
-                                "hqldH": {
+                                "IJGA7": {
                                   "content": "Discard"
-                                },
-                                "ZBaFq": {
-                                  "enabled": false
                                 }
                               }
                             },
                             {
-                              "id": "SA15Q",
+                              "id": "U00fwv",
                               "type": "ref",
-                              "ref": "TH5d7",
+                              "ref": "MHAI5",
                               "name": "Retry",
                               "descendants": {
-                                "Js7vW": {
-                                  "icon": "rotate-cw",
-                                  "fill": "$fg-2"
+                                "JGIqs": {
+                                  "enabled": true,
+                                  "icon": "rotate-cw"
                                 },
-                                "hqldH": {
+                                "IJGA7": {
                                   "content": "Retry"
-                                },
-                                "ZBaFq": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -48531,10 +47977,10 @@
                       "fill": "$fg",
                       "content": "Thanks both. The cross-repository case is fixed in 3f2a9b1 and the e2e is green again.\n\n@sofiab could you take another look? The migration is the only part that changed since your review."
                     },
-                    "pehHx/wYaxO/hqldH": {
+                    "pehHx/nWkY8/IJGA7": {
                       "content": "Close with comment"
                     },
-                    "pehHx/gAIL0": {
+                    "pehHx/CaBvk": {
                       "opacity": 1
                     }
                   }
@@ -48937,29 +48383,85 @@
                           "height": 1
                         },
                         {
-                          "id": "wYaxO",
+                          "id": "nWkY8",
                           "type": "ref",
-                          "ref": "TH5d7",
+                          "ref": "MHAI5",
                           "name": "Close",
                           "descendants": {
-                            "Js7vW": {
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "git-pull-request-closed",
                               "fill": "$red"
                             },
-                            "hqldH": {
+                            "IJGA7": {
                               "content": "Close pull request"
                             },
-                            "ZBaFq/luKkY": {
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
                               "content": "⇧X"
                             }
                           }
                         },
                         {
-                          "id": "gAIL0",
+                          "id": "vhL5E",
                           "type": "ref",
-                          "ref": "t0PlX5",
+                          "ref": "RmbQl",
+                          "name": "Close · split",
+                          "enabled": false,
+                          "descendants": {
+                            "qnCtH/JGIqs": {
+                              "enabled": true,
+                              "icon": "circle-check",
+                              "fill": "$purple"
+                            },
+                            "qnCtH/IJGA7": {
+                              "content": "Close issue"
+                            },
+                            "qnCtH/yJS6O": {
+                              "enabled": true
+                            },
+                            "qnCtH/yJS6O/luKkY": {
+                              "content": "⇧X"
+                            }
+                          }
+                        },
+                        {
+                          "id": "c8zddO",
+                          "type": "ref",
+                          "ref": "f8sNbZ",
+                          "name": "Discard",
+                          "enabled": false,
+                          "descendants": {
+                            "IJGA7": {
+                              "content": "Discard"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "↵"
+                            }
+                          }
+                        },
+                        {
+                          "id": "CaBvk",
+                          "type": "ref",
+                          "ref": "PmKqy",
                           "name": "Comment",
-                          "opacity": 0.45
+                          "opacity": 0.45,
+                          "descendants": {
+                            "IJGA7": {
+                              "content": "Comment"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "⌘↵"
+                            }
+                          }
                         }
                       ]
                     }
@@ -49049,19 +48551,19 @@
                               "fill": "$fg",
                               "content": "And 4a1c9e2 adds a base in another repository to the e2e, so it can't come back."
                             },
-                            "wYaxO/Js7vW": {
+                            "nWkY8/JGIqs": {
                               "enabled": false
                             },
-                            "wYaxO/hqldH": {
+                            "nWkY8/IJGA7": {
                               "content": "Cancel"
                             },
-                            "wYaxO/ZBaFq/luKkY": {
+                            "nWkY8/yJS6O/luKkY": {
                               "content": "Esc"
                             },
-                            "gAIL0": {
+                            "CaBvk": {
                               "opacity": 1
                             },
-                            "gAIL0/hqldH": {
+                            "CaBvk/IJGA7": {
                               "content": "Reply"
                             }
                           }
@@ -50055,11 +49557,11 @@
                   "ref": "sWprg",
                   "name": "Activity / Composer · issue",
                   "descendants": {
-                    "pehHx/wYaxO": {
-                      "id": "UQGRX",
-                      "type": "ref",
-                      "ref": "L4s15U",
-                      "name": "Close"
+                    "pehHx/nWkY8": {
+                      "enabled": false
+                    },
+                    "pehHx/vhL5E": {
+                      "enabled": true
                     }
                   }
                 },
@@ -50077,10 +49579,10 @@
                       "fill": "$fg",
                       "content": "Fixed by #15: the migration keeps sub-issue links whose parent lives in another repository.\n\nClosing; reopen if it comes back after the upgrade."
                     },
-                    "UQGRX/cJk7E": {
+                    "pehHx/vhL5E/qnCtH/IJGA7": {
                       "content": "Close with comment"
                     },
-                    "pehHx/gAIL0": {
+                    "pehHx/CaBvk": {
                       "opacity": 1
                     }
                   }
@@ -50092,11 +49594,11 @@
                   "ref": "sWprg",
                   "name": "Activity / Composer · closed",
                   "descendants": {
-                    "pehHx/wYaxO/Js7vW": {
+                    "pehHx/nWkY8/JGIqs": {
                       "icon": "circle-dot",
                       "fill": "$green"
                     },
-                    "pehHx/wYaxO/hqldH": {
+                    "pehHx/nWkY8/IJGA7": {
                       "content": "Reopen issue"
                     }
                   }
@@ -50108,7 +49610,7 @@
                   "ref": "sWprg",
                   "name": "Activity / Composer · merged",
                   "descendants": {
-                    "pehHx/wYaxO": {
+                    "pehHx/nWkY8": {
                       "enabled": false
                     }
                   }
@@ -50128,10 +49630,10 @@
                       "width": "fill_container",
                       "stroke": "$accent",
                       "descendants": {
-                        "wYaxO/hqldH": {
+                        "nWkY8/IJGA7": {
                           "content": "Close with comment"
                         },
-                        "gAIL0": {
+                        "CaBvk": {
                           "opacity": 1
                         }
                       }
@@ -50286,19 +49788,19 @@
                       "fill": "$fg",
                       "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
                     },
-                    "pehHx/wYaxO/Js7vW": {
+                    "pehHx/nWkY8/JGIqs": {
                       "enabled": false
                     },
-                    "pehHx/wYaxO/hqldH": {
+                    "pehHx/nWkY8/IJGA7": {
                       "content": "Cancel"
                     },
-                    "pehHx/wYaxO/ZBaFq/luKkY": {
+                    "pehHx/nWkY8/yJS6O/luKkY": {
                       "content": "Esc"
                     },
-                    "pehHx/gAIL0": {
+                    "pehHx/CaBvk": {
                       "opacity": 1
                     },
-                    "pehHx/gAIL0/hqldH": {
+                    "pehHx/CaBvk/IJGA7": {
                       "content": "Update comment"
                     }
                   }
@@ -50581,27 +50083,17 @@
                       "content": "Discard your changes to this comment?",
                       "fill": "$fg"
                     },
-                    "pehHx/wYaxO/hqldH": {
+                    "pehHx/nWkY8/IJGA7": {
                       "content": "Keep editing"
                     },
-                    "pehHx/wYaxO/ZBaFq/luKkY": {
+                    "pehHx/nWkY8/yJS6O/luKkY": {
                       "content": "Esc"
                     },
-                    "pehHx/gAIL0": {
-                      "fill": "#DA3633",
-                      "stroke": "#DA3633"
+                    "pehHx/c8zddO": {
+                      "enabled": true
                     },
-                    "pehHx/gAIL0/hqldH": {
-                      "content": "Discard",
-                      "fill": "#FFFFFF"
-                    },
-                    "pehHx/gAIL0/ZBaFq": {
-                      "fill": "#FFFFFF29",
-                      "stroke": "#FFFFFF33"
-                    },
-                    "pehHx/gAIL0/ZBaFq/luKkY": {
-                      "content": "↵",
-                      "fill": "#FFFFFF"
+                    "pehHx/CaBvk": {
+                      "enabled": false
                     }
                   }
                 },
@@ -51173,39 +50665,32 @@
                           "gap": 8,
                           "children": [
                             {
-                              "id": "Z7ltJ",
+                              "id": "WAnBj",
                               "type": "ref",
-                              "ref": "TH5d7",
+                              "ref": "MHAI5",
                               "name": "Try again",
                               "descendants": {
-                                "Js7vW": {
+                                "JGIqs": {
+                                  "enabled": true,
                                   "icon": "rotate-cw"
                                 },
-                                "hqldH": {
+                                "IJGA7": {
                                   "content": "Try again"
-                                },
-                                "ZBaFq": {
-                                  "enabled": false
-                                },
-                                "ZBaFq/luKkY": {
-                                  "content": "⇧R"
                                 }
                               }
                             },
                             {
-                              "id": "G0C6RH",
+                              "id": "D8qiJZ",
                               "type": "ref",
-                              "ref": "TH5d7",
+                              "ref": "MHAI5",
                               "name": "Open on GitHub",
                               "descendants": {
-                                "Js7vW": {
+                                "JGIqs": {
+                                  "enabled": true,
                                   "icon": "arrow-up-right"
                                 },
-                                "hqldH": {
+                                "IJGA7": {
                                   "content": "Open on GitHub"
-                                },
-                                "ZBaFq": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -52567,26 +52052,11 @@
                             "U1eor/PKgvB": {
                               "content": "3 files"
                             },
-                            "U1eor/SRALN": {
-                              "fill": "$accent",
-                              "stroke": "$accent"
+                            "U1eor/wqQfi": {
+                              "enabled": false
                             },
-                            "U1eor/Lxodb": {
-                              "fill": "#FFFFFF"
-                            },
-                            "U1eor/lsKaS": {
-                              "fill": "#FFFFFF",
-                              "fontWeight": "600"
-                            },
-                            "U1eor/iICyO": {
-                              "fill": "#FFFFFF33",
-                              "stroke": "#0D111733"
-                            },
-                            "U1eor/iICyO/pINSd": {
-                              "fill": "#FFFFFF"
-                            },
-                            "U1eor/iICyO/Q8v43": {
-                              "fill": "#FFFFFF"
+                            "U1eor/D1N17": {
+                              "enabled": true
                             },
                             "Yw1Y1/Sfi2r": {
                               "icon": "circle-check",
@@ -52842,26 +52312,11 @@
                                     "XPhTt/PKgvB": {
                                       "content": "3 files"
                                     },
-                                    "XPhTt/SRALN": {
-                                      "fill": "$accent",
-                                      "stroke": "$accent"
+                                    "XPhTt/wqQfi": {
+                                      "enabled": false
                                     },
-                                    "XPhTt/Lxodb": {
-                                      "fill": "#FFFFFF"
-                                    },
-                                    "XPhTt/lsKaS": {
-                                      "fill": "#FFFFFF",
-                                      "fontWeight": "600"
-                                    },
-                                    "XPhTt/iICyO": {
-                                      "fill": "#FFFFFF33",
-                                      "stroke": "#0D111733"
-                                    },
-                                    "XPhTt/iICyO/pINSd": {
-                                      "fill": "#FFFFFF"
-                                    },
-                                    "XPhTt/iICyO/Q8v43": {
-                                      "fill": "#FFFFFF"
+                                    "XPhTt/D1N17": {
+                                      "enabled": true
                                     },
                                     "k0fK7/Sfi2r": {
                                       "icon": "circle-check",
@@ -97862,12 +97317,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
-                                "cOEHe": {
-                                  "name": "Group: Reason"
-                                },
                                 "fqtcl": {
                                   "name": "Mode list",
                                   "gap": 0,
@@ -117596,7 +117045,19 @@
                                     "PKgvB": {
                                       "content": "3 files"
                                     },
-                                    "SRALN": {
+                                    "wqQfi": {
+                                      "enabled": false
+                                    },
+                                    "wqQfi/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "D1N17/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "zZZb7/JGIqs": {
+                                      "enabled": false
+                                    },
+                                    "WWa4u/JGIqs": {
                                       "enabled": false
                                     },
                                     "kAXIF": {
@@ -118630,12 +118091,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
-                                "cOEHe": {
-                                  "name": "Group: Reason"
-                                },
                                 "fqtcl": {
                                   "name": "Mode list",
                                   "gap": 0,
@@ -166288,26 +165743,11 @@
                             "U1eor/PKgvB": {
                               "content": "3 files"
                             },
-                            "U1eor/SRALN": {
-                              "fill": "$accent",
-                              "stroke": "$accent"
+                            "U1eor/wqQfi": {
+                              "enabled": false
                             },
-                            "U1eor/Lxodb": {
-                              "fill": "#FFFFFF"
-                            },
-                            "U1eor/lsKaS": {
-                              "fill": "#FFFFFF",
-                              "fontWeight": "600"
-                            },
-                            "U1eor/iICyO": {
-                              "fill": "#FFFFFF33",
-                              "stroke": "#0D111733"
-                            },
-                            "U1eor/iICyO/pINSd": {
-                              "fill": "#FFFFFF"
-                            },
-                            "U1eor/iICyO/Q8v43": {
-                              "fill": "#FFFFFF"
+                            "U1eor/D1N17": {
+                              "enabled": true
                             },
                             "Yw1Y1/Sfi2r": {
                               "icon": "circle-check",
@@ -191248,27 +190688,20 @@
                                     "PKgvB": {
                                       "content": "3 files"
                                     },
-                                    "SRALN": {
-                                      "fill": "$accent",
-                                      "stroke": "$accent",
+                                    "wqQfi": {
                                       "enabled": false
                                     },
-                                    "Lxodb": {
-                                      "fill": "#FFFFFF"
+                                    "wqQfi/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "lsKaS": {
-                                      "fill": "#FFFFFF",
-                                      "fontWeight": "600"
+                                    "D1N17/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "iICyO": {
-                                      "fill": "#FFFFFF33",
-                                      "stroke": "#0D111733"
+                                    "zZZb7/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "iICyO/pINSd": {
-                                      "fill": "#FFFFFF"
-                                    },
-                                    "iICyO/Q8v43": {
-                                      "fill": "#FFFFFF"
+                                    "WWa4u/JGIqs": {
+                                      "enabled": false
                                     },
                                     "kAXIF": {
                                       "enabled": true,
@@ -194612,8 +194045,20 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "SRALN": {
+                            "wqQfi": {
                               "enabled": false
+                            },
+                            "wqQfi/JGIqs": {
+                              "enabled": true
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             },
                             "kAXIF": {
                               "enabled": true,
@@ -194656,17 +194101,24 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "git-branch"
-                            },
-                            "lsKaS": {
-                              "content": "Delete branch"
-                            },
-                            "iICyO/pINSd": {
+                            "wqQfi/JGIqs": {
+                              "icon": "git-branch",
                               "enabled": true
                             },
-                            "iICyO/Q8v43": {
-                              "content": "D"
+                            "wqQfi/IJGA7": {
+                              "content": "Delete branch"
+                            },
+                            "wqQfi/yJS6O/luKkY": {
+                              "content": "⇧D"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -194705,17 +194157,21 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "list-ordered"
-                            },
-                            "lsKaS": {
-                              "content": "Queue"
-                            },
-                            "iICyO/pINSd": {
+                            "wqQfi/JGIqs": {
+                              "icon": "list-ordered",
                               "enabled": true
                             },
-                            "iICyO/Q8v43": {
-                              "content": "M"
+                            "wqQfi/IJGA7": {
+                              "content": "Queue"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -194775,11 +194231,21 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "timer"
+                            "wqQfi/JGIqs": {
+                              "icon": "timer",
+                              "enabled": true
                             },
-                            "lsKaS": {
+                            "wqQfi/IJGA7": {
                               "content": "Auto-merge"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -194818,8 +194284,20 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "SRALN": {
+                            "wqQfi": {
                               "enabled": false
+                            },
+                            "wqQfi/JGIqs": {
+                              "enabled": true
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             },
                             "kAXIF": {
                               "enabled": true,
@@ -194893,11 +194371,21 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "arrow-up-right"
+                            "wqQfi/JGIqs": {
+                              "icon": "arrow-up-right",
+                              "enabled": true
                             },
-                            "lsKaS": {
+                            "wqQfi/IJGA7": {
                               "content": "Resolve on GitHub"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -194957,17 +194445,24 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "git-pull-request-arrow"
+                            "wqQfi/JGIqs": {
+                              "icon": "git-pull-request-arrow",
+                              "enabled": true
                             },
-                            "lsKaS": {
+                            "wqQfi/IJGA7": {
                               "content": "Update branch"
                             },
-                            "iICyO/pINSd": {
-                              "enabled": false
-                            },
-                            "iICyO/Q8v43": {
+                            "wqQfi/yJS6O/luKkY": {
                               "content": "U"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -195006,11 +194501,21 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "Lxodb": {
-                              "icon": "eye"
+                            "wqQfi/JGIqs": {
+                              "icon": "eye",
+                              "enabled": true
                             },
-                            "lsKaS": {
+                            "wqQfi/IJGA7": {
                               "content": "Mark ready"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         },
@@ -195070,8 +194575,20 @@
                             "PKgvB": {
                               "content": "3 files"
                             },
-                            "lsKaS": {
+                            "wqQfi/JGIqs": {
+                              "enabled": true
+                            },
+                            "wqQfi/IJGA7": {
                               "content": "Back to the merge"
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": true
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": true
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": true
                             }
                           }
                         }
@@ -267046,9 +266563,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -268840,6 +268354,18 @@
                                         },
                                         "PKgvB": {
                                           "content": "14 files"
+                                        },
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -270045,6 +269571,18 @@
                                         },
                                         "PKgvB": {
                                           "content": "11 files"
+                                        },
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -274280,26 +273818,23 @@
                                         "PKgvB": {
                                           "content": "6 files"
                                         },
-                                        "SRALN": {
-                                          "fill": "$accent",
-                                          "stroke": "$accent"
+                                        "wqQfi": {
+                                          "enabled": false
                                         },
-                                        "Lxodb": {
-                                          "fill": "#FFFFFF"
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "lsKaS": {
-                                          "fill": "#FFFFFF",
-                                          "fontWeight": "600"
+                                        "D1N17": {
+                                          "enabled": true
                                         },
-                                        "iICyO": {
-                                          "fill": "#FFFFFF33",
-                                          "stroke": "#0D111733"
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "iICyO/pINSd": {
-                                          "fill": "#FFFFFF"
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "iICyO/Q8v43": {
-                                          "fill": "#FFFFFF"
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -275999,26 +275534,23 @@
                                         "PKgvB": {
                                           "content": "6 files"
                                         },
-                                        "SRALN": {
-                                          "fill": "$accent",
-                                          "stroke": "$accent"
+                                        "wqQfi": {
+                                          "enabled": false
                                         },
-                                        "Lxodb": {
-                                          "fill": "#FFFFFF"
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "lsKaS": {
-                                          "fill": "#FFFFFF",
-                                          "fontWeight": "600"
+                                        "D1N17": {
+                                          "enabled": true
                                         },
-                                        "iICyO": {
-                                          "fill": "#FFFFFF33",
-                                          "stroke": "#0D111733"
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "iICyO/pINSd": {
-                                          "fill": "#FFFFFF"
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
                                         },
-                                        "iICyO/Q8v43": {
-                                          "fill": "#FFFFFF"
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -277620,6 +277152,18 @@
                                         },
                                         "PKgvB": {
                                           "content": "19 files"
+                                        },
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -282005,9 +281549,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -283032,9 +282573,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -283876,9 +283414,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -285169,8 +284704,7 @@
                                   "name": "Closed",
                                   "content": "Closed"
                                 },
-                                "x4f2K": {
-                                  "name": "Group: Milestone",
+                                "kYgnt/fThUd": {
                                   "content": "Group: Milestone"
                                 }
                               }
@@ -286081,8 +285615,7 @@
                                   "name": "Closed",
                                   "content": "Closed"
                                 },
-                                "x4f2K": {
-                                  "name": "Group: Label",
+                                "kYgnt/fThUd": {
                                   "content": "Group: Label"
                                 }
                               }
@@ -286754,8 +286287,7 @@
                                       "name": "Closed",
                                       "content": "Closed"
                                     },
-                                    "x4f2K": {
-                                      "name": "Group: None",
+                                    "kYgnt/fThUd": {
                                       "content": "Group: None"
                                     }
                                   }
@@ -291161,6 +290693,18 @@
                                         },
                                         "PKgvB": {
                                           "content": "3 files"
+                                        },
+                                        "wqQfi/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "D1N17/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "zZZb7/JGIqs": {
+                                          "enabled": false
+                                        },
+                                        "WWa4u/JGIqs": {
+                                          "enabled": false
                                         }
                                       }
                                     },
@@ -292439,6 +291983,18 @@
                                 },
                                 "PKgvB": {
                                   "content": "8 files"
+                                },
+                                "wqQfi/JGIqs": {
+                                  "enabled": false
+                                },
+                                "D1N17/JGIqs": {
+                                  "enabled": false
+                                },
+                                "zZZb7/JGIqs": {
+                                  "enabled": false
+                                },
+                                "WWa4u/JGIqs": {
+                                  "enabled": false
                                 }
                               }
                             },
@@ -292822,6 +292378,18 @@
                             },
                             "PKgvB": {
                               "content": "8 files"
+                            },
+                            "wqQfi/JGIqs": {
+                              "enabled": false
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": false
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": false
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": false
                             }
                           }
                         },
@@ -293274,6 +292842,18 @@
                             },
                             "PKgvB": {
                               "content": "8 files"
+                            },
+                            "wqQfi/JGIqs": {
+                              "enabled": false
+                            },
+                            "D1N17/JGIqs": {
+                              "enabled": false
+                            },
+                            "zZZb7/JGIqs": {
+                              "enabled": false
+                            },
+                            "WWa4u/JGIqs": {
+                              "enabled": false
                             }
                           }
                         },
@@ -298153,26 +297733,23 @@
                                     "PKgvB": {
                                       "content": "4 files"
                                     },
-                                    "SRALN": {
-                                      "fill": "$accent",
-                                      "stroke": "$accent"
+                                    "wqQfi": {
+                                      "enabled": false
                                     },
-                                    "Lxodb": {
-                                      "fill": "#FFFFFF"
+                                    "wqQfi/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "lsKaS": {
-                                      "fill": "#FFFFFF",
-                                      "fontWeight": "600"
+                                    "D1N17": {
+                                      "enabled": true
                                     },
-                                    "iICyO": {
-                                      "fill": "#FFFFFF33",
-                                      "stroke": "#0D111733"
+                                    "D1N17/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "iICyO/pINSd": {
-                                      "fill": "#FFFFFF"
+                                    "zZZb7/JGIqs": {
+                                      "enabled": false
                                     },
-                                    "iICyO/Q8v43": {
-                                      "fill": "#FFFFFF"
+                                    "WWa4u/JGIqs": {
+                                      "enabled": false
                                     }
                                   }
                                 },
@@ -309484,9 +309061,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -310086,9 +309660,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
                                 "fqtcl": {
                                   "gap": 0
                                 },
@@ -354148,19 +353719,19 @@
                                   "fill": "$fg",
                                   "content": "**Does replayQueue stop at the first conflict?** It sets the conflicting item aside and carries on, so a later edit to the same issue can land before the one it depends on. I'd stop the batch at the first conflict and leave the rest queued."
                                 },
-                                "wYaxO/Js7vW": {
+                                "nWkY8/JGIqs": {
                                   "enabled": false
                                 },
-                                "wYaxO/hqldH": {
+                                "nWkY8/IJGA7": {
                                   "content": "Cancel"
                                 },
-                                "wYaxO/ZBaFq/luKkY": {
+                                "nWkY8/yJS6O/luKkY": {
                                   "content": "Esc"
                                 },
-                                "gAIL0": {
+                                "CaBvk": {
                                   "opacity": 1
                                 },
-                                "gAIL0/hqldH": {
+                                "CaBvk/IJGA7": {
                                   "content": "Update comment"
                                 }
                               }
@@ -354576,7 +354147,7 @@
                             "Lu92c/mnTU1": {
                               "content": "Good, that covers it. I'll re-review once 4a1c9e2 is green."
                             },
-                            "auMHj/hqldH": {
+                            "d7Asqn/IJGA7": {
                               "content": "Reply"
                             }
                           }
@@ -354853,22 +354424,15 @@
                           }
                         },
                         {
-                          "type": "frame",
-                          "id": "Z2T1UJ",
+                          "id": "l7i0JB",
+                          "type": "ref",
+                          "ref": "GRpic",
                           "name": "Close",
-                          "padding": 3,
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "D8SaK6",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
+                          "descendants": {
+                            "AfFM0": {
+                              "icon": "x"
                             }
-                          ]
+                          }
                         }
                       ]
                     },
@@ -355709,50 +355273,70 @@
                                   "height": 1
                                 },
                                 {
-                                  "id": "CVvqY",
+                                  "id": "Q2VsKB",
                                   "type": "ref",
-                                  "ref": "TH5d7",
+                                  "ref": "MHAI5",
                                   "name": "Cancel",
                                   "descendants": {
-                                    "Js7vW": {
-                                      "enabled": false
-                                    },
-                                    "hqldH": {
+                                    "IJGA7": {
                                       "content": "Cancel"
                                     },
-                                    "ZBaFq/luKkY": {
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
                                       "content": "Esc"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "pYysZ",
+                                  "id": "IQFd4",
                                   "type": "ref",
-                                  "ref": "TH5d7",
+                                  "ref": "MHAI5",
                                   "name": "Second",
                                   "descendants": {
-                                    "Js7vW": {
-                                      "enabled": false
-                                    },
-                                    "hqldH": {
+                                    "IJGA7": {
                                       "content": "Start a review"
                                     },
-                                    "ZBaFq/luKkY": {
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
                                       "content": "⌘⇧↵"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "auMHj",
+                                  "id": "FHDUx",
                                   "type": "ref",
-                                  "ref": "t0PlX5",
+                                  "ref": "f8sNbZ",
+                                  "name": "Discard",
+                                  "enabled": false,
+                                  "descendants": {
+                                    "IJGA7": {
+                                      "content": "Discard"
+                                    },
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
+                                      "content": "↵"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "d7Asqn",
+                                  "type": "ref",
+                                  "ref": "PmKqy",
                                   "name": "First",
                                   "descendants": {
-                                    "hqldH": {
-                                      "content": "Comment",
-                                      "fill": "#0D1117"
+                                    "IJGA7": {
+                                      "content": "Comment"
                                     },
-                                    "ZBaFq/luKkY": {
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
                                       "content": "⌘↵"
                                     }
                                   }
@@ -355777,10 +355361,10 @@
                         "DmEOR": {
                           "enabled": false
                         },
-                        "pYysZ/hqldH": {
+                        "IQFd4/IJGA7": {
                           "content": "Submit draft (4 comments)"
                         },
-                        "auMHj/hqldH": {
+                        "d7Asqn/IJGA7": {
                           "content": "Add to draft"
                         }
                       }
@@ -355829,17 +355413,16 @@
                           "fill": "$fg",
                           "enabled": true
                         },
-                        "CVvqY/hqldH": {
+                        "Q2VsKB/IJGA7": {
                           "content": "Keep writing"
                         },
-                        "pYysZ/hqldH": {
-                          "content": "Discard",
-                          "fill": "$red"
+                        "IQFd4": {
+                          "enabled": false
                         },
-                        "pYysZ/ZBaFq/luKkY": {
-                          "content": "↵"
+                        "FHDUx": {
+                          "enabled": true
                         },
-                        "auMHj": {
+                        "d7Asqn": {
                           "enabled": false
                         }
                       }
@@ -394923,10 +394506,10 @@
                                                   "name": "Comment box",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "pYysZ/hqldH": {
+                                                    "IQFd4/IJGA7": {
                                                       "content": "Comment now"
                                                     },
-                                                    "auMHj/hqldH": {
+                                                    "d7Asqn/IJGA7": {
                                                       "content": "Start a review"
                                                     }
                                                   }
@@ -460802,12 +460385,6 @@
                                 "DoSF8": {
                                   "content": "Mentioned"
                                 },
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
-                                "cOEHe": {
-                                  "name": "Group: Reason"
-                                },
                                 "fqtcl": {
                                   "name": "Mode list",
                                   "gap": 0,
@@ -461044,12 +460621,6 @@
                               "name": "List header",
                               "width": "fill_container",
                               "descendants": {
-                                "A0i5R": {
-                                  "name": "Filter"
-                                },
-                                "cOEHe": {
-                                  "name": "Group: Reason"
-                                },
                                 "fqtcl": {
                                   "name": "Mode list",
                                   "gap": 0,
@@ -462413,7 +461984,7 @@
                                 "nEbGC": {
                                   "enabled": false
                                 },
-                                "HcPlj": {
+                                "NcKAK": {
                                   "enabled": false
                                 }
                               }
@@ -484785,40 +484356,35 @@
                         "PKgvB": {
                           "content": "4 files"
                         },
-                        "Lxodb": {
+                        "wqQfi/JGIqs": {
                           "enabled": false
                         },
-                        "lsKaS": {
+                        "wqQfi/IJGA7": {
                           "content": "Merge"
                         },
-                        "iICyO": {
-                          "type": "icon",
-                          "id": "BfZu0",
-                          "name": "icon arrow-up-right",
-                          "width": 12,
-                          "height": 12,
-                          "icon": "arrow-up-right",
-                          "library": "lucide",
-                          "fill": "$fg-2"
-                        },
-                        "iafrM": {
+                        "wqQfi/yJS6O": {
                           "enabled": false
                         },
-                        "gynBw": {
+                        "D1N17/JGIqs": {
                           "enabled": false
                         },
-                        "f4m6j": {
+                        "D1N17/IJGA7": {
+                          "content": "Merge"
+                        },
+                        "D1N17/yJS6O": {
                           "enabled": false
                         },
-                        "JjFn3": {
-                          "type": "icon",
-                          "id": "ckrGM",
-                          "name": "icon arrow-up-right",
-                          "width": 12,
-                          "height": 12,
-                          "icon": "arrow-up-right",
-                          "library": "lucide",
-                          "fill": "$fg-2"
+                        "zZZb7/JGIqs": {
+                          "enabled": false
+                        },
+                        "zZZb7/yJS6O": {
+                          "enabled": false
+                        },
+                        "WWa4u/JGIqs": {
+                          "enabled": false
+                        },
+                        "WWa4u/yJS6O": {
+                          "enabled": false
                         }
                       }
                     },
@@ -485680,7 +485246,7 @@
                         "b24mtF/LhjnW": {
                           "content": "In 2 files"
                         },
-                        "b24mtF/lsKaS": {
+                        "b24mtF/wqQfi/IJGA7": {
                           "content": "Resolve"
                         },
                         "EbIQE/h5alMd": {
@@ -485744,16 +485310,11 @@
                         "b24mtF/cTYQG": {
                           "content": "Approved by dkim and sbrandt"
                         },
-                        "b24mtF/SRALN": {
-                          "fill": "$accent",
-                          "stroke": "$accent"
+                        "b24mtF/wqQfi": {
+                          "enabled": false
                         },
-                        "b24mtF/lsKaS": {
-                          "fill": "#FFFFFF",
-                          "fontWeight": "600"
-                        },
-                        "b24mtF/BfZu0": {
-                          "fill": "#FFFFFF"
+                        "b24mtF/D1N17": {
+                          "enabled": true
                         },
                         "EbIQE/Sfi2r": {
                           "icon": "circle-check",
@@ -485824,11 +485385,8 @@
                         "b24mtF/PKgvB": {
                           "content": "3 files"
                         },
-                        "b24mtF/lsKaS": {
+                        "b24mtF/wqQfi/IJGA7": {
                           "content": "Mark ready"
-                        },
-                        "b24mtF/BfZu0": {
-                          "enabled": false
                         },
                         "EbIQE/TQnhn": {
                           "enabled": false
@@ -485895,7 +485453,7 @@
                         "b24mtF/vbu7Z": {
                           "enabled": false
                         },
-                        "b24mtF/lsKaS": {
+                        "b24mtF/wqQfi/IJGA7": {
                           "content": "Delete branch"
                         },
                         "EbIQE/Sfi2r": {
@@ -486139,22 +485697,10 @@
                         "pehHx/u3HNv": {
                           "enabled": false
                         },
-                        "pehHx/wYaxO": {
-                          "padding": [
-                            7,
-                            12
-                          ]
-                        },
-                        "pehHx/wYaxO/ZBaFq": {
+                        "pehHx/nWkY8/yJS6O": {
                           "enabled": false
                         },
-                        "pehHx/gAIL0": {
-                          "padding": [
-                            7,
-                            12
-                          ]
-                        },
-                        "pehHx/gAIL0/ZBaFq": {
+                        "pehHx/c8zddO/yJS6O": {
                           "enabled": false
                         }
                       }
@@ -486183,22 +485729,10 @@
                         "pehHx/mnTU1": {
                           "fontSize": 16
                         },
-                        "pehHx/wYaxO": {
-                          "padding": [
-                            7,
-                            12
-                          ]
-                        },
-                        "pehHx/wYaxO/ZBaFq": {
+                        "pehHx/nWkY8/yJS6O": {
                           "enabled": false
                         },
-                        "pehHx/gAIL0": {
-                          "padding": [
-                            7,
-                            12
-                          ]
-                        },
-                        "pehHx/gAIL0/ZBaFq": {
+                        "pehHx/CaBvk/yJS6O": {
                           "enabled": false
                         }
                       }
@@ -522293,11 +521827,11 @@
                               "name": "Composer · closed, pull request",
                               "width": "fill_container",
                               "descendants": {
-                                "pehHx/wYaxO/Js7vW": {
+                                "pehHx/nWkY8/JGIqs": {
                                   "icon": "git-pull-request",
                                   "fill": "$green"
                                 },
-                                "pehHx/wYaxO/hqldH": {
+                                "pehHx/nWkY8/IJGA7": {
                                   "content": "Reopen pull request"
                                 }
                               }
@@ -522464,10 +521998,10 @@
                                   "fill": "$fg",
                                   "content": "Thanks both. The cross-repository case is fixed in 3f2a9b1. @so"
                                 },
-                                "pehHx/wYaxO/hqldH": {
+                                "pehHx/nWkY8/IJGA7": {
                                   "content": "Close with comment"
                                 },
-                                "pehHx/gAIL0": {
+                                "pehHx/CaBvk": {
                                   "opacity": 1
                                 }
                               }
@@ -522521,10 +522055,10 @@
                                   "fill": "$fg",
                                   "content": "Same root cause as #1"
                                 },
-                                "pehHx/wYaxO/hqldH": {
+                                "pehHx/nWkY8/IJGA7": {
                                   "content": "Close with comment"
                                 },
-                                "pehHx/gAIL0": {
+                                "pehHx/CaBvk": {
                                   "opacity": 1
                                 }
                               }

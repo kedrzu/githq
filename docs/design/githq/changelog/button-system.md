@@ -343,3 +343,82 @@ Left as they are:
   rows, the "Changed here · Reset" chips (E4, R2, K2), the projects bar's pills, the not tracked badge, segmented
   List / Board options, the command menu's context chips, view tabs, quick filters, the empty state's waiting link,
   the Undone row links, the address-field examples and MB83's Safari chrome.
+
+## Round 2e · agent brief
+
+Asked (`.context/button-system-brief-2e.md`): every button in App · Components (`pUvet`) and the `Components · …`
+frames drawn with the family at its place's size and variant, then the old button components that are no longer used
+deleted.
+
+Changed: 15 instances of old button components and 19 hand-drawn buttons became family instances. Each was inserted
+into a scratch frame, moved to the old node's index, then the old node was deleted. No `Replace` was used inside a
+component. Pen drops overrides that point into a deleted node, so the 94 overrides other instances held were re-applied
+on the new ids. Where a variant needs a different member for one state (a destructive Discard, the issue's split
+Close, a lit Merge), the other member sits beside the original, hidden, and the variant shows it. The old style
+overrides (padding, a red fill painted on a primary) were dropped. The eight old components nothing uses any more were
+deleted. `Button / medium` (`TH5d7`), `Button / medium · primary` (`t0PlX5`), `Button / medium · menu` (`L4s15U`) and
+`Button / small, outline` (`gQ61z`) stay, because `Phone / …` components still use them.
+
+- [ ] Activity / Comment (`WHy4W`), the failed card's actions `md`: Discard `AQsyM` → `C7wjCV`, Retry `SA15Q` → `U00fwv`
+  (`Button / md`, rotate-cw; its `$fg-2` icon now takes the label's colour).
+- [ ] Activity / Thread · failed (`V75cQv`): Try again `Z7ltJ` → `WAnBj` (rotate-cw), Open on GitHub `G0C6RH` → `D8qiJZ`
+  (arrow-up-right), `Button / md`.
+- [ ] Activity / Editor (`OXAXr`) footer `Y9bgGG`: Close `wYaxO` → `nWkY8` (`Button / md`, git-pull-request-closed
+  `$red`, ⇧X); new hidden `vhL5E` (`Split button / md`, circle-check `$purple`, "Close issue", ⇧X); new hidden `c8zddO`
+  (`Button / md · destructive`, "Discard", ↵); Comment `gAIL0` → `CaBvk` (`Button / md · primary`, ⌘↵, opacity 0.45).
+  As in the code (`ItemThreadComposer.vue`): an issue's Close is a split button, a pull request's Close and Reopen are
+  plain buttons.
+- [ ] Overrides moved onto the editor's new ids: `G3hGNp`, `G7spc`, `d7Rk1Q` → `kTpfA`, `xBKa6`, `DwI8a` (Close with
+  comment, Comment lit); `BWMUY`, `FoNd9` (Reopen issue / pull request); `yL1Bq` (Close hidden); `ehuxk`,
+  `n2U14` → `WZSfd`, `phPkk` → `yhNhK` (Cancel, Esc; Update comment, Reply).
+- [ ] Activity / Composer · issue (`AljH1`): its replacement of the Close slot with `L4s15U` (`UQGRX`) is gone; it hides
+  `nWkY8` and shows `vhL5E`. `G7spc` labels the split "Close with comment".
+- [ ] Activity / Comment · editing, discard? (`BVHXx`): Comment painted `#DA3633` as "Discard" → Comment hidden,
+  `c8zddO` shown (`· destructive`); Close reads "Keep editing", Esc.
+- [ ] Activity / Comment · narrow, editing, discard? (`SSKJn`) and `· narrow, editing · phone` (`w6BzvV`): the padding
+  7 12 overrides are dropped (the member keeps its size); the hidden keys are kept.
+- [ ] Review / New comment (`SAmev`), its footer replacement `y5QcQW`: Cancel `CVvqY` → `Q2VsKB`, Second `pYysZ` →
+  `IQFd4` ("Start a review", ⌘⇧↵), First `auMHj` → `d7Asqn` (`· primary`, Comment, ⌘↵), all `Button / md`; new hidden
+  `FHDUx` (`Button / md · destructive`, Discard, ↵). Overrides moved: `c0AL2N` (Submit draft (4 comments), Add to
+  draft), `b6KYNz` (Comment now, Start a review), `OMVhL` → `Vmijc` (Reply).
+- [ ] Review / New comment · asks to discard (`y4kGY9`): Second painted `$red` as "Discard" → Second and First hidden,
+  `FHDUx` shown; Cancel reads "Keep writing".
+- [ ] Item / PR merge (`BioKQ`) Actions `D2HO8`, a card's actions `md`, as `PullRequestMerge.vue`: hand-drawn Merge
+  `SRALN` → `wqQfi` (`Button / md`, git-merge, "Merge pull request", ⇧M as text, as the editor's ⇧X) and new hidden
+  `D1N17` (`Button / md · primary`, the same); Open on GitHub `aUP2E` → `zZZb7` (github, O); Review files `nr4kB` →
+  `WWa4u` (file-diff, D, secondary, was ghost). The icons are off in the component: the code drops them under 560 px,
+  and three buttons with icons need about 540.
+  - The 580 px merging cards (`vSpbJ`, `v6CZn`, `q9eCkj`, `DEdfl`, `VJOXK`, `DISxv`, `TsAaL`, `kUaDx`, `P1kGS2`) turn
+    the icons on; their state labels, icons and keys moved (Delete branch ⇧D, Queue, Auto-merge, Resolve on GitHub,
+    Update branch U, Mark ready, Back to the merge).
+  - The 512 px cards (`U1eor` in `pX8Wm`, `E3s3O`, `cxxI7`, `N5EEiJ`, `SNGx9`, `g233G`, `ZUCsW`, `xZmAP`, `ov9XI`,
+    `h80HI`, `cxl79`, `O7Jjgh`, `qwE2a`) keep the icons off; the ones that painted Merge accent (`EFhBM` and `a4Nljg`
+    through `U1eor`, `Y2FX64` through `XPhTt`, `g233G`, `ZUCsW`, `cxl79`, `lCo9U` through `b24mtF`) hide `wqQfi` and
+    show `D1N17`; `E3s3O`, `cxxI7`, `vSpbJ`, `VJOXK` hide Merge.
+  - The summary column (`XPhTt` in `Item / Summary · pull request`, 376 px): no icons, "Merge". The keys stay hidden:
+    with them the row needs 393 px. That follows the code's narrow rule (under 480 px it drops the key hints too), not
+    the brief's "keep their keys".
+  - `Item / PR merge · phone` (`T6Pdf7`): icons and keys hidden, "Merge"; the replacements of the keys by
+    arrow-up-right are gone with the old slots. It stays `md` (no `lg` without a `Replace` in a component).
+    `q5Pag`, `OA04b`, `xySZQ` (labels) and `lCo9U` (lit) moved through `b24mtF`.
+- [ ] App · Components, Item sections column (`Pstd6`): width 460 → 480, so the merge card's three `md` buttons with
+  their keys fit (470 px).
+- [ ] List header / My work (`wjD5X`) and `· two filters` (`E7lOaZ`), as the code's `ListToolbarControl`
+  (`Button / sm · outline`): Filter `A0i5R`, `r7icv` → `IizNh`, `neVUh` (list-filter); Group `cOEHe`, `twOBn` → `qoRJj`,
+  `kYgnt` (rows-3). Moved: `vFg43` (Group: Repository), `Fo2qu` (hidden), `Wj9hW`, `wtNwW`, `wPUOp` (Group: Milestone,
+  Label, None).
+- [ ] Project pane / List (`MJtxW`), `/ Board` (`Wk5sR`), Project / Filter bar (`LHimd`): Display `Qw5ZS`, `vf330` →
+  `gSirg`, `avOax` (`Button / sm · outline`, sliders-horizontal; the Board's label hidden, as before; `R4VAUR`, `u4Flaw`
+  hide the List's); Add filter `z6OwTj`, `R1Tv2`, `cVeqZ` → `cuBsl`, `x5b9P2`, `iJRbC` (`Button / sm · ghost`, plus, F);
+  the Board's Reset view `Dwro9` → `o3vVkO` (`Icon button / sm`, rotate-ccw).
+- [ ] Hand-drawn icon-only buttons → `Icon button / sm`: Sidebar / expanded Collapse `hndIV` → `s0ghhc` (`RPgGZ` keeps
+  its `$bg-3`); Item / Toolbar Open on GitHub `ozgMo` → `w8fjd`, Close `dxRh4` → `JPBzJ`; Repository / Header · not
+  tracked github `HcPlj` → `NcKAK` (`v0HUZ`, `ftc6r` hide it); Review / Conversation Close `Z2T1UJ` → `l7i0JB`.
+- [ ] App · Toolbar — view options fit… (`xFD8r`), Header `xqOW2`'s Right part replacement `r54Rv`: Open on GitHub
+  `DZXQX` (`Button / icon`) → `Xxg3S` (`Icon button / sm`, github).
+- [ ] Deleted: `Button / icon, label, key` (`n73Aps`), `Button / icon, label, no key` (`m1uQkH`), `Button / label, key`
+  (`JOjbe`), `Button / label, no key` (`Dhiuj`), `Button / icon, label` (`EoODS`), `Button / label` (`syf0m`),
+  `Button / label, icon key` (`vAXUD`), `Button / icon` (`HtcJe`).
+- Not changed: Update / Status bar (`SoI9D`)'s Restart and Later (`cgBnL`, `ttyBv`) stay text actions inside the
+  status bar segment (16 px), which doesn't grow for a button. Toggles, segmented controls, links (Edit, Change), Diff / File
+  header's Viewed toggle and the sidebar rail are outside the guideline.
