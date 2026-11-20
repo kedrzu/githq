@@ -260,4 +260,11 @@ function onKeydown(event: KeyboardEvent) {
   background: $color-red;
   border-color: $color-red;
 }
+
+// On green or red the accent's key chip darkens its text's ground too far ("Ctrl+" reads 4.25:1 on red): the light
+// fill's chip, as before these were primary.
+.reviewSubmitDialog_send_APPROVE kbd,
+.reviewSubmitDialog_send_REQUEST_CHANGES kbd {
+  background: rgba($color-on-light, 0.1);
+}
 </style>
