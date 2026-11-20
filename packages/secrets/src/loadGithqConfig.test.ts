@@ -41,7 +41,7 @@ function containerWithStore(entries: Record<string, string>) {
 }
 
 test('resolves a secret from the store, and an environment variable wins over it', async () => {
-    process.env.GITHUB_CLIENT_SECRET = 'from-the-environment';
+    process.env[GITHUB_CLIENT_SECRET.name] = 'from-the-environment';
     const container = containerWithStore({
         GITHUB_CLIENT_SECRET: 'from-the-store',
         CLOUDFLARE_ANALYTICS_TOKEN: 'stored-token',
