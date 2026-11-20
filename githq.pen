@@ -530,18 +530,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "MiiSN": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "fThUd": {
                                   "content": "Primary",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "yFmU6": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "yFmU6/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             },
@@ -605,22 +605,22 @@
                               "reusable": true,
                               "ref": "lLbwO",
                               "name": "Button / sm · destructive",
-                              "fill": "$red",
+                              "fill": "$red-emphasis",
                               "stroke": "#00000000",
                               "descendants": {
                                 "MiiSN": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "fThUd": {
                                   "content": "Destructive",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "yFmU6": {
-                                  "fill": "#0D111729",
-                                  "stroke": "#0D111733"
+                                  "fill": "#00000000",
+                                  "stroke": "#FFFFFF66"
                                 },
                                 "yFmU6/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 }
                               }
                             },
@@ -634,18 +634,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "MiiSN": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "fThUd": {
                                   "content": "Light",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "yFmU6": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "yFmU6/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -723,18 +723,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "JGIqs": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "IJGA7": {
                                   "content": "Primary",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "yJS6O": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "yJS6O/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             },
@@ -798,22 +798,22 @@
                               "reusable": true,
                               "ref": "MHAI5",
                               "name": "Button / md · destructive",
-                              "fill": "$red",
+                              "fill": "$red-emphasis",
                               "stroke": "#00000000",
                               "descendants": {
                                 "JGIqs": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "IJGA7": {
                                   "content": "Destructive",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "yJS6O": {
-                                  "fill": "#0D111729",
-                                  "stroke": "#0D111733"
+                                  "fill": "#00000000",
+                                  "stroke": "#FFFFFF66"
                                 },
                                 "yJS6O/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 }
                               }
                             },
@@ -827,18 +827,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "JGIqs": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "IJGA7": {
                                   "content": "Light",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "yJS6O": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "yJS6O/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -916,18 +916,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "v1vM9": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "ct37E": {
                                   "content": "Primary",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "KBHqf": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "KBHqf/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             },
@@ -991,22 +991,22 @@
                               "reusable": true,
                               "ref": "r7YsD",
                               "name": "Button / lg · destructive",
-                              "fill": "$red",
+                              "fill": "$red-emphasis",
                               "stroke": "#00000000",
                               "descendants": {
                                 "v1vM9": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "ct37E": {
                                   "content": "Destructive",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 },
                                 "KBHqf": {
-                                  "fill": "#0D111729",
-                                  "stroke": "#0D111733"
+                                  "fill": "#00000000",
+                                  "stroke": "#FFFFFF66"
                                 },
                                 "KBHqf/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-emphasis"
                                 }
                               }
                             },
@@ -1020,18 +1020,18 @@
                               "stroke": "#00000000",
                               "descendants": {
                                 "v1vM9": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "ct37E": {
                                   "content": "Light",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "KBHqf": {
                                   "fill": "#0D111729",
                                   "stroke": "#0D111733"
                                 },
                                 "KBHqf/luKkY": {
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -165211,50 +165211,34 @@
                   "height": 1
                 },
                 {
-                  "id": "Wycr9",
+                  "id": "skz2I",
                   "type": "ref",
-                  "ref": "n73Aps",
+                  "ref": "PmKqy",
                   "name": "Button Squash and merge",
-                  "fill": "$accent",
-                  "cornerRadius": 6,
-                  "stroke": "$accent",
-                  "gap": 6,
-                  "padding": [
-                    4,
-                    4,
-                    4,
-                    8
-                  ],
                   "descendants": {
-                    "O9dWyI": {
-                      "name": "icon git-merge",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "git-merge",
-                      "fill": "#0D1117"
+                    "JGIqs": {
+                      "enabled": true,
+                      "icon": "git-merge"
                     },
-                    "i9UKWn": {
-                      "fill": "#0D1117",
-                      "content": "Squash and merge",
-                      "fontSize": 12,
-                      "fontWeight": "500"
+                    "IJGA7": {
+                      "content": "Squash and merge"
                     },
-                    "I9KkTl": {
-                      "id": "w7A47H",
+                    "yJS6O": {
+                      "id": "ovW45",
                       "type": "ref",
                       "ref": "guh3O",
-                      "name": "Kbd ⌘↵",
-                      "fill": "#0D11171A",
+                      "name": "Key",
+                      "height": 18,
+                      "fill": "#0D111729",
                       "stroke": "#0D111733",
-                      "height": 16,
                       "descendants": {
                         "q1SXG": {
                           "icon": "command",
-                          "fill": "#0D1117"
+                          "fill": "$on-light"
                         },
                         "lhKUf": {
                           "icon": "corner-down-left",
-                          "fill": "#0D1117"
+                          "fill": "$on-light"
                         }
                       }
                     }
@@ -168214,16 +168198,19 @@
                               "height": 1
                             },
                             {
-                              "id": "l2RPat",
+                              "id": "Ae0FN",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "kl53W",
                               "name": "Button Re-run",
                               "descendants": {
-                                "E6FRCf": {
-                                  "id": "BSVWo",
+                                "fThUd": {
+                                  "content": "Re-run"
+                                },
+                                "yFmU6": {
+                                  "id": "P9cYKY",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧E",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -169383,50 +169370,34 @@
                           "height": 1
                         },
                         {
-                          "id": "aPD44",
+                          "id": "K4UDEZ",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Squash and merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Squash and merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Squash and merge"
                             },
-                            "I9KkTl": {
-                              "id": "rsJJk",
+                            "yJS6O": {
+                              "id": "w0ca2",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -169791,16 +169762,19 @@
                               "height": 1
                             },
                             {
-                              "id": "B3BzW",
+                              "id": "B6LJe",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "kl53W",
                               "name": "Button Re-run",
                               "descendants": {
-                                "E6FRCf": {
-                                  "id": "N7r1T",
+                                "fThUd": {
+                                  "content": "Re-run"
+                                },
+                                "yFmU6": {
+                                  "id": "SBCZg",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧E",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -169971,31 +169945,19 @@
                           "height": 1
                         },
                         {
-                          "id": "XTYRz",
+                          "id": "nyztk",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Can't merge yet",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "circle-x",
                               "fill": "$fg-3"
                             },
-                            "Cenjq": {
-                              "fill": "$fg-dim",
+                            "IJGA7": {
                               "content": "Can't merge yet",
-                              "fontSize": 13
+                              "fill": "$fg-dim"
                             }
                           }
                         }
@@ -170345,16 +170307,19 @@
                               "height": 1
                             },
                             {
-                              "id": "i6dOxW",
+                              "id": "zUEGC",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "kl53W",
                               "name": "Button Re-run",
                               "descendants": {
-                                "E6FRCf": {
-                                  "id": "PzlDv",
+                                "fThUd": {
+                                  "content": "Re-run"
+                                },
+                                "yFmU6": {
+                                  "id": "w4gCZo",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧E",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -171115,31 +171080,19 @@
                           "height": 1
                         },
                         {
-                          "id": "UzL8V",
+                          "id": "l8Y9H",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Can't merge yet",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "circle-x",
                               "fill": "$fg-3"
                             },
-                            "Cenjq": {
-                              "fill": "$fg-dim",
+                            "IJGA7": {
                               "content": "Can't merge yet",
-                              "fontSize": 13
+                              "fill": "$fg-dim"
                             }
                           }
                         }
@@ -171764,50 +171717,34 @@
                           "height": 1
                         },
                         {
-                          "id": "K1IxI",
+                          "id": "QfMeD",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "guU0V",
+                            "yJS6O": {
+                              "id": "WzhgI",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -172909,50 +172846,34 @@
                           "height": 1
                         },
                         {
-                          "id": "xyj8n",
+                          "id": "O3A2H",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "RB1kZ",
+                            "yJS6O": {
+                              "id": "WBBUB",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -174506,10 +174427,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Merge"
                         }
                       }
@@ -175049,10 +174970,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Rebase and merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Rebase and merge"
                         }
                       }
@@ -176046,16 +175967,19 @@
                               "height": 1
                             },
                             {
-                              "id": "fEJT9",
+                              "id": "pxrLP",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "kl53W",
                               "name": "Button Re-run",
                               "descendants": {
-                                "E6FRCf": {
-                                  "id": "DnNJt",
+                                "fThUd": {
+                                  "content": "Re-run"
+                                },
+                                "yFmU6": {
+                                  "id": "m6Wih8",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧E",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -176496,31 +176420,19 @@
                           "height": 1
                         },
                         {
-                          "id": "s8yPC",
+                          "id": "DOxiy",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Can't merge yet",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "circle-x",
                               "fill": "$fg-3"
                             },
-                            "Cenjq": {
-                              "fill": "$fg-dim",
+                            "IJGA7": {
                               "content": "Can't merge yet",
-                              "fontSize": 13
+                              "fill": "$fg-dim"
                             }
                           }
                         }
@@ -177133,10 +177045,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Merge"
                         }
                       }
@@ -177740,10 +177652,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Merge"
                         }
                       }
@@ -178356,10 +178268,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Merge"
                         }
                       }
@@ -179018,10 +178930,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Merge"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Merge"
                         }
                       }
@@ -179708,50 +179620,34 @@
                           "height": 1
                         },
                         {
-                          "id": "viCP9",
+                          "id": "kLiCd",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "YTzIv",
+                            "yJS6O": {
+                              "id": "VnaIA",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -180145,50 +180041,34 @@
                           "height": 1
                         },
                         {
-                          "id": "HlJrg",
+                          "id": "n2ZCN5",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "lcYfA",
+                            "yJS6O": {
+                              "id": "aOY5T",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -180645,36 +180525,24 @@
                           "height": 1
                         },
                         {
-                          "id": "KQU2z",
+                          "id": "owW1y",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Turn off auto-merge",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon circle-off",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "circle-off",
-                              "fill": "$fg"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "circle-off"
                             },
-                            "i9UKWn": {
-                              "content": "Turn off auto-merge",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Turn off auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "LT3HN",
+                            "yJS6O": {
+                              "id": "U9XSX",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -181108,40 +180976,24 @@
                           ]
                         },
                         {
-                          "id": "GOos1",
+                          "id": "i0TYU",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "M4s1se",
                           "name": "Button Bypass rules and merge",
-                          "fill": "#00000000",
-                          "cornerRadius": 6,
-                          "stroke": "$red",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "$red"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "$red",
-                              "content": "Bypass rules and merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Bypass rules and merge"
                             },
-                            "I9KkTl": {
-                              "id": "Q87Pa7",
+                            "yJS6O": {
+                              "id": "oxPVW",
                               "type": "ref",
                               "ref": "T24lwV",
-                              "name": "Kbd ⌥⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "weRcq": {
                                   "icon": "option"
@@ -181193,50 +181045,34 @@
                           "height": 1
                         },
                         {
-                          "id": "G2VLu",
+                          "id": "Jt4fl",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "RHfL9",
+                            "yJS6O": {
+                              "id": "x7v6C",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -181666,16 +181502,19 @@
                               "height": 1
                             },
                             {
-                              "id": "vPLhQ",
+                              "id": "hInzS",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "kl53W",
                               "name": "Button Re-run",
                               "descendants": {
-                                "E6FRCf": {
-                                  "id": "k1vtpR",
+                                "fThUd": {
+                                  "content": "Re-run"
+                                },
+                                "yFmU6": {
+                                  "id": "VW1xt",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧E",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -181746,31 +181585,19 @@
                           "height": 1
                         },
                         {
-                          "id": "gLpOu",
+                          "id": "S3J79",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Can't merge yet",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "circle-x",
                               "fill": "$fg-3"
                             },
-                            "Cenjq": {
-                              "fill": "$fg-dim",
+                            "IJGA7": {
                               "content": "Can't merge yet",
-                              "fontSize": 13
+                              "fill": "$fg-dim"
                             }
                           }
                         }
@@ -182267,20 +182094,20 @@
                           "height": 1
                         },
                         {
-                          "id": "xlcI6",
+                          "id": "AA71S",
                           "type": "ref",
-                          "ref": "vAXUD",
+                          "ref": "MHAI5",
                           "name": "Button Jump the queue",
                           "descendants": {
-                            "G36gb": {
+                            "IJGA7": {
                               "content": "Jump the queue"
                             },
-                            "E6FRCf": {
-                              "id": "VDaZ6",
+                            "yJS6O": {
+                              "id": "YdEsR",
                               "type": "ref",
                               "ref": "T24lwV",
-                              "name": "Kbd ⇧⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "weRcq": {
                                   "icon": "arrow-big-up"
@@ -182296,50 +182123,34 @@
                           }
                         },
                         {
-                          "id": "dDqJR",
+                          "id": "HKHqr",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Add to queue",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon list-plus",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "list-plus",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "list-plus"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Add to queue",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Add to queue"
                             },
-                            "I9KkTl": {
-                              "id": "Q37RLU",
+                            "yJS6O": {
+                              "id": "NgR5S",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -182703,29 +182514,20 @@
                           "height": 1
                         },
                         {
-                          "id": "TBQYC",
+                          "id": "Ebnxj",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "MHAI5",
                           "name": "Button Take out of queue",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "KpHhX": {
-                              "content": "Take out of queue",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Take out of queue"
                             },
-                            "oCNhh": {
-                              "id": "G3u2O",
+                            "yJS6O": {
+                              "id": "Z25ZZB",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⇧Q",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "arrow-big-up"
@@ -183449,50 +183251,34 @@
                           "height": 1
                         },
                         {
-                          "id": "p3rie",
+                          "id": "BECVe",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Squash and merge all 3",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Squash and merge all 3",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Squash and merge all 3"
                             },
-                            "I9KkTl": {
-                              "id": "ED33r",
+                            "yJS6O": {
+                              "id": "yQPrt",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -183716,34 +183502,24 @@
                           "height": 1
                         },
                         {
-                          "id": "jaeIk",
+                          "id": "ONqfF",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Rebase stack on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "width": 14,
-                              "height": 14,
-                              "fill": "$fg"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Rebase stack on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Rebase stack on GitHub"
                             },
-                            "I9KkTl": {
-                              "id": "jUFfm",
+                            "yJS6O": {
+                              "id": "i2DYh",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -184112,34 +183888,24 @@
                           "height": 1
                         },
                         {
-                          "id": "fEgfx",
+                          "id": "cZJh2",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Resolve on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "width": 14,
-                              "height": 14,
-                              "fill": "$fg"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Resolve on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Resolve on GitHub"
                             },
-                            "I9KkTl": {
-                              "id": "IhV7z",
+                            "yJS6O": {
+                              "id": "Uj0G0",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -184397,19 +184163,19 @@
                               "height": 1
                             },
                             {
-                              "id": "VqEVA",
+                              "id": "AavOL",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "lLbwO",
                               "name": "Button Update by rebase",
                               "descendants": {
-                                "G36gb": {
+                                "fThUd": {
                                   "content": "Update by rebase"
                                 },
-                                "E6FRCf": {
-                                  "id": "ks5mn",
+                                "yFmU6": {
+                                  "id": "MDgZM",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧U",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -184533,50 +184299,34 @@
                           "height": 1
                         },
                         {
-                          "id": "cy9zX",
+                          "id": "TeCZC",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Update branch",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-pull-request-arrow",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-pull-request-arrow",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-pull-request-arrow"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Update branch",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Update branch"
                             },
-                            "I9KkTl": {
-                              "id": "JWYs1",
+                            "yJS6O": {
+                              "id": "g5wkUW",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -184828,20 +184578,20 @@
                               "height": 1
                             },
                             {
-                              "id": "Rbftn",
+                              "id": "rSoA3",
                               "type": "ref",
-                              "ref": "vAXUD",
+                              "ref": "lLbwO",
                               "name": "Button Update by rebase",
                               "enabled": false,
                               "descendants": {
-                                "G36gb": {
+                                "fThUd": {
                                   "content": "Update by rebase"
                                 },
-                                "E6FRCf": {
-                                  "id": "YFyUr",
+                                "yFmU6": {
+                                  "id": "q4CiDp",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧U",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -185273,50 +185023,34 @@
                           "height": 1
                         },
                         {
-                          "id": "q4uB4K",
+                          "id": "aWA11",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Mark ready for review",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon eye",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "eye",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "eye"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Mark ready for review",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Mark ready for review"
                             },
-                            "I9KkTl": {
-                              "id": "xz3fW",
+                            "yJS6O": {
+                              "id": "O6r0n6",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -185707,50 +185441,34 @@
                           "height": 1
                         },
                         {
-                          "id": "hC4FL",
+                          "id": "dHn3r",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Squash and merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Squash and merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Squash and merge"
                             },
-                            "I9KkTl": {
-                              "id": "FjyYI",
+                            "yJS6O": {
+                              "id": "QbHRz",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -185888,29 +185606,23 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "id": "nQLq0",
+                          "id": "aWUId",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Open on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon github",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "github",
-                              "fill": "$fg"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "github"
                             },
-                            "i9UKWn": {
-                              "content": "Open on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Open on GitHub"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "O"
                             }
                           }
                         },
@@ -186893,28 +186605,19 @@
                               "height": 1
                             },
                             {
-                              "id": "M2195",
+                              "id": "TeGoX",
                               "type": "ref",
-                              "ref": "JOjbe",
+                              "ref": "lLbwO",
                               "name": "Button Delete branch",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
                               "descendants": {
-                                "KpHhX": {
-                                  "content": "Delete branch",
-                                  "fontSize": 12
+                                "fThUd": {
+                                  "content": "Delete branch"
                                 },
-                                "oCNhh": {
-                                  "id": "G4tHpF",
+                                "yFmU6": {
+                                  "id": "A9hoWP",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧D",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -186975,20 +186678,20 @@
                           "height": 1
                         },
                         {
-                          "id": "hkEwD",
+                          "id": "wGiRy",
                           "type": "ref",
-                          "ref": "vAXUD",
+                          "ref": "MHAI5",
                           "name": "Button Revert…",
                           "descendants": {
-                            "G36gb": {
+                            "IJGA7": {
                               "content": "Revert"
                             },
-                            "E6FRCf": {
-                              "id": "SsgiI",
+                            "yJS6O": {
+                              "id": "D5RVU6",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⇧Z",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "arrow-big-up"
@@ -187246,28 +186949,19 @@
                               "height": 1
                             },
                             {
-                              "id": "eQWkk",
+                              "id": "hZiLW",
                               "type": "ref",
-                              "ref": "JOjbe",
+                              "ref": "lLbwO",
                               "name": "Button Restore branch",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
                               "descendants": {
-                                "KpHhX": {
-                                  "content": "Restore branch",
-                                  "fontSize": 12
+                                "fThUd": {
+                                  "content": "Restore branch"
                                 },
-                                "oCNhh": {
-                                  "id": "J9ZpjN",
+                                "yFmU6": {
+                                  "id": "C6mVH",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧D",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -187328,20 +187022,20 @@
                           "height": 1
                         },
                         {
-                          "id": "Tysp6",
+                          "id": "OdreY",
                           "type": "ref",
-                          "ref": "vAXUD",
+                          "ref": "MHAI5",
                           "name": "Button Revert…",
                           "descendants": {
-                            "G36gb": {
+                            "IJGA7": {
                               "content": "Revert"
                             },
-                            "E6FRCf": {
-                              "id": "dqjNC",
+                            "yJS6O": {
+                              "id": "ZWeW7",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⇧Z",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "arrow-big-up"
@@ -187896,10 +187590,10 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Try again"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Try again"
                         }
                       }
@@ -188254,40 +187948,24 @@
                           ]
                         },
                         {
-                          "id": "hDxVW",
+                          "id": "M7vZh",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "M4s1se",
                           "name": "Button Bypass rules and merge",
-                          "fill": "#00000000",
-                          "cornerRadius": 6,
-                          "stroke": "$red",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "$red"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "$red",
-                              "content": "Bypass rules and merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Bypass rules and merge"
                             },
-                            "I9KkTl": {
-                              "id": "mEroX",
+                            "yJS6O": {
+                              "id": "SPWH3",
                               "type": "ref",
                               "ref": "T24lwV",
-                              "name": "Kbd ⌥⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "weRcq": {
                                   "icon": "option"
@@ -188339,50 +188017,34 @@
                           "height": 1
                         },
                         {
-                          "id": "c5tuU",
+                          "id": "m4Hjg",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "timer",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "timer"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Enable auto-merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge"
                             },
-                            "I9KkTl": {
-                              "id": "heOX1",
+                            "yJS6O": {
+                              "id": "BCsUc",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -188642,32 +188304,22 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "pAE95",
+                                  "id": "O3zQS",
                                   "type": "ref",
-                                  "ref": "n73Aps",
+                                  "ref": "MHAI5",
                                   "name": "Button See the new commit",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    4,
-                                    4,
-                                    8
-                                  ],
                                   "descendants": {
-                                    "O9dWyI": {
-                                      "width": 14,
-                                      "height": 14,
-                                      "fill": "$fg"
+                                    "JGIqs": {
+                                      "enabled": true,
+                                      "icon": "arrow-up-right"
                                     },
-                                    "i9UKWn": {
-                                      "content": "See the new commit",
-                                      "fontSize": 12
+                                    "IJGA7": {
+                                      "content": "See the new commit"
                                     },
-                                    "I9KkTl": {
-                                      "name": "Kbd D"
+                                    "yJS6O": {
+                                      "enabled": true
                                     },
-                                    "I9KkTl/luKkY": {
+                                    "yJS6O/luKkY": {
                                       "content": "D"
                                     }
                                   }
@@ -189048,14 +188700,13 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Enable auto-merge"
                         },
-                        "Wycr9/O9dWyI": {
-                          "name": "icon timer",
+                        "skz2I/JGIqs": {
                           "icon": "timer"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Enable auto-merge"
                         }
                       }
@@ -189857,27 +189508,23 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "Mg2G4",
+                                  "id": "L4dsJ",
                                   "type": "ref",
-                                  "ref": "n73Aps",
+                                  "ref": "MHAI5",
                                   "name": "Button Open on GitHub",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    4,
-                                    4,
-                                    8
-                                  ],
                                   "descendants": {
-                                    "O9dWyI": {
-                                      "width": 14,
-                                      "height": 14,
-                                      "fill": "$fg"
+                                    "JGIqs": {
+                                      "enabled": true,
+                                      "icon": "arrow-up-right"
                                     },
-                                    "i9UKWn": {
-                                      "content": "Open on GitHub",
-                                      "fontSize": 12
+                                    "IJGA7": {
+                                      "content": "Open on GitHub"
+                                    },
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
+                                      "content": "O"
                                     }
                                   }
                                 }
@@ -190194,27 +189841,23 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "q0WPAH",
+                                  "id": "kDL7E",
                                   "type": "ref",
-                                  "ref": "n73Aps",
+                                  "ref": "MHAI5",
                                   "name": "Button Open on GitHub",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    4,
-                                    4,
-                                    8
-                                  ],
                                   "descendants": {
-                                    "O9dWyI": {
-                                      "width": 14,
-                                      "height": 14,
-                                      "fill": "$fg"
+                                    "JGIqs": {
+                                      "enabled": true,
+                                      "icon": "arrow-up-right"
                                     },
-                                    "i9UKWn": {
-                                      "content": "Open on GitHub",
-                                      "fontSize": 12
+                                    "IJGA7": {
+                                      "content": "Open on GitHub"
+                                    },
+                                    "yJS6O": {
+                                      "enabled": true
+                                    },
+                                    "yJS6O/luKkY": {
+                                      "content": "O"
                                     }
                                   }
                                 }
@@ -190513,28 +190156,19 @@
                               "height": 1
                             },
                             {
-                              "id": "S5tuA",
+                              "id": "laKnT",
                               "type": "ref",
-                              "ref": "JOjbe",
+                              "ref": "lLbwO",
                               "name": "Button Delete branch",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                4,
-                                4,
-                                4,
-                                8
-                              ],
                               "descendants": {
-                                "KpHhX": {
-                                  "content": "Delete branch",
-                                  "fontSize": 12
+                                "fThUd": {
+                                  "content": "Delete branch"
                                 },
-                                "oCNhh": {
-                                  "id": "M6p7f1",
+                                "yFmU6": {
+                                  "id": "M2GvD",
                                   "type": "ref",
                                   "ref": "L44zw",
-                                  "name": "Kbd ⇧D",
+                                  "name": "Key",
                                   "height": 16,
                                   "descendants": {
                                     "pINSd": {
@@ -190595,20 +190229,20 @@
                           "height": 1
                         },
                         {
-                          "id": "D22dpX",
+                          "id": "Dl2Ay",
                           "type": "ref",
-                          "ref": "vAXUD",
+                          "ref": "MHAI5",
                           "name": "Button Revert…",
                           "descendants": {
-                            "G36gb": {
+                            "IJGA7": {
                               "content": "Revert"
                             },
-                            "E6FRCf": {
-                              "id": "JZ3An",
+                            "yJS6O": {
+                              "id": "PNYNt",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⇧Z",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "arrow-big-up"
@@ -190884,20 +190518,13 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "xQrWR",
+                                  "id": "X5a7jo",
                                   "type": "ref",
-                                  "ref": "syf0m",
+                                  "ref": "MHAI5",
                                   "name": "Button Sign in again",
-                                  "cornerRadius": 7,
-                                  "gap": 7,
-                                  "padding": [
-                                    7,
-                                    12
-                                  ],
                                   "descendants": {
-                                    "SofV5": {
-                                      "content": "Sign in again",
-                                      "fontSize": 13
+                                    "IJGA7": {
+                                      "content": "Sign in again"
                                     }
                                   }
                                 }
@@ -190947,10 +190574,10 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Try again"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Try again"
                         }
                       }
@@ -191217,32 +190844,22 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "z17Y9a",
+                                  "id": "dfgK4",
                                   "type": "ref",
-                                  "ref": "n73Aps",
+                                  "ref": "MHAI5",
                                   "name": "Button Request access on GitHub",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    4,
-                                    4,
-                                    8
-                                  ],
                                   "descendants": {
-                                    "O9dWyI": {
-                                      "width": 14,
-                                      "height": 14,
-                                      "fill": "$fg"
+                                    "JGIqs": {
+                                      "enabled": true,
+                                      "icon": "arrow-up-right"
                                     },
-                                    "i9UKWn": {
-                                      "content": "Request access on GitHub",
-                                      "fontSize": 12
+                                    "IJGA7": {
+                                      "content": "Request access on GitHub"
                                     },
-                                    "I9KkTl": {
-                                      "name": "Kbd A"
+                                    "yJS6O": {
+                                      "enabled": true
                                     },
-                                    "I9KkTl/luKkY": {
+                                    "yJS6O/luKkY": {
                                       "content": "A"
                                     }
                                   }
@@ -191293,10 +190910,10 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Try again"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Try again"
                         }
                       }
@@ -192935,17 +192552,16 @@
                           "content": "⌥D"
                         },
                         "McVDN": {
-                          "id": "cf54p",
+                          "id": "g9KO0",
                           "type": "ref",
-                          "ref": "m1uQkH",
+                          "ref": "lLbwO",
                           "name": "Second action",
-                          "enabled": true,
                           "descendants": {
-                            "O9dWyI": {
+                            "MiiSN": {
                               "enabled": true,
                               "icon": "undo-2"
                             },
-                            "i9UKWn": {
+                            "fThUd": {
                               "content": "Revert"
                             }
                           }
@@ -193259,41 +192875,19 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "g0vhmr",
+                                  "id": "w994O",
+                                  "type": "ref",
+                                  "ref": "oHOZZ",
                                   "name": "Display button",
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 6,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    9
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "zQvVE",
-                                      "name": "icon sliders-horizontal",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "sliders-horizontal",
-                                      "library": "lucide",
-                                      "fill": "$fg"
+                                  "descendants": {
+                                    "MiiSN": {
+                                      "enabled": true,
+                                      "icon": "sliders-horizontal"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "zo0jU",
-                                      "name": "Display",
-                                      "fill": "$fg",
-                                      "content": "Display",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                    "fThUd": {
+                                      "content": "Display"
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             },
@@ -194739,17 +194333,16 @@
                           "content": "⌥M"
                         },
                         "McVDN": {
-                          "id": "YxZQ9",
+                          "id": "gQqt6",
                           "type": "ref",
-                          "ref": "m1uQkH",
+                          "ref": "lLbwO",
                           "name": "Second action",
-                          "enabled": true,
                           "descendants": {
-                            "O9dWyI": {
+                            "MiiSN": {
                               "enabled": true,
                               "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
+                            "fThUd": {
                               "content": "Open on GitHub"
                             }
                           }
@@ -266333,10 +265926,10 @@
                   "name": "Footer",
                   "width": "fill_container",
                   "descendants": {
-                    "Wycr9": {
+                    "skz2I": {
                       "name": "Button Squash and merge 2 of 4"
                     },
-                    "Wycr9/i9UKWn": {
+                    "skz2I/IJGA7": {
                       "content": "Squash and merge 2 of 4"
                     }
                   }
@@ -267402,27 +266995,23 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "id": "Ihagy",
+                          "id": "Jia9X",
                           "type": "ref",
-                          "ref": "n73Aps",
-                          "name": "Button link",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
+                          "ref": "MHAI5",
+                          "name": "Button Open on GitHub",
                           "descendants": {
-                            "O9dWyI": {
-                              "width": 14,
-                              "height": 14,
-                              "fill": "$fg"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Open on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Open on GitHub"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "O"
                             }
                           }
                         }
@@ -267580,50 +267169,34 @@
                   "height": 1
                 },
                 {
-                  "id": "L2wMIW",
+                  "id": "Ooma6",
                   "type": "ref",
-                  "ref": "n73Aps",
+                  "ref": "PmKqy",
                   "name": "Button Squash and merge all 3",
-                  "fill": "$accent",
-                  "cornerRadius": 6,
-                  "stroke": "$accent",
-                  "gap": 6,
-                  "padding": [
-                    4,
-                    4,
-                    4,
-                    8
-                  ],
                   "descendants": {
-                    "O9dWyI": {
-                      "name": "icon git-merge",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "git-merge",
-                      "fill": "#0D1117"
+                    "JGIqs": {
+                      "enabled": true,
+                      "icon": "git-merge"
                     },
-                    "i9UKWn": {
-                      "fill": "#0D1117",
-                      "content": "Squash and merge all 3",
-                      "fontSize": 12,
-                      "fontWeight": "500"
+                    "IJGA7": {
+                      "content": "Squash and merge all 3"
                     },
-                    "I9KkTl": {
-                      "id": "WrAtv",
+                    "yJS6O": {
+                      "id": "HOaf2",
                       "type": "ref",
                       "ref": "guh3O",
-                      "name": "Kbd ⌘↵",
-                      "fill": "#0D11171A",
+                      "name": "Key",
+                      "height": 18,
+                      "fill": "#0D111729",
                       "stroke": "#0D111733",
-                      "height": 16,
                       "descendants": {
                         "q1SXG": {
                           "icon": "command",
-                          "fill": "#0D1117"
+                          "fill": "$on-light"
                         },
                         "lhKUf": {
                           "icon": "corner-down-left",
-                          "fill": "#0D1117"
+                          "fill": "$on-light"
                         }
                       }
                     }
@@ -271838,40 +271411,26 @@
                                   "name": "Arrangement"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "rbUvD",
+                                  "id": "HjUnG",
+                                  "type": "ref",
+                                  "ref": "GRpic",
                                   "name": "Open on GitHub",
-                                  "padding": 3,
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "wl9zz",
-                                      "name": "icon github",
-                                      "width": 15,
-                                      "height": 15,
-                                      "icon": "github",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
+                                  "descendants": {
+                                    "AfFM0": {
+                                      "icon": "github"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "CTTe1",
+                                  "id": "UTrkq",
+                                  "type": "ref",
+                                  "ref": "GRpic",
                                   "name": "Close",
-                                  "padding": 3,
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "HCbkL",
-                                      "name": "icon x",
-                                      "width": 16,
-                                      "height": 16,
-                                      "icon": "x",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
+                                  "descendants": {
+                                    "AfFM0": {
+                                      "icon": "x"
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             },
@@ -272811,153 +272370,81 @@
                                           "alignItems": "center",
                                           "children": [
                                             {
-                                              "type": "frame",
-                                              "id": "aXtZI",
-                                              "name": "Primary Merge",
-                                              "fill": "$accent",
-                                              "cornerRadius": 6,
-                                              "stroke": "$accent",
-                                              "strokeWidth": 1,
-                                              "gap": 6,
-                                              "padding": [
-                                                5,
-                                                8,
-                                                5,
-                                                10
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "d4gDQk",
-                                                  "name": "Merge icon",
-                                                  "width": 13,
-                                                  "height": 13,
-                                                  "icon": "git-merge",
-                                                  "library": "lucide",
-                                                  "fill": "#FFFFFF"
+                                              "id": "LJPCE",
+                                              "type": "ref",
+                                              "ref": "PmKqy",
+                                              "name": "Button Merge",
+                                              "descendants": {
+                                                "JGIqs": {
+                                                  "enabled": true,
+                                                  "icon": "git-merge"
                                                 },
-                                                {
-                                                  "type": "text",
-                                                  "id": "zAmge",
-                                                  "name": "Merge label",
-                                                  "fill": "#FFFFFF",
-                                                  "content": "Merge",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12.5,
-                                                  "fontWeight": "600"
+                                                "IJGA7": {
+                                                  "content": "Merge"
                                                 },
-                                                {
-                                                  "id": "le8ti",
+                                                "yJS6O": {
+                                                  "id": "FfZJA",
                                                   "type": "ref",
                                                   "ref": "L44zw",
-                                                  "name": "Kbd ⇧M",
-                                                  "fill": "#FFFFFF33",
+                                                  "name": "Key",
+                                                  "height": 18,
+                                                  "fill": "#0D111729",
                                                   "stroke": "#0D111733",
                                                   "descendants": {
                                                     "pINSd": {
-                                                      "name": "Key arrow-big-up",
                                                       "icon": "arrow-big-up",
-                                                      "fill": "#FFFFFF"
+                                                      "fill": "$on-light"
                                                     },
                                                     "Q8v43": {
-                                                      "fill": "#FFFFFF",
-                                                      "content": "M"
+                                                      "content": "M",
+                                                      "fill": "$on-light"
                                                     }
                                                   }
                                                 }
-                                              ]
+                                              }
                                             },
                                             {
-                                              "type": "frame",
-                                              "id": "w8u1aL",
-                                              "name": "Primary Open on GitHub",
-                                              "fill": "$bg-3",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border-2",
-                                              "strokeWidth": 1,
-                                              "gap": 6,
-                                              "padding": [
-                                                5,
-                                                8,
-                                                5,
-                                                10
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "qtPLn",
-                                                  "name": "Primary icon",
-                                                  "width": 13,
-                                                  "height": 13,
-                                                  "icon": "github",
-                                                  "library": "lucide",
-                                                  "fill": "$fg"
+                                              "id": "e6Dhc",
+                                              "type": "ref",
+                                              "ref": "MHAI5",
+                                              "name": "Button Open on GitHub",
+                                              "descendants": {
+                                                "JGIqs": {
+                                                  "enabled": true,
+                                                  "icon": "github"
                                                 },
-                                                {
-                                                  "type": "text",
-                                                  "id": "Q66jTU",
-                                                  "name": "Primary label",
-                                                  "fill": "$fg",
-                                                  "content": "Open on GitHub",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12.5,
-                                                  "fontWeight": "500"
+                                                "IJGA7": {
+                                                  "content": "Open on GitHub"
                                                 },
-                                                {
-                                                  "id": "p8MF8",
-                                                  "type": "ref",
-                                                  "ref": "w9kS9",
-                                                  "name": "Kbd O",
-                                                  "descendants": {
-                                                    "luKkY": {
-                                                      "content": "O"
-                                                    }
-                                                  }
+                                                "yJS6O": {
+                                                  "enabled": true
+                                                },
+                                                "yJS6O/luKkY": {
+                                                  "content": "O"
                                                 }
-                                              ]
+                                              }
                                             },
                                             {
-                                              "type": "frame",
-                                              "id": "Zcc1i",
-                                              "name": "Files changed",
-                                              "cornerRadius": 6,
-                                              "gap": 6,
-                                              "padding": [
-                                                5,
-                                                8
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "U5NZrM",
-                                                  "name": "icon file-diff",
-                                                  "width": 13,
-                                                  "height": 13,
-                                                  "icon": "file-diff",
-                                                  "library": "lucide",
-                                                  "fill": "$fg-2"
+                                              "id": "EDtbb",
+                                              "type": "ref",
+                                              "ref": "MHAI5",
+                                              "name": "Button Review files",
+                                              "descendants": {
+                                                "JGIqs": {
+                                                  "enabled": true,
+                                                  "icon": "file-diff"
                                                 },
-                                                {
-                                                  "type": "text",
-                                                  "id": "teQgb",
-                                                  "name": "Files label",
-                                                  "fill": "$fg-2",
-                                                  "content": "Review files",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12.5,
-                                                  "fontWeight": "normal"
+                                                "IJGA7": {
+                                                  "content": "Review files"
                                                 },
-                                                {
-                                                  "id": "tIYqp",
+                                                "yJS6O": {
+                                                  "id": "InckT",
                                                   "type": "ref",
                                                   "ref": "L44zw",
-                                                  "name": "Kbd ⇧O",
+                                                  "name": "Key",
+                                                  "height": 18,
                                                   "descendants": {
                                                     "pINSd": {
-                                                      "name": "Key arrow-big-up",
                                                       "icon": "arrow-big-up"
                                                     },
                                                     "Q8v43": {
@@ -272965,7 +272452,7 @@
                                                     }
                                                   }
                                                 }
-                                              ]
+                                              }
                                             },
                                             {
                                               "type": "frame",
@@ -288902,27 +288389,15 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "BcarU",
+                                  "id": "rzOvC",
+                                  "type": "ref",
+                                  "ref": "GRpic",
                                   "name": "Reset view",
-                                  "cornerRadius": 6,
-                                  "padding": [
-                                    4,
-                                    6
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "j3ZF2J",
-                                      "name": "icon rotate-ccw",
-                                      "width": 13,
-                                      "height": 13,
-                                      "icon": "rotate-ccw",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
+                                  "descendants": {
+                                    "AfFM0": {
+                                      "icon": "rotate-ccw"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
                                   "type": "frame",
@@ -288979,44 +288454,15 @@
                                   ]
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "d3huXr",
+                                  "id": "Ro2M2",
+                                  "type": "ref",
+                                  "ref": "GRpic",
                                   "name": "Display button",
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 6,
-                                  "stroke": "$border",
-                                  "strokeWidth": 1,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    6
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "vmzU8",
-                                      "name": "icon sliders-horizontal",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "sliders-horizontal",
-                                      "library": "lucide",
-                                      "fill": "$fg"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "z4W87G",
-                                      "x": 29,
-                                      "y": 4,
-                                      "name": "Display",
-                                      "enabled": false,
-                                      "fill": "$fg",
-                                      "content": "Display",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                  "descendants": {
+                                    "AfFM0": {
+                                      "icon": "sliders-horizontal"
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             },
@@ -299327,31 +298773,17 @@
                                   "height": 1
                                 },
                                 {
-                                  "id": "Ce6Ns",
+                                  "id": "AUHtC",
                                   "type": "ref",
-                                  "ref": "EoODS",
+                                  "ref": "MHAI5",
                                   "name": "Button Link as a stack…",
-                                  "fill": "$bg-3",
-                                  "cornerRadius": 7,
-                                  "stroke": "$border-2",
-                                  "strokeWidth": 1,
-                                  "gap": 7,
-                                  "padding": [
-                                    7,
-                                    12
-                                  ],
                                   "descendants": {
-                                    "F9mRc": {
-                                      "name": "icon layers",
-                                      "width": 16,
-                                      "height": 16,
-                                      "icon": "layers",
-                                      "fill": "$fg-2"
+                                    "JGIqs": {
+                                      "enabled": true,
+                                      "icon": "layers"
                                     },
-                                    "Cenjq": {
-                                      "fill": "$fg",
-                                      "content": "Link as a stack",
-                                      "fontSize": 13
+                                    "IJGA7": {
+                                      "content": "Link as a stack"
                                     }
                                   }
                                 }
@@ -300973,10 +300405,10 @@
                       "name": "Footer",
                       "width": "fill_container",
                       "descendants": {
-                        "L2wMIW": {
+                        "Ooma6": {
                           "name": "Button Rebase and merge all 3"
                         },
-                        "L2wMIW/i9UKWn": {
+                        "Ooma6/IJGA7": {
                           "content": "Rebase and merge all 3"
                         }
                       }
@@ -301365,35 +300797,24 @@
                           "height": 1
                         },
                         {
-                          "id": "uMTBq",
+                          "id": "iu1OH",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Rebase stack on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon arrow-up-right",
-                              "width": 14,
-                              "height": 14,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Rebase stack on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Rebase stack on GitHub"
                             },
-                            "I9KkTl": {
-                              "id": "s358RM",
+                            "yJS6O": {
+                              "id": "tAmJf",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -301702,35 +301123,24 @@
                           "height": 1
                         },
                         {
-                          "id": "L2ugGs",
+                          "id": "UHkuo",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Rebase stack on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon arrow-up-right",
-                              "width": 14,
-                              "height": 14,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Rebase stack on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Rebase stack on GitHub"
                             },
-                            "I9KkTl": {
-                              "id": "TsXHD",
+                            "yJS6O": {
+                              "id": "Wrrya",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -302092,7 +301502,7 @@
                         "f2lHDi": {
                           "content": "On GitHub, rebuild the stack without #490."
                         },
-                        "Ihagy": {
+                        "Jia9X": {
                           "name": "Button Open on GitHub"
                         }
                       }
@@ -302520,38 +301930,24 @@
                           "height": 1
                         },
                         {
-                          "id": "voNkP",
+                          "id": "YV5LL",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Mark #102 ready",
-                          "fill": "#00000000",
-                          "stroke": "#00000000",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon eye",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "eye",
-                              "fill": "$fg-2"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "eye"
                             },
-                            "i9UKWn": {
-                              "content": "Mark #102 ready",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Mark #102 ready"
                             },
-                            "I9KkTl": {
-                              "id": "N0OTdK",
+                            "yJS6O": {
+                              "id": "RGKOp",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⌘K",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "command"
@@ -302564,50 +301960,34 @@
                           }
                         },
                         {
-                          "id": "aKVTU",
+                          "id": "x5cT0",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Squash and merge",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "git-merge",
-                              "fill": "#0D1117"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "i9UKWn": {
-                              "fill": "#0D1117",
-                              "content": "Squash and merge",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Squash and merge"
                             },
-                            "I9KkTl": {
-                              "id": "XlgZR",
+                            "yJS6O": {
+                              "id": "ePpU7",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#0D11171A",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#0D1117"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -302925,31 +302305,17 @@
                           "height": 1
                         },
                         {
-                          "id": "i1Jhp",
+                          "id": "L6IyK",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Squash and merge",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "circle-x",
-                              "fill": "$fg-2"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "circle-x"
                             },
-                            "Cenjq": {
-                              "fill": "$fg",
-                              "content": "Squash and merge",
-                              "fontSize": 13
+                            "IJGA7": {
+                              "content": "Squash and merge"
                             }
                           }
                         }
@@ -303646,50 +303012,34 @@
                           "height": 1
                         },
                         {
-                          "id": "Q6JLYT",
+                          "id": "ImdDc",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Enable auto-merge for both",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon clock",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "clock",
-                              "fill": "#FFFFFF"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "clock"
                             },
-                            "i9UKWn": {
-                              "fill": "#FFFFFF",
-                              "content": "Enable auto-merge for both",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Enable auto-merge for both"
                             },
-                            "I9KkTl": {
-                              "id": "Vu8Jp",
+                            "yJS6O": {
+                              "id": "uITj2",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#FFFFFF33",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#FFFFFF"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#FFFFFF"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -304029,14 +303379,13 @@
                         "Ln185/IOvfA": {
                           "content": "Stop earlier"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Add all 3 to the queue"
                         },
-                        "Wycr9/O9dWyI": {
-                          "name": "icon list-plus",
+                        "skz2I/JGIqs": {
                           "icon": "list-plus"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Add all 3 to the queue"
                         }
                       }
@@ -304331,29 +303680,20 @@
                           "height": 1
                         },
                         {
-                          "id": "A49FOy",
+                          "id": "vsOTo",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "MHAI5",
                           "name": "Button Take out of queue",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "KpHhX": {
-                              "content": "Take out of queue",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Take out of queue"
                             },
-                            "oCNhh": {
-                              "id": "nE9FK",
+                            "yJS6O": {
+                              "id": "KvKoK",
                               "type": "ref",
                               "ref": "L44zw",
-                              "name": "Kbd ⇧Q",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "pINSd": {
                                   "icon": "arrow-big-up"
@@ -304702,32 +304042,20 @@
                           ]
                         },
                         {
-                          "id": "yXjBy",
+                          "id": "dN8Pf",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "M4s1se",
                           "name": "Button Bypass rules and merge #1203",
-                          "cornerRadius": 6,
-                          "stroke": "$red",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
-                          "fill": "#00000000",
                           "descendants": {
-                            "KpHhX": {
-                              "fill": "$red",
-                              "content": "Bypass rules and merge #1203",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Bypass rules and merge #1203"
                             },
-                            "oCNhh": {
-                              "id": "iaI65",
+                            "yJS6O": {
+                              "id": "mP3Kf",
                               "type": "ref",
                               "ref": "T24lwV",
-                              "name": "Kbd ⌥⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "weRcq": {
                                   "icon": "option"
@@ -304789,31 +304117,19 @@
                           "height": 1
                         },
                         {
-                          "id": "egwxE",
+                          "id": "H5wwrU",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Can't merge yet",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon circle-x",
-                              "width": 16,
-                              "height": 16,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "circle-x",
                               "fill": "$fg-3"
                             },
-                            "Cenjq": {
-                              "fill": "$fg-dim",
+                            "IJGA7": {
                               "content": "Can't merge yet",
-                              "fontSize": 13
+                              "fill": "$fg-dim"
                             }
                           }
                         }
@@ -305482,22 +304798,19 @@
                           "height": 1
                         },
                         {
-                          "id": "wKPML",
+                          "id": "cUkL2",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "MHAI5",
                           "name": "Button Close",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "KpHhX": {
-                              "content": "Close",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Close"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "Esc"
                             }
                           }
                         }
@@ -305793,31 +305106,17 @@
                           "height": 1
                         },
                         {
-                          "id": "vc2w2",
+                          "id": "WZaiV",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Squash and merge 2",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon git-merge",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "git-merge",
-                              "fill": "$fg-2"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "git-merge"
                             },
-                            "Cenjq": {
-                              "fill": "$fg",
-                              "content": "Squash and merge 2",
-                              "fontSize": 13
+                            "IJGA7": {
+                              "content": "Squash and merge 2"
                             }
                           }
                         }
@@ -306121,10 +305420,10 @@
                         "f2lHDi": {
                           "enabled": false
                         },
-                        "Ihagy": {
+                        "Jia9X": {
                           "name": "Button #490 on GitHub"
                         },
-                        "Ihagy/i9UKWn": {
+                        "Jia9X/IJGA7": {
                           "content": "#490 on GitHub"
                         }
                       }
@@ -306155,10 +305454,10 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Try again"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Try again"
                         }
                       }
@@ -306465,11 +305764,8 @@
                         "f2lHDi": {
                           "enabled": false
                         },
-                        "Ihagy": {
+                        "Jia9X": {
                           "name": "Button Open on GitHub"
-                        },
-                        "Ihagy/i9UKWn": {
-                          "content": "Open on GitHub"
                         }
                       }
                     },
@@ -306498,22 +305794,19 @@
                           "height": 1
                         },
                         {
-                          "id": "e3ffc",
+                          "id": "bY4bl",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "MHAI5",
                           "name": "Button Close",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "KpHhX": {
-                              "content": "Close",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Close"
+                            },
+                            "yJS6O": {
+                              "enabled": true
+                            },
+                            "yJS6O/luKkY": {
+                              "content": "Esc"
                             }
                           }
                         }
@@ -306820,10 +306113,10 @@
                         "Ln185/IOvfA": {
                           "content": "Close"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Try again"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Try again"
                         }
                       }
@@ -307180,35 +306473,24 @@
                           "height": 1
                         },
                         {
-                          "id": "GDUs6",
+                          "id": "u6W5b",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Rebase stack on GitHub",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon arrow-up-right",
-                              "icon": "arrow-up-right",
-                              "width": 14,
-                              "height": 14
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
-                              "content": "Rebase stack on GitHub",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Rebase stack on GitHub"
                             },
-                            "I9KkTl": {
-                              "id": "iQejc",
+                            "yJS6O": {
+                              "id": "gyUAY",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -308984,50 +308266,34 @@
                           "height": 1
                         },
                         {
-                          "id": "vANVE",
+                          "id": "bFbcZ",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "PmKqy",
                           "name": "Button Link 3 into a stack",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon layers",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "layers",
-                              "fill": "#FFFFFF"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "layers"
                             },
-                            "i9UKWn": {
-                              "fill": "#FFFFFF",
-                              "content": "Link 3 into a stack",
-                              "fontSize": 12,
-                              "fontWeight": "500"
+                            "IJGA7": {
+                              "content": "Link 3 into a stack"
                             },
-                            "I9KkTl": {
-                              "id": "LZw2C",
+                            "yJS6O": {
+                              "id": "CKvGh",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#FFFFFF33",
+                              "name": "Key",
+                              "height": 18,
+                              "fill": "#0D111729",
                               "stroke": "#0D111733",
-                              "height": 16,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command",
-                                  "fill": "#FFFFFF"
+                                  "fill": "$on-light"
                                 },
                                 "lhKUf": {
                                   "icon": "corner-down-left",
-                                  "fill": "#FFFFFF"
+                                  "fill": "$on-light"
                                 }
                               }
                             }
@@ -309533,31 +308799,17 @@
                           "height": 1
                         },
                         {
-                          "id": "b6AgC",
+                          "id": "j2MfQ",
                           "type": "ref",
-                          "ref": "EoODS",
+                          "ref": "MHAI5",
                           "name": "Button Link 3 into a stack",
-                          "fill": "$bg-3",
-                          "cornerRadius": 7,
-                          "stroke": "$border-2",
-                          "strokeWidth": 1,
-                          "gap": 7,
-                          "padding": [
-                            7,
-                            12
-                          ],
                           "descendants": {
-                            "F9mRc": {
-                              "name": "icon layers",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "layers",
-                              "fill": "$fg-2"
+                            "JGIqs": {
+                              "enabled": true,
+                              "icon": "layers"
                             },
-                            "Cenjq": {
-                              "fill": "$fg",
-                              "content": "Link 3 into a stack",
-                              "fontSize": 13
+                            "IJGA7": {
+                              "content": "Link 3 into a stack"
                             }
                           }
                         }
@@ -309934,29 +309186,20 @@
                           "height": 1
                         },
                         {
-                          "id": "uhG1p",
+                          "id": "FtORW",
                           "type": "ref",
-                          "ref": "JOjbe",
+                          "ref": "MHAI5",
                           "name": "Button Go to that stack",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "KpHhX": {
-                              "content": "Go to that stack",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Go to that stack"
                             },
-                            "oCNhh": {
-                              "id": "pwRpJ",
+                            "yJS6O": {
+                              "id": "D7UrVx",
                               "type": "ref",
                               "ref": "oPSI9",
-                              "name": "Kbd ↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "YRrEc": {
                                   "icon": "corner-down-left"
@@ -310358,14 +309601,13 @@
                         "Ln185/IOvfA": {
                           "content": "Choose"
                         },
-                        "Wycr9": {
+                        "skz2I": {
                           "name": "Button Add #44 on top"
                         },
-                        "Wycr9/O9dWyI": {
-                          "name": "icon plus",
+                        "skz2I/JGIqs": {
                           "icon": "plus"
                         },
-                        "Wycr9/i9UKWn": {
+                        "skz2I/IJGA7": {
                           "content": "Add #44 on top"
                         }
                       }
@@ -310641,35 +309883,24 @@
                           "height": 1
                         },
                         {
-                          "id": "x9AHS",
+                          "id": "jlo3B",
                           "type": "ref",
-                          "ref": "n73Aps",
+                          "ref": "MHAI5",
                           "name": "Button Dissolve",
-                          "cornerRadius": 6,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            4,
-                            4,
-                            8
-                          ],
                           "descendants": {
-                            "O9dWyI": {
-                              "name": "icon unlink",
-                              "width": 14,
-                              "height": 14,
+                            "JGIqs": {
+                              "enabled": true,
                               "icon": "unlink"
                             },
-                            "i9UKWn": {
-                              "content": "Dissolve",
-                              "fontSize": 12
+                            "IJGA7": {
+                              "content": "Dissolve"
                             },
-                            "I9KkTl": {
-                              "id": "QBesp",
+                            "yJS6O": {
+                              "id": "jDe6K",
                               "type": "ref",
                               "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "height": 16,
+                              "name": "Key",
+                              "height": 18,
                               "descendants": {
                                 "q1SXG": {
                                   "icon": "command"
@@ -312367,17 +311598,16 @@
                           "content": "⌥M"
                         },
                         "McVDN": {
-                          "id": "Zt4NR",
+                          "id": "LVgSh",
                           "type": "ref",
-                          "ref": "m1uQkH",
+                          "ref": "lLbwO",
                           "name": "Second action",
-                          "enabled": true,
                           "descendants": {
-                            "O9dWyI": {
+                            "MiiSN": {
                               "enabled": true,
                               "icon": "arrow-up-right"
                             },
-                            "i9UKWn": {
+                            "fThUd": {
                               "content": "Open on GitHub"
                             }
                           }
@@ -524983,6 +524213,18 @@
     "current-header": {
       "type": "color",
       "value": "#1B2130"
+    },
+    "red-emphasis": {
+      "type": "color",
+      "value": "#DA3633"
+    },
+    "on-emphasis": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "on-light": {
+      "type": "color",
+      "value": "#0D1117"
     }
   },
   "fileToken": "926208b3-4cc0-40af-a9ef-a0904bbaa60d"

@@ -57,3 +57,58 @@ includes the 1 px stroke: `sm` 4 / 8, `md` 7 / 12, `lg` 11 / 16 (with key: end 4
 - [ ] App · Components → Components (`x7TAdR`): new row `Atoms and guideline` (`XK6l1`) holding Atoms (`U5qIGb`) and
   the new sheet `Buttons — guideline` (`Afd8j`): sizes, variants by size with their meanings, icon and split
   buttons, the rules, and two examples (a composer's footer, a list's toolbar).
+
+## Round 2a · agent brief
+
+Asked (`.context/button-system-brief-2a.md`): the colour variables the code's destructive and light-surface buttons
+use, and every button in App · Merging a pull request (`LLr2k`) and App · Stacked pull requests (`LIEPU`) drawn with
+the family at its place's size and variant.
+
+Changed: 63 instances of the old button components and 9 hand-drawn buttons became family instances. Each new
+instance was inserted at the old one's index with its label, icon, key and visibility, then the old one deleted (its
+id is gone). Keys that were another `Kbd …` were replaced in the new instance's `Key` slot, at the size's key height.
+The merge panel's footers moved from 24 to 32 px; they size to content, so no container needed adjusting.
+
+- [ ] Variables: new `$red-emphasis` `#DA3633`, `$on-emphasis` `#FFFFFF`, `$on-light` `#0D1117` (the code's
+  `$color-red-emphasis`, `$color-on-emphasis`, `$color-on-light`).
+- [ ] Button / sm|md|lg · destructive (`L9VJfE`, `f8sNbZ`, `Z7XjE`): fill `$red` → `$red-emphasis`; icon and label
+  `#0D1117` → `$on-emphasis`; key `#0D111729` / `#0D111733` → no fill, stroke `#FFFFFF66`, glyph `$on-emphasis`
+  (Kbd's `onDanger`).
+- [ ] Button / sm|md|lg · primary (`fQMJo`, `PmKqy`, `sJgFa`) and · light (`qzu4v`, `XjdaU`, `e2B8m`): icon, label
+  and key glyph `#0D1117` → `$on-light` (the key's translucent fill and stroke stay hex).
+- [ ] Merge / Footer (`wKwA4`): `Wycr9` (`Button / icon, label, key`, 24) → `skz2I` (`Button / md · primary`,
+  git-merge, ⌘↵). Its 15 instances' label, icon and name overrides moved to `skz2I` (iAsoE, sNsOZ, p8are, P58Gmw,
+  i73Ehg, p1C1V, wpmNZ, hBwSa, H9TI6, pV2gT, bzDvR, XgatD, S87goL, fGk1F, KbXhK).
+- [ ] Merge / Footer · stop earlier, checks (`hocRs`): `L2wMIW` → `Ooma6` (`Button / md · primary`); `fwL4L`'s
+  "Rebase and merge all 3" moved to it.
+- [ ] Merge / Band (`i7gsTn`): `Ihagy` (24) → `Jia9X` (`Button / md`, Open on GitHub, O); overrides of `fIOhx`,
+  `ur7X9` ("#490 on GitHub"), `N76Wv` moved to it.
+- [ ] App · Merging a pull request (`LLr2k`), 41 screen buttons:
+  - merge panel footers' main action (Squash and merge, Enable auto-merge, Add to queue, Update branch, Mark ready
+    for review, Squash and merge all 3): 24 px accent → `Button / md · primary`;
+  - their neighbours (Jump the queue, was ghost; Take out of queue; Turn off auto-merge; Revert…, was ghost; Rebase
+    stack on GitHub; Resolve on GitHub; Can't merge yet, was `md` light restyled) → `Button / md`, the disabled
+    "Can't merge yet" keeping its `$fg-3` icon and `$fg-dim` label;
+  - Bypass rules and merge (PM12a): 24 px red outline → `Button / md · danger`;
+  - the panel's own action bar and its error states' actions (Open on GitHub, See the new commit, Request access on
+    GitHub, Sign in again) → `Button / md`;
+  - a check row's Re-run (ghost, ⇧E) → `Button / sm · ghost`; the Branch row's Update by rebase (was ghost),
+    Delete branch and Restore branch → `Button / sm` (a row's inline control).
+- [ ] App · Stacked pull requests (`LIEPU`), 18 screen buttons: the stack merge panel's footers as above (Squash and
+  merge, Enable auto-merge for both and Link 3 into a stack, white labels before → `Button / md · primary`; Mark #102
+  ready, was ghost, Rebase stack on GitHub, Take out of queue, Close, Go to that stack, Dissolve, the disabled
+  Squash and merge / Link 3 into a stack / Can't merge yet → `Button / md`); Bypass rules and merge #1203 →
+  `Button / md · danger`; the Chain offer's Link as a stack… → `Button / md`.
+- [ ] Toasts on PM34 (`iufWy`), PM35 (`eUSa0`), SP80 (`wGo8k`): the second action, replaced in the instance by
+  `Button / icon, label, no key`, → `Button / sm` (Revert; Open on GitHub). The toast's own actions are the Toast
+  component's, App · Toasts' round.
+- [ ] SP5's hand-drawn merge card (`FGLBP`, 512 wide in the panel): Merge (`aXtZI`, white on accent, 26 px) →
+  `Button / md · primary` (⇧M); Open on GitHub (`w8u1aL`) → `Button / md` (O); Review files (`Zcc1i`, was a ghost
+  text) → `Button / md` (⇧O). Wide enough to keep the icons.
+- [ ] Hand-drawn project headers: PM35's Display (`g0vhmr`, 23 px) → `Button / sm · outline` (the code's); SP26's
+  icon-only Display (`d3huXr`) and Reset view (`BcarU`) → `Icon button / sm`.
+- [ ] A stack screen's panel toolbar (`YPRJ7`): hand-drawn Open on GitHub (`rbUvD`) and Close (`CTTe1`) →
+  `Icon button / sm`.
+
+Left as they are: the merge method's segmented choice (`Method …`) and PM35's "Changed here · Reset" chip are not
+buttons under the guideline; the item panel's merge card is `Item / PR merge` (App · Components), a later round.
