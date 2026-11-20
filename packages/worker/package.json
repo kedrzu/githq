@@ -10,8 +10,8 @@
         "./*.js": "./src/*.ts"
     },
     "scripts": {
-        "dev": "mkdir -p ../app/.output/public && touch ../../.env && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --port 8788 --env-file ../../.env",
-        "preview": "touch ../../.env && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --env-file ../../.env",
+        "dev": "mkdir -p ../app/.output/public && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --port 8788",
+        "preview": "GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev",
         "deploy": "wrangler deploy && wrangler deploy --config wrangler.www.jsonc",
         "secrets:put:prod": "env -u GITHUB_CLIENT_SECRET GITHQ_ENV=prod bun githq secrets run GITHUB_CLIENT_SECRET -- sh -c 'printf %s \"$GITHUB_CLIENT_SECRET\" | wrangler secret put GITHUB_CLIENT_SECRET'",
         "stats": "GITHQ_ENV=stats bun scripts/stats.ts",

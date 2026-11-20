@@ -25,7 +25,6 @@ tsconfig.cjs.json
 # Environment
 .env
 .env.*
-!.env.example
 
 # Logs
 *.log
