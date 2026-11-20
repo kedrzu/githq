@@ -27,14 +27,17 @@ html {
 
 // `Reveal` (`@nzyme/vue`) animates by this. By hand, not through the `motion` mixin, which can't target `html` itself. Off,
 // it opens at once; on, 100 ms because `Reveal` delays its fade by half its duration, which makes 150 ms in total
-// (`$motion-open`).
+// (`$motion-open`). `MotionList` (`TransitionList` from `@nzyme/vue-transitions`) by the other; off, it isn't a
+// transition at all.
 html {
     --reveal-duration: 0s;
+    --transition-list-duration: 0s;
 }
 
 @media (prefers-reduced-motion: no-preference) {
     html[data-motion='on'] {
         --reveal-duration: 100ms;
+        --transition-list-duration: #{$motion-open};
     }
 }
 
