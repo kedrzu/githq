@@ -7,7 +7,7 @@ way the landing's hero picture is (`ykYxo`), and follow the app from now on. Bas
 Exports: `OG / Default` → `packages/app/public/og.png` (1200 × 630, `og:image` and `twitter:image`);
 `OG / Repo social preview` → `docs/assets/github-social-preview.png` (1280 × 640, uploaded by hand in the repository's
 Settings → Social preview; GitHub has no API for it). `OG / Centered` is for launch posts and has no file in the repo.
-Export with `bun nzyme pen render githq.pen AjdEy dCg9Z --scale 1`.
+Export with `bun githq pen render githq.pen AjdEy dCg9Z --scale 1`.
 
 ## Round 1 · agent brief
 
