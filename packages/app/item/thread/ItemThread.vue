@@ -154,6 +154,13 @@ const revealedId = ref<string | null>(null);
 const unfolded = ref(false);
 /** The folded middle is being read. */
 const readingMiddle = ref(false);
+/** Its detail, the middle or a pull request's review threads are still being read. */
+const busy = computed(() => !props.detail || readingMiddle.value || props.reviewThreadsLoading);
+/**
+ * Read: what arrives now is news and slides in. Not before the render after the reading ends, so what that reading
+ * brings shows at once, as the rest of it did: the page doesn't move under a reader just arrived at an anchor.
+ */
+const settled = ref(!busy.value);
 /** Reading the folded middle failed: the band says so. */
 const foldFailed = ref(false);
 // Before the watch below, which reads the editors: another item closes them first.
@@ -286,6 +293,25 @@ watch(
 // looks for it in.
 // The review threads come after the detail: a link to a comment on the code is looked for again once they are in.
 watch(() => [props.linkedAnchor, props.detail, props.reviewThreads] as const, revealLinked, { immediate: true });
+// Still from the moment a reading starts; settled after the render that shows what it read.
+watch(
+  busy,
+  isBusy => {
+    if (isBusy) {
+      settled.value = false;
+    }
+  },
+  { flush: 'sync' },
+);
+watch(
+  busy,
+  isBusy => {
+    if (!isBusy) {
+      settled.value = true;
+    }
+  },
+  { flush: 'post' },
+);
 
 defineExpose({
   /**
@@ -805,7 +831,7 @@ type Askable =
   <div
     ref="root"
     :class="css.itemThread"
-    :aria-busy="!detail || readingMiddle || reviewThreadsLoading || undefined"
+    :aria-busy="busy || undefined"
     @keydown="onKeydown"
   >
     <span
@@ -844,6 +870,7 @@ type Askable =
         v-if="entries.length > 0"
         :key="item.id"
         tag="ol"
+        :still="!settled"
         :class="css.itemThread_comments"
       >
         <li
