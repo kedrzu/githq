@@ -29,7 +29,7 @@ if (!token) {
     console.error(
         `${TOKEN_VARIABLE} is not set. Create a Cloudflare API token (My Profile → API Tokens, permission ` +
             'Account → Account Analytics → Read) and store it once with:\n\n' +
-            '  GITHQ_ENV=stats bun nzyme secrets set CLOUDFLARE_ANALYTICS_TOKEN ' +
+            '  GITHQ_ENV=stats bun githq secrets set CLOUDFLARE_ANALYTICS_TOKEN ' +
             '--prompt="Cloudflare API token with Account Analytics: Read"\n\n' +
             'then run `bun --cwd packages/worker stats`.',
     );
