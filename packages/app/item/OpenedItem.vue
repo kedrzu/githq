@@ -408,7 +408,7 @@ interface LookedRead extends ItemOpening {
       >
         <Button
           variant="secondary"
-          size="sm"
+          size="md"
           :icon="ArrowLeft"
           @click="arranging.close()"
         >
@@ -421,7 +421,7 @@ interface LookedRead extends ItemOpening {
       >
         <Button
           variant="secondary"
-          size="sm"
+          size="md"
           :icon="RotateCw"
           @click="opened.tryAgain()"
         >

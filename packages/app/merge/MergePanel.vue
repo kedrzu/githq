@@ -2337,7 +2337,7 @@ function onOpenFocus(event: Event) {
         <template v-else-if="verdict.kind === 'merged'">
           <Button
             v-if="canRevert"
-            variant="ghost"
+            variant="secondary"
             :kbd="keyOf(definitions.revert)"
             :keyshortcuts="keyOf(definitions.revert)"
             :busy="advancing === 'revert'"
@@ -2348,7 +2348,7 @@ function onOpenFocus(event: Event) {
         <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'unknown'">
           <Button
             v-if="canJump"
-            variant="ghost"
+            variant="secondary"
             kbd="Shift+Mod+Enter"
             :keyshortcuts="formatAriaKeyShortcuts('Shift+Mod+Enter')"
             :busy="advancing === 'jumpQueue'"
@@ -2357,7 +2357,7 @@ function onOpenFocus(event: Event) {
           >
           <Button
             v-if="stackDraft !== null && allowed"
-            variant="ghost"
+            variant="secondary"
             :icon="Eye"
             kbd="Mod+K"
             :keyshortcuts="formatAriaKeyShortcuts('Mod+K')"

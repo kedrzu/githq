@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Narrow — an opened item's summary column, a phone — it drops its buttons' key hints and the conditions' asides, and "Merge pull request" says "Merge". On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge pull request" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready", "Queue", "Auto-merge") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge pull request" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. Under 560px — the panel at its default width too — its buttons drop their icons, as on a phone; narrow — an opened item's summary column, a phone — also their key hints and the conditions' asides, and "Merge pull request" says "Merge"; where the buttons still get no room on one line, the last goes under. On a phone (mobile D52, MB260), which has no merging or code review yet (D4), "Merge pull request" links to the pull request on github.com and "Review files" keeps its address, which the phone hands off to github.com (D3), both marked ↗ (D11); the three buttons drop their icons. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -231,11 +231,11 @@ function refusedAside(reason: EditFailureReason) {
       />
       <span :class="css.pullRequestMerge_files">{{ t(l.files, { count: pr.changedFiles }) }}</span>
     </p>
-    <div :class="[css.pullRequestMerge_actions, phone.active && css.pullRequestMerge_actions_phone]">
+    <div :class="css.pullRequestMerge_actions">
       <Button
         v-if="branchCommand"
         variant="secondary"
-        size="sm"
+        size="md"
         :icon="GitBranch"
         :kbd="keyOf(branch)"
         :keyshortcuts="keyOf(branch)"
@@ -246,7 +246,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-if="updateCommand"
         variant="secondary"
-        size="sm"
+        size="md"
         :icon="GitPullRequestArrow"
         :kbd="keyOf(updateBranch)"
         :keyshortcuts="keyOf(updateBranch)"
@@ -258,7 +258,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-if="mergeOffered && phone.active"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
-        size="sm"
+        size="md"
         :link="pr.url"
         target="_blank"
         rel="noopener noreferrer"
@@ -273,7 +273,7 @@ function refusedAside(reason: EditFailureReason) {
       <Button
         v-else-if="mergeOffered"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
-        size="sm"
+        size="md"
         :icon="GitMerge"
         :kbd="keyOf(merge)"
         :keyshortcuts="keyOf(merge)"
@@ -288,7 +288,7 @@ function refusedAside(reason: EditFailureReason) {
       </Button>
       <Button
         variant="secondary"
-        size="sm"
+        size="md"
         :icon="phone.active ? undefined : Github"
         :link="pr.url"
         :kbd="keyOf(openOnGitHub)"
@@ -300,8 +300,8 @@ function refusedAside(reason: EditFailureReason) {
       </Button>
       <!-- On a phone the address of the review is handed off to github.com's changed files (mobile D3). -->
       <Button
-        variant="ghost"
-        size="sm"
+        variant="secondary"
+        size="md"
         :icon="phone.active ? undefined : FileDiff"
         :link="reviewPath"
         :kbd="keyOf(review)"
@@ -319,9 +319,12 @@ function refusedAside(reason: EditFailureReason) {
 </template>
 
 <style lang="scss" module="css">
-// Under this width (an opened item's summary column) the block gives up what it can do without: its buttons' key hints
-// and the aside of a condition (approvals by name), so the buttons stay on one line and the conditions unwrapped.
+// Under this width (an opened item's summary column, a phone) the block gives up what it can do without: the
+// aside of a condition (approvals by name), so the conditions stay unwrapped, and "Merge pull request" says "Merge".
 $narrow: 480px;
+// Under this width (the panel at its default 560px, so its block at 512px) the buttons give up their leading icons, as on
+// a phone, and keep their key hints: three 32px buttons with both need about 545px, without the icons about 480px.
+$no-icons: 560px;
 
 .pullRequestMerge {
   overflow: hidden;
@@ -432,18 +435,16 @@ $narrow: 480px;
   color: $color-fg-dim;
 }
 
+// Where even the narrow buttons get no room on one line (the summary column at its narrowest, a phone, a fourth button),
+// the last goes under, never cut off.
 .pullRequestMerge_actions {
   display: flex;
+  flex-wrap: wrap;
   gap: $spacing-8;
   align-items: center;
   padding: $spacing-10 $spacing-12;
   background: $color-bg;
   border-top: 1px solid $color-border;
-}
-
-// A phone's narrowest leave the three buttons no room on one line: the last goes under, never cut off.
-.pullRequestMerge_actions_phone {
-  flex-wrap: wrap;
 }
 
 .pullRequestMerge_narrowLabel {
@@ -453,6 +454,13 @@ $narrow: 480px;
 .pullRequestMerge_note {
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+}
+
+@container (width < #{$no-icons}) {
+  // A button's leading icon: the first in its content (`Button`'s `icon`), never a mark in the label.
+  .pullRequestMerge_actions [data-button-size] > span:first-child > svg:first-child {
+    display: none;
+  }
 }
 
 @container (width < #{$narrow}) {
