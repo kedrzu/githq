@@ -228,7 +228,12 @@ export function createIssueEdit(params: CreateIssueEditParams): Edit {
             };
             return {
                 kind: 'confirmed',
-                layer: { item: current => current, addedItem: confirmed, addedProjectItems: places },
+                layer: {
+                    item: current => current,
+                    addedItem: confirmed,
+                    addedProjectItems: places,
+                    firstIds: new Map([[created.id, temporaryId]]),
+                },
                 partial:
                     failed.length > 0
                         ? { itemId: created.id, reference: `${repository.nameWithOwner}#${created.number}`, failed }

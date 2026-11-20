@@ -18,6 +18,7 @@ import { ProjectStore } from '@/projects/ProjectStore.js';
 import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import type { IssueItem, ItemLabel } from '@/store/ItemTypes.js';
@@ -325,7 +326,7 @@ test('an edit still being made when another account signs in is dropped, never s
     expect(github.mutations()).toEqual([]);
 });
 
-test('a comment shows at once as on its way, then as GitHub rendered it', async () => {
+test('a comment shows at once as on its way, then as GitHub rendered it, drawn under its first id', async () => {
     const { editor, details, github, session } = await setup();
     await details.ensure('I_1');
     const held = createPromise();
@@ -345,6 +346,7 @@ test('a comment shows at once as on its way, then as GitHub rendered it', async 
         ['IC_new', '<p>Fixed in <b>#12</b></p>', undefined],
     ]);
     expect(comments?.totalCount).toBe(1);
+    expect(session.container.resolve(ItemOverlay).getFirstId('IC_new')).toBe(pending?.id ?? '');
 });
 
 test('a project field is confirmed by its own value, and the item’s other values stay', async () => {

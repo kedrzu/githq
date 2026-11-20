@@ -35,6 +35,11 @@ export interface ItemOverlayLayer {
     readonly addedProjectItems?: readonly ProjectItem[];
     /** An issue the change creates: shown wherever it belongs until the item store holds it. */
     readonly addedItem?: AddedItem;
+    /**
+     * Of a confirmed change, GitHub's ids of what it created (an issue, a comment) to the temporary ids they were shown
+     * under: remembered for the session (`ItemOverlay.getFirstId`).
+     */
+    readonly firstIds?: ReadonlyMap<string, string>;
 }
 
 /** An issue being created, as the lists show it before (and for a while after) the item store holds it. */
@@ -56,8 +61,8 @@ export const ItemOverlay = defineService({
     name: 'ItemOverlay',
     setup() {
         const layersRef = shallowRef<ReadonlyMap<string, readonly ItemOverlayLayer[]>>(new Map());
-        // GitHub's id of each issue created in this session, to the temporary id it was first shown under. Kept after
-        // the layers go, as a list keeps drawing the issue under its first id.
+        // GitHub's id of each issue or comment created in this session, to the temporary id it was first shown under.
+        // Kept after the layers go, as a list keeps drawing it under its first id.
         const firstIdsRef = shallowRef<ReadonlyMap<string, string>>(new Map());
 
         return {
@@ -90,9 +95,8 @@ export const ItemOverlay = defineService({
          * over the rest when `layer` is gone.
          */
         function replace(id: string, layer: ItemOverlayLayer, by: ItemOverlayLayer) {
-            const confirmedId = by.addedItem?.item.id;
-            if (confirmedId !== undefined && confirmedId !== id) {
-                firstIdsRef.value = new Map([...firstIdsRef.value, [confirmedId, id]]);
+            if (by.firstIds) {
+                firstIdsRef.value = new Map([...firstIdsRef.value, ...by.firstIds]);
             }
 
             const layers = layersRef.value.get(id) ?? [];
@@ -221,8 +225,9 @@ export const ItemOverlay = defineService({
         }
 
         /**
-         * The id an item was first shown under in this session: the temporary one of an issue created here, else its
-         * own. A list keys its row by it, so the row GitHub's issue takes over is the same one, changed in place.
+         * The id an item or a comment was first shown under in this session: the temporary one of an issue or a comment
+         * created here, else its own. A list keys its row by it, so the row GitHub's copy takes over is the same one,
+         * changed in place.
          * Reactive.
          */
         function getFirstId(id: string): string {
