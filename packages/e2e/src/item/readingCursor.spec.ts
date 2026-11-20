@@ -78,6 +78,8 @@ const DRAFT = 'Mine, not sent yet.';
 const TALL = 'A long read. '.repeat(800).trim();
 /** How far a press of ↓ moves the cursor inside a stop: the line it stands for. */
 const LINE = 40;
+/** How often a held key repeats. */
+const KEY_REPEAT_MS = 60;
 
 test('AC1: ] puts the cursor on each comment in order, the review and each comment of its code thread too, never on a commit or an event; [ goes back; both stop at the ends', async ({
     page,
@@ -189,11 +191,15 @@ test('AC2: ↓ reaches every stop in order, commits and events too, a tall comme
         }
     }
 
+    // The page's time steps a key repeat's 60 ms at each one, however long the runner takes between them: a gap past the
+    // app's hold window would make every repeat a new press.
+    const heldFrom = Date.now();
     const travel: number[] = [];
     let last = await scrollTop();
     for (let repeat = 0; repeat < 14; repeat++) {
+        await page.clock.setFixedTime(heldFrom + repeat * KEY_REPEAT_MS);
         await page.keyboard.down('ArrowDown');
-        await page.waitForTimeout(60);
+        await nextFrames(page);
         const now = await scrollTop();
         travel.push(now - last);
         last = now;
