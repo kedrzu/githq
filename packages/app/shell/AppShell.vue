@@ -1,4 +1,4 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with ⌘B; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum, and whether the window holds the panel at all, at its minimum beside the screen at its own (`panelFits`) — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. In the phone layout (`phone`, mobile D5) the screen fills the window, with no sidebar, panel, splitter nor status bar, and items open on their page (`panelFits` off): over it the phone's top bar with the places button, unless the screen draws its own (`ownTopBar`, a list's or an item's), each top bar with the strip under it while offline or paused (mobile D12, `PhoneShellContext`); the command line floating over its bottom (`commandLine`), the screen's scroll ending with room for it, hidden while a task is open (`PhoneLayout.taskOpen`, mobile D18: the command menu, a sheet from below); and the places panel from the left (`PlacesPanel`), open while `PhoneLayout` says, which the screen's list and item never mount under. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with ⌘B; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge, the expanded sidebar's tracked projects and repositories reordered by dragging them (`move`, D44) — the panel as wide as the window allows, leaving the screen its minimum, and whether the window holds the panel at all, at its minimum beside the screen at its own (`panelFits`) — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. In the phone layout (`phone`, mobile D5) the screen fills the window, with no sidebar, panel, splitter nor status bar, and items open on their page (`panelFits` off): over it the phone's top bar with the places button, unless the screen draws its own (`ownTopBar`, a list's or an item's), each top bar with the strip under it while offline or paused (mobile D12, `PhoneShellContext`); the command line floating over its bottom (`commandLine`), the screen's scroll ending with room for it, hidden while a task is open (`PhoneLayout.taskOpen`, mobile D18: the command menu, a sheet from below); and the places panel from the left (`PlacesPanel`), open while `PhoneLayout` says, which the screen's list and item never mount under. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -28,7 +28,7 @@ import PhoneTopBar from './PhoneTopBar.vue';
 import PlacesPanel from './PlacesPanel.vue';
 import type { SegmentEdits } from './SegmentEdits.js';
 import Sidebar from './Sidebar.vue';
-import type { SidebarTracked } from './Sidebar.vue';
+import type { SidebarMovePlace, SidebarTracked } from './Sidebar.vue';
 import type { SidebarBrokenWorkflows, SidebarMyWorkCounts, SidebarSubEntry } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
 
@@ -56,7 +56,7 @@ const props = defineProps<{
   tracked?: SidebarTracked;
   /** The rows under a tracked project or repository in the phone's places panel (`Sidebar`). */
   getChildren?: (target: TrackedTarget) => readonly SidebarSubEntry[];
-  /** Those rows slide open and closed. */
+  /** Those rows slide open and closed, and the sidebar's rows make room for a dragged one by sliding. */
   animate?: boolean;
   /** Syncing the settings stopped (settings-sync T9): an amber dot on the user's avatar. */
   settingsSyncStopped?: boolean;
@@ -78,6 +78,8 @@ const emit = defineEmits<{
   search: [];
   /** A failed edit in the status bar was clicked: its message again. */
   showFailure: [];
+  /** A tracked project or repository was dragged to another place among its kind in the sidebar (D44). */
+  move: [target: TrackedTarget, place: SidebarMovePlace];
 }>();
 
 defineSlots<{
@@ -287,9 +289,11 @@ function onLayout(sizes: number[]) {
           :settings-sync-stopped="settingsSyncStopped"
           :broken-workflows="brokenWorkflows"
           :draft-reviews="draftReviews"
+          :animate="animate"
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"
+          @move="(target, place) => emit('move', target, place)"
         >
           <template
             v-if="$slots.trackedMenu"

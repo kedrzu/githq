@@ -4,7 +4,9 @@ import { page, userEvent } from 'vitest/browser';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
+import type { SidebarMovePlace } from './Sidebar.vue';
 import * as stories from './Sidebar.stories.js';
 
 const {
@@ -31,6 +33,7 @@ const {
     PhoneOnProject,
     PhoneOnRepository,
     PhoneOnRepositoryAnimated,
+    Reordering,
     SomeCountsArriving,
     SyncStopped,
     CollapsedSyncStopped,
@@ -516,6 +519,65 @@ test('D14: a group of my work counts once its search is in; the others and the t
     await expect.element(page.getByRole('link', { name: /^My\swork$/ })).toBeVisible();
 });
 
+/** The sample repositories' addresses, in the order they are given. */
+const REPOSITORY_ADDRESSES = ['/kedrzu/githq', '/kedrzu/skills', '/skyline-labs/portal', '/skyline-labs/api'];
+
+test('a repository dragged down lands after the row it took the place of; the list stays as given, and the drag goes nowhere', async () => {
+    const onMove = vi.fn();
+    await Reordering.run({ args: { ...Reordering.args, onMove } });
+
+    await dragRow('kedrzu/githq', 'skyline-labs/portal');
+
+    const target: TrackedTarget = { kind: 'repository', nameWithOwner: 'kedrzu/githq' };
+    const place: SidebarMovePlace = {
+        anchor: { kind: 'repository', nameWithOwner: 'skyline-labs/portal' },
+        side: 'after',
+    };
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(target, place);
+    // Nothing reordered the props: Vue's order, not Sortable's, is on the page.
+    expect(placeAddresses('Repositories')).toEqual(REPOSITORY_ADDRESSES);
+    // The router would have moved by the next frame.
+    await new Promise(requestAnimationFrame);
+    expect(document.querySelector('[data-route]')?.getAttribute('data-route')).toBe('/');
+});
+
+test('a repository dragged up lands before the row it took the place of', async () => {
+    const onMove = vi.fn();
+    await Reordering.run({ args: { ...Reordering.args, onMove } });
+
+    await dragRow('skyline-labs/api', 'kedrzu/skills');
+
+    const target: TrackedTarget = { kind: 'repository', nameWithOwner: 'skyline-labs/api' };
+    const place: SidebarMovePlace = { anchor: { kind: 'repository', nameWithOwner: 'kedrzu/skills' }, side: 'before' };
+    expect(onMove).toHaveBeenCalledExactlyOnceWith(target, place);
+    expect(placeAddresses('Repositories')).toEqual(REPOSITORY_ADDRESSES);
+});
+
+test('a project is not dropped among the repositories', async () => {
+    const onMove = vi.fn();
+    await Reordering.run({ args: { ...Reordering.args, onMove } });
+
+    await dragRow('Docs revamp', 'kedrzu/skills');
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(placeAddresses('Projects')).toEqual([
+        '/orgs/skyline-labs/projects/1',
+        '/orgs/kedrzu/projects/2',
+        '/orgs/skyline-labs/projects/3',
+    ]);
+    expect(placeAddresses('Repositories')).toEqual(REPOSITORY_ADDRESSES);
+});
+
+test('a click on a tracked place, without a drag, goes to it', async () => {
+    const onMove = vi.fn();
+    await Reordering.run({ args: { ...Reordering.args, onMove } });
+
+    await userEvent.click(placeRow('kedrzu/skills'));
+
+    await expect.poll(() => document.querySelector('[data-route]')?.getAttribute('data-route')).toBe('/kedrzu/skills');
+    expect(onMove).not.toHaveBeenCalled();
+});
+
 /** A tracked place's own row, by its name. */
 function placeRow(name: string) {
     return page
@@ -541,4 +603,43 @@ function placeItem(name: string) {
 /** The rows under a tracked place. */
 function subRows(name: string) {
     return page.elementLocator(placeItem(name)).getByRole('list');
+}
+
+/** Where the places under a section's heading go, in the page's order. */
+function placeAddresses(heading: string) {
+    const list = page.getByRole('heading', { name: heading }).element().nextElementSibling;
+    return [...(list?.querySelectorAll(':scope > li') ?? [])].map(item =>
+        item.querySelector('a')?.getAttribute('href'),
+    );
+}
+
+/**
+ * Drags a place's row onto another's, as a mouse does with Sortable's own pointer dragging: a frame between steps, a
+ * pause over the target for Sortable to see it there, and on release the mouse's own `mouseup` (which Sortable drops on)
+ * and the click the browser sends after it.
+ */
+async function dragRow(name: string, onto: string) {
+    const source = placeRow(name).element();
+    const from = source.getBoundingClientRect();
+    const to = placeRow(onto).element().getBoundingClientRect();
+    const x = from.left + from.width / 2;
+    const init = { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 };
+    source.dispatchEvent(new PointerEvent('pointerdown', { ...init, clientX: x, clientY: from.top + from.height / 2 }));
+    for (let step = 1; step <= 10; step++) {
+        const y = from.top + from.height / 2 + ((to.top - from.top) * step) / 10;
+        document.dispatchEvent(new PointerEvent('pointermove', { ...init, clientX: x, clientY: y }));
+        await wait(20);
+    }
+
+    await wait(150);
+    const end = { ...init, clientX: x, clientY: to.top + to.height / 2 };
+    document.dispatchEvent(new PointerEvent('pointerup', end));
+    document.dispatchEvent(new MouseEvent('mouseup', end));
+    source.dispatchEvent(new MouseEvent('click', end));
+}
+
+function wait(ms: number) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }
