@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for Settings' Repositories and Projects (`TrackedListView.vue`, G8, T17): the head counting
- * what is tracked, the owners' groups, each a list named after the owner, and their rows.
+ * Playwright harness for Settings' Repositories and Projects (`TrackedListView.vue`, G8, T17, D44): the head counting
+ * what is tracked, then one flat list in the user's order, each row naming its owner before its name.
  */
 export class TrackedListScreenHarness {
     readonly page: Page;
@@ -23,17 +23,19 @@ export class TrackedListScreenHarness {
         return this.root.getByRole('heading', { level: 2, name: /^No\s\w+\stracked\syet$/u });
     }
 
-    /** The header of an owner's group: its icon, login, standing and counts, and "Track more". */
-    groupHeader(owner: string): Locator {
-        return this.root.getByRole('heading', { level: 3, name: owner, exact: true }).locator('..');
+    /** The list: "Tracked repositories" or "Tracked projects". */
+    get list(): Locator {
+        return this.root.getByRole('list', { name: /^Tracked\s(repositories|projects)$/u });
     }
 
-    /** A row, by its owner's group and its name (a repository's without the owner, a project's title). */
-    row(owner: string, name: string): Locator {
-        return this.root
-            .getByRole('list', { name: owner, exact: true })
-            .getByRole('listitem')
-            .filter({ has: this.page.getByText(name, { exact: true }) });
+    /** Every row, in the order shown. */
+    get rows(): Locator {
+        return this.list.getByRole('listitem');
+    }
+
+    /** A row by its owner and name as shown: a repository's `owner/name`, a project's `owner / title`. */
+    row(title: string): Locator {
+        return this.rows.filter({ has: this.page.getByText(title, { exact: true }) });
     }
 
     /** The row the keys act on. */

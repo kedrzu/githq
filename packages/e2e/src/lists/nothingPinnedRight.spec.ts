@@ -182,12 +182,11 @@ test("a tracked repository's row in Settings keeps its counts right after its na
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     await page.goto('/settings');
     const list = new TrackedListScreenHarness(page);
-    const name = SAMPLE_REPOSITORY.split('/')[1] ?? '';
-    const row = list.row(SAMPLE_VIEWER.viewer.login, name);
+    const row = list.row(SAMPLE_REPOSITORY);
 
     // The name, the badge saying who may see it, then the counts.
     const badge = row.getByText('public', { exact: true });
-    await expectFollows(badge, row.getByText(name, { exact: true }), row, MIN_FROM_SETTINGS_RIGHT_EDGE);
+    await expectFollows(badge, row.getByText(SAMPLE_REPOSITORY, { exact: true }), row, MIN_FROM_SETTINGS_RIGHT_EDGE);
     await expectFollows(row.getByText(/\d+ open/u), badge, row, MIN_FROM_SETTINGS_RIGHT_EDGE);
 });
 
