@@ -11,8 +11,11 @@ import {
     OAUTH_TOKEN_PATH,
 } from '@githq/github/oauth.js';
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
+import { GITHUB_CLIENT_SECRET } from '@githq/secrets/secrets.js';
+import { RuntimeConfig } from '@nzyme/config/RuntimeConfig.js';
 
 import worker from './worker.js';
+import { getWorkerContainer } from './workerContainer.js';
 import type { AnalyticsEngineDataPoint, WorkerEnv } from './WorkerEnv.js';
 
 // GitHub is the system boundary: its token endpoint is a stubbed global `fetch`. Every console call and
@@ -27,12 +30,13 @@ const TOKEN = 'gho_TheAccessToken0123456789';
 const REFRESH_TOKEN = 'ghr_TheRefreshToken0123456789';
 const NEW_TOKEN = 'gho_TheRefreshedAccessToken0123';
 const NEW_REFRESH_TOKEN = 'ghr_TheNewRefreshToken0123456789';
+const CLIENT_SECRET = 'the-client-secret-value';
 /** `e2e-client:the-client-secret-value`, as GitHub's Basic auth wants it. */
-const CLIENT_BASIC_AUTH = `Basic ${btoa('e2e-client:the-client-secret-value')}`;
+const CLIENT_BASIC_AUTH = `Basic ${btoa(`e2e-client:${CLIENT_SECRET}`)}`;
 const ENV: WorkerEnv = {
     ASSETS: { fetch: () => Promise.resolve(new Response('asset')) },
     GITHQ_ENV: 'e2e',
-    GITHUB_CLIENT_SECRET: 'the-client-secret-value',
+    GITHUB_CLIENT_SECRET: CLIENT_SECRET,
 };
 
 let github: Mock<typeof fetch>;
@@ -51,10 +55,10 @@ beforeEach(() => {
 afterEach(() => {
     mock.restore();
     for (const answer of answered) {
-        expect(answer).not.toContain(ENV.GITHUB_CLIENT_SECRET);
+        expect(answer).not.toContain(CLIENT_SECRET);
     }
     for (const line of logged) {
-        expect(line).not.toContain(ENV.GITHUB_CLIENT_SECRET);
+        expect(line).not.toContain(CLIENT_SECRET);
         expect(line).not.toContain(CODE);
         for (const token of [TOKEN, REFRESH_TOKEN, NEW_TOKEN, NEW_REFRESH_TOKEN]) {
             expect(line).not.toContain(token);
@@ -485,6 +489,7 @@ test('without the OAuth App’s credentials the auth endpoints answer 500 not_co
     for (const env of [
         { ASSETS: ENV.ASSETS },
         { ASSETS: ENV.ASSETS, GITHQ_ENV: 'e2e' },
+        { ASSETS: ENV.ASSETS, GITHQ_ENV: 'e2e', GITHUB_CLIENT_SECRET: '' },
         { ASSETS: ENV.ASSETS, GITHUB_CLIENT_SECRET: 'x', GITHQ_ENV: 'unknown' },
     ]) {
         for (const request of [
@@ -500,6 +505,14 @@ test('without the OAuth App’s credentials the auth endpoints answer 500 not_co
         }
     }
     expect(github).not.toHaveBeenCalled();
+});
+
+test('resolves the client secret from the bindings through the Worker’s container, text bindings only', async () => {
+    const container = await getWorkerContainer(ENV);
+
+    expect(container.resolve(GITHUB_CLIENT_SECRET)).toBe(CLIENT_SECRET);
+    expect(Object.keys(container.resolve(RuntimeConfig)).toSorted()).toEqual(['GITHQ_ENV', 'GITHUB_CLIENT_SECRET']);
+    expect(await getWorkerContainer(ENV)).toBe(container);
 });
 
 test('answers an unknown API path with a JSON 404', async () => {

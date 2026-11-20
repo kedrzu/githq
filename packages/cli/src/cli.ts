@@ -7,7 +7,7 @@ import { execute } from '@nzyme/cli-core/execute.js';
 import { definePenCommands } from '@nzyme/pen/definePenCommands.js';
 import { defineSecretsCommands } from '@nzyme/secrets/commands/defineSecretsCommands.js';
 
-import { GithqSecrets } from './secrets/GithqSecrets.js';
+import { GithqSecrets } from './GithqSecrets.js';
 
 await execute({
     name: 'githq',

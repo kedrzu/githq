@@ -1,8 +1,9 @@
 /**
- * The Worker's environment. The OAuth App's client secret is set with `wrangler secret put` in production and comes
- * from the secret store or the repo root `.env` for `wrangler dev`. Optional in the type because a checkout with
- * neither runs without it: the auth endpoints then answer 500 `not_configured` instead of sending a half-built request
- * to GitHub.
+ * The Worker's environment: its bindings. The secrets among them (`GITHUB_CLIENT_SECRET`, declared in
+ * `@githq/secrets`) are not typed here: the Worker resolves them through its container (`workerContainer.ts`). The
+ * OAuth App's client secret is set with `wrangler secret put` in production and comes from the secret store or the
+ * repo root `.env` for `wrangler dev`. A checkout with neither runs without it: the auth endpoints then answer 500
+ * `not_configured` instead of sending a half-built request to GitHub.
  */
 export interface WorkerEnv {
     /**
@@ -18,8 +19,8 @@ export interface WorkerEnv {
     USAGE?: { writeDataPoint(dataPoint: AnalyticsEngineDataPoint): void };
     /** Which OAuth App this is: `prod`, `dev` or `e2e` (`getOAuthClientId`). */
     GITHQ_ENV?: string;
-    /** Secret: used only in the Worker's own requests to GitHub (the token exchange and revocation), never in a response or log. */
-    GITHUB_CLIENT_SECRET?: string;
+    /** The other bindings, the secrets among them, read only through the Worker's container. */
+    readonly [binding: string]: unknown;
 }
 
 /** One row written to Workers Analytics Engine; the subset of Cloudflare's type the Worker writes. */

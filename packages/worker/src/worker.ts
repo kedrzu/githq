@@ -11,6 +11,7 @@ import { isDocsPath, serveDocs } from './docs.js';
 import { DOWNLOAD_PREFIX, serveDownload } from './download.js';
 import { LANDING_PATH, serveHome, serveLanding } from './home.js';
 import { isMediaPath, serveMedia } from './media.js';
+import { getWorkerContainer } from './workerContainer.js';
 import type { WorkerEnv } from './WorkerEnv.js';
 
 /**
@@ -42,13 +43,13 @@ export default {
             case LANDING_PATH:
                 return await serveLanding(request, env);
             case OAUTH_AUTHORIZE_PATH:
-                return authorize(request, env);
+                return authorize(request, env, await getWorkerContainer(env));
             case OAUTH_TOKEN_PATH:
-                return await exchangeToken(request, env);
+                return await exchangeToken(request, env, await getWorkerContainer(env));
             case OAUTH_REFRESH_PATH:
-                return await refreshAccessToken(request, env);
+                return await refreshAccessToken(request, env, await getWorkerContainer(env));
             case OAUTH_REVOKE_PATH:
-                return await revokeToken(request, env);
+                return await revokeToken(request, env, await getWorkerContainer(env));
             case OAUTH_APPROVAL_PATH:
                 return openApproval(request, env);
             default:

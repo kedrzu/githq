@@ -1,6 +1,8 @@
 /**
- * Every secret githq uses, for `bun secrets …`. `GITHQ_ENV` (`dev` by default, `prod`, `stats`) picks the
- * store's prefix (`GithqSecrets`) and which secrets apply. How to use them: the `secrets` skill.
+ * Every secret githq uses. Code resolves them through the container (a script after `loadGithqConfig`, the Worker
+ * from its bindings), never from `process.env`. `GITHQ_ENV` (`githqEnv.ts`: `dev` by default, `prod`, `stats`) picks
+ * the store's prefix (`GithqSecretStore`) and which secrets apply. Nothing but declarations lives here, so the Worker
+ * bundle that imports this module pulls no store code. How to use them: the `secrets` skill.
  */
 import type { EnvVariables } from '@nzyme/ioc/helpers/EnvVariables.js';
 import { defineSecret } from '@nzyme/secrets/defineSecret.js';

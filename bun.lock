@@ -1069,7 +1069,7 @@
         "githq": "src/cli.ts",
       },
       "dependencies": {
-        "@nzyme/bitwarden": "workspace:*",
+        "@githq/secrets": "workspace:*",
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/ioc": "workspace:*",
         "@nzyme/pen": "workspace:*",
@@ -1137,10 +1137,26 @@
         "oxfmt": "0.77.0",
       },
     },
+    "packages/secrets": {
+      "name": "@githq/secrets",
+      "dependencies": {
+        "@nzyme/bitwarden": "workspace:*",
+        "@nzyme/config": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/secrets": "workspace:*",
+      },
+      "devDependencies": {
+        "@nzyme/tsconfig": "workspace:*",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+      },
+    },
     "packages/worker": {
       "name": "@githq/worker",
       "dependencies": {
         "@githq/github": "workspace:*",
+        "@githq/secrets": "workspace:*",
+        "@nzyme/config": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
       },
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
@@ -1671,6 +1687,8 @@
     "@githq/e2e": ["@githq/e2e@workspace:packages/e2e"],
 
     "@githq/github": ["@githq/github@workspace:packages/github"],
+
+    "@githq/secrets": ["@githq/secrets@workspace:packages/secrets"],
 
     "@githq/worker": ["@githq/worker@workspace:packages/worker"],
 

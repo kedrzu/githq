@@ -12,7 +12,7 @@
         "./*.js": "./src/*.ts"
     },
     "dependencies": {
-        "@nzyme/bitwarden": "workspace:*",
+        "@githq/secrets": "workspace:*",
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/ioc": "workspace:*",
         "@nzyme/pen": "workspace:*",

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs a development command with the secrets declared in `packages/cli/src/secrets/secrets.ts`, or without them
+# Runs a development command with the secrets declared in `packages/secrets/src/secrets.ts`, or without them
 # when this machine cannot read the store or a secret is missing there: someone with no Bitwarden access still gets
 # `bun run dev`, signing in with the dev-only token form. A name already set in the environment wins over the store.
 if ! listed=$(bun githq secrets list 2>&1); then

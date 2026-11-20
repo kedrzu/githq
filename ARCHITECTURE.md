@@ -22,7 +22,8 @@ githq is a fast, keyboard-first client for GitHub Issues, Projects, pull request
 |`@githq/docs`|`packages/docs`|The documentation site (VitePress), served at githq.dev/docs from the web builds.|
 |`@githq/desktop`|`packages/desktop`|The Tauri shell around the app's desktop build, and its native commands.|
 |`@githq/e2e`|`packages/e2e`|Playwright tests of the built app against a mocked GitHub, and the screen harnesses.|
-|`@githq/cli`|`packages/cli`|The `githq` CLI, `bun githq …`: the `secrets` commands with the declared secrets, and the `pen` commands.|
+|`@githq/secrets`|`packages/secrets`|Every secret's declaration, the Bitwarden store they live in, and the loader that puts them in a script's container.|
+|`@githq/cli`|`packages/cli`|The `githq` CLI, `bun githq …`: the `secrets` commands over `@githq/secrets`, and the `pen` commands.|
 
 ## App and UI
 
@@ -39,7 +40,7 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **GitHub:** `packages/github` holds the client. Users' tokens come from the sign-in and stay on their device.
 - **GitHub OAuth Apps:** `githq` in production and `githq (dev)` in development. `GITHQ_ENV` (`prod`, `dev`, or `e2e` for the tests' dummy) picks one. Client IDs are public, in `packages/github/src/oauthClientIds.json`; the Worker, the desktop build and its native side all read that file. Client secrets are in the secret store, and production's is also a Worker secret.
 - **Cloudflare:** Workers and static assets; `packages/worker/wrangler.jsonc`.
-- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets and the desktop updater's signing key, read through `@nzyme/secrets` (`secrets` skill). Declarations and provider: `packages/cli/src/secrets/`.
+- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets and the desktop updater's signing key, read through `@nzyme/secrets` (`secrets` skill). Declarations, store and loader: `packages/secrets`. Code resolves a secret through an IoC container: a Bun script loads it from the store (`loadGithqConfig`), the Worker from its bindings (`packages/worker/src/workerContainer.ts`); only external tools (wrangler, Tauri, CI steps) get it as an environment variable.
 
 ## Tooling and workflow
 
