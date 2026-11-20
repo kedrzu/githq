@@ -19,7 +19,7 @@ API: `nzyme/packages/secrets/README.md`; the store's setup:
   `packages/secrets/src/secrets.ts`. Nothing else lives in that module: the Worker bundles it.
 - The store, with the project id and the prefix: `packages/secrets/src/GithqSecretStore.ts`; `GITHQ_ENV` in
   `packages/secrets/src/githqEnv.ts`.
-- The loader a Bun script calls: `packages/secrets/src/loadGithqConfig.ts`.
+- The loader a Bun script calls: `loadSecretsConfig` from `@nzyme/secrets`, given `GithqSecretStore`.
 - The commands: the `githq` CLI, `packages/cli/src/cli.ts` (`bun githq …`), its provider `packages/cli/src/GithqSecrets.ts`.
 - The fallback wrapper: `scripts/withSecrets.sh`.
 
@@ -51,7 +51,7 @@ The usage statistics token, `CLOUDFLARE_ANALYTICS_TOKEN`, has an environment of 
 Code resolves a secret through the container, never from `process.env` or `env`: `container.resolve(SECRET)` with
 the declaration from `@githq/secrets/secrets.js`.
 
-- A Bun script creates a container and calls `await loadGithqConfig(container)` (an environment variable wins over the
+- A Bun script creates a container and calls `await loadSecretsConfig(container, [container.resolve(GithqSecretStore)])` (an environment variable wins over the
   store; with `CI` set the store is not read). It needs no `bun secrets run` wrapper: `packages/worker/scripts/stats.ts`.
 - The Worker builds its container from its bindings (`packages/worker/src/workerContainer.ts`) and resolves
   `GITHUB_CLIENT_SECRET` with `resolveOptionalSecret`, since it runs without it.
