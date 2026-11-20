@@ -422,3 +422,17 @@ deleted. `Button / medium` (`TH5d7`), `Button / medium · primary` (`t0PlX5`), `
 - Not changed: Update / Status bar (`SoI9D`)'s Restart and Later (`cgBnL`, `ttyBv`) stay text actions inside the
   status bar segment (16 px), which doesn't grow for a button. Toggles, segmented controls, links (Edit, Change), Diff / File
   header's Viewed toggle and the sidebar rail are outside the guideline.
+
+## Round 3 · implementation
+
+Forced by: the final compliance check of the built code against the design (`.context/button-system-brief-3.md`).
+Code review's selection bar draws Mark viewed `secondary` in `packages/app/review/ReviewFileList.vue`: the review's one
+accent action is Submit review.
+
+- [ ] Review / Selection bar (`YiQJ9`), its only instance `JCimW` in Review / File list (`SgpvP`), shown by CR23 · Ten
+  files selected: Mark viewed `Wih4M` (`Button / sm · primary`) → `F83zG` (`Button / sm`, the secondary base),
+  "Mark viewed" with V. No overrides pointed into the old node.
+- Not changed: the file notes' buttons are already `Button / md` with no size overrides, as `ReviewDiffRow.vue`: Open
+  on GitHub in Diff / File note · binary (`aPT6Y`, and through it `· too large` `PslUs` and `· renamed` `NGjwk`), CR67's
+  failed note (`apjNE`: Try again `vSTqP`, Open on GitHub `qyXYL`) and CR68's waiting-for-allowance notes (`eGdOD`,
+  `xId51`).
