@@ -1,5 +1,5 @@
 /**
- * Every secret githq uses, for `bun githq secrets …`. `GITHQ_ENV` (`dev` by default, `prod`, `stats`) picks the
+ * Every secret githq uses, for `bun secrets …`. `GITHQ_ENV` (`dev` by default, `prod`, `stats`) picks the
  * store's prefix (`GithqSecrets`) and which secrets apply. How to use them: the `secrets` skill.
  */
 import type { EnvVariables } from '@nzyme/ioc/helpers/EnvVariables.js';
