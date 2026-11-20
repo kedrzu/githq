@@ -24,7 +24,7 @@
     },
     "nzyme/packages/apis": {
       "name": "@nzyme/apis",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/fetch-utils": "workspace:*",
         "@nzyme/types": "workspace:*",
@@ -37,7 +37,7 @@
     },
     "nzyme/packages/aws": {
       "name": "@nzyme/aws",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@aws-sdk/client-cloudfront": "^3.1161.0",
         "@aws-sdk/client-dynamodb": "^3.1152.0",
@@ -66,7 +66,7 @@
     },
     "nzyme/packages/bitwarden": {
       "name": "@nzyme/bitwarden",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/openapi": "workspace:*",
         "@nzyme/secrets": "workspace:*",
@@ -81,7 +81,7 @@
     },
     "nzyme/packages/cli": {
       "name": "@nzyme/cli",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "bin": {
         "nzyme": "bin/cli.js",
       },
@@ -114,7 +114,7 @@
     },
     "nzyme/packages/cli-core": {
       "name": "@nzyme/cli-core",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
         "@nzyme/logging": "workspace:*",
@@ -133,7 +133,7 @@
     },
     "nzyme/packages/config": {
       "name": "@nzyme/config",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
         "@nzyme/logging": "workspace:*",
@@ -150,7 +150,7 @@
     },
     "nzyme/packages/crypto": {
       "name": "@nzyme/crypto",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/types": "workspace:*",
         "spark-md5": "^3.0.2",
@@ -165,7 +165,7 @@
     },
     "nzyme/packages/discord-cli": {
       "name": "@nzyme/discord-cli",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/openapi-cli": "workspace:*",
@@ -183,7 +183,7 @@
     },
     "nzyme/packages/dom-utils": {
       "name": "@nzyme/dom-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/crypto": "workspace:*",
         "@nzyme/types": "workspace:*",
@@ -200,7 +200,7 @@
     },
     "nzyme/packages/eslint": {
       "name": "@nzyme/eslint",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@eslint/markdown": "^8.0.3",
         "@nzyme/oxlint": "workspace:*",
@@ -230,7 +230,7 @@
     },
     "nzyme/packages/esm": {
       "name": "@nzyme/esm",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
         "@types/node": "26.6.6",
@@ -240,7 +240,7 @@
     },
     "nzyme/packages/fetch-utils": {
       "name": "@nzyme/fetch-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/types": "workspace:*",
         "@nzyme/xml-utils": "workspace:*",
@@ -256,7 +256,7 @@
     },
     "nzyme/packages/github-cli": {
       "name": "@nzyme/github-cli",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/logging": "workspace:*",
@@ -276,7 +276,7 @@
     },
     "nzyme/packages/i18n": {
       "name": "@nzyme/i18n",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/i18n-core": "workspace:*",
         "@nzyme/ioc": "workspace:*",
@@ -290,7 +290,7 @@
     },
     "nzyme/packages/i18n-compiler": {
       "name": "@nzyme/i18n-compiler",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/i18n-core": "workspace:*",
         "@nzyme/project-utils": "workspace:*",
@@ -309,7 +309,7 @@
     },
     "nzyme/packages/i18n-core": {
       "name": "@nzyme/i18n-core",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
       },
@@ -321,7 +321,7 @@
     },
     "nzyme/packages/ioc": {
       "name": "@nzyme/ioc",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/types": "workspace:*",
         "@nzyme/utils": "workspace:*",
@@ -337,7 +337,7 @@
     },
     "nzyme/packages/ioc-testing": {
       "name": "@nzyme/ioc-testing",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
         "@nzyme/logging": "workspace:*",
@@ -351,7 +351,7 @@
     },
     "nzyme/packages/linear": {
       "name": "@nzyme/linear",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@linear/sdk": "101.1.0",
         "@nzyme/cli-core": "workspace:*",
@@ -374,7 +374,7 @@
     },
     "nzyme/packages/logging": {
       "name": "@nzyme/logging",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
         "@nzyme/types": "workspace:*",
@@ -418,7 +418,7 @@
     },
     "nzyme/packages/markdown": {
       "name": "@nzyme/markdown",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
         "@typescript/native-preview": "^7.0.0-dev.20260707.2",
@@ -427,7 +427,7 @@
     },
     "nzyme/packages/money": {
       "name": "@nzyme/money",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
         "@types/bun": "^1.4.4",
@@ -437,7 +437,7 @@
     },
     "nzyme/packages/node-utils": {
       "name": "@nzyme/node-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
         "@types/node": "26.6.6",
@@ -447,7 +447,7 @@
     },
     "nzyme/packages/nuxt-tools": {
       "name": "@nzyme/nuxt-tools",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@types/fs-extra": "^11.0.4",
         "@types/mime-types": "^3.0.1",
@@ -468,7 +468,7 @@
     },
     "nzyme/packages/openapi": {
       "name": "@nzyme/openapi",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/fetch-utils": "workspace:*",
         "@nzyme/types": "workspace:*",
@@ -486,7 +486,7 @@
     },
     "nzyme/packages/openapi-cli": {
       "name": "@nzyme/openapi-cli",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/utils": "workspace:*",
@@ -503,7 +503,7 @@
     },
     "nzyme/packages/oxlint": {
       "name": "@nzyme/oxlint",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
         "@types/bun": "^1.4.4",
@@ -514,7 +514,7 @@
     },
     "nzyme/packages/pen": {
       "name": "@nzyme/pen",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/project-utils": "workspace:*",
@@ -530,7 +530,7 @@
     },
     "nzyme/packages/project-utils": {
       "name": "@nzyme/project-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@manypkg/find-root": "^3.1.0",
         "@nzyme/logging": "workspace:*",
@@ -553,7 +553,7 @@
     },
     "nzyme/packages/pulumi": {
       "name": "@nzyme/pulumi",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.1152.0",
         "@aws-sdk/credential-provider-node": "^3.972.86",
@@ -599,7 +599,7 @@
     },
     "nzyme/packages/rollup-utils": {
       "name": "@nzyme/rollup-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/esm": "workspace:*",
         "@nzyme/utils": "workspace:*",
@@ -640,7 +640,7 @@
     },
     "nzyme/packages/rpc": {
       "name": "@nzyme/rpc",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/crypto": "workspace:*",
         "@nzyme/fetch-utils": "workspace:*",
@@ -661,7 +661,7 @@
     },
     "nzyme/packages/secrets": {
       "name": "@nzyme/secrets",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/config": "workspace:*",
@@ -682,7 +682,7 @@
     },
     "nzyme/packages/sentry-cli": {
       "name": "@nzyme/sentry-cli",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/cli-core": "workspace:*",
         "@nzyme/github-cli": "workspace:*",
@@ -700,7 +700,7 @@
     },
     "nzyme/packages/slack": {
       "name": "@nzyme/slack",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/utils": "workspace:*",
         "@slack/types": "^3.2.0",
@@ -714,7 +714,7 @@
     },
     "nzyme/packages/stealth-browser": {
       "name": "@nzyme/stealth-browser",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "bin": {
         "stealth-browser": "bin/stealth-browser.js",
       },
@@ -733,7 +733,7 @@
     },
     "nzyme/packages/tsconfig": {
       "name": "@nzyme/tsconfig",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "typescript-plugin-css-modules": "^5.2.0",
         "typescript-vue-plugin": "^1.8.27",
@@ -751,7 +751,7 @@
     },
     "nzyme/packages/types": {
       "name": "@nzyme/types",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@standard-schema/spec": "^1.1.0",
         "type-fest": "^5.10.0",
@@ -764,7 +764,7 @@
     },
     "nzyme/packages/typography": {
       "name": "@nzyme/typography",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@types/mdast": "^4.0.4",
         "mdast-util-newline-to-break": "^2.0.0",
@@ -783,7 +783,7 @@
     },
     "nzyme/packages/utils": {
       "name": "@nzyme/utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/types": "workspace:*",
         "date-fns": "^4.4.0",
@@ -800,7 +800,7 @@
     },
     "nzyme/packages/validation": {
       "name": "@nzyme/validation",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/i18n": "workspace:*",
         "@nzyme/i18n-core": "workspace:*",
@@ -818,7 +818,7 @@
     },
     "nzyme/packages/vitest": {
       "name": "@nzyme/vitest",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "date-fns": "^4.4.0",
       },
@@ -836,7 +836,7 @@
     },
     "nzyme/packages/vue": {
       "name": "@nzyme/vue",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/dom-utils": "workspace:*",
         "@nzyme/ioc": "workspace:*",
@@ -870,7 +870,7 @@
     },
     "nzyme/packages/vue-forms": {
       "name": "@nzyme/vue-forms",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/dom-utils": "workspace:*",
         "@nzyme/i18n": "workspace:*",
@@ -911,7 +911,7 @@
     },
     "nzyme/packages/vue-i18n": {
       "name": "@nzyme/vue-i18n",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/i18n": "workspace:*",
         "@nzyme/i18n-core": "workspace:*",
@@ -932,7 +932,7 @@
     },
     "nzyme/packages/vue-ioc": {
       "name": "@nzyme/vue-ioc",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/ioc": "workspace:*",
         "@nzyme/logging": "workspace:*",
@@ -950,7 +950,7 @@
     },
     "nzyme/packages/vue-transitions": {
       "name": "@nzyme/vue-transitions",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/types": "workspace:*",
         "@nzyme/vue-utils": "workspace:*",
@@ -969,7 +969,7 @@
     },
     "nzyme/packages/vue-utils": {
       "name": "@nzyme/vue-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@nzyme/dom-utils": "workspace:*",
         "@nzyme/types": "workspace:*",
@@ -991,7 +991,7 @@
     },
     "nzyme/packages/xml-utils": {
       "name": "@nzyme/xml-utils",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "fast-xml-parser": "^5.11.2",
       },
