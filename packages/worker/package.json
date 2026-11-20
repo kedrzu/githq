@@ -22,7 +22,8 @@
         "@githq/github": "workspace:*",
         "@githq/secrets": "workspace:*",
         "@nzyme/config": "workspace:*",
-        "@nzyme/ioc": "workspace:*"
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/secrets": "workspace:*"
     },
     "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",
