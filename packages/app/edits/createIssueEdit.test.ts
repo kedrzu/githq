@@ -22,7 +22,7 @@ import { ItemEditor } from './ItemEditor.js';
 
 const CREATED = '2026-10-30T13:00:00Z';
 
-test('a new issue shows at once — in "my work" when assigned to the user — and GitHub’s issue takes its place', async () => {
+test('a new issue shows at once — in "my work" when assigned to the user — and GitHub’s issue takes its place, drawn under the first id', async () => {
     const { editor, items, overlay, github, session, login } = await setup();
     const held = createPromise();
     session.github.hold = held.promise;
@@ -45,6 +45,8 @@ test('a new issue shows at once — in "my work" when assigned to the user — a
     expect(items.all.filter(item => item.title === 'Reminders skip DST').map(item => item.id)).toEqual(['I_new']);
     expect(items.membership.assigned?.has('I_new')).toBe(true);
     expect(overlay.getConfirmedId(pending?.id ?? '')).toBe('I_new');
+    expect(overlay.getFirstId('I_new')).toBe(pending?.id ?? '');
+    expect(overlay.getFirstId('I_other')).toBe('I_other');
     expect(github.created()).toEqual([
         expect.objectContaining({
             repositoryId: 'R_web',
