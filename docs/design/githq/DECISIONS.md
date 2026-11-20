@@ -970,15 +970,16 @@ mark on the left edge of a code thread's current comment, drawn in round 1.
 ### D44
 
 **The user orders their tracked projects and repositories by dragging, and Settings lists them in that order.** (owner,
-2026-11-19.) Drawn in `githq.pen`, App · Settings: T26, T27, G8, T17; the design log is `changelog/reorder-tracked.md`.
+2026-11-19.) Drawn in `githq.pen`, App · Settings: G8, T17, T20, and the docs figures DOC2, DOC4; the design log is `changelog/reorder-tracked.md`.
 
 - **In the sidebar,** expanded on a computer, a project is dragged among the projects and a repository among the
-  repositories, never across. A 2 px accent line shows where it lands; its old place dims while it is dragged. The rail
-  and a phone don't reorder.
+  repositories, never across. The row itself moves with the pointer and the others make room, live, as in a sortable
+  list; nothing marks a drop place, so dragging is not drawn. The rail and a phone don't reorder.
 - **In Settings,** Repositories (G8) and Projects (T17) are one flat list each, in the sidebar's order, not grouped by
   owner: the owner stands in grey before the name. A row is dragged as in the sidebar, or the selected one moved with
   ⌥↑ ⌥↓. The owner headers go, with their "Track more" and "N of M tracked"; the list's "Track repositories" stays. A
-  phone shows the flat list without reordering.
+  phone shows the flat list without reordering. Settings has no owner filter; the pickers (T18, T22) keep theirs and
+  stay grouped by owner, as they list what can be tracked, not the user's order.
 - **One order everywhere.** It is the settings file's order, so it reaches the other tabs and devices, and it is D12's
   precedence. A reorder on this device survives a sync unless the file was reordered meanwhile, when the file's wins
   (settings-sync D11).
@@ -986,7 +987,8 @@ mark on the left edge of a code thread's current comment, drawn in round 1.
 **Why.** "In the user's order" meant the order things were tracked in, with no way to change it; the sidebar is where
 the order is seen, so that is where it is set. Grouping Settings by owner would show a second order beside it.
 
-**Rejected.** Keyboard reordering in the sidebar (the owner: the mouse is enough there; Settings has the keys). A
+**Rejected.** A drop line between rows with the dragged row's place dimmed (round 1, T26 and T27): the owner wants the
+row to move live. Keyboard reordering in the sidebar (the owner: the mouse is enough there; Settings has the keys). A
 separate "order" block in Settings beside the owner groups: two lists of the same things.
 
 ## Open questions
