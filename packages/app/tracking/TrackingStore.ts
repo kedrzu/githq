@@ -243,6 +243,7 @@ export const TrackingStore = defineService({
             markChosen,
             track,
             untrack,
+            move,
             replaceDocument,
             setWorkflowSettings,
             setAnimations,
@@ -337,6 +338,42 @@ export const TrackingStore = defineService({
                 const kept = projects.filter(project => project.id !== target.id);
                 return kept.length === projects.length ? null : { repositories, projects: kept };
             });
+        }
+
+        /**
+         * Puts the repository or project right before or after `place.anchor`, the other of the same kind, in the
+         * settings document's order — the order the sidebar and Settings show. Entries not shown (untracked ones)
+         * keep their places relative to each other, and every entry is moved as it is. Nothing when the kinds differ,
+         * either is not in the document or it already stands there.
+         */
+        function move(target: TrackedTarget, place: { anchor: TrackedTarget; side: 'before' | 'after' }) {
+            const written = write(kept => {
+                const { anchor, side } = place;
+                if (target.kind === 'repository' && anchor.kind === 'repository') {
+                    const repositories = moveEntry(
+                        kept.document.repositories,
+                        target.nameWithOwner,
+                        { anchor: anchor.nameWithOwner, side },
+                        repository => repository.nameWithOwner,
+                    );
+                    return repositories && { ...kept, document: { ...kept.document, repositories } };
+                }
+
+                if (target.kind === 'project' && anchor.kind === 'project') {
+                    const projects = moveEntry(
+                        kept.document.projects,
+                        target.id,
+                        { anchor: anchor.id, side },
+                        project => project.id,
+                    );
+                    return projects && { ...kept, document: { ...kept.document, projects } };
+                }
+
+                return null;
+            });
+            if (written) {
+                changedHere();
+            }
         }
 
         /**
@@ -1123,6 +1160,32 @@ function applyEntries<T extends SettingsRepository | SettingsProject>(
     }
 
     return next;
+}
+
+/**
+ * `entries` with the one keyed `key` moved right before or after the one keyed `place.anchor`, as the same object;
+ * `null` when either is missing or the order stays.
+ */
+function moveEntry<T>(
+    entries: readonly T[],
+    key: string,
+    place: { anchor: string; side: 'before' | 'after' },
+    keyOf: (entry: T) => string,
+): T[] | null {
+    const entry = entries.find(other => keyOf(other) === key);
+    if (!entry || key === place.anchor) {
+        return null;
+    }
+
+    const rest = entries.filter(other => other !== entry);
+    const anchorIndex = rest.findIndex(other => keyOf(other) === place.anchor);
+    if (anchorIndex < 0) {
+        return null;
+    }
+
+    const next = [...rest];
+    next.splice(place.side === 'before' ? anchorIndex : anchorIndex + 1, 0, entry);
+    return next.every((other, index) => other === entries[index]) ? null : next;
 }
 
 /** A page of repositories as offered: without the user's settings repository, counted without it too. */
