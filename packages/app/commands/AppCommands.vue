@@ -505,8 +505,7 @@ function navigate(result: NavigationResult) {
     :subject="registry.subject"
     :repository="contextRepository"
     :navigation="navigationData"
-    :start-command-id="registry.menu?.commandId ?? null"
-    :parts="registry.menu?.parts ?? null"
+    :request="registry.menu"
     @navigate="navigate"
   />
   <KeyHelp

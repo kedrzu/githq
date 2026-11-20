@@ -323,7 +323,7 @@ interface Standing {
             </div>
             <Button
               v-if="canRun"
-              variant="outline"
+              variant="secondary"
               size="sm"
               :icon="Play"
               @click="emit('runWorkflow')"

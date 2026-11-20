@@ -17,6 +17,13 @@ test('the default first, then the others', () => {
     ]);
 });
 
+test('the resolved address first when it isn’t GitHub’s default, then the default, then the rest (PM48)', () => {
+    const params = { settings: EMAILS, method: 'MERGE', pr: PR, viewerLogin: 'someone' } as const;
+    expect(getCommitEmails({ ...params, resolved: 'c@x.dev' })).toEqual(['c@x.dev', 'a@x.dev', 'b@x.dev']);
+    expect(getCommitEmails({ ...params, resolved: 'a@x.dev' })).toEqual(['a@x.dev', 'b@x.dev', 'c@x.dev']);
+    expect(getCommitEmails({ ...params, resolved: 'gone@x.dev' })).toEqual(['a@x.dev', 'b@x.dev', 'c@x.dev']);
+});
+
 test('a squash only for the pull request’s author; a merge commit for anyone (D4)', () => {
     expect(getCommitEmails({ settings: EMAILS, method: 'SQUASH', pr: PR, viewerLogin: AUTHOR })).not.toBeNull();
     expect(getCommitEmails({ settings: EMAILS, method: 'SQUASH', pr: PR, viewerLogin: 'someone' })).toBeNull();

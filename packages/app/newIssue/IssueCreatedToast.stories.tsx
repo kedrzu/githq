@@ -64,7 +64,7 @@ export const NumberOnItsWay: Story = {};
 /** Mobile D44 (MB204): GitHub gave its number. */
 export const Numbered: Story = { args: { number: 1211 } };
 
-/** Mobile D44: on a phone, above the command line, its buttons a finger's height. */
+/** Mobile D44: on a phone, above the command line, its buttons `md`. */
 export const OnPhone: Story = {
     args: { number: 1211, phone: true },
     decorators: [withPhoneLayout(true)],

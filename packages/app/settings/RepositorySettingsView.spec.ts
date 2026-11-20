@@ -331,6 +331,22 @@ test('W12: Enter edits a pattern in place, with the same preview naming what sto
     expect(onWorkflowSettings).toHaveBeenCalledExactlyOnceWith({ defaultBranch: true, refs: ['v*.*.*'] });
 });
 
+test("Commit email sits between Tracking and Workflow alerts; a pick asks for the owner's default by the owner's login", async () => {
+    const onOwnerCommitEmail = vi.fn();
+    await Synced.run({ args: { ...Synced.args, onOwnerCommitEmail } });
+
+    const headings = page
+        .getByRole('heading', { level: 2 })
+        .elements()
+        .map(heading => heading.textContent?.trim());
+    expect(headings).toEqual(['fitloop/webapp', 'Tracking', 'Commit email', 'Workflow alerts']);
+    await expect.element(page.getByText(/commits\sas\smichal@fitloop\.dev/u)).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: /^For\sall\sof\sfitloop/u }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: /^GitHub default/u }));
+    expect(onOwnerCommitEmail).toHaveBeenCalledExactlyOnceWith('fitloop', null);
+});
+
 test('MB152: on a phone the head says how it stands, and Stop tracking says what it deletes before it untracks', async () => {
     await page.viewport(390, 844);
     const onUntrack = vi.fn();

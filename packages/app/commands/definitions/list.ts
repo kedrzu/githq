@@ -175,6 +175,22 @@ export const remove = defineAppCommand({
     configurable: false,
 });
 
+/** Moves the selected tracked repository or project one place up in the user's order (D44), before the row above. */
+export const moveUp = defineAppCommand({
+    id: 'moveUp',
+    title: l.moveUp,
+    key: 'Alt+ArrowUp',
+    places: ['trackedList'],
+});
+
+/** Moves the selected tracked repository or project one place down in the user's order (D44), after the row below. */
+export const moveDown = defineAppCommand({
+    id: 'moveDown',
+    title: l.moveDown,
+    key: 'Alt+ArrowDown',
+    places: ['trackedList'],
+});
+
 /** Switches the selected row's switch, as Space on the switch itself does (the default branch's workflow alerts). */
 export const toggleRow = defineAppCommand({
     id: 'toggleRow',

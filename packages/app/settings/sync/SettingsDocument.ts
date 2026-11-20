@@ -41,6 +41,12 @@ export interface SettingsDocument {
      */
     readonly refSort?: unknown;
     /**
+     * The address each owner's merges commit with by default, an object of owner login to address, as written in the
+     * file: an owner absent from it takes GitHub's default, a value not understood is kept until the user changes that
+     * owner's choice, so read it with {@link readOwnerCommitEmail} and write it with {@link writeOwnerCommitEmail}.
+     */
+    readonly commitEmails?: unknown;
+    /**
      * The maximum width of the full-screen item page's box, as written in the file: a value not understood is kept
      * until the user changes it, so read it with {@link readMaxWidth}.
      */
@@ -176,6 +182,7 @@ export function serializeSettings(document: SettingsDocument): string {
         projects,
         reviewCommentChoice,
         refSort,
+        commitEmails,
         itemPageWidth,
         reviewDiffWidth,
         workflowRuns,
@@ -202,6 +209,7 @@ export function serializeSettings(document: SettingsDocument): string {
         })),
         reviewCommentChoice,
         refSort,
+        commitEmails,
         itemPageWidth,
         reviewDiffWidth,
         workflowRuns,
@@ -342,6 +350,96 @@ export function writeRefSort(params: WriteRefSortParams): SettingsDocument | nul
 }
 
 /**
+ * The address the owner's merges commit with by default; `null` for GitHub's default — the owner absent, or a value
+ * not understood (a newer build's), which stays in the file until the user changes it. Owners compare without regard
+ * to case, as GitHub's logins do.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readOwnerCommitEmail(document: SettingsDocument, owner: string): string | null {
+    const emails = isPlainObject(document.commitEmails) ? document.commitEmails : {};
+    const key = Object.keys(emails).find(other => isSameLogin(other, owner));
+    const email = key === undefined ? undefined : emails[key];
+    return typeof email === 'string' && email !== '' ? email : null;
+}
+
+/** What {@link writeOwnerCommitEmail} writes. */
+export interface WriteOwnerCommitEmailParams {
+    readonly document: SettingsDocument;
+    /** The owner's login, in the spelling to write (the part of `nameWithOwner` before the `/`). */
+    readonly owner: string;
+    /** The address, `null` for GitHub's default, which removes the owner's key. */
+    readonly email: string | null;
+}
+
+/**
+ * The document with the owner's default commit email set — over the other owners' keys and a newer build's, which
+ * stay (D13); a key of the owner in another case is replaced. Choosing GitHub's default removes the key, and the map
+ * with it once empty, so a file that never had a choice stays as it was. `null` when the owner reads as that already,
+ * so a value not understood stays until the user picks another.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function writeOwnerCommitEmail(params: WriteOwnerCommitEmailParams): SettingsDocument | null {
+    const { document, owner, email } = params;
+    if (readOwnerCommitEmail(document, owner) === email) {
+        return null;
+    }
+
+    const previous = isPlainObject(document.commitEmails) ? document.commitEmails : {};
+    const others = Object.entries(previous).filter(([key]) => !isSameLogin(key, owner));
+    const entries = email === null ? others : [...others, [owner, email]];
+    if (entries.length > 0) {
+        return { ...document, commitEmails: Object.fromEntries(entries) };
+    }
+
+    const { commitEmails: _removed, ...rest } = document;
+    return rest;
+}
+
+/**
+ * The address the repository's merges commit with, tri-state: `undefined` to inherit the owner's choice (the entry has
+ * none, or a value not understood, which stays in the file), `null` for GitHub's default chosen for this repository,
+ * a string for that address.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readRepositoryCommitEmail(repository: SettingsRepository | undefined): string | null | undefined {
+    const email = repository?.commitEmail;
+    if (email === null) {
+        return null;
+    }
+
+    return typeof email === 'string' && email !== '' ? email : undefined;
+}
+
+/** What {@link writeRepositoryCommitEmail} writes where. */
+export interface WriteRepositoryCommitEmailParams {
+    readonly document: SettingsDocument;
+    /** The repository whose entry takes it. */
+    readonly nameWithOwner: string;
+    /** `undefined` inherits the owner's choice and removes the key, `null` is GitHub's default, a string that address. */
+    readonly email: string | null | undefined;
+}
+
+/**
+ * The document with the repository's `commitEmail` set; `null` when it has no entry of the repository or reads as that
+ * choice already, so a value not understood stays until the user changes the choice.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function writeRepositoryCommitEmail(params: WriteRepositoryCommitEmailParams): SettingsDocument | null {
+    const { document, nameWithOwner, email } = params;
+    const repository = document.repositories.find(entry => entry.nameWithOwner === nameWithOwner);
+    if (!repository || readRepositoryCommitEmail(repository) === email) {
+        return null;
+    }
+
+    const { commitEmail: _removed, ...rest } = repository;
+    const written = email === undefined ? rest : { ...repository, commitEmail: email };
+    return {
+        ...document,
+        repositories: document.repositories.map(entry => (entry === repository ? written : entry)),
+    };
+}
+
+/**
  * A maximum width as written in the file: a positive whole number of pixels or `'full'`; `null` for absent or not
  * understood (`0`, a negative or fractional number, another string), so the view falls back to its default.
  * @__NO_SIDE_EFFECTS__
@@ -388,6 +486,10 @@ export function writeWorkflowRunsGroupBy(
 
     const previous = isPlainObject(document.workflowRuns) ? document.workflowRuns : {};
     return { ...document, workflowRuns: { ...previous, groupBy } };
+}
+
+function isSameLogin(a: string, b: string) {
+    return a.toLowerCase() === b.toLowerCase();
 }
 
 function readRefTreeOrder(value: unknown): RefTreeOrder {

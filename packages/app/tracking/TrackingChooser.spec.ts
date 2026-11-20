@@ -531,15 +531,6 @@ test('T1: a search narrows every owner, and leaves out those it matches nothing 
     await expect.poll(repositoryNames).toEqual(['webapp', 'web-admin', 'webhooks', 'website']);
 });
 
-test('the picker starts on an owner it is told; one GitHub does not list leaves all owners', async () => {
-    await Picker.run({ args: { ...Picker.args, initialOwner: 'skyline-labs' } });
-    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toBeChecked();
-    await expect.element(page.getByRole('heading', { name: 'kedrzu' })).not.toBeInTheDocument();
-
-    await Picker.run({ args: { ...Picker.args, initialOwner: 'nuxt' } });
-    await expect.element(page.getByRole('radio', { name: /^All owners/ })).toBeChecked();
-});
-
 test('never G10: with nothing to pick, the filter is there to look up', async () => {
     await Picker.run({ args: { ...Picker.args, candidates: EMPTY_CANDIDATES, tracked: [], repositories: [] } });
 
@@ -696,8 +687,12 @@ test('GitHub is asked nothing under two characters, nor with an owner picked', a
     expect(search).not.toHaveBeenCalled();
     await expect.element(page.getByRole('heading', { name: 'On GitHub' })).not.toBeInTheDocument();
 
-    await Choose.run({ args: { ...Choose.args, filter: 'nuxt', initialOwner: 'skyline-labs', search } });
-    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toBeChecked();
+    // Wide enough for the filter to show, which `fill` waits for.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await Choose.run({ args: { ...Choose.args, search } });
+    await userEvent.click(page.getByRole('radio', { name: /^skyline-labs/ }));
+    await userEvent.fill(page.getByRole('textbox', { name: 'Filter repositories' }), 'nuxt');
     await sleep(400);
     expect(search).not.toHaveBeenCalled();
 });

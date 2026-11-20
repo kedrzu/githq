@@ -912,3 +912,42 @@ exponential time and can't be interrupted on the page's own thread. An invalid o
 - Fetching collapsed files to search them — lock and generated files for nothing.
 - The bar in the toolbar's place, as the workflow log's (W4b) — the toolbar's place and the stack stay in view.
 - N ⇧N for matches, as in the log — they are the threads' here (D32).
+
+## D48
+
+**Go to file is a review command on ⌘P (Ctrl+P) whose level of the command menu lists the pull request's files in the
+file list's order, the cursor's file checked, and narrows them by scattered letters of the path, the name weighing
+more than its folders, best first. Each row is the file's name, its folder dimmed after it, its change letter as the
+file list draws it and "Viewed". Picking one goes there as a click in the file list does: the cursor on its header,
+the diff scrolled to it; a path filter or hidden viewed files holding it back give way, as for a linked thread. Files
+only known for their threads are listed too. Nothing is asked of GitHub.** (2026-11-19, owner; CR144–CR148; its key
+from a comment box and the open menu: [commands D15](../commands/DECISIONS.md#d15))
+
+**Why.** On a pull request of dozens or hundreds of files, a file known by name took scrolling, stepping file by file
+or a path filter. Editors settled this with ⌘P and a few letters; the command menu already has nested levels with
+their own field, so the search is one more level, not a new component.
+
+**Rejected.**
+
+- Files found from ⌘K's top level as the user types — hundreds of paths would crowd out the actions and items it
+  finds, and a path is not what ⌘K is asked for.
+- A separate quick-open dialog — a second menu with its own keys and look beside the command menu.
+- Recently opened files first — no history of visited files exists.
+
+## D49
+
+**A thread in the diff looks like a code thread on a pull request's thread: the page's colour, each comment flat with
+its text in the card text colour, a ⋯ on its meta line, then a Reply band and a Resolve thread band. Every review
+comment, there and on a pull request's thread, has the comment cards' menu — Edit in place, Quote reply into its
+thread's reply box, Copy link, Delete after asking — each only where GitHub allows. Deleting the draft's last pending
+comment discards the emptied draft.** (2026-11-19, owner's pick of Variant B of three; CR151, CR152, F33)
+
+**Why.** The grey bubble with Reply… and Resolve in one row looked unlike a comment anywhere else, and review comments
+could be neither edited nor deleted in githq. An empty draft only blocks what is written next (D17).
+
+**Rejected.**
+
+- One card with a head band per comment, and a card per comment — further from the code thread the pull request's
+  thread already has; the second breaks the thread into pieces in the diff.
+- A comment-level key in code review — its cursor stops on lines and threads, not comments; pointer and Tab reach the
+  ⋯ there, and `.` and `Q` reach it on a pull request's thread.

@@ -141,8 +141,7 @@ function onKeydown(event: KeyboardEvent) {
       <span :class="css.reviewSubmitDialog_note">{{ t(l.note) }}</span>
       <Button
         :class="css[`reviewSubmitDialog_send_${choice.event}`]"
-        size="sm"
-        variant="light"
+        variant="primary"
         :disabled="!canSend"
         :kbd="SEND_KEY"
         :keyshortcuts="formatAriaKeyShortcuts(SEND_KEY)"
@@ -260,5 +259,12 @@ function onKeydown(event: KeyboardEvent) {
 .reviewSubmitDialog_send_REQUEST_CHANGES.reviewSubmitDialog_send_REQUEST_CHANGES {
   background: $color-red;
   border-color: $color-red;
+}
+
+// On green or red the accent's key chip darkens its text's ground too far ("Ctrl+" reads 4.25:1 on red): the light
+// fill's chip, as before these were primary.
+.reviewSubmitDialog_send_APPROVE kbd,
+.reviewSubmitDialog_send_REQUEST_CHANGES kbd {
+  background: rgba($color-on-light, 0.1);
 }
 </style>

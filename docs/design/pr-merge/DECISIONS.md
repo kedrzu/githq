@@ -341,3 +341,30 @@ until it ends (about 5 minutes). Accepted: a restore from githq draws over that 
 > does not list, and `estimatedTimeToMerge` is nullable; PM16 shows both. `Repository.viewerPossibleCommitEmails` and
 > `viewerDefaultCommitEmail` give the addresses, so the email needs no new scope. `viewerCanMergeAsAdmin` is one boolean,
 > with no answer per rule. `PullRequest.stackEntry` gives the position in a stack.
+
+## D17
+
+**A default commit email per owner and per repository: the merge panel starts on the repository's choice, else its
+owner's, else GitHub's default, skipping an address GitHub does not offer for the repository. `Y` opens a menu of the
+addresses, whose "Remember for this repository" switch also makes the pick the repository's default (PM48, PM50–PM53).
+Both levels are set in the repository's settings (T24, T25), and the address goes with turning auto-merge on too.**
+(2026-11-19, owner; per owner with a repository override, the settings block and the menu chosen by the owner from drawn
+variants)
+
+**Why.** One GitHub account holds private and work repositories, each committing under its own address; starting every
+merge on the account-wide default makes the user switch on every work merge, and a forgotten switch stays in the
+history. An owner covers a whole organisation at once; a repository may differ.
+
+Both are synced settings ([settings-sync D7](../settings-sync/DECISIONS.md#d7)). An address goes to GitHub only when it
+differs from GitHub's default ([D5](#d5)), so a repository whose default differs sends its direct merges through
+`mergePullRequest` with the guard of [D12](#d12). Bypass, a merge queue, a stack and a rebase still take no address.
+
+> **Checked 2026-11-19 (`packages/github/src/schema.graphql:14224`):** `EnablePullRequestAutoMergeInput` has
+> `authorEmail`, so auto-merge carries the address as a merge does.
+
+**Rejected.**
+
+- A default per repository only — every new repository of the work organisation would need setting.
+- The owner's default on its group in Settings › Repositories, or a section of its own listing every owner (T26–T28 as
+  drawn) — further from where the user meets the question.
+- `Y` cycling with `⇧Y` to remember, or only a link to the settings (PM44–PM47, PM49 as drawn).

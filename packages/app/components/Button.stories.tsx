@@ -1,10 +1,22 @@
 import Form from '@nzyme/vue-forms/components/Form.vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ArrowUpRight, CircleCheck, Github, ListFilter, LogOut, Plus, Rows3, Search, Star } from 'lucide-vue-next';
+import {
+    ArrowUpRight,
+    ChevronDown,
+    CircleCheck,
+    Github,
+    ListFilter,
+    LogOut,
+    Plus,
+    Rows3,
+    Search,
+    Star,
+} from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow, StorySection } from '@/.storybook/StoryLayout.jsx';
 
+import type { ButtonSize } from './Button.vue';
 import Button from './Button.vue';
 
 const meta = {
@@ -65,10 +77,9 @@ export const Gallery: Story = {
                     </Button>
                 </StoryRow>
             </StorySection>
-            <StorySection title="An item's thread — compact, with and without an icon">
+            <StorySection title="An item's thread — medium, with and without an icon">
                 <StoryRow>
                     <Button
-                        size="compact"
                         icon={CircleCheck}
                         kbd="Escape"
                     >
@@ -76,7 +87,6 @@ export const Gallery: Story = {
                     </Button>
                     <Button
                         variant="primary"
-                        size="compact"
                         kbd="Mod+Enter"
                     >
                         Comment
@@ -98,22 +108,6 @@ export const Gallery: Story = {
                         icon={Rows3}
                     >
                         Group: Reason
-                    </Button>
-                </StoryRow>
-            </StorySection>
-            <StorySection title="Beside a heading — small framed">
-                <StoryRow>
-                    <Button
-                        variant="framed"
-                        size="sm"
-                    >
-                        Select all 12
-                    </Button>
-                    <Button
-                        variant="framed"
-                        size="sm"
-                    >
-                        Show all 312
                     </Button>
                 </StoryRow>
             </StorySection>
@@ -191,6 +185,60 @@ export const Gallery: Story = {
                     </Button>
                 </StoryRow>
             </StorySection>
+        </StoryPage>
+    ),
+};
+
+const SIZES: ButtonSize[] = ['sm', 'md', 'lg', 'xl'];
+
+/**
+ * Each size, in this order: plain, with an icon, with a key, with an icon passed in the label (sized by the button, not
+ * lucide's 24px), and a field with its key.
+ */
+export const Sizes: Story = {
+    render: () => (
+        <StoryPage>
+            {SIZES.map(size => (
+                <StorySection
+                    key={size}
+                    title={size}
+                >
+                    <div tid={size}>
+                        <StoryRow>
+                            <Button size={size}>Close issue</Button>
+                            <Button
+                                size={size}
+                                icon={CircleCheck}
+                            >
+                                Close issue
+                            </Button>
+                            <Button
+                                size={size}
+                                variant="primary"
+                                icon={CircleCheck}
+                                kbd="Mod+Enter"
+                            >
+                                Comment
+                            </Button>
+                            <Button
+                                size={size}
+                                variant="ghost"
+                            >
+                                Group
+                                <ChevronDown />
+                            </Button>
+                            <Button
+                                size={size}
+                                variant="field"
+                                icon={Search}
+                                kbd="Mod+K"
+                            >
+                                Search…
+                            </Button>
+                        </StoryRow>
+                    </div>
+                </StorySection>
+            ))}
         </StoryPage>
     ),
 };

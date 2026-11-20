@@ -1,6 +1,9 @@
 import { getOAuthClientId, OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTERN } from '@githq/github/oauth.js';
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
+import { GITHUB_CLIENT_SECRET } from '@githq/secrets/secrets.js';
+import type { Container } from '@nzyme/ioc/Container.js';
+import { resolveOptionalSecret } from '@nzyme/secrets/resolveOptionalSecret.js';
 
 import { getUsageClient, isUsageOptedOut, recordUsage } from './usage.js';
 import type { WorkerEnv } from './WorkerEnv.js';
@@ -62,13 +65,13 @@ const OPEN_CORS_HEADERS = {
 };
 
 /** `GET /api/auth/authorize?state=…`: redirects the browser to GitHub's consent screen. */
-export function authorize(request: Request, env: WorkerEnv): Response {
+export function authorize(request: Request, env: WorkerEnv, container: Container): Response {
     if (request.method !== 'GET') {
         return methodNotAllowed('GET');
     }
 
-    const clientId = getOAuthClientId(env.GITHQ_ENV);
-    if (!clientId || !env.GITHUB_CLIENT_SECRET) {
+    const app = getOAuthApp(env, container);
+    if (!app) {
         return notConfigured();
     }
 
@@ -81,7 +84,7 @@ export function authorize(request: Request, env: WorkerEnv): Response {
     }
 
     const location = new URL(GITHUB_AUTHORIZE_URL);
-    location.searchParams.set('client_id', clientId);
+    location.searchParams.set('client_id', app.clientId);
     location.searchParams.set('redirect_uri', callbackUrl(request));
     location.searchParams.set('scope', OAUTH_SCOPES.join(' '));
     location.searchParams.set('state', state);
@@ -120,14 +123,13 @@ export function openApproval(request: Request, env: WorkerEnv): Response {
  * other site can read a token out of this endpoint. `redirectUri` must be this origin's callback (the one
  * {@link authorize} sent to GitHub), so a code issued for some other site is never exchanged here.
  */
-export async function exchangeToken(request: Request, env: WorkerEnv): Promise<Response> {
+export async function exchangeToken(request: Request, env: WorkerEnv, container: Container): Promise<Response> {
     if (request.method !== 'POST') {
         return methodNotAllowed('POST');
     }
 
-    const clientId = getOAuthClientId(env.GITHQ_ENV);
-    const clientSecret = env.GITHUB_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
+    const app = getOAuthApp(env, container);
+    if (!app) {
         return notConfigured();
     }
 
@@ -155,7 +157,7 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
         });
     }
 
-    const response = await requestToken({ clientId, clientSecret, grant: { code, redirect_uri: redirectUri } });
+    const response = await requestToken({ app, grant: { code, redirect_uri: redirectUri } });
     // 200 is only ever the answer with the token; every refusal and failure has an error status.
     if (response.ok && !isUsageOptedOut(body)) {
         recordUsage(env, 'token_created', { client: getUsageClient(request), platform: '' });
@@ -172,7 +174,7 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
  * it, only a refresh token the caller holds can be used, the token travels in the body only, and anything not shaped
  * like a refresh token is refused before GitHub is asked.
  */
-export async function refreshAccessToken(request: Request, env: WorkerEnv): Promise<Response> {
+export async function refreshAccessToken(request: Request, env: WorkerEnv, container: Container): Promise<Response> {
     if (request.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: OPEN_CORS_HEADERS });
     }
@@ -181,9 +183,8 @@ export async function refreshAccessToken(request: Request, env: WorkerEnv): Prom
         return withOpenCors(methodNotAllowed('POST, OPTIONS'));
     }
 
-    const clientId = getOAuthClientId(env.GITHQ_ENV);
-    const clientSecret = env.GITHUB_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
+    const app = getOAuthApp(env, container);
+    if (!app) {
         return withOpenCors(notConfigured());
     }
 
@@ -200,11 +201,7 @@ export async function refreshAccessToken(request: Request, env: WorkerEnv): Prom
         );
     }
 
-    const response = await requestToken({
-        clientId,
-        clientSecret,
-        grant: { grant_type: 'refresh_token', refresh_token: token },
-    });
+    const response = await requestToken({ app, grant: { grant_type: 'refresh_token', refresh_token: token } });
     // As with the exchange, only a 200 carries new tokens: a refused or failed renewal is not counted.
     if (response.ok && !isUsageOptedOut(body)) {
         recordUsage(env, 'token_refreshed', { client: getUsageClient(request), platform: '' });
@@ -222,7 +219,7 @@ export async function refreshAccessToken(request: Request, env: WorkerEnv): Prom
  * the URL that the Worker's logs record, and anything not shaped like an OAuth App token is refused before GitHub is
  * asked, so the open endpoint cannot spend githq's credentials on junk.
  */
-export async function revokeToken(request: Request, env: WorkerEnv): Promise<Response> {
+export async function revokeToken(request: Request, env: WorkerEnv, container: Container): Promise<Response> {
     if (request.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: OPEN_CORS_HEADERS });
     }
@@ -231,9 +228,8 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
         return withOpenCors(methodNotAllowed('POST, OPTIONS'));
     }
 
-    const clientId = getOAuthClientId(env.GITHQ_ENV);
-    const clientSecret = env.GITHUB_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
+    const app = getOAuthApp(env, container);
+    if (!app) {
         return withOpenCors(notConfigured());
     }
 
@@ -252,11 +248,11 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
 
     let response: Response;
     try {
-        response = await fetch(`${GITHUB_API_URL}/applications/${encodeURIComponent(clientId)}/token`, {
+        response = await fetch(`${GITHUB_API_URL}/applications/${encodeURIComponent(app.clientId)}/token`, {
             method: 'DELETE',
             headers: {
                 accept: 'application/vnd.github+json',
-                authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+                authorization: `Basic ${btoa(`${app.clientId}:${app.clientSecret}`)}`,
                 'content-type': 'application/json',
                 'user-agent': 'githq',
             },
@@ -285,9 +281,25 @@ export async function revokeToken(request: Request, env: WorkerEnv): Promise<Res
     );
 }
 
-interface RequestTokenParams {
+/** The OAuth App the Worker signs in with. */
+interface OAuthApp {
     clientId: string;
+    /** Used only in the Worker's own requests to GitHub (the token exchange and revocation), never in a response or log. */
     clientSecret: string;
+}
+
+/**
+ * The OAuth App of the Worker's environment, or `undefined` when it lacks the client ID (`GITHQ_ENV` names no OAuth
+ * App) or the client secret, which a checkout without the secret store runs without.
+ */
+function getOAuthApp(env: WorkerEnv, container: Container): OAuthApp | undefined {
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
+    const clientSecret = resolveOptionalSecret(container, GITHUB_CLIENT_SECRET);
+    return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+}
+
+interface RequestTokenParams {
+    app: OAuthApp;
     /** The form fields of the grant: the code and its redirect URI, or the refresh grant and its refresh token. */
     grant: Record<string, string>;
 }
@@ -306,8 +318,8 @@ async function requestToken(params: RequestTokenParams): Promise<Response> {
             method: 'POST',
             headers: { accept: 'application/json' },
             body: new URLSearchParams({
-                client_id: params.clientId,
-                client_secret: params.clientSecret,
+                client_id: params.app.clientId,
+                client_secret: params.app.clientSecret,
                 ...params.grant,
             }),
         });

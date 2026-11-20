@@ -1,4 +1,4 @@
-<!-- Picking repositories to track (T18, D25): the first sign-in's chooser (G2) in a modal, as its picker: owners on the left with tracked / all, the filter (`/`) and sort above the list. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N repositories" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on an owner (a group's "Track more") or a search (`?q=`, from an untracked repository's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s; on a phone a screen of its own, back naming Repositories (mobile D35). -->
+<!-- Picking repositories to track (T18, D25): the first sign-in's chooser (G2) in a modal, as its picker: owners on the left with tracked / all, the filter (`/`) and sort above the list. What is being untracked with Undo on offer (`PendingUntracks`) counts as gone, so it can be picked; picking it takes the untrack back. A tick only selects: "Track N repositories" (⌘↵) adds the picked after the others in one write, and Esc or Cancel closes without asking, the picks gone. Opens on a search (`?q=`, from an untracked repository's screen). The modal itself, its keys and Esc are `TrackPickerDialog`'s; on a phone a screen of its own, back naming Repositories (mobile D35). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -23,8 +23,6 @@ const TICK_MS = 60_000;
 const NO_PROJECTS: readonly string[] = [];
 
 const props = defineProps<{
-  /** The owner it opens on: a group's "Track more". */
-  owner?: string;
   /** What its filter holds when it opens: `?q=`, from an untracked repository's screen. */
   search?: string;
 }>();
@@ -143,7 +141,6 @@ function getAdded() {
       :projects="NO_PROJECTS"
       :tracked="tracked"
       :reading="reading"
-      :initial-owner="owner"
       :candidates="tracking.candidates"
       :now="now"
       :found="found"

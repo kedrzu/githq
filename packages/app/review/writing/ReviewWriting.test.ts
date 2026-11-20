@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { watch } from 'vue';
 
+import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
@@ -36,6 +37,8 @@ const WRITES = [
     'StartPullRequestReview',
     'ResolveReviewThread',
     'UnresolveReviewThread',
+    'UpdatePullRequestReviewComment',
+    'DeletePullRequestReviewComment',
 ];
 const REPLY = { path: 'a.ts', side: 'after', line: 3, startLine: null, threadId: 'T_1' } as const;
 const DRAFT_TAKEN = 'User can only have one pending review per pull request';
@@ -165,6 +168,23 @@ function createGitHub() {
                         },
                     };
                 }
+                case 'UpdatePullRequestReviewComment':
+                    return answerUpdateComment(request);
+                case 'DeletePullRequestReviewComment': {
+                    const { id } = request.variables;
+                    const deleted = github.threads
+                        .flatMap(({ comments }) => comments)
+                        .find(comment => comment.id === id);
+                    if (deleted?.state === 'PENDING' && github.draft) {
+                        github.draft.comments--;
+                    }
+
+                    github.threads = github.threads.flatMap(thread => {
+                        const comments = thread.comments.filter(comment => comment.id !== id);
+                        return comments.length > 0 ? [{ ...thread, comments }] : [];
+                    });
+                    return { data: { deletePullRequestReviewComment: { clientMutationId: null } } };
+                }
                 case 'AddPullRequestReviewThread':
                     if (github.draft) {
                         github.draft.comments++;
@@ -187,6 +207,23 @@ function createGitHub() {
         },
     };
     return github;
+
+    function answerUpdateComment(request: TestGraphQLRequest): TestGraphQLAnswer {
+        const { id, body } = request.variables;
+        let updated: ReviewThreadComment | null = null;
+        github.threads = github.threads.map(thread => ({
+            ...thread,
+            comments: thread.comments.map(comment => {
+                if (comment.id !== id || typeof body !== 'string') {
+                    return comment;
+                }
+
+                updated = { ...comment, body, bodyHTML: `<p>${body}</p>`, lastEditedAt: '2026-11-19T12:00:00Z' };
+                return updated;
+            }),
+        }));
+        return { data: { updatePullRequestReviewComment: { pullRequestReviewComment: updated } } };
+    }
 
     function answerAddReview(request: TestGraphQLRequest): TestGraphQLAnswer {
         if (github.draft) {
@@ -1214,7 +1251,7 @@ test('a thread resolved here names the viewer at once; once read again, it names
     expect(model.threads[0]).toMatchObject({ isResolved: true, resolvedBy: hubot });
 });
 
-test('after signing out nothing more goes out, a reply or a resolve', async () => {
+test('after signing out nothing more goes out: a reply, a resolve, an edit or a delete', async () => {
     const github = createGitHub();
     github.threads = [sampleThread()];
     const { model, session, writes } = await open(github);
@@ -1223,8 +1260,160 @@ test('after signing out nothing more goes out, a reply or a resolve', async () =
 
     model.writing.send(id, 'single');
     model.writing.setResolved('T_1', true);
+    model.writing.editComment('C_1', 'Edited');
+    model.writing.deleteComment('C_2');
     await Bun.sleep(50);
 
     expect(writes()).toEqual([]);
     expect(model.writing.getText(id)).toBe('');
+});
+
+test('an edit shows at once, outlives a threads read made before GitHub answers, and then shows as GitHub answered it', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { session, model, writes } = await open(github);
+    const release = holdOperation(session, 'UpdatePullRequestReviewComment');
+
+    model.writing.editComment('C_1', 'Edited');
+    expect(model.writing.getCommentEdit('C_1')).toBe('Edited');
+    expect(model.threads[0]?.comments[0]?.body).toBe('Edited');
+
+    await waitUntil(() => writes().length === 1, { timeoutMs: 2000 });
+    const before = github.threadsRead();
+    session.container.resolve(ReviewFiles).open(REFERENCE);
+    await waitUntil(() => github.threadsRead() > before && model.threadsState.kind === 'ready', { timeoutMs: 2000 });
+    await aMoment();
+    expect(model.writing.getCommentEdit('C_1')).toBe('Edited');
+    expect(model.threads[0]?.comments[0]?.body).toBe('Edited');
+
+    release();
+    await waitUntil(() => model.writing.getCommentEdit('C_1') === null, { timeoutMs: 2000 });
+    expect(model.threads[0]?.comments[0]).toMatchObject({ body: 'Edited', bodyHTML: '<p>Edited</p>' });
+    expect(
+        session.github.requests.find(request => request.operation === 'UpdatePullRequestReviewComment')?.variables,
+    ).toEqual({ id: 'C_1', body: 'Edited' });
+    await aMoment();
+    expect(model.threads[0]?.comments[0]?.bodyHTML).toBe('<p>Edited</p>');
+    expect(model.writing.failedEdits).toEqual([]);
+});
+
+test('a refused edit shows what GitHub holds again and keeps its text and why for its editor, until let go', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model } = await open(github);
+    const [read] = sampleThread().comments;
+    github.refused.set('UpdatePullRequestReviewComment', 'Not allowed');
+
+    model.writing.editComment('C_1', 'Edited');
+    await waitUntil(() => model.writing.failedEdits.length > 0, { timeoutMs: 2000 });
+
+    const failed: FailedTextEdit[] = [
+        { itemId: PULL_REQUEST, commentId: 'C_1', body: 'Edited', reason: { kind: 'refused', message: 'Not allowed' } },
+    ];
+    expect(model.writing.failedEdits).toEqual(failed);
+    expect(model.writing.getCommentEdit('C_1')).toBeNull();
+    expect(model.threads[0]?.comments[0]).toEqual(read);
+
+    model.writing.discardFailedEdit('C_1');
+    expect(model.writing.failedEdits).toEqual([]);
+});
+
+test('an edit refused without a word is one GitHub dropped, and one not answered is offline', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session } = await open(github);
+    github.refused.set('UpdatePullRequestReviewComment', '');
+
+    model.writing.editComment('C_1', 'Edited');
+    await waitUntil(() => model.writing.failedEdits.length > 0, { timeoutMs: 2000 });
+    expect(model.writing.failedEdits[0]?.reason).toEqual({ kind: 'dropped' });
+
+    github.refused.clear();
+    session.github.holdIf = request =>
+        request.operation === 'UpdatePullRequestReviewComment'
+            ? Promise.reject(new TypeError('Failed to fetch'))
+            : null;
+    model.writing.editComment('C_2', 'Edited too');
+    await waitUntil(() => model.writing.failedEdits.length === 2, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.writing.failedEdits[1]).toMatchObject({ commentId: 'C_2', reason: { kind: 'offline' } });
+});
+
+test('a delete hides the comment at once, and its thread with its last; refused, it is back with why', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { session, model, writes } = await open(github);
+    const release = holdOperation(session, 'DeletePullRequestReviewComment');
+
+    model.writing.deleteComment('C_1');
+    expect(model.threads[0]?.comments.map(({ id }) => id)).toEqual(['C_2']);
+    release();
+    await waitUntil(() => github.threads[0]?.comments.length === 1, { timeoutMs: 2000 });
+    await aMoment();
+    expect(model.threads[0]?.comments.map(({ id }) => id)).toEqual(['C_2']);
+
+    github.refused.set('DeletePullRequestReviewComment', 'Not allowed');
+    model.writing.deleteComment('C_2');
+    expect(model.threads).toEqual([]);
+    await waitUntil(() => model.writing.getDeleteFailure('T_1') !== null, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.writing.getDeleteFailure('T_1')).toEqual({ kind: 'refused', message: 'Not allowed' });
+    expect(model.threads[0]?.comments.map(({ id }) => id)).toEqual(['C_2']);
+    expect(writes()).toEqual(['DeletePullRequestReviewComment', 'DeletePullRequestReviewComment']);
+});
+
+test("a pending comment deleted counts out of the draft at once, back in on a refusal; the draft's last takes the emptied draft with it", async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 2 };
+    github.threads = [threadOf('T_1', ['PENDING', 'PENDING'])];
+    const { model, session, writes } = await open(github);
+    await waitUntil(() => model.writing.draftCount === 2, { timeoutMs: 2000 });
+    github.refused.set('DeletePullRequestReviewComment', 'Not allowed');
+    // The draft read after the refusal waits: the count is back before it.
+    const release = holdOperation(session, 'ItemDetail');
+
+    model.writing.deleteComment('T_1_0');
+    expect(model.writing.draftCount).toBe(1);
+    await waitUntil(() => model.writing.getDeleteFailure('T_1') !== null, { timeoutMs: 2000 });
+    expect(model.writing.draftCount).toBe(2);
+    expect(model.threads[0]?.comments).toHaveLength(2);
+
+    release();
+    session.github.holdIf = null;
+    await aMoment();
+    github.refused.clear();
+    model.writing.deleteComment('T_1_0');
+    expect(model.writing.getDeleteFailure('T_1')).toBeNull();
+    await waitUntil(() => github.threads[0]?.comments.length === 1, { timeoutMs: 2000 });
+    model.writing.deleteComment('T_1_1');
+    expect(model.writing.draftCount).toBe(0);
+    expect(model.threads).toEqual([]);
+    await waitUntil(() => github.draft === null, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(writes()).toEqual([
+        'DeletePullRequestReviewComment',
+        'DeletePullRequestReviewComment',
+        'DeletePullRequestReviewComment',
+        'DeletePullRequestReview',
+    ]);
+    expect(model.writing.draftOpen).toBe(false);
+});
+
+test('a pending comment deleted with others left in the draft leaves the draft', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 2 };
+    github.threads = [threadOf('T_1', ['PENDING']), threadOf('T_2', ['PENDING'])];
+    const { model, writes } = await open(github);
+    await waitUntil(() => model.writing.draftCount === 2, { timeoutMs: 2000 });
+
+    model.writing.deleteComment('T_1_0');
+    await waitUntil(() => model.threads.length === 1 && writes().length === 1, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(github.draft).toEqual({ id: 'DRAFT', comments: 1 });
+    expect(model.writing.draftCount).toBe(1);
+    expect(writes()).toEqual(['DeletePullRequestReviewComment']);
 });

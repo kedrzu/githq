@@ -1,7 +1,7 @@
 # Releases the desktop app (packages/desktop). A manually dispatched action, run from main, with a `mode`:
 # `preview` only prints the version and release notes the commits since the last stable tag would give and
 # releases nothing; `stable` (`v0.2.0`) does. The version and the notes come from the Conventional Commits since the
-# last stable tag (`packages/app/scripts/release.ts`). A release creates the tag on the commit it ran on and a draft
+# last stable tag, each change with its author's GitHub login (`packages/app/scripts/release.ts`). A release creates the tag on the commit it ran on and a draft
 # GitHub release, builds macOS (Apple Silicon and Intel), Windows and Linux (`desktop-build.yml`), and uploads the
 # installers, the signed updater bundles and the updater's `latest.json` to the draft. Publishing the draft is a separate
 # step (`docs/desktop/RELEASING.md`); apps on the Stable stream look for updates at
@@ -65,12 +65,13 @@ jobs:
         with:
           bun-version-file: package.json
 
-      # Writes `tag` to GITHUB_OUTPUT unless this is a preview.
+      # Writes `tag` to GITHUB_OUTPUT unless this is a preview. Reads the login of each listed commit's author with gh.
       - name: Plan the release
         id: plan
         run: bun packages/app/scripts/release.ts plan --mode "$MODE" --notes "$RUNNER_TEMP/notes.md"
         env:
           MODE: ${{ inputs.mode }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Name the version
         id: version

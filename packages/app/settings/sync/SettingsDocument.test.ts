@@ -7,12 +7,16 @@ import {
     readAnimations,
     readMaxWidth,
     readUsageStatistics,
+    readOwnerCommitEmail,
     readRefSort,
+    readRepositoryCommitEmail,
     readReviewCommentChoice,
     readWorkflowRunsGroupBy,
     readWorkflowSettings,
     serializeSettings,
+    writeOwnerCommitEmail,
     writeRefSort,
+    writeRepositoryCommitEmail,
     writeWorkflowRunsGroupBy,
     writeWorkflowSettings,
 } from './SettingsDocument.js';
@@ -345,3 +349,87 @@ test('writing the runs grouping keeps the keys a newer build put beside it, and 
     expect(written?.version).toBe(1);
     expect(written && writeWorkflowRunsGroupBy(written, 'status')).toBeNull();
 });
+
+test('an untouched document with commit emails serialises byte-identically and keeps what it holds', () => {
+    const text = `${JSON.stringify(
+        {
+            ...DOCUMENT,
+            repositories: [{ ...GITHQ, commitEmail: null, future: 1 }, API],
+            refSort: { branches: 'name' },
+            commitEmails: { Acme: 'me@work.test', other: 7 },
+            futureField: true,
+        },
+        null,
+        2,
+    )}\n`;
+
+    const parsed = parseSettings(text);
+
+    expect(parsed.kind === 'ok' && serializeSettings(parsed.document)).toBe(text);
+});
+
+test('an owner reads without regard to case; absent or a value not understood reads as GitHub default', () => {
+    const document: SettingsDocument = { ...DOCUMENT, commitEmails: { Acme: 'me@work.test', odd: 7, empty: '' } };
+
+    expect(readOwnerCommitEmail(document, 'acme')).toBe('me@work.test');
+    expect(readOwnerCommitEmail(document, 'odd')).toBeNull();
+    expect(readOwnerCommitEmail(document, 'empty')).toBeNull();
+    expect(readOwnerCommitEmail(DOCUMENT, 'acme')).toBeNull();
+    expect(readOwnerCommitEmail({ ...DOCUMENT, commitEmails: ['x'] }, 'acme')).toBeNull();
+});
+
+test("an owner's email replaces a key in another case, with the given spelling, and keeps the other keys", () => {
+    const document: SettingsDocument = { ...DOCUMENT, commitEmails: { ACME: 'a@x.test', odd: 7 } };
+
+    expect(writeOwnerCommitEmail({ document, owner: 'acme', email: 'b@x.test' })).toEqual({
+        ...DOCUMENT,
+        commitEmails: { odd: 7, acme: 'b@x.test' },
+    });
+});
+
+test("GitHub's default removes the owner's key, and the map once it is empty; reading as it already writes nothing", () => {
+    const document: SettingsDocument = { ...DOCUMENT, commitEmails: { Acme: 'a@x.test', other: 'o@x.test' } };
+
+    expect(writeOwnerCommitEmail({ document, owner: 'acme', email: null })).toEqual({
+        ...DOCUMENT,
+        commitEmails: { other: 'o@x.test' },
+    });
+    expect(
+        writeOwnerCommitEmail({
+            document: { ...DOCUMENT, commitEmails: { Acme: 'a@x.test' } },
+            owner: 'acme',
+            email: null,
+        }),
+    ).toEqual(DOCUMENT);
+    expect(writeOwnerCommitEmail({ document: DOCUMENT, owner: 'acme', email: null })).toBeNull();
+    expect(writeOwnerCommitEmail({ document, owner: 'acme', email: 'a@x.test' })).toBeNull();
+    const newer: SettingsDocument = { ...DOCUMENT, commitEmails: { acme: { by: 'newer' } } };
+    expect(writeOwnerCommitEmail({ document: newer, owner: 'acme', email: null })).toBeNull();
+});
+
+test.each<[unknown, string | null | undefined]>([
+    [undefined, undefined],
+    [null, null],
+    ['me@work.test', 'me@work.test'],
+    [7, undefined],
+    ['', undefined],
+    [{ by: 'newer' }, undefined],
+])('a repository with commitEmail %j reads as %j', (written, reads) => {
+    expect(readRepositoryCommitEmail({ ...GITHQ, commitEmail: written })).toBe(reads);
+    expect(readRepositoryCommitEmail(undefined)).toBeUndefined();
+});
+
+test('the repository choice is written in its entry only, inherit removes the key, no entry or no change writes nothing', () => {
+    const nameWithOwner = 'kedrzu/githq';
+    const set = writeRepositoryCommitEmail({ document: DOCUMENT, nameWithOwner, email: 'me@work.test' });
+    expect(set?.repositories).toEqual([{ ...GITHQ, commitEmail: 'me@work.test' }, API]);
+    const github = writeRepositoryCommitEmail({ document: DOCUMENT, nameWithOwner, email: null });
+    expect(github?.repositories[0]?.commitEmail).toBeNull();
+    expect(set && writeRepositoryCommitEmail({ document: set, nameWithOwner, email: undefined })).toEqual(DOCUMENT);
+    expect(writeRepositoryCommitEmail({ document: DOCUMENT, nameWithOwner, email: undefined })).toBeNull();
+    expect(set && writeRepositoryCommitEmail({ document: set, nameWithOwner, email: 'me@work.test' })).toBeNull();
+    expect(writeRepositoryCommitEmail({ document: DOCUMENT, nameWithOwner: 'x/none', email: null })).toBeNull();
+});
+
+const GITHQ: SettingsRepository = { nameWithOwner: 'kedrzu/githq', id: 'R_1', tracking: true };
+const API: SettingsRepository = { nameWithOwner: 'acme/api', id: 'R_2', tracking: false };

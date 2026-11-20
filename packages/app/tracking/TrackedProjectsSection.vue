@@ -1,10 +1,10 @@
-<!-- Settings' Projects (T17, D25): like Repositories (G8) — what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), by owner (`TrackedListView`) — each row saying where its items come from and how many of those repositories are tracked, how many items it holds and how it stands, all from what this browser keeps, so the rows show before GitHub's lists arrive — read once as the section opens, for the groups' standing, totals and "Track more". A row opens its settings; Untrack and ⌫ untrack at once, with Undo (T20); "Track projects" (A) and a group's "Track more" open the picker (T22), the latter on that owner. `?tab=projects&q=` (from an untracked project's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
+<!-- Settings' Projects (T17, D25, D44): like Repositories (G8) — what is tracked, less what is being untracked with Undo on offer (`PendingUntracks`), one flat list in the user's order (`TrackedListView`) — each row naming its owner, saying where its items come from and how many of those repositories are tracked, how many items it holds and how it stands, all from what this browser keeps. A row opens its settings; dragged, or moved with ⌥↑ / ⌥↓, it takes another place in the order (`TrackingStore.move`), the sidebar's too; Untrack and ⌫ untrack at once, with Undo (T20); "Track projects" (A) opens the picker (T22). `?tab=projects&q=` (from an untracked project's screen) opens the picker at once with that search. On a phone (`phone`, mobile D35) the rows only drill in; the screen's "+" adds (`add`), the picker a screen of its own. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { AccountSession } from '@/auth/AccountSession.js';
+import { prefersReducedMotion } from '@/landing/prefersReducedMotion.js';
 import { useNow } from '@/services/useNow.js';
 
 import { PendingUntracks } from './PendingUntracks.js';
@@ -16,8 +16,8 @@ import { getProjectSettingsPath } from './trackingRoutes.js';
 import { TrackingStore } from './TrackingStore.js';
 import type { TrackedProject } from './TrackingTypes.js';
 import TrackProjectsDialog from './TrackProjectsDialog.vue';
+import type { SortablePlace } from './useSortableRows.js';
 import { getTrackedStatus } from './utils/getTrackedStatus.js';
-import { groupTrackedByOwner } from './utils/groupTrackedByOwner.js';
 
 /** How often "synced 14s ago" moves on. */
 const TICK_MS = 15_000;
@@ -39,12 +39,10 @@ const props = defineProps<{
 const tracking = useService(TrackingStore);
 const pending = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
-const accounts = useService(AccountSession);
 const router = useRouter();
 const now = useNow(TICK_MS);
 
 const pickerOpen = ref(Boolean(props.initialSearch));
-const pickerOwner = ref<string>();
 const pickerSearch = ref(props.initialSearch);
 
 /**
@@ -61,27 +59,7 @@ const rows = computed(() => {
     };
   });
 });
-const groups = computed(() => {
-  const listed = tracking.candidates;
-  return groupTrackedByOwner({
-    entries: rows.value,
-    getOwner: row => row.project.owner,
-    getName: row => row.project.title,
-    getOwnerKind: row => row.project.ownerKind,
-    login: accounts.current?.login ?? null,
-    listed: listed
-      ? new Map([
-          [listed.login, listed.projects.length],
-          ...listed.organizations.map((organization): [string, number] => [
-            organization.login,
-            organization.projects.length,
-          ]),
-        ])
-      : null,
-  });
-});
-
-void tracking.loadCandidates();
+const animate = computed(() => tracking.animations && !prefersReducedMotion());
 
 function getKey(row: ProjectRow) {
   return row.project.id;
@@ -96,6 +74,13 @@ function openSettings(row: ProjectRow) {
   void router.push(getProjectSettingsPath(row.project));
 }
 
+function move(row: ProjectRow, place: SortablePlace<ProjectRow>) {
+  tracking.move(
+    { kind: 'project', id: row.project.id },
+    { anchor: { kind: 'project', id: place.anchor.project.id }, side: place.side },
+  );
+}
+
 function untrack(row: ProjectRow) {
   pending.untrack({ kind: 'project', id: row.project.id }, row.project.title);
 }
@@ -103,8 +88,7 @@ function untrack(row: ProjectRow) {
 // A phone's "+" in the screen's top bar opens the picker.
 defineExpose({ add: openPicker });
 
-function openPicker(owner?: string) {
-  pickerOwner.value = owner;
+function openPicker() {
   pickerSearch.value = undefined;
   pickerOpen.value = true;
 }
@@ -113,16 +97,19 @@ function openPicker(owner?: string) {
 <template>
   <TrackedListView
     kind="projects"
-    :groups="groups"
+    :rows="rows"
     :get-key="getKey"
     :loaded="tracking.loaded"
     :phone="phone"
+    :animate="animate"
     @open="openSettings"
+    @move="move"
     @untrack="untrack"
     @add="openPicker"
   >
     <template #row="{ row, selected }">
       <TrackedProjectRow
+        :owner="row.project.owner"
         :title="row.project.title"
         :number="row.project.number"
         :item-count="row.itemCount"
@@ -138,7 +125,6 @@ function openPicker(owner?: string) {
   </TrackedListView>
   <TrackProjectsDialog
     v-model:open="pickerOpen"
-    :owner="pickerOwner"
     :search="pickerSearch"
   />
 </template>

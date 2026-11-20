@@ -10,7 +10,7 @@ import { createSampleMergeableWork, FIRST_TITLE } from './sampleMergeableWork.js
 const DEFAULT_EMAIL = 'mona@acme.dev';
 const OTHER_EMAIL = 'mona@personal.dev';
 
-test('D5, PM6: a chosen address goes through `mergePullRequest` with the head the user saw', async ({
+test('D5, PM48: an address picked from the menu goes through `mergePullRequest` with the head the user saw', async ({
     page,
     github,
 }) => {
@@ -21,7 +21,8 @@ test('D5, PM6: a chosen address goes through `mergePullRequest` with the head th
 
     await page.keyboard.press('Shift+M');
     await expect(panel.line('Email')).toContainText(DEFAULT_EMAIL);
-    await page.keyboard.press('y');
+    await panel.pickEmail(OTHER_EMAIL);
+    await expect(panel.emailMenu).toBeHidden();
     await expect(panel.line('Email')).toContainText(OTHER_EMAIL);
     await page.keyboard.press('ControlOrMeta+Enter');
 
@@ -66,7 +67,8 @@ test('D12, PM43: a chosen address is not sent once the rules stop being met for 
 
     await page.keyboard.press('Shift+M');
     await expect(panel.line('Email')).toContainText(DEFAULT_EMAIL);
-    await page.keyboard.press('Y');
+    await panel.pickEmail(OTHER_EMAIL);
+    await expect(panel.emailMenu).toBeHidden();
     await expect(panel.line('Email')).toContainText(OTHER_EMAIL);
 
     sample.world.withdrawApproval(sample.first);

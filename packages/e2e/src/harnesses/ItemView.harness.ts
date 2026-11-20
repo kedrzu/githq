@@ -85,6 +85,16 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name: /^Merge(?: pull request)?$/u });
     }
 
+    /** A pull request's merge card: its standing, its conditions, its branches and its actions. */
+    get mergeCard(): Locator {
+        return this.root.getByTestId('pull-request-merge');
+    }
+
+    /** The composer at the thread's end: the comment box and its footer's buttons. */
+    get composer(): Locator {
+        return this.root.getByTestId('item-composer');
+    }
+
     /** "Add to project". */
     get addToProjectButton(): Locator {
         return this.root.getByRole('button', { name: 'Add to project' });
@@ -162,6 +172,11 @@ export class ItemViewHarness {
         return this.root
             .getByRole('listitem')
             .filter({ has: this.page.getByRole('button', { name: 'Comment actions' }) });
+    }
+
+    /** A code thread's comment holding `text` (`ReviewComment`): a stop of the reading cursor, its meta line on top. */
+    codeComment(text: string): Locator {
+        return this.root.locator('[data-code-thread] [data-reading-stop]').filter({ hasText: text });
     }
 
     /** The comment the address's fragment names, marked as the current location (`aria-current="location"`). */

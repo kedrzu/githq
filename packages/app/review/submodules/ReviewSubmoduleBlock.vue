@@ -252,7 +252,7 @@ function getCommitUrl(oid: string) {
         v-if="comparisonUrl !== null"
         :class="css.reviewSubmoduleBlock_comparison"
         size="sm"
-        variant="outline"
+        variant="secondary"
         :link="comparisonUrl"
         target="_blank"
         rel="noopener noreferrer"
@@ -351,7 +351,7 @@ function getCommitUrl(oid: string) {
         </div>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           @click="submodules.retry(change)"
         >
           {{ t(l.tryAgain) }}

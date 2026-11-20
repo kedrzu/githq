@@ -110,6 +110,12 @@ In a review `J` and `K` walk the pull requests of the stack, then on along the l
 step. Files are `[` and `]`. The stack's map sits at the top of the review, one click per pull
 request, and the command palette goes to any of them. [The keys](DECISIONS.md#d16).
 
+## Going to a file
+
+A file known by name is a ⌘P away, as in an editor: the command menu opens at "Go to file", a few scattered letters of
+the path find it, the name before its folders, and Enter goes there as a click in the file list does, showing it even
+when the path filter or hidden viewed files held it back. [Go to file](DECISIONS.md#d48).
+
 ## Writing a review
 
 People review in two ways: some collect comments in a draft and send one review at the end, others send each remark

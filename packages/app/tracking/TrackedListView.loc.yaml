@@ -36,3 +36,9 @@ noRepositoriesDetailPhone:
   en: My work still shows what concerns you, from any repository. Track a repository to keep all its issues and pull requests on this phone, other people's too.
 noProjectsDetailPhone:
   en: My work still shows what concerns you, from any repository. Track a project to keep all its items on this phone, from any repository.
+move:
+  en: Move
+repositoriesList:
+  en: Tracked repositories
+projectsList:
+  en: Tracked projects

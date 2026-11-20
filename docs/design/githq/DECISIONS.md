@@ -513,9 +513,9 @@ Settled while building it (PR #82, 2026-11-02):
 ### D25
 
 Settings lists **only what is tracked**, and adding is a **separate picker** (owner, 2026-11-02). Repositories and
-Projects each show the tracked ones grouped by owner, without ticks or an owner filter (the list is short), and a row
+Projects each show the tracked ones grouped by owner (since 2026-11-19 flat, in the user's order: [D44](#d44)), without ticks or an owner filter (the list is short), and a row
 opens that repository's or project's settings page (T16), because each now has settings of its own. Each row untracks
-with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
+with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more" (gone with the groups, D44), opens a picker with search,
 owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
 gone from Settings. First sign-in keeps its chooser (G2). Replaces the Settings half of D24. Screens G8, T17.
 The picker is **the first sign-in chooser in a modal of its own** (owner, 2026-11-02), not a palette shaped like the
@@ -966,6 +966,48 @@ the same rules on both screens are one thing to learn.
 **Rejected** (the owner's pick of Variant A, round 2 of the log). Variant B: a lit segment beside the comment on the
 rail and a faint tint. Variant C: Variant A plus a caret in the gutter for the cursor's place in a tall comment. A 2 px
 mark on the left edge of a code thread's current comment, drawn in round 1.
+
+### D44
+
+**The user orders their tracked projects and repositories by dragging, and Settings lists them in that order.** (owner,
+2026-11-19.) Drawn in `githq.pen`, App · Settings: G8, T17, T20, and the docs figures DOC2, DOC4; the design log is `changelog/reorder-tracked.md`.
+
+- **In the sidebar,** expanded on a computer, a project is dragged among the projects and a repository among the
+  repositories, never across. The row itself moves with the pointer and the others make room, live, as in a sortable
+  list; nothing marks a drop place, so dragging is not drawn. The rail and a phone don't reorder.
+- **In Settings,** Repositories (G8) and Projects (T17) are one flat list each, in the sidebar's order, not grouped by
+  owner: the owner stands in grey before the name. A row is dragged as in the sidebar, or the selected one moved with
+  ⌥↑ ⌥↓. The owner headers go, with their "Track more" and "N of M tracked"; the list's "Track repositories" stays. A
+  phone shows the flat list without reordering. Settings has no owner filter; the pickers (T18, T22) keep theirs and
+  stay grouped by owner, as they list what can be tracked, not the user's order.
+- **One order everywhere.** It is the settings file's order, so it reaches the other tabs and devices, and it is D12's
+  precedence. A reorder on this device survives a sync unless the file was reordered meanwhile, when the file's wins
+  (settings-sync D11).
+
+**Why.** "In the user's order" meant the order things were tracked in, with no way to change it; the sidebar is where
+the order is seen, so that is where it is set. Grouping Settings by owner would show a second order beside it.
+
+**Rejected.** A drop line between rows with the dragged row's place dimmed (round 1, T26 and T27): the owner wants the
+row to move live. Keyboard reordering in the sidebar (the owner: the mouse is enough there; Settings has the keys). A
+separate "order" block in Settings beside the owner groups: two lists of the same things.
+
+### D45
+
+**Buttons follow one guideline, `buttons.md`: four heights, 24 / 32 / 40 / 48 (`sm`, `md`, `lg`, `xl`), chosen by
+what a place is for, and nine variants with one meaning each.** (owner, 2026-11-20.) A place whose purpose is an action
+— a card's, a composer's, a dialog's, the merge panel's, an empty state's — is `md`; dense chrome — toolbars, headers,
+rows, toasts — stays `sm`; a page's single call to action is `lg`. Icon-only buttons share the scale (`sm` 24, `md` 32;
+the rail 38 × 34). One row holds one size and one variant besides its single primary. `compact` (30 px) and `framed`
+are gone; the main action is `primary` everywhere but a sign-in page (`light`). Drawn in `githq.pen`, App ·
+Components (`Button / …`, `Buttons — guideline`); the design log is `changelog/button-system.md`.
+
+**Why.** Sizes had grown screen by screen: five in the code (24, 30, 32, 38, 48), six in the design (22 to 31), and the
+actions clicked most with a mouse — merge, comment, reply — were 24 and 30 px. Primer's 32 for a default control and 40
+for a large one are proven; 24 keeps dense chrome dense.
+
+**Rejected.** 28 / 32 / 40: lists and toolbars lose density for buttons mostly pressed by key. 24 / 36 / 40: an action
+taller than the 32 px fields and dialogs around it. Toasts' actions at `md`: a toast stays light, and its actions are
+pressed by key (⌘Z, Esc); D40's small secondary buttons stand.
 
 ## Open questions
 

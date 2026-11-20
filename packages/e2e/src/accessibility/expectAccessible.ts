@@ -3,14 +3,33 @@ import { ACCESSIBILITY_TAGS } from '@githq/app/testing/accessibilityTags.js';
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { expectButtonSizes } from './expectButtonSizes.js';
+
+/** What `expectAccessible` checks beyond the whole page with axe. */
+export interface ExpectAccessibleOptions {
+    /**
+     * A CSS selector, for a layer that holds the focus and hides the page from assistive technology (a menu, a popover):
+     * only it is checked then. The page behind it has its own state in the walk.
+     */
+    readonly within?: string;
+    /**
+     * `false` leaves the buttons' sizes unchecked (`expectButtonSizes`, by default checked): the landing page and the docs
+     * follow their own design, not the app's button guideline.
+     */
+    readonly buttonSizes?: boolean;
+}
+
 /**
- * Checks the page as it stands now with axe, under the same tags as the stories (`.storybook/preview.ts`). Soft, so one
- * walk through a screen reports all of its states; each violation shows its rule, its elements and why.
- *
- * @param within A CSS selector, for a layer that holds the focus and hides the page from assistive technology (a menu, a
- * popover): only it is checked then. The page behind it has its own state in the walk.
+ * Checks the page as it stands now with axe, under the same tags as the stories (`.storybook/preview.ts`), and, on the
+ * app's screens, its buttons against their sizes. Soft, so one walk through a screen reports all of its states; each
+ * violation shows its rule, its elements and why.
  */
-export async function expectAccessible(page: Page, state: string, within?: string): Promise<void> {
+export async function expectAccessible(
+    page: Page,
+    state: string,
+    options: ExpectAccessibleOptions = {},
+): Promise<void> {
+    const { within, buttonSizes = true } = options;
     // An overlay still fading in has a colour mixed with what is behind it, which is not the one it rests on.
     await page.evaluate(() =>
         Promise.all(
@@ -36,4 +55,8 @@ export async function expectAccessible(page: Page, state: string, within?: strin
         ),
     );
     expect.soft(found, `axe on ${state}`).toEqual([]);
+
+    if (buttonSizes) {
+        await expectButtonSizes(page, state, within);
+    }
 }

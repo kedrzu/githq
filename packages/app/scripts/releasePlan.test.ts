@@ -11,6 +11,7 @@ import {
     renderNotes,
     userVisibleChanges,
 } from './releasePlan.js';
+import type { ReleaseCommit, UserVisibleChangeGroup } from './releasePlan.js';
 
 function plan(subjects: string[], tags: string[]) {
     const result = planRelease({ subjects, tags });
@@ -154,54 +155,64 @@ describe('developmentVersion', () => {
 });
 
 describe('userVisibleChanges', () => {
-    test('keeps what users notice, under the headings of the notes, in their order, with its pull request', () => {
+    test('keeps what users notice, under the headings of the notes, in their order, with its pull request and author', () => {
+        const expected: UserVisibleChangeGroup[] = [
+            {
+                kind: 'breaking',
+                changes: [{ description: 'Drop the old store', pullRequest: 2, author: 'octocat' }],
+            },
+            { kind: 'features', changes: [{ description: 'Add the menu', pullRequest: undefined, author: undefined }] },
+            {
+                kind: 'performance',
+                changes: [{ description: 'Load the list faster', pullRequest: 5, author: 'kedrzu' }],
+            },
+        ];
         expect(
-            userVisibleChanges([
-                'perf: load the list faster (#5)',
-                'chore: tidy (#8)',
-                'fix(web): the landing page (#9)',
-                'feat: add the menu',
-                'Merge branch main',
-                'refactor!: drop the old store (#2)',
-            ]),
-        ).toEqual([
-            { kind: 'breaking', changes: [{ description: 'Drop the old store', pullRequest: 2 }] },
-            { kind: 'features', changes: [{ description: 'Add the menu', pullRequest: undefined }] },
-            { kind: 'performance', changes: [{ description: 'Load the list faster', pullRequest: 5 }] },
-        ]);
+            userVisibleChanges(
+                commits([
+                    ['perf: load the list faster (#5)', 'kedrzu'],
+                    ['chore: tidy (#8)', 'kedrzu'],
+                    ['fix(web): the landing page (#9)', 'kedrzu'],
+                    ['feat: add the menu', null],
+                    ['Merge branch main', 'kedrzu'],
+                    ['refactor!: drop the old store (#2)', 'octocat'],
+                ]),
+            ),
+        ).toEqual(expected);
     });
 });
 
 describe('renderNotes', () => {
     const POLICY = 'https://example.test/policy';
 
-    test('groups in order, capitalises, keeps the pull request, leaves out the rest', () => {
+    test('groups in order, capitalises, writes the pull request and the author, leaves out the rest', () => {
         const notes = renderNotes({
-            subjects: [
-                'perf: load the list faster (#5)',
-                'fix: keep the focus (#4)',
-                'feat(web): web only (#9)',
-                'chore: tidy (#8)',
-                'Add the context menu (#26)',
-                'feat: add the menu (#3)',
-                'chore!: drop the old store (#2)',
-                'fix: second fix',
-            ],
+            commits: commits([
+                ['perf: load the list faster (#5)', null],
+                ['fix: keep the focus (#4)', 'kedrzu'],
+                ['feat(web): web only (#9)', 'kedrzu'],
+                ['chore: tidy (#8)', 'kedrzu'],
+                ['Add the context menu (#26)', 'kedrzu'],
+                ['feat: add the menu (#3)', 'octocat'],
+                ['chore!: drop the old store (#2)', 'kedrzu'],
+                ['fix: second fix', 'kedrzu'],
+                ['fix: third fix', null],
+            ]),
             policyUrl: POLICY,
         });
         expect(notes).toBe(
             [
-                '## Breaking changes\n\n- Drop the old store (#2)',
-                '## Features\n\n- Add the menu (#3)',
-                '## Fixes\n\n- Keep the focus (#4)\n- Second fix',
-                '## Performance\n\n- Load the list faster (#5)',
+                '## Breaking changes\n\n- Drop the old store #2 by @kedrzu',
+                '## Features\n\n- Add the menu #3 by @octocat',
+                '## Fixes\n\n- Keep the focus #4 by @kedrzu\n- Second fix by @kedrzu\n- Third fix',
+                '## Performance\n\n- Load the list faster #5',
                 `Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](${POLICY}).`,
             ].join('\n\n') + '\n',
         );
     });
 
     test('with nothing to list, only the closing sentence remains', () => {
-        const notes = renderNotes({ subjects: ['chore: a'], policyUrl: POLICY });
+        const notes = renderNotes({ commits: commits([['chore: a', 'kedrzu']]), policyUrl: POLICY });
         expect(notes).not.toContain('##');
         expect(notes).toContain(POLICY);
     });
@@ -276,3 +287,7 @@ describe('composeUpdaterManifest', () => {
         });
     });
 });
+
+function commits(entries: [subject: string, author: string | null][]): ReleaseCommit[] {
+    return entries.map(([subject, author]) => ({ subject, author }));
+}

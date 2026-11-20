@@ -112,6 +112,56 @@ test('fields this build does not know merge key by key like the known ones, and 
     });
 });
 
+test('commit emails merge per D11: the owner map as one value, a repository’s choice key by key, a removal staying removed', () => {
+    const base = { ...documentOf([WEB, { ...API, commitEmail: 'a@x.test' }], []), commitEmails: { acme: 'w@x.test' } };
+    // Here: GitHub's default for web, API back to inheriting, the owner's choice removed.
+    const { commitEmails: _removed, ...withoutOwners } = base;
+    const local = { ...withoutOwners, repositories: [{ ...WEB, commitEmail: null }, API] };
+    // There: a choice for docs-owner's map only.
+    const remote = { ...base, commitEmails: { acme: 'w@x.test', other: 'o@x.test' } };
+
+    // The owner map changed only there (here it was removed): both sides changed, so the file's value wins.
+    expect(mergeSettings({ local, remote, base })).toEqual({
+        ...documentOf([{ ...WEB, commitEmail: null }, API], []),
+        commitEmails: { acme: 'w@x.test', other: 'o@x.test' },
+    });
+});
+
+test('a reorder made only here is kept, with the entries new in the file last', () => {
+    const base = documentOf([WEB, API, DOCS], []);
+    const local = documentOf([DOCS, WEB, API], []);
+
+    expect(mergeSettings({ local, remote: base, base })).toEqual(local);
+    expect(mergeSettings({ local, remote: documentOf([WEB, CLI, API, DOCS], []), base })).toEqual(
+        documentOf([DOCS, WEB, API, CLI], []),
+    );
+});
+
+test('a reorder made only here keeps an entry only this device has in its place, and still merges fields', () => {
+    const base = documentOf([WEB, API], []);
+    const local = documentOf([API, CLI, untracked(WEB)], []);
+    const remote = documentOf([WEB, { ...API, id: 'R_api2' }], []);
+
+    expect(mergeSettings({ local, remote, base })).toEqual(
+        documentOf([{ ...API, id: 'R_api2' }, CLI, untracked(WEB)], []),
+    );
+});
+
+test('a reorder made on both sides takes the file’s order', () => {
+    const base = documentOf([WEB, API, DOCS], []);
+    const local = documentOf([DOCS, WEB, API], []);
+    const remote = documentOf([API, DOCS, WEB], []);
+
+    expect(mergeSettings({ local, remote, base })).toEqual(remote);
+});
+
+test('an order only the file changed is the file’s', () => {
+    const base = documentOf([WEB, API], []);
+    const remote = documentOf([API, WEB], []);
+
+    expect(mergeSettings({ local: base, remote, base })).toEqual(remote);
+});
+
 function documentOf(repositories: SettingsRepository[], projects: SettingsProject[]): SettingsDocument {
     return { version: 1, repositories, projects };
 }

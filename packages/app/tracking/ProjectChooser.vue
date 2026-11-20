@@ -74,8 +74,6 @@ const props = defineProps<{
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   /** `candidates` are being read: the list says so. */
   reading?: boolean;
-  /** The owner it opens on (a group's "Track more"); all owners when not given or GitHub doesn't list it. */
-  initialOwner?: string;
 }>();
 
 /** The picked projects, by id. */
@@ -96,12 +94,12 @@ const phoneLayout = useService(PhoneLayout);
 const phone = computed(() => phoneLayout.active);
 /** A phone's group action ("Select all", "Show"): a text link in the accent, a finger's height. */
 const groupActionLook = computed(() =>
-  phone.value ? ({ variant: 'link', tone: 'accent' } as const) : ({ variant: 'framed', size: 'sm' } as const),
+  phone.value ? ({ variant: 'link', tone: 'accent' } as const) : ({ variant: 'outline', size: 'sm' } as const),
 );
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
-const owner = ref<string>(props.initialOwner ?? 'all');
+const owner = ref<string>('all');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const closedShown = ref<ReadonlySet<string>>(new Set());
 /** The project last clicked: where a Shift+click's range starts. */
@@ -237,7 +235,7 @@ watch(filter, () => {
   anchor.value = null;
 });
 
-// The owner it opened on turns out not to be one GitHub lists (someone else's group's "Track more"): all of them.
+// The owner picked is not one GitHub lists, as its lists are read again: all of them.
 watch(
   () => props.candidates,
   candidates => {
@@ -602,7 +600,7 @@ function sortByUpdate(rows: readonly CandidateProject[]) {
         >
           {{ closedText(group) }}
           <Button
-            variant="framed"
+            variant="outline"
             size="sm"
             @click="closedShown = addTo(closedShown, group.login)"
           >

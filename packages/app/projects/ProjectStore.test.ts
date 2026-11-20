@@ -273,6 +273,34 @@ test('D12: outside a project, its row field shows — "Status", else the first s
     expect(projects.getRowField('PVT_1')).toBeNull();
 });
 
+test("D12, D44: an item in several tracked projects leads with the one first in the user's order, and a move turns it", async () => {
+    const { projects, items, tracking } = await setup();
+    const launch: ItemProject = {
+        itemId: 'PVTI_launch',
+        projectId: 'PVT_2',
+        title: 'Launch',
+        number: 2,
+        url: 'https://github.com/orgs/acme/projects/2',
+        status: { name: 'Backlog', color: 'BLUE', optionId: 'O_backlog' },
+        updatedAt: MONDAY,
+    };
+    tracking.track({ project: { id: 'PVT_2', owner: 'acme', ownerKind: 'org', number: 2, title: 'Launch' } });
+    const stored = assertValue(items.get('I_1'));
+    const item = { ...stored, projects: [launch, ...stored.projects] };
+    const rows = () => projects.withRowFields(item).projects.map(place => [place.title, place.status?.name ?? null]);
+
+    expect(rows()).toEqual([
+        ['Roadmap', 'Todo'],
+        ['Launch', 'Backlog'],
+    ]);
+
+    tracking.move({ kind: 'project', id: 'PVT_2' }, { anchor: { kind: 'project', id: 'PVT_1' }, side: 'before' });
+    expect(rows()).toEqual([
+        ['Launch', 'Backlog'],
+        ['Roadmap', 'Todo'],
+    ]);
+});
+
 interface SetupOptions {
     /** The project's fields after "Status". */
     readonly extraFields?: readonly ProjectFieldFieldsFragment[];

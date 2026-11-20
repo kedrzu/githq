@@ -49,7 +49,7 @@ const names = computed(() => props.paths.map(getFileName).join(', '));
     >
     <Button
       size="sm"
-      variant="outline"
+      variant="secondary"
       @click="emit('showOnly')"
     >
       {{ t(l.showOnly, count) }}

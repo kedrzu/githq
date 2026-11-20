@@ -1,0 +1,25 @@
+{
+    "name": "@githq/cli",
+    "private": true,
+    "description": "The githq CLI (`bun githq …`): the secrets commands and the pen commands for githq.pen",
+    "license": "AGPL-3.0-only",
+    "bin": {
+        "githq": "src/cli.ts"
+    },
+    "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        "./*.js": "./src/*.ts"
+    },
+    "dependencies": {
+        "@githq/secrets": "workspace:*",
+        "@nzyme/cli-core": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/pen": "workspace:*",
+        "@nzyme/secrets": "workspace:*"
+    },
+    "devDependencies": {
+        "@nzyme/tsconfig": "workspace:*",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2"
+    }
+}

@@ -58,21 +58,23 @@ const t = useTranslate();
     :class="css.projectSettingsView"
     :data-route-scroll="`project-settings:${owner}/${title}`"
   >
-    <SettingsPageHead
-      :parent="t(sectionLabels.projects)"
-      :icon="SquareKanban"
-      :title="title"
-      :meta="t(l.ownerTracked, { owner })"
-      @back="emit('back')"
-    />
-    <TrackingBlock
-      kind="project"
-      :name="title"
-      :status="status"
-      :now="now"
-      :open-count="openCount"
-      @untrack="emit('untrack')"
-    />
+    <div :class="css.projectSettingsView_column">
+      <SettingsPageHead
+        :parent="t(sectionLabels.projects)"
+        :icon="SquareKanban"
+        :title="title"
+        :meta="t(l.ownerTracked, { owner })"
+        @back="emit('back')"
+      />
+      <TrackingBlock
+        kind="project"
+        :name="title"
+        :status="status"
+        :now="now"
+        :open-count="openCount"
+        @untrack="emit('untrack')"
+      />
+    </div>
   </div>
 </template>
 
@@ -87,5 +89,9 @@ const t = useTranslate();
   min-height: 0;
   padding: $spacing-24 32px;
   overflow-y: auto;
+}
+
+.projectSettingsView_column {
+  max-width: $settings-column-width;
 }
 </style>

@@ -1,4 +1,4 @@
-<!-- A text button on nzyme's `useButton`: a `click` listener that returns a promise keeps it busy — spinner, `aria-busy`, further clicks ignored — until the promise settles; `type="submit"` submits the surrounding `Form` and is busy while it does. With `link` it is an anchor. An optional leading icon and a trailing keyboard hint (`Kbd`), not drawn where key hints are hidden (`KeyHintsContext`). -->
+<!-- A text button (which size and variant where: `docs/design/githq/buttons.md`) on nzyme's `useButton`: a `click` listener that returns a promise keeps it busy — spinner, `aria-busy`, further clicks ignored — until the promise settles; `type="submit"` submits the surrounding `Form` and is busy while it does. With `link` it is an anchor. An optional leading icon and a trailing keyboard hint (`Kbd`), not drawn where key hints are hidden (`KeyHintsContext`). -->
 <script lang="ts">
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { defineProp } from '@nzyme/vue-utils/defineProp.js';
@@ -9,8 +9,6 @@ import type { LucideIcon } from 'lucide-vue-next';
  * - `light`: light fill, the main action of a page with nothing else on it ("Sign in with GitHub").
  * - `secondary`: raised neutral fill with an outline, next to a primary ("Only my repositories").
  * - `outline`: outline only, quieter tools of a toolbar ("Group: Reason").
- * - `framed`: a stronger outline and a medium label, an action beside a heading that plain text would leave reading as
- *   status ("Select all 12", "Show all 312"). Drawn small only.
  * - `ghost`: no fill until hovered, toolbars and menus' triggers ("Filter").
  * - `link`: text only, inline in a sentence ("Why?") or a row's meta line ("Open on GitHub").
  * - `field`: looks like a text field, for a button that opens one ("Search… ⌘K" in the sidebar).
@@ -21,7 +19,6 @@ export type ButtonVariant =
   | 'danger'
   | 'destructive'
   | 'field'
-  | 'framed'
   | 'ghost'
   | 'light'
   | 'link'
@@ -30,10 +27,11 @@ export type ButtonVariant =
   | 'secondary';
 
 /**
- * `sm` toolbars, `compact` the actions of a card or an editor in an item's thread (Comment, Resolve thread), `md` forms
- * and footers, `lg` a page's single call to action, `xl` the landing page's hero.
+ * 24 / 32 / 40 / 48 px tall (`docs/design/githq/buttons.md`): `sm` dense chrome a mouse rarely aims at (toolbars,
+ * headers inside an item), `md` every place whose purpose is an action, `lg` a page's single call to action, `xl` the
+ * landing page.
  */
-export type ButtonSize = 'compact' | 'lg' | 'md' | 'sm' | 'xl';
+export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the look. */
 export const ButtonProps = {
@@ -107,6 +105,8 @@ const kbdTone = computed(() => {
     :aria-busy="busy || undefined"
     :aria-disabled="(link && disabled) || unavailable || undefined"
     :aria-keyshortcuts="keyshortcuts ?? undefined"
+    :data-button-size="size ?? 'md'"
+    :data-button-variant="variant"
   >
     <!-- Hidden, not removed, while busy: the button keeps its width under the spinner. -->
     <span :class="css.button_content">
@@ -139,6 +139,9 @@ const kbdTone = computed(() => {
 </template>
 
 <style lang="scss" module="css">
+// Each size sets `--button-size-padding-block`, `--button-size-padding-inline`, `--button-size-radius` and
+// `--button-icon-size`; the variants that draw differently (`ghost`, `link`, `field`) override them, and the rules here
+// and `.button_keyed` consume them, so a joined control's hooks work at every size.
 .button {
   @include focus-ring;
 
@@ -148,6 +151,10 @@ const kbdTone = computed(() => {
   align-items: center;
   justify-content: center;
   margin: 0;
+  padding: var(--button-size-padding-block) var(--button-size-padding-inline);
+  // A caller joining another control to its end sets `--button-padding-end`, `--button-radius` and drops its end
+  // border with `--button-border-end-width: 0` (a split button's menu).
+  padding-inline-end: var(--button-padding-end, var(--button-size-padding-inline));
   font-family: $font-family-sans;
   font-weight: $font-weight-medium;
   line-height: 18px;
@@ -157,15 +164,13 @@ const kbdTone = computed(() => {
   user-select: none;
   background: none;
   border: 1px solid transparent;
-  // A caller joining another control to its end drops its end border with `--button-border-end-width: 0` (a split
-  // button's menu).
   border-inline-end-width: var(--button-border-end-width, 1px);
-  border-radius: 7px;
+  border-radius: var(--button-radius, var(--button-size-radius));
 }
 
 .button_content {
   display: inline-flex;
-  gap: 7px;
+  gap: $spacing-7;
   align-items: center;
   min-width: 0;
 
@@ -176,8 +181,16 @@ const kbdTone = computed(() => {
 
 .button_icon {
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+}
+
+// An icon passed in the label (a trailing chevron, the external-link mark) at the size's icon size, under any class of
+// the caller's own (no specificity): lucide's own 24px would make the button taller.
+:where(.button_content > svg) {
+  flex: none;
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
 }
 
 // The leading icon, not the busy spinner: a caller tints it with `--button-icon-color` (the action's state colour).
@@ -200,58 +213,53 @@ const kbdTone = computed(() => {
   }
 }
 
+// 24px: 3 + 16 + 3 and the border.
 .button_sm {
-  padding: 3px 7px;
+  --button-size-padding-block: 3px;
+  --button-size-padding-inline: #{$spacing-7};
+  --button-size-radius: #{$radius-md};
+  --button-icon-size: 14px;
+
   font-size: $font-size-xs;
-  font-weight: $font-weight-normal;
   line-height: 16px;
-  border-radius: $radius-md;
 
   .button_content {
     gap: $spacing-6;
   }
 }
 
-// A caller joining another control to its end sets `--button-padding-end` and `--button-radius` (a split button).
-.button_compact {
-  padding: $spacing-5 $spacing-10;
-  padding-inline-end: var(--button-padding-end, #{$spacing-10});
-  font-size: $font-size-sm;
-  border-radius: var(--button-radius, #{$radius-md});
-
-  .button_content {
-    gap: $spacing-6;
-  }
-
-  .button_icon {
-    width: 13px;
-    height: 13px;
-  }
-}
-
+// 32px: 6 + 18 + 6 and the border.
 .button_md {
-  padding: 6px 11px;
+  --button-size-padding-block: #{$spacing-6};
+  --button-size-padding-inline: 11px;
+  --button-size-radius: 7px;
+  --button-icon-size: 16px;
+
   font-size: $font-size-md;
 }
 
+// 40px: 10 + 18 + 10 and the border.
 .button_lg {
-  padding: 9px 15px;
+  --button-size-padding-block: #{$spacing-10};
+  --button-size-padding-inline: 15px;
+  --button-size-radius: 7px;
+  --button-icon-size: 16px;
+
   font-size: $font-size-lg;
 }
 
+// 48px: 13 + 20 + 13 and the border.
 .button_xl {
-  padding: 13px 21px;
+  --button-size-padding-block: 13px;
+  --button-size-padding-inline: 21px;
+  --button-size-radius: #{$radius-xl};
+  --button-icon-size: 18px;
+
   font-size: 16px;
   line-height: 20px;
-  border-radius: $radius-xl;
 
   .button_content {
     gap: $spacing-10;
-  }
-
-  .button_icon {
-    width: 18px;
-    height: 18px;
   }
 }
 
@@ -293,21 +301,6 @@ const kbdTone = computed(() => {
   }
 }
 
-.button_framed {
-  color: $color-fg-2;
-  border-color: $color-border-2;
-
-  &:hover {
-    color: $color-fg;
-    background: $color-bg-2;
-  }
-
-  &.button_sm {
-    padding-inline: 9px;
-    font-weight: $font-weight-medium;
-  }
-}
-
 .button_danger {
   color: $color-red;
   background: rgba($color-red, 0.06);
@@ -337,34 +330,40 @@ const kbdTone = computed(() => {
     background: $color-bg-3;
   }
 
+  // A narrower inline padding than the other variants'; the height is the size's.
   &.button_md {
-    padding-inline: 7px;
+    --button-size-padding-inline: #{$spacing-7};
   }
 }
 
+// Outside the size scale: the font and line of the text it sits in, no padding.
 .button_link {
-  padding: 0;
+  --button-size-padding-block: 0;
+  --button-size-padding-inline: 0;
+  --button-size-radius: #{$radius-sm};
+
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
   color: $color-fg-2;
   border: none;
-  border-radius: $radius-sm;
 
   &:hover {
     color: $color-fg;
   }
 }
 
+// The size's height; the inline padding and the look of a text field.
 .button_field {
-  padding: $spacing-6 $spacing-8;
+  --button-size-padding-inline: #{$spacing-8};
+  --button-size-radius: #{$radius-md};
+
   font-size: $font-size-sm;
   font-weight: $font-weight-normal;
   color: $color-fg-dim;
   cursor: text;
   background: $color-bg;
   border-color: $color-border;
-  border-radius: $radius-md;
 
   .button_icon {
     color: $color-fg-3;
@@ -400,7 +399,6 @@ const kbdTone = computed(() => {
   }
 
   &.button_outline,
-  &.button_framed,
   &.button_ghost,
   &.button_link {
     color: $color-fg-dim;
@@ -420,36 +418,10 @@ const kbdTone = computed(() => {
   }
 }
 
-// With a key at its end, the key sits as far from the right edge as from the top and bottom: the hint is as tall as
-// the label's line, so the end padding is the block padding. After the variants, which set their own inline padding.
+// With a key at its end, the key sits as far from the end as from the top and bottom: the hint is as tall as the
+// label's line, so the end padding is the block padding. After `.button`, at every size and variant.
 .button_keyed {
-  &.button_sm {
-    padding-inline-end: 3px;
-  }
-
-  &.button_compact {
-    padding-inline-end: var(--button-padding-end, #{$spacing-8});
-  }
-
-  &.button_md {
-    padding-inline-end: 6px;
-  }
-
-  &.button_lg {
-    padding-inline-end: 9px;
-  }
-
-  &.button_xl {
-    padding-inline-end: 13px;
-  }
-
-  &.button_field {
-    padding-inline-end: $spacing-6;
-  }
-
-  &.button_link {
-    padding-inline-end: 0;
-  }
+  padding-inline-end: var(--button-padding-end, var(--button-size-padding-block));
 }
 
 // Over the hidden content, centred in the button.

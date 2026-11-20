@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), telling the panel while the settings are on their way with none in memory, and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, turning auto-merge on or off, jumping the queue (`ItemEditor`) — and its ordinary commands, the same path as every screen's (`PullRequestCommands`) — updating its branch, leaving the queue (a stack leaves whole, through its first one, its later ones then read again) and, merged, deleting or restoring its branch — read the pull request again once done; reverting leaves for the toast leading to the new one. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), telling the panel while the settings are on their way with none in memory, and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, turning auto-merge on or off, jumping the queue (`ItemEditor`) — and its ordinary commands, the same path as every screen's (`PullRequestCommands`) — updating its branch, leaving the queue (a stack leaves whole, through its first one, its later ones then read again) and, merged, deleting or restoring its branch — read the pull request again once done; reverting leaves for the toast leading to the new one. The commit email starts on the user's stored default for the repository or its owner (`TrackingStore`, `resolveCommitEmail`), and an address picked with "Remember for this repository" becomes the repository's. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -15,6 +15,7 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import MergePanel from './MergePanel.vue';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
@@ -22,6 +23,7 @@ import { MergePanelStore } from './MergePanelStore.js';
 import { getPullRequestCommands } from './getPullRequestCommands.js';
 import { PullRequestCommands } from './PullRequestCommands.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
+import { resolveCommitEmail } from './resolveCommitEmail.js';
 import type { MergeAdvancing, MergeStep, MergeSubmission, PullRequestCommand } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
@@ -48,6 +50,7 @@ const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 const browser = useService(Browser);
 const pullRequestCommands = useService(PullRequestCommands);
+const tracking = useService(TrackingStore);
 
 const opened = computed(() => {
   const id = store.itemId;
@@ -151,6 +154,16 @@ const stackChecks = computed(() => {
 });
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
+/** The commit email a merge starts on, by the user's stored defaults; `null` until they are read. */
+const commitEmail = computed(() => {
+  const name = repository.value;
+  return name !== null && tracking.loaded
+    ? resolveCommitEmail({ ...tracking.commitEmailChoices(name), settings: settings.value })
+    : null;
+});
+const tracked = computed(
+  () => repository.value !== null && tracking.isTracked({ kind: 'repository', nameWithOwner: repository.value }),
+);
 /** The repository's merge settings are on their way, with none in memory: a `⌘↵` pressed meanwhile waits for them. */
 const settingsReading = shallowRef(false);
 const sending = shallowRef(false);
@@ -321,6 +334,13 @@ function getStepTarget(step: MergeStep) {
   return range.open.find(member => member.number === range.holder?.number) ?? pr.value;
 }
 
+/** An address picked in the panel with "Remember for this repository" on: the repository's default now (PM52). */
+function rememberEmail(email: string | null) {
+  if (repository.value !== null) {
+    tracking.setRepositoryCommitEmail(repository.value, email);
+  }
+}
+
 /** `↑`/`↓`: the line one open pull request earlier or later (D18). */
 function moveLine(direction: 'earlier' | 'later') {
   const range = stackMerge.value;
@@ -351,6 +371,8 @@ function moveLine(direction: 'earlier' | 'later') {
     :now="now"
     :stack="stackView"
     :viewer-login="auth.viewer?.login ?? null"
+    :commit-email="commitEmail"
+    :tracked="tracked"
     :commands="
       getPullRequestCommands({
         pr,
@@ -366,5 +388,6 @@ function moveLine(direction: 'earlier' | 'later') {
     @command="runCommand"
     @enable-auto-merge="enableAutoMerge"
     @visit="browser.openInNewTab"
+    @remember-email="rememberEmail"
   />
 </template>

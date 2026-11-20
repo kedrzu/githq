@@ -304,13 +304,25 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
                     :class="css.changelogView_change"
                   >
                     {{ change.description }}
-                    <a
-                      v-if="change.pullRequest !== undefined"
-                      :class="css.changelogView_pullRequest"
-                      v-bind="getPullRequestLink(change.pullRequest)"
-                    >
-                      #{{ change.pullRequest }}
-                    </a>
+                    <!-- Spaces as in a release's HTML, where the same line reads `Description #N by @login`. -->
+                    <template v-if="change.pullRequest !== undefined">
+                      {{ ' '
+                      }}<a
+                        :class="css.changelogView_meta"
+                        v-bind="getPullRequestLink(change.pullRequest)"
+                        >#{{ change.pullRequest }}</a
+                      >
+                    </template>
+                    <template v-if="change.author !== undefined">
+                      {{ ' ' }}<span :class="css.changelogView_meta">{{ t(l.by) }}</span>{{ ' '
+                      }}<a
+                        :class="css.changelogView_meta"
+                        :href="`https://github.com/${change.author}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >@{{ change.author }}</a
+                      >
+                    </template>
                   </li>
                 </ul>
               </section>
@@ -472,15 +484,19 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
       color: $color-fg-3;
     }
 
-    a.issue-link {
+    // A change's `#N by @login`, the ` by ` marked by `markReleaseAuthorBy`; dimmed as a Development change's.
+    a.issue-link,
+    a.user-mention,
+    .changelog-by {
       font-size: 12.5px;
       color: $color-fg-dim;
       text-decoration: none;
+    }
 
-      &:hover {
-        color: $color-fg-2;
-        text-decoration: underline;
-      }
+    a.issue-link:hover,
+    a.user-mention:hover {
+      color: $color-fg-2;
+      text-decoration: underline;
     }
   }
 }
@@ -527,13 +543,13 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
   }
 }
 
-.changelogView_pullRequest {
-  margin-left: $spacing-4;
+// A change's `#N by @login`.
+.changelogView_meta {
   font-size: 12.5px;
   color: $color-fg-dim;
   text-decoration: none;
 
-  &:hover {
+  &:is(a):hover {
     color: $color-fg-2;
     text-decoration: underline;
   }

@@ -148,8 +148,7 @@ const Selection = defineComponent({
                 subject: registry.subject,
                 repository: null,
                 navigation: NAVIGATION,
-                startCommandId: registry.menu?.commandId ?? null,
-                parts: null,
+                request: registry.menu,
                 onNavigate: () => undefined,
             }),
         ];

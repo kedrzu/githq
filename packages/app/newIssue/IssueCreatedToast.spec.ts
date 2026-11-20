@@ -34,11 +34,11 @@ test('Create another and Open are buttons with no keys, and Escape stays the scr
     expect(toast().getByRole('button', { name: 'Dismiss' }).elements()).toHaveLength(1);
 });
 
-test('on a phone its buttons are a finger’s height', async () => {
+test('on a phone its buttons are 32 px, a toast’s on a phone', async () => {
     await holdToastLifetimes(() => OnPhone.run());
 
     for (const name of ['Create another', 'Open']) {
         const button = toast().getByRole('button', { name, exact: true }).element();
-        expect(button.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+        expect(button.getBoundingClientRect().height).toBe(32);
     }
 });

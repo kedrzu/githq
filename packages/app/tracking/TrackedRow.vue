@@ -1,4 +1,4 @@
-<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`): its icon, name (a project's with its mono `#number`) and visibility tag, then, each after the one before, where its items come from (a project's), how many it holds and how it stands (`TrackedRowNote`); at the row's edge Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it and runs the keys. On a phone (`phone`, mobile MB151, MB154) two lines a finger's height — the owner in grey before a repository's name, then what it says in one grey line — and the chevron, with no Untrack: the row only drills into its settings, where Stop tracking is. -->
+<!-- A tracked repository's or project's row in Settings (G8 `CqvD4`, T17 `L5sxR`; selected `Dht0d`, `jbKD6`; D44): its icon, its owner in grey before its name — `mlaine/tasklet` a repository's, `fitloop / Platform Q4` a project's, with its mono `#number` — and visibility tag, then, each after the one before, where its items come from (a project's), how many it holds and how it stands (`TrackedRowNote`); at the row's edge Untrack ⌫ — shown on the hovered and on the selected row — and the chevron saying the row opens its settings. The list (`TrackedListView`) opens it, orders it and runs the keys. On a phone (`phone`, mobile MB151, MB154) two lines a finger's height — the owner and name as on a computer, then what it says in one grey line — and the chevron, with no Untrack: the row only drills into its settings, where Stop tracking is. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -18,10 +18,12 @@ const UNTRACK_KEY = keyOf(remove);
 
 defineProps<{
   icon: LucideIcon;
-  /** A repository's name (its owner is the group's), a project's title. */
+  /** A repository's name without its owner, a project's title. */
   title: string;
-  /** On a phone, the owner before a repository's name, in grey. */
-  owner?: string;
+  /** The owner, in grey before the title. */
+  owner: string;
+  /** A project's owner stands apart from its title (`fitloop / Platform Q4`); a repository's joins it (`mlaine/tasklet`). */
+  spacedOwner?: boolean;
   /** A project's number, after its title. */
   number?: number;
   /** "public", "private"; none while not known. */
@@ -57,11 +59,7 @@ const t = useTranslate();
     />
     <span :class="css.trackedRow_phoneText">
       <span :class="css.trackedRow_phoneTitle">
-        <span
-          v-if="owner"
-          :class="css.trackedRow_phoneOwner"
-          >{{ owner }}/</span
-        >{{ title
+        <span :class="css.trackedRow_owner">{{ spacedOwner ? `${owner} / ` : `${owner}/` }}</span>{{ title
         }}<span
           v-if="number !== undefined"
           :class="css.trackedRow_number"
@@ -93,7 +91,9 @@ const t = useTranslate();
       :class="css.trackedRow_icon"
       aria-hidden="true"
     />
-    <span :class="css.trackedRow_title">{{ title }}</span>
+    <span :class="css.trackedRow_title"
+      ><span :class="css.trackedRow_owner">{{ spacedOwner ? `${owner} / ` : `${owner}/` }}</span>{{ title }}</span
+    >
     <span
       v-if="number !== undefined"
       :class="css.trackedRow_number"
@@ -119,7 +119,7 @@ const t = useTranslate();
     <span :class="css.trackedRow_spacer" />
     <span :class="css.trackedRow_actions">
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         :kbd="UNTRACK_KEY"
         :keyshortcuts="selected ? formatAriaKeyShortcuts(UNTRACK_KEY) : undefined"
@@ -169,7 +169,7 @@ const t = useTranslate();
   white-space: nowrap;
 }
 
-.trackedRow_phoneOwner {
+.trackedRow_owner {
   font-weight: $font-weight-normal;
   color: $color-fg-dim;
 }

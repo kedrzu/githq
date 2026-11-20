@@ -1,0 +1,10 @@
+resolveFailed:
+  en: "Couldn't resolve it: {reason}"
+unresolveFailed:
+  en: "Couldn't open it again: {reason}"
+deleteFailed:
+  en: "Couldn't delete the comment: {reason}"
+notReached:
+  en: GitHub wasn't reached.
+noReason:
+  en: GitHub gave no reason.

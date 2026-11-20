@@ -77,7 +77,6 @@ const look = computed(
       <Button
         v-if="newIssue"
         variant="secondary"
-        size="sm"
         :icon="SquarePen"
         :kbd="newIssue.key"
         :keyshortcuts="newIssue.key"
@@ -87,7 +86,6 @@ const look = computed(
       </Button>
       <Button
         variant="secondary"
-        size="sm"
         :icon="Search"
         :kbd="keyOf(definitions.commandMenu)"
         :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.commandMenu))"
@@ -102,7 +100,6 @@ const look = computed(
     >
       <Button
         variant="secondary"
-        size="sm"
         :icon="Hourglass"
         :kbd="waitingKey"
         :keyshortcuts="waitingKey"

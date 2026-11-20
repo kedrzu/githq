@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 import { escapeRegExp } from '../utils/escapeRegExp.js';
@@ -60,6 +61,40 @@ export class AppShellHarness {
     /** One of {@link placeRows} by its name: "Pull requests", "Backlog". */
     placeRow(name: string, row: string): Locator {
         return this.placeRows(name).filter({ hasText: new RegExp(`^${escapeRegExp(row)}`) });
+    }
+
+    /**
+     * The sidebar's tracked repositories or projects on a computer, in the order shown: the rows of the list under the
+     * "Repositories" or "Projects" heading.
+     */
+    trackedRows(group: 'Repositories' | 'Projects'): Locator {
+        return this.sidebar
+            .getByRole('heading', { level: 2, name: group, exact: true })
+            .locator('xpath=following-sibling::ul[1]/li');
+    }
+
+    /**
+     * Drags a tracked repository (`owner/name`) or project (its title) in the sidebar onto another's place (D44), with
+     * the mouse moving in steps, as a hand does: the list only starts a drag a few pixels in. Waits for the rows
+     * still sliding from an earlier drag to settle first: Sortable starts no drag on a row while it slides.
+     */
+    async dragTracked(name: string, onto: string): Promise<void> {
+        await expect(this.sidebar.locator('li[style*="translate"]')).toHaveCount(0);
+        const from = await this.tracked(name).boundingBox();
+        const to = await this.tracked(onto).boundingBox();
+        if (!from || !to) {
+            throw new Error('The rows are not on screen');
+        }
+
+        await this.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+        await this.page.mouse.down();
+        await this.page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });
+        // Sortable passes over a row still sliding out of the way: once they all stand, move over the target again, so
+        // the last place it took is the target's, however slow the machine.
+        await expect(this.sidebar.locator('li[style*="translate"]')).toHaveCount(0);
+        await this.page.mouse.move(to.x + to.width / 2, to.y + to.height / 2 + 1);
+        await expect(this.sidebar.locator('li[style*="translate"]')).toHaveCount(0);
+        await this.page.mouse.up();
     }
 
     /** Right-clicks a tracked repository (`owner/name`) or project (its title) in the sidebar: its context menu. */

@@ -67,11 +67,11 @@ function getGitHubLink(nameWithOwner: string, target: WorkflowActionTarget) {
     {{ texts.detail(store.rerunFailure) }}
     <template
       v-if="link"
-      #actions="{ active }"
+      #actions="{ active, size }"
     >
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="ArrowUpRight"
         :link="link.url"
         :kbd="active ? link.kbd : undefined"

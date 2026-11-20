@@ -54,6 +54,5 @@ const t = useTranslate();
   @include settings-screen-column;
 
   gap: $spacing-32;
-  max-width: 560px;
 }
 </style>

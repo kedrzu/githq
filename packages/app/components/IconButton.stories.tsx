@@ -16,7 +16,7 @@ export default meta;
 
 type Story = StoryObj<typeof IconButton>;
 
-/** In a header next to text, and on the rail; one shown but not built yet, one busy. */
+/** Each size: in a header next to text, beside medium buttons, and on the rail; one shown but not built yet, one busy. */
 export const Gallery: Story = {
     render: () => (
         <StoryPage>
@@ -39,10 +39,25 @@ export const Gallery: Story = {
                     />
                 </StoryRow>
             </StorySection>
-            <StorySection title="Medium — the rail">
+            <StorySection title="Medium — beside medium buttons">
                 <StoryRow>
                     <IconButton
                         size="md"
+                        icon={Maximize2}
+                        label="Expand the diff"
+                    />
+                    <IconButton
+                        size="md"
+                        icon={X}
+                        label="Close"
+                        kbd="Escape"
+                    />
+                </StoryRow>
+            </StorySection>
+            <StorySection title="The rail">
+                <StoryRow>
+                    <IconButton
+                        size="rail"
                         label="Account: kedrzu"
                     >
                         <Avatar
@@ -52,19 +67,19 @@ export const Gallery: Story = {
                         />
                     </IconButton>
                     <IconButton
-                        size="md"
+                        size="rail"
                         icon={PanelLeftOpen}
                         label="Expand sidebar"
                         kbd="["
                     />
                     <IconButton
-                        size="md"
+                        size="rail"
                         icon={Search}
                         label="Search or jump to…"
                         unavailable
                     />
                     <IconButton
-                        size="md"
+                        size="rail"
                         icon={Search}
                         label="Searching"
                         busy

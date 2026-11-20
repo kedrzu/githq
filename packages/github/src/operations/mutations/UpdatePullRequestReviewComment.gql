@@ -1,0 +1,8 @@
+# Edits a review comment's Markdown; answers with the comment as GitHub rendered it.
+mutation UpdatePullRequestReviewComment($id: ID!, $body: String!) {
+    updatePullRequestReviewComment(input: { pullRequestReviewCommentId: $id, body: $body }) {
+        pullRequestReviewComment {
+            ...ReviewThreadCommentFields
+        }
+    }
+}

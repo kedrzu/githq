@@ -98,8 +98,7 @@ const icon = computed(() => {
       </p>
       <div :class="css.trackingBlock_action">
         <Button
-          variant="outline"
-          size="sm"
+          variant="secondary"
           @click="emit('untrack')"
         >
           {{ t(l.untrack) }}
@@ -122,7 +121,6 @@ const icon = computed(() => {
 
 .trackingBlock_phoneButton {
   width: 100%;
-  min-height: $touch-target-size;
 }
 
 .trackingBlock_phoneNote {

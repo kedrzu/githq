@@ -1,11 +1,17 @@
 /**
  * Prints the last 30 days of usage statistics from Workers Analytics Engine, newest day first: how often each event
  * happened, by client and platform (the data point's layout is in `src/usage.ts`). Run it with
- * `bun --cwd packages/worker stats`; the token comes from the secret store (the `secrets` skill).
+ * `bun --cwd packages/worker stats`; it reads the token from the secret store itself (`loadSecretsConfig`, the `secrets`
+ * skill).
  */
 import { readFile } from 'node:fs/promises';
 
-const TOKEN_VARIABLE = 'CLOUDFLARE_ANALYTICS_TOKEN';
+import { GithqSecretStore } from '@githq/secrets/GithqSecretStore.js';
+import { CLOUDFLARE_ANALYTICS_TOKEN } from '@githq/secrets/secrets.js';
+import { createContainer } from '@nzyme/ioc/Container.js';
+import type { Container } from '@nzyme/ioc/Container.js';
+import { loadSecretsConfig } from '@nzyme/secrets/loadSecretsConfig.js';
+import { resolveOptionalSecret } from '@nzyme/secrets/resolveOptionalSecret.js';
 
 const QUERY = `
 SELECT
@@ -22,31 +28,38 @@ FORMAT JSON`;
 
 const COLUMNS = ['day', 'event', 'client', 'platform', 'total'] as const;
 
-type StatsRow = Record<(typeof COLUMNS)[number], string>;
+export type StatsRow = Record<(typeof COLUMNS)[number], string>;
 
-const token = process.env[TOKEN_VARIABLE];
-if (!token) {
-    console.error(
-        `${TOKEN_VARIABLE} is not set. Create a Cloudflare API token (My Profile → API Tokens, permission ` +
-            'Account → Account Analytics → Read) and store it once with:\n\n' +
-            '  GITHQ_ENV=stats bun nzyme secrets set CLOUDFLARE_ANALYTICS_TOKEN ' +
-            '--prompt="Cloudflare API token with Account Analytics: Read"\n\n' +
-            'then run `bun --cwd packages/worker stats`.',
-    );
-    process.exit(1);
+if (import.meta.main) {
+    const container = createContainer();
+    await loadSecretsConfig(container, [container.resolve(GithqSecretStore)]);
+    if (resolveOptionalSecret(container, CLOUDFLARE_ANALYTICS_TOKEN) === undefined) {
+        console.error(
+            'CLOUDFLARE_ANALYTICS_TOKEN is not set. Create a Cloudflare API token (My Profile → API Tokens, permission ' +
+                'Account → Account Analytics → Read) and store it once with:\n\n' +
+                '  GITHQ_ENV=stats bun secrets set CLOUDFLARE_ANALYTICS_TOKEN ' +
+                '--prompt="Cloudflare API token with Account Analytics: Read"\n\n' +
+                'then run `bun --cwd packages/worker stats`.',
+        );
+        process.exit(1);
+    }
+    printTable(await readUsageStats(container));
 }
 
-const accountId = await readAccountId();
-const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/analytics_engine/sql`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: QUERY,
-});
-if (!response.ok) {
-    console.error(`Analytics Engine answered ${response.status}: ${await response.text()}`);
-    process.exit(1);
+/** The usage of the last 30 days, asked of Analytics Engine with the container's `CLOUDFLARE_ANALYTICS_TOKEN`. */
+export async function readUsageStats(container: Container): Promise<StatsRow[]> {
+    const token = container.resolve(CLOUDFLARE_ANALYTICS_TOKEN);
+    const accountId = await readAccountId();
+    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/analytics_engine/sql`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: QUERY,
+    });
+    if (!response.ok) {
+        throw new Error(`Analytics Engine answered ${response.status}: ${await response.text()}`);
+    }
+    return readRows(await response.json());
 }
-printTable(readRows(await response.json()));
 
 /** The account is named in `wrangler.jsonc` (JSONC: comments, so not `JSON.parse`). */
 async function readAccountId(): Promise<string> {

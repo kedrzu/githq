@@ -735,7 +735,7 @@ interface CreateEnableAutoMergeEditParams {
  */
 function createEnableAutoMergeEdit(params: CreateEnableAutoMergeEditParams): Edit {
     const { item, viewer, now } = params;
-    const { method, title, body } = params.request;
+    const { method, title, body, authorEmail } = params.request;
     const autoMerge: PullRequestAutoMerge = {
         mergeMethod: method,
         enabledAt: now,
@@ -752,6 +752,7 @@ function createEnableAutoMergeEdit(params: CreateEnableAutoMergeEditParams): Edi
                 expectedHeadOid: item.headRefOid,
                 ...(title === undefined ? {} : { commitHeadline: title }),
                 ...(body === undefined ? {} : { commitBody: body }),
+                ...(authorEmail === undefined ? {} : { authorEmail }),
             });
             const answer = enablePullRequestAutoMerge?.pullRequest;
             return answer?.autoMergeRequest ? confirmedAutoMerge(answer) : toDroppedVerdict();

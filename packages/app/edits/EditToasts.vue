@@ -106,11 +106,11 @@ function getLink(failure: EditFailure) {
       @dismiss="queue.dismiss(failure.id)"
     >
       {{ texts.failureDetail(failure) }}
-      <template #actions="{ active }">
+      <template #actions="{ active, size }">
         <Button
           v-if="getFailedIds(failure).length > 0"
           variant="secondary"
-          size="sm"
+          :size="size"
           :kbd="active ? keyOf(selectFailedCommand) : undefined"
           :keyshortcuts="active ? keyOf(selectFailedCommand) : undefined"
           @click="selectFailed(failure)"
@@ -120,7 +120,7 @@ function getLink(failure: EditFailure) {
         <Button
           v-if="getUnrestoredComment(failure)"
           variant="secondary"
-          size="sm"
+          :size="size"
           :icon="Undo2"
           @click="restoreComment(failure)"
         >
@@ -129,7 +129,7 @@ function getLink(failure: EditFailure) {
         <Button
           v-if="getLink(failure)"
           variant="secondary"
-          size="sm"
+          :size="size"
           :icon="ArrowUpRight"
           :link="getLink(failure)?.url"
           target="_blank"

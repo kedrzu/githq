@@ -23,11 +23,15 @@ import {
     readAnimations,
     readMaxWidth,
     readUsageStatistics,
+    readOwnerCommitEmail,
     readRefSort,
+    readRepositoryCommitEmail,
     readReviewCommentChoice,
     readSettingsDocument,
     readWorkflowRunsGroupBy,
+    writeOwnerCommitEmail,
     writeRefSort,
+    writeRepositoryCommitEmail,
     writeWorkflowRunsGroupBy,
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
@@ -45,6 +49,7 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import type { WorkflowRefSettings, WorkflowRunsGroupBy } from '@/workflows/WorkflowTypes.js';
 
 import { TrackingPersistence } from './TrackingPersistence.js';
@@ -67,6 +72,14 @@ import type {
     TrackingCandidates,
     TrackingProgress,
 } from './TrackingTypes.js';
+
+/** The default commit email chosen for a repository and for its owner. */
+export interface CommitEmailChoices {
+    /** `undefined` inherits the owner's choice, `null` is GitHub's default, a string that address. */
+    readonly repository: string | null | undefined;
+    /** An address, or `null` for GitHub's default. */
+    readonly owner: string | null;
+}
 
 /** What the user chose to track on the tracking screen (G2, G8). */
 export interface TrackingChoice {
@@ -230,12 +243,16 @@ export const TrackingStore = defineService({
             markChosen,
             track,
             untrack,
+            move,
             replaceDocument,
             setWorkflowSettings,
             setAnimations,
             setUsageStatistics,
             setReviewCommentChoice,
             setRefSort,
+            commitEmailChoices,
+            setOwnerCommitEmail,
+            setRepositoryCommitEmail,
             setMaxWidth,
             setWorkflowRunsGroupBy,
             onUntrack,
@@ -324,6 +341,42 @@ export const TrackingStore = defineService({
         }
 
         /**
+         * Puts the repository or project right before or after `place.anchor`, the other of the same kind, in the
+         * settings document's order — the order the sidebar and Settings show. Entries not shown (untracked ones)
+         * keep their places relative to each other, and every entry is moved as it is. Nothing when the kinds differ,
+         * either is not in the document or it already stands there.
+         */
+        function move(target: TrackedTarget, place: { anchor: TrackedTarget; side: 'before' | 'after' }) {
+            const written = write(kept => {
+                const { anchor, side } = place;
+                if (target.kind === 'repository' && anchor.kind === 'repository') {
+                    const repositories = moveEntry(
+                        kept.document.repositories,
+                        target.nameWithOwner,
+                        { anchor: anchor.nameWithOwner, side },
+                        repository => repository.nameWithOwner,
+                    );
+                    return repositories && { ...kept, document: { ...kept.document, repositories } };
+                }
+
+                if (target.kind === 'project' && anchor.kind === 'project') {
+                    const projects = moveEntry(
+                        kept.document.projects,
+                        target.id,
+                        { anchor: anchor.id, side },
+                        project => project.id,
+                    );
+                    return projects && { ...kept, document: { ...kept.document, projects } };
+                }
+
+                return null;
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
          * Replaces the settings document wholesale — with the settings repository's, merged (settings-sync D11). What
          * it no longer tracks is untracked, its copy dropped; what it newly tracks is downloaded. Kept and sent to the
          * other tabs like any change; nothing while signed out.
@@ -340,6 +393,48 @@ export const TrackingStore = defineService({
         function setWorkflowSettings(nameWithOwner: string, settings: WorkflowRefSettings) {
             const written = write(kept => {
                 const document = writeWorkflowSettings({ document: kept.document, nameWithOwner, settings });
+                return document && { ...kept, document };
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The default commit email chosen for the repository and for its owner, as the slot holds them now: `repository`
+         * is `undefined` to inherit the owner's, `null` for GitHub's default; `owner` is `null` for GitHub's default.
+         * Reactive when read in a computed or a render.
+         */
+        function commitEmailChoices(nameWithOwner: string): CommitEmailChoices {
+            const { document } = keptRef.value;
+            const entry = document.repositories.find(repository => repository.nameWithOwner === nameWithOwner);
+            return {
+                repository: readRepositoryCommitEmail(entry),
+                owner: readOwnerCommitEmail(document, parseRepositoryName(nameWithOwner).owner),
+            };
+        }
+
+        /**
+         * The user's default commit email for an owner's repositories (`null` for GitHub's default), a change made
+         * here: kept, sent to the other tabs and saved. Nothing when the owner reads as that already.
+         */
+        function setOwnerCommitEmail(owner: string, email: string | null) {
+            const written = write(kept => {
+                const document = writeOwnerCommitEmail({ document: kept.document, owner, email });
+                return document && { ...kept, document };
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's default commit email for a repository: `undefined` inherits the owner's, `null` is GitHub's
+         * default, a string that address. Nothing when the settings hold no entry of it, or that choice already.
+         */
+        function setRepositoryCommitEmail(nameWithOwner: string, email: string | null | undefined) {
+            const written = write(kept => {
+                const document = writeRepositoryCommitEmail({ document: kept.document, nameWithOwner, email });
                 return document && { ...kept, document };
             });
             if (written) {
@@ -1065,6 +1160,32 @@ function applyEntries<T extends SettingsRepository | SettingsProject>(
     }
 
     return next;
+}
+
+/**
+ * `entries` with the one keyed `key` moved right before or after the one keyed `place.anchor`, as the same object;
+ * `null` when either is missing or the order stays.
+ */
+function moveEntry<T>(
+    entries: readonly T[],
+    key: string,
+    place: { anchor: string; side: 'before' | 'after' },
+    keyOf: (entry: T) => string,
+): T[] | null {
+    const entry = entries.find(other => keyOf(other) === key);
+    if (!entry || key === place.anchor) {
+        return null;
+    }
+
+    const rest = entries.filter(other => other !== entry);
+    const anchorIndex = rest.findIndex(other => keyOf(other) === place.anchor);
+    if (anchorIndex < 0) {
+        return null;
+    }
+
+    const next = [...rest];
+    next.splice(place.side === 'before' ? anchorIndex : anchorIndex + 1, 0, entry);
+    return next.every((other, index) => other === entries[index]) ? null : next;
 }
 
 /** A page of repositories as offered: without the user's settings repository, counted without it too. */

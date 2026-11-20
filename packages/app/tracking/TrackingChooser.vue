@@ -134,8 +134,6 @@ const props = defineProps<{
   tracked?: readonly TrackedRepositoryEntry[];
   /** The picker: `candidates` are being read — the list says so. */
   reading?: boolean;
-  /** The picker: the owner it opens on (a group's "Track more"); all owners when not given or GitHub doesn't list it. */
-  initialOwner?: string;
 }>();
 
 defineSlots<{
@@ -167,7 +165,7 @@ const phoneLayout = useService(PhoneLayout);
 const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
-const owner = ref<string>(props.initialOwner ?? 'all');
+const owner = ref<string>('all');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const projectsUnfolded = ref(false);
 /** The segment a phone shows. */
@@ -429,7 +427,7 @@ const footerDetail = computed(() => {
 });
 /** A phone's group action ("Select none", "Show all"): a text link in the accent, a finger's height. */
 const groupActionLook = computed((): GroupActionLook =>
-  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'framed', size: 'sm' },
+  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'outline', size: 'sm' },
 );
 // What the filter names, once nothing listed matches it: not while the lists are first read — after reading them
 // failed it still is — and not under an owner picked that it doesn't name. G10 looks a project's address up too.
@@ -519,7 +517,7 @@ watch(filter, () => {
   repositoryAnchor.value = null;
 });
 
-// The owner it opened on turns out not to be one GitHub lists (someone else's group's "Track more"): all of them.
+// The owner picked is not one GitHub lists, as its lists are read again: all of them.
 watch(
   () => props.candidates,
   candidates => {
@@ -1028,6 +1026,7 @@ function projectMeta(project: CandidateProject) {
       <div v-else>
         <Button
           variant="primary"
+          size="lg"
           kbd="Mod+Enter"
           :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :busy="busy"
@@ -1387,6 +1386,7 @@ function projectMeta(project: CandidateProject) {
           <Button
             v-if="!typing"
             :variant="phone ? 'ghost' : undefined"
+            :size="phone ? 'md' : 'lg'"
             :class="css.trackingChooser_onlyMine"
             :unavailable="busy"
             @click="emit('onlyMine')"
@@ -1395,7 +1395,7 @@ function projectMeta(project: CandidateProject) {
           </Button>
           <Button
             variant="primary"
-            :size="phone && !typing ? 'lg' : undefined"
+            :size="typing ? 'md' : 'lg'"
             :class="css.trackingChooser_track"
             kbd="Mod+Enter"
             :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"

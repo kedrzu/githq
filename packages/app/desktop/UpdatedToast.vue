@@ -67,11 +67,11 @@ function onOpenChange(open: boolean) {
     {{ older ? t(l.olderDetail) : t(l.updatedDetail, { previousVersion: shown.previousVersion }) }}
     <template
       v-if="!older"
-      #actions="{ active }"
+      #actions="{ active, size }"
     >
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(whatChanged) : undefined"
         :keyshortcuts="active ? keyOf(whatChanged) : undefined"
         @click="openChangelog"

@@ -56,7 +56,7 @@ require_bun_floor
 # config is shared by every worktree of this clone, and setting it again is harmless. A driver that
 # cannot run yet (nothing installed) makes git report a conflict, which the catch-up aborts and reports.
 git config merge.pen.name "Pen design file"
-git config merge.pen.driver "bun nzyme pen merge %O %A %B %P"
+git config merge.pen.driver "bun pen merge %O %A %B %P"
 
 # --- Worktree: catch up with origin/main, copy local files ---
 #
@@ -112,20 +112,14 @@ if [ "$CI" != "true" ] && [ "$repo_root" != "$(pwd -P)" ]; then
         fi
     fi
 
-    # Gitignored files that live only in the main checkout: personal instructions (CLAUDE.local.md),
-    # personal Claude settings and env files (the root `.env` holds the dev OAuth App's credentials). Templates
-    # (`*.example`) are committed and stay as they are; a file already in the worktree is not
-    # overwritten. `(N)` is zsh's nullglob: a pattern matching nothing is skipped, not fatal.
+    # Gitignored files that live only in the main checkout: personal instructions (CLAUDE.local.md) and
+    # personal Claude settings. No env file: credentials come from the secret store, which every worktree reads
+    # through the keychain. A file already in the worktree is not overwritten.
     echo ""
     echo "📋 Copying local files from the main checkout..."
     echo ""
-    for src in "$repo_root"/CLAUDE.local.md "$repo_root"/.claude/settings.local.json \
-        "$repo_root"/.env(N) "$repo_root"/.env.*(N) "$repo_root"/packages/*/.dev.vars(N) \
-        "$repo_root"/packages/*/.dev.vars.*(N); do
+    for src in "$repo_root"/CLAUDE.local.md "$repo_root"/.claude/settings.local.json; do
         rel=${src#$repo_root/}
-        case "$rel" in
-            *.example) continue ;;
-        esac
         if [ -f "$src" ] && [ ! -e "$rel" ]; then
             mkdir -p "$(dirname "$rel")"
             cp "$src" "$rel"

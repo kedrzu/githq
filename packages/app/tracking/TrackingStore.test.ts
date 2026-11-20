@@ -276,6 +276,84 @@ test('tabs stay in step: another tab takes the change in, and the document it sa
     expect(second.tracking.repositories).toEqual([API, WEB]);
 });
 
+test('move puts an entry before or after another of its kind, keeping unshown entries and unknown fields, and another tab sees the order', async () => {
+    const login = uniqueLogin();
+    const key = `githq.settings.${login}`;
+    const newer = { ...DOCS, tracking: true, future: { a: 1 } };
+    const document: SettingsDocument = {
+        version: 1,
+        repositories: [
+            { ...WEB, tracking: true },
+            { ...API, tracking: false },
+            newer,
+            { nameWithOwner: 'acme/last', id: 'R_last', tracking: true },
+        ],
+        projects: [{ ...ROADMAP, tracking: true }],
+    };
+    const localStorage = new Map([[key, JSON.stringify({ chosen: true, document, saving: { state: 'off' } })]]);
+    const tabs = createTestTabs();
+    const first = await open({ login, tabs, localStorage });
+    const second = await open({ login, tabs, localStorage });
+    const names = () => first.tracking.document.repositories.map(repository => repository.nameWithOwner);
+
+    first.tracking.move(
+        { kind: 'repository', nameWithOwner: 'acme/web' },
+        { anchor: { kind: 'repository', nameWithOwner: 'acme/docs' }, side: 'after' },
+    );
+    // The untracked acme/api keeps its place relative to the others.
+    expect(names()).toEqual(['acme/api', 'acme/docs', 'acme/web', 'acme/last']);
+    expect(first.tracking.document.repositories[1]).toEqual(newer);
+    expect(first.tracking.repositories.map(repository => repository.nameWithOwner)).toEqual([
+        'acme/docs',
+        'acme/web',
+        'acme/last',
+    ]);
+
+    first.tracking.move(
+        { kind: 'repository', nameWithOwner: 'acme/last' },
+        { anchor: { kind: 'repository', nameWithOwner: 'acme/docs' }, side: 'before' },
+    );
+    expect(names()).toEqual(['acme/api', 'acme/last', 'acme/docs', 'acme/web']);
+
+    await first.session.clock.advance(0);
+    expect(second.tracking.document).toEqual(first.tracking.document);
+    expect(second.tracking.repositories.map(repository => repository.nameWithOwner)).toEqual([
+        'acme/last',
+        'acme/docs',
+        'acme/web',
+    ]);
+});
+
+test('move writes nothing when it stands there already, an entry is unknown or the kinds are mixed', async () => {
+    const login = uniqueLogin();
+    const tabs = createTestTabs();
+    const first = await open({ login, tabs });
+    const second = await open({ login, tabs });
+    first.tracking.choose({ repositories: [WEB, API], projects: [ROADMAP] });
+    await first.session.clock.advance(0);
+    let changes = 0;
+    first.tracking.onLocalChange(() => changes++);
+    const before = first.localStorage.get(`githq.settings.${login}`);
+    const secondBefore = second.tracking.document;
+    const web: TrackedTarget = { kind: 'repository', nameWithOwner: 'acme/web' };
+    const api: TrackedTarget = { kind: 'repository', nameWithOwner: 'acme/api' };
+    const unknown: TrackedTarget = { kind: 'repository', nameWithOwner: 'acme/unknown' };
+    const roadmap: TrackedTarget = { kind: 'project', id: 'PVT_1' };
+
+    first.tracking.move(web, { anchor: api, side: 'before' });
+    first.tracking.move(api, { anchor: web, side: 'after' });
+    first.tracking.move(web, { anchor: web, side: 'after' });
+    first.tracking.move(web, { anchor: unknown, side: 'after' });
+    first.tracking.move(unknown, { anchor: web, side: 'after' });
+    first.tracking.move(web, { anchor: roadmap, side: 'after' });
+    first.tracking.move(roadmap, { anchor: web, side: 'before' });
+    await first.session.clock.advance(0);
+
+    expect(changes).toBe(0);
+    expect(first.localStorage.get(`githq.settings.${login}`)).toBe(before);
+    expect(second.tracking.document).toBe(secondBefore);
+});
+
 test('a repository’s workflows setting is written only when the user changes it, kept through untracking, told as a local change and taken in by another tab', async () => {
     const login = uniqueLogin();
     const tabs = createTestTabs();

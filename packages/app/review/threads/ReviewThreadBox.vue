@@ -1,4 +1,4 @@
-<!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Under the comments, what the viewer may do: Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, and Resolve, or Unresolve on one opened (CR74). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box is inside the thread, in a band with the viewer's avatar after the comments, Reply… gives way to it and Resolve thread has a band of its own under it; the comments stay where they were. A change of state GitHub didn't take says so here, in the state it went back to. -->
+<!-- A review thread's box (`Review / Thread`), on the page's colour: under an amber "Outdated" head band saying how it was placed (D30), its comments (`ReviewComment`) in a padded body, then the bands closing it (`ReviewThreadBands`): the Reply band with the viewer's avatar and Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, showing its key there (`· focused`); then the Resolve band with Resolve thread, or Unresolve on one opened (CR74). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the rest follows. The accent edge says it is the thread N and ⇧N are at (D32). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box takes Reply…'s place in its band; the comments stay where they were. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where GitHub lets the viewer reply, Copy link, Delete) and shows an edit on its way. A change of state or a deletion GitHub didn't take says so in the Resolve band, the thread as it went back to. -->
 <script lang="ts">
 import type { ReviewCommentTarget } from '../writing/ReviewWriting.js';
 
@@ -13,22 +13,23 @@ export interface ReviewThreadReplies {
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronDown, ChevronUp, CircleCheck, History, RotateCcw } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, CircleCheck, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { comment as commentCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
-import Button from '@/components/Button.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
+import ReviewComment from './ReviewComment.vue';
+import type { ReviewCommentActions } from './ReviewCommentActions.js';
 import * as l from './ReviewThreadBox.loc.js';
-import ReviewThreadComment from './ReviewThreadComment.vue';
+import ReviewThreadBands from './ReviewThreadBands.vue';
 import type { ReviewThread } from './ReviewThread.js';
 import ReviewFailureNote from '../writing/ReviewFailureNote.vue';
 import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
-import { useResolveFailureText } from '../writing/useResolveFailureText.js';
+import { useThreadFailureText } from '../writing/useThreadFailureText.js';
 
 const props = defineProps<{
   thread: ReviewThread;
@@ -43,6 +44,10 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** Why resolving it or opening it again didn't go through. */
   resolveFailure?: ReviewWriteFailure | null;
+  /** Why deleting one of its comments didn't go through (`ReviewWriting.getDeleteFailure`). */
+  deleteFailure?: ReviewWriteFailure | null;
+  /** What the view does with its comments, from their ⋯; none, no ⋯. */
+  commentActions?: ReviewCommentActions | null;
 }>();
 
 const emit = defineEmits<{
@@ -58,7 +63,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
-const getFailureText = useResolveFailureText();
+const getFailureText = useThreadFailureText();
 
 const first = computed(() => props.thread.comments[0] ?? null);
 const who = computed(() => first.value?.author?.login ?? t(l.ghost));
@@ -71,9 +76,18 @@ const whole = computed(() => !props.thread.isResolved || props.open || box.value
 const canToggle = computed(() =>
   props.thread.isResolved ? props.thread.viewerCanUnresolve : props.thread.viewerCanResolve,
 );
-const failureText = computed(() =>
-  props.resolveFailure ? getFailureText(props.resolveFailure, props.thread.isResolved) : null,
-);
+const failureTexts = computed(() => {
+  const texts: string[] = [];
+  if (props.resolveFailure) {
+    texts.push(getFailureText(props.resolveFailure, props.thread.isResolved ? 'unresolve' : 'resolve'));
+  }
+
+  if (props.deleteFailure) {
+    texts.push(getFailureText(props.deleteFailure, 'delete'));
+  }
+
+  return texts;
+});
 </script>
 
 <template>
@@ -85,7 +99,6 @@ const failureText = computed(() =>
       css.reviewThreadBox,
       thread.isResolved && css.reviewThreadBox_resolved,
       focused && css.reviewThreadBox_focused,
-      box && css.reviewThreadBox_replying,
     ]"
   >
     <button
@@ -115,10 +128,7 @@ const failureText = computed(() =>
         aria-hidden="true"
       />
     </button>
-    <div
-      v-if="whole"
-      :class="css.reviewThreadBox_body"
-    >
+    <template v-if="whole">
       <p
         v-if="outdatedNote !== null"
         :class="css.reviewThreadBox_head"
@@ -130,90 +140,72 @@ const failureText = computed(() =>
         <span :class="css.reviewThreadBox_outdated">{{ t(l.outdated) }}</span>
         <span :class="css.reviewThreadBox_note">{{ outdatedNote }}</span>
       </p>
-      <ReviewThreadComment
-        v-for="comment in thread.comments"
-        :key="comment.id"
-        :comment="comment"
-      />
-      <template
-        v-for="sent in replies?.sent ?? []"
-        :key="sent.id"
-      >
-        <slot
-          name="reply"
-          :target="sent"
+      <div :class="css.reviewThreadBox_body">
+        <ReviewComment
+          v-for="comment in thread.comments"
+          :key="comment.id"
+          :comment-id="comment.id"
+          :author="comment.author"
+          :created-at="comment.createdAt"
+          :url="comment.url"
+          :edited="comment.lastEditedAt !== null"
+          :in-draft="comment.state === 'PENDING'"
+          :html="comment.bodyHTML"
+          :actions="commentActions"
+          :body="comment.body"
+          :can-edit="comment.viewerCanUpdate"
+          :can-delete="comment.viewerCanDelete"
+          :can-quote="thread.viewerCanReply"
         />
-      </template>
-      <div
-        v-if="!box && (thread.viewerCanReply || canToggle)"
-        :class="css.reviewThreadBox_actions"
-      >
-        <Button
-          v-if="thread.viewerCanReply"
-          :class="css.reviewThreadBox_reply"
-          variant="field"
-          size="sm"
-          block
-          :kbd="focused ? keyOf(commentCommand) : undefined"
-          :keyshortcuts="focused ? keyOf(commentCommand) : undefined"
-          @click="emit('reply')"
+        <template
+          v-for="sent in replies?.sent ?? []"
+          :key="sent.id"
         >
-          {{ inDraft ? t(l.addToDraft) : t(l.reply) }}
-        </Button>
-        <span
-          v-else
-          :class="css.reviewThreadBox_spacer"
-        />
-        <Button
-          v-if="canToggle"
-          size="sm"
-          variant="outline"
-          @click="emit('setResolved', !thread.isResolved)"
-        >
-          {{ thread.isResolved ? t(l.unresolve) : t(l.resolve) }}
-        </Button>
+          <slot
+            name="reply"
+            :target="sent"
+          />
+        </template>
       </div>
-    </div>
-    <div
-      v-if="box"
-      :class="css.reviewThreadBox_replyBand"
-    >
-      <Avatar
-        :name="viewer?.login ?? t(l.ghost)"
-        :src="viewer?.avatarUrl"
-        decorative
-      />
-      <div :class="css.reviewThreadBox_replyBox">
-        <slot
-          name="reply"
-          :target="box"
-        />
-      </div>
-    </div>
-    <div
-      v-if="box && canToggle"
-      :class="css.reviewThreadBox_resolveBand"
-    >
-      <Button
-        :class="!thread.isResolved && css.reviewThreadBox_resolve"
-        size="compact"
-        :icon="thread.isResolved ? RotateCcw : CircleCheck"
-        @click="emit('setResolved', !thread.isResolved)"
+      <ReviewThreadBands
+        :viewer="viewer"
+        :can-reply="thread.viewerCanReply"
+        :reply-label="inDraft ? t(l.addToDraft) : undefined"
+        :reply-key="focused ? keyOf(commentCommand) : undefined"
+        :can-toggle="canToggle"
+        :resolved="thread.isResolved"
+        @reply="emit('reply')"
+        @set-resolved="emit('setResolved', $event)"
       >
-        {{ thread.isResolved ? t(l.unresolve) : t(l.resolveThread) }}
-      </Button>
-    </div>
-    <ReviewFailureNote
-      v-if="failureText !== null"
-      :class="css.reviewThreadBox_failure"
-      :text="failureText"
-    />
+        <template
+          v-if="box"
+          #box
+        >
+          <slot
+            name="reply"
+            :target="box"
+          />
+        </template>
+        <template
+          v-if="failureTexts.length > 0"
+          #notes
+        >
+          <ReviewFailureNote
+            v-for="text in failureTexts"
+            :key="text"
+            :text="text"
+          />
+        </template>
+      </ReviewThreadBands>
+    </template>
   </div>
 </template>
 
 <style lang="scss" module="css">
+// Its bands meet its rounded edge: what overflows it is cut off.
 .reviewThreadBox {
-  background: $color-bg-2;
+  overflow: hidden;
+  background: $color-bg;
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
 }
@@ -224,11 +216,6 @@ const failureText = computed(() =>
 
 .reviewThreadBox_focused {
   border-color: $color-accent;
-}
-
-// Replying it is the page's colour, the reply's band standing out (D39).
-.reviewThreadBox_replying {
-  background: $color-bg;
 }
 
 .reviewThreadBox_line {
@@ -289,69 +276,9 @@ const failureText = computed(() =>
   color: $color-fg-3;
 }
 
-.reviewThreadBox_body {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-12;
-  padding: $spacing-12 $spacing-14;
-}
-
-.reviewThreadBox_resolved .reviewThreadBox_body {
+// Opened, a resolved thread's line is closed off from the rest.
+.reviewThreadBox_line + * {
   border-top: 1px solid $color-border;
-}
-
-.reviewThreadBox_actions {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-}
-
-// Twice the class: the button's own look comes from a stylesheet that may load after this one.
-.reviewThreadBox_actions .reviewThreadBox_reply {
-  flex: 1;
-  min-width: 0;
-  height: 28px;
-  padding: 0 $spacing-8 0 $spacing-10;
-  font-size: $font-size-xs;
-}
-
-.reviewThreadBox_spacer {
-  flex: 1;
-}
-
-// The avatar level with the box's head, the band growing downwards.
-.reviewThreadBox_replyBand {
-  display: flex;
-  gap: $spacing-10;
-  align-items: flex-start;
-  padding: $spacing-10 $spacing-12;
-  background: $color-bg-2;
-  border-top: 1px solid $color-border;
-
-  &:last-child {
-    border-radius: 0 0 calc(#{$radius-lg} - 1px) calc(#{$radius-lg} - 1px);
-  }
-}
-
-.reviewThreadBox_replyBox {
-  flex: 1;
-  min-width: 0;
-}
-
-.reviewThreadBox_resolveBand {
-  display: flex;
-  gap: $spacing-10;
-  align-items: center;
-  padding: $spacing-8 $spacing-12;
-  border-top: 1px solid $color-border;
-}
-
-.reviewThreadBox_resolve {
-  --button-icon-color: #{$color-green};
-}
-
-.reviewThreadBox_failure {
-  padding: 0 $spacing-14 $spacing-10;
 }
 
 .reviewThreadBox_head {
@@ -359,8 +286,10 @@ const failureText = computed(() =>
   flex-wrap: wrap;
   gap: $spacing-6;
   align-items: center;
+  padding: $spacing-9 $spacing-14;
   margin: 0;
   font-size: $font-size-xs;
+  border-bottom: 1px solid $color-border;
 }
 
 .reviewThreadBox_outdatedIcon {
@@ -377,5 +306,12 @@ const failureText = computed(() =>
 
 .reviewThreadBox_note {
   color: $color-fg-dim;
+}
+
+.reviewThreadBox_body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-14;
+  padding: $spacing-12;
 }
 </style>

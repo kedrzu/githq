@@ -93,8 +93,7 @@ const values = computed(() =>
     <template #footer>
       <span :class="css.projectDraftDialog_note">{{ t(l.readOnly) }}</span>
       <Button
-        variant="ghost"
-        size="sm"
+        variant="secondary"
         :icon="ArrowUpRight"
         :link="project.url"
         target="_blank"

@@ -990,27 +990,6 @@ export type CommitStatesQuery = {
     >;
 };
 
-export type CommitSubjectsQueryVariables = Exact<{
-    owner: string;
-    name: string;
-    from: string;
-    after?: string | null | undefined;
-}>;
-
-export type CommitSubjectsQuery = {
-    repository: {
-        object:
-            | {
-                  history: {
-                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
-                      nodes: Array<{ oid: string; message: string } | null> | null;
-                  };
-              }
-            | Record<PropertyKey, never>
-            | null;
-    } | null;
-};
-
 export type CommitSubmodulesQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -1021,6 +1000,31 @@ export type CommitSubmodulesQuery = {
     repository: {
         object:
             | { submodules: { nodes: Array<{ path: string; gitUrl: string } | null> | null } }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
+export type CommitsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    from: string;
+    after?: string | null | undefined;
+}>;
+
+export type CommitsQuery = {
+    repository: {
+        object:
+            | {
+                  history: {
+                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                      nodes: Array<{
+                          oid: string;
+                          message: string;
+                          author: { user: { login: string } | null } | null;
+                      } | null> | null;
+                  };
+              }
             | Record<PropertyKey, never>
             | null;
     } | null;
@@ -8566,7 +8570,11 @@ export type PullRequestReviewThreadsQuery = {
                         nodes: Array<{
                             id: string;
                             bodyHTML: string;
+                            body: string;
                             createdAt: string;
+                            lastEditedAt: string | null;
+                            viewerCanUpdate: boolean;
+                            viewerCanDelete: boolean;
                             url: string;
                             diffHunk: string;
                             outdated: boolean;
@@ -9343,7 +9351,11 @@ export type ReviewThreadCommentsQuery = {
                   nodes: Array<{
                       id: string;
                       bodyHTML: string;
+                      body: string;
                       createdAt: string;
+                      lastEditedAt: string | null;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       url: string;
                       diffHunk: string;
                       outdated: boolean;
@@ -15317,7 +15329,11 @@ export type ReviewPageFieldsFragment = {
 export type ReviewThreadCommentFieldsFragment = {
     id: string;
     bodyHTML: string;
+    body: string;
     createdAt: string;
+    lastEditedAt: string | null;
+    viewerCanUpdate: boolean;
+    viewerCanDelete: boolean;
     url: string;
     diffHunk: string;
     outdated: boolean;
@@ -16953,6 +16969,14 @@ export type DeletePullRequestReviewMutation = {
     deletePullRequestReview: { pullRequestReview: { id: string } | null } | null;
 };
 
+export type DeletePullRequestReviewCommentMutationVariables = Exact<{
+    id: string;
+}>;
+
+export type DeletePullRequestReviewCommentMutation = {
+    deletePullRequestReviewComment: { clientMutationId: string | null } | null;
+};
+
 export type DeleteRefMutationVariables = Exact<{
     refId: string;
 }>;
@@ -17054,6 +17078,7 @@ export type EnablePullRequestAutoMergeMutationVariables = Exact<{
     mergeMethod: PullRequestMergeMethod;
     commitHeadline?: string | null | undefined;
     commitBody?: string | null | undefined;
+    authorEmail?: string | null | undefined;
     expectedHeadOid: string;
 }>;
 
@@ -17497,6 +17522,38 @@ export type UpdatePullRequestMilestoneMutation = {
             id: string;
             updatedAt: string;
             milestone: { id: string; title: string; dueOn: string | null } | null;
+        } | null;
+    } | null;
+};
+
+export type UpdatePullRequestReviewCommentMutationVariables = Exact<{
+    id: string;
+    body: string;
+}>;
+
+export type UpdatePullRequestReviewCommentMutation = {
+    updatePullRequestReviewComment: {
+        pullRequestReviewComment: {
+            id: string;
+            bodyHTML: string;
+            body: string;
+            createdAt: string;
+            lastEditedAt: string | null;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
+            url: string;
+            diffHunk: string;
+            outdated: boolean;
+            state: PullRequestReviewCommentState;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+            originalCommit: { oid: string; abbreviatedOid: string } | null;
+            pullRequestReview: { id: string } | null;
         } | null;
     } | null;
 };
@@ -21586,7 +21643,11 @@ export const ReviewThreadCommentFieldsFragmentDoc = new TypedDocumentString(
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -21854,8 +21915,24 @@ export const CommitStatesDocument = new TypedDocumentString(`
     state
   }
 }`);
-export const CommitSubjectsDocument = new TypedDocumentString(`
-    query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
+export const CommitSubmodulesDocument = new TypedDocumentString(`
+    query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
+  repository(owner: $owner, name: $name) {
+    object(oid: $oid) {
+      ... on Commit {
+        submodules(first: 100) {
+          nodes {
+            path
+            gitUrl
+          }
+        }
+      }
+    }
+  }
+}
+    `);
+export const CommitsDocument = new TypedDocumentString(`
+    query Commits($owner: String!, $name: String!, $from: String!, $after: String) {
   repository(owner: $owner, name: $name) {
     object(expression: $from) {
       ... on Commit {
@@ -21867,22 +21944,11 @@ export const CommitSubjectsDocument = new TypedDocumentString(`
           nodes {
             oid
             message
-          }
-        }
-      }
-    }
-  }
-}
-    `);
-export const CommitSubmodulesDocument = new TypedDocumentString(`
-    query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
-  repository(owner: $owner, name: $name) {
-    object(oid: $oid) {
-      ... on Commit {
-        submodules(first: 100) {
-          nodes {
-            path
-            gitUrl
+            author {
+              user {
+                login
+              }
+            }
           }
         }
       }
@@ -25578,7 +25644,11 @@ export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -26563,7 +26633,11 @@ export const ReviewThreadCommentsDocument = new TypedDocumentString(`
     avatarUrl
   }
   bodyHTML
+  body
   createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
   url
   diffHunk
   outdated
@@ -28143,6 +28217,13 @@ export const DeletePullRequestReviewDocument = new TypedDocumentString(`
   }
 }
     `);
+export const DeletePullRequestReviewCommentDocument = new TypedDocumentString(`
+    mutation DeletePullRequestReviewComment($id: ID!) {
+  deletePullRequestReviewComment(input: {id: $id}) {
+    clientMutationId
+  }
+}
+    `);
 export const DeleteRefDocument = new TypedDocumentString(`
     mutation DeleteRef($refId: ID!) {
   deleteRef(input: {refId: $refId}) {
@@ -28261,9 +28342,9 @@ fragment PullRequestStatusFields on PullRequest {
   ...PullRequestPendingReviewFields
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
-    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
+    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $authorEmail: String, $expectedHeadOid: GitObjectID!) {
   enablePullRequestAutoMerge(
-    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, expectedHeadOid: $expectedHeadOid}
+    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, authorEmail: $authorEmail, expectedHeadOid: $expectedHeadOid}
   ) {
     pullRequest {
       ...PullRequestStatusFields
@@ -28768,6 +28849,40 @@ export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
   title
   dueOn
 }`);
+export const UpdatePullRequestReviewCommentDocument = new TypedDocumentString(`
+    mutation UpdatePullRequestReviewComment($id: ID!, $body: String!) {
+  updatePullRequestReviewComment(
+    input: {pullRequestReviewCommentId: $id, body: $body}
+  ) {
+    pullRequestReviewComment {
+      ...ReviewThreadCommentFields
+    }
+  }
+}
+    fragment ReviewThreadCommentFields on PullRequestReviewComment {
+  id
+  author {
+    login
+    avatarUrl
+  }
+  bodyHTML
+  body
+  createdAt
+  lastEditedAt
+  viewerCanUpdate
+  viewerCanDelete
+  url
+  diffHunk
+  outdated
+  state
+  originalCommit {
+    oid
+    abbreviatedOid
+  }
+  pullRequestReview {
+    id
+  }
+}`);
 export type Requester<C = {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>;
 export function getSdk<C>(requester: Requester<C>) {
     return {
@@ -28806,19 +28921,19 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CommitStatesQuery>;
         },
-        CommitSubjects(variables: CommitSubjectsQueryVariables, options?: C): Promise<CommitSubjectsQuery> {
-            return requester<CommitSubjectsQuery, CommitSubjectsQueryVariables>(
-                CommitSubjectsDocument,
-                variables,
-                options,
-            ) as Promise<CommitSubjectsQuery>;
-        },
         CommitSubmodules(variables: CommitSubmodulesQueryVariables, options?: C): Promise<CommitSubmodulesQuery> {
             return requester<CommitSubmodulesQuery, CommitSubmodulesQueryVariables>(
                 CommitSubmodulesDocument,
                 variables,
                 options,
             ) as Promise<CommitSubmodulesQuery>;
+        },
+        Commits(variables: CommitsQueryVariables, options?: C): Promise<CommitsQuery> {
+            return requester<CommitsQuery, CommitsQueryVariables>(
+                CommitsDocument,
+                variables,
+                options,
+            ) as Promise<CommitsQuery>;
         },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(
@@ -29285,6 +29400,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<DeletePullRequestReviewMutation>;
         },
+        DeletePullRequestReviewComment(
+            variables: DeletePullRequestReviewCommentMutationVariables,
+            options?: C,
+        ): Promise<DeletePullRequestReviewCommentMutation> {
+            return requester<DeletePullRequestReviewCommentMutation, DeletePullRequestReviewCommentMutationVariables>(
+                DeletePullRequestReviewCommentDocument,
+                variables,
+                options,
+            ) as Promise<DeletePullRequestReviewCommentMutation>;
+        },
         DeleteRef(variables: DeleteRefMutationVariables, options?: C): Promise<DeleteRefMutation> {
             return requester<DeleteRefMutation, DeleteRefMutationVariables>(
                 DeleteRefDocument,
@@ -29520,6 +29645,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<UpdatePullRequestMilestoneMutation>;
+        },
+        UpdatePullRequestReviewComment(
+            variables: UpdatePullRequestReviewCommentMutationVariables,
+            options?: C,
+        ): Promise<UpdatePullRequestReviewCommentMutation> {
+            return requester<UpdatePullRequestReviewCommentMutation, UpdatePullRequestReviewCommentMutationVariables>(
+                UpdatePullRequestReviewCommentDocument,
+                variables,
+                options,
+            ) as Promise<UpdatePullRequestReviewCommentMutation>;
         },
     };
 }

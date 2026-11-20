@@ -19,6 +19,8 @@ const {
     SearchResults,
     SearchAsking,
     SearchNothingFound,
+    GoToFile,
+    GoToFileArriving,
     Levels,
     LevelsOnOpenItem,
     FoundInRepository,
@@ -169,15 +171,38 @@ test('E4: the selection\'s actions say "2 of 3 editable"; its key runs the same 
         );
 });
 
-test("⌘K opens the menu; a key typed in it is text, and no action's key runs from it", async () => {
+test("D15: ⌘K opens the menu; a key that could be typing is text there, any other action's key closes it and runs", async () => {
     await Closed.run();
+    const field = page.getByRole('textbox', { name: 'Type a command or search…' });
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
-    await userEvent.keyboard('[[');
-    await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveValue('[');
-    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    await expect.element(field).toHaveFocus();
+    await userEvent.keyboard('[[{ControlOrMeta>}a{/ControlOrMeta}');
+    await expect.element(field).toHaveValue('[');
     await expect.element(page.getByTestId('sidebar')).toHaveTextContent('expanded');
+
+    await userEvent.keyboard('{ControlOrMeta>}b{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sidebar')).toHaveTextContent('collapsed');
+    await expect.element(field).not.toBeInTheDocument();
+});
+
+test("D15: an action's key with a level moves the open menu to it; pressed there it keeps the text", async () => {
+    await runWithPointerAway(Levels);
+    const level = page.getByRole('listbox', { name: 'Follow people…' });
+
+    await userEvent.keyboard('gr{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(level).toBeInTheDocument();
+    const field = page.getByRole('dialog', { name: 'Command menu' }).getByRole('textbox');
+    await expect.element(field).toHaveValue('');
+
+    await userEvent.keyboard('gr{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(field).toHaveValue('gr');
+
+    // Back at the top, the same key enters it again.
+    await userEvent.keyboard('{Backspace}{Backspace}{Backspace}');
+    await expect.element(level).not.toBeInTheDocument();
+    await userEvent.keyboard('{ControlOrMeta>}p{/ControlOrMeta}');
+    await expect.element(level).toBeInTheDocument();
 });
 
 test('⌘K closes the open menu and opens it again; held down it does either once', async () => {
@@ -388,6 +413,54 @@ test('E10: nothing found says what was asked, not that nothing matches', async (
 
     await expect.element(page.getByText('Nothing on GitHub matches "vitee"')).toBeInTheDocument();
     await expect.element(page.getByText('Nothing matches', { exact: true })).not.toBeInTheDocument();
+});
+
+test("CR144: Go to file lists every file in order, the cursor's checked, and Enter reveals the one picked", async () => {
+    await GoToFile.run();
+
+    await expect.element(page.getByText('7 files', { exact: true })).toBeInTheDocument();
+    const options = page.getByRole('option');
+    expect(options.elements().map(option => option.textContent)).toEqual([
+        // The change as the file list draws it: its letter, its word for a screen reader.
+        'MModifiedREADME.mdViewed',
+        'AAddedsync.mddocs',
+        'MModifiedReviewFileList.vuepackages/app/review',
+        'RRenamedReviewFileRow.vuepackages/app/reviewViewed',
+        'MModifiedSyncBadge.tsxsrc/components',
+        'DDeletedengine.tssrc/sync',
+        'MModifiedindex.tssrc/sync',
+    ]);
+    await expect.element(page.getByRole('option', { name: 'Added sync.md docs current' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Modified README.md Viewed' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Revealed README.md');
+});
+
+test('CR145: typed letters rank names first and are marked where the search found them, in a name or a folder alone', async () => {
+    await GoToFile.run();
+
+    await userEvent.keyboard('rvwfl');
+    const first = page.getByRole('option').first();
+    await expect.element(first).toHaveTextContent(/^MModifiedReviewFileList\.vue/u);
+    expect(getMarks(first)).toEqual(['R', 'v', 'wF', 'l']);
+
+    await userEvent.clear(page.getByRole('textbox', { name: 'Go to file…' }));
+    await userEvent.keyboard('sync');
+    await expect.element(page.getByText('4 files', { exact: true })).toBeInTheDocument();
+    // In its folder alone: the name has none of it.
+    const inFolder = page.getByRole('option', { name: /^Deleted engine\.ts/u });
+    expect(getMarks(inFolder)).toEqual(['sync']);
+});
+
+test('CR146, CR147: nothing found names what was typed; while files arrive, those arrived are listed and the footer says how far', async () => {
+    await GoToFileArriving.run();
+
+    await expect.element(page.getByText('Reading the files… 3 of 7')).toBeInTheDocument();
+    expect(page.getByRole('option').elements()).toHaveLength(3);
+
+    await userEvent.keyboard('zzq');
+    await expect.element(page.getByText('No file matches “zzq”')).toBeInTheDocument();
 });
 
 test("another action's submenu still filters what it offers", async () => {
