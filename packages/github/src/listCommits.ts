@@ -1,9 +1,9 @@
 import type { GitHubSdk } from './createGitHubRequester.js';
-import type { CommitSubjectsQuery } from './generated.gen.js';
+import type { CommitsQuery } from './generated.gen.js';
 import { GitHubApiError } from './GitHubApiError.js';
 
 /** Which commits to read. */
-export interface ListCommitSubjectsParams {
+export interface ListCommitsParams {
     readonly owner: string;
     readonly name: string;
     /** The commit or branch to read back from. */
@@ -14,10 +14,17 @@ export interface ListCommitSubjectsParams {
     readonly maxPages: number;
 }
 
+/** A commit read: the first line of its message, and who wrote it. */
+export interface ListedCommit {
+    readonly subject: string;
+    /** The GitHub login of its author; `null` when GitHub links the commit to no account. */
+    readonly author: string | null;
+}
+
 /** The commits read. */
-export interface ListCommitSubjectsResult {
-    /** The first line of each message, newest first. */
-    readonly subjects: string[];
+export interface ListCommitsResult {
+    /** Newest first. */
+    readonly commits: ListedCommit[];
     /** The commit of `stopAt` the walk met; `null` when it met none. */
     readonly stoppedAt: string | null;
     /** The pages allowed ran out with more commits behind them. */
@@ -25,20 +32,20 @@ export interface ListCommitSubjectsResult {
 }
 
 /**
- * Reads the subjects of the commits behind `from` (`CommitSubjects`), newest first, up to the first commit of `stopAt`.
+ * Reads the commits behind `from` (`Commits`), newest first, up to the first commit of `stopAt`.
  * Paged, rather than compared, because a comparison lists at most 250 commits (desktop releases D17).
  *
  * Throws {@link GitHubApiError} when GitHub refuses, or has no such commit.
  */
-export async function listCommitSubjects(
+export async function listCommits(
     sdk: GitHubSdk,
-    { owner, name, from, stopAt, maxPages }: ListCommitSubjectsParams,
-): Promise<ListCommitSubjectsResult> {
-    const subjects: string[] = [];
+    { owner, name, from, stopAt, maxPages }: ListCommitsParams,
+): Promise<ListCommitsResult> {
+    const commits: ListedCommit[] = [];
     let after: string | null = null;
 
     for (let page = 0; page < maxPages; page++) {
-        const { repository }: CommitSubjectsQuery = await sdk.CommitSubjects({ owner, name, from, after });
+        const { repository }: CommitsQuery = await sdk.Commits({ owner, name, from, after });
         const commit = repository?.object;
         if (!commit || !('history' in commit)) {
             throw new GitHubApiError({ status: 404, message: `GitHub has no commit ${from} in ${owner}/${name}` });
@@ -47,20 +54,23 @@ export async function listCommitSubjects(
         const { nodes, pageInfo } = commit.history;
         for (const node of nodes ?? []) {
             if (node && stopAt.has(node.oid)) {
-                return { subjects, stoppedAt: node.oid, limited: false };
+                return { commits, stoppedAt: node.oid, limited: false };
             }
 
             if (node) {
-                subjects.push(node.message.split('\n', 1).join(''));
+                commits.push({
+                    subject: node.message.split('\n', 1).join(''),
+                    author: node.author?.user?.login ?? null,
+                });
             }
         }
 
         if (!pageInfo.hasNextPage) {
-            return { subjects, stoppedAt: null, limited: false };
+            return { commits, stoppedAt: null, limited: false };
         }
 
         after = pageInfo.endCursor;
     }
 
-    return { subjects, stoppedAt: null, limited: true };
+    return { commits, stoppedAt: null, limited: true };
 }

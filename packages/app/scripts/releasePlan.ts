@@ -1,6 +1,7 @@
 // The release rules of the desktop app, pure: PR titles and commit subjects are Conventional Commits, a title's type
 // agrees with the paths the PR changes, and the next version and the release notes are computed from the subjects
-// since the last stable tag; the updater's manifest is composed from a release's files. CI runs this with bun and without `bun install`, so it imports nothing.
+// since the last stable tag, each change with the GitHub login of its commit's author; the updater's manifest is
+// composed from a release's files. CI runs this with bun and without `bun install`, so it imports nothing.
 
 const TYPES = ['feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'build', 'ci', 'chore'];
 // Scopes of work that never reaches the desktop app's users.
@@ -53,8 +54,15 @@ export interface DevelopmentVersionParams {
     commitCount: number;
 }
 
+/** A commit as the release notes read it. */
+export interface ReleaseCommit {
+    subject: string;
+    /** The GitHub login of its author; `null` when GitHub links the commit to no account. */
+    author: string | null;
+}
+
 export interface RenderNotesParams {
-    subjects: string[];
+    commits: ReleaseCommit[];
     policyUrl: string;
 }
 
@@ -90,6 +98,8 @@ export interface UserVisibleChange {
     description: string;
     /** The number a squash merge appended, if any. */
     pullRequest: number | undefined;
+    /** The GitHub login of the commit's author, if GitHub knows it. */
+    author: string | undefined;
 }
 
 /** The changes of one heading of the release notes, never empty. */
@@ -110,6 +120,11 @@ interface Change {
     description: string;
     /** The number in the ` (#N)` a squash merge appends. */
     pullRequest: number | undefined;
+}
+
+interface AuthoredChange {
+    change: Change;
+    author: string | null;
 }
 
 /**
@@ -188,37 +203,53 @@ export function developmentVersion({ tags, commitCount }: DevelopmentVersionPara
     return `${major}.${minor + 1}.0-dev.${commitCount}`;
 }
 
+/** Whether the release notes list a commit with this subject. */
+export function isUserVisibleSubject(subject: string): boolean {
+    return isUserVisible(parseChange(subject));
+}
+
 /**
- * What users notice among commit subjects, under the headings of the release notes and in their order: the one rule of
+ * What users notice among commits, under the headings of the release notes and in their order: the one rule of
  * what the notes list, which the app's Changelog applies to a Development build's commits too.
  */
-export function userVisibleChanges(subjects: string[]): UserVisibleChangeGroup[] {
-    const changes = subjects.map(parseChange).filter(isUserVisible);
-    const groups: { kind: ChangeGroupKind; entries: Change[] }[] = [
-        { kind: 'breaking', entries: changes.filter(change => change.breaking) },
-        { kind: 'features', entries: changes.filter(change => !change.breaking && change.type === 'feat') },
-        { kind: 'fixes', entries: changes.filter(change => !change.breaking && change.type === 'fix') },
-        { kind: 'performance', entries: changes.filter(change => !change.breaking && change.type === 'perf') },
+export function userVisibleChanges(commits: ReleaseCommit[]): UserVisibleChangeGroup[] {
+    const entries: AuthoredChange[] = [];
+    for (const { subject, author } of commits) {
+        const change = parseChange(subject);
+        if (isUserVisible(change)) {
+            entries.push({ change, author });
+        }
+    }
+    const groups: { kind: ChangeGroupKind; entries: AuthoredChange[] }[] = [
+        { kind: 'breaking', entries: entries.filter(({ change }) => change.breaking) },
+        { kind: 'features', entries: entries.filter(({ change }) => !change.breaking && change.type === 'feat') },
+        { kind: 'fixes', entries: entries.filter(({ change }) => !change.breaking && change.type === 'fix') },
+        { kind: 'performance', entries: entries.filter(({ change }) => !change.breaking && change.type === 'perf') },
     ];
 
     return groups
-        .filter(({ entries }) => entries.length > 0)
-        .map(({ kind, entries }) => ({
-            kind,
-            changes: entries.map(({ description, pullRequest }) => ({
-                description: capitalise(description),
-                pullRequest,
+        .filter(group => group.entries.length > 0)
+        .map(group => ({
+            kind: group.kind,
+            changes: group.entries.map(({ change, author }) => ({
+                description: capitalise(change.description),
+                pullRequest: change.pullRequest,
+                author: author ?? undefined,
             })),
         }));
 }
 
-/** Markdown release notes: the user-visible changes grouped, then the pointer to the code signing policy. */
-export function renderNotes({ subjects, policyUrl }: RenderNotesParams): string {
-    const sections = userVisibleChanges(subjects).map(({ kind, changes }) => {
-        const lines = changes.map(
-            ({ description, pullRequest }) =>
-                `- ${description}${pullRequest === undefined ? '' : ` (#${pullRequest})`}`,
-        );
+/**
+ * Markdown release notes: the user-visible changes grouped, each as `- Description #N by @login` with whichever of the
+ * two GitHub knows, then the pointer to the code signing policy.
+ */
+export function renderNotes({ commits, policyUrl }: RenderNotesParams): string {
+    const sections = userVisibleChanges(commits).map(({ kind, changes }) => {
+        const lines = changes.map(({ description, pullRequest, author }) => {
+            const number = pullRequest === undefined ? '' : ` #${pullRequest}`;
+            const by = author === undefined ? '' : ` by @${author}`;
+            return `- ${description}${number}${by}`;
+        });
         return `## ${GROUP_TITLES[kind]}\n\n${lines.join('\n')}`;
     });
     sections.push(

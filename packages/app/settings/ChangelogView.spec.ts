@@ -83,7 +83,7 @@ test('U43: a Development build has its one fold first, counted and grouped, whos
     await expect.element(fold(/^Development/)).toHaveTextContent(/since 0\.2\.0\s*Running/);
     await expect.element(fold(/^githq 0\.2\.0/)).toHaveAttribute('aria-expanded', 'false');
     await expect.element(fold(/^githq 0\.2\.0/)).not.toHaveTextContent(/New|Running/);
-    await expect.element(page.getByText("4 changes you'd notice, out of 7 commits.")).toBeVisible();
+    await expect.element(page.getByText("5 changes you'd notice, out of 7 commits.")).toBeVisible();
     await expect.element(page.getByRole('heading', { name: 'Features' })).toBeVisible();
     await expect.element(page.getByRole('link', { name: '#135' })).toHaveAttribute('href', '/kedrzu/githq/pull/135');
 
@@ -95,7 +95,7 @@ test('before the first Stable the fold names no end, and says the list is cut sh
     await DevelopmentBeforeFirstStable.run();
 
     await expect.element(fold(/^Development/)).not.toHaveTextContent('since');
-    await expect.element(page.getByText("4 changes you'd notice, in the newest 300 commits.")).toBeVisible();
+    await expect.element(page.getByText("5 changes you'd notice, in the newest 300 commits.")).toBeVisible();
 });
 
 test('U44: nothing users notice says so, and the link still goes to the commits', async () => {
@@ -163,3 +163,54 @@ test('a pull request number links to that pull request in the app, with Open and
         .element(page.getByTestId('on-github'))
         .toHaveTextContent('On GitHub: https://github.com/kedrzu/githq/pull/133');
 });
+
+test('a change reads `#N by @login` the same, in the same colours, in a Stable and a Development fold', async () => {
+    await Development.run();
+    await userEvent.click(fold(/^githq 0\.2\.0/));
+    await expect.element(fold(/^githq 0\.2\.0/)).toHaveAttribute('aria-expanded', 'true');
+
+    const [development, stable] = findChanges('Close a pull request in one step, with undo').map(readChange);
+    expect(development).toEqual({
+        text: 'Close a pull request in one step, with undo #133 by @kedrzu',
+        colours: stable?.colours,
+    });
+    expect(stable?.text).toBe(development?.text);
+    // Dimmed against the description, not merely equal.
+    const colours = development?.colours;
+    expect(colours?.by).not.toBe(colours?.description);
+    expect(colours?.pullRequest).toBe(colours?.by);
+    expect(colours?.author).toBe(colours?.by);
+});
+
+test('a change by someone links to them on GitHub; one without a pull request or an author has no by', async () => {
+    await Development.run();
+
+    const author = page.getByRole('link', { name: '@octocat' });
+    await expect.element(author).toHaveAttribute('href', 'https://github.com/octocat');
+    await expect.element(author).toHaveAttribute('target', '_blank');
+    expect(findChanges('Keep the sidebar width').map(change => readChange(change).text)).toEqual([
+        'Keep the sidebar width across restarts',
+    ]);
+});
+
+/** The changes, innermost list items, whose text starts so: a Development fold's first, as the folds are ordered. */
+function findChanges(description: string) {
+    return Array.from(document.querySelectorAll('li')).filter(
+        item => !item.querySelector('li') && item.textContent.trim().startsWith(description),
+    );
+}
+
+/** A change's text as read, and the colours of its description, `#N`, `by` and `@login`. */
+function readChange(item: HTMLElement) {
+    const [pullRequest, author] = Array.from(item.querySelectorAll('a'));
+    const by = Array.from(item.querySelectorAll('span')).find(span => span.textContent === 'by');
+    return {
+        text: item.textContent.replaceAll(/\s+/g, ' ').trim(),
+        colours: {
+            description: getComputedStyle(item).color,
+            pullRequest: pullRequest && getComputedStyle(pullRequest).color,
+            by: by && getComputedStyle(by).color,
+            author: author && getComputedStyle(author).color,
+        },
+    };
+}

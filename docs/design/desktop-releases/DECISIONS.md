@@ -416,3 +416,23 @@ section keeps them in one place, and the column of sections one row shorter.
 The block's head carries its title, the keys ↑↓ and Space, and All releases or All commits on GitHub (`O`); the folds and
 their states are unchanged (U41–U48). The whole page scrolls as one. What changed in the toast opens Updates. The
 changelog is read from GitHub each time Updates opens, as it was for its own section.
+
+## D21
+
+**Every change in the changelog reads `Description #312 by @login`, the same in a Stable release and in a Development
+build's fold, and names its author always, the owner included.** (2026-11-20, owner) This sharpens how [D17](#d17)'s
+folds show a change.
+
+**Why.** A Stable fold showed `(#312)` and a Development fold `#312`, and neither said whose change it was: a
+contributor should be credited and linked. `#312 by @login` is dimmed as one run after the description, and both
+links open as before (the pull request in githq, the author's profile on GitHub).
+
+The author is the GitHub login of the commit's author, which for a squash merge is the pull request's author: the
+release notes read it from GitHub when they are generated (`release.ts plan`), the Development fold with its commits.
+A commit GitHub links to no account is listed without `by`. The published v0.1.0–v0.4.0 notes were rewritten to the
+same form. Screens: U41–U43 in `githq.pen`.
+
+**Rejected.**
+
+- `#312 @login` and GitHub's own `by @login in #312` (the owner chose `by` after the number).
+- The author only when it isn't the owner: one rule reads calmer than a credit that comes and goes.
