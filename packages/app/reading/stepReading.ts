@@ -9,6 +9,12 @@ import type { ReadingBand, ReadingSegment } from './ReadingCursor.js';
  */
 export const LINE_STEP = 40;
 
+/**
+ * The least scroll a press makes instead of moving the cursor: the browser scrolls by whole pixels, so a press scrolling
+ * less (a start a fraction of a pixel past the line a third from the edge) would move nothing, again and again.
+ */
+const MIN_SCROLL = 1;
+
 export interface StepReadingParams {
     /** As `buildSegments` gives them; at least one. */
     readonly segments: readonly ReadingSegment[];
@@ -68,7 +74,7 @@ export function stepReading({ segments, current, band, viewport, direction }: St
         }
 
         const scroll = Math.min(step, next.start - line, viewport.remaining);
-        return scroll > 0 ? { segment: from, scroll } : { segment: next, scroll: 0 };
+        return scroll >= MIN_SCROLL ? { segment: from, scroll } : { segment: next, scroll: 0 };
     }
 
     const previous = index > 0 ? segments[index - 1] : undefined;
@@ -89,7 +95,7 @@ export function stepReading({ segments, current, band, viewport, direction }: St
     }
 
     const scroll = Math.min(step, line - from.start, viewport.scrolled);
-    return scroll > 0 ? { segment: from, scroll: -scroll } : { segment: previous, scroll: 0 };
+    return scroll >= MIN_SCROLL ? { segment: from, scroll: -scroll } : { segment: previous, scroll: 0 };
 }
 
 /** The cursor's segment, or with it wholly out of the band, the segment at the edge it left by. */

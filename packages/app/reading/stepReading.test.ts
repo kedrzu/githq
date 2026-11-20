@@ -103,6 +103,18 @@ test('a segment starting above the line a third from the bottom is the next pres
     expect(scroll).toBeCloseTo(1400 - 1050 - (SCREEN * 2) / 3);
 });
 
+test('a next segment starting less than a pixel past the line is the press’s own, not a scroll the browser drops', () => {
+    // Scrolled so that the thread's excerpt starts a third of a pixel below the line a third from the bottom.
+    const { segment: next, scroll } = press({
+        current: segmentOf('review'),
+        scrolled: 1160 - (SCREEN * 2) / 3 - 1 / 3,
+        direction: 'down',
+    });
+
+    expect(next).toEqual({ key: 'thread', kind: 'comment', start: 1160, end: 1220 });
+    expect(scroll).toBe(0);
+});
+
 test('a cursor left wholly above the band by a wheel goes on from the segment at the band’s top', () => {
     // On the tall comment, scrolled to the review's head: the next is the thread's excerpt, not the review's head.
     const { segment: next } = press({ current: segmentOf('tall'), scrolled: 1150, direction: 'down' });

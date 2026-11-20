@@ -933,7 +933,8 @@ filter-as-you-type list needs no headings.
 ### D43
 
 **An opened item's page has code review's reading cursor over its thread.** (owner, 2026-11-18.) Drawn in `githq.pen`,
-App · Pull request, F24, F27, F30, F31; the design log is `changelog/reading-cursor.md`.
+App · Pull request, F24, F27, F30, F31; the design log is `changelog/reading-cursor.md`. How ↓ ↑ move it, what is marked
+and the linked comment: amended by [D46](#d46).
 
 - **Keys.** ↓ ↑ move the cursor a line (about two), further a repeat the longer the key is held; PageDown PageUp a
   screen; `[` `]` from comment to comment, `]` unfolding the folded middle before the next one. The actions act on the
@@ -1008,6 +1009,42 @@ for a large one are proven; 24 keeps dense chrome dense.
 **Rejected.** 28 / 32 / 40: lists and toolbars lose density for buttons mostly pressed by key. 24 / 36 / 40: an action
 taller than the 32 px fields and dialogs around it. Toasts' actions at `md`: a toast stays light, and its actions are
 pressed by key (⌘Z, Esc); D40's small secondary buttons stand.
+
+### D46
+
+**The reading cursor moves by part of the thread and marks everything around it.** (owner, 2026-11-18.) Amends
+[D43](#d43)'s keys, stops and look; no new drawing, the marks reuse the current-edge, current-header and cursor-tint
+tokens. The design log is `changelog/reading-cursor.md`, round 5.
+
+- **Segments.** The content is cut where the innermost stop changes: a review's head and summary, a code thread's
+  excerpt, each comment, the thread's reply and resolve bands, a commit, an event, the fold. A stretch under 40 px (a
+  card's padding) belongs to the one before it.
+- **A press of ↓ ↑** goes to the next or previous segment when its start is already in the upper (↓) or below the
+  upper (↑) two thirds of what shows, scrolling at most a step to show it; otherwise it scrolls a step and the cursor
+  stays. A step is a quarter of what shows (the docked composer left out), at least 40 px. A short comment takes one
+  press, one taller than the screen several; every press moves the cursor or scrolls, except at the content's end.
+- **Held ↓ ↑** scroll smoothly at 500 px/s from the first repeat to the release. A reading line starts at the cursor's
+  segment (its start going down, its end going up, kept in what shows) and travels with the scroll; the cursor takes
+  each segment the line reaches, so it moves relative to where it was, never to a fixed line on the screen. Nothing
+  snaps on release. Where the content can scroll no further the line goes on at the same pace, so the cursor still
+  reaches the last stops. The pointer does not move the cursor while a key is held.
+- **The whole chain is marked.** A code thread is a stop of its own (`thread:<id>`, a row, so `[` `]` skip it). The
+  cursor on a comment of a code thread marks the comment (tint), its thread (current-edge border) and its review
+  (current-edge border and current-header head); on the thread, the thread and its review. Each is `aria-current`.
+- **The linked comment is only where the cursor starts.** The page opens with the cursor on it, marked as any stop
+  under the cursor, with no accent border; the first move by key, pointer or focus leaves it unmarked. The accent
+  border stays only where no cursor is shown: the panel, a phone, code review.
+- **Key hints.** With the cursor on a code thread or inside it, "Reply…" shows `R` and "Resolve thread" or "Unresolve"
+  `H`; focus inside the thread still shows `R`, as before.
+- **Unchanged:** PageDown PageUp, `[` `]`, the pointer, a wheel scroll's following and the actions; code review's diff
+  cursor and its held-key speed-up; the commit page and a workflow run, where ↓ ↑ only scroll.
+
+**Why.** D43's cursor was an invisible line moved 40 px a press, so most presses showed nothing until a stop's edge
+was crossed; only the innermost stop was marked; the linked comment's border stayed whatever the cursor did; and `R`
+`H` were not shown anywhere.
+
+**Rejected.** Snapping a held key's cursor to a fixed line on the screen: the cursor would jump away from where the
+reader was as the hold begins.
 
 ## Open questions
 
