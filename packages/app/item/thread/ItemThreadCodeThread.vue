@@ -1,10 +1,10 @@
-<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments (`ReviewComment`), then the bands code review's threads close with too (`ReviewThreadBands`): one with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again: an empty reply box closes with it, one with text or refused asks first as its Cancel does, a reply on its way goes on. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state, or a deletion, GitHub didn't take says so in the resolve band. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where it takes one, so not in the draft, Copy link, Delete) and shows an edit on its way. Each comment carries GitHub's anchor (`discussion_r<id>`) as its `id`; while the address names one of them, it is the location and the card's border is in the accent, as the thread's linked comment, and the address brings the card into view from its top, its code above the comment, as long as the comment still fits (`data-route-scroll-frame`). The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. Each of its comments is a stop of the reading cursor, keyed by the comment's id: the cursor on one tints its part of the card, edge to edge, as code review's cursor line (`Review / Comment · current`), and makes it `aria-current` — unless it is the linked one, which stays the location; edited in place, the comment keeps the stop around its editor. -->
+<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments (`ReviewComment`), then the bands code review's threads close with too (`ReviewThreadBands`): one with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again: an empty reply box closes with it, one with text or refused asks first as its Cancel does, a reply on its way goes on. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state, or a deletion, GitHub didn't take says so in the resolve band. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where it takes one, so not in the draft, Copy link, Delete) and shows an edit on its way. Each comment carries GitHub's anchor (`discussion_r<id>`) as its `id`; while the address names one of them, it is the location, and where no reading cursor is shown (an item's panel, a phone, code review) the card's border is in the accent, as the thread's linked comment — on an item's page the cursor starts on it instead — and the address brings the card into view from its top, its code above the comment, as long as the comment still fits (`data-route-scroll-frame`). The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. The card is a row stop of the reading cursor (`thread:<id>`, the key of its folded row), and each of its comments one inside it, keyed by the comment's id: the cursor on the card or on one of its comments turns the card's border `current-edge`, as a comment card under it (`CommentCard`), and makes it `aria-current`; on a comment it also tints that comment's part of the card, edge to edge, as code review's cursor line (`Review / Comment · current`), and makes it `aria-current` too; edited in place, the comment keeps the stop around its editor. While the cursor is on the card or in it, "Reply…" shows `R` and Resolve thread or Unresolve `H`, where the viewer may write them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { comment as commentCommand } from '@/commands/definitions/index.js';
+import { comment as commentCommand, resolveThread } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import CommentEditor from '@/comments/CommentEditor.vue';
 import Button from '@/components/Button.vue';
@@ -12,7 +12,7 @@ import ReviewComment from '@/review/threads/ReviewComment.vue';
 import type { ReviewCommentActions } from '@/review/threads/ReviewCommentActions.js';
 import type { ReviewThread, ReviewThreadComment } from '@/review/threads/ReviewThread.js';
 import ReviewThreadBands from '@/review/threads/ReviewThreadBands.vue';
-import { useReadingStops } from '@/reading/ReadingCursor.js';
+import { useReadingCursorShown, useReadingStop, useReadingStops } from '@/reading/ReadingCursor.js';
 import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
 import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
 import type { ReviewWriteFailure } from '@/review/writing/ReviewWriting.js';
@@ -55,10 +55,18 @@ const emit = defineEmits<{
 const t = useTranslate();
 const getCommentFailureText = useCommentFailureText();
 const getThreadFailureText = useThreadFailureText();
-const isCurrent = useReadingStops();
+const getStopState = useReadingStops();
+const cursorShown = useReadingCursorShown();
+const stopKey = computed(() => `thread:${props.thread.id}`);
+const stop = useReadingStop(stopKey);
 
-/** One of its comments is the one the address names. */
-const linked = computed(() => holdsAnchor(props.thread, props.linkedAnchor));
+/**
+ * One of its comments is the one the address names: the accent border, where no reading cursor is shown — on the page
+ * the cursor starts there instead.
+ */
+const linked = computed(() => !cursorShown.value && holdsAnchor(props.thread, props.linkedAnchor));
+/** The reading cursor is on it, or on one of its comments: marked, and its keys `R` and `H` act on it. */
+const marked = computed(() => stop.current || stop.within);
 const who = computed(() => props.thread.comments[0]?.author?.login ?? t(l.ghost));
 const canReply = computed(() => !props.draft && props.thread.viewerCanReply);
 const canToggle = computed(
@@ -83,7 +91,9 @@ const failureTexts = computed(() => {
 });
 /** The focus is in the thread: `R` opens its reply editor, as on code review's focused thread. */
 const focused = ref(false);
-const replyKey = computed(() => (focused.value && props.replies ? keyOf(commentCommand) : undefined));
+const replyKey = computed(() => ((focused.value || marked.value) && props.replies ? keyOf(commentCommand) : undefined));
+/** `H` resolves it, or unresolves it, while the reading cursor is in it. */
+const resolveKey = computed(() => (marked.value && props.replies ? keyOf(resolveThread) : undefined));
 /** Hide asked whether to discard the reply: Discard folds the thread too. */
 const hiding = ref(false);
 
@@ -120,7 +130,7 @@ function cancelReply() {
 }
 
 function isLinked(comment: ReviewThreadComment) {
-  return props.linkedAnchor !== undefined && getUrlAnchor(comment.url) === props.linkedAnchor;
+  return !cursorShown.value && props.linkedAnchor !== undefined && getUrlAnchor(comment.url) === props.linkedAnchor;
 }
 
 function onFocusOut(event: FocusEvent) {
@@ -132,8 +142,15 @@ function onFocusOut(event: FocusEvent) {
   <div
     role="group"
     :aria-label="t(l.label, { who, path: thread.path })"
-    :class="[css.itemThreadCodeThread, linked && css.itemThreadCodeThread_linked]"
+    :class="[
+      css.itemThreadCodeThread,
+      marked && css.itemThreadCodeThread_current,
+      linked && css.itemThreadCodeThread_linked,
+    ]"
     :data-code-thread="thread.id"
+    :data-reading-stop="stopKey"
+    data-reading-stop-kind="row"
+    :aria-current="marked || undefined"
     data-route-scroll-frame
     tabindex="-1"
     @focusin="focused = true"
@@ -181,10 +198,10 @@ function onFocusOut(event: FocusEvent) {
         :can-edit="comment.viewerCanUpdate"
         :can-delete="comment.viewerCanDelete"
         :can-quote="canReply && replies != null"
-        :class="isCurrent(comment.id) && css.itemThreadCodeThread_current"
+        :class="getStopState(comment.id) === 'current' && css.itemThreadCodeThread_currentComment"
         :data-reading-stop="comment.id"
         data-reading-stop-kind="comment"
-        :aria-current="isLinked(comment) ? 'location' : isCurrent(comment.id) || undefined"
+        :aria-current="isLinked(comment) ? 'location' : getStopState(comment.id) === 'current' || undefined"
       />
       <ReviewSentComment
         v-for="sent in reply?.sent ?? []"
@@ -197,6 +214,7 @@ function onFocusOut(event: FocusEvent) {
       :viewer="viewer"
       :can-reply="canReply"
       :reply-key="replyKey"
+      :resolve-key="resolveKey"
       :can-toggle="canToggle"
       :resolved="thread.isResolved"
       :resolver="resolver?.login"
@@ -252,6 +270,12 @@ function onFocusOut(event: FocusEvent) {
   border-radius: $radius-lg;
 }
 
+// The reading cursor on it or in it, as a comment card under it (`CommentCard`): only the border's colour changes, so
+// nothing moves.
+.itemThreadCodeThread_current {
+  border-color: $color-current-edge;
+}
+
 .itemThreadCodeThread_linked {
   border-color: $color-accent;
 }
@@ -302,7 +326,7 @@ function onFocusOut(event: FocusEvent) {
 
 // The comment under the reading cursor: a tint from the card's edge to its edge, halfway into the gaps above and below,
 // behind what it says. A fill only, so nothing moves.
-.itemThreadCodeThread_current {
+.itemThreadCodeThread_currentComment {
   position: relative;
   isolation: isolate;
 

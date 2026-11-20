@@ -1,4 +1,4 @@
-<!-- The two bands closing a code thread under its comments, the same in code review's diff (`ReviewThreadBox`) and on a pull request's thread (`ItemThreadCodeThread`): the Reply band (`Thread / Reply band`), on the band colour, with the viewer's avatar and "Reply…" — or what the thread says instead ("Add to your draft…") — showing its key, `R`, while the thread has the focus (`· focused`), and the reply being written in its place, growing downwards, the avatar level with its head (`· writing`); then the Resolve band (`Thread / Resolve band`): Resolve thread, or Unresolve on a resolved one, who resolved it, and why a change GitHub didn't take did not go through. Each band only when it holds something. -->
+<!-- The two bands closing a code thread under its comments, the same in code review's diff (`ReviewThreadBox`) and on a pull request's thread (`ItemThreadCodeThread`): the Reply band (`Thread / Reply band`), on the band colour, with the viewer's avatar and "Reply…" — or what the thread says instead ("Add to your draft…") — showing its key, `R`, while the thread has the focus (`· focused`), and the reply being written in its place, growing downwards, the avatar level with its head (`· writing`); then the Resolve band (`Thread / Resolve band`): Resolve thread, or Unresolve on a resolved one, showing its key, `H`, where the view gives it, who resolved it, and why a change GitHub didn't take did not go through. Each band only when it holds something. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck, RotateCcw } from 'lucide-vue-next';
@@ -16,8 +16,10 @@ defineProps<{
   canReply: boolean;
   /** Instead of "Reply…": where the reply goes ("Add to your draft…"). */
   replyLabel?: string;
-  /** "Reply…"'s key, shown while the thread has the focus. */
+  /** "Reply…"'s key, shown while the thread has the focus (or, on an item's page, the reading cursor). */
   replyKey?: string;
+  /** Resolve thread's or Unresolve's key, shown while the reading cursor is in the thread (an item's page). */
+  resolveKey?: string;
   /** GitHub lets the viewer resolve it, or open it again. */
   canToggle: boolean;
   resolved: boolean;
@@ -82,6 +84,8 @@ const t = useTranslate();
       :class="!resolved && css.reviewThreadBands_resolveButton"
       size="md"
       :icon="resolved ? RotateCcw : CircleCheck"
+      :kbd="resolveKey"
+      :keyshortcuts="resolveKey"
       @click="emit('setResolved', !resolved)"
     >
       {{ resolved ? t(l.unresolve) : t(l.resolve) }}

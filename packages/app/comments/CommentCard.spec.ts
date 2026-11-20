@@ -8,12 +8,14 @@ const {
     Current,
     CurrentLinked,
     CurrentPending,
+    Linked,
     Narrow,
     NarrowLongLogin,
     NotAStop,
     NotCurrent,
     WideReview,
     WidestReview,
+    Within,
 } = composeStories(stories);
 
 /** `$color-current-edge`, `$color-current-header`, `$color-accent`, `$color-amber` at 50%, `$color-bg-2`. */
@@ -110,10 +112,22 @@ test('under the reading cursor the card is the current one: its border current-e
     expect(getComputedStyle(head).backgroundColor).toBe(CURRENT_HEADER);
 });
 
-test('a linked card keeps its accent border and a draft review its amber one; their heads take the tint', async () => {
+test('a card around the cursor is marked as the one under it, both aria-current', async () => {
+    await Within.run();
+    const head = getHead(Within.args.author?.login ?? '');
+
+    expect(getStop()?.getAttribute('aria-current')).toBe('true');
+    expect(getComputedStyle(assertCard(head)).borderTopColor).toBe(CURRENT_EDGE);
+    expect(getComputedStyle(head).backgroundColor).toBe(CURRENT_HEADER);
+});
+
+test('a linked card has the accent border without a cursor and none with one; a draft keeps its amber', async () => {
+    await Linked.run();
+    expect(getComputedStyle(assertCard(getHead(Linked.args.author?.login ?? ''))).borderTopColor).toBe(ACCENT);
+
     await CurrentLinked.run();
     const linked = getHead(CurrentLinked.args.author?.login ?? '');
-    expect(getComputedStyle(assertCard(linked)).borderTopColor).toBe(ACCENT);
+    expect(getComputedStyle(assertCard(linked)).borderTopColor).toBe(CURRENT_EDGE);
     expect(getComputedStyle(linked).backgroundColor).toBe(CURRENT_HEADER);
 
     await CurrentPending.run();
