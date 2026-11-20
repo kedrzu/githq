@@ -50,14 +50,28 @@ const DEVELOPMENT: ChangelogDevelopment = {
         {
             kind: 'features',
             changes: [
-                { description: 'Reach WCAG 2.2 AA and check it in stories and e2e', pullRequest: 132 },
-                { description: 'Close a pull request in one step, with undo', pullRequest: 133 },
-                { description: 'Show pull request sizes in green and red, the same in every list', pullRequest: 115 },
+                {
+                    description: 'Reach WCAG 2.2 AA and check it in stories and e2e',
+                    pullRequest: 132,
+                    author: 'kedrzu',
+                },
+                { description: 'Close a pull request in one step, with undo', pullRequest: 133, author: 'kedrzu' },
+                {
+                    description: 'Show pull request sizes in green and red, the same in every list',
+                    pullRequest: 115,
+                    author: 'kedrzu',
+                },
             ],
         },
         {
             kind: 'fixes',
-            changes: [{ description: 'Say Workflows section where the app still said tab', pullRequest: 135 }],
+            changes: [
+                {
+                    description: 'Say Workflows section where the app still said tab',
+                    pullRequest: 135,
+                    author: 'kedrzu',
+                },
+            ],
         },
     ],
 };

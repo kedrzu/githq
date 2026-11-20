@@ -64,7 +64,11 @@ test('a Development build has its own fold first, filtered as release notes are'
         development: {
             since: '0.2.0',
             limited: false,
-            subjects: ['feat: add a thing (#3)', 'chore: tidy (#4)', 'fix(web): the landing page (#5)'],
+            commits: [
+                { subject: 'feat: add a thing (#3)', author: 'octocat' },
+                { subject: 'chore: tidy (#4)', author: 'octocat' },
+                { subject: 'fix(web): the landing page (#5)', author: null },
+            ],
         },
     });
 
@@ -73,7 +77,7 @@ test('a Development build has its own fold first, filtered as release notes are'
         since: '0.2.0',
         commits: 3,
         limited: false,
-        groups: [{ kind: 'features', changes: [{ description: 'Add a thing', pullRequest: 3 }] }],
+        groups: [{ kind: 'features', changes: [{ description: 'Add a thing', pullRequest: 3, author: 'octocat' }] }],
     });
     expect(second).toMatchObject({ kind: 'release', version: '0.2.0' });
 });

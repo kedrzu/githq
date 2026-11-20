@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const CLI = path.join(import.meta.dirname, 'release.ts');
+// Stands in for gh, so a test never calls the real GitHub: logs its arguments, then answers FAKE_GH_LOGIN or fails.
+const FAKE_GH = `#!/bin/sh
+printf '%s\\n' "$*" >> "$FAKE_GH_LOG"
+if [ -n "$FAKE_GH_FAIL" ]; then exit 1; fi
+printf '%s\\n' "$FAKE_GH_LOGIN"
+`;
 
 // Never inherit anything that could point git at the real repository.
 function cleanEnv(extra: Record<string, string> = {}): Record<string, string> {
@@ -18,14 +24,19 @@ function cleanEnv(extra: Record<string, string> = {}): Record<string, string> {
 }
 
 let dir: string;
+let bin: string;
 
 beforeEach(() => {
     dir = mkdtempSync(path.join(tmpdir(), 'release-cli-'));
+    bin = mkdtempSync(path.join(tmpdir(), 'release-cli-bin-'));
+    writeFileSync(path.join(bin, 'gh'), FAKE_GH);
+    chmodSync(path.join(bin, 'gh'), 0o755);
     git('init', '--initial-branch=main');
 });
 
 afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
+    rmSync(bin, { recursive: true, force: true });
 });
 
 function git(...args: string[]) {
@@ -56,14 +67,23 @@ function run(args: string[], extra: Record<string, string> = {}) {
     return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
-function plan(mode: string) {
+// `gh` sets the fake gh's answer, `octocat` when not given.
+function plan(mode: string, gh: Record<string, string> = {}) {
     const notes = path.join(dir, '..', `${path.basename(dir)}-notes.md`);
     const output = path.join(dir, '..', `${path.basename(dir)}-output`);
-    const result = run(['plan', '--mode', mode, '--notes', notes], { GITHUB_OUTPUT: output });
+    const ghLog = path.join(bin, 'calls');
+    const result = run(['plan', '--mode', mode, '--notes', notes], {
+        GITHUB_OUTPUT: output,
+        PATH: `${bin}${path.delimiter}${process.env.PATH ?? ''}`,
+        FAKE_GH_LOG: ghLog,
+        FAKE_GH_LOGIN: 'octocat',
+        ...gh,
+    });
     const read = (file: string) => (existsSync(file) ? readFileSync(file, 'utf8') : undefined);
-    const files = { notes: read(notes), output: read(output) };
+    const files = { notes: read(notes), output: read(output), ghCalls: read(ghLog)?.trim().split('\n') ?? [] };
     rmSync(notes, { force: true });
     rmSync(output, { force: true });
+    rmSync(ghLog, { force: true });
     return { ...result, ...files };
 }
 
@@ -140,11 +160,36 @@ describe('plan', () => {
         const result = plan('stable');
         expect(result.status).toBe(0);
         expect(result.output).toBe('tag=v0.1.0\n');
-        expect(result.notes).toContain('- Add search (#3)');
-        expect(result.notes).toContain('- Crash on start');
+        expect(result.notes).toContain('- Add search #3 by @octocat\n');
+        expect(result.notes).toContain('- Crash on start by @octocat\n');
         expect(result.notes).not.toContain('Old style');
         expect(result.notes).toContain('https://github.com/kedrzu/githq#code-signing-policy');
         expect(result.stdout).toContain('v0.1.0');
+    });
+
+    test('asks GitHub for the author of each user-visible commit only, in the repository it runs for', () => {
+        commit('feat: add search (#3)');
+        commit('chore: tidy');
+        const result = plan('stable', { FAKE_GH_LOGIN: 'octocat', GITHUB_REPOSITORY: 'someone/fork' });
+        expect(result.status).toBe(0);
+        expect(result.ghCalls).toEqual([
+            expect.stringMatching(/^api repos\/someone\/fork\/commits\/[0-9a-f]{40} --jq \.author\.login \/\/ ""$/),
+        ]);
+    });
+
+    test('a commit GitHub links to no account is listed without an author', () => {
+        commit('feat: add search (#3)');
+        const result = plan('stable', { FAKE_GH_LOGIN: '' });
+        expect(result.status).toBe(0);
+        expect(result.notes).toContain('- Add search #3\n');
+    });
+
+    test('a failing gh fails the run without notes or a tag', () => {
+        commit('feat: add search (#3)');
+        const result = plan('stable', { FAKE_GH_FAIL: '1' });
+        expectOneError(result.status, result.stdout);
+        expect(result.notes).toBeUndefined();
+        expect(result.output).toBeUndefined();
     });
 
     test('ignores commits before the last stable tag', () => {

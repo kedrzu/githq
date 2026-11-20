@@ -10,7 +10,7 @@ const WAIT = { intervalMs: 1, timeoutMs: 1000 };
 const STABLE_BUILD = { version: '0.2.0', commit: 'abc' };
 const DEVELOPMENT_BUILD = { version: '0.3.0-dev.214', commit: 'abc' };
 const RELEASES = 'RepositoryReleases';
-const COMMITS = 'CommitSubjects';
+const COMMITS = 'Commits';
 
 test('reads when the section opens and not before, and an opening while it reads adds nothing', async () => {
     const { store, asked } = start(() => releases([release('v0.2.0')]));
@@ -125,8 +125,8 @@ test('a Development build reads from its own commit back to a Stable tag, and na
         operation === RELEASES
             ? releases([release('v0.2.0', { tagCommit: { oid: 'tagged' } })])
             : commits([
-                  { oid: 'abc', message: 'feat: new (#3)' },
-                  { oid: 'tagged', message: 'chore: release' },
+                  { oid: 'abc', message: 'feat: new (#3)', author: { user: { login: 'octocat' } } },
+                  { oid: 'tagged', message: 'chore: release', author: { user: { login: 'octocat' } } },
               ]),
     );
 
@@ -134,7 +134,13 @@ test('a Development build reads from its own commit back to a Stable tag, and na
     await waitUntil(() => store.read.kind === 'loaded', WAIT);
 
     expect(store.read).toMatchObject({
-        answer: { development: { since: '0.2.0', subjects: ['feat: new (#3)'], limited: false } },
+        answer: {
+            development: {
+                since: '0.2.0',
+                commits: [{ subject: 'feat: new (#3)', author: 'octocat' }],
+                limited: false,
+            },
+        },
     });
     expect(asked()).toEqual([RELEASES, COMMITS]);
     expect(session.github.requests.at(-1)?.variables).toMatchObject({ from: 'abc' });
@@ -161,7 +167,7 @@ test('a newer Stable tagged on a later commit is never met: the walk stops at th
     await waitUntil(() => store.read.kind === 'loaded', WAIT);
 
     expect(store.read).toMatchObject({
-        answer: { development: { since: '0.2.0', subjects: ['feat: new'], limited: false } },
+        answer: { development: { since: '0.2.0', commits: [{ subject: 'feat: new', author: null }], limited: false } },
     });
     expect(pages).toBe(1);
 });

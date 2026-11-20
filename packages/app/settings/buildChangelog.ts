@@ -2,7 +2,7 @@ import type { GitHubRelease } from '@githq/github/listReleases.js';
 
 import { REPOSITORY_URL } from '@/landing/landingLinks.js';
 import { userVisibleChanges } from '@/scripts/releasePlan.js';
-import type { UserVisibleChangeGroup } from '@/scripts/releasePlan.js';
+import type { ReleaseCommit, UserVisibleChangeGroup } from '@/scripts/releasePlan.js';
 import { isNewerVersion, isOlderVersion, isPrereleaseVersion } from '@/services/AppUpdate.js';
 
 /** The repository the app's versions are published in. */
@@ -42,7 +42,8 @@ export type ChangelogVersion = ChangelogDevelopment | ChangelogRelease;
 /** What a Development build read of its commits since the last Stable. */
 export interface DevelopmentCommits {
     readonly since: string | null;
-    readonly subjects: string[];
+    /** Newest first; {@link ChangelogDevelopment.commits} counts them. */
+    readonly commits: ReleaseCommit[];
     readonly limited: boolean;
 }
 
@@ -87,9 +88,9 @@ export function buildChangelog({
         {
             kind: 'development',
             since: development.since,
-            commits: development.subjects.length,
+            commits: development.commits.length,
             limited: development.limited,
-            groups: userVisibleChanges(development.subjects),
+            groups: userVisibleChanges(development.commits),
         },
         ...stable,
     ];
