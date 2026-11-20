@@ -95,6 +95,7 @@ function close(reason: CloseReason) {
 <template>
   <div
     ref="root"
+    tid="item-composer"
     :class="[
       css.itemThreadComposer,
       readOnly && css.itemThreadComposer_readOnly,

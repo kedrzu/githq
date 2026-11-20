@@ -176,7 +176,10 @@ function refusedAside(reason: EditFailureReason) {
 </script>
 
 <template>
-  <section :class="css.pullRequestMerge">
+  <section
+    :class="css.pullRequestMerge"
+    tid="pull-request-merge"
+  >
     <PullRequestVerdictLine
       :verdict="verdict"
       tag="h2"

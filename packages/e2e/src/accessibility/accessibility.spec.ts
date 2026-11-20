@@ -30,10 +30,10 @@ const ISSUE = 'Sign-in loops after the token expires';
 test('the landing page, wide and on a phone', async ({ page }) => {
     await page.goto('/');
     await expect(new LandingHarness(page).root).toBeVisible();
-    await expectAccessible(page, 'the landing page');
+    await expectAccessible(page, 'the landing page', { buttonSizes: false });
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await expectAccessible(page, 'the landing page on a phone');
+    await expectAccessible(page, 'the landing page on a phone', { buttonSizes: false });
 });
 
 test('the docs: an article and the "not found" page, wide and on a phone', async ({ page }) => {
@@ -45,10 +45,10 @@ test('the docs: an article and the "not found" page, wide and on a phone', async
         await page.setViewportSize({ width: 1440, height: 900 });
         await page.goto(path);
         await expect(shown).toBeVisible();
-        await expectAccessible(page, state);
+        await expectAccessible(page, state, { buttonSizes: false });
 
         await page.setViewportSize({ width: 390, height: 844 });
-        await expectAccessible(page, `${state} on a phone`);
+        await expectAccessible(page, `${state} on a phone`, { buttonSizes: false });
     }
 });
 
@@ -83,7 +83,7 @@ test('my work, with the command menu, the new issue dialog and the account menu 
 
     await shell.account(SAMPLE_VIEWER.viewer.login).click();
     await expect(page.getByRole('menu')).toBeVisible();
-    await expectAccessible(page, 'the account menu', '[role="menu"]');
+    await expectAccessible(page, 'the account menu', { within: '[role="menu"]' });
     await page.keyboard.press('Escape');
 
     await myWork.row(ISSUE).click();
@@ -94,7 +94,7 @@ test('my work, with the command menu, the new issue dialog and the account menu 
     await page.keyboard.press('s');
     const status = new PickerHarness(page, 'Status');
     await expect(status.option('In Progress')).toBeVisible();
-    await expectAccessible(page, 'a picker', '[role="dialog"]');
+    await expectAccessible(page, 'a picker', { within: '[role="dialog"]' });
 });
 
 test('a toast', async ({ page, github }) => {
@@ -125,6 +125,17 @@ test('the merge panel', async ({ page, github }) => {
     await expectAccessible(page, 'the merge panel');
 });
 
+test('a pull request on a phone', async ({ page, github }) => {
+    const sample = createSampleMergeableWork();
+    await openMyWork(page, github, sample.world);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/acme/web/pull/15');
+    const item = new ItemViewHarness(page);
+    await expect(item.title).toHaveText(FIRST_TITLE);
+    await expect(item.mergeCard).toBeVisible();
+    await expectAccessible(page, 'a pull request on a phone');
+});
+
 test('a repository, a project as a list and a board, and the sidebar’s context menu', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     const shell = await openTrackedWork(page, github, sample.world);
@@ -134,7 +145,7 @@ test('a repository, a project as a list and a board, and the sidebar’s context
     await expectAccessible(page, 'a repository');
 
     await shell.openTrackedMenu(SAMPLE_REPOSITORY);
-    await expectAccessible(page, 'the sidebar’s context menu', '[role="menu"]');
+    await expectAccessible(page, 'the sidebar’s context menu', { within: '[role="menu"]' });
     await page.keyboard.press('Escape');
 
     await shell.tracked(SAMPLE_PROJECT).click();
