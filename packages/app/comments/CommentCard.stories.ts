@@ -131,7 +131,23 @@ export const Current: Story = {
     decorators: [withReadingCursor(COMMENT.id)],
 };
 
-/** `· linked, current`: the address names it too; it keeps the accent border, the head alone takes the cursor's tint. */
+/**
+ * `· current` around the cursor: a review's card with the cursor on a comment of one of its code threads, marked as if
+ * on it.
+ */
+export const Within: Story = {
+    args: { stop: COMMENT.id },
+    parameters: { menu: true },
+    decorators: [withReadingCursor('T_comment', ['T_comment', 'thread:T', COMMENT.id])],
+};
+
+/** `· linked`, where no cursor is shown (an item's panel, code review's conversation): the accent border. */
+export const Linked: Story = {
+    args: { stop: COMMENT.id, linked: true },
+    parameters: { menu: true },
+};
+
+/** The address names it on an item's page: only where the cursor starts, marked current, no accent. */
 export const CurrentLinked: Story = {
     args: { stop: COMMENT.id, linked: true },
     parameters: { menu: true },

@@ -238,8 +238,9 @@ test('a link to a comment on the code opens its resolved thread once the threads
     await page.goto('/acme/web/pull/15#discussion_T_7_1');
     await expect(item.root.getByText('A remark after the review')).toBeVisible();
     release();
-    await expect(linked).toHaveId('discussion_T_7_1');
-    await expect(linked).toBeInViewport();
+    // On the page the reading cursor starts on it: marked as the stop under the cursor.
+    await expect(item.readingCursor).toHaveId('discussion_T_7_1');
+    await expect(item.readingCursor).toBeInViewport();
     // Not the comment against the top with its thread's file and code cut off above it: the card from its top.
     await expect
         .poll(() => getRoomAbovePadding(item.root.locator('[data-code-thread]:has(#discussion_T_7_1)')))

@@ -1,10 +1,14 @@
-import { findStopOnScreen } from './findStopOnScreen.js';
-import type { ReadingBand, ReadingCursor, ReadingStopBox } from './ReadingCursor.js';
+import { findCursorSegment } from './findCursorSegment.js';
+import { findSegmentAt } from './findSegmentAt.js';
+import { getSegmentCursor } from './getSegmentCursor.js';
+import type { ReadingBand, ReadingPlace, ReadingSegment, ReadingStopBox } from './ReadingCursor.js';
 
 export interface FollowScrollParams {
+    /** As `buildSegments` gives them from `stops`. */
+    readonly segments: readonly ReadingSegment[];
     /** In document order. */
     readonly stops: readonly ReadingStopBox[];
-    readonly cursor: ReadingCursor;
+    readonly cursor: ReadingPlace;
     /** What shows after the scroll. */
     readonly band: ReadingBand;
     /** Which way the content was scrolled. */
@@ -12,17 +16,19 @@ export interface FollowScrollParams {
 }
 
 /**
- * Where a wheel, trackpad or scrollbar scroll leaves the reading cursor (D44): on its stop while any of it shows; once
- * the stop is wholly out of sight, on the stop at the edge it left by (the top scrolling down, the bottom up), so the
- * keys always act on something in view. Its stop gone, the same.
+ * Where a wheel, trackpad or scrollbar scroll leaves the reading cursor (D44): on its segment while any of it shows;
+ * once the segment is wholly out of sight, on the segment at the edge it left by (the top scrolling down, the bottom
+ * up), so the keys always act on something in view. Its stop gone, the same. A segment taller than what shows is taken
+ * where the band starts, so the cursor stays on the part in sight.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function followScroll({ stops, cursor, band, direction }: FollowScrollParams): ReadingCursor {
-    const stop = stops.find(other => other.key === cursor.key);
-    if (stop && stop.bottom > band.top && stop.top < band.bottom) {
+export function followScroll({ segments, stops, cursor, band, direction }: FollowScrollParams): ReadingPlace {
+    const current = findCursorSegment({ segments, stops, cursor });
+    if (current && current.end > band.top && current.start < band.bottom) {
         return cursor;
     }
 
-    return findStopOnScreen({ stops, band, edge: direction === 'down' ? 'top' : 'bottom' }) ?? cursor;
+    const edge = findSegmentAt(segments, direction === 'down' ? band.top : band.bottom - 1);
+    return edge ? getSegmentCursor({ stops, segment: edge, y: band.top }) : cursor;
 }

@@ -1,4 +1,4 @@
-<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says after them (`tail`), its ⋯ at the card's edge — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). On an item's thread a card is a stop of the reading cursor (`stop`, `data-reading-stop`): the cursor on it, its border turns `current-edge` and its head `current-header`, as code review's current file (`Activity / Comment · current`) — a linked or a draft card keeps its own border and takes the head alone — and it is the `aria-current` one; where no screen provides a cursor (code review's conversation), nothing marks it. Its menu (`menu`) opens from the ⋯ (`menuOpen`, also from outside: the item's `.`) and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One comment card, wherever comments are listed — an item's thread (`ItemThread`), code review's conversation (`ReviewConversation`): the writer's avatar in the gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says after them (`tail`), its ⋯ at the card's edge — and what they wrote below, when anything. Its layout follows its own width, not the window's (a container query, `Activity / Comment · narrow`): under 480 px the gutter goes and a small avatar starts the head, the verb drops and the age stays, `tail` moves to a line under what was written, the Author chip gives way first and then the login is cut short — the ⋯ always stays. The viewer's draft review has an amber border (`pending`); the comment the address links to an accent one (`linked`), only where no reading cursor is shown (an item's panel, a phone, code review's conversation) — on an item's page the cursor starts on it instead. On an item's thread a card is a stop of the reading cursor (`stop`, `data-reading-stop`): the cursor on it, or on a stop inside it (a comment of one of a review's code threads), its border turns `current-edge` and its head `current-header`, as code review's current file (`Activity / Comment · current`) — a draft card keeps its amber border and takes the head alone — and it is `aria-current`; where no screen provides a cursor (code review's conversation), nothing marks it. Its menu (`menu`) opens from the ⋯ (`menuOpen`, also from outside: the item's `.`) and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -8,7 +8,7 @@ import Avatar from '@/components/Avatar.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
 import Menu from '@/components/Menu.vue';
-import { useReadingStop } from '@/reading/ReadingCursor.js';
+import { useReadingCursorShown, useReadingStop } from '@/reading/ReadingCursor.js';
 import type { ReadingStopKind } from '@/reading/ReadingCursor.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
@@ -32,7 +32,10 @@ const props = defineProps<{
   failed?: boolean;
   /** The viewer's draft review: the amber border (`Activity / Review · pending`). */
   pending?: boolean;
-  /** The comment the address's fragment names: the accent border (`Activity / Comment · linked`). */
+  /**
+   * The comment the address's fragment names: the accent border (`Activity / Comment · linked`), where no reading
+   * cursor is shown.
+   */
   linked?: boolean;
   /** Said instead of the login: "Your review". */
   name?: string;
@@ -71,9 +74,12 @@ const menuOpen = defineModel<boolean>('menuOpen', { default: false });
 const t = useTranslate();
 const headRef = useTemplateRef<HTMLElement>('head');
 const readingStop = useReadingStop(() => props.stop ?? '');
+const cursorShown = useReadingCursorShown();
 
-/** The reading cursor is on it. */
-const current = computed(() => props.stop !== undefined && readingStop.current);
+/** The reading cursor is on it, or on a stop inside it. */
+const current = computed(() => props.stop !== undefined && (readingStop.current || readingStop.within));
+/** The accent border, where no cursor starts on it instead. */
+const linkedShown = computed(() => props.linked && !cursorShown.value);
 
 const login = computed(() => props.author?.login ?? t(l.deletedUser));
 const time = computed(() => (props.createdAt === undefined ? null : Date.parse(props.createdAt)));
@@ -120,7 +126,7 @@ watchPostEffect(() => {
           current && css.commentCard_current,
           failed && css.commentCard_failed,
           pending && css.commentCard_pending,
-          linked && css.commentCard_linked,
+          linkedShown && css.commentCard_linked,
         ]"
       >
         <p
@@ -235,8 +241,8 @@ watchPostEffect(() => {
   border-radius: $radius-lg;
 }
 
-// Under the reading cursor, as code review's current file: only colours change, so nothing moves. Before the pending
-// and linked borders, which it leaves as they are.
+// Under the reading cursor, or around it, as code review's current file: only colours change, so nothing moves. Before
+// the pending border, which it leaves as it is.
 .commentCard_current {
   border-color: $color-current-edge;
 }

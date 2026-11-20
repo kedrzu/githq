@@ -1,22 +1,30 @@
 import { assertValue } from '@nzyme/utils/assert.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onElementScroll } from '@nzyme/vue-utils/onElementScroll.js';
+import { onEventEmitter } from '@nzyme/vue-utils/onEventEmitter.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { toValue } from 'vue';
+import { onScopeDispose, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, ShallowRef } from 'vue';
 
+import { Clock } from '@/services/Clock.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
+import { buildSegments } from './buildSegments.js';
+import { findCursorSegment } from './findCursorSegment.js';
 import { findNextComment } from './findNextComment.js';
-import { findStopAt } from './findStopAt.js';
+import { findSegmentAt } from './findSegmentAt.js';
 import { findStopOnScreen } from './findStopOnScreen.js';
+import { followHeld } from './followHeld.js';
 import { followScroll } from './followScroll.js';
 import { getCommentScroll } from './getCommentScroll.js';
 import { getCursorScroll } from './getCursorScroll.js';
 import type { CursorScrollViewport } from './getCursorScroll.js';
-import type { ReadingBand, ReadingCursor, ReadingStopBox } from './ReadingCursor.js';
-import { LINE_STEP, stepCursor } from './stepCursor.js';
-import { useHeldKey } from './useHeldKey.js';
+import { getHeldLine } from './getHeldLine.js';
+import { getSegmentCursor } from './getSegmentCursor.js';
+import type { ReadingBand, ReadingCursor, ReadingPlace, ReadingStopBox } from './ReadingCursor.js';
+import { LINE_STEP, stepReading } from './stepReading.js';
+import { REPEAT_GAP_MS, useHeldKey } from './useHeldKey.js';
 
 /** Options of {@link useReadingCursor}. */
 export interface UseReadingCursorOptions {
@@ -36,7 +44,11 @@ export interface UseReadingCursorOptions {
 
 /** What {@link useReadingCursor} gives, for the screen to bind its keys to. */
 export interface ReadingCursorActions {
-    /** ↓ ↑: a short step, further the longer the key is held, never past a stop's start. */
+    /**
+     * ↓ ↑ pressed: on to the next segment, or a quarter of the screen's scroll through a tall one (`stepReading`). Held:
+     * a smooth scroll, the cursor following a reading line carried with it (`followHeld`). With no stops, a line's
+     * scroll, more the longer the key is held.
+     */
     move(direction: 1 | -1): void;
     /** PageDown PageUp: a screen. */
     page(direction: 1 | -1): void;
@@ -53,17 +65,23 @@ export interface ReadingCursorActions {
 
 /** What PageDown PageUp keep in sight of the screen they leave. */
 const PAGE_OVERLAP = LINE_STEP;
+/** How fast a held ↓ ↑ scrolls, in px a second. */
+const HELD_SPEED = 500;
 /** What marks a stop, its value the key. */
 const STOP_ATTRIBUTE = 'data-reading-stop';
 
 /**
  * A reading screen's cursor (D44's, on a scrolling page): a position in the content shown by the stop it is on, the
- * stops being elements marked `data-reading-stop`. ↓ ↑ and PageDown PageUp move it, the screen scrolling only to keep
- * it a third of what shows from an edge; the pointer moving over a stop or pressing it, or the focus going into it, puts
- * it there; a scroll that takes its stop out of sight brings it to the stop at the edge it left by. With no stops the
- * keys only scroll.
+ * stops being elements marked `data-reading-stop`, with the stops around it (its `path`). A press of ↓ ↑ moves it to the
+ * next part of the content, or scrolls a quarter of the screen through a tall one; held, the screen scrolls smoothly and
+ * the cursor follows from where it was, as far as the scroll carried it, nothing snapping as the key is released.
+ * PageDown PageUp scroll a screen, the cursor keeping its place on it. The pointer moving over a stop (not while an
+ * arrow is held) or pressing it, or the focus going into it, puts it there; a scroll that takes its part out of sight
+ * brings it to the part at the edge it left by; its stop drawn away (a thread resolved), to the innermost stop around
+ * it still there. With no stops the keys only scroll.
  */
 export function useReadingCursor(options: UseReadingCursorOptions): ReadingCursorActions {
+    const clock = useService(Clock);
     const held = useHeldKey();
     const { cursor } = options;
     const withStops = options.stops ?? true;
@@ -71,8 +89,36 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
     let lastPointer: { x: number; y: number } | null = null;
     let lastScroll: { element: HTMLElement; top: number } | null = null;
     let pressing = false;
+    let hold: Hold | null = null;
 
     onElementScroll(() => toValue(options.scroller), onScroll);
+    onEventEmitter(held.released, stopHold);
+    onScopeDispose(stopHold);
+    // The content drawn again (a thread resolved or hidden, a comment loading): the path read again, once a frame.
+    watch(
+        () => (withStops ? toValue(options.scroller) : null),
+        (scroller, _previous, onCleanup) => {
+            if (!scroller) {
+                return;
+            }
+
+            let frame: number | null = null;
+            const observer = new MutationObserver(() => {
+                frame ??= requestAnimationFrame(() => {
+                    frame = null;
+                    refreshPath(scroller);
+                });
+            });
+            observer.observe(scroller, { childList: true, subtree: true });
+            onCleanup(() => {
+                observer.disconnect();
+                if (frame !== null) {
+                    cancelAnimationFrame(frame);
+                }
+            });
+        },
+        { immediate: true },
+    );
     // The window's, for a move into the content to be told from where the pointer was before.
     onWindowEvent('pointermove', onPointerMove, { passive: true });
     onWindowEvent('pointerdown', onPointerDown, { passive: true });
@@ -88,21 +134,158 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
             return;
         }
 
-        const distance = direction * held.step(direction) * LINE_STEP;
-        travel(scroller, distance, 'line');
+        const stops = withStops ? measureStops(scroller) : [];
+        if (stops.length === 0) {
+            scroller.scrollBy({ top: direction * held.step(direction) * LINE_STEP, behavior: 'instant' });
+            return;
+        }
+
+        if (held.isRepeat(direction)) {
+            keepHolding(scroller, direction, stops);
+            return;
+        }
+
+        stopHold();
+        const band = getBand(scroller);
+        const segments = buildSegments(stops);
+        const current = cursor.value ? findCursorSegment({ segments, stops, cursor: cursor.value }) : null;
+        if (!current) {
+            // Nowhere yet, or its stop gone: the first press lands on what shows at the top.
+            setCursor(findStopOnScreen({ stops, band, edge: 'top' }));
+            return;
+        }
+
+        const { segment, scroll } = stepReading({
+            segments,
+            current,
+            band,
+            viewport: getViewport(scroller),
+            direction: direction === 1 ? 'down' : 'up',
+        });
+        if (segment !== current) {
+            setCursor(getSegmentCursor({ stops, segment }));
+        }
+
+        if (scroll !== 0) {
+            scroller.scrollBy({ top: scroll, behavior: 'instant' });
+        }
     }
 
+    /** A repeat of the held arrow: the smooth scroll started by the first one, kept going by the rest. */
+    function keepHolding(scroller: HTMLElement, direction: 1 | -1, stops: readonly ReadingStopBox[]) {
+        const now = clock.now();
+        if (hold?.scroller === scroller && hold.direction === direction) {
+            hold.lastRepeat = now;
+            return;
+        }
+
+        stopHold();
+        const band = getBand(scroller);
+        const current = cursor.value
+            ? findCursorSegment({ segments: buildSegments(stops), stops, cursor: cursor.value })
+            : null;
+        if (!current) {
+            setCursor(findStopOnScreen({ stops, band, edge: 'top' }));
+            return;
+        }
+
+        hold = {
+            scroller,
+            direction,
+            line: getHeldLine({ segment: current, band, direction: direction === 1 ? 'down' : 'up' }),
+            lastFrame: now,
+            lastRepeat: now,
+            frame: requestAnimationFrame(scrollHeld),
+        };
+    }
+
+    /**
+     * A frame of the held arrow's scroll: by the time since the last one, the reading line carried as far — on past the
+     * content's ends, where the scroll stops, so the cursor still reaches the last stops — and the cursor following it.
+     */
+    function scrollHeld() {
+        const current = hold;
+        if (!current) {
+            return;
+        }
+
+        const now = clock.now();
+        const { scroller, direction } = current;
+        // No repeat for a while is a release that never came (the keyup went elsewhere).
+        if (now - current.lastRepeat > REPEAT_GAP_MS || getActiveScroller() !== scroller) {
+            stopHold();
+            return;
+        }
+
+        const from = current.line;
+        current.line += (direction * HELD_SPEED * (now - current.lastFrame)) / 1000;
+        current.lastFrame = now;
+        // By whole pixels between the line's rounded places, so what scrolls never drifts from the line.
+        const distance = Math.round(current.line) - Math.round(from);
+        if (distance !== 0) {
+            scroller.scrollBy({ top: distance, behavior: 'instant' });
+        }
+
+        const stops = measureStops(scroller);
+        const segments = buildSegments(stops);
+        const at = cursor.value ? findCursorSegment({ segments, stops, cursor: cursor.value }) : null;
+        if (at) {
+            const next = followHeld({
+                segments,
+                line: current.line,
+                direction: direction === 1 ? 'down' : 'up',
+                current: at,
+            });
+            if (next !== at) {
+                setCursor(getSegmentCursor({ stops, segment: next }));
+            }
+        }
+
+        current.frame = requestAnimationFrame(scrollHeld);
+    }
+
+    /** The held arrow's scroll ends where it is; the cursor stays where it followed it to. */
+    function stopHold() {
+        if (hold) {
+            cancelAnimationFrame(hold.frame);
+            hold = null;
+        }
+    }
+
+    /** A screen's scroll, the cursor on the segment at its place on the screen it leaves, kept in sight. */
     function page(direction: 1 | -1) {
+        stopHold();
         const scroller = getActiveScroller();
         if (!scroller) {
             return;
         }
 
         const band = getBand(scroller);
-        travel(scroller, direction * Math.max(band.bottom - band.top - PAGE_OVERLAP, LINE_STEP), 'page');
+        const distance = direction * Math.max(band.bottom - band.top - PAGE_OVERLAP, LINE_STEP);
+        const stops = withStops ? measureStops(scroller) : [];
+        if (stops.length === 0) {
+            scroller.scrollBy({ top: distance, behavior: 'instant' });
+            return;
+        }
+
+        const from = getCursorY(stops);
+        if (from === null) {
+            setCursor(findStopOnScreen({ stops, band, edge: 'top' }));
+            return;
+        }
+
+        const segment = findSegmentAt(buildSegments(stops), from + distance);
+        if (!segment) {
+            return;
+        }
+
+        setCursor(getSegmentCursor({ stops, segment, y: from + distance }));
+        scroller.scrollBy({ top: distance, behavior: 'instant' });
+        scrollToCursor(scroller, getCursorY(stops) ?? from, direction);
     }
 
     function stepComment(direction: 1 | -1) {
+        stopHold();
         const scroller = getActiveScroller();
         if (!scroller || !withStops) {
             return false;
@@ -115,7 +298,7 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
             return false;
         }
 
-        cursor.value = { key: next.key, offset: 0 };
+        setCursor({ key: next.key, offset: 0 });
         const viewport = getViewport(scroller);
         const distance = getCommentScroll(next.top - viewport.scrolled, viewport);
         if (distance !== 0) {
@@ -126,45 +309,42 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
     }
 
     function setTo(key: string) {
-        cursor.value = { key, offset: 0 };
+        setCursor({ key, offset: 0 });
     }
 
     function setToTop() {
         const scroller = toValue(options.scroller);
         if (scroller && withStops) {
-            cursor.value = findStopOnScreen({ stops: measureStops(scroller), band: getBand(scroller), edge: 'top' });
+            setCursor(findStopOnScreen({ stops: measureStops(scroller), band: getBand(scroller), edge: 'top' }));
         }
     }
 
-    /** The reader's own move: the cursor so far on and in sight, a third of the band from the edge it goes toward. */
-    function travel(scroller: HTMLElement, distance: number, by: 'line' | 'page') {
-        const stops = withStops ? measureStops(scroller) : [];
-        const band = getBand(scroller);
-        if (stops.length === 0) {
-            scroller.scrollBy({ top: distance, behavior: 'instant' });
+    /** Every move of the cursor: onto the place, with the stops around it as the page has them now. */
+    function setCursor(place: ReadingPlace | null) {
+        const scroller = toValue(options.scroller);
+        cursor.value = place && { ...place, path: scroller ? readPath(scroller, place.key) : [place.key] };
+    }
+
+    /**
+     * The content drawn again: the path read again, and with the cursor's stop gone, the cursor on the innermost stop of
+     * its old path still there (the row a resolved thread folds to), so no mark is left on what is not drawn.
+     */
+    function refreshPath(scroller: HTMLElement) {
+        const current = cursor.value;
+        const key = current?.path.find(other => findStop(scroller, other) !== null);
+        if (!current || key === undefined) {
             return;
         }
 
-        const from = getCursorY(stops);
-        if (from === null) {
-            // Nowhere yet, or its stop gone: the first press lands on what shows at the top.
-            cursor.value = findStopOnScreen({ stops, band, edge: 'top' });
+        if (key !== current.key) {
+            setCursor({ key, offset: 0 });
             return;
         }
 
-        const y = stepCursor({ stops, y: from, distance, by });
-        const stop = findStopAt(stops, y);
-        if (!stop) {
-            return;
+        const path = readPath(scroller, key);
+        if (path.length !== current.path.length || path.some((other, index) => other !== current.path[index])) {
+            setCursor(current);
         }
-
-        cursor.value = { key: stop.key, offset: y - stop.top };
-        if (by === 'page') {
-            // A screen's travel scrolls a screen, the cursor keeping its place on it.
-            scroller.scrollBy({ top: y - from, behavior: 'instant' });
-        }
-
-        scrollToCursor(scroller, y, distance > 0 ? 1 : -1);
     }
 
     /** By `scrollBy`, at once: the cursor's line, at `y` from the content's top, kept a third of the band from the edge it goes toward. */
@@ -225,18 +405,21 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
         lastScroll = { element: scroller, top: scroller.scrollTop };
         const current = cursor.value;
         const distance = scroller.scrollTop - previous;
-        if (!current || distance === 0 || !withStops || !toValue(options.isActive)) {
+        // A held arrow's own scroll: the cursor follows its reading line instead.
+        if (!current || distance === 0 || !withStops || !toValue(options.isActive) || hold) {
             return;
         }
 
+        const stops = measureStops(scroller);
         const next = followScroll({
-            stops: measureStops(scroller),
+            segments: buildSegments(stops),
+            stops,
             cursor: current,
             band: getBand(scroller),
             direction: distance > 0 ? 'down' : 'up',
         });
         if (next !== current) {
-            cursor.value = next;
+            setCursor(next);
         }
     }
 
@@ -244,8 +427,8 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
         const still = !lastPointer || (lastPointer.x === event.clientX && lastPointer.y === event.clientY);
         lastPointer = { x: event.clientX, y: event.clientY };
         // Content scrolling or showing up under a pointer that stays put moves nothing: the browser's own moves after a
-        // layout say where it is, and the first event known is no move at all.
-        if (!still) {
+        // layout say where it is, and the first event known is no move at all. Nor does a held arrow's scroll under it.
+        if (!still && !hold) {
             putAtPointer(event);
         }
     }
@@ -268,7 +451,7 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
         const stop = pressing ? null : findStopElement(target);
         if (stop && target instanceof Element) {
             const offset = target.getBoundingClientRect().top - stop.getBoundingClientRect().top;
-            cursor.value = { key: getStopKey(stop), offset: Math.max(offset, 0) };
+            setCursor({ key: getStopKey(stop), offset: Math.max(offset, 0) });
         }
     }
 
@@ -278,7 +461,7 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
             const key = getStopKey(stop);
             const offset = Math.max(event.clientY - stop.getBoundingClientRect().top, 0);
             if (key !== cursor.value?.key || offset !== cursor.value.offset) {
-                cursor.value = { key, offset };
+                setCursor({ key, offset });
             }
         }
     }
@@ -293,6 +476,17 @@ export function useReadingCursor(options: UseReadingCursorOptions): ReadingCurso
         const stop = target.closest(`[${STOP_ATTRIBUTE}]`);
         return stop && scroller.contains(stop) ? stop : null;
     }
+}
+
+/** A held arrow's smooth scroll, going while its repeats come. */
+interface Hold {
+    readonly scroller: HTMLElement;
+    readonly direction: 1 | -1;
+    /** The reading line the cursor follows, from the content's top (`getHeldLine`, `followHeld`). */
+    line: number;
+    lastFrame: number;
+    lastRepeat: number;
+    frame: number;
 }
 
 /** Every stop in the scroller, in document order, from the content's top; a stop not laid out (hidden) is none. */
@@ -312,6 +506,25 @@ function measureStops(scroller: HTMLElement): ReadingStopBox[] {
     }
 
     return stops;
+}
+
+/**
+ * The keys of the stop keyed so and of every stop around it in the scroller, its own first, the outermost last. Just its
+ * own with it not drawn.
+ */
+function readPath(scroller: HTMLElement, key: string): string[] {
+    const path = [key];
+    let stop = findStop(scroller, key)?.parentElement?.closest(`[${STOP_ATTRIBUTE}]`) ?? null;
+    while (stop && scroller.contains(stop)) {
+        path.push(getStopKey(stop));
+        stop = stop.parentElement?.closest(`[${STOP_ATTRIBUTE}]`) ?? null;
+    }
+
+    return path;
+}
+
+function findStop(scroller: HTMLElement, key: string) {
+    return scroller.querySelector(`[${STOP_ATTRIBUTE}="${CSS.escape(key)}"]`);
 }
 
 function getStopKey(stop: Element) {

@@ -209,3 +209,20 @@ thread"), F31 (`W` and `Q` in the comment's menu); the variables were already `t
 is cut short on one line rather than wrapped, which the drawing's wrap stands for. The labels of round 3 and the merge
 button's are built in #354, their own pull request; the other unticked entries are the file's own layout and need no
 code.
+
+## Round 5 · a cursor you can see
+
+Asked (the owner, 2026-11-18; spec `.context/specs/2026-11-18-reading-cursor-visible.md`): ↓ ↑ moved an invisible line
+40 px a press, only the innermost stop was marked, the linked comment kept its accent border whatever the cursor did,
+and `R` `H` showed nowhere. Decided in D46, amending D43. No change to `githq.pen`: the marks reuse the current-edge,
+current-header and cursor-tint tokens of F24 and F27.
+
+- [x] ↓ ↑ go segment by segment (a review's head, a code thread's excerpt, each comment, the thread's bands, a commit,
+  an event, the fold), or scroll a quarter of the screen through a segment taller than it.
+- [x] Held ↓ ↑ scroll smoothly at 500 px/s, the cursor following a reading line set where it was as the hold began;
+  nothing snaps on release, and at the content's end the cursor still walks to the last stop.
+- [x] A code thread is a stop (`thread:<id>`); the cursor on one of its comments marks the comment, the thread and the
+  review, each `aria-current`.
+- [x] The linked comment is where the cursor starts on the page, with no accent border; the panel, a phone and code
+  review keep the border.
+- [x] "Reply…" shows `R` and "Resolve thread" / "Unresolve" `H` while the cursor is on the thread or in it.
