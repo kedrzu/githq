@@ -56,6 +56,9 @@ export const ItemOverlay = defineService({
     name: 'ItemOverlay',
     setup() {
         const layersRef = shallowRef<ReadonlyMap<string, readonly ItemOverlayLayer[]>>(new Map());
+        // GitHub's id of each issue created in this session, to the temporary id it was first shown under. Kept after
+        // the layers go, as a list keeps drawing the issue under its first id.
+        const firstIdsRef = shallowRef<ReadonlyMap<string, string>>(new Map());
 
         return {
             /** Whether any item has layers; reactive. */
@@ -72,6 +75,7 @@ export const ItemOverlay = defineService({
             getAddedProjectItems,
             getAddedItems,
             getConfirmedId,
+            getFirstId,
         };
 
         /** Draws `layer` over the item, over the layers before it. */
@@ -86,6 +90,11 @@ export const ItemOverlay = defineService({
          * over the rest when `layer` is gone.
          */
         function replace(id: string, layer: ItemOverlayLayer, by: ItemOverlayLayer) {
+            const confirmedId = by.addedItem?.item.id;
+            if (confirmedId !== undefined && confirmedId !== id) {
+                firstIdsRef.value = new Map([...firstIdsRef.value, [confirmedId, id]]);
+            }
+
             const layers = layersRef.value.get(id) ?? [];
             const replaced = layers.includes(layer)
                 ? layers.map(other => (other === layer ? by : other))
@@ -112,6 +121,7 @@ export const ItemOverlay = defineService({
 
         function clear() {
             layersRef.value = new Map();
+            firstIdsRef.value = new Map();
         }
 
         /** The row with the item's layers drawn over it; the row itself when it has none. Reactive. */
@@ -208,6 +218,15 @@ export const ItemOverlay = defineService({
             }
 
             return null;
+        }
+
+        /**
+         * The id an item was first shown under in this session: the temporary one of an issue created here, else its
+         * own. A list keys its row by it, so the row GitHub's issue takes over is the same one, changed in place.
+         * Reactive.
+         */
+        function getFirstId(id: string): string {
+            return firstIdsRef.value.get(id) ?? id;
         }
     },
 });

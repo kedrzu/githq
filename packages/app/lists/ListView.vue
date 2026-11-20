@@ -30,6 +30,7 @@ import { getStackMerge } from '@/merge/stack/getStackMerge.js';
 import { getStackMergeEnd } from '@/merge/stack/getStackMergeEnd.js';
 import { Browser } from '@/services/Browser.js';
 import { PhoneLayout } from '@/shell/PhoneLayout.js';
+import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
@@ -275,6 +276,7 @@ const t = useTranslate();
 const browser = useService(Browser);
 const expandedStacks = useService(ExpandedStacks);
 const navigation = useService(ItemNavigation);
+const overlay = useService(ItemOverlay);
 const bodyRef = useTemplateRef<HTMLElement>('body');
 const collapsed = ref<ReadonlySet<string>>(new Set());
 /**
@@ -1535,6 +1537,15 @@ function dropArriving(key: string) {
   arriving.value = next;
 }
 
+/**
+ * What a row or card is drawn under: its key, with the id the item was first shown under (`ItemOverlay.getFirstId`), so
+ * an issue created here stays the same row when GitHub's issue takes its place rather than fading out into a new one.
+ */
+function getDrawnKey(entry: ListEntry<unknown>) {
+  const firstId = overlay.getFirstId(entry.id);
+  return firstId === entry.id ? entry.key : entry.key.replace(entry.id, firstId);
+}
+
 /** The row of the item nested under the entry `parentKey`. */
 function isNestedRowOf(key: string, parentKey: string, id: string) {
   const current = placed.value.get(key);
@@ -1645,11 +1656,11 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
             >
               <template
                 v-for="row in group.rows"
-                :key="row.key"
+                :key="getDrawnKey(row)"
               >
                 <li
                   v-for="current in shownByRow.get(row.key)"
-                  :key="current.entry.key"
+                  :key="getDrawnKey(current.entry)"
                   :class="[
                     css.listView_row,
                     current.rail && css[`listView_row_rail${current.depth}`],
@@ -1748,11 +1759,11 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
           >
             <template
               v-for="row in group.rows"
-              :key="row.key"
+              :key="getDrawnKey(row)"
             >
               <li
                 v-for="current in shownByRow.get(row.key)?.filter(shown => !shown.memberOf)"
-                :key="current.entry.key"
+                :key="getDrawnKey(current.entry)"
                 :class="[
                   css.listView_card,
                   current.parent && css.listView_card_nested,
