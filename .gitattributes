@@ -7,5 +7,5 @@
 **/__generated__/** linguist-generated
 
 # Pen design files: merged node by node by the `pen` merge driver (registered in setup.sh), diffed with
-# `bun githq pen diff`, not as text. How: the `design` skill.
+# `bun pen diff`, not as text. How: the `design` skill.
 *.pen merge=pen -diff linguist-generated
