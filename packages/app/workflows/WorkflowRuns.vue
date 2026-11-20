@@ -30,6 +30,7 @@ import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
 import MenuRadioItem from '@/components/MenuRadioItem.vue';
+import MotionList from '@/components/MotionList.vue';
 import ListEndSentinel from '@/lists/ListEndSentinel.vue';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
@@ -310,53 +311,59 @@ function describeGroup(label: WorkflowRunGroupLabel): { text: string; icon: Luci
       :class="css.workflowRuns_list"
       tabindex="-1"
     >
-      <template
-        v-for="group in groups"
-        :key="group.key"
+      <!-- A run arriving fades in and the rest slide down; another workflow's runs show at once. -->
+      <MotionList
+        :key="runs.runs[0]?.workflowId"
+        tag="div"
       >
-        <h2
-          v-if="group.label.kind !== 'all'"
-          :class="css.workflowRuns_heading"
+        <template
+          v-for="group in groups"
+          :key="group.key"
         >
-          <button
-            type="button"
-            :class="css.workflowRuns_toggle"
-            :aria-expanded="!folded.has(group.key)"
-            @click="toggle(group)"
+          <h2
+            v-if="group.label.kind !== 'all'"
+            :class="css.workflowRuns_heading"
           >
-            <component
-              :is="folded.has(group.key) ? ChevronRight : ChevronDown"
-              :class="css.workflowRuns_chevron"
-              aria-hidden="true"
+            <button
+              type="button"
+              :class="css.workflowRuns_toggle"
+              :aria-expanded="!folded.has(group.key)"
+              @click="toggle(group)"
+            >
+              <component
+                :is="folded.has(group.key) ? ChevronRight : ChevronDown"
+                :class="css.workflowRuns_chevron"
+                aria-hidden="true"
+              />
+              <component
+                :is="describeGroup(group.label).icon"
+                v-if="describeGroup(group.label).icon"
+                :class="[
+                  css.workflowRuns_headingIcon,
+                  group.label.kind === 'status' && css[`workflowRuns_status_${group.label.status}`],
+                ]"
+                aria-hidden="true"
+              />
+              <span :class="describeGroup(group.label).mono && css.workflowRuns_mono">{{
+                describeGroup(group.label).text
+              }}</span>
+              <span :class="css.workflowRuns_headingCount">{{ group.runs.length }}</span>
+            </button>
+          </h2>
+          <template v-if="!folded.has(group.key)">
+            <WorkflowRunRow
+              v-for="run in group.runs"
+              :key="run.id"
+              :data-run-key="getRunKey(run)"
+              :run="run"
+              :git-ref="getRunRef(run)"
+              :now="now"
+              :selected="keys && selection.selectedKey === getRunKey(run)"
+              @open="openRun(run)"
             />
-            <component
-              :is="describeGroup(group.label).icon"
-              v-if="describeGroup(group.label).icon"
-              :class="[
-                css.workflowRuns_headingIcon,
-                group.label.kind === 'status' && css[`workflowRuns_status_${group.label.status}`],
-              ]"
-              aria-hidden="true"
-            />
-            <span :class="describeGroup(group.label).mono && css.workflowRuns_mono">{{
-              describeGroup(group.label).text
-            }}</span>
-            <span :class="css.workflowRuns_headingCount">{{ group.runs.length }}</span>
-          </button>
-        </h2>
-        <template v-if="!folded.has(group.key)">
-          <WorkflowRunRow
-            v-for="run in group.runs"
-            :key="run.id"
-            :data-run-key="getRunKey(run)"
-            :run="run"
-            :git-ref="getRunRef(run)"
-            :now="now"
-            :selected="keys && selection.selectedKey === getRunKey(run)"
-            @open="openRun(run)"
-          />
+          </template>
         </template>
-      </template>
+      </MotionList>
 
       <div
         v-if="empty"
