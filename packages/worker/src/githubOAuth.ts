@@ -1,9 +1,9 @@
 import { getOAuthClientId, OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTERN } from '@githq/github/oauth.js';
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
-import { resolveOptionalSecret } from '@githq/secrets/resolveOptionalSecret.js';
 import { GITHUB_CLIENT_SECRET } from '@githq/secrets/secrets.js';
 import type { Container } from '@nzyme/ioc/Container.js';
+import { resolveOptionalSecret } from '@nzyme/secrets/resolveOptionalSecret.js';
 
 import { getUsageClient, isUsageOptedOut, recordUsage } from './usage.js';
 import type { WorkerEnv } from './WorkerEnv.js';

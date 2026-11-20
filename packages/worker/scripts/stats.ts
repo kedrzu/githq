@@ -1,16 +1,17 @@
 /**
  * Prints the last 30 days of usage statistics from Workers Analytics Engine, newest day first: how often each event
  * happened, by client and platform (the data point's layout is in `src/usage.ts`). Run it with
- * `bun --cwd packages/worker stats`; it reads the token from the secret store itself (`loadGithqConfig`, the `secrets`
+ * `bun --cwd packages/worker stats`; it reads the token from the secret store itself (`loadSecretsConfig`, the `secrets`
  * skill).
  */
 import { readFile } from 'node:fs/promises';
 
-import { loadGithqConfig } from '@githq/secrets/loadGithqConfig.js';
-import { resolveOptionalSecret } from '@githq/secrets/resolveOptionalSecret.js';
+import { GithqSecretStore } from '@githq/secrets/GithqSecretStore.js';
 import { CLOUDFLARE_ANALYTICS_TOKEN } from '@githq/secrets/secrets.js';
 import { createContainer } from '@nzyme/ioc/Container.js';
 import type { Container } from '@nzyme/ioc/Container.js';
+import { loadSecretsConfig } from '@nzyme/secrets/loadSecretsConfig.js';
+import { resolveOptionalSecret } from '@nzyme/secrets/resolveOptionalSecret.js';
 
 const QUERY = `
 SELECT
@@ -31,7 +32,7 @@ export type StatsRow = Record<(typeof COLUMNS)[number], string>;
 
 if (import.meta.main) {
     const container = createContainer();
-    await loadGithqConfig(container);
+    await loadSecretsConfig(container, [container.resolve(GithqSecretStore)]);
     if (resolveOptionalSecret(container, CLOUDFLARE_ANALYTICS_TOKEN) === undefined) {
         console.error(
             'CLOUDFLARE_ANALYTICS_TOKEN is not set. Create a Cloudflare API token (My Profile → API Tokens, permission ' +

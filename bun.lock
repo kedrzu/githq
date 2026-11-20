@@ -1140,7 +1140,6 @@
       "name": "@githq/secrets",
       "dependencies": {
         "@nzyme/bitwarden": "workspace:*",
-        "@nzyme/config": "workspace:*",
         "@nzyme/ioc": "workspace:*",
         "@nzyme/secrets": "workspace:*",
       },
@@ -1156,6 +1155,7 @@
         "@githq/secrets": "workspace:*",
         "@nzyme/config": "workspace:*",
         "@nzyme/ioc": "workspace:*",
+        "@nzyme/secrets": "workspace:*",
       },
       "devDependencies": {
         "@nzyme/tsconfig": "workspace:*",

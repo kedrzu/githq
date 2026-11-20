@@ -1,5 +1,5 @@
 /**
- * Every secret githq uses. Code resolves them through the container (a script after `loadGithqConfig`, the Worker
+ * Every secret githq uses. Code resolves them through the container (a script after `loadSecretsConfig`, the Worker
  * from its bindings), never from `process.env`. `GITHQ_ENV` (`githqEnv.ts`: `dev` by default, `prod`, `stats`) picks
  * the store's prefix (`GithqSecretStore`) and which secrets apply. Nothing but declarations lives here, so the Worker
  * bundle that imports this module pulls no store code. How to use them: the `secrets` skill.
