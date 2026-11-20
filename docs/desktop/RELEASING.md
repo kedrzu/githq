@@ -121,7 +121,7 @@ skill), as `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` 
 back. If the key is lost, installed apps can never update again: they accept only updates signed by this key, so every
 user would have to reinstall by hand from a build with a new key.
 
-On any machine, once logged in with `bun githq secrets login`:
+On any machine, once logged in with `bun secrets login`:
 
 - `bun run build:desktop:signed` builds the app with signed updater bundles, as a release does, reading the key from the
   store.
@@ -129,7 +129,7 @@ On any machine, once logged in with `bun githq secrets login`:
   Release action signs with:
 
   ```sh
-  GITHQ_ENV=prod bun githq secrets run -- sh -c '
+  GITHQ_ENV=prod bun secrets run -- sh -c '
     printf %s "$TAURI_SIGNING_PRIVATE_KEY" | gh secret set TAURI_SIGNING_PRIVATE_KEY
     printf %s "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD'
   ```
@@ -148,12 +148,12 @@ from an unidentified developer. With them, the build signs and notarizes. Follow
 3. Put everything in the secret store, under `GITHQ_ENV=prod`, the only place it can be read back from:
 
    ```sh
-   base64 -i certificate.p12 | GITHQ_ENV=prod bun githq secrets set APPLE_CERTIFICATE --no-prompt
-   GITHQ_ENV=prod bun githq secrets set APPLE_CERTIFICATE_PASSWORD --prompt="The .p12's export password"
-   GITHQ_ENV=prod bun githq secrets set APPLE_SIGNING_IDENTITY --prompt="Developer ID Application: Name (TEAMID)"
-   GITHQ_ENV=prod bun githq secrets set APPLE_ID --prompt="The Apple Account's email"
-   GITHQ_ENV=prod bun githq secrets set APPLE_PASSWORD --prompt="An app-specific password from account.apple.com"
-   GITHQ_ENV=prod bun githq secrets set APPLE_TEAM_ID --prompt="The team ID, developer.apple.com → Membership"
+   base64 -i certificate.p12 | GITHQ_ENV=prod bun secrets set APPLE_CERTIFICATE --no-prompt
+   GITHQ_ENV=prod bun secrets set APPLE_CERTIFICATE_PASSWORD --prompt="The .p12's export password"
+   GITHQ_ENV=prod bun secrets set APPLE_SIGNING_IDENTITY --prompt="Developer ID Application: Name (TEAMID)"
+   GITHQ_ENV=prod bun secrets set APPLE_ID --prompt="The Apple Account's email"
+   GITHQ_ENV=prod bun secrets set APPLE_PASSWORD --prompt="An app-specific password from account.apple.com"
+   GITHQ_ENV=prod bun secrets set APPLE_TEAM_ID --prompt="The team ID, developer.apple.com → Membership"
    ```
 
    `bun run build:desktop:signed` then signs and notarizes on any machine, with no certificate in its keychain.
@@ -161,7 +161,7 @@ from an unidentified developer. With them, the build signs and notarizes. Follow
 4. Set the repository secrets from the store, which is what the workflows read:
 
    ```sh
-   GITHQ_ENV=prod bun githq secrets run -- sh -c '
+   GITHQ_ENV=prod bun secrets run -- sh -c '
      printf %s "$APPLE_CERTIFICATE" | gh secret set APPLE_CERTIFICATE
      printf %s "$APPLE_CERTIFICATE_PASSWORD" | gh secret set APPLE_CERTIFICATE_PASSWORD
      printf %s "$APPLE_SIGNING_IDENTITY" | gh secret set APPLE_SIGNING_IDENTITY
@@ -193,8 +193,8 @@ Links and everything else works. Only the workflows use it: `bun run build:deskt
 3. Put it in the secret store and in the repository secrets:
 
    ```sh
-   base64 -i githq.provisionprofile | GITHQ_ENV=prod bun githq secrets set APPLE_PROVISIONING_PROFILE --no-prompt
-   GITHQ_ENV=prod bun githq secrets run -- sh -c \
+   base64 -i githq.provisionprofile | GITHQ_ENV=prod bun secrets set APPLE_PROVISIONING_PROFILE --no-prompt
+   GITHQ_ENV=prod bun secrets run -- sh -c \
      'printf %s "$APPLE_PROVISIONING_PROFILE" | gh secret set APPLE_PROVISIONING_PROFILE'
    ```
 

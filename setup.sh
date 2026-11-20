@@ -56,7 +56,7 @@ require_bun_floor
 # config is shared by every worktree of this clone, and setting it again is harmless. A driver that
 # cannot run yet (nothing installed) makes git report a conflict, which the catch-up aborts and reports.
 git config merge.pen.name "Pen design file"
-git config merge.pen.driver "bun githq pen merge %O %A %B %P"
+git config merge.pen.driver "bun pen merge %O %A %B %P"
 
 # --- Worktree: catch up with origin/main, copy local files ---
 #
