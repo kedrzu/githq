@@ -47,7 +47,6 @@ function onKeydown(event: KeyboardEvent) {
     <ReviewPendingList :comments="comments" />
     <template #footer>
       <Button
-        size="sm"
         kbd="Escape"
         keyshortcuts="Escape"
         data-cancel
@@ -56,9 +55,7 @@ function onKeydown(event: KeyboardEvent) {
         {{ t(l.cancel) }}
       </Button>
       <Button
-        :class="css.reviewDiscardDialog_discard"
-        size="sm"
-        variant="light"
+        variant="destructive"
         :kbd="DISCARD_KEY"
         :keyshortcuts="formatAriaKeyShortcuts(DISCARD_KEY)"
         @click="emit('discard')"
@@ -78,11 +75,5 @@ function onKeydown(event: KeyboardEvent) {
   margin: 0;
   font-size: $font-size-sm;
   color: $color-fg-2;
-}
-
-// Twice the class: the button's own look comes from a stylesheet that may load after this one.
-.reviewDiscardDialog_discard.reviewDiscardDialog_discard {
-  background: $color-red;
-  border-color: $color-red;
 }
 </style>

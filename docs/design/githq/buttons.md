@@ -45,6 +45,8 @@ Each variant means one thing.
 
 - **One row, one variant:** an action bar is `secondary` throughout, apart from its single `primary` (or `destructive`)
   one.
+- **A bar that wears a state's colour** lends it to its main action: the pending review's toolbar is amber and its
+  Submit review amber, red once a submission is refused (code review D28). The button stays `primary` in meaning.
 - `tone="accent"` colours a `link` or `ghost` label in the accent, for a text action that does something ("Request").
 
 ## Icons and keys

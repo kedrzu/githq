@@ -141,8 +141,7 @@ function onKeydown(event: KeyboardEvent) {
       <span :class="css.reviewSubmitDialog_note">{{ t(l.note) }}</span>
       <Button
         :class="css[`reviewSubmitDialog_send_${choice.event}`]"
-        size="sm"
-        variant="light"
+        variant="primary"
         :disabled="!canSend"
         :kbd="SEND_KEY"
         :keyshortcuts="formatAriaKeyShortcuts(SEND_KEY)"

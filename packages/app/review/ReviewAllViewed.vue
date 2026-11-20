@@ -57,8 +57,7 @@ const note = computed(() => {
       <p :class="css.reviewAllViewed_note">{{ note }}</p>
       <div :class="css.reviewAllViewed_actions">
         <Button
-          size="sm"
-          variant="light"
+          variant="primary"
           :kbd="keyOf(submitReview)"
           :keyshortcuts="formatAriaKeyShortcuts(keyOf(submitReview))"
           :busy="sending"
@@ -68,7 +67,6 @@ const note = computed(() => {
         </Button>
         <Button
           v-if="nextNumber !== null"
-          size="sm"
           :kbd="keyOf(next)"
           :keyshortcuts="formatAriaKeyShortcuts(keyOf(next))"
           @click="emit('next')"

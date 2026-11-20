@@ -385,7 +385,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         <Button
           v-if="row.notice !== 'empty'"
           size="sm"
-          variant="outline"
+          variant="secondary"
           :link="fileUrl"
           target="_blank"
           rel="noopener noreferrer"
@@ -424,7 +424,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         </div>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           :link="fileUrl"
           target="_blank"
           rel="noopener noreferrer"
@@ -446,14 +446,14 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         </div>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           @click="emit('retry', row.file.path)"
         >
           {{ t(l.tryAgain) }}
         </Button>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           :link="fileUrl"
           target="_blank"
           rel="noopener noreferrer"

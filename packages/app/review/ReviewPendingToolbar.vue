@@ -6,6 +6,7 @@ import { CircleAlert, PencilLine } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { submitReview } from '@/commands/definitions/index.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 
@@ -75,7 +76,6 @@ const failureText = computed(() => {
       >
       <Button
         v-if="canDismiss"
-        :class="css.reviewPendingToolbar_quiet"
         size="sm"
         variant="ghost"
         @click="emit('dismiss')"
@@ -83,7 +83,6 @@ const failureText = computed(() => {
         {{ t(l.dismiss) }}
       </Button>
       <Button
-        :class="css.reviewPendingToolbar_quiet"
         size="sm"
         variant="ghost"
         @click="failed?.finish.kind === 'discard' ? emit('discard') : emit('submit')"
@@ -94,7 +93,7 @@ const failureText = computed(() => {
         v-if="canRetry"
         :class="css.reviewPendingToolbar_main"
         size="sm"
-        variant="light"
+        variant="primary"
         @click="emit('retry')"
       >
         {{ t(l.tryAgain) }}
@@ -123,7 +122,6 @@ const failureText = computed(() => {
       </span>
       <span :class="css.reviewPendingToolbar_note">{{ t(l.note, { count: commentCount }) }}</span>
       <Button
-        :class="css.reviewPendingToolbar_quiet"
         size="sm"
         variant="ghost"
         :disabled="sending"
@@ -134,9 +132,9 @@ const failureText = computed(() => {
       <Button
         :class="css.reviewPendingToolbar_main"
         size="sm"
-        variant="light"
+        variant="primary"
         :kbd="keyOf(submitReview)"
-        :keyshortcuts="keyOf(submitReview)"
+        :keyshortcuts="formatAriaKeyShortcuts(keyOf(submitReview))"
         :busy="sending"
         @click="emit('submit')"
       >
@@ -201,14 +199,9 @@ const failureText = computed(() => {
   text-overflow: ellipsis;
 }
 
-.reviewPendingToolbar .reviewPendingToolbar_quiet {
-  flex: none;
-  color: $color-fg-2;
-}
-
-// Twice the class: the button's own look comes from a stylesheet that may load after this one.
+// The bar's state colour, amber or red (D28): twice the class, as the button's own look comes from a stylesheet that
+// may load after this one.
 .reviewPendingToolbar .reviewPendingToolbar_main {
-  flex: none;
   color: $color-on-light;
   background: var(--review-pending-tone);
   border-color: var(--review-pending-tone);

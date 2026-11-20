@@ -51,7 +51,6 @@ import CommentDeleteDialog from '@/comments/CommentDeleteDialog.vue';
 import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import Kbd from '@/components/Kbd.vue';
 import Toaster from '@/components/Toaster.vue';
 import { useMaxWidth } from '@/components/useMaxWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
@@ -2491,20 +2490,18 @@ function readAgain() {
                 <template #action>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="RotateCw"
                     @click="readAgain"
                   >
-                    <RotateCw aria-hidden="true" />
                     {{ t(l.tryAgain) }}
                   </Button>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="Github"
                     :link="githubUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Github aria-hidden="true" />
                     {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>
@@ -2519,12 +2516,11 @@ function readAgain() {
                 <template #action>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="Github"
                     :link="githubUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Github aria-hidden="true" />
                     {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>
@@ -2539,10 +2535,9 @@ function readAgain() {
                 <template #action>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="FunnelX"
                     @click="filterPattern = ''"
                   >
-                    <FunnelX aria-hidden="true" />
                     {{ t(l.clearFilter) }}
                   </Button>
                 </template>
@@ -2557,8 +2552,7 @@ function readAgain() {
               >
                 <template #action>
                   <Button
-                    size="sm"
-                    variant="light"
+                    variant="primary"
                     :kbd="keyOf(definitions.submitReview)"
                     :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.submitReview))"
                     :busy="finish.kind === 'sending'"
@@ -2569,7 +2563,6 @@ function readAgain() {
                   <Button
                     v-if="nextNumber !== null"
                     variant="secondary"
-                    size="sm"
                     :kbd="keyOf(definitions.next)"
                     :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.next))"
                     @click="stepPullRequest(nextPullRequest, 'K')"
@@ -2578,10 +2571,9 @@ function readAgain() {
                   </Button>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="Eye"
                     @click="hideViewed = false"
                   >
-                    <Eye aria-hidden="true" />
                     {{ t(l.showViewed) }}
                   </Button>
                 </template>
@@ -2603,21 +2595,20 @@ function readAgain() {
                   <Button
                     v-if="!conversationShown"
                     variant="secondary"
-                    size="sm"
+                    :icon="MessageSquare"
+                    :kbd="keyOf(definitions.toggleConversation)"
+                    :keyshortcuts="formatAriaKeyShortcuts(keyOf(definitions.toggleConversation))"
                     @click="conversationShown = true"
                   >
-                    <MessageSquare aria-hidden="true" />
                     {{ t(l.conversation) }}
-                    <Kbd :keys="keyOf(definitions.toggleConversation)" />
                   </Button>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    :icon="Github"
                     :link="githubUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Github aria-hidden="true" />
                     {{ t(definitions.openOnGitHub.title) }}
                   </Button>
                 </template>

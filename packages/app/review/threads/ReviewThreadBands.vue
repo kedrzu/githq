@@ -112,7 +112,7 @@ const t = useTranslate();
   align-items: center;
   justify-content: center;
   width: 20px;
-  height: 30px;
+  height: 32px;
 }
 
 .reviewThreadBands_box {
@@ -127,8 +127,6 @@ const t = useTranslate();
 .reviewThreadBands_reply .reviewThreadBands_field {
   flex: 1;
   min-width: 0;
-  height: 30px;
-  padding: 0 $spacing-8 0 $spacing-10;
   border-color: $color-border-2;
 }
 

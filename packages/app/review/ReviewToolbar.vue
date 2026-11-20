@@ -14,6 +14,7 @@ import {
 import { computed } from 'vue';
 
 import { openOnGitHub, toggleConversation, toggleFileList } from '@/commands/definitions/index.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -200,6 +201,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
       :icon="Github"
       :label="t(openOnGitHub.title)"
       :kbd="keyOf(openOnGitHub)"
+      :keyshortcuts="formatAriaKeyShortcuts(keyOf(openOnGitHub))"
       :link="githubUrl"
       target="_blank"
       rel="noopener noreferrer"
