@@ -25,7 +25,7 @@ withDefaults(
 );
 
 defineSlots<{
-  /** The ways on: `Button`s, `variant="secondary" size="sm"`, drawn in a wrapping row on a screen. */
+  /** The ways on: `Button`s, `variant="secondary"` at the default `md` on a screen, drawn in a wrapping row; `sm` in a group or a column. */
   action?(): unknown;
 }>();
 </script>

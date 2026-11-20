@@ -185,7 +185,6 @@ function applyChange(values: readonly string[], change: PickerChange) {
           </Picker>
           <Button
             variant="outline"
-            size="sm"
             :aria-pressed="assignedToMe"
             keyshortcuts="Alt+A"
             @click="toggleAssignMe"
@@ -382,6 +381,7 @@ function applyChange(values: readonly string[], change: PickerChange) {
         <template #trigger>
           <Button
             variant="outline"
+            size="lg"
             :icon="SquareKanban"
             :class="css.newIssueFields_addProject"
           >
@@ -735,7 +735,6 @@ function applyChange(values: readonly string[], change: PickerChange) {
 .newIssueFields_projects .newIssueFields_addProject {
   justify-content: flex-start;
   width: 100%;
-  min-height: $touch-target-size;
   color: $color-fg-2;
   border-color: $color-border-2;
   border-radius: $radius-lg;

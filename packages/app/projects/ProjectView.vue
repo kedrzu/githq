@@ -582,7 +582,6 @@ function hasItemView(entry: ProjectEntry) {
         <template v-else>
           <Button
             variant="secondary"
-            size="sm"
             :icon="Plus"
             :kbd="keyOf(commandMenu)"
             :keyshortcuts="formatAriaKeyShortcuts(keyOf(commandMenu))"
@@ -592,7 +591,6 @@ function hasItemView(entry: ProjectEntry) {
           </Button>
           <Button
             variant="secondary"
-            size="sm"
             :icon="SquarePen"
             :kbd="keyOf(newIssueInProject)"
             :keyshortcuts="keyOf(newIssueInProject)"
@@ -602,7 +600,6 @@ function hasItemView(entry: ProjectEntry) {
           </Button>
           <Button
             variant="secondary"
-            size="sm"
             :icon="FilePlus"
             @click="composing = null"
           >
@@ -641,7 +638,6 @@ function hasItemView(entry: ProjectEntry) {
         <Button
           v-if="allItemsTo"
           variant="secondary"
-          size="sm"
           :icon="List"
           :link="allItemsTo"
         >
@@ -650,7 +646,6 @@ function hasItemView(entry: ProjectEntry) {
         <Button
           v-if="filter"
           variant="secondary"
-          size="sm"
           :icon="FilterX"
           @click="emit('clearFilter')"
         >

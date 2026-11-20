@@ -298,7 +298,6 @@ function onFilterKeydown(event: KeyboardEvent) {
         }}</span>
         <span :class="css.reviewFileList_spacer" />
         <Button
-          variant="light"
           size="sm"
           :kbd="keyOf(toggleViewed)"
           :keyshortcuts="formatAriaKeyShortcuts(keyOf(toggleViewed))"

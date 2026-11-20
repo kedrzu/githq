@@ -50,10 +50,10 @@ function onOpenChange(open: boolean) {
     @update:open="onOpenChange"
   >
     {{ t(l.detail) }}
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(loadNewVersion) : undefined"
         :keyshortcuts="active ? keyOf(loadNewVersion) : undefined"
         @click="version.reload()"

@@ -40,8 +40,7 @@ const emit = defineEmits<{
       <span>{{ moveLabel }}</span>
     </span>
     <Button
-      variant="outline"
-      size="sm"
+      variant="secondary"
       :icon="Plus"
       :kbd="addKey"
       :keyshortcuts="formatAriaKeyShortcuts(addKey)"

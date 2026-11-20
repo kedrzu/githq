@@ -29,6 +29,8 @@ description: >-
 
 - Keys between a list, an item and its pages (`↵`, `⇧↵`, `Esc`, `j`/`k`, Back, addresses):
   `docs/design/githq/navigation.md`.
+- Which button, at which size and in which variant (`Button`, `SplitButton`, `IconButton`):
+  `docs/design/githq/buttons.md`.
 - Targets, the landing page and the UI package: `ARCHITECTURE.md`, "App and UI" and "Decisions".
 
 Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.

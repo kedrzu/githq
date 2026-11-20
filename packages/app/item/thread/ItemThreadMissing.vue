@@ -42,14 +42,14 @@ const t = useTranslate();
       <div :class="css.itemThreadMissing_actions">
         <Button
           v-if="readAgain"
-          size="compact"
+          size="md"
           :icon="RotateCw"
           @click="readAgain"
         >
           {{ t(l.tryAgain) }}
         </Button>
         <Button
-          size="compact"
+          size="md"
           :icon="ArrowUpRight"
           :link="item.url"
           target="_blank"

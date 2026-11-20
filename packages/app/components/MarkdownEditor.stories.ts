@@ -124,8 +124,8 @@ const meta = {
           <div :style="{ width, padding: '20px', background: '#11161c' }">
             <MarkdownEditor v-bind="args" v-model="text">
               <template #footer>
-                <Button size="compact" :icon="GitPullRequestClosed" kbd="Shift+X">Close pull request</Button>
-                <Button size="compact" variant="primary" kbd="Mod+Enter" :unavailable="!text.trim()">Comment</Button>
+                <Button size="md" :icon="GitPullRequestClosed" kbd="Shift+X">Close pull request</Button>
+                <Button size="md" variant="primary" kbd="Mod+Enter" :unavailable="!text.trim()">Comment</Button>
               </template>
             </MarkdownEditor>
           </div>`,

@@ -518,7 +518,7 @@ function getProjectMark(title: string) {
       </div>
       <IconButton
         v-if="!railForced"
-        size="md"
+        size="rail"
         :icon="PanelLeftOpen"
         :label="t(l.expand)"
         :kbd="keyOf(sidebar)"
@@ -526,7 +526,7 @@ function getProjectMark(title: string) {
         @click="emit('toggle')"
       />
       <IconButton
-        size="md"
+        size="rail"
         :icon="Search"
         :label="t(l.search)"
         :kbd="keyOf(commandMenu)"
@@ -732,7 +732,8 @@ function getProjectMark(title: string) {
   gap: $spacing-8;
   align-items: center;
   justify-content: space-between;
-  padding: 6px $spacing-8;
+  // 34 px: 5 px above and below the `sm` 24 px collapse button.
+  padding: $spacing-5 $spacing-8;
   margin-bottom: $spacing-10;
 }
 

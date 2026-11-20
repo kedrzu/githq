@@ -109,10 +109,10 @@ function openStarted() {
     @update:open="open => open || dispatches.dismissStarted()"
   >
     {{ getStartedDetail(dispatches.started) }}
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(openStartedRun) : undefined"
         :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(openStartedRun)) : undefined"
         @click="openStarted"
@@ -131,11 +131,11 @@ function openStarted() {
     {{ getFailureDetail(dispatches.failure) }}
     <template
       v-if="dispatches.failure.reason.kind === 'organizationRestricted'"
-      #actions
+      #actions="{ size }"
     >
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :icon="ArrowUpRight"
         :link="getApprovalUrl(browser.origin)"
         target="_blank"

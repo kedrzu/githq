@@ -343,11 +343,13 @@ function getChoice(): TrackingChoice {
         <div :class="css.trackingChoicePage_actions">
           <Button
             variant="primary"
+            size="lg"
             @click="load"
           >
             {{ t(l.retry) }}
           </Button>
           <Button
+            size="lg"
             :disabled="busy"
             @click="track"
           >

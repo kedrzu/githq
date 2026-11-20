@@ -1,4 +1,4 @@
-<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the item view posts the comment first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. Docked (`docked`, a phone's composer above the keyboard, mobile D51, MB236–MB243) it is the same composer without the avatar, the screen's width, upside down for the thumb (`MarkdownEditor`'s docked arrangement): the closing and Comment on top, the text, then Write / Preview and the tools; the reasons to close are a menu at the bottom named by what the button says ("Close with comment"), with the item's reference under it, and Escape in it is reported (`cancel`). -->
+<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the item view posts the comment first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. Docked (`docked`, a phone's composer above the keyboard, mobile D51, MB236–MB243) it is the same composer, its buttons a phone screen's `lg`, without the avatar, the screen's width, upside down for the thumb (`MarkdownEditor`'s docked arrangement): the closing and Comment on top, the text, then Write / Preview and the tools; the reasons to close are a menu at the bottom named by what the button says ("Close with comment"), with the item's reference under it, and Escape in it is reported (`cancel`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -95,6 +95,7 @@ function close(reason: CloseReason) {
 <template>
   <div
     ref="root"
+    tid="item-composer"
     :class="[
       css.itemThreadComposer,
       readOnly && css.itemThreadComposer_readOnly,
@@ -146,6 +147,7 @@ function close(reason: CloseReason) {
         <SplitButton
           v-if="stateAction === 'close' && item.kind === 'issue'"
           :class="css.itemThreadComposer_completed"
+          :size="docked ? 'lg' : 'md'"
           :icon="CircleCheck"
           :kbd="keyOf(state)"
           :keyshortcuts="keyOf(state)"
@@ -174,7 +176,7 @@ function close(reason: CloseReason) {
         <Button
           v-else-if="stateAction === 'close'"
           :class="css.itemThreadComposer_closed"
-          size="compact"
+          :size="docked ? 'lg' : 'md'"
           :icon="GitPullRequestClosed"
           :kbd="keyOf(state)"
           :keyshortcuts="keyOf(state)"
@@ -185,7 +187,7 @@ function close(reason: CloseReason) {
         <Button
           v-else-if="stateAction === 'reopen'"
           :class="css.itemThreadComposer_open"
-          size="compact"
+          :size="docked ? 'lg' : 'md'"
           :icon="item.kind === 'issue' ? CircleDot : GitPullRequest"
           :kbd="keyOf(state)"
           :keyshortcuts="keyOf(state)"
@@ -194,7 +196,7 @@ function close(reason: CloseReason) {
           {{ item.kind === 'issue' ? t(l.reopenIssue) : t(l.reopenPullRequest) }}
         </Button>
         <Button
-          size="compact"
+          :size="docked ? 'lg' : 'md'"
           variant="primary"
           :kbd="SUBMIT_KEY"
           :keyshortcuts="formatAriaKeyShortcuts(SUBMIT_KEY)"

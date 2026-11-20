@@ -329,12 +329,14 @@ function turnOff() {
           <div :class="css.savingView_actions">
             <Button
               variant="primary"
+              size="lg"
               :busy="combining"
               @click="combineAndTurnOn"
             >
               {{ t(l.combine) }}
             </Button>
             <Button
+              size="lg"
               :disabled="combining"
               @click="cancel"
             >

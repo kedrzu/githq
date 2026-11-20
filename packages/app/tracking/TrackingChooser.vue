@@ -427,7 +427,7 @@ const footerDetail = computed(() => {
 });
 /** A phone's group action ("Select none", "Show all"): a text link in the accent, a finger's height. */
 const groupActionLook = computed((): GroupActionLook =>
-  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'framed', size: 'sm' },
+  phone.value ? { variant: 'link', tone: 'accent', size: 'md' } : { variant: 'outline', size: 'sm' },
 );
 // What the filter names, once nothing listed matches it: not while the lists are first read — after reading them
 // failed it still is — and not under an owner picked that it doesn't name. G10 looks a project's address up too.
@@ -1026,6 +1026,7 @@ function projectMeta(project: CandidateProject) {
       <div v-else>
         <Button
           variant="primary"
+          size="lg"
           kbd="Mod+Enter"
           :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :busy="busy"
@@ -1385,6 +1386,7 @@ function projectMeta(project: CandidateProject) {
           <Button
             v-if="!typing"
             :variant="phone ? 'ghost' : undefined"
+            :size="phone ? 'md' : 'lg'"
             :class="css.trackingChooser_onlyMine"
             :unavailable="busy"
             @click="emit('onlyMine')"
@@ -1393,7 +1395,7 @@ function projectMeta(project: CandidateProject) {
           </Button>
           <Button
             variant="primary"
-            :size="phone && !typing ? 'lg' : undefined"
+            :size="typing ? 'md' : 'lg'"
             :class="css.trackingChooser_track"
             kbd="Mod+Enter"
             :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"

@@ -57,7 +57,7 @@ function openSettings() {
     <template #trigger>
       <IconButton
         v-if="compact"
-        size="md"
+        size="rail"
         :label="label"
       >
         <span :class="css.accountMenu_avatar">

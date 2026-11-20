@@ -128,7 +128,7 @@ async function loadOnce() {
       <div :class="css.savedSettingsOffer_actions">
         <Button
           variant="primary"
-          :size="phone.active ? 'lg' : undefined"
+          size="lg"
           :kbd="keyOf(loadSavedSettings)"
           :keyshortcuts="formatAriaKeyShortcuts(keyOf(loadSavedSettings))"
           :busy="loading"
@@ -137,7 +137,7 @@ async function loadOnce() {
           {{ t(l.load) }}
         </Button>
         <Button
-          :size="phone.active ? 'lg' : undefined"
+          size="lg"
           :disabled="loading"
           @click="emit('decline')"
         >

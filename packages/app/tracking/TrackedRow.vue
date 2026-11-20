@@ -119,7 +119,7 @@ const t = useTranslate();
     <span :class="css.trackedRow_spacer" />
     <span :class="css.trackedRow_actions">
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         :kbd="UNTRACK_KEY"
         :keyshortcuts="selected ? formatAriaKeyShortcuts(UNTRACK_KEY) : undefined"

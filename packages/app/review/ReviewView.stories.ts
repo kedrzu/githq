@@ -21,6 +21,7 @@ import type {
 } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
+import type { FileFilterInput } from './utils/createFileFilter.js';
 import ReviewView from './ReviewView.vue';
 
 const REFERENCE = { owner: 'fitloop', name: 'webapp', number: 1202 };
@@ -125,6 +126,16 @@ export const ConversationOn: Story = {
         ),
 };
 
+/** D11: a filter no file matches: the list kept under it, and the way to clear it. */
+export const NoMatch: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'waiting' } },
+            { filter: { pattern: 'nothing-here', regex: false } },
+        ),
+};
+
 /** The allowance ran out before the list could be read: it comes by itself. */
 export const ListPaused: Story = {
     render: () => renderView({ kind: 'paused', until: new Date('2026-10-30T14:32:00').getTime() }),
@@ -138,6 +149,7 @@ interface RenderOptions {
     readonly lostViewed?: ReadonlySet<string>;
     readonly threads?: readonly ReviewThread[];
     readonly conversationShown?: boolean;
+    readonly filter?: FileFilterInput;
     /** Handed the user's settings once read, to set or read them. */
     readonly onTracking?: (tracking: TrackingStore) => void;
 }
@@ -172,7 +184,14 @@ function renderView(
 function createFiles(
     list: ReviewFileListState,
     states: Readonly<Record<string, ReviewFileState>>,
-    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {}, lostViewed = new Set(), threads = [] }: RenderOptions,
+    {
+        viewed = 'UNVIEWED',
+        hideViewed = false,
+        collapsed = {},
+        lostViewed = new Set(),
+        threads = [],
+        filter = { pattern: '', regex: false },
+    }: RenderOptions,
 ): PullRequestFiles {
     const files = Object.keys(states).map((path): ReviewFile => ({
         path,
@@ -219,7 +238,7 @@ function createFiles(
         setHideViewed: () => {},
         isThreadOpen: () => false,
         setThreadOpen: () => {},
-        filter: { pattern: '', regex: false },
+        filter,
         setFilter: () => {},
         keepFilter: () => {},
         position: null,

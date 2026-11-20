@@ -1,4 +1,4 @@
-<!-- A compact `Button` with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s) — on a phone a menu at the bottom, named by `menuTitle`, what it acts on under the name (`menuContext`). Attributes go to the button. -->
+<!-- An `md` `Button` (`docs/design/githq/buttons.md`; `lg` among a phone screen's actions, the docked composer's) with a menu of the action's other ways joined to its end ("Close issue" ⇧X, then "Close as not planned" in the menu): the button does the usual one, the chevron after a rule is a click target of its own and opens the menu (`menu` slot, `MenuItem`s) — on a phone a menu at the bottom, named by `menuTitle`, what it acts on under the name (`menuContext`). Attributes go to the button. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronDown } from 'lucide-vue-next';
@@ -22,6 +22,8 @@ defineProps<{
   menuTitle?: string;
   /** On a phone, what the menu acts on, under its name (an item's reference). */
   menuContext?: string;
+  /** `md` when not given; `lg` among a phone screen's actions. */
+  size?: 'md' | 'lg';
   /** The usual action; a promise keeps the button busy until it settles. */
   onClick?: (event: Event) => unknown;
 }>();
@@ -39,7 +41,7 @@ defineSlots<{
     <Button
       v-bind="$attrs"
       :class="css.splitButton_main"
-      size="compact"
+      :size="size ?? 'md'"
       :icon="icon"
       :kbd="kbd"
       :keyshortcuts="keyshortcuts"
@@ -57,6 +59,7 @@ defineSlots<{
           :class="css.splitButton_menu"
           :icon="ChevronDown"
           :label="menuLabel"
+          data-button-size="split"
         />
       </template>
       <slot name="menu" />
@@ -79,7 +82,7 @@ defineSlots<{
 
 // A segment of the frame the two parts draw together, as the button looks.
 .splitButton_menu {
-  --icon-button-glyph-size: 12px;
+  --icon-button-glyph-size: 14px;
   --icon-button-width: auto;
   --icon-button-height: auto;
   --icon-button-padding: 0 #{$spacing-8} 0 #{$spacing-6};
@@ -99,7 +102,7 @@ defineSlots<{
     top: 50%;
     left: 0;
     width: 1px;
-    height: 14px;
+    height: 16px;
     content: '';
     background: $color-border-2;
     transform: translateY(-50%);

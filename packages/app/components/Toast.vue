@@ -20,6 +20,7 @@ export type ToastLasts = keyof typeof TOAST_LASTS;
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleCheck, CircleX, GitMerge, Info, TriangleAlert, X } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { ToastDescription, ToastRoot, ToastTitle } from 'reka-ui';
@@ -27,10 +28,12 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 
 import type { BoundCommand } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
+import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
 import Button from './Button.vue';
+import type { ButtonSize } from './Button.vue';
 import IconButton from './IconButton.vue';
 import * as l from './Toast.loc.js';
 import { ToasterStack } from './ToasterStack.js';
@@ -77,13 +80,17 @@ const emit = defineEmits<{
 defineSlots<{
   /** What happened. */
   default?(): unknown;
-  /** Buttons before "Dismiss"; `active`: it is the newest toast, so its buttons show their keys. */
-  actions?(props: { active: boolean }): unknown;
+  /**
+   * Buttons before "Dismiss", `secondary` (code decision D40) at `size`: `sm`, `md` on a phone (a finger's chrome);
+   * `active`: it is the newest toast, so its buttons show their keys.
+   */
+  actions?(props: { active: boolean; size: ButtonSize }): unknown;
 }>();
 
 const open = defineModel<boolean>('open', { default: true });
 const t = useTranslate();
 const stack = injectContext(ToasterStack);
+const phone = useService(PhoneLayout);
 const icons = {
   danger: CircleX,
   done: GitMerge,
@@ -98,6 +105,7 @@ const arrival = ref<number | null>(null);
 const active = computed(() => arrival.value != null && stack.isNewest(arrival.value));
 /** Escape is its own: it is the newest, and takes the key. */
 const takesEscape = computed(() => active.value && props.dismissOnEscape);
+const actionSize = computed((): ButtonSize => (phone.active ? 'md' : 'sm'));
 const lifetime = computed(() => TOAST_LASTS[props.lasts]);
 const timed = computed(() => Number.isFinite(lifetime.value));
 /** When it opened, and whether reka's countdown has resumed since: see `getElapsed`. */
@@ -223,11 +231,12 @@ function getElapsed(remaining: number, total: number) {
         <slot
           name="actions"
           :active="active"
+          :size="actionSize"
         />
         <Button
           v-if="dismissButton"
           variant="secondary"
-          size="sm"
+          :size="actionSize"
           :kbd="takesEscape ? 'Escape' : undefined"
           :keyshortcuts="takesEscape ? 'Escape' : undefined"
           @click="dismiss"

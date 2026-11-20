@@ -320,7 +320,6 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
           <Button
             v-if="canRetry"
             variant="secondary"
-            size="sm"
             :icon="RotateCw"
             :kbd="keyOf(definitions.tryAgain)"
             :keyshortcuts="keyOf(definitions.tryAgain)"
@@ -330,7 +329,6 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
           </Button>
           <Button
             variant="secondary"
-            size="sm"
             :icon="Github"
             :kbd="keyOf(definitions.openOnGitHub)"
             :keyshortcuts="keyOf(definitions.openOnGitHub)"

@@ -296,8 +296,6 @@ function matchesAny(event: KeyboardEvent, keys: readonly string[]) {
 }
 
 .reviewFindBar_action {
-  --icon-button-width: 30px;
-
   &:disabled {
     opacity: 0.4;
   }

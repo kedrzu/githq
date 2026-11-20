@@ -60,10 +60,10 @@ function onOpenChange(close: UndoableClose, open: boolean) {
     :commands="getCommands(close)"
     @update:open="onOpenChange(close, $event)"
   >
-    <template #actions="{ active }">
+    <template #actions="{ active, size }">
       <Button
         variant="secondary"
-        size="sm"
+        :size="size"
         :kbd="active ? keyOf(undo) : undefined"
         :keyshortcuts="active ? formatAriaKeyShortcuts(keyOf(undo)) : undefined"
         @click="undoClose(close)"

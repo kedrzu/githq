@@ -37,7 +37,7 @@ function onKeydown(event: KeyboardEvent) {
     <p :class="css.commentDeleteDialog_detail">{{ t(l.detail) }}</p>
     <template #footer>
       <Button
-        size="sm"
+        size="md"
         kbd="Escape"
         keyshortcuts="Escape"
         data-cancel
@@ -46,7 +46,7 @@ function onKeydown(event: KeyboardEvent) {
         {{ t(l.cancel) }}
       </Button>
       <Button
-        size="sm"
+        size="md"
         variant="danger"
         :kbd="DELETE_KEY"
         :keyshortcuts="formatAriaKeyShortcuts(DELETE_KEY)"

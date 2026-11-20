@@ -478,12 +478,13 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
   min-height: 0;
 }
 
+// 38 px and the border: 7 px above and below the `sm` 24 px icon buttons.
 .commitDetails_toolbar {
   display: flex;
   flex: none;
   gap: $spacing-6;
   align-items: center;
-  padding: $spacing-8 $spacing-12 $spacing-8 $spacing-20;
+  padding: $spacing-7 $spacing-12 $spacing-7 $spacing-20;
   border-bottom: 1px solid $color-border;
 }
 
@@ -573,7 +574,6 @@ function getPullRequestWord(pullRequest: CommitPullRequest) {
 }
 
 .commitDetails_copy {
-  --icon-button-glyph-size: 13px;
   --icon-button-color: #{$color-fg-dim};
 }
 
