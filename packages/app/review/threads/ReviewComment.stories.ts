@@ -46,7 +46,7 @@ const meta = {
             return { args, commentActions };
         },
         template: `
-          <div style="width: ${WIDTH}px; padding: 12px; background: #0d1117" data-testid="frame">
+          <div style="width: ${WIDTH}px; background: #0d1117" data-testid="frame">
             <ReviewComment v-bind="args" :actions="commentActions" />
           </div>`,
     }),
@@ -76,7 +76,7 @@ export const WithMenu: Story = {
     parameters: { menu: true },
 };
 
-/** `· editing`: the editor in place under the meta line; Update saves the edit through the view. */
+/** `· editing`: the editor in place under the header row; Update saves the edit through the view. */
 export const Editing: Story = {
     args: { canEdit: true, canDelete: true, edited: true },
     parameters: { menu: true, editing: true },

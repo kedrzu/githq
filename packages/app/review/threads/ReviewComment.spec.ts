@@ -10,7 +10,7 @@ const { Comment, EditSending, WithMenu } = composeStories(stories);
 const FG = 'rgb(240, 246, 252)';
 const FG_DIM = 'rgb(139, 146, 155)';
 
-/** What the ⋯ is drawn in, on the meta line: its opacity says whether it is in sight. */
+/** What the ⋯ is drawn in, on the header row: its opacity says whether it is in sight. */
 function getMoreOpacity() {
     const more = page.getByRole('button', { name: 'Comment actions' }).element().closest('p > span');
     return more ? getComputedStyle(more).opacity : null;
@@ -36,7 +36,7 @@ test('the ⋯ is out of sight until the comment is hovered or the focus is in it
     expect(page.getByRole('button', { name: 'Comment actions' }).query()).toBeNull();
 });
 
-test('a right click on the comment opens its menu, Edit putting the editor in place under the meta line', async () => {
+test('a right click on the comment opens its menu, Edit putting the editor in place under the header row', async () => {
     await WithMenu.run();
 
     await userEvent.click(page.getByText('sofiab', { exact: true }), { button: 'right' });
@@ -56,4 +56,18 @@ test('what it says is in the card text colour; an edit on its way dimmed, "Sendi
     expect(getComputedStyle(sending).color).toBe(FG_DIM);
     await expect.element(page.getByText('Sending…')).toBeVisible();
     expect(page.getByRole('button', { name: 'Comment actions' }).query()).toBeNull();
+});
+
+test("what it says sits under the header row at full width, from the avatar's left edge, not indented past it", async () => {
+    await Comment.run();
+    const avatar = page.getByText('sofiab', { exact: true }).element().closest('p')?.firstElementChild;
+    const author = page.getByText('sofiab', { exact: true }).element().getBoundingClientRect();
+    const text = page
+        .getByText(/^What happens when the same workout/u)
+        .element()
+        .getBoundingClientRect();
+    expect(avatar).toBeInstanceOf(HTMLElement);
+
+    expect(text.left).toBe(avatar!.getBoundingClientRect().left);
+    expect(text.top).toBeGreaterThanOrEqual(author.bottom);
 });
