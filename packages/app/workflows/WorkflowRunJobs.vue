@@ -6,6 +6,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleCheck, CircleDashed, CircleSlash, CircleX, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import MotionList from '@/components/MotionList.vue';
 import Skeleton from '@/components/Skeleton.vue';
 import SkeletonBar from '@/components/SkeletonBar.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
@@ -132,7 +133,8 @@ function describeStepTime(step: GitHubWorkflowStep) {
         <SkeletonBar tone="weak" />
       </Skeleton>
     </div>
-    <ul
+    <!-- Jobs and steps starting as the run goes fade in, the rest sliding into place. -->
+    <MotionList
       v-else
       :class="css.workflowRunJobs_list"
     >
@@ -168,7 +170,7 @@ function describeStepTime(step: GitHubWorkflowStep) {
           >
           <span :class="css.workflowRunJobs_jobTime">{{ describeJobTime(job) }}</span>
         </button>
-        <ul
+        <MotionList
           v-if="!hideSteps && job.id === selectedId && job.steps.length > 0"
           :class="css.workflowRunJobs_list"
         >
@@ -217,9 +219,9 @@ function describeStepTime(step: GitHubWorkflowStep) {
               >{{ describeStepTime(step) }}</span
             >
           </li>
-        </ul>
+        </MotionList>
       </li>
-    </ul>
+    </MotionList>
   </nav>
 </template>
 

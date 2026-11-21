@@ -397,6 +397,7 @@ function createCommentEdit(params: CreateItemEditsParams, body: string, keptInTh
                     // Read again since it was written: the comment is in what was read.
                     supersededBy: stored => stored.updatedAt >= comment.createdAt,
                     confirmedAt: comment.createdAt,
+                    firstIds: new Map([[comment.id, pending.id]]),
                 },
             };
         },

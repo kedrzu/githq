@@ -561,6 +561,7 @@ function getInvalidFileMessage(): RunMessage {
         >
           <template #column>
             <WorkflowRunJobs
+              :key="runId"
               :jobs="model.jobs"
               :counts="model.counts"
               :selected-id="markedJob?.id ?? null"

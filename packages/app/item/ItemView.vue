@@ -1107,8 +1107,10 @@ async function resolveAtCursor() {
                         @merge="merge"
                         @command="merging?.run(pr.id, $event)"
                       />
+                      <!-- Keyed by the item: another item's lists show at once, one item's changes slide (`MotionList`). -->
                       <PullRequestReviews
                         v-if="prDetail"
+                        :key="item.id"
                         ref="reviews"
                         :detail="prDetail"
                         :now="now"
@@ -1117,11 +1119,13 @@ async function resolveAtCursor() {
                       />
                       <PullRequestChecks
                         v-if="prDetail"
+                        :key="item.id"
                         :detail="prDetail"
                         :now="now"
                         :required-ids="requiredCheckIds"
                       />
                       <LinkedItems
+                        :key="item.id"
                         :title="t(l.closes)"
                         :items="closes ?? []"
                         :repository="item.repository.nameWithOwner"

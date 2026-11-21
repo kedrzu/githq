@@ -3,6 +3,7 @@
 import { CircleDot, GitPullRequest, SquareKanban } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
+import MotionList from '@/components/MotionList.vue';
 import type { Item } from '@/store/ItemTypes.js';
 import { formatRelativeReference } from '@/utils/formatRelativeReference.js';
 
@@ -27,7 +28,7 @@ const emit = defineEmits<{
     :class="css.linkedItems"
   >
     <h2 :class="css.linkedItems_title">{{ title }}</h2>
-    <ul :class="css.linkedItems_list">
+    <MotionList :class="css.linkedItems_list">
       <li
         v-for="linked in items"
         :key="linked.id"
@@ -60,7 +61,7 @@ const emit = defineEmits<{
           <template v-if="linked.projects.length > 1">+{{ linked.projects.length - 1 }}</template>
         </span>
       </li>
-    </ul>
+    </MotionList>
   </section>
 </template>
 

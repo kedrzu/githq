@@ -8,6 +8,11 @@ const props = withDefaults(
   defineProps<{
     /** The list element. */
     tag?: string;
+    /**
+     * Changes land at once while it is set (a list whose first contents are still being read), the list staying the
+     * same: what its items hold is kept.
+     */
+    still?: boolean;
   }>(),
   { tag: 'ul' },
 );
@@ -35,6 +40,7 @@ function holdLeaving(el: Element) {
   <TransitionList
     v-if="motion"
     :tag="props.tag"
+    :duration="props.still ? 0 : undefined"
     @before-leave="holdLeaving"
   >
     <slot />

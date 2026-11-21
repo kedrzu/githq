@@ -8,6 +8,7 @@ import { comment as commentCommand, resolveThread } from '@/commands/definitions
 import { keyOf } from '@/commands/keyOf.js';
 import CommentEditor from '@/comments/CommentEditor.vue';
 import Button from '@/components/Button.vue';
+import MotionList from '@/components/MotionList.vue';
 import ReviewComment from '@/review/threads/ReviewComment.vue';
 import type { ReviewCommentActions } from '@/review/threads/ReviewCommentActions.js';
 import type { ReviewThread, ReviewThreadComment } from '@/review/threads/ReviewThread.js';
@@ -180,8 +181,15 @@ function onFocusOut(event: FocusEvent) {
         {{ t(l.hide) }}
       </Button>
     </p>
-    <div :class="css.itemThreadCodeThread_body">
-      <ItemThreadExcerpt :thread="thread" />
+    <!-- A reply arriving fades in; one sent, on its way, gives its place to GitHub's comment. -->
+    <MotionList
+      tag="div"
+      :class="css.itemThreadCodeThread_body"
+    >
+      <ItemThreadExcerpt
+        key="excerpt"
+        :thread="thread"
+      />
       <ReviewComment
         v-for="comment in thread.comments"
         :id="getUrlAnchor(comment.url)"
@@ -209,7 +217,7 @@ function onFocusOut(event: FocusEvent) {
         :status="sent.status"
         :author="viewer ?? null"
       />
-    </div>
+    </MotionList>
     <ReviewThreadBands
       :viewer="viewer"
       :can-reply="canReply"
