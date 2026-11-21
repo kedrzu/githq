@@ -4,7 +4,7 @@ Where the cursor is, in code review and on a pull request's thread, is shown wit
 border in `current-edge` (as the current file's edge), never the full accent and never an added edge. Code review's
 focused thread shows `H` on Resolve thread as it shows `R` on Reply…. A code thread's comment reads as on GitHub: a
 header row with the avatar, author and age, and the body under it with no indent, comments divided by a line. The
-comment under the reading cursor is tinted `current-tint` (the accent at 8 %) over its whole part of the card, its
+comment under the reading cursor is tinted `current-tint` (the accent at 6.5 %) over its whole part of the card, its
 code excerpt included when it is the first comment.
 Base: `4391ee74`.
 
@@ -88,3 +88,17 @@ of `b1us0`) sets `B8zor/a24mp` to `$current-tint`.
 - [x] F38's note (`qIqh2`): the rule for the first comment: its code excerpt is tinted with it; the thread's border is
   `$current-edge`.
 - [x] `Variants · How the comment under the reading cursor shows` (`pVY08`): deleted.
+
+## Round 5 · agent brief
+
+Asked (`.context/focus-highlight-brief-5.md`): the owner wants the comment under the reading cursor fainter, 6.5 %
+instead of 8 %. Changed: the variable and F37's note; F37–F38's names and F38's note state no strength. Over `$bg` the
+tint is about `#141926`: `$fg` 16.1:1, `$fg-dim` 5.6:1, `$fg-3` 3.3:1; still visible on a 3× export of both screens.
+The raw `#7B87F714` left in the file is the accent at 8 % of other features (merge verdicts `trFmO`, `hnZCp`, `Sw3U0`
+and the `FfoPH` overrides on `q9eCkj`, `DEdfl`; `wL6s4`, `bXAlk`, `UImR9`, `Docs / Callout · note` `QDRPv`), not this
+tint, so it stays.
+
+- [ ] Variables: `current-tint` `#7B87F714` → `#7B87F711` (6.5 %). `Review / Comment · current` (`fNNF4`), F37's
+  `Comment 2` (`D0Pkj`) and F38's `Comment 1` (`d6dN4E`) and `Excerpt row` override (`tvOv3/B8zor/a24mp`) follow.
+- [ ] F37's note (`Nyqmp`): "the accent at 8 %, #7B87F714", "about #161A29", "$fg 15.9:1", "$fg-dim 5.5:1" → "the
+  accent at 6.5 %, #7B87F711", "about #141926", "$fg 16.1:1", "$fg-dim 5.6:1".

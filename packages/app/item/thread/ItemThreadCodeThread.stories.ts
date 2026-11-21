@@ -91,7 +91,7 @@ export const LongLine: Story = {
 };
 
 /**
- * `F37`: the reading cursor on its second comment, in a review — the comment tinted 8 % (`current-tint`) from the card's
+ * `F37`: the reading cursor on its second comment, in a review — the comment tinted 6.5 % (`current-tint`) from the card's
  * edge to its edge, the card's border `current-edge`, and `R` and `H` beside Reply… and Resolve thread.
  */
 export const CurrentComment: Story = {
