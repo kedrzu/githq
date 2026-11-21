@@ -19,9 +19,8 @@ const {
     CurrentLinkedComment,
 } = composeStories(stories);
 
-/** `$color-current-edge`, `$color-accent`, `$color-border-2`. */
+/** `$color-current-edge`, `$color-border-2`. */
 const CURRENT_EDGE = 'rgb(79, 88, 157)';
-const ACCENT = 'rgb(123, 135, 247)';
 const BORDER_2 = 'rgb(61, 68, 77)';
 
 test('Reply… and Resolve thread are offered only where GitHub lets the viewer reply and resolve', async () => {
@@ -105,10 +104,10 @@ test('with the cursor on the thread or in it, Reply… shows R and Resolve threa
     expectHint('Resolve thread', null);
 });
 
-test('the linked comment is the location in the accent border without a cursor; with one, only where it starts', async () => {
+test('the linked comment is the location in the current-edge border without a cursor; with one, only where it starts', async () => {
     await Linked.run();
     expect(document.querySelector('[data-reading-stop="T_db_1"]')?.getAttribute('aria-current')).toBe('location');
-    expect(getComputedStyle(getCard()).borderTopColor).toBe(ACCENT);
+    expect(getComputedStyle(getCard()).borderTopColor).toBe(CURRENT_EDGE);
 
     await CurrentLinkedComment.run();
     expect(document.querySelector('[data-reading-stop="T_db_1"]')?.getAttribute('aria-current')).toBe('true');

@@ -32,7 +32,7 @@ const props = defineProps<{
   /** On GitHub: Copy link. */
   url: string;
   edited?: boolean;
-  /** The address's fragment names it: the accent border. */
+  /** The address's fragment names it: the `current-edge` border. */
   linked?: boolean;
   /** GitHub says the user may edit it. */
   canEdit?: boolean;

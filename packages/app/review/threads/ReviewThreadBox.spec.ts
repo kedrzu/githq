@@ -10,6 +10,8 @@ const { DeleteRefused, Focused, Open, Outdated, WithMenu } = composeStories(stor
 
 /** `$color-fg`: the card text colour. */
 const FG = 'rgb(240, 246, 252)';
+/** `$color-current-edge`. */
+const CURRENT_EDGE = 'rgb(79, 88, 157)';
 
 /** The thread's parts, top to bottom. */
 function getParts() {
@@ -32,6 +34,12 @@ test('an open thread shows each comment in the card text colour, then a reply ba
     expect(replyBand?.textContent).not.toContain('Resolve');
     expect(resolveBand?.querySelector('button')?.textContent?.trim()).toBe('Resolve thread');
     expect(resolveBand?.textContent).not.toContain('Reply');
+});
+
+test('the focused thread has the current-edge border', async () => {
+    await Focused.run();
+    const thread = page.getByRole('group', { name: /^Thread by/u }).element();
+    expect(getComputedStyle(thread).borderTopColor).toBe(CURRENT_EDGE);
 });
 
 test('Reply… shows its key only on the focused thread', async () => {

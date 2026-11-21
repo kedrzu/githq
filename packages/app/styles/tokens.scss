@@ -89,7 +89,8 @@ $color-on-light: #0d1117;
 
 // The brand, not Primer's.
 $color-accent: #7b87f7;
-// The edge of the review's current file (D44): the accent at 60% over the window, made opaque because the edges of a
+// The edge of where you are (D44): the review's current file, the thread or comment card under the reading cursor or
+// the focus, and the one the address names; the accent at 60% over the window, made opaque because the edges of a
 // block overlap at its bottom corners and a translucent one would show stronger there.
 $color-current-edge: #4f589d;
 // The header of the review's current file (D44): the accent at 6% over the header's own bg-2, as faint as lets every

@@ -38,7 +38,7 @@ type Story = StoryObj<typeof meta>;
 /** `Review / Thread`: the comments in its body, then the Reply band and the Resolve band. */
 export const Open: Story = {};
 
-/** `· focused`: the accent edge, and Reply… shows its key. */
+/** `· focused`: the `current-edge` border, and Reply… shows its key. */
 export const Focused: Story = { args: { focused: true } };
 
 /** `· outdated`: the head band says how it was placed. */

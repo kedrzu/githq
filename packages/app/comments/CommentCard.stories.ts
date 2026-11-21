@@ -141,13 +141,13 @@ export const Within: Story = {
     decorators: [withReadingCursor('T_comment', ['T_comment', 'thread:T', COMMENT.id])],
 };
 
-/** `· linked`, where no cursor is shown (an item's panel, code review's conversation): the accent border. */
+/** `· linked`, where no cursor is shown (an item's panel, code review's conversation): the `current-edge` border. */
 export const Linked: Story = {
     args: { stop: COMMENT.id, linked: true },
     parameters: { menu: true },
 };
 
-/** The address names it on an item's page: only where the cursor starts, marked current, no accent. */
+/** The address names it on an item's page: only where the cursor starts, marked current, no border of its own. */
 export const CurrentLinked: Story = {
     args: { stop: COMMENT.id, linked: true },
     parameters: { menu: true },

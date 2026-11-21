@@ -117,10 +117,10 @@ export const CursorElsewhere: Story = {
     decorators: [withReadingCursor('description')],
 };
 
-/** `· linked`, where no cursor is shown (an item's panel, code review): the accent border, the comment the location. */
+/** `· linked`, where no cursor is shown (an item's panel, code review): the `current-edge` border, the comment the location. */
 export const Linked: Story = { args: { linkedAnchor: 'discussion_T_db_1' } };
 
-/** On an item's page the comment the address names is only where the cursor starts: current, no accent. */
+/** On an item's page the comment the address names is only where the cursor starts: current, no border of its own. */
 export const CurrentLinkedComment: Story = {
     args: { linkedAnchor: 'discussion_T_db_1' },
     decorators: [withReadingCursor('T_db_1', ['T_db_1', DB_STOP])],
