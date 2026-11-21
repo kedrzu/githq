@@ -1,4 +1,4 @@
-<!-- A review thread's box (`Review / Thread`), on the page's colour: under an amber "Outdated" head band saying how it was placed (D30), its comments (`ReviewComment`) in a padded body, then the bands closing it (`ReviewThreadBands`): the Reply band with the viewer's avatar and Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, showing its key there (`· focused`); then the Resolve band with Resolve thread, or Unresolve on one opened (CR74). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the rest follows. The accent edge says it is the thread N and ⇧N are at (D32). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box takes Reply…'s place in its band; the comments stay where they were. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where GitHub lets the viewer reply, Copy link, Delete) and shows an edit on its way. A change of state or a deletion GitHub didn't take says so in the Resolve band, the thread as it went back to. -->
+<!-- A review thread's box (`Review / Thread`), on the page's colour: under an amber "Outdated" head band saying how it was placed (D30), its comments (`ReviewComment`) in a padded body, then the bands closing it (`ReviewThreadBands`): the Reply band with the viewer's avatar and Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, showing its key there (`· focused`); then the Resolve band with Resolve thread, or Unresolve on one opened (CR74), showing `H` on the focused one where the viewer may. Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the rest follows. The accent edge says it is the thread N and ⇧N are at (D32). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box takes Reply…'s place in its band; the comments stay where they were. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where GitHub lets the viewer reply, Copy link, Delete) and shows an edit on its way. A change of state or a deletion GitHub didn't take says so in the Resolve band, the thread as it went back to. -->
 <script lang="ts">
 import type { ReviewCommentTarget } from '../writing/ReviewWriting.js';
 
@@ -16,7 +16,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronUp, CircleCheck, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { comment as commentCommand } from '@/commands/definitions/index.js';
+import { comment as commentCommand, resolveThread as resolveThreadCommand } from '@/commands/definitions/index.js';
 import { keyOf } from '@/commands/keyOf.js';
 import Avatar from '@/components/Avatar.vue';
 import MotionList from '@/components/MotionList.vue';
@@ -178,6 +178,7 @@ const failureTexts = computed(() => {
         :reply-label="inDraft ? t(l.addToDraft) : undefined"
         :reply-key="focused ? keyOf(commentCommand) : undefined"
         :can-toggle="canToggle"
+        :resolve-key="focused && canToggle ? keyOf(resolveThreadCommand) : undefined"
         :resolved="thread.isResolved"
         @reply="emit('reply')"
         @set-resolved="emit('setResolved', $event)"

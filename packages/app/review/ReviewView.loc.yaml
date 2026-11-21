@@ -96,3 +96,7 @@ find:
   en: Find in the diff
 replyInThread:
   en: Reply to the thread
+resolveThread:
+  en: Resolve thread
+unresolveThread:
+  en: Unresolve thread

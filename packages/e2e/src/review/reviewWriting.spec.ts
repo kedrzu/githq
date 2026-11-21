@@ -956,6 +956,45 @@ test('a reply GitHub refuses comes back in its box, and after a reload it is sti
     await expect.poll(() => writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
 });
 
+test('H on the thread N is at resolves it, and on a resolved one opened unresolves it', async ({ page, github }) => {
+    const { review, writes } = await openWriting(page, github, { threads: [OPEN_THREADS[0]!] });
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    await expect(review.focusedThread.getByRole('button', { name: /^Resolve thread/ })).toHaveAttribute(
+        'aria-keyshortcuts',
+        'H',
+    );
+    await page.keyboard.press('h');
+
+    await expect(review.thread('First thread here').getByRole('button', { name: /Resolved/ })).toBeVisible();
+    expect(writes.map(write => write.name)).toEqual(['ResolveReviewThread']);
+
+    await review
+        .thread('First thread here')
+        .getByRole('button', { name: /Resolved/ })
+        .click();
+    await expect(review.focusedThread).toContainText('First thread here');
+    await page.keyboard.press('h');
+
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Resolve thread' })).toBeVisible();
+    expect(writes.map(write => write.name)).toEqual(['ResolveReviewThread', 'UnresolveReviewThread']);
+});
+
+test('H does nothing on a resolved thread folded to its one line', async ({ page, github }) => {
+    const { review, writes } = await openWriting(page, github, {
+        threads: [{ ...OPEN_THREADS[0]!, isResolved: true }],
+    });
+    const folded = review.thread('First thread here').getByRole('button', { name: /Resolved/ });
+
+    await review.pointAt(folded);
+    await expect(review.focusedThread).toContainText('First thread here');
+    await page.keyboard.press('h');
+
+    await expect(folded).toBeVisible();
+    expect(writes).toEqual([]);
+});
+
 test('Resolve folds the thread where it is, moving nothing above it, and N goes on to the open one', async ({
     page,
     github,

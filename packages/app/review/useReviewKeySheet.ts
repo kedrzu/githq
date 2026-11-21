@@ -63,6 +63,7 @@ export function useReviewKeySheet(): void {
                         { keys: [keyOf(definitions.commentOnLine)], label: t(definitions.commentOnLine.title) },
                         { keys: [keyOf(definitions.rangeDown), keyOf(definitions.rangeUp)], label: t(l.range) },
                         { keys: [keyOf(definitions.comment)], label: t(l.reply) },
+                        { keys: [keyOf(definitions.resolveThread)], label: t(l.resolve) },
                         { keys: [COMMENT_BOX_KEYS.sendFirst, COMMENT_BOX_KEYS.sendSecond], label: t(l.send) },
                         { keys: [keyOf(definitions.submitReview)], label: t(definitions.submitReview.title) },
                         { keys: [COMMENT_BOX_KEYS.suggest], label: t(l.suggest) },

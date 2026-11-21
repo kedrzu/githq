@@ -56,3 +56,5 @@ closeFind:
   en: Close the bar, in the field
 reply:
   en: Reply to the thread
+resolve:
+  en: Resolve or unresolve the thread

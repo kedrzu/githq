@@ -42,6 +42,16 @@ test('Reply… shows its key only on the focused thread', async () => {
     await expect.element(page.getByRole('button', { name: /^Reply…/u })).toHaveAttribute('aria-keyshortcuts', 'R');
 });
 
+test('Resolve thread shows its key only on the focused thread', async () => {
+    await Open.run();
+    await expect.element(page.getByRole('button', { name: 'Resolve thread' })).not.toHaveAttribute('aria-keyshortcuts');
+
+    await Focused.run();
+    await expect
+        .element(page.getByRole('button', { name: /^Resolve thread/u }))
+        .toHaveAttribute('aria-keyshortcuts', 'H');
+});
+
 test('an outdated thread says how it was placed in a head band above the comments', async () => {
     await Outdated.run();
     const [head, body] = getParts();
