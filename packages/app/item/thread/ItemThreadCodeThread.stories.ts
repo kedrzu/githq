@@ -91,12 +91,18 @@ export const LongLine: Story = {
 };
 
 /**
- * `Review / Comment · current`: the reading cursor on its second comment, in a review — the comment tinted from the
- * card's edge to its edge, the card's border `current-edge`, and `R` and `H` beside Reply… and Resolve thread.
+ * `F37`: the reading cursor on its second comment, in a review — the comment tinted 8 % (`current-tint`) from the card's
+ * edge to its edge, the card's border `current-edge`, and `R` and `H` beside Reply… and Resolve thread.
  */
 export const CurrentComment: Story = {
     args: { replies: REPLIES },
     decorators: [withReadingCursor('T_db_1', ['T_db_1', DB_STOP, 'R_review'])],
+};
+
+/** `F38`: the cursor on the first comment — its code tinted with it, from the card's top border to the divider under it. */
+export const CurrentFirstComment: Story = {
+    args: { replies: REPLIES },
+    decorators: [withReadingCursor('T_db_0', ['T_db_0', DB_STOP, 'R_review'])],
 };
 
 /** The cursor on the card itself, in its bands (focus on Reply…): marked, both keys shown, no comment tinted. */
