@@ -64911,7 +64911,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The comment under the reading cursor is tinted $current-tint (the accent at 8 %, #7B87F714) over its whole part of the card: from the divider above it to the divider below, edge to edge, header and body. The thread's border is $current-edge. Here the cursor is on mlaine's reply, the middle of three comments in sofiab's code thread. Over the card's $bg the tint is about #161A29, and text on it keeps AA: $fg 15.9:1, the age in $fg-dim 5.5:1, the ⋯ icon in $fg-3 3.3:1 (over 3:1 for icons). Reply… shows R and Resolve thread H. A fill only: nothing moves as the cursor goes from comment to comment.",
+                      "content": "The comment under the reading cursor is tinted $current-tint (the accent at 6.5 %, #7B87F711) over its whole part of the card: from the divider above it to the divider below, edge to edge, header and body. The thread's border is $current-edge. Here the cursor is on mlaine's reply, the middle of three comments in sofiab's code thread. Over the card's $bg the tint is about #141926, and text on it keeps AA: $fg 16.1:1, the age in $fg-dim 5.6:1, the ⋯ icon in $fg-3 3.3:1 (over 3:1 for icons). Reply… shows R and Resolve thread H. A fill only: nothing moves as the cursor goes from comment to comment.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -523447,7 +523447,7 @@
     },
     "current-tint": {
       "type": "color",
-      "value": "#7B87F714"
+      "value": "#7B87F711"
     }
   },
   "fileToken": "926208b3-4cc0-40af-a9ef-a0904bbaa60d"

@@ -99,7 +99,7 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'cursor-tint':
         "the reading cursor's row, sel's accent at 10.2% left translucent to lie over any of the thread's fills",
     'current-tint':
-        'the comment of a code thread under the reading cursor, with its code when first: accent at 8%, translucent to lie over the card and the excerpt row, faint enough for AA',
+        'the comment of a code thread under the reading cursor, with its code when first: accent at 6.5%, translucent to lie over the card and the excerpt row, faint enough for AA',
     'find-match': "the amber of a match of find (D47), dark and faint enough for every syntax colour's AA on it",
     'find-match-current': 'the current match, stronger than a match and outlined, still AA for every syntax colour',
     'find-match-outline': "the design's outline of the current match",

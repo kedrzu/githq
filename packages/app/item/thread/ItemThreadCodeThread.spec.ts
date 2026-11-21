@@ -22,8 +22,8 @@ const {
 
 /** `$color-current-edge`, `$color-border-2`. */
 const CURRENT_EDGE = 'rgb(79, 88, 157)';
-/** `$color-current-tint`: the accent at 8 %. */
-const CURRENT_TINT = 'rgba(123, 135, 247, 0.08)';
+/** `$color-current-tint`: the accent at 6.5 %, which the browser keeps as 17/255 (`#7B87F711`, as the design has it). */
+const CURRENT_TINT = 'rgba(123, 135, 247, 0.067)';
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 const BORDER_2 = 'rgb(61, 68, 77)';
 

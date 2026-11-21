@@ -1056,7 +1056,7 @@ and the accent borders of D44 and D46. The design log is `changelog/focus-highli
   is drawn that the element doesn't already have.
 - **A code thread's comment reads as on GitHub.** A header row — avatar, author, age, notes, ⋯ — and what it says under
   it from the same left edge, no indent; a thread's comments are divided by a line in `border`.
-- **The comment under the reading cursor** is tinted `current-tint`, the accent at 8 %, over its whole part of the card,
+- **The comment under the reading cursor** is tinted `current-tint`, the accent at 6.5 %, over its whole part of the card,
   divider to divider and edge to edge; the first comment's code excerpt is tinted with it (F37, F38).
 - **Code review's focused thread** shows `H` on Resolve thread or Unresolve as it shows `R` on Reply…, and `H` does it,
   on a thread shown whole where GitHub lets the viewer.
@@ -1065,7 +1065,7 @@ and the accent borders of D44 and D46. The design log is `changelog/focus-highli
 behind a comment's text lowered its contrast; the indented body read worse than GitHub's.
 
 **Rejected.** The header row alone tinted (cut the header off from its comment); the dividers around the comment lit,
-or only the thread's border (could not be seen); the tint at 5 % (invisible) and 6.5 % (owner preferred 8 %).
+or only the thread's border (could not be seen); the tint at 5 % (invisible); 8 % was built first, then made fainter (owner, 2026-11-21).
 
 ## Open questions
 
