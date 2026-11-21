@@ -4,7 +4,8 @@ Where the cursor is, in code review and on a pull request's thread, is shown wit
 border in `current-edge` (as the current file's edge), never the full accent and never an added edge. Code review's
 focused thread shows `H` on Resolve thread as it shows `R` on Reply…. A code thread's comment reads as on GitHub: a
 header row with the avatar, author and age, and the body under it with no indent, comments divided by a line. The
-comment under the reading cursor is no longer tinted behind its text; how it is marked instead is the owner's pick.
+comment under the reading cursor is tinted `current-tint` (the accent at 8 %) over its whole part of the card, its
+code excerpt included when it is the first comment.
 Base: `4391ee74`.
 
 ## Round 1 · agent brief
@@ -66,3 +67,24 @@ F39–F40 added. Measured over `$bg` `#0D1117`: 8 % gives about `#161A29` (`$fg`
   `Review · sofiab` (`yv4iF`)'s Comment 2 overrides the fill with the raw `#7B87F711`.
 - [ ] New `F40 · Variant E · On the first comment, with its code, at 6.5 %` (slot `w205fV`, screen `YgM1w`): a copy of
   F38; `Review · sofiab` (`JwSn8`)'s Comment 1 and `Excerpt row` override the fill with `#7B87F711`.
+
+## Round 4 · agent brief
+
+Asked (`.context/focus-highlight-brief-4.md`): the owner picked Variant D at 8 % (`current-tint` `#7B87F714`). Settle
+the Variants frame. Changed: F39–F40 deleted (codes retired), F37–F38 moved into the reading-cursor row and renamed,
+the Variants frame deleted. F38's `Excerpt row` tint stays an override on an instance: `Review · sofiab` (`tvOv3`,
+of `b1us0`) sets `B8zor/a24mp` to `$current-tint`.
+
+- [ ] `F39 · Variant E · The comment's part tinted at 6.5 %` (slot `AQqg7`, screen `r3Cz0`): deleted.
+- [ ] `F40 · Variant E · On the first comment, with its code, at 6.5 %` (slot `w205fV`, screen `YgM1w`): deleted.
+- [ ] F37 (slot `KmZdO`, screen `HarMI`, caption `QT9cp`): moved from `pVY08` to the end of `Row of screens · The
+  reading cursor` (`TS9ng`), after F31; `F37 · Variant D · The comment's part of the card tinted at 8 %` →
+  `F37 · The comment under the cursor, its part of the card tinted`.
+- [ ] F37's note (`Nyqmp`): "Recommended…" → the rule: the comment under the reading cursor is tinted `$current-tint`
+  over its whole part of the card, divider to divider, edge to edge; the thread's border is `$current-edge`.
+- [ ] F38 (slot `o1bhI`, screen `mtZmU`, caption `lAxcx`): moved after F37 in `TS9ng`;
+  `F38 · Variant D · On the first comment, with its code, at 8 %` → `F38 · On the first comment, its code tinted with
+  it`.
+- [ ] F38's note (`qIqh2`): the rule for the first comment: its code excerpt is tinted with it; the thread's border is
+  `$current-edge`.
+- [ ] `Variants · How the comment under the reading cursor shows` (`pVY08`): deleted.
