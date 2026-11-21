@@ -33,3 +33,36 @@ three new screens F34–F36; moving the avatar dropped 251 overrides on 46 insta
 - [ ] App · Pull request (`XN8vf`): new `Variants · How the comment under the reading cursor shows` (`pVY08`):
   `F34 · Variant A · The comment's header lit` (`gyjFw`), `F35 · Variant B · The lines around the comment lit`
   (`Q1J3fu`), `F36 · Variant C · Only the thread's border` (`t23cHK`).
+
+## Round 2 · agent brief
+
+Asked (`.context/focus-highlight-brief-2.md`): the owner rejected A–C (the header tint cuts the header off, lit
+dividers can't be seen); a faint tint of the comment's whole part of the card instead, the code excerpt included when
+the comment comes with it. Also: CR120–CR126 were each used by two screens. Changed: a new variable, two components,
+F34–F36 replaced by F37–F38, the conversation set renumbered.
+
+- [ ] Variables: new `current-tint` = `#7B87F70D` (the accent at 5 %).
+- [ ] Review / Comment · current (`fNNF4`): header row tint `$current-header` → the whole comment `$current-tint`.
+- [ ] `Variants · How the comment under the reading cursor shows` (`pVY08`): F34–F36 deleted (codes retired); new
+  `F37 · Variant D · The comment's whole part of the card, faintly tinted` (slot `KmZdO`, screen `HarMI`, the cursor
+  on the middle comment) and `F38 · Variant D · On the first comment, with its code` (slot `o1bhI`, screen `mtZmU`;
+  the code thread's `Excerpt row` `a24mp` takes `$current-tint` as an override).
+- [ ] The conversation set CR120–CR126 → CR153–CR159 (frame, slot, caption): `eOOkK`, `Y0S98J`, `cyUd6`, `j0LRr`,
+  `WLGn5` (slot `YQPcq`), `qIKMX`, `QNbcB`. The line-cursor set keeps CR120–CR126.
+
+## Round 3 · agent brief
+
+Asked (`.context/focus-highlight-brief-3.md`): at 5 % the tint can't be seen on the page; the old 10.2 % lowered the
+text's contrast. Variant D at 8 %, and a second strength, 6.5 %, to compare. Changed: the variable, F37–F38 renamed,
+F39–F40 added. Measured over `$bg` `#0D1117`: 8 % gives about `#161A29` (`$fg` 15.9:1, `$fg-dim` 5.5:1, `$fg-3`
+3.3:1), 6.5 % about `#141926` (16.1:1, 5.6:1, 3.3:1); both visible on a 2× export of the screen.
+
+- [ ] Variables: `current-tint` `#7B87F70D` → `#7B87F714` (8 %). `fNNF4` and F37–F38 follow.
+- [ ] F37 (`KmZdO`, `HarMI`, caption `QT9cp` / `Nyqmp`): renamed `F37 · Variant D · The comment's part of the card
+  tinted at 8 %`; the note gives the new strength and contrast.
+- [ ] F38 (`o1bhI`, `mtZmU`, caption `lAxcx` / `qIqh2`): renamed `F38 · Variant D · On the first comment, with its
+  code, at 8 %`.
+- [ ] New `F39 · Variant E · The comment's part tinted at 6.5 %` (slot `AQqg7`, screen `r3Cz0`): a copy of F37;
+  `Review · sofiab` (`yv4iF`)'s Comment 2 overrides the fill with the raw `#7B87F711`.
+- [ ] New `F40 · Variant E · On the first comment, with its code, at 6.5 %` (slot `w205fV`, screen `YgM1w`): a copy of
+  F38; `Review · sofiab` (`JwSn8`)'s Comment 1 and `Excerpt row` override the fill with `#7B87F711`.
