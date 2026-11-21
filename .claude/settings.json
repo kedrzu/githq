@@ -89,21 +89,9 @@
             "CronList"
         ]
     },
-    "disableWorkflows": true,
     "disableBundledSkills": true,
+    "disableWorkflows": true,
     "disableArtifact": true,
-    "agentPushNotifEnabled": false,
-    "autoMemoryEnabled": false,
-    "autoDreamEnabled": false,
-    "extraKnownMarketplaces": {
-        "kedrzu-skills": {
-            "source": {
-                "source": "github",
-                "repo": "kedrzu/skills"
-            },
-            "autoUpdate": true
-        }
-    },
     "enabledPlugins": {
         "dev@kedrzu-skills": true,
         "git@kedrzu-skills": true,
@@ -115,5 +103,17 @@
         "handoff@kedrzu-skills": true,
         "retro@kedrzu-skills": true,
         "claude-md-management@claude-plugins-official": true
-    }
+    },
+    "extraKnownMarketplaces": {
+        "kedrzu-skills": {
+            "source": {
+                "source": "github",
+                "repo": "kedrzu/skills"
+            },
+            "autoUpdate": true
+        }
+    },
+    "autoMemoryEnabled": false,
+    "autoDreamEnabled": false,
+    "agentPushNotifEnabled": false
 }
