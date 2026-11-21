@@ -46540,15 +46540,28 @@
                       "name": "Body",
                       "width": "fill_container",
                       "layout": "vertical",
-                      "gap": 14,
-                      "padding": 12,
                       "children": [
                         {
-                          "id": "hmTwe",
-                          "type": "ref",
-                          "ref": "VAMmB",
-                          "name": "Excerpt",
-                          "width": "fill_container"
+                          "type": "frame",
+                          "id": "a24mp",
+                          "name": "Excerpt row",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            12,
+                            12,
+                            0,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "id": "hmTwe",
+                              "type": "ref",
+                              "ref": "VAMmB",
+                              "name": "Excerpt",
+                              "width": "fill_container"
+                            }
+                          ]
                         },
                         {
                           "id": "Rbrqs",
@@ -46569,6 +46582,9 @@
                           "name": "Comment 2",
                           "width": "fill_container",
                           "descendants": {
+                            "V6rFj3": {
+                              "enabled": true
+                            },
                             "J1oko": {
                               "fill": "#C9A26B"
                             },
@@ -46583,6 +46599,34 @@
                             },
                             "o6hbQ": {
                               "content": "Right, migrating now instead of clearing. Pushed in e81f0a3."
+                            }
+                          }
+                        },
+                        {
+                          "id": "TKerH",
+                          "type": "ref",
+                          "ref": "IHFo8",
+                          "name": "Comment 3",
+                          "width": "fill_container(0)",
+                          "enabled": false,
+                          "descendants": {
+                            "V6rFj3": {
+                              "enabled": true
+                            },
+                            "J1oko": {
+                              "fill": "#7FB3D5"
+                            },
+                            "J1oko/zeZzP": {
+                              "content": "SB"
+                            },
+                            "m8e7t": {
+                              "content": "sofiab"
+                            },
+                            "LkH3H": {
+                              "content": "1d"
+                            },
+                            "o6hbQ": {
+                              "content": "Good. Can the e2e get a base in another repository too, so this can't come back?"
                             }
                           }
                         }
@@ -50213,7 +50257,7 @@
                   "reusable": true,
                   "ref": "cK3wW",
                   "name": "Activity / Latest comment · linked",
-                  "stroke": "$accent"
+                  "stroke": "$current-edge"
                 },
                 {
                   "id": "iMK9U",
@@ -50223,7 +50267,7 @@
                   "name": "Activity / Comment · linked",
                   "descendants": {
                     "ic51h": {
-                      "stroke": "$accent"
+                      "stroke": "$current-edge"
                     }
                   }
                 },
@@ -62752,7 +62796,7 @@
                                   "width": "fill_container",
                                   "descendants": {
                                     "B8zor/Rbrqs": {
-                                      "id": "eEZBS",
+                                      "id": "z1NBU",
                                       "type": "ref",
                                       "ref": "fNNF4",
                                       "name": "Comment 1",
@@ -64830,6 +64874,1033 @@
                           }
                         }
                       ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KmZdO",
+              "name": "Slot · F37 · The comment under the cursor, its part of the card tinted",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "atsej",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QT9cp",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F37 · The comment under the cursor, its part of the card tinted",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Nyqmp",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The comment under the reading cursor is tinted $current-tint (the accent at 8 %, #7B87F714) over its whole part of the card: from the divider above it to the divider below, edge to edge, header and body. The thread's border is $current-edge. Here the cursor is on mlaine's reply, the middle of three comments in sofiab's code thread. Over the card's $bg the tint is about #161A29, and text on it keeps AA: $fg 15.9:1, the age in $fg-dim 5.5:1, the ⋯ icon in $fg-3 3.3:1 (over 3:1 for icons). Reply… shows R and Resolve thread H. A fill only: nothing moves as the cursor goes from comment to comment.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HarMI",
+                  "name": "F37 · The comment under the cursor, its part of the card tinted",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DMzv2",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "JN1Iy",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "b49czV": {
+                              "fill": "$bg-3"
+                            },
+                            "uONNn": {
+                              "fill": "$fg"
+                            },
+                            "AC0j9": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qxJaO",
+                          "name": "PR view (full screen)",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$bg-item",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "YoTX5",
+                              "type": "ref",
+                              "ref": "ZzpBW",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a9vgxp": {
+                                  "icon": "git-pull-request"
+                                },
+                                "P1piP": {
+                                  "content": "mlaine/tasklet"
+                                },
+                                "b2amx": {
+                                  "content": "#15"
+                                },
+                                "VYOFz": {
+                                  "content": "3 / 13"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "IHyHO",
+                              "name": "Columns",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "id": "xDz7v",
+                                  "type": "ref",
+                                  "ref": "NjMaL",
+                                  "name": "Summary",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "F4vY2d",
+                                  "name": "Timeline column",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    -480,
+                                    32,
+                                    32,
+                                    32
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "UVBq3",
+                                      "name": "Timeline",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 22,
+                                      "children": [
+                                        {
+                                          "id": "Z63elT",
+                                          "type": "ref",
+                                          "ref": "bJhAe",
+                                          "width": "fill_container",
+                                          "name": "Body",
+                                          "descendants": {
+                                            "MrJvR": {
+                                              "content": "commented 4 days ago"
+                                            },
+                                            "r8lpm": {
+                                              "content": "Moves issues, pull requests and project items into IndexedDB so lists render before the network answers. It is the first of four in the offline stack."
+                                            },
+                                            "VxGG5": {
+                                              "enabled": true
+                                            },
+                                            "ZMrV4": {
+                                              "enabled": true
+                                            },
+                                            "styOz": {
+                                              "enabled": true
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "J9nlRa",
+                                          "name": "Feed",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "id": "LYQvL",
+                                              "layoutPosition": "absolute",
+                                              "x": 55,
+                                              "y": -22,
+                                              "name": "Rail line",
+                                              "fill": "$border",
+                                              "width": 2,
+                                              "height": 1364
+                                            },
+                                            {
+                                              "id": "zejou",
+                                              "type": "ref",
+                                              "ref": "lkjfC",
+                                              "name": "Push · 6 commits",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "B34xq": {
+                                                  "content": "pushed 6 commits"
+                                                },
+                                                "Umt2E": {
+                                                  "content": "4d"
+                                                },
+                                                "b1Q2dt/M39SI": {
+                                                  "content": "Open the IndexedDB store on sign-in"
+                                                },
+                                                "b1Q2dt/GhMha": {
+                                                  "icon": "circle-check",
+                                                  "fill": "$green"
+                                                },
+                                                "b1Q2dt/X0yIB0": {
+                                                  "content": "91ac0de"
+                                                },
+                                                "UPp5m/M39SI": {
+                                                  "content": "Keep issues and pull requests in one store"
+                                                },
+                                                "UPp5m/X0yIB0": {
+                                                  "content": "c3e8b17"
+                                                },
+                                                "ddvDC/M39SI": {
+                                                  "content": "Read the list from the store before the network"
+                                                },
+                                                "ddvDC/X0yIB0": {
+                                                  "content": "7d0f2aa"
+                                                },
+                                                "kt6I8": {
+                                                  "enabled": true
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "lucBr",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · added",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "tag",
+                                                  "fill": "$fg-2"
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "mlaine"
+                                                },
+                                                "xlFny": {
+                                                  "content": "added"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": true
+                                                },
+                                                "LHum1": {
+                                                  "content": "and asked sofiab and dkim for a review",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "4d"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "sMhx6",
+                                              "name": "Indent",
+                                              "width": "fill_container",
+                                              "children": [
+                                                {
+                                                  "id": "RlS1t",
+                                                  "type": "ref",
+                                                  "ref": "lshuQ",
+                                                  "name": "Divider",
+                                                  "width": "fill_container"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "lMB1Y",
+                                              "type": "ref",
+                                              "ref": "b1us0",
+                                              "name": "Review · sofiab",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "kbXB2": {
+                                                  "stroke": "$current-edge"
+                                                },
+                                                "kvHUy": {
+                                                  "fill": "$current-header"
+                                                },
+                                                "B8zor": {
+                                                  "stroke": "$current-edge"
+                                                },
+                                                "B8zor/uIXia": {
+                                                  "id": "D0Pkj",
+                                                  "type": "ref",
+                                                  "ref": "fNNF4",
+                                                  "name": "Comment 2",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "V6rFj3": {
+                                                      "enabled": true
+                                                    },
+                                                    "J1oko": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "J1oko/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "m8e7t": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "LkH3H": {
+                                                      "content": "1d"
+                                                    },
+                                                    "o6hbQ": {
+                                                      "content": "Right, migrating now instead of clearing. Pushed in e81f0a3."
+                                                    }
+                                                  }
+                                                },
+                                                "B8zor/TKerH": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/KOQJ3/ODSnh": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/uxXso/yJS6O": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/uxXso/yJS6O/luKkY": {
+                                                  "content": "H"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Dh7BW",
+                                              "type": "ref",
+                                              "ref": "NXXMN",
+                                              "name": "Code comment · dkim, resolved",
+                                              "width": "fill_container"
+                                            },
+                                            {
+                                              "id": "owcU4",
+                                              "type": "ref",
+                                              "ref": "lkjfC",
+                                              "name": "Push · 3 commits",
+                                              "width": "fill_container"
+                                            },
+                                            {
+                                              "id": "J8KV5w",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · 2 of 9 checks failed on",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "circle-x",
+                                                  "fill": "$red"
+                                                },
+                                                "smi7i": {
+                                                  "enabled": false
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "CI"
+                                                },
+                                                "xlFny": {
+                                                  "content": "2 of 9 checks failed on"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": false
+                                                },
+                                                "LHum1": {
+                                                  "content": "e81f0a3: e2e, typecheck",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "1d"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "q2HIf",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · asked sofiab for another review",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "refresh-cw",
+                                                  "fill": "$fg-2"
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "mlaine"
+                                                },
+                                                "xlFny": {
+                                                  "content": "asked"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": false
+                                                },
+                                                "LHum1": {
+                                                  "content": "sofiab for another review",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "3h"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "l8JBZ6",
+                                              "type": "ref",
+                                              "ref": "Dp20Y",
+                                              "name": "Comment · mlaine",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "N5FNN": {
+                                                  "fill": "#C9A26B"
+                                                },
+                                                "N5FNN/zeZzP": {
+                                                  "content": "ML"
+                                                },
+                                                "my8kv": {
+                                                  "content": "mlaine"
+                                                },
+                                                "bCJbH": {
+                                                  "content": "2h"
+                                                },
+                                                "BujgM": {
+                                                  "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "WnDzV",
+                                              "name": "Indent",
+                                              "width": "fill_container",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                40
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "wxi0v",
+                                                  "type": "ref",
+                                                  "ref": "t2x5CU",
+                                                  "name": "Divider",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "cMld2": {
+                                                      "content": "1 new since you looked"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "O6razU",
+                                              "type": "ref",
+                                              "ref": "WHy4W",
+                                              "name": "Comment · dkim",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "bCJbH": {
+                                                  "content": "1h"
+                                                },
+                                                "BujgM": {
+                                                  "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "oFfZS",
+                                              "type": "ref",
+                                              "ref": "sWprg",
+                                              "name": "Composer",
+                                              "width": "fill_container"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "E3sqi",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "YBQPD": {
+                          "name": "Segment · PR view (full page)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "o1bhI",
+              "name": "Slot · F38 · On the first comment, its code tinted with it",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ofDsc",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lAxcx",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F38 · On the first comment, its code tinted with it",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qIqh2",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "When the comment under the cursor is the first one, the one that comes with the code, its code excerpt is tinted with it: $current-tint covers the excerpt row too, from the card's top border down to the divider under the comment, edge to edge. The excerpt's own box keeps its code colours; only the padding around it takes the tint. Comment 1 is Review / Comment · current; the excerpt row takes the same colour as an override. The thread's border is $current-edge, as in F37.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mtZmU",
+                  "name": "F38 · On the first comment, its code tinted with it",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v4aM5H",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "azCbI",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "b49czV": {
+                              "fill": "$bg-3"
+                            },
+                            "uONNn": {
+                              "fill": "$fg"
+                            },
+                            "AC0j9": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rvIpQ",
+                          "name": "PR view (full screen)",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$bg-item",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "kwMRe",
+                              "type": "ref",
+                              "ref": "ZzpBW",
+                              "name": "Toolbar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "a9vgxp": {
+                                  "icon": "git-pull-request"
+                                },
+                                "P1piP": {
+                                  "content": "mlaine/tasklet"
+                                },
+                                "b2amx": {
+                                  "content": "#15"
+                                },
+                                "VYOFz": {
+                                  "content": "3 / 13"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "C8eMoI",
+                              "name": "Columns",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "id": "cVEJq",
+                                  "type": "ref",
+                                  "ref": "NjMaL",
+                                  "name": "Summary",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fFWFb",
+                                  "name": "Timeline column",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "padding": [
+                                    -480,
+                                    32,
+                                    32,
+                                    32
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "P2rGU",
+                                      "name": "Timeline",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 22,
+                                      "children": [
+                                        {
+                                          "id": "h0wIdw",
+                                          "type": "ref",
+                                          "ref": "bJhAe",
+                                          "width": "fill_container",
+                                          "name": "Body",
+                                          "descendants": {
+                                            "MrJvR": {
+                                              "content": "commented 4 days ago"
+                                            },
+                                            "r8lpm": {
+                                              "content": "Moves issues, pull requests and project items into IndexedDB so lists render before the network answers. It is the first of four in the offline stack."
+                                            },
+                                            "VxGG5": {
+                                              "enabled": true
+                                            },
+                                            "ZMrV4": {
+                                              "enabled": true
+                                            },
+                                            "styOz": {
+                                              "enabled": true
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "h2NWwT",
+                                          "name": "Feed",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "id": "GhSse",
+                                              "layoutPosition": "absolute",
+                                              "x": 55,
+                                              "y": -22,
+                                              "name": "Rail line",
+                                              "fill": "$border",
+                                              "width": 2,
+                                              "height": 1364
+                                            },
+                                            {
+                                              "id": "e3YW2a",
+                                              "type": "ref",
+                                              "ref": "lkjfC",
+                                              "name": "Push · 6 commits",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "B34xq": {
+                                                  "content": "pushed 6 commits"
+                                                },
+                                                "Umt2E": {
+                                                  "content": "4d"
+                                                },
+                                                "b1Q2dt/M39SI": {
+                                                  "content": "Open the IndexedDB store on sign-in"
+                                                },
+                                                "b1Q2dt/GhMha": {
+                                                  "icon": "circle-check",
+                                                  "fill": "$green"
+                                                },
+                                                "b1Q2dt/X0yIB0": {
+                                                  "content": "91ac0de"
+                                                },
+                                                "UPp5m/M39SI": {
+                                                  "content": "Keep issues and pull requests in one store"
+                                                },
+                                                "UPp5m/X0yIB0": {
+                                                  "content": "c3e8b17"
+                                                },
+                                                "ddvDC/M39SI": {
+                                                  "content": "Read the list from the store before the network"
+                                                },
+                                                "ddvDC/X0yIB0": {
+                                                  "content": "7d0f2aa"
+                                                },
+                                                "kt6I8": {
+                                                  "enabled": true
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Vq4lO",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · added",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "tag",
+                                                  "fill": "$fg-2"
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "mlaine"
+                                                },
+                                                "xlFny": {
+                                                  "content": "added"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": true
+                                                },
+                                                "LHum1": {
+                                                  "content": "and asked sofiab and dkim for a review",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "4d"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "kHBKC",
+                                              "name": "Indent",
+                                              "width": "fill_container",
+                                              "children": [
+                                                {
+                                                  "id": "KXfWt",
+                                                  "type": "ref",
+                                                  "ref": "lshuQ",
+                                                  "name": "Divider",
+                                                  "width": "fill_container"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "tvOv3",
+                                              "type": "ref",
+                                              "ref": "b1us0",
+                                              "name": "Review · sofiab",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "kbXB2": {
+                                                  "stroke": "$current-edge"
+                                                },
+                                                "kvHUy": {
+                                                  "fill": "$current-header"
+                                                },
+                                                "B8zor": {
+                                                  "stroke": "$current-edge"
+                                                },
+                                                "B8zor/a24mp": {
+                                                  "fill": "$current-tint"
+                                                },
+                                                "B8zor/Rbrqs": {
+                                                  "id": "d6dN4E",
+                                                  "type": "ref",
+                                                  "ref": "fNNF4",
+                                                  "name": "Comment 1",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "o6hbQ": {
+                                                      "content": "Clearing the pulls store drops every pull request whose base lives in another repository. That's what the e2e trips on."
+                                                    }
+                                                  }
+                                                },
+                                                "B8zor/uIXia": {
+                                                  "id": "qHjbR",
+                                                  "type": "ref",
+                                                  "ref": "IHFo8",
+                                                  "name": "Comment 2",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "V6rFj3": {
+                                                      "enabled": true
+                                                    },
+                                                    "J1oko": {
+                                                      "fill": "#C9A26B"
+                                                    },
+                                                    "J1oko/zeZzP": {
+                                                      "content": "ML"
+                                                    },
+                                                    "m8e7t": {
+                                                      "content": "mlaine"
+                                                    },
+                                                    "LkH3H": {
+                                                      "content": "1d"
+                                                    },
+                                                    "o6hbQ": {
+                                                      "content": "Right, migrating now instead of clearing. Pushed in e81f0a3."
+                                                    }
+                                                  }
+                                                },
+                                                "B8zor/TKerH": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/KOQJ3/ODSnh": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/uxXso/yJS6O": {
+                                                  "enabled": true
+                                                },
+                                                "B8zor/uxXso/yJS6O/luKkY": {
+                                                  "content": "H"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ZOudo",
+                                              "type": "ref",
+                                              "ref": "NXXMN",
+                                              "name": "Code comment · dkim, resolved",
+                                              "width": "fill_container"
+                                            },
+                                            {
+                                              "id": "LFgh8",
+                                              "type": "ref",
+                                              "ref": "lkjfC",
+                                              "name": "Push · 3 commits",
+                                              "width": "fill_container"
+                                            },
+                                            {
+                                              "id": "iyJI3",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · 2 of 9 checks failed on",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "circle-x",
+                                                  "fill": "$red"
+                                                },
+                                                "smi7i": {
+                                                  "enabled": false
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "CI"
+                                                },
+                                                "xlFny": {
+                                                  "content": "2 of 9 checks failed on"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": false
+                                                },
+                                                "LHum1": {
+                                                  "content": "e81f0a3: e2e, typecheck",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "1d"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ANI7o",
+                                              "type": "ref",
+                                              "ref": "umLcQ",
+                                              "name": "Event · asked sofiab for another review",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "zBUpf": {
+                                                  "icon": "refresh-cw",
+                                                  "fill": "$fg-2"
+                                                },
+                                                "Yl9EU": {
+                                                  "content": "mlaine"
+                                                },
+                                                "xlFny": {
+                                                  "content": "asked"
+                                                },
+                                                "uSG4o": {
+                                                  "enabled": false
+                                                },
+                                                "LHum1": {
+                                                  "content": "sofiab for another review",
+                                                  "enabled": true
+                                                },
+                                                "K9lUQx": {
+                                                  "content": "3h"
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ruE8B",
+                                              "type": "ref",
+                                              "ref": "Dp20Y",
+                                              "name": "Comment · mlaine",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "N5FNN": {
+                                                  "fill": "#C9A26B"
+                                                },
+                                                "N5FNN/zeZzP": {
+                                                  "content": "ML"
+                                                },
+                                                "my8kv": {
+                                                  "content": "mlaine"
+                                                },
+                                                "bCJbH": {
+                                                  "content": "2h"
+                                                },
+                                                "BujgM": {
+                                                  "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "gWJWE",
+                                              "name": "Indent",
+                                              "width": "fill_container",
+                                              "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                40
+                                              ],
+                                              "children": [
+                                                {
+                                                  "id": "m9vcR",
+                                                  "type": "ref",
+                                                  "ref": "t2x5CU",
+                                                  "name": "Divider",
+                                                  "width": "fill_container",
+                                                  "descendants": {
+                                                    "cMld2": {
+                                                      "content": "1 new since you looked"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "id": "cothQ",
+                                              "type": "ref",
+                                              "ref": "WHy4W",
+                                              "name": "Comment · dkim",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "bCJbH": {
+                                                  "content": "1h"
+                                                },
+                                                "BujgM": {
+                                                  "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "lFvwp",
+                                              "type": "ref",
+                                              "ref": "sWprg",
+                                              "name": "Composer",
+                                              "width": "fill_container"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "eQzGK",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "YBQPD": {
+                          "name": "Segment · PR view (full page)"
+                        }
+                      }
                     }
                   ]
                 }
@@ -353454,155 +354525,167 @@
                       "name": "Review / Comment",
                       "reusable": true,
                       "width": "fill_container",
-                      "gap": 10,
+                      "layout": "vertical",
                       "children": [
                         {
-                          "id": "J1oko",
-                          "type": "ref",
-                          "ref": "of5Pp",
-                          "name": "Avatar",
-                          "fill": "#7FB3D5",
-                          "descendants": {
-                            "zeZzP": {
-                              "content": "SB"
-                            }
-                          }
+                          "type": "rectangle",
+                          "id": "V6rFj3",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Divider",
+                          "enabled": false,
+                          "fill": "$border",
+                          "width": "fill_container(0)",
+                          "height": 1
                         },
                         {
                           "type": "frame",
-                          "id": "Quuge",
-                          "name": "Comment body",
+                          "id": "y516VN",
+                          "name": "Header",
                           "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 3,
+                          "gap": 8,
+                          "padding": [
+                            12,
+                            12,
+                            6,
+                            12
+                          ],
+                          "alignItems": "center",
                           "children": [
                             {
+                              "id": "J1oko",
+                              "type": "ref",
+                              "ref": "of5Pp",
+                              "name": "Avatar",
+                              "fill": "#7FB3D5",
+                              "descendants": {
+                                "zeZzP": {
+                                  "content": "SB"
+                                }
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "m8e7t",
+                              "name": "Author",
+                              "fill": "$fg",
+                              "content": "sofiab",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LkH3H",
+                              "name": "When",
+                              "fill": "$fg-dim",
+                              "content": "2h",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "C1OFHW",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Edited",
+                              "enabled": false,
+                              "fill": "$fg-dim",
+                              "content": "· edited",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "type": "frame",
-                              "id": "y516VN",
-                              "name": "Comment meta",
-                              "width": "fill_container",
-                              "height": 20,
-                              "gap": 6,
-                              "alignItems": "center",
+                              "id": "VsQye",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Pending",
+                              "enabled": false,
+                              "fill": "#D299221F",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
                               "children": [
                                 {
                                   "type": "text",
-                                  "id": "m8e7t",
-                                  "name": "Author",
-                                  "fill": "$fg",
-                                  "content": "sofiab",
+                                  "id": "EK2Pn",
+                                  "name": "Label",
+                                  "fill": "$amber",
+                                  "content": "Pending · in your draft",
                                   "fontFamily": "$font",
-                                  "fontSize": 12.5,
+                                  "fontSize": 11,
                                   "fontWeight": "500"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "LkH3H",
-                                  "name": "When",
-                                  "fill": "$fg-dim",
-                                  "content": "2h",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "C1OFHW",
-                                  "x": 0,
-                                  "y": 0,
-                                  "name": "Edited",
-                                  "enabled": false,
-                                  "fill": "$fg-dim",
-                                  "content": "· edited",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "VsQye",
-                                  "x": 0,
-                                  "y": 0,
-                                  "name": "Pending",
-                                  "enabled": false,
-                                  "fill": "#D299221F",
-                                  "cornerRadius": 4,
-                                  "padding": [
-                                    1,
-                                    6
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "EK2Pn",
-                                      "name": "Label",
-                                      "fill": "$amber",
-                                      "content": "Pending · in your draft",
-                                      "fontFamily": "$font",
-                                      "fontSize": 11,
-                                      "fontWeight": "500"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "GZVAJ",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "So5NZ",
-                                  "x": 0,
-                                  "y": 0,
-                                  "name": "More",
-                                  "enabled": false,
-                                  "width": 14,
-                                  "height": 14,
-                                  "icon": "ellipsis",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
                                 }
                               ]
                             },
                             {
                               "type": "frame",
-                              "id": "AdsFm",
-                              "name": "Body",
+                              "id": "GZVAJ",
+                              "name": "spacer",
                               "width": "fill_container",
-                              "layout": "vertical",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "ca6WN",
-                                  "x": 0,
-                                  "y": 0,
-                                  "name": "Lead",
-                                  "enabled": false,
-                                  "fill": "$fg",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container(0)",
-                                  "content": "Does replayQueue stop at the first conflict?",
-                                  "lineHeight": 1.5385,
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "o6hbQ",
-                                  "name": "Text",
-                                  "fill": "$fg",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
-                                  "lineHeight": 1.5385,
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
-                                }
-                              ]
+                              "height": 1
+                            },
+                            {
+                              "type": "icon",
+                              "id": "So5NZ",
+                              "x": 0,
+                              "y": 0,
+                              "name": "More",
+                              "enabled": false,
+                              "width": 14,
+                              "height": 14,
+                              "icon": "ellipsis",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AdsFm",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            6,
+                            12,
+                            12,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ca6WN",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Lead",
+                              "enabled": false,
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container(0)",
+                              "content": "Does replayQueue stop at the first conflict?",
+                              "lineHeight": 1.5385,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "o6hbQ",
+                              "name": "Text",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
+                              "lineHeight": 1.5385,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -353615,14 +354698,14 @@
                       "ref": "IHFo8",
                       "name": "Review / Comment · current",
                       "width": 584,
-                      "fill": "#7B87F71A",
-                      "stroke": "#7B87F71A",
-                      "strokeAlignment": "outer",
-                      "strokeWidth": {
-                        "top": 7,
-                        "right": 12,
-                        "bottom": 7,
-                        "left": 12
+                      "fill": "$current-tint",
+                      "stroke": [],
+                      "strokeAlignment": "inner",
+                      "strokeWidth": 0,
+                      "descendants": {
+                        "y516VN": {
+                          "fill": []
+                        }
                       }
                     },
                     {
@@ -353689,19 +354772,19 @@
                         },
                         "AdsFm": {
                           "type": "frame",
-                          "id": "QfnaY",
+                          "id": "JWJLn",
                           "name": "Editing",
                           "width": "fill_container",
                           "layout": "vertical",
                           "padding": [
-                            4,
-                            0,
-                            0,
-                            0
+                            6,
+                            12,
+                            12,
+                            12
                           ],
                           "children": [
                             {
-                              "id": "WZSfd",
+                              "id": "AkmAG",
                               "type": "ref",
                               "ref": "OXAXr",
                               "name": "Editor",
@@ -353709,7 +354792,7 @@
                               "stroke": "$accent",
                               "descendants": {
                                 "ro5XW": {
-                                  "id": "SOGFe",
+                                  "id": "EOUVC",
                                   "type": "ref",
                                   "ref": "xvz0F",
                                   "name": "Format",
@@ -353820,8 +354903,6 @@
                           "name": "Body",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 14,
-                          "padding": 12,
                           "children": [
                             {
                               "id": "WFYVj",
@@ -353839,6 +354920,9 @@
                               "enabled": false,
                               "fill": "#00000000",
                               "descendants": {
+                                "V6rFj3": {
+                                  "enabled": true
+                                },
                                 "J1oko": {
                                   "fill": "#D97757"
                                 },
@@ -353894,7 +354978,7 @@
                       "ref": "ce2EO",
                       "name": "Review / Thread · focused",
                       "width": "fill_container",
-                      "stroke": "$accent",
+                      "stroke": "$current-edge",
                       "descendants": {
                         "ZzJy7": {
                           "id": "j2Jk9",
@@ -353902,6 +354986,12 @@
                           "ref": "bqocN",
                           "name": "Reply band",
                           "width": "fill_container"
+                        },
+                        "v5HOc6/KQyPy/yJS6O": {
+                          "enabled": true
+                        },
+                        "v5HOc6/KQyPy/yJS6O/luKkY": {
+                          "content": "H"
                         }
                       }
                     },
@@ -368316,7 +369406,7 @@
                                                   "ref": "ce2EO",
                                                   "name": "Thread",
                                                   "width": "fill_container",
-                                                  "stroke": "$accent",
+                                                  "stroke": "$current-edge",
                                                   "descendants": {
                                                     "qrcqS": {
                                                       "enabled": true
@@ -413201,7 +414291,7 @@
             {
               "type": "frame",
               "id": "S8Ol7",
-              "name": "Slot · CR120 · The conversation at 340 px, as cards",
+              "name": "Slot · CR153 · The conversation at 340 px, as cards",
               "width": 1440,
               "layout": "vertical",
               "gap": 12,
@@ -413219,7 +414309,7 @@
                       "id": "y6HQKD",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR120 · The conversation at 340 px, as cards",
+                      "content": "CR153 · The conversation at 340 px, as cards",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -413242,7 +414332,7 @@
                 {
                   "type": "frame",
                   "id": "eOOkK",
-                  "name": "CR120 · The conversation at 340 px, as cards",
+                  "name": "CR153 · The conversation at 340 px, as cards",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -414137,7 +415227,7 @@
             {
               "type": "frame",
               "id": "A4kcAD",
-              "name": "Slot · CR121 · Dragged to 560 px: the cards widen",
+              "name": "Slot · CR154 · Dragged to 560 px: the cards widen",
               "width": 1440,
               "layout": "vertical",
               "gap": 12,
@@ -414155,7 +415245,7 @@
                       "id": "G5MJXI",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR121 · Dragged to 560 px: the cards widen",
+                      "content": "CR154 · Dragged to 560 px: the cards widen",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -414178,7 +415268,7 @@
                 {
                   "type": "frame",
                   "id": "Y0S98J",
-                  "name": "CR121 · Dragged to 560 px: the cards widen",
+                  "name": "CR154 · Dragged to 560 px: the cards widen",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -415162,7 +416252,7 @@
             {
               "type": "frame",
               "id": "vVNwm",
-              "name": "Slot · CR122 · ⋯ on your comment: the same menu",
+              "name": "Slot · CR155 · ⋯ on your comment: the same menu",
               "width": 560,
               "layout": "vertical",
               "gap": 12,
@@ -415180,7 +416270,7 @@
                       "id": "BsUkq",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR122 · ⋯ on your comment: the same menu",
+                      "content": "CR155 · ⋯ on your comment: the same menu",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -415192,7 +416282,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The card's ⋯ opens the menu the pull request's thread has. Edit turns the card into the editor in place (CR123); Quote reply puts the quoted text into the sidebar's composer at the foot; Copy link copies the comment's GitHub link; Delete asks first. Edit and Delete show on comments you may change, as on the thread. Scrolled to the latest comments.",
+                      "content": "The card's ⋯ opens the menu the pull request's thread has. Edit turns the card into the editor in place (CR156); Quote reply puts the quoted text into the sidebar's composer at the foot; Copy link copies the comment's GitHub link; Delete asks first. Edit and Delete show on comments you may change, as on the thread. Scrolled to the latest comments.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -415203,7 +416293,7 @@
                 {
                   "type": "frame",
                   "id": "cyUd6",
-                  "name": "CR122 · ⋯ on your comment: the same menu",
+                  "name": "CR155 · ⋯ on your comment: the same menu",
                   "clip": true,
                   "width": 340,
                   "height": 560,
@@ -415248,7 +416338,7 @@
             {
               "type": "frame",
               "id": "F3O3m5",
-              "name": "Slot · CR123 · Editing your comment in place",
+              "name": "Slot · CR156 · Editing your comment in place",
               "width": 560,
               "layout": "vertical",
               "gap": 12,
@@ -415266,7 +416356,7 @@
                       "id": "zOeiA",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR123 · Editing your comment in place",
+                      "content": "CR156 · Editing your comment in place",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -415289,7 +416379,7 @@
                 {
                   "type": "frame",
                   "id": "j0LRr",
-                  "name": "CR123 · Editing your comment in place",
+                  "name": "CR156 · Editing your comment in place",
                   "clip": true,
                   "width": 340,
                   "height": 600,
@@ -415334,7 +416424,7 @@
             {
               "type": "frame",
               "id": "YQPcq",
-              "name": "Slot · CR124 · Your comment sending, and one refused",
+              "name": "Slot · CR157 · Your comment sending, and one refused",
               "width": 704,
               "layout": "vertical",
               "gap": 12,
@@ -415352,7 +416442,7 @@
                       "id": "a4e9tr",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR124 · Your comment sending, and one refused",
+                      "content": "CR157 · Your comment sending, and one refused",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -415375,7 +416465,7 @@
                 {
                   "type": "frame",
                   "id": "WLGn5",
-                  "name": "CR124 · Your comment sending, and one refused",
+                  "name": "CR157 · Your comment sending, and one refused",
                   "gap": 24,
                   "children": [
                     {
@@ -415471,7 +416561,7 @@
             {
               "type": "frame",
               "id": "EgvuT",
-              "name": "Slot · CR125 · A very long login on a review",
+              "name": "Slot · CR158 · A very long login on a review",
               "width": 560,
               "layout": "vertical",
               "gap": 12,
@@ -415489,7 +416579,7 @@
                       "id": "FF7qB",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR125 · A very long login on a review",
+                      "content": "CR158 · A very long login on a review",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -415512,7 +416602,7 @@
                 {
                   "type": "frame",
                   "id": "qIKMX",
-                  "name": "CR125 · A very long login on a review",
+                  "name": "CR158 · A very long login on a review",
                   "clip": true,
                   "width": 340,
                   "height": 420,
@@ -415551,7 +416641,7 @@
             {
               "type": "frame",
               "id": "ERZS9",
-              "name": "Slot · CR126 · The ⋯ of a review card",
+              "name": "Slot · CR159 · The ⋯ of a review card",
               "width": 520,
               "fill": "#00000000",
               "cornerRadius": 10,
@@ -415572,7 +416662,7 @@
                       "id": "rMFa0",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR126 · The ⋯ of a review card",
+                      "content": "CR159 · The ⋯ of a review card",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -415595,7 +416685,7 @@
                 {
                   "type": "frame",
                   "id": "QNbcB",
-                  "name": "CR126 · The ⋯ of a review card",
+                  "name": "CR159 · The ⋯ of a review card",
                   "clip": true,
                   "width": 340,
                   "height": 420,
@@ -449213,14 +450303,14 @@
                                               ],
                                               "children": [
                                                 {
-                                                  "id": "OvKgC",
+                                                  "id": "U57Ff5",
                                                   "type": "ref",
                                                   "ref": "Bc2hQ",
                                                   "name": "Thread",
                                                   "width": "fill_container",
                                                   "descendants": {
                                                     "WFYVj": {
-                                                      "id": "ng3dj",
+                                                      "id": "LF83x",
                                                       "type": "ref",
                                                       "ref": "n2U14",
                                                       "name": "Comment 1",
@@ -522354,6 +523444,10 @@
     "on-light": {
       "type": "color",
       "value": "#0D1117"
+    },
+    "current-tint": {
+      "type": "color",
+      "value": "#7B87F714"
     }
   },
   "fileToken": "926208b3-4cc0-40af-a9ef-a0904bbaa60d"

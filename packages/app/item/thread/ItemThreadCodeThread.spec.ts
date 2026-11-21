@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test } from 'vitest';
+import { assert, expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ItemThreadCodeThread.stories.js';
@@ -12,6 +12,7 @@ const {
     Draft,
     LongLine,
     CurrentComment,
+    CurrentFirstComment,
     Current,
     CurrentResolved,
     CursorElsewhere,
@@ -19,9 +20,11 @@ const {
     CurrentLinkedComment,
 } = composeStories(stories);
 
-/** `$color-current-edge`, `$color-accent`, `$color-border-2`. */
+/** `$color-current-edge`, `$color-border-2`. */
 const CURRENT_EDGE = 'rgb(79, 88, 157)';
-const ACCENT = 'rgb(123, 135, 247)';
+/** `$color-current-tint`: the accent at 8 %. */
+const CURRENT_TINT = 'rgba(123, 135, 247, 0.08)';
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 const BORDER_2 = 'rgb(61, 68, 77)';
 
 test('Reply… and Resolve thread are offered only where GitHub lets the viewer reply and resolve', async () => {
@@ -105,10 +108,10 @@ test('with the cursor on the thread or in it, Reply… shows R and Resolve threa
     expectHint('Resolve thread', null);
 });
 
-test('the linked comment is the location in the accent border without a cursor; with one, only where it starts', async () => {
+test('the linked comment is the location in the current-edge border without a cursor; with one, only where it starts', async () => {
     await Linked.run();
     expect(document.querySelector('[data-reading-stop="T_db_1"]')?.getAttribute('aria-current')).toBe('location');
-    expect(getComputedStyle(getCard()).borderTopColor).toBe(ACCENT);
+    expect(getComputedStyle(getCard()).borderTopColor).toBe(CURRENT_EDGE);
 
     await CurrentLinkedComment.run();
     expect(document.querySelector('[data-reading-stop="T_db_1"]')?.getAttribute('aria-current')).toBe('true');
@@ -133,4 +136,38 @@ function expectHint(name: string, key: string | null) {
     const button = page.getByRole('button', { name, exact: true }).element();
     expect(button.getAttribute('aria-keyshortcuts')).toBe(key);
     expect(button.querySelector('kbd') !== null).toBe(key !== null);
+}
+
+test('the comment under the cursor is tinted, the others not; on the first, its code row is tinted with it', async () => {
+    await CurrentComment.run();
+    expect(getComputedStyle(getComment('T_db_1')).backgroundColor).toBe(CURRENT_TINT);
+    expect(getComputedStyle(getComment('T_db_0')).backgroundColor).toBe(TRANSPARENT);
+    expect(getComputedStyle(getExcerptRow()).backgroundColor).toBe(TRANSPARENT);
+
+    await CurrentFirstComment.run();
+    expect(getComputedStyle(getComment('T_db_0')).backgroundColor).toBe(CURRENT_TINT);
+    expect(getComputedStyle(getComment('T_db_1')).backgroundColor).toBe(TRANSPARENT);
+    expect(getComputedStyle(getExcerptRow()).backgroundColor).toBe(CURRENT_TINT);
+});
+
+test('the tint moves nothing: the comment and the code row keep their heights with and without the cursor', async () => {
+    await CursorElsewhere.run();
+    const comment = getComment('T_db_0').getBoundingClientRect().height;
+    const excerpt = getExcerptRow().getBoundingClientRect().height;
+
+    await CurrentFirstComment.run();
+    expect(getComment('T_db_0').getBoundingClientRect().height).toBe(comment);
+    expect(getExcerptRow().getBoundingClientRect().height).toBe(excerpt);
+});
+
+function getComment(stop: string) {
+    const comment = document.querySelector(`[data-reading-stop="${stop}"]`);
+    assert(comment instanceof HTMLElement);
+    return comment;
+}
+
+function getExcerptRow() {
+    const row = getCard().querySelector('[class*="itemThreadCodeThread_excerpt"]');
+    assert(row instanceof HTMLElement);
+    return row;
 }

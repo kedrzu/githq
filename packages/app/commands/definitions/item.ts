@@ -204,15 +204,15 @@ export const quoteComment = defineAppCommand({
 });
 
 /**
- * Resolves the code thread the reading cursor is in, or unresolves it, on an item's page, where GitHub lets the viewer;
- * the binding names which way it goes and gives its icon.
+ * Resolves the code thread the reading cursor is in, or unresolves it, on an item's page and under the review's cursor on
+ * a thread shown whole, where GitHub lets the viewer; the binding names which way it goes and gives its icon.
  */
 export const resolveThread = defineAppCommand({
     id: 'resolveThread',
     title: l.resolveThread,
     icon: CircleCheck,
     key: 'H',
-    places: ['item'],
+    places: ['item', 'review'],
 });
 
 /**

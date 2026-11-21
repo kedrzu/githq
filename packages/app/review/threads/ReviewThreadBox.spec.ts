@@ -10,6 +10,8 @@ const { DeleteRefused, Focused, Open, Outdated, WithMenu } = composeStories(stor
 
 /** `$color-fg`: the card text colour. */
 const FG = 'rgb(240, 246, 252)';
+/** `$color-current-edge`. */
+const CURRENT_EDGE = 'rgb(79, 88, 157)';
 
 /** The thread's parts, top to bottom. */
 function getParts() {
@@ -34,12 +36,28 @@ test('an open thread shows each comment in the card text colour, then a reply ba
     expect(resolveBand?.textContent).not.toContain('Reply');
 });
 
+test('the focused thread has the current-edge border', async () => {
+    await Focused.run();
+    const thread = page.getByRole('group', { name: /^Thread by/u }).element();
+    expect(getComputedStyle(thread).borderTopColor).toBe(CURRENT_EDGE);
+});
+
 test('Reply… shows its key only on the focused thread', async () => {
     await Open.run();
     await expect.element(page.getByRole('button', { name: 'Reply…' })).not.toHaveAttribute('aria-keyshortcuts');
 
     await Focused.run();
     await expect.element(page.getByRole('button', { name: /^Reply…/u })).toHaveAttribute('aria-keyshortcuts', 'R');
+});
+
+test('Resolve thread shows its key only on the focused thread', async () => {
+    await Open.run();
+    await expect.element(page.getByRole('button', { name: 'Resolve thread' })).not.toHaveAttribute('aria-keyshortcuts');
+
+    await Focused.run();
+    await expect
+        .element(page.getByRole('button', { name: /^Resolve thread/u }))
+        .toHaveAttribute('aria-keyshortcuts', 'H');
 });
 
 test('an outdated thread says how it was placed in a head band above the comments', async () => {

@@ -98,3 +98,8 @@ Author chip gives way under `$comment-card-tight` (300 px). The editor's tools a
 
 Left unticked: `Activity / Review · narrow` (`WUD8Y`)'s resolved-threads row hiding its path and avatars. The row is
 unchanged; it needs a review card under 480 px on the pull request's thread, which no screen has yet.
+
+## Note · renumbered (2026-11-21)
+
+CR120–CR126 of this log collided with the line cursor's CR120–CR126 (`code-review-line-cursor.md`). This set is now
+CR153–CR159, in the same order; the node ids above are unchanged. Done in `focus-highlight.md`, round 2.

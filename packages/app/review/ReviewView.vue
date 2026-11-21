@@ -30,6 +30,7 @@ import {
   ListChecks,
   MessageSquare,
   Reply,
+  RotateCcw,
   RotateCw,
   Pause,
   Rows2,
@@ -1088,6 +1089,23 @@ useCommands(() => [
     },
     t,
   ),
+  // `H` where the thread's Resolve band shows its button: a thread shown whole, which GitHub lets the viewer toggle.
+  bindCommand(
+    definitions.resolveThread,
+    {
+      ...REVIEW_PLACE,
+      title: findFocusedThread()?.placement.thread.isResolved ? t(l.unresolveThread) : t(l.resolveThread),
+      icon: findFocusedThread()?.placement.thread.isResolved ? RotateCcw : CircleCheck,
+      when: () => findTogglableThread() !== undefined,
+      run: () => {
+        const row = findTogglableThread();
+        if (row) {
+          setThreadResolved(row, !row.placement.thread.isResolved);
+        }
+      },
+    },
+    t,
+  ),
   bindCommand(
     definitions.rangeDown,
     {
@@ -2042,6 +2060,19 @@ function startRange({ path, side, from, to }: LineRange) {
 
 function findFocusedThread() {
   return walkedThreads.value.find(({ placement }) => placement.thread.id === focusedThread.value);
+}
+
+/** The focused thread when `H` may act on it, by the rule `ReviewThreadBox` shows its Resolve button by. */
+function findTogglableThread() {
+  const row = findFocusedThread();
+  if (!row) {
+    return undefined;
+  }
+
+  const { thread } = row.placement;
+  const whole =
+    !thread.isResolved || files.value?.isThreadOpen(thread.id) === true || getThreadReplies(row).box !== null;
+  return whole && (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve) ? row : undefined;
 }
 
 /** Its box under it: on its own lines, a resolved one opened to be read. */

@@ -1046,6 +1046,27 @@ was crossed; only the innermost stop was marked; the linked comment's border sta
 **Rejected.** Snapping a held key's cursor to a fixed line on the screen: the cursor would jump away from where the
 reader was as the hold begins.
 
+### D47
+
+**Where you are is marked quietly and the same way everywhere.** (owner, 2026-11-21.) Amends [D46](#d46)'s comment tint
+and the accent borders of D44 and D46. The design log is `changelog/focus-highlight.md`; screens F37, F38, CR124.
+
+- **One edge.** A file, a code thread or a comment card under the cursor, focused, or named by the address shows its own
+  border in `current-edge`, the current file's edge. The full accent is no longer a border for any of them, and no edge
+  is drawn that the element doesn't already have.
+- **A code thread's comment reads as on GitHub.** A header row — avatar, author, age, notes, ⋯ — and what it says under
+  it from the same left edge, no indent; a thread's comments are divided by a line in `border`.
+- **The comment under the reading cursor** is tinted `current-tint`, the accent at 8 %, over its whole part of the card,
+  divider to divider and edge to edge; the first comment's code excerpt is tinted with it (F37, F38).
+- **Code review's focused thread** shows `H` on Resolve thread or Unresolve as it shows `R` on Reply…, and `H` does it,
+  on a thread shown whole where GitHub lets the viewer.
+
+**Why.** The focused thread's accent border was much brighter than the current file's edge; the old tint (10.2 %)
+behind a comment's text lowered its contrast; the indented body read worse than GitHub's.
+
+**Rejected.** The header row alone tinted (cut the header off from its comment); the dividers around the comment lit,
+or only the thread's border (could not be seen); the tint at 5 % (invisible) and 6.5 % (owner preferred 8 %).
+
 ## Open questions
 
 ### D26

@@ -91,12 +91,18 @@ export const LongLine: Story = {
 };
 
 /**
- * `Review / Comment · current`: the reading cursor on its second comment, in a review — the comment tinted from the
- * card's edge to its edge, the card's border `current-edge`, and `R` and `H` beside Reply… and Resolve thread.
+ * `F37`: the reading cursor on its second comment, in a review — the comment tinted 8 % (`current-tint`) from the card's
+ * edge to its edge, the card's border `current-edge`, and `R` and `H` beside Reply… and Resolve thread.
  */
 export const CurrentComment: Story = {
     args: { replies: REPLIES },
     decorators: [withReadingCursor('T_db_1', ['T_db_1', DB_STOP, 'R_review'])],
+};
+
+/** `F38`: the cursor on the first comment — its code tinted with it, from the card's top border to the divider under it. */
+export const CurrentFirstComment: Story = {
+    args: { replies: REPLIES },
+    decorators: [withReadingCursor('T_db_0', ['T_db_0', DB_STOP, 'R_review'])],
 };
 
 /** The cursor on the card itself, in its bands (focus on Reply…): marked, both keys shown, no comment tinted. */
@@ -117,10 +123,10 @@ export const CursorElsewhere: Story = {
     decorators: [withReadingCursor('description')],
 };
 
-/** `· linked`, where no cursor is shown (an item's panel, code review): the accent border, the comment the location. */
+/** `· linked`, where no cursor is shown (an item's panel, code review): the `current-edge` border, the comment the location. */
 export const Linked: Story = { args: { linkedAnchor: 'discussion_T_db_1' } };
 
-/** On an item's page the comment the address names is only where the cursor starts: current, no accent. */
+/** On an item's page the comment the address names is only where the cursor starts: current, no border of its own. */
 export const CurrentLinkedComment: Story = {
     args: { linkedAnchor: 'discussion_T_db_1' },
     decorators: [withReadingCursor('T_db_1', ['T_db_1', DB_STOP])],

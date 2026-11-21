@@ -78,8 +78,8 @@ const text = defineModel<string>('text', { default: '' });
 </template>
 
 <style lang="scss" module="css">
+// The comment pads itself (`ReviewComment`).
 .reviewWrittenComment_sent {
-  padding: $spacing-12 $spacing-14;
   background: $color-bg-2;
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;

@@ -1,4 +1,4 @@
-<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, the avatar, then a meta line — who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — and what it says under that in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the meta line, shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the meta line (`Review / Comment · editing`, `CommentEditor`), then Quote reply (into its thread's reply, where the thread takes one: `canQuote`), Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. Its attributes (an anchor's `id`, a reading stop's) go on its root, which the editor stays inside. -->
+<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, laid out as on GitHub: a header row — the avatar, who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — then, under it at full width from the header's left edge, what it says in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the header row (as tall without it), shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the header row (`Review / Comment · editing`, `CommentEditor`), then Quote reply (into its thread's reply, where the thread takes one: `canQuote`), Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. It is its own padded box, edge to edge of its thread's card, with a 1 px divider above it after the first of its thread (a reply on its way too), so its root covers the area between dividers; its attributes (an anchor's `id`, a reading stop's) go on that root, which the editor stays inside. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -74,7 +74,7 @@ const editing = computed(() => acting.value !== null && acting.value.actions.edi
 /** On its way, GitHub has nothing to act on yet. */
 const menu = computed(() => (onItsWay.value || editing.value ? null : acting.value));
 
-// The ⋯ is the meta line's only button.
+// The ⋯ is the header row's only button.
 watchPostEffect(() => {
   if (menu.value && menu.value.actions.menuFocus === menu.value.id) {
     moreRef.value?.querySelector('button')?.focus();
@@ -92,102 +92,99 @@ watchPostEffect(() => {
       v-bind="$attrs"
       :class="css.reviewComment"
     >
-      <Avatar
-        :name="login"
-        :src="author?.avatarUrl"
-        decorative
-      />
-      <div :class="css.reviewComment_main">
-        <p :class="css.reviewComment_meta">
-          <span :class="css.reviewComment_author">{{ login }}</span>
-          <time
-            v-if="url === undefined"
-            :class="css.reviewComment_age"
-            :datetime="createdAt"
-            >{{ age }}</time
-          >
-          <a
-            v-else
-            :class="css.reviewComment_age"
-            :href="url"
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="t(l.openOnGitHub, { age })"
-            :title="t(l.openOnGitHub, { age })"
-            ><time :datetime="createdAt">{{ age }}</time></a
-          >
-          <span
-            v-if="edited"
-            :class="css.reviewComment_note"
-            >{{ t(l.edited) }}</span
-          >
-          <ReviewPendingPill v-if="inDraft" />
-          <span
-            v-else-if="onItsWay"
-            :class="css.reviewComment_note"
-            >{{ t(l.sending) }}</span
-          >
-          <span :class="css.reviewComment_spacer" />
-          <span
-            v-if="menu"
-            ref="more"
-            :class="css.reviewComment_more"
-          >
-            <Menu
-              :open="menu.actions.openMenu === menu.id"
-              align="end"
-              :label="t(l.commentMenu)"
-              @update:open="menu.actions.setMenuOpen(menu.id, $event)"
-              @close-auto-focus="menu.actions.onMenuClose($event)"
-            >
-              <template #trigger>
-                <IconButton
-                  :icon="Ellipsis"
-                  :label="t(l.commentMenu)"
-                />
-              </template>
-              <CommentMenu
-                :can-edit="canEdit ?? false"
-                :can-quote="canQuote ?? false"
-                :can-delete="canDelete"
-                @edit="menu.actions.startEdit(menu.id, menu.body)"
-                @quote-reply="menu.quote(menu.id, menu.body)"
-                @copy-link="url !== undefined && menu.actions.copyLink(url)"
-                @delete="menu.actions.askDelete(menu.id)"
-              />
-            </Menu>
-          </span>
-        </p>
-        <CommentEditor
-          v-if="editing && acting"
-          :class="css.reviewComment_editor"
-          inline
-          :text="acting.actions.editors.get(acting.id)?.text ?? ''"
-          :author="author"
-          :repository="acting.repository"
-          :item-number="acting.itemNumber"
-          :people="acting.people"
-          :reason="acting.actions.getFailure(acting.id)"
-          :autofocus="acting.actions.focusedEditor === acting.id"
-          :changed="acting.actions.isChanged(acting.id)"
-          :asking="acting.actions.asking === acting.id"
-          @update:text="acting.actions.setText(acting.id, $event)"
-          @update:asking="acting.actions.setAsking(acting.id, $event)"
-          @save="acting.actions.saveEdit(acting.id, acting.body)"
-          @cancel="acting.actions.cancelEdit(acting.id)"
+      <p :class="css.reviewComment_header">
+        <Avatar
+          :name="login"
+          :src="author?.avatarUrl"
+          decorative
         />
-        <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
-        <p
-          v-else-if="shownText !== undefined"
-          :class="[css.reviewComment_typed, onItsWay && css.reviewComment_typed_sending]"
-          v-text="shownText"
-        />
-        <GitHubHtml
+        <span :class="css.reviewComment_author">{{ login }}</span>
+        <time
+          v-if="url === undefined"
+          :class="css.reviewComment_age"
+          :datetime="createdAt"
+          >{{ age }}</time
+        >
+        <a
           v-else
-          :class="css.reviewComment_text"
-          :html="html ?? ''"
-        />
-      </div>
+          :class="css.reviewComment_age"
+          :href="url"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="t(l.openOnGitHub, { age })"
+          :title="t(l.openOnGitHub, { age })"
+          ><time :datetime="createdAt">{{ age }}</time></a
+        >
+        <span
+          v-if="edited"
+          :class="css.reviewComment_note"
+          >{{ t(l.edited) }}</span
+        >
+        <ReviewPendingPill v-if="inDraft" />
+        <span
+          v-else-if="onItsWay"
+          :class="css.reviewComment_note"
+          >{{ t(l.sending) }}</span
+        >
+        <span :class="css.reviewComment_spacer" />
+        <span
+          v-if="menu"
+          ref="more"
+          :class="css.reviewComment_more"
+        >
+          <Menu
+            :open="menu.actions.openMenu === menu.id"
+            align="end"
+            :label="t(l.commentMenu)"
+            @update:open="menu.actions.setMenuOpen(menu.id, $event)"
+            @close-auto-focus="menu.actions.onMenuClose($event)"
+          >
+            <template #trigger>
+              <IconButton
+                :icon="Ellipsis"
+                :label="t(l.commentMenu)"
+              />
+            </template>
+            <CommentMenu
+              :can-edit="canEdit ?? false"
+              :can-quote="canQuote ?? false"
+              :can-delete="canDelete"
+              @edit="menu.actions.startEdit(menu.id, menu.body)"
+              @quote-reply="menu.quote(menu.id, menu.body)"
+              @copy-link="url !== undefined && menu.actions.copyLink(url)"
+              @delete="menu.actions.askDelete(menu.id)"
+            />
+          </Menu>
+        </span>
+      </p>
+      <CommentEditor
+        v-if="editing && acting"
+        inline
+        :text="acting.actions.editors.get(acting.id)?.text ?? ''"
+        :author="author"
+        :repository="acting.repository"
+        :item-number="acting.itemNumber"
+        :people="acting.people"
+        :reason="acting.actions.getFailure(acting.id)"
+        :autofocus="acting.actions.focusedEditor === acting.id"
+        :changed="acting.actions.isChanged(acting.id)"
+        :asking="acting.actions.asking === acting.id"
+        @update:text="acting.actions.setText(acting.id, $event)"
+        @update:asking="acting.actions.setAsking(acting.id, $event)"
+        @save="acting.actions.saveEdit(acting.id, acting.body)"
+        @cancel="acting.actions.cancelEdit(acting.id)"
+      />
+      <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
+      <p
+        v-else-if="shownText !== undefined"
+        :class="[css.reviewComment_typed, onItsWay && css.reviewComment_typed_sending]"
+        v-text="shownText"
+      />
+      <GitHubHtml
+        v-else
+        :class="css.reviewComment_text"
+        :html="html ?? ''"
+      />
     </div>
     <template #content>
       <CommentMenu
@@ -205,22 +202,24 @@ watchPostEffect(() => {
 </template>
 
 <style lang="scss" module="css">
+// Its own box, edge to edge of the thread, divider to divider: the header row, then what it says under it from the
+// header's left edge. Padded itself, so its root (a reading stop's) covers the whole box.
 .reviewComment {
   display: flex;
-  gap: $spacing-10;
-}
-
-.reviewComment_main {
-  display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  gap: $spacing-12;
+  padding: $spacing-12;
 }
 
-.reviewComment_meta {
+// Each comment after the first of its thread, a reply on its way too, is divided from the one above.
+.reviewComment + .reviewComment {
+  border-top: 1px solid $color-border;
+}
+
+// As tall with the ⋯ as without it.
+.reviewComment_header {
   display: flex;
-  gap: $spacing-6;
+  gap: $spacing-8;
   align-items: center;
   height: 20px;
   margin: 0;
@@ -296,9 +295,5 @@ watchPostEffect(() => {
 // On its way, dimmed (not faded: it stays readable): GitHub's rendering replaces it once GitHub has it.
 .reviewComment_typed_sending {
   color: $color-fg-dim;
-}
-
-.reviewComment_editor {
-  padding-top: $spacing-4;
 }
 </style>
