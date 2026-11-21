@@ -1067,6 +1067,19 @@ behind a comment's text lowered its contrast; the indented body read worse than 
 **Rejected.** The header row alone tinted (cut the header off from its comment); the dividers around the comment lit,
 or only the thread's border (could not be seen); the tint at 5 % (invisible); 8 % was built first, then made fainter (owner, 2026-11-21).
 
+### D48
+
+**Every app icon sizes "/hq" by one rule, `app-icons.md`: the smaller the icon is shown, the larger the type on its
+tile.** (owner, 2026-11-21.) 54 % of the side up to 32 px, then 4 points less with every doubling: 46 % at 128 px,
+38 % at 512 px. The size it is shown at counts, not its pixels; `icon.icns` and `icon.ico` draw each size for itself.
+A reference set in SVG and PNG is in `docs/assets/app-icons/`.
+
+**Why.** The desktop app's icon was scaled from one 512 px image at 38 %, so "/hq" read small in the Dock and the
+taskbar. The web icons already grew as they shrank (54 %, 44 %, 38 %), by hand; the rule passes through those three
+points, so they don't change.
+
+**Rejected.** Growing the type further below 32 px: at 54 % it already spans 85 % of the tile and would touch its edge.
+
 ## Open questions
 
 ### D26
