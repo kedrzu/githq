@@ -66,15 +66,17 @@ test("in code review, a comment's ⋯ lists Edit, Quote reply, Copy link and Del
     const question = review.comment(QUESTION);
     await question.hover();
     await question.getByRole('button', { name: 'Comment actions' }).click();
-    await expect(menu.getByRole('menuitem')).toHaveText(['Quote reply', 'Copy link']);
+    // Hovered, it is the comment under the cursor: its menu shows the keys that act on it.
+    await expect(menu.getByRole('menuitem')).toHaveText(['Quote replyQ', 'Copy link']);
+    await expect(menu.getByRole('menuitem', { name: 'Quote reply' })).toHaveAttribute('aria-keyshortcuts', 'Q');
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
 
     // On its meta line: GitHub's rendering keeps the browser's own menu.
     await review.comment(OWN).click({ button: 'right', position: { x: 4, y: 4 } });
     await expect(page.getByRole('menu').getByRole('menuitem')).toHaveText([
-        'Edit',
-        'Quote reply',
+        'EditW',
+        'Quote replyQ',
         'Copy link',
         'Delete',
     ]);
