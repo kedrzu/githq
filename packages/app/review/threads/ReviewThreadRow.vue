@@ -32,6 +32,8 @@ const props = defineProps<{
   deleteFailure?: ReviewWriteFailure | null;
   /** What the view does with its comments, from their ⋯; none, no ⋯. */
   commentActions?: ReviewCommentActions | null;
+  /** The id of the comment the line cursor is on (D44), while the keys are on the cursor. */
+  currentComment?: string;
 }>();
 
 const emit = defineEmits<{
@@ -133,6 +135,7 @@ const codeLabel = computed(() => {
       :resolve-failure="resolveFailure"
       :delete-failure="deleteFailure"
       :comment-actions="commentActions"
+      :current-comment="currentComment"
       @toggle="emit('toggle')"
       @reply="emit('reply')"
       @set-resolved="emit('setResolved', $event)"

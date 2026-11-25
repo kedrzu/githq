@@ -85,10 +85,15 @@ const props = withDefaults(
      * hovering it leaves the cursor where it is (D44).
      */
     pinned?: boolean;
-    /** The row holds the line cursor (D44): a line tinted with its comment buttons, a thread focused, a gap lit. */
+    /**
+     * The row holds the line cursor (D44): a line tinted with its comment buttons, a thread focused with the comment it
+     * is on tinted, a gap lit.
+     */
     cursor?: boolean;
     /** The keys are in a text field, not on the cursor: only a line's comment buttons show it, for the pointer. */
     quiet?: boolean;
+    /** The id of the comment the line cursor is on, in the thread on this row shown whole (D44). */
+    cursorComment?: string;
     /** The row is of the file V, Space and C act on, whose block is edged in accent (D44). */
     current?: boolean;
     /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
@@ -289,6 +294,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         :resolve-failure="threadFailure"
         :delete-failure="threadDeleteFailure"
         :comment-actions="commentActions"
+        :current-comment="cursor && !quiet ? cursorComment : undefined"
         @toggle="emit('toggleThread', row.placement.thread.id)"
         @reply="emit('replyInThread', row)"
         @set-resolved="emit('setThreadResolved', row, $event)"

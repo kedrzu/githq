@@ -15,26 +15,46 @@ const B = sampleFile('src/b.ts');
 const ROWS = buildRows();
 
 test('↓ from the line above a thread lands on the thread, and the next ↓ on the line after it', () => {
-    const onThread = moveCursor({ rows: ROWS, cursor: at('19|19'), delta: 1 });
+    const onThread = moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: at('19|19'), delta: 1 });
 
     expect(describe(onThread)).toBe('thread');
-    expect(describe(moveCursor({ rows: ROWS, cursor: onThread, delta: 1 }))).toBe('20|20');
-    expect(describe(moveCursor({ rows: ROWS, cursor: onThread, delta: -1 }))).toBe('19|19');
+    expect(describe(moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: onThread, delta: 1 }))).toBe('20|20');
+    expect(describe(moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: onThread, delta: -1 }))).toBe('19|19');
 });
 
 test('a move passes over what is no stop: a comment box, and a file’s end between its last gap and the next header', () => {
-    expect(describe(moveCursor({ rows: ROWS, cursor: at('22|23'), delta: 1 }))).toBe('23|24');
-    expect(describe(moveCursor({ rows: ROWS, cursor: { key: getReviewHeaderKey(B.path) }, delta: -1 }))).toBe(
-        `gap ${A.path}`,
-    );
+    expect(describe(moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: at('22|23'), delta: 1 }))).toBe('23|24');
+    expect(
+        describe(
+            moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: { key: getReviewHeaderKey(B.path) }, delta: -1 }),
+        ),
+    ).toBe(`gap ${A.path}`);
 });
 
 test('a move of several stops goes that many, and stops at the ends of the diff', () => {
-    expect(describe(moveCursor({ rows: ROWS, cursor: at('17|17'), delta: 4 }))).toBe('20|20');
-    expect(describe(moveCursor({ rows: ROWS, cursor: { key: getReviewHeaderKey(A.path) }, delta: -3 }))).toBe(
-        `header ${A.path}`,
+    expect(describe(moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: at('17|17'), delta: 4 }))).toBe('20|20');
+    expect(
+        describe(
+            moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: { key: getReviewHeaderKey(A.path) }, delta: -3 }),
+        ),
+    ).toBe(`header ${A.path}`);
+    expect(describe(moveCursor({ isThreadWhole: folded, rows: ROWS, cursor: at('23|24'), delta: 1000 }))).toBe(
+        `gap ${B.path}`,
     );
-    expect(describe(moveCursor({ rows: ROWS, cursor: at('23|24'), delta: 1000 }))).toBe(`gap ${B.path}`);
+});
+
+test('a thread shown whole is a stop per comment: ↓ reads them in order, ↑ from below lands on the last', () => {
+    const first = moveCursor({ rows: ROWS, cursor: at('19|19'), delta: 1, isThreadWhole: whole });
+    const second = moveCursor({ rows: ROWS, cursor: first, delta: 1, isThreadWhole: whole });
+
+    expect(describe(first)).toBe('thread C_1');
+    expect(describe(second)).toBe('thread C_2');
+    expect(describe(moveCursor({ rows: ROWS, cursor: second, delta: 1, isThreadWhole: whole }))).toBe('20|20');
+    expect(describe(moveCursor({ rows: ROWS, cursor: first, delta: -1, isThreadWhole: whole }))).toBe('19|19');
+    expect(describe(moveCursor({ rows: ROWS, cursor: at('20|20'), delta: -1, isThreadWhole: whole }))).toBe(
+        'thread C_2',
+    );
+    expect(describe(moveCursor({ rows: ROWS, cursor: at('19|19'), delta: 3, isThreadWhole: whole }))).toBe('20|20');
 });
 
 function buildRows() {
@@ -76,7 +96,19 @@ function describe(cursor: ReviewCursor): string {
         return `${row.line.left?.line ?? '-'}|${row.line.right?.line ?? '-'}`;
     }
 
-    return row?.kind === 'thread' ? 'thread' : `${row?.kind} ${cursor.key.split('\0')[0]}`;
+    if (row?.kind === 'thread') {
+        return cursor.comment === undefined ? 'thread' : `thread ${cursor.comment}`;
+    }
+
+    return `${row?.kind} ${cursor.key.split('\0')[0]}`;
+}
+
+function folded() {
+    return false;
+}
+
+function whole() {
+    return true;
 }
 
 function sampleFile(path: string): ReviewFile {

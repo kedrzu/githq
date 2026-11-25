@@ -1,4 +1,4 @@
-import { holdsAnchor } from '@/item/thread/holdsAnchor.js';
+import { getUrlAnchor } from '@/item/thread/getUrlAnchor.js';
 
 import type { ReviewFileListEnd, ReviewThreadsState } from '../ReviewFiles.js';
 import type { ThreadPlacement } from './placeThreads.js';
@@ -6,12 +6,13 @@ import type { ReviewThread } from './ReviewThread.js';
 
 /**
  * Where the thread an address names is: `waiting` while the threads or the list of files may yet bring it, `missing` once
- * they can't, `placed` under the file it shows in — its new path for a file renamed by the pull request.
+ * they can't, `placed` under the file it shows in — its new path for a file renamed by the pull request — with the id of
+ * the comment named, which the cursor lands on.
  */
 export type LinkedThread =
     | { readonly kind: 'waiting' }
     | { readonly kind: 'missing' }
-    | { readonly kind: 'placed'; readonly path: string; readonly threadId: string };
+    | { readonly kind: 'placed'; readonly path: string; readonly threadId: string; readonly commentId: string };
 
 export interface FindLinkedThreadParams {
     /** GitHub's anchor of one of its comments, `discussion_r<id>` ({@link parseThreadAnchor}). */
@@ -35,7 +36,7 @@ export function parseThreadAnchor(hash: string) {
 }
 
 /**
- * Finds the thread holding the comment an address names among a review's threads, and the file it shows in. A thread not
+ * Finds the thread holding the comment an address names among a review's threads, the comment, and the file it shows in. A thread not
  * placed yet waits for a list of files still growing, its file maybe on a page to come.
  *
  * @__NO_SIDE_EFFECTS__
@@ -47,16 +48,28 @@ export function findLinkedThread({
     placements,
     listEnd,
 }: FindLinkedThreadParams): LinkedThread {
-    const thread = threads.find(other => holdsAnchor(other, anchor));
-    if (!thread) {
+    const linked = findLinkedComment(threads, anchor);
+    if (!linked) {
         return threadsState.kind === 'loading' ? { kind: 'waiting' } : { kind: 'missing' };
     }
 
+    const { thread, commentId } = linked;
     for (const [path, placed] of placements) {
         if (placed.some(placement => placement.thread.id === thread.id)) {
-            return { kind: 'placed', path, threadId: thread.id };
+            return { kind: 'placed', path, threadId: thread.id, commentId };
         }
     }
 
     return listEnd === 'growing' ? { kind: 'waiting' } : { kind: 'missing' };
+}
+
+function findLinkedComment(threads: readonly ReviewThread[], anchor: string) {
+    for (const thread of threads) {
+        const comment = thread.comments.find(({ url }) => getUrlAnchor(url) === anchor);
+        if (comment) {
+            return { thread, commentId: comment.id };
+        }
+    }
+
+    return null;
 }

@@ -4,11 +4,13 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ReviewComment.stories.js';
 
-const { Comment, EditSending, WithMenu } = composeStories(stories);
+const { Comment, Current, EditSending, UnderReadingCursor, WithMenu } = composeStories(stories);
 
 /** `$color-fg`, `$color-fg-dim`. */
 const FG = 'rgb(240, 246, 252)';
 const FG_DIM = 'rgb(139, 146, 155)';
+/** `$color-current-tint`: the accent at 6.5 %, which the browser keeps as 17/255. */
+const CURRENT_TINT = 'rgba(123, 135, 247, 0.067)';
 
 /** What the ⋯ is drawn in, on the header row: its opacity says whether it is in sight. */
 function getMoreOpacity() {
@@ -70,4 +72,36 @@ test("what it says sits under the header row at full width, from the avatar's le
 
     expect(text.left).toBe(avatar!.getBoundingClientRect().left);
     expect(text.top).toBeGreaterThanOrEqual(author.bottom);
+});
+
+test("code review's current comment is tinted over its whole box and aria-current; any other is not", async () => {
+    await Current.run();
+    const box = document.querySelector('[data-cursor-comment]');
+    expect(box).toBeInstanceOf(HTMLElement);
+    expect(box!.getAttribute('data-cursor-comment')).toBe(Current.args.commentId);
+    expect(box!.contains(page.getByText('sofiab', { exact: true }).element())).toBe(true);
+    expect(getComputedStyle(box!).backgroundColor).toBe(CURRENT_TINT);
+    expect(box!.getAttribute('aria-current')).toBe('true');
+
+    await WithMenu.run();
+    const other = document.querySelector('[data-cursor-comment]')!;
+    expect(getComputedStyle(other).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(other.hasAttribute('aria-current')).toBe(false);
+});
+
+test("a comment's menu shows W and Q when it is code review's current one or under a page's reading cursor, else none", async () => {
+    for (const story of [Current, UnderReadingCursor]) {
+        await story.run();
+        await userEvent.click(page.getByText('sofiab', { exact: true }), { button: 'right' });
+        await expect.element(page.getByRole('menuitem', { name: /^Edit/u })).toHaveAttribute('aria-keyshortcuts', 'W');
+        await expect
+            .element(page.getByRole('menuitem', { name: /^Quote reply/u }))
+            .toHaveAttribute('aria-keyshortcuts', 'Q');
+        await userEvent.keyboard('{Escape}');
+    }
+
+    // In code review off the cursor, as everywhere with no reading cursor (code review's conversation): no keys.
+    await WithMenu.run();
+    await userEvent.click(page.getByText('sofiab', { exact: true }), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Edit' })).not.toHaveAttribute('aria-keyshortcuts');
 });

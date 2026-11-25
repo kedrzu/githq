@@ -49,7 +49,8 @@ import { quoteIntoDraft } from '@/comments/quoteIntoDraft.js';
 import { useCommentActions } from '@/comments/useCommentActions.js';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
-import type { ReviewThread, ReviewThreadComment } from '@/review/threads/ReviewThread.js';
+import { getCodeCommentActions } from '@/review/threads/getCodeCommentActions.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import { useReviewCommentActions } from '@/review/threads/useReviewCommentActions.js';
 import { getCommentWays } from '@/review/writing/getCommentWays.js';
 import { getPendingComments } from '@/review/writing/getPendingComments.js';
@@ -397,7 +398,8 @@ function getStopActions(key: string, threadId: string | null): ThreadStopActions
   };
   const comment = thread?.comments.find(({ id }) => id === key);
   if (thread && comment) {
-    return { ...threadActions, ...getCodeCommentActions(thread, comment, threadActions.reply !== null) };
+    const quote = threadActions.reply === null ? null : () => quoteIntoReply(thread, comment.body);
+    return { ...threadActions, ...getCodeCommentActions({ comment, commentActions: reviewActions, quote }) };
   }
 
   const card = findCard(key);
@@ -407,26 +409,6 @@ function getStopActions(key: string, threadId: string | null): ThreadStopActions
     menu: card?.menu ? () => actions.setMenuOpen(card.id, true) : null,
     quote: canQuote ? () => emit('quoteReply', card.body) : null,
     edit: card?.kind === 'comment' && card.canEdit ? () => void actions.editByKey(card.id, card.body) : null,
-  };
-}
-
-/**
- * A code thread's comment's menu, Quote reply and Edit, as its ⋯ offers them: none of them while its edit is on its way,
- * GitHub having nothing to act on yet; no menu while edited, the editor in its place; Quote reply where its thread
- * takes a reply.
- */
-function getCodeCommentActions(
-  thread: ReviewThread,
-  comment: ReviewThreadComment,
-  canReply: boolean,
-): Pick<ThreadStopActions, 'menu' | 'quote' | 'edit'> {
-  const { actions: commentActions } = reviewActions;
-  const onItsWay = reviewActions.getEdit(comment.id) !== null;
-  const menu = !onItsWay && !commentActions.editors.has(comment.id);
-  return {
-    menu: menu ? () => commentActions.setMenuOpen(comment.id, true) : null,
-    quote: menu && canReply ? () => quoteIntoReply(thread, comment.body) : null,
-    edit: !onItsWay && comment.viewerCanUpdate ? () => void commentActions.editByKey(comment.id, comment.body) : null,
   };
 }
 

@@ -1,12 +1,21 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, shallowRef } from 'vue';
 
+import { bindCommand } from '@/commands/bindCommand.js';
+import CommandMenu from '@/commands/CommandMenu.vue';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { commandMenu } from '@/commands/definitions/index.js';
+import type { NavigationData } from '@/commands/searchNavigation.js';
+import { useCommands } from '@/commands/useCommands.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -22,9 +31,18 @@ import type {
 import type { ReviewThread } from './threads/ReviewThread.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
+import type { ReviewWriting } from './writing/ReviewWriting.js';
+import type { DiffLineRange } from './diff/buildDiffRows.js';
 import ReviewView from './ReviewView.vue';
 
 const REFERENCE = { owner: 'fitloop', name: 'webapp', number: 1202 };
+/**
+ * No lines shown beyond the diff's: one array, as `ReviewFiles` keeps it. A new one on every call has the view's rows
+ * rebuilt on every read, which loops once a thread sits on a line.
+ */
+const NO_LINES: readonly DiffLineRange[] = [];
+/** The command menu finds no places or items here: only the screen's actions. */
+const NO_NAVIGATION: NavigationData = { places: [], trackedRepositories: [], items: [] };
 
 const meta = {
     component: ReviewView,
@@ -62,6 +80,24 @@ export const Files: Story = {
                 'public/hero.png': { kind: 'binary', before: 12_000, after: 14_000 },
             },
             { onTracking: parameters.onTracking },
+        ),
+};
+
+/**
+ * D44: a file with an open thread of two comments on its changed line, the second the viewer's own, and the command menu
+ * behind ⌘K as the app has it. For a spec, `parameters.writing` is the writing it writes through (a fresh
+ * {@link FakeReviewWriting} by default).
+ */
+export const Thread: Story = {
+    render: (_args, { parameters }) =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'ready', before: 'one\ntwo\nthree\n', after: 'one\nTWO\nthree\n' } },
+            {
+                threads: [createTwoCommentThread()],
+                writing: parameters.writing instanceof FakeReviewWriting ? parameters.writing : new FakeReviewWriting(),
+                commandMenu: true,
+            },
         ),
 };
 
@@ -150,6 +186,10 @@ interface RenderOptions {
     readonly threads?: readonly ReviewThread[];
     readonly conversationShown?: boolean;
     readonly filter?: FileFilterInput;
+    /** What the review writes through; nothing is written by default. */
+    readonly writing?: ReviewWriting;
+    /** The command menu mounted beside the view, opened by ⌘K. */
+    readonly commandMenu?: boolean;
     /** Handed the user's settings once read, to set or read them. */
     readonly onTracking?: (tracking: TrackingStore) => void;
 }
@@ -176,9 +216,40 @@ function renderView(
             provideContainer(container);
             const tracking = container.resolve(TrackingStore);
             void tracking.ready().then(() => options.onTracking?.(tracking));
-            return () => h(ReviewView, { reference: REFERENCE });
+            return () => (options.commandMenu ? h(ReviewWithCommandMenu) : h(ReviewView, { reference: REFERENCE }));
         },
     });
+}
+
+/** The view and the command menu over its actions, ⌘K opening it as the app's shell does (`AppCommands`). */
+const ReviewWithCommandMenu = defineComponent({
+    setup() {
+        const t = useTranslate();
+        const registry = useService(CommandRegistry);
+        useCommands(() => [
+            bindCommand(commandMenu, { section: 'app', menu: false, once: true, run: () => registry.openMenu() }, t),
+        ]);
+        return () => [
+            h(ReviewView, { reference: REFERENCE }),
+            h(CommandMenu, {
+                open: registry.menu !== null,
+                'onUpdate:open': (open: boolean) => (open ? registry.openMenu() : registry.closeMenu()),
+                commands: registry.commands,
+                subject: registry.subject,
+                navigation: NO_NAVIGATION,
+                request: registry.menu,
+            }),
+        ];
+    },
+});
+
+/** `T_1` on `src/sync/queue.ts`'s changed line: sofiab's comment, then one of the viewer's, which they may edit. */
+function createTwoCommentThread(): ReviewThread {
+    const thread = sampleThread({ path: 'src/sync/queue.ts', line: 2, originalLine: 2 });
+    return {
+        ...thread,
+        comments: thread.comments.map((comment, index) => ({ ...comment, viewerCanUpdate: index === 1 })),
+    };
 }
 
 function createFiles(
@@ -191,8 +262,10 @@ function createFiles(
         lostViewed = new Set(),
         threads = [],
         filter = { pattern: '', regex: false },
+        writing = idleReviewWriting,
     }: RenderOptions,
 ): PullRequestFiles {
+    const openThreads = shallowRef<ReadonlySet<string>>(new Set());
     const files = Object.keys(states).map((path): ReviewFile => ({
         path,
         previousPath: null,
@@ -236,16 +309,25 @@ function createFiles(
         setViewed: () => {},
         hideViewed,
         setHideViewed: () => {},
-        isThreadOpen: () => false,
-        setThreadOpen: () => {},
+        isThreadOpen: id => openThreads.value.has(id),
+        setThreadOpen: (id, open) => {
+            const changed = new Set(openThreads.value);
+            if (open) {
+                changed.add(id);
+            } else {
+                changed.delete(id);
+            }
+
+            openThreads.value = changed;
+        },
         filter,
         setFilter: () => {},
         keepFilter: () => {},
         position: null,
         setPosition: () => {},
-        getExpandedLines: () => [],
+        getExpandedLines: () => NO_LINES,
         isExpansionReset: () => false,
         expandLines: () => {},
-        writing: idleReviewWriting,
+        writing,
     };
 }

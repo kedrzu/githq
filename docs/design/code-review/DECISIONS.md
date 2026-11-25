@@ -799,7 +799,7 @@ pointer, nor a drag along the numbers; leaving the diff keeps it. A wheel or tra
 while that stop is on screen and, once it would leave, brings it to the nearest stop at that edge, so the keys always
 act on something in view (as Vim). A single ↓ moves one stop; held, the key's repeat moves one stop at a time for
 about 0.4 s, then a stop more every 0.25 s, up to six a repeat, until it is let go. Stops are headers, lines, threads
-and gaps; a collapsed file is its header and the threads under it; placeholders and notes belong to their header; a
+and gaps, a thread shown whole being a stop per comment (D49); a collapsed file is its header and the threads under it; placeholders and notes belong to their header; a
 submodule's block, distance marks and the all-viewed block are passed over. C takes the row's newer line, or its older one on a row with only that (a
 deleted line alone, unified's deleted line); threads stay under the half they belong to (D24). Hovering the pinned
 header's overlay leaves the cursor where it is: the real header is far above, and the next ↓ would go back up there.
@@ -945,9 +945,19 @@ comment discards the emptied draft.** (2026-11-19, owner's pick of Variant B of 
 **Why.** The grey bubble with Reply… and Resolve in one row looked unlike a comment anywhere else, and review comments
 could be neither edited nor deleted in githq. An empty draft only blocks what is written next (D17).
 
+**Keys (2026-11-25, owner: "it should be consistent").** As on a pull request's thread, the diff's cursor stops on each
+comment of a thread shown whole, in reading order (↑ from below lands on its last); a resolved thread folded to its
+line stays one stop. Its head and code belong to its first comment, its bands, replies on their way and reply box to its
+last. On the comment under the cursor `W` edits it in place, `Q` quotes it into its thread's reply box and `.` opens
+its menu, each where the menu offers it; the command menu and `?` list them, and its menu shows `W` and `Q` beside Edit
+and Quote reply. The comment is tinted `current-tint` as on a pull request's thread, never while the keys are in a text
+field. N ⇧N land on a thread's first comment, a link on the comment it names; `R`, `H` and `C` act on the thread from any
+of its comments. The conversation column has no cursor and keeps pointer and Tab.
+
 **Rejected.**
 
 - One card with a head band per comment, and a card per comment — further from the code thread the pull request's
   thread already has; the second breaks the thread into pieces in the diff.
-- A comment-level key in code review — its cursor stops on lines and threads, not comments; pointer and Tab reach the
-  ⋯ there, and `.` and `Q` reach it on a pull request's thread.
+- No comment-level key in code review, the cursor stopping on a thread as a whole and pointer and Tab reaching the ⋯
+  (2026-11-19 to 2026-11-25) — the keys that work on a pull request's thread did nothing in the diff, nor did the
+  command menu offer them. (owner, 2026-11-25)

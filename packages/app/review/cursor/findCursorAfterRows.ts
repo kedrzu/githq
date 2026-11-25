@@ -3,6 +3,8 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { findReplacementRow, getCommentLine, getReviewHeaderKey, getReviewRowPath } from '../buildReviewRows.js';
 import type { ReviewGapDirection, ReviewGapRow, ReviewRow } from '../buildReviewRows.js';
 import { isCursorStop } from './isCursorStop.js';
+import type { IsThreadWhole } from './listCursorStops.js';
+import { normalizeCursor } from './normalizeCursor.js';
 import type { ReviewCursor } from './ReviewCursor.js';
 
 export interface FindCursorAfterRowsParams {
@@ -13,6 +15,7 @@ export interface FindCursorAfterRowsParams {
     readonly order?: readonly string[];
     /** The way lines came out of a gap, when that is what changed the rows; `null` for anything else. */
     readonly expanded?: ReviewGapDirection | null;
+    readonly isThreadWhole: IsThreadWhole;
 }
 
 /**
@@ -21,7 +24,8 @@ export interface FindCursorAfterRowsParams {
  * came out first, which the way they came says. Any other row gone gives way to the row of the same line in the new rows
  * (a layout or whitespace switch), or else the nearest stop left, in its file first ({@link findReplacementRow}): a
  * placeholder or a note standing for its file's content gives its header, a comment box, a mark or a file's end the next
- * stop of their file. `null` when no file is left.
+ * stop of their file. A thread shown whole keeps the cursor on its comment, or with that gone on the next comment left, else
+ * the previous; folded, on the thread. The cursor itself while it is still a stop. `null` when no file is left.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -31,19 +35,24 @@ export function findCursorAfterRows({
     cursor,
     order,
     expanded,
+    isThreadWhole,
 }: FindCursorAfterRowsParams): ReviewCursor | null {
-    if (next.some(row => row.key === cursor.key)) {
-        return cursor;
+    const held = previous.find(row => row.key === cursor.key);
+    const kept = next.find(row => row.key === cursor.key);
+    if (kept) {
+        const previousComments =
+            held?.kind === 'thread' ? held.placement.thread.comments.map(comment => comment.id) : undefined;
+        return normalizeCursor({ row: kept, cursor, isThreadWhole, previousComments });
     }
 
-    const held = previous.find(row => row.key === cursor.key);
     const gapRow = held?.kind === 'gap' ? findGapAfterRows(next, held, expanded ?? null) : null;
     if (gapRow) {
         return { key: gapRow.key };
     }
 
     const replacement = findReplacementRow({ key: cursor.key, offset: 0, previous, next, order });
-    return replacement ? snapToStop(next, replacement.row) : null;
+    const stop = replacement && snapToStop(next, replacement.row);
+    return stop && normalizeCursor({ row: stop, cursor: { key: stop.key }, isThreadWhole });
 }
 
 /**
@@ -68,7 +77,7 @@ function findGapAfterRows(rows: readonly ReviewRow[], gap: ReviewGapRow, expande
 }
 
 /** The stop for a row that is not one: its file's header for what stands in for the file's content, else the next one. */
-function snapToStop(rows: readonly ReviewRow[], row: ReviewRow): ReviewCursor | null {
+function snapToStop(rows: readonly ReviewRow[], row: ReviewRow): ReviewRow | null {
     const path = getReviewRowPath(row.key);
     const header = rows.find(other => other.key === getReviewHeaderKey(path)) ?? null;
     switch (row.kind) {
@@ -76,22 +85,20 @@ function snapToStop(rows: readonly ReviewRow[], row: ReviewRow): ReviewCursor | 
         case 'line':
         case 'thread':
         case 'gap':
-            return { key: row.key };
+            return row;
         case 'failed':
         case 'notice':
         case 'onlyWhitespace':
         case 'paused':
         case 'placeholder':
         case 'submodule':
-            return header && { key: header.key };
+            return header;
         case 'allViewed':
         case 'comment':
         case 'distance':
         case 'end':
-        case 'fileEnd': {
-            const after = getFileRows(rows.slice(rows.indexOf(row)), path).find(isCursorStop) ?? header;
-            return after && { key: after.key };
-        }
+        case 'fileEnd':
+            return getFileRows(rows.slice(rows.indexOf(row)), path).find(isCursorStop) ?? header;
         default:
             return assertNever(row);
     }

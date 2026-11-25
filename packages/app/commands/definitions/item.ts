@@ -181,26 +181,27 @@ export const discardReview = defineAppCommand({
 
 /**
  * Opens the menu (⋯) of the card the reading cursor is on, on an opened item's page: the description, a comment, a
- * review or a comment of a code thread. Not offered on a stop with no menu (a commit, an event, a comment on its way).
+ * review or a comment of a code thread; and of the comment under the review's cursor, on a thread shown whole. Not
+ * offered on a stop with no menu (a commit, an event, a comment on its way).
  */
 export const commentMenu = defineAppCommand({
     id: 'commentMenu',
     title: l.commentMenu,
     icon: Ellipsis,
     key: '.',
-    places: ['item'],
+    places: ['item', 'review'],
 });
 
 /**
  * Quotes the card the reading cursor is on into the composer, as its menu's Quote reply does, on an item's page; a code
- * thread's comment into its thread's reply box.
+ * thread's comment into its thread's reply box, there and under the review's cursor.
  */
 export const quoteComment = defineAppCommand({
     id: 'quoteComment',
     title: l.quoteComment,
     icon: TextQuote,
     key: 'Q',
-    places: ['item'],
+    places: ['item', 'review'],
 });
 
 /**
@@ -216,13 +217,13 @@ export const resolveThread = defineAppCommand({
 });
 
 /**
- * Edits the comment or the description the reading cursor is on in place, on an item's page, where GitHub lets the
- * viewer; with its editor open already, puts the text cursor back in it.
+ * Edits the comment or the description the reading cursor is on in place, on an item's page, or the comment under the
+ * review's cursor, where GitHub lets the viewer; with its editor open already, puts the text cursor back in it.
  */
 export const editComment = defineAppCommand({
     id: 'editComment',
     title: l.editComment,
     icon: Pencil,
     key: 'W',
-    places: ['item'],
+    places: ['item', 'review'],
 });

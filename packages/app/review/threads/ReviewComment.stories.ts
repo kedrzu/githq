@@ -5,6 +5,7 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { REVIEW_VIEWER } from '@/testing/sampleReviews.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import { useSampleReviewCommentActions } from '@/testing/useSampleReviewCommentActions.js';
+import { withReadingCursor } from '@/testing/withReadingCursor.js';
 
 import ReviewComment from './ReviewComment.vue';
 
@@ -97,4 +98,17 @@ export const Editing: Story = {
 export const EditSending: Story = {
     args: { canEdit: true, canDelete: true },
     parameters: { menu: true, edit: EDITED },
+};
+
+/** Code review's cursor on it: tinted over its whole box, and its menu shows Edit's and Quote reply's keys. */
+export const Current: Story = {
+    args: { canEdit: true, canDelete: true, canQuote: true, current: true },
+    parameters: { menu: true },
+};
+
+/** On a pull request's page, under its reading cursor: not `current`, yet its menu shows the keys there too. */
+export const UnderReadingCursor: Story = {
+    args: { canEdit: true, canDelete: true, canQuote: true },
+    parameters: { menu: true },
+    decorators: [withReadingCursor(COMMENT.id)],
 };
