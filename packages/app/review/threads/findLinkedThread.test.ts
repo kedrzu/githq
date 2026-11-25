@@ -23,12 +23,13 @@ test("a fragment names a comment on the code by a comment's anchor or by GitHub'
     }
 });
 
-test('any comment of the thread finds it, under the path of the file it shows in, a renamed one its new path', () => {
-    expect(findLinkedThread(READY)).toEqual({ kind: 'placed', path: 'src/new.ts', threadId: 'T_1' });
+test('any comment of the thread finds it and that comment, under the path of the file it shows in, a renamed one its new path', () => {
+    expect(findLinkedThread(READY)).toEqual({ kind: 'placed', path: 'src/new.ts', threadId: 'T_1', commentId: 'C_2' });
     expect(findLinkedThread({ ...READY, anchor: 'discussion_r1' })).toEqual({
         kind: 'placed',
         path: 'src/new.ts',
         threadId: 'T_1',
+        commentId: 'C_1',
     });
 });
 

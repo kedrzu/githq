@@ -145,6 +145,7 @@ import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFile
 import { ReviewSubmodules } from './submodules/ReviewSubmodules.js';
 import type { ReviewSubmoduleChange } from './submodules/ReviewSubmodules.js';
 import { countThreads } from './threads/countThreads.js';
+import { getCodeCommentActions } from './threads/getCodeCommentActions.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
 import { findLinkedThread, parseThreadAnchor } from './threads/findLinkedThread.js';
@@ -569,7 +570,7 @@ const failedEdits = computed(() => (opened.id === null ? [] : commentDrafts.getF
 const conversationPeople = computed(() =>
   filterNotNull([opened.item?.author ?? null, ...(detail.value?.comments.nodes ?? []).map(comment => comment.author)]),
 );
-/** What the diff's threads' comments do from their ⋯, written through the writing; no key of their own here. */
+/** What the diff's threads' comments do from their ⋯, written through the writing; `.`, `Q` and `W` under the cursor. */
 const commentActions = useReviewCommentActions({
   subject: () => opened.id ?? '',
   writing,
@@ -1107,6 +1108,34 @@ useCommands(() => [
     },
     t,
   ),
+  // `.`, `Q`, `W` on the comment under the cursor, as its ⋯ offers them (the item keeps its own over the review).
+  bindCommand(
+    definitions.commentMenu,
+    {
+      ...REVIEW_PLACE,
+      when: () => getCursorCommentActions()?.menu != null,
+      run: () => getCursorCommentActions()?.menu?.(),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.quoteComment,
+    {
+      ...REVIEW_PLACE,
+      when: () => getCursorCommentActions()?.quote != null,
+      run: () => getCursorCommentActions()?.quote?.(),
+    },
+    t,
+  ),
+  bindCommand(
+    definitions.editComment,
+    {
+      ...REVIEW_PLACE,
+      when: () => getCursorCommentActions()?.edit != null,
+      run: () => getCursorCommentActions()?.edit?.(),
+    },
+    t,
+  ),
   bindCommand(
     definitions.rangeDown,
     {
@@ -1491,7 +1520,7 @@ function landOnLink() {
 
   const row = rows.value.find(other => other.key === getReviewThreadKey(path, threadId));
   if (row?.kind === 'thread') {
-    jumpToThread(row);
+    jumpToThread(row, linked.commentId);
     return;
   }
 
@@ -1535,15 +1564,18 @@ function endLink() {
   }
 }
 
-/** A quarter down the screen, the code above it in sight (CR15), and held there (D7). A resolved one opens, to be read. */
-function jumpToThread(row: ReviewThreadRow) {
+/**
+ * A quarter down the screen, the code above it in sight (CR15), and held there (D7). A resolved one opens, to be read. The
+ * cursor on the comment asked for, a link's; else as `setTo` puts it.
+ */
+function jumpToThread(row: ReviewThreadRow, comment?: string) {
   const { id, isResolved } = row.placement.thread;
   if (isResolved) {
     files.value?.setThreadOpen(id, true);
   }
 
   stopLanding();
-  reviewCursor.setTo(row.key);
+  reviewCursor.setTo(row.key, comment);
   walkedCursor = cursor.value;
   justResolved.value = null;
   const height = list.value?.getViewport().height ?? 0;
@@ -2072,6 +2104,27 @@ function findTogglableThread() {
   return isThreadWhole(row) && (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve)
     ? row
     : undefined;
+}
+
+/**
+ * What `.`, `Q` and `W` do on the comment the cursor is on, by the rule its ⋯ follows; `null` off a comment. Quote reply
+ * where the thread takes a reply, as its box's comments offer it.
+ */
+function getCursorCommentActions() {
+  const commentId = cursor.value?.comment;
+  const row = cursorRow.value;
+  if (commentId === undefined || row?.kind !== 'thread') {
+    return null;
+  }
+
+  const { thread } = row.placement;
+  const comment = thread.comments.find(({ id }) => id === commentId);
+  if (!comment) {
+    return null;
+  }
+
+  const quote = writing.value !== null && thread.viewerCanReply ? () => quoteIntoReply(thread, comment.body) : null;
+  return getCodeCommentActions({ comment, commentActions, quote });
 }
 
 /** Shown whole, its comments each a stop of the cursor (D44): by the rule `ReviewThreadBox` shows it by. */
