@@ -1,4 +1,4 @@
-<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, laid out as on GitHub: a header row — the avatar, who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — then, under it at full width from the header's left edge, what it says in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the header row (as tall without it), shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the header row (`Review / Comment · editing`, `CommentEditor`), then Quote reply (into its thread's reply, where the thread takes one: `canQuote`), Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. It is its own padded box, edge to edge of its thread's card, with a 1 px divider above it after the first of its thread (a reply on its way too), so its root covers the area between dividers; its attributes (an anchor's `id`, a reading stop's) go on that root, which the editor stays inside. -->
+<!-- A comment of a code thread (`Review / Comment`), wherever code threads show — code review's diff (`ReviewThreadBox`), a pull request's thread (`ItemThreadCodeThread`) — and a reply on its way (`ReviewSentComment`): flat on the thread's page colour, laid out as on GitHub: a header row — the avatar, who, how long ago with a link to it on GitHub, "· edited" once changed, "Pending · in your draft" while only the viewer sees it (`Review / Comment · pending`), "Sending…" while on its way — then, under it at full width from the header's left edge, what it says in the card text colour, as GitHub rendered it, or as typed until GitHub has it, dimmed while on its way. Given the view's comment actions (`actions`), its ⋯ ends the header row (as tall without it), shown on hover, while the focus is in it or while open (`Review / Comment · hovered`), and a right click on it opens the same menu — not on GitHub's rendering, which keeps the browser's own (`GitHubLinks`): Edit turns what it says into its editor in place under the header row (`Review / Comment · editing`, `CommentEditor`), then Quote reply (into its thread's reply, where the thread takes one: `canQuote`), Copy link and Delete, each where GitHub allows (`CommentMenu`); all done by the view's `useCommentActions`. An edit on its way shows its text dimmed, "Sending…", with no menu: GitHub has nothing to act on yet. It is its own padded box, edge to edge of its thread's card, with a 1 px divider above it after the first of its thread (a reply on its way too), so its root covers the area between dividers; its attributes (an anchor's `id`, a reading stop's) go on that root, which the editor stays inside, and so does `data-cursor-comment`, its id, by which code review's cursor measures it and tells which comment the pointer is over (none on a reply on its way). The comment code review's cursor is on (`current`) is tinted over its whole box (`current-tint`), `aria-current`, and its menu shows Edit's and Quote reply's keys. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -20,6 +20,7 @@ import type { ReviewCommentActions } from './ReviewCommentActions.js';
 import ReviewPendingPill from './ReviewPendingPill.vue';
 
 // The root is the context menu's; an anchor's `id` and a reading stop's attributes belong on the comment itself.
+// Bound after its own `aria-current`, so a pull request's thread, which marks its comments itself, sets it.
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
@@ -49,6 +50,11 @@ const props = defineProps<{
   canDelete?: boolean;
   /** Its thread takes a reply (not one of the viewer's draft review): Quote reply is offered, into that reply. */
   canQuote?: boolean;
+  /**
+   * Code review's cursor is on it (D44). Elsewhere not given: a pull request's thread marks the comment under the reading
+   * cursor itself, and its menu shows the keys where the reading cursor is shown.
+   */
+  current?: boolean;
 }>();
 
 /** How often "12m" moves on. */
@@ -89,8 +95,10 @@ watchPostEffect(() => {
     @close-auto-focus="menu?.actions.onMenuClose($event)"
   >
     <div
+      :data-cursor-comment="commentId"
+      :aria-current="current ? 'true' : undefined"
       v-bind="$attrs"
-      :class="css.reviewComment"
+      :class="[css.reviewComment, current && css.reviewComment_current]"
     >
       <p :class="css.reviewComment_header">
         <Avatar
@@ -149,6 +157,7 @@ watchPostEffect(() => {
               :can-edit="canEdit ?? false"
               :can-quote="canQuote ?? false"
               :can-delete="canDelete"
+              :shortcuts="current || undefined"
               @edit="menu.actions.startEdit(menu.id, menu.body)"
               @quote-reply="menu.quote(menu.id, menu.body)"
               @copy-link="url !== undefined && menu.actions.copyLink(url)"
@@ -192,6 +201,7 @@ watchPostEffect(() => {
         :can-edit="canEdit ?? false"
         :can-quote="canQuote ?? false"
         :can-delete="canDelete"
+        :shortcuts="current || undefined"
         @edit="menu.actions.startEdit(menu.id, menu.body)"
         @quote-reply="menu.quote(menu.id, menu.body)"
         @copy-link="url !== undefined && menu.actions.copyLink(url)"
@@ -209,6 +219,11 @@ watchPostEffect(() => {
   flex-direction: column;
   gap: $spacing-12;
   padding: $spacing-12;
+}
+
+// Under code review's cursor: a fill over its whole box, divider to divider, so nothing moves.
+.reviewComment_current {
+  background: $color-current-tint;
 }
 
 // Each comment after the first of its thread, a reply on its way too, is divided from the one above.

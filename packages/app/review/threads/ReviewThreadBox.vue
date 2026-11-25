@@ -1,4 +1,4 @@
-<!-- A review thread's box (`Review / Thread`), on the page's colour: under an amber "Outdated" head band saying how it was placed (D30), its comments (`ReviewComment`) one under another, each its own padded box edge to edge with a 1 px divider between them, then the bands closing it (`ReviewThreadBands`): the Reply band with the viewer's avatar and Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, showing its key there (`· focused`); then the Resolve band with Resolve thread, or Unresolve on one opened (CR74), showing `H` on the focused one where the viewer may. Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the rest follows. The `current-edge` border says it is the thread N and ⇧N are at (D32). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box takes Reply…'s place in its band; the comments stay where they were. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where GitHub lets the viewer reply, Copy link, Delete) and shows an edit on its way. A change of state or a deletion GitHub didn't take says so in the Resolve band, the thread as it went back to. -->
+<!-- A review thread's box (`Review / Thread`), on the page's colour: under an amber "Outdated" head band saying how it was placed (D30), its comments (`ReviewComment`) one under another, each its own padded box edge to edge with a 1 px divider between them, then the bands closing it (`ReviewThreadBands`): the Reply band with the viewer's avatar and Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, showing its key there (`· focused`); then the Resolve band with Resolve thread, or Unresolve on one opened (CR74), showing `H` on the focused one where the viewer may. Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the rest follows. The `current-edge` border says it is the thread N and ⇧N are at (D32); shown whole, the comment the line cursor is on (`currentComment`, D44) is tinted with its keys in its menu (`ReviewComment`). The viewer's replies on their way show after the comments. Replying (`Review / Thread · replying`, D39), the box takes Reply…'s place in its band; the comments stay where they were. Given the view's comment actions (`commentActions`), each comment has its ⋯ (Edit in place, Quote reply into this thread's reply box where GitHub lets the viewer reply, Copy link, Delete) and shows an edit on its way. A change of state or a deletion GitHub didn't take says so in the Resolve band, the thread as it went back to. -->
 <script lang="ts">
 import type { ReviewCommentTarget } from '../writing/ReviewWriting.js';
 
@@ -23,6 +23,7 @@ import MotionList from '@/components/MotionList.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
+import { isReviewThreadWhole } from './isReviewThreadWhole.js';
 import ReviewComment from './ReviewComment.vue';
 import type { ReviewCommentActions } from './ReviewCommentActions.js';
 import * as l from './ReviewThreadBox.loc.js';
@@ -49,6 +50,8 @@ const props = defineProps<{
   deleteFailure?: ReviewWriteFailure | null;
   /** What the view does with its comments, from their ⋯; none, no ⋯. */
   commentActions?: ReviewCommentActions | null;
+  /** The id of the comment the line cursor is on (D44), while the keys are on the cursor. */
+  currentComment?: string;
 }>();
 
 const emit = defineEmits<{
@@ -73,7 +76,9 @@ const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
 const inDraft = computed(() => props.thread.comments.some(comment => comment.state === 'PENDING'));
 const box = computed(() => props.replies?.box ?? null);
 /** Shown whole: open, or resolved and opened, or replied to, which opens it. */
-const whole = computed(() => !props.thread.isResolved || props.open || box.value !== null);
+const whole = computed(() =>
+  isReviewThreadWhole({ thread: props.thread, open: props.open, replying: box.value !== null }),
+);
 const canToggle = computed(() =>
   props.thread.isResolved ? props.thread.viewerCanUnresolve : props.thread.viewerCanResolve,
 );
@@ -161,6 +166,7 @@ const failureTexts = computed(() => {
           :can-edit="comment.viewerCanUpdate"
           :can-delete="comment.viewerCanDelete"
           :can-quote="thread.viewerCanReply"
+          :current="comment.id === currentComment"
         />
         <template
           v-for="sent in replies?.sent ?? []"

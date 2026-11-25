@@ -1,7 +1,8 @@
-<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. Where the reading cursor's keys work (an item's page, F31), Edit shows `W` and Quote reply `Q`; they act on the card under the cursor, not inside the open menu. -->
+<!-- The entries of a thread card's menu (`Activity / Comment menu`, F15), from its ⋯ or a right click on it: Edit, Quote reply, Copy link, then Delete in red. Edit and Delete only where GitHub says the user may (K1b), Quote reply only where the composer takes a comment; the description has no Delete. Where the reading cursor's keys work (an item's page, F31), or on the comment under code review's cursor (`shortcuts`), Edit shows `W` and Quote reply `Q`; they act on the card under the cursor, not inside the open menu. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Link, Pencil, TextQuote, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import { keyOf } from '@/commands/keyOf.js';
 import { editComment, quoteComment } from '@/commands/definitions/index.js';
@@ -11,12 +12,18 @@ import { useReadingCursorShown } from '@/reading/ReadingCursor.js';
 
 import * as l from './CommentMenu.loc.js';
 
-defineProps<{
-  canEdit: boolean;
-  /** The composer takes a comment: not on a locked conversation or an archived repository. */
-  canQuote: boolean;
-  canDelete?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    canEdit: boolean;
+    /** The composer takes a comment: not on a locked conversation or an archived repository. */
+    canQuote: boolean;
+    canDelete?: boolean;
+    /** Show the keys beside Edit and Quote reply; by default, where a reading cursor is shown. */
+    shortcuts?: boolean;
+  }>(),
+  // Absent is not `false`: the reading cursor decides.
+  { shortcuts: undefined },
+);
 
 const emit = defineEmits<{
   edit: [];
@@ -27,7 +34,9 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-const keys = useReadingCursorShown();
+const cursorShown = useReadingCursorShown();
+
+const keys = computed(() => props.shortcuts ?? cursorShown.value);
 </script>
 
 <template>

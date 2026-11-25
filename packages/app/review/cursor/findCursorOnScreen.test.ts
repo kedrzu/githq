@@ -1,11 +1,14 @@
 import { expect, test } from 'bun:test';
 
+import { createThreadRowSample } from '@/testing/sampleThreads.js';
+
 import type { AnchoredListShownRow, AnchoredListViewport } from '../AnchoredList.vue';
 import { buildFileLineRows, buildReviewRows, estimateReviewRowHeight } from '../buildReviewRows.js';
 import type { ReviewRow } from '../buildReviewRows.js';
 import { computeFileDiff } from '../diff/computeFileDiff.js';
 import type { ReviewFile } from '../ReviewFiles.js';
 import { findCursorOnScreen } from './findCursorOnScreen.js';
+import type { ReviewCommentBox } from './findCursorOnScreen.js';
 import type { ReviewCursor } from './ReviewCursor.js';
 
 const FILE: ReviewFile = {
@@ -24,15 +27,27 @@ test('the first stop wholly under the pinned header, the last wholly above the b
     const shown = layOut(ROWS, 54, 100);
     const viewport: AnchoredListViewport = { height: 100, covered: HEADER, scrolled: 54, remaining: 1000 };
 
-    expect(describe(findCursorOnScreen({ rows: shown, viewport, edge: 'top' }))).toBe('19|19');
-    expect(describe(findCursorOnScreen({ rows: shown, viewport, edge: 'bottom' }))).toBe('20|20');
+    expect(
+        describe(
+            findCursorOnScreen({ isThreadWhole: folded, getCommentBox: noBox, rows: shown, viewport, edge: 'top' }),
+        ),
+    ).toBe('19|19');
+    expect(
+        describe(
+            findCursorOnScreen({ isThreadWhole: folded, getCommentBox: noBox, rows: shown, viewport, edge: 'bottom' }),
+        ),
+    ).toBe('20|20');
 });
 
 test('at the top of the diff the first stop is the one under the header in place, not the header itself', () => {
     const shown = layOut(ROWS, 0, 100);
     const viewport: AnchoredListViewport = { height: 100, covered: HEADER, scrolled: 0, remaining: 1000 };
 
-    expect(describe(findCursorOnScreen({ rows: shown, viewport, edge: 'top' }))).toBe('gap');
+    expect(
+        describe(
+            findCursorOnScreen({ isThreadWhole: folded, getCommentBox: noBox, rows: shown, viewport, edge: 'top' }),
+        ),
+    ).toBe('gap');
 });
 
 test('a stop taller than the screen is the cursor at either edge; with no stop showing, none is', () => {
@@ -40,9 +55,45 @@ test('a stop taller than the screen is the cursor at either edge; with no stop s
     const viewport: AnchoredListViewport = { height: 100, covered: HEADER, scrolled: 0, remaining: 1000 };
     const tall = [{ row: gap!, top: 20, bottom: 300 }];
 
-    expect(findCursorOnScreen({ rows: tall, viewport, edge: 'top' })).toEqual({ key: gap!.key });
-    expect(findCursorOnScreen({ rows: tall, viewport, edge: 'bottom' })).toEqual({ key: gap!.key });
-    expect(findCursorOnScreen({ rows: [{ row: header!, top: 0, bottom: HEADER }], viewport, edge: 'top' })).toBeNull();
+    expect(
+        findCursorOnScreen({ isThreadWhole: folded, getCommentBox: noBox, rows: tall, viewport, edge: 'top' }),
+    ).toEqual({ key: gap!.key });
+    expect(
+        findCursorOnScreen({ isThreadWhole: folded, getCommentBox: noBox, rows: tall, viewport, edge: 'bottom' }),
+    ).toEqual({ key: gap!.key });
+    expect(
+        findCursorOnScreen({
+            isThreadWhole: folded,
+            getCommentBox: noBox,
+            rows: [{ row: header!, top: 0, bottom: HEADER }],
+            viewport,
+            edge: 'top',
+        }),
+    ).toBeNull();
+});
+
+test('a thread shown whole gives the comment wholly under the pinned header, or the last wholly above the bottom', () => {
+    const thread = createThreadRowSample({ kind: 'onLine', inline: 'right' });
+    const viewport: AnchoredListViewport = { height: 100, covered: HEADER, scrolled: 0, remaining: 1000 };
+    // C_1 starts under the pinned header, C_2 goes past the bottom.
+    const boxes: Record<string, ReviewCommentBox> = { C_1: { top: 30, bottom: 80 }, C_2: { top: 80, bottom: 150 } };
+    const shown = { rows: [{ row: thread, top: 20, bottom: 300 }], viewport, isThreadWhole: whole };
+    const getCommentBox = (_key: string, comment: string) => boxes[comment] ?? null;
+
+    expect(findCursorOnScreen({ ...shown, edge: 'top', getCommentBox })).toEqual({ key: thread.key, comment: 'C_2' });
+    expect(findCursorOnScreen({ ...shown, edge: 'bottom', getCommentBox })).toEqual({
+        key: thread.key,
+        comment: 'C_1',
+    });
+    // Not drawn, its comments take the thread's box: the first, or the last.
+    expect(findCursorOnScreen({ ...shown, edge: 'top', getCommentBox: noBox })).toEqual({
+        key: thread.key,
+        comment: 'C_1',
+    });
+    expect(findCursorOnScreen({ ...shown, edge: 'bottom', getCommentBox: noBox })).toEqual({
+        key: thread.key,
+        comment: 'C_2',
+    });
 });
 
 function buildRows() {
@@ -78,4 +129,16 @@ function describe(cursor: ReviewCursor | null) {
     }
 
     return `${row.line.left?.line ?? '-'}|${row.line.right?.line ?? '-'}`;
+}
+
+function folded() {
+    return false;
+}
+
+function whole() {
+    return true;
+}
+
+function noBox() {
+    return null;
 }

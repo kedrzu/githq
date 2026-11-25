@@ -9,6 +9,7 @@ import { computeFileDiff } from '../diff/computeFileDiff.js';
 import type { ReviewFile } from '../ReviewFiles.js';
 import type { ReviewCommentTarget } from '../writing/ReviewWriting.js';
 import { placeThreads } from '../threads/placeThreads.js';
+import type { ReviewThread } from '../threads/ReviewThread.js';
 import { findCursorAfterRows } from './findCursorAfterRows.js';
 import type { ReviewCursor } from './ReviewCursor.js';
 
@@ -25,14 +26,19 @@ test('a cursor whose row is still there stays on it', () => {
     const rows = build();
     const cursor = { key: getReviewThreadKey(A.path, THREAD.id) };
 
-    expect(findCursorAfterRows({ previous: rows, next: build({ layout: 'unified' }), cursor })).toBe(cursor);
+    expect(
+        findCursorAfterRows({ isThreadWhole: folded, previous: rows, next: build({ layout: 'unified' }), cursor }),
+    ).toBe(cursor);
 });
 
 test('a layout switch keeps the cursor on the row of the same line: the newer one, the older on a deleted line alone', () => {
     const split = build();
     const unified = build({ layout: 'unified' });
     const after = (numbers: string) =>
-        describe(unified, findCursorAfterRows({ previous: split, next: unified, cursor: at(split, numbers) }));
+        describe(
+            unified,
+            findCursorAfterRows({ isThreadWhole: folded, previous: split, next: unified, cursor: at(split, numbers) }),
+        );
 
     expect(after('20|20')).toBe('-|20');
     expect(after('-|21')).toBe('-|21');
@@ -44,9 +50,12 @@ test('a whitespace switch keeps the cursor on the row of the same line, now unch
     const shown = build({ layout: 'unified' });
     const hidden = build({ layout: 'unified', ignoreWhitespace: true });
 
-    expect(describe(hidden, findCursorAfterRows({ previous: shown, next: hidden, cursor: at(shown, '-|18') }))).toBe(
-        '18|18',
-    );
+    expect(
+        describe(
+            hidden,
+            findCursorAfterRows({ isThreadWhole: folded, previous: shown, next: hidden, cursor: at(shown, '-|18') }),
+        ),
+    ).toBe('18|18');
 });
 
 test('a gap whose lines come down from its top keeps the cursor while it hides lines; opened whole, the first line out has it', () => {
@@ -55,7 +64,13 @@ test('a gap whose lines come down from its top keeps the cursor while it hides l
     const opened = (expanded: readonly DiffLineRange[]) =>
         describe(
             build({ expanded }),
-            findCursorAfterRows({ previous: closed, next: build({ expanded }), cursor, expanded: 'down' }),
+            findCursorAfterRows({
+                isThreadWhole: folded,
+                previous: closed,
+                next: build({ expanded }),
+                cursor,
+                expanded: 'down',
+            }),
         );
 
     expect(opened([{ start: 33, end: 38 }])).toBe('gap 39');
@@ -66,6 +81,7 @@ test('a gap opened whole from its bottom gives the cursor to the line right abov
     const closed = build();
     const top = gapOf(closed, 1);
     const kept = findCursorAfterRows({
+        isThreadWhole: folded,
         previous: closed,
         next: build({ expanded: [{ start: 5, end: 14 }] }),
         cursor: { key: top.key },
@@ -77,7 +93,13 @@ test('a gap opened whole from its bottom gives the cursor to the line right abov
     expect(
         describe(
             opened,
-            findCursorAfterRows({ previous: closed, next: opened, cursor: { key: top.key }, expanded: 'up' }),
+            findCursorAfterRows({
+                isThreadWhole: folded,
+                previous: closed,
+                next: opened,
+                cursor: { key: top.key },
+                expanded: 'up',
+            }),
         ),
     ).toBe('14|14');
 });
@@ -87,10 +109,22 @@ test("a cursor whose row went goes to its file's header first: collapsed, or not
     const cursor = at(rows, '20|20');
     const header = { key: getReviewHeaderKey(A.path) };
 
-    expect(findCursorAfterRows({ previous: rows, next: build({ a: { kind: 'collapsed' } }), cursor })).toEqual(header);
-    expect(findCursorAfterRows({ previous: rows, next: build({ a: { kind: 'placeholder' } }), cursor })).toEqual(
-        header,
-    );
+    expect(
+        findCursorAfterRows({
+            isThreadWhole: folded,
+            previous: rows,
+            next: build({ a: { kind: 'collapsed' } }),
+            cursor,
+        }),
+    ).toEqual(header);
+    expect(
+        findCursorAfterRows({
+            isThreadWhole: folded,
+            previous: rows,
+            next: build({ a: { kind: 'placeholder' } }),
+            cursor,
+        }),
+    ).toEqual(header);
 });
 
 test('a thread gone gives the cursor to the first stop its file shows, past a comment box at its top', () => {
@@ -100,6 +134,7 @@ test('a thread gone gives the cursor to the first stop its file shows, past a co
         comments: [{ id: 'box', path: A.path, side: 'after', line: 3, startLine: null, threadId: null }],
     });
     const cursor = findCursorAfterRows({
+        isThreadWhole: folded,
         previous: rows,
         next,
         cursor: { key: getReviewThreadKey(A.path, THREAD.id) },
@@ -113,10 +148,30 @@ test('a file gone gives the cursor to the next file; with none left, there is no
     const rows = build();
     const onlyB = buildReviewRows({ files: [B], getContent: () => ({ kind: 'collapsed' }) });
 
-    expect(findCursorAfterRows({ previous: rows, next: onlyB, cursor: at(rows, '20|20') })).toEqual({
+    expect(
+        findCursorAfterRows({ isThreadWhole: folded, previous: rows, next: onlyB, cursor: at(rows, '20|20') }),
+    ).toEqual({
         key: getReviewHeaderKey(B.path),
     });
-    expect(findCursorAfterRows({ previous: rows, next: [], cursor: at(rows, '20|20') })).toBeNull();
+    expect(
+        findCursorAfterRows({ isThreadWhole: folded, previous: rows, next: [], cursor: at(rows, '20|20') }),
+    ).toBeNull();
+});
+
+test('a thread shown whole keeps the cursor object on its comment; with that gone, the next comment left, else the previous', () => {
+    const [c1, c2] = THREAD.comments;
+    const c3 = { ...c2!, id: 'C_3' };
+    const rows = build({ thread: { ...THREAD, comments: [c1!, c2!, c3] } });
+    const key = getReviewThreadKey(A.path, THREAD.id);
+    const on = (comment: string): ReviewCursor => ({ key, comment });
+    const after = (next: readonly ReviewRow[], cursor: ReviewCursor) =>
+        findCursorAfterRows({ isThreadWhole: whole, previous: rows, next, cursor });
+    const cursor = on('C_2');
+
+    expect(after(build({ thread: { ...THREAD, comments: [c1!, c2!, c3] } }), cursor)).toBe(cursor);
+    expect(after(build({ thread: { ...THREAD, comments: [c1!, c3] } }), cursor)).toEqual(on('C_3'));
+    expect(after(build({ thread: { ...THREAD, comments: [c1!] } }), on('C_3'))).toEqual(on('C_1'));
+    expect(findCursorAfterRows({ isThreadWhole: folded, previous: rows, next: rows, cursor })).toEqual({ key });
 });
 
 interface BuildOptions {
@@ -124,6 +179,8 @@ interface BuildOptions {
     readonly ignoreWhitespace?: boolean;
     readonly expanded?: readonly DiffLineRange[];
     readonly threads?: boolean;
+    /** The thread on line 19, {@link THREAD} if not given. */
+    readonly thread?: ReviewThread;
     readonly comments?: readonly ReviewCommentTarget[];
     /** File A's content when not its lines. */
     readonly a?: ReviewFileContent;
@@ -135,6 +192,7 @@ function build({
     ignoreWhitespace = false,
     expanded = [],
     threads = true,
+    thread = THREAD,
     comments = [],
     a,
 }: BuildOptions = {}): ReviewRow[] {
@@ -152,7 +210,7 @@ function build({
                           layout,
                           expanded: file === A ? expanded : [],
                           threads:
-                              file === A && threads ? placeThreads({ kind: 'open', diff, expanded }, [THREAD]) : [],
+                              file === A && threads ? placeThreads({ kind: 'open', diff, expanded }, [thread]) : [],
                           comments: file === A ? comments : [],
                       }),
                   },
@@ -203,4 +261,12 @@ function describe(rows: readonly ReviewRow[], cursor: ReviewCursor | null): stri
 
 function sampleFile(path: string): ReviewFile {
     return { path, previousPath: null, changeType: 'MODIFIED', additions: 2, deletions: 2, viewed: 'UNVIEWED' };
+}
+
+function folded() {
+    return false;
+}
+
+function whole() {
+    return true;
 }

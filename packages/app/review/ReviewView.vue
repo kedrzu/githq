@@ -128,7 +128,6 @@ import ReviewFindBar from './find/ReviewFindBar.vue';
 import { useReviewFind } from './find/useReviewFind.js';
 import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
 import ReviewConversation from './conversation/ReviewConversation.vue';
-import { findCursorOnScreen } from './cursor/findCursorOnScreen.js';
 import type { ReviewCursor } from './cursor/ReviewCursor.js';
 import { groupReviewFiles } from './groupReviewFiles.js';
 import type { ReviewFileGroup } from './groupReviewFiles.js';
@@ -149,6 +148,7 @@ import { countThreads } from './threads/countThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
 import { findLinkedThread, parseThreadAnchor } from './threads/findLinkedThread.js';
+import { isReviewThreadWhole } from './threads/isReviewThreadWhole.js';
 import { useReviewCommentActions } from './threads/useReviewCommentActions.js';
 import { findOpenThreadFrom, findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
@@ -518,6 +518,7 @@ const reviewCursor = useReviewCursor({
   diffColumn,
   order: allPaths,
   isDragging: () => lineRange.value?.dragging === true,
+  isThreadWhole,
   onMove: stopLanding,
 });
 /** Find in the diff's shown lines (D47): a new query lands from the cursor, a step goes to its match's row. */
@@ -1395,17 +1396,15 @@ function findLandingPath() {
  * stop is past it, or while its lines are still on their way, its threads waiting under the header for them.
  */
 function placeLandedCursor() {
-  const exposed = list.value;
-  const top = exposed
-    ? findCursorOnScreen({ rows: exposed.getShownRows(), viewport: exposed.getViewport(), edge: 'top' })
-    : null;
+  const top = reviewCursor.findTop();
   const path = findLandingPath();
   const header = path === null ? -1 : rows.value.findIndex(row => row.key === getReviewHeaderKey(path));
   const waiting = header !== -1 && isFileWaiting(rows.value, header);
   const inFile = top !== null && getReviewRowPath(top.key) === path && !waiting;
-  const key = path === null || inFile ? top?.key : getReviewHeaderKey(path);
-  if (key !== undefined) {
-    reviewCursor.setTo(key);
+  if (path !== null && !inFile) {
+    reviewCursor.setTo(getReviewHeaderKey(path));
+  } else if (top) {
+    reviewCursor.setTo(top.key, top.comment);
   }
 }
 
@@ -2070,9 +2069,15 @@ function findTogglableThread() {
   }
 
   const { thread } = row.placement;
-  const whole =
-    !thread.isResolved || files.value?.isThreadOpen(thread.id) === true || getThreadReplies(row).box !== null;
-  return whole && (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve) ? row : undefined;
+  return isThreadWhole(row) && (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve)
+    ? row
+    : undefined;
+}
+
+/** Shown whole, its comments each a stop of the cursor (D44): by the rule `ReviewThreadBox` shows it by. */
+function isThreadWhole(row: ReviewThreadRow) {
+  const { thread } = row.placement;
+  return isReviewThreadWhole({ thread, open: isThreadOpen(thread.id), replying: getThreadReplies(row).box !== null });
 }
 
 /** Its box under it: on its own lines, a resolved one opened to be read. */
@@ -2441,6 +2446,7 @@ function readAgain() {
                   :pushed="pushed"
                   :pinned="pinned"
                   :cursor="!pinned && cursor?.key === row.key"
+                  :cursor-comment="!pinned && cursor?.key === row.key ? cursor.comment : undefined"
                   :quiet="keysInField"
                   :current="getReviewRowPath(row.key) === currentPath"
                   :toward-gap="getGapToward"
