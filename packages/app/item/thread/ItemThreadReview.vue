@@ -240,8 +240,6 @@ function toggle(threadId: string, open: boolean) {
 }
 
 .itemThreadReview_text {
-  --github-html-font-size: #{$font-size-reading};
-  --github-html-line-height: #{$line-height-reading};
   --github-html-color: #{$color-fg};
 }
 </style>

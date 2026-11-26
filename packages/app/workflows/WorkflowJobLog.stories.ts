@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { h, ref, shallowRef } from 'vue';
 
 import Button from '@/components/Button.vue';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 
 import { parseJobLog } from './utils/parseJobLog.js';
 import WorkflowJobLog from './WorkflowJobLog.vue';
@@ -112,6 +113,56 @@ export const LongLines: Story = {
             ).concat('##[error]Process completed with exit code 1.'),
         }),
     ),
+};
+
+/**
+ * The Code role changing as the log is read, as Settings › Display changes it: "Larger code" is 14px on a 26px line, which
+ * the shell would set on the page and the story sets on the log's box.
+ */
+export const CodeTypographyChanging: Story = {
+    render: () => ({
+        setup: () => {
+            const view = viewOf(
+                STEPS,
+                sections({
+                    3: Array.from(
+                        { length: 300 },
+                        (_, index) =>
+                            `${index} at Object.logger (node_modules/rollup/dist/es/shared/node-entry.js:22641:9) ${'long '.repeat(index % 30)}`,
+                    ).concat('##[error]Process completed with exit code 1.'),
+                }),
+            );
+            const larger = { ...PHONE_TYPOGRAPHY.code, size: 14, lineHeight: 26 };
+            const code = shallowRef(PHONE_TYPOGRAPHY.code);
+            return () =>
+                h(
+                    'div',
+                    {
+                        style: {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            flex: 1,
+                            minWidth: 0,
+                            '--font-size-code': `${code.value.size}px`,
+                            '--line-height-code': `${code.value.lineHeight}px`,
+                        },
+                    },
+                    [
+                        h(
+                            Button,
+                            {
+                                variant: 'secondary',
+                                size: 'sm',
+                                tid: 'workflow-log-larger-code',
+                                onClick: () => (code.value = code.value === larger ? PHONE_TYPOGRAPHY.code : larger),
+                            },
+                            () => 'Larger code',
+                        ),
+                        h(WorkflowJobLog, { ...view, codeTypography: code.value }),
+                    ],
+                );
+        },
+    }),
 };
 
 /** Lines that wrap much taller than their length says, words filling each screen line only half way; the error last. */
@@ -348,6 +399,8 @@ function viewOf(steps: readonly GitHubWorkflowStep[], lines: readonly string[], 
         runId: 4821,
         size: `${lines.length} lines · 176 KB`,
         address: null,
+        // What the styles fall back to, which a story draws in: no shell sets the custom properties.
+        codeTypography: PHONE_TYPOGRAPHY.code,
     };
 }
 

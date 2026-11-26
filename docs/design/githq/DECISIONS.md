@@ -1082,6 +1082,20 @@ points, so they don't change.
 
 ## Open questions
 
+### D49
+
+**Text reads in three roles the user sets in Settings › Display: Reading, Code and Interface.** (owner, 2026-11-26.) Drawn in
+`githq.pen`, T28–T30. Reading is what people wrote (descriptions, comments, review threads, the editor), Code is diffs, code in
+comments and job logs, Interface is everything else. Each role takes a font from a short list of self-hosted reading fonts
+(Monaspace among the code ones); Reading and Code also take a size and a line height, Code's in whole pixels. Presets set both
+sizes at once: Compact 13 / 1.5 and 12 / 18 px, Default 14 / 1.5 and 12 / 20 px (GitHub's sizes), Spaced 15 / 1.65 and
+13 / 22 px; a value changed by hand makes it Custom, and a preset drops the hand-made values but keeps the fonts. The job log
+runs 2 px denser than the diff. Interface monospace (SHAs, keys) follows the Code font at its own size. Saved in
+`settings.json`, applied only in the desktop layout; the phone keeps its fixed type.
+
+**Rejected.** Scaling the interface's sizes: its rows have fixed heights across the app. A setting per screen: too many
+knobs; sizes beside a role's text follow its base instead. Presets only: the owner wanted each value adjustable.
+
 ### D26
 
 Settings is **a column of sections** rather than tabs along the top (owner,

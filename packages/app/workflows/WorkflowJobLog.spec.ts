@@ -3,11 +3,13 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 
 import { MAX_SHOWN_CHARACTERS } from './utils/getLogLineParts.js';
 import * as stories from './WorkflowJobLog.stories.js';
 
 const {
+    CodeTypographyChanging,
     Failed,
     FoldedAbove,
     Hostile,
@@ -28,7 +30,9 @@ const {
     TallAtTheEnd,
 } = composeStories(stories);
 
-/** A 100,000-line log may still only ever have what is in view: 500 / 18 rows and a little overscan. */
+/** A log line's height in the stories: the Code line height the styles fall back to, less 2. */
+const LINE_HEIGHT = PHONE_TYPOGRAPHY.code.lineHeight - 2;
+/** A 100,000-line log may still only ever have what is in view: 500 / LINE_HEIGHT rows and a little overscan. */
 const DOM_ROW_CAP = 70;
 /** The test's frame is narrower than the story: the middle of a row, where a click goes by default, is outside it. */
 const IN_THE_TEST_FRAME = { x: 40, y: 9 };
@@ -193,7 +197,7 @@ test('G/⇧G go to the top and the end; D/U go half a page', async () => {
     await settled();
     await userEvent.keyboard('d');
     await settled();
-    const halfPage = Math.floor(log().clientHeight / 2 / 18);
+    const halfPage = Math.floor(log().clientHeight / 2 / LINE_HEIGHT);
     expect(Number(cursorNumber())).toBeGreaterThanOrEqual(halfPage - 2);
     const down = log().scrollTop;
     expect(down).toBeGreaterThan(0);
@@ -240,14 +244,14 @@ test('W and T persist between logs and sessions, off by default; wrapped lines h
     await settled();
     await expect.element(page.getByTestId('workflow-log-wrap')).toHaveAttribute('aria-pressed', 'false');
     const text = () => lines().find(line => line.textContent?.includes('much more besides'));
-    expect(text()?.getBoundingClientRect().height).toBe(18);
+    expect(text()?.getBoundingClientRect().height).toBe(LINE_HEIGHT);
     expect(log().scrollWidth).toBeGreaterThan(log().clientWidth);
 
     await userEvent.keyboard('w');
     await settled();
     await settled();
     expect(localStorage.getItem('githq.logWrap')).toBe('true');
-    const wrapped = lines().filter(line => line.getBoundingClientRect().height > 18);
+    const wrapped = lines().filter(line => line.getBoundingClientRect().height > LINE_HEIGHT);
     expect(wrapped.length).toBeGreaterThan(0);
     expect(log().scrollWidth).toBe(log().clientWidth);
     const body = wrapped[0]?.lastElementChild;
@@ -428,7 +432,7 @@ test('a line of a million characters is cut, saying how much, and stays quick wr
     await userEvent.keyboard('w');
     await settled();
     await settled();
-    expect(longest()?.getBoundingClientRect().height).toBeGreaterThan(18);
+    expect(longest()?.getBoundingClientRect().height).toBeGreaterThan(LINE_HEIGHT);
     expect(performance.now() - started).toBeLessThan(3000);
 });
 
@@ -477,7 +481,7 @@ test('a selection’s start stays in the DOM as the view moves away from it', as
     first.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     await settled();
 
-    log().scrollTop += 18 * 500;
+    log().scrollTop += LINE_HEIGHT * 500;
     await settled();
     expect(first.isConnected).toBe(true);
     expect(lines().find(line => line.firstElementChild?.textContent === number)).toBe(first);
@@ -523,6 +527,39 @@ test('the list is labelled, and takes the keyboard to scroll', async () => {
     expect(log().getAttribute('tabindex')).toBe('0');
 });
 
+test('a change of the Code role sizes the lines anew, the top line holding; the end, the start and long lines stay in reach', async () => {
+    await CodeTypographyChanging.run();
+    await settled();
+    log().scrollTop = 40 * LINE_HEIGHT;
+    await settled();
+    const topNumber = () =>
+        lines().find(line => line.getBoundingClientRect().bottom > log().getBoundingClientRect().top)?.firstElementChild
+            ?.firstElementChild?.textContent;
+    const before = topNumber();
+
+    await userEvent.click(page.getByTestId('workflow-log-larger-code'), { position: IN_THE_TEST_FRAME });
+    await settled();
+    await settled();
+
+    // The Code line height less 2, as the styles draw it, and the line on top of the view still there.
+    expect(lines().every(line => line.getBoundingClientRect().height === 24)).toBe(true);
+    expect(topNumber()).toBe(before);
+    // Each line's row is as wide as its text in the larger characters: none runs past it.
+    expect(lines().every(line => line.scrollWidth <= line.clientWidth)).toBe(true);
+
+    log().focus();
+    await userEvent.keyboard('{Shift>}g{/Shift}');
+    await settled();
+    expect(cursorText()).toContain('exit code 1');
+    expect(inView(cursorLine())).toBe(true);
+    expect(Math.ceil(log().scrollTop + log().clientHeight)).toBeGreaterThanOrEqual(log().scrollHeight);
+
+    await userEvent.keyboard('g');
+    await settled();
+    expect(inView(cursorLine())).toBe(true);
+    expect(log().scrollTop).toBe(0);
+});
+
 test('⇧G reaches the end even where wrapped lines come out taller than estimated', async () => {
     await TallAtTheEnd.run();
     await settled();
@@ -554,7 +591,7 @@ test('a 200 on the jobs’ poll keeps a selection’s start in the DOM: the rows
     window.getSelection()?.selectAllChildren(first.lastElementChild);
     first.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     await settled();
-    log().scrollTop += 18 * 500;
+    log().scrollTop += LINE_HEIGHT * 500;
     await settled();
     expect(first.isConnected).toBe(true);
 
@@ -574,7 +611,7 @@ test('“… N more characters” opens the rest of its line by a click, wrapped
     const more = page.getByTestId('workflow-log-more');
     await expect.element(more).toHaveTextContent('990000 more characters');
     const before = long()?.getBoundingClientRect().height;
-    expect(before).toBe(18);
+    expect(before).toBe(LINE_HEIGHT);
     // Held in view, not 72,000 pixels off to the side.
     expect(more.element().getBoundingClientRect().right).toBeLessThanOrEqual(log().getBoundingClientRect().right);
 
@@ -1166,7 +1203,7 @@ test('W4c: a click on the map in a step left out lands on the nearest row that s
     const map = page.getByTestId('workflow-log-map');
 
     // A log shorter than the view takes the height of its lines on the map: this is line 5, the middle step's first.
-    await userEvent.click(map, { position: { x: 5, y: 4.5 * 18 } });
+    await userEvent.click(map, { position: { x: 5, y: 4.5 * LINE_HEIGHT } });
     await settled();
     expect(cursorGap()?.textContent).toContain('1 line');
     await userEvent.keyboard(' ');
@@ -1183,8 +1220,8 @@ test('W4c: the sticky head gives way to the next head, past a step left out betw
     await OnlyMatchesLeftOutBetween.run();
     await settled();
     await settled();
-    // Where a head of 26 and 60 lines of 18 put the next head, a little above the bottom of the view.
-    log().scrollTop = 26 + 60 * 18 - 100;
+    // Where a head of 26 and 60 lines of LINE_HEIGHT put the next head, a little above the bottom of the view.
+    log().scrollTop = 26 + 60 * LINE_HEIGHT - 100;
     await settled();
 
     const head = headOf('Post Checkout');

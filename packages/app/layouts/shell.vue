@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the place the screen is in (`getOpenPlace`), its row current in the sidebar — and under any tracked place tapped open in the phone's places panel its sections with their tabs' counts or its saved views (`getSidebarChildren`; whether a place has any, `expandable`, told without working them out), sliding open while the animations are on and no reduced motion is asked for —, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu, and is dragged into the user's order there (`TrackingStore.move`, D44); the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the place the screen is in (`getOpenPlace`), its row current in the sidebar — and under any tracked place tapped open in the phone's places panel its sections with their tabs' counts or its saved views (`getSidebarChildren`; whether a place has any, `expandable`, told without working them out), sliding open while the animations are on and no reduced motion is asked for —, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and of an issue just created, with Create another and Open (mobile D44), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin) and, outside the phone layout, the typography the settings choose (the custom properties the type tokens read, `TypographyStore`). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane; a workflow's `?pane=workflow&workflow=owner|name|deploy.yml`, a workflow's run's `?pane=run&run=owner|name|123`, one instance per run) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu, and is dragged into the user's order there (`TrackingStore.move`, D44); the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. In the phone layout (`PhoneLayout`, mobile D5) the shell is the phone's — its top bar on a screen that draws none of its own (`meta.ownTopBar`), the places panel — and the command line floats over the screen (mobile D17): on an item's page the comment box's pill, showing the item's draft when there is one (`CommentDrafts`), which grows into the item's composer docked above the keyboard with the cursor in it (`ItemNavigation.requestComment`, mobile D51), and ⌘; elsewhere ⌘ with the part the list shows (`PhoneLayout.part`), opening the command menu with the place's parts first — while the list is selecting several, with how many, opening it on them (mobile D28); either opens the command menu. The toasts then sit above it. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -85,6 +85,7 @@ import {
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { TypographyStore } from '@/typography/TypographyStore.js';
 import type { TrackedProject, TrackedTarget } from '@/tracking/TrackingTypes.js';
 import TrackFailedToast from '@/tracking/TrackFailedToast.vue';
 import UntrackToast from '@/tracking/UntrackToast.vue';
@@ -160,6 +161,7 @@ const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
 const pullRequestCommands = useService(PullRequestCommands);
 const phone = useService(PhoneLayout);
+const typography = useService(TypographyStore);
 const projectStore = useService(ProjectStore);
 const listViewOptions = useService(ListViewOptionsStore);
 const router = useRouter();
@@ -175,6 +177,33 @@ watchEffect(onCleanup => {
     root.dataset.motion = 'on';
     onCleanup(() => delete root.dataset.motion);
   }
+});
+
+// The typography the settings choose, as the custom properties the type tokens read (`styles/tokens.scss`); leaving the
+// shell takes them away. The phone layout sets none: its styles fall back to the values it always draws with.
+watchEffect(onCleanup => {
+  if (phone.active) {
+    return;
+  }
+  const { applied } = typography;
+  const properties: Record<string, string> = {
+    '--font-family-interface': applied.interface.font.stack,
+    '--font-family-reading': applied.reading.font.stack,
+    '--font-family-code': applied.code.font.stack,
+    '--font-size-reading': `${applied.reading.size}px`,
+    '--line-height-reading': `${applied.reading.lineHeight}`,
+    '--font-size-code': `${applied.code.size}px`,
+    '--line-height-code': `${applied.code.lineHeight}px`,
+  };
+  const { style } = document.documentElement;
+  for (const [name, value] of Object.entries(properties)) {
+    style.setProperty(name, value);
+  }
+  onCleanup(() => {
+    for (const name of Object.keys(properties)) {
+      style.removeProperty(name);
+    }
+  });
 });
 
 // The places panel's rows under a place slide open by script (`Reveal`), which the `motion` mixin can't hold back: they ask

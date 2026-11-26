@@ -1,4 +1,4 @@
-<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. Search (W4b, W4c): / or ⌘F opens the bar in the toolbar's place, ⌘F because the browser's own find can't see lines not drawn. It searches the whole job in memory, folded steps included, and what a marked line is drawn with (`findLogMatches`), a moment after the typing stops; landing on a match opens its step, shows its line past the cut if that is where it is, and brings it into view. Enter or N next, ⇧N previous, wrapping around. Tab shows only the matching lines (`buildLogDocument`'s `only`): Space opens a gap in place, Enter returns to the full log at the line, in the search's field too, and a key that would land in a step left out lands on the nearest row that shows. Esc closes and returns to where the view was, unless Enter from only the matches chose a line. The parent keeps the query as the job changes. -->
+<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Lines are in the Code role's font and size, 2px tighter than its line height (`codeTypography`), sized anew as it changes or its font comes in, holding what you look at. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. Search (W4b, W4c): / or ⌘F opens the bar in the toolbar's place, ⌘F because the browser's own find can't see lines not drawn. It searches the whole job in memory, folded steps included, and what a marked line is drawn with (`findLogMatches`), a moment after the typing stops; landing on a match opens its step, shows its line past the cut if that is where it is, and brings it into view. Enter or N next, ⇧N previous, wrapping around. Tab shows only the matching lines (`buildLogDocument`'s `only`): Space opens a gap in place, Enter returns to the full log at the line, in the search's field too, and a key that would land in a step left out lands on the nearest row that shows. Esc closes and returns to where the view was, unless Enter from only the matches chose a line. The parent keeps the query as the job changes. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -28,6 +28,8 @@ import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
+import type { TypographyRoleValues } from '@/typography/readTypography.js';
+import type { CodeFontId } from '@/typography/typographyCatalog.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
@@ -72,6 +74,11 @@ const props = defineProps<{
   size: string;
   /** The line the address names: the cursor goes there, now and whenever it changes. */
   address: LogLineAddress | null;
+  /**
+   * The Code role as drawn (`TypographyStore.applied.code`): a line is its font and size, its line height less
+   * {@link LINE_TIGHTENING}; a change re-measures the lines, holding what you look at.
+   */
+  codeTypography: TypographyRoleValues<CodeFontId>;
 }>();
 
 const emit = defineEmits<{
@@ -116,7 +123,8 @@ interface LogPlace {
 const LOG_PLACE = { place: 'jobLog', section: 'view' } as const;
 /** The keys that move the log's cursor or act on its line: not from what Tab focused outside the log. */
 const ROW_KEYS = { ...LOG_PLACE, actsOnRow: true } as const;
-const LINE_HEIGHT = 18;
+/** How much tighter than the Code role's line height a log line is, than a diff's, so more of a long log fits. */
+const LINE_TIGHTENING = 2;
 const STEP_HEIGHT = 26;
 const GAP_HEIGHT = 24;
 /** How long the typing stops for before a search runs: a pass over 100,000 lines is too much for every key. */
@@ -127,9 +135,8 @@ const NUMBER_WIDTH = 66;
 /** The line's time and the gap after it. */
 const TIME_WIDTH = 70;
 const TEXT_END_PADDING = 12;
-/** JetBrains Mono at 12px, until it is measured. */
-const DEFAULT_CHARACTER_WIDTH = 7.2;
-const MONO_FONT = '12px "JetBrains Mono", ui-monospace, monospace';
+/** A character in ems where a canvas can't measure one: JetBrains Mono's advance. */
+const DEFAULT_CHARACTER_EMS = 0.6;
 const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 const TIME_FORMAT = new Intl.DateTimeFormat(APP_LANGUAGE, {
   hour: '2-digit',
@@ -160,7 +167,11 @@ const cursor = ref(opening.cursor);
 const folded = shallowRef(opening.folded);
 /** Lines whose height differs from the estimate, by index: a wrapped line once seen. */
 const measured = shallowRef(new Map<number, number>());
-const characterWidth = ref(DEFAULT_CHARACTER_WIDTH);
+/** The Code role's font as a canvas takes it. */
+const codeFont = computed(() => `${props.codeTypography.size}px ${props.codeTypography.font.stack}`);
+/** Changed only inside `keepInPlace`, with what depends on them: the view stays on what it shows. */
+const characterWidth = ref(measureCharacterWidth());
+const lineHeight = ref(getLineHeight());
 const pinnedRow = ref<number | null>(null);
 /** The lines shown past the cut, by index. */
 const wholeLines = shallowRef(new Set<number>());
@@ -255,7 +266,7 @@ const stickyOffset = computed(() => {
 });
 // The map shows the whole log, in lines by their numbers: what is folded keeps its place on it. A log shorter than the
 // view takes the height of its lines, not the map's whole.
-const mapTotal = computed(() => Math.max(props.log.lines.at(-1)?.number ?? 0, view.viewportHeight / LINE_HEIGHT));
+const mapTotal = computed(() => Math.max(props.log.lines.at(-1)?.number ?? 0, view.viewportHeight / lineHeight.value));
 const mapViewTop = computed(() => getMapPlace(view.scrollTop));
 const mapViewBottom = computed(() => getMapPlace(view.scrollTop + view.viewportHeight));
 // Where one step gives way to the next: nothing above the log's first line.
@@ -420,7 +431,7 @@ watch(
   },
 );
 // What shows is laid out by now; a wrapped line says how high it really is.
-watch([shownRows, wrap, () => view.viewportWidth], measureRows, { flush: 'post' });
+watch([shownRows, wrap, () => view.viewportWidth, lineHeight, characterWidth], measureRows, { flush: 'post' });
 // Within the change, so that `keepInPlace` around it sees the heights before and after.
 watch(() => view.viewportWidth, forgetMeasured, { flush: 'sync' });
 watch(
@@ -431,10 +442,14 @@ watch(
   },
   { flush: 'sync' },
 );
+watch([codeFont, () => props.codeTypography.lineHeight], () => {
+  applyCodeTypography();
+  void loadCodeFont();
+});
 
 onWindowEvent('mouseup', stopSelecting);
 onMounted(() => {
-  characterWidth.value = measureCharacterWidth();
+  void loadCodeFont();
   if (cursorRow.value !== null) {
     view.reveal(cursorRow.value, 'context');
   }
@@ -462,6 +477,34 @@ function forgetMeasured() {
   measured.value = new Map();
 }
 
+/** The Code role's font, size or line height changed, or its font came in: the lines are sized and wrapped anew. */
+function applyCodeTypography() {
+  const width = measureCharacterWidth();
+  const height = getLineHeight();
+  if (width === characterWidth.value && height === lineHeight.value) {
+    return;
+  }
+
+  view.keepInPlace(() => {
+    characterWidth.value = width;
+    lineHeight.value = height;
+    forgetMeasured();
+  });
+}
+
+/** A font still on its way is measured as its fallback: measured again once it is in, if it is still the one. */
+async function loadCodeFont() {
+  const font = codeFont.value;
+  await window.document.fonts.load(font);
+  if (codeFont.value === font) {
+    applyCodeTypography();
+  }
+}
+
+function getLineHeight() {
+  return props.codeTypography.lineHeight - LINE_TIGHTENING;
+}
+
 function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap<number, number>) {
   switch (entry.kind) {
     case 'step':
@@ -473,7 +516,7 @@ function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap
     case 'line': {
       const whole = wholeLines.value.has(entry.index);
       if (!wrap.value && !whole) {
-        return LINE_HEIGHT;
+        return lineHeight.value;
       }
 
       const height = known.get(entry.index);
@@ -483,7 +526,7 @@ function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap
 
       const length = getShownLength(entry.line);
       const characters = whole ? length : Math.min(length, MAX_SHOWN_CHARACTERS);
-      return Math.max(1, Math.ceil(characters / perLine)) * LINE_HEIGHT;
+      return Math.max(1, Math.ceil(characters / perLine)) * lineHeight.value;
     }
     default:
       return assertNever(entry);
@@ -994,10 +1037,10 @@ function measureRows() {
 function measureCharacterWidth() {
   const context = window.document.createElement('canvas').getContext('2d');
   if (!context) {
-    return DEFAULT_CHARACTER_WIDTH;
+    return props.codeTypography.size * DEFAULT_CHARACTER_EMS;
   }
 
-  context.font = MONO_FONT;
+  context.font = codeFont.value;
   return context.measureText('M').width;
 }
 </script>
@@ -1239,6 +1282,9 @@ function measureCharacterWidth() {
 </template>
 
 <style lang="scss" module="css">
+// A log line: the Code role's line height, 2px tighter than a diff's, so more of a long log fits (`LINE_TIGHTENING`).
+$job-log-line-height: calc(#{$line-height-code} - 2px);
+
 .workflowJobLog {
   display: flex;
   flex: 1;
@@ -1287,8 +1333,8 @@ function measureCharacterWidth() {
   min-width: 100%;
   margin: 0;
   font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  line-height: 18px;
+  font-size: $font-size-code;
+  line-height: $job-log-line-height;
   color: $color-fg-2;
   list-style: none;
   padding-inline: 0;
@@ -1304,7 +1350,7 @@ function measureCharacterWidth() {
 .workflowJobLog_line {
   display: flex;
   min-width: 100%;
-  height: 18px;
+  height: $job-log-line-height;
   background: $color-bg;
 }
 
@@ -1314,12 +1360,12 @@ function measureCharacterWidth() {
 
 .workflowJobLog_list_wrapped .workflowJobLog_line {
   height: auto;
-  min-height: 18px;
+  min-height: $job-log-line-height;
 }
 
 .workflowJobLog_line_whole {
   height: auto;
-  min-height: 18px;
+  min-height: $job-log-line-height;
 }
 
 .workflowJobLog_line_error {
@@ -1370,7 +1416,7 @@ function measureCharacterWidth() {
   left: 0;
   display: flex;
   flex: none;
-  font-size: $font-size-2xs;
+  font-size: $font-size-code-small;
   color: $color-fg-dim;
   user-select: none;
   background: inherit;
@@ -1482,7 +1528,7 @@ function measureCharacterWidth() {
   display: inline-flex;
   gap: $spacing-6;
   align-items: center;
-  height: 18px;
+  height: $job-log-line-height;
   padding: 0 $spacing-6;
   font: inherit;
   color: $color-fg-dim;
@@ -1500,7 +1546,7 @@ function measureCharacterWidth() {
 // `isolate`: what the character does to the direction of text ends at the end of this element, which it is alone in.
 .workflowJobLog_control {
   padding-inline: $spacing-2;
-  font-size: $font-size-2xs;
+  font-size: $font-size-code-small;
   color: $color-fg-dim;
   background: $color-bg-3;
   border-radius: $radius-sm;

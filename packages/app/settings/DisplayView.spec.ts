@@ -6,7 +6,7 @@ import { matchText } from '@/testing/matchText.js';
 
 import * as stories from './DisplayView.stories.js';
 
-const { AnimationsOff } = composeStories(stories);
+const { AnimationsOff, AnimationsOn, Phone } = composeStories(stories);
 
 test('the animations switch is named, described by its text, shows the model and flips on click and Space', async () => {
     const onUpdate = vi.fn();
@@ -37,4 +37,20 @@ test('Display offers no choice of a layout: the Animations switch is its one con
     expect(page.getByRole('radio').elements()).toHaveLength(0);
     expect(page.getByRole('switch').elements()).toHaveLength(1);
     expect(page.getByRole('combobox').elements()).toHaveLength(0);
+});
+
+test('the computer shows the typography above Animations', async () => {
+    await AnimationsOn.run();
+
+    await expect.element(page.getByRole('region', { name: 'Typography' })).toBeVisible();
+    await expect.element(page.getByRole('group', { name: 'Preset' })).toBeVisible();
+});
+
+test('in the phone layout Display shows no typography controls, only the Animations switch', async () => {
+    await Phone.run();
+
+    await expect.element(page.getByRole('switch', { name: 'Animations' })).toBeVisible();
+    expect(page.getByRole('region', { name: 'Typography' }).elements()).toHaveLength(0);
+    expect(page.getByRole('group', { name: 'Preset' }).elements()).toHaveLength(0);
+    expect(page.getByRole('button').elements()).toHaveLength(0);
 });

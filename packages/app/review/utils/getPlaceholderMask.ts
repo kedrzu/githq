@@ -26,9 +26,13 @@ export interface PlaceholderParams {
     readonly rows: number;
 }
 
-/** A placeholder in a layout. */
+/** A placeholder in a layout, in the Code role's size and line height (`TypographyStore`), as its rows are drawn. */
 export interface PlaceholderMaskParams extends PlaceholderParams {
     readonly layout: DiffLayout;
+    /** In pixels: a character of code is 0.6 of it. */
+    readonly codeSize: number;
+    /** In pixels: a row's height. */
+    readonly codeLineHeight: number;
 }
 
 /** What a line of a patch is drawn in (D45): the tint of an added or a deleted line, `null` for a grey bar. */
@@ -96,10 +100,15 @@ interface PlaceholderLine {
     readonly bar: PlaceholderBar | null;
 }
 
-/** Code is JetBrains Mono at 12 px: 0.6 em a character. */
-const CHAR_WIDTH = 7.2;
+/** What the bars of a mask are laid out by, in pixels. */
+interface BarMetrics {
+    readonly charWidth: number;
+    readonly lineHeight: number;
+}
+
+/** A character of code in ems: JetBrains Mono's advance, which the other code fonts are close to. */
+const CHAR_EMS = 0.6;
 const INDENT_CHARS = 2;
-const LINE_HEIGHT = 20;
 const BAR_HEIGHT = 8;
 /**
  * Where code starts: unified after both line numbers, the comment button's gutter and the sign, split after the number
@@ -126,16 +135,24 @@ const maskCache = new Map<string, string>();
  * same lines show every time and in either layout.
  */
 export function getPlaceholderMask(params: PlaceholderMaskParams): string {
-    const key = [params.path, getSides(params.changeType), params.layout, params.rows].join('\u0000');
+    const key = [
+        params.path,
+        getSides(params.changeType),
+        params.layout,
+        params.rows,
+        params.codeSize,
+        params.codeLineHeight,
+    ].join('\u0000');
     const cached = maskCache.get(key);
     if (cached !== undefined) {
         return cached;
     }
 
+    const metrics: BarMetrics = { charWidth: params.codeSize * CHAR_EMS, lineHeight: params.codeLineHeight };
     const svg =
         params.layout === 'split'
-            ? drawSplit(buildSplitPlaceholder(params))
-            : drawUnified(buildUnifiedPlaceholder(params));
+            ? drawSplit(buildSplitPlaceholder(params), metrics)
+            : drawUnified(buildUnifiedPlaceholder(params), metrics);
     const mask = `url("data:image/svg+xml,${svg.replace(/[<>%#]/g, encodeURIComponent)}")`;
 
     for (const oldest of maskCache.keys()) {
@@ -374,32 +391,34 @@ function createBarSource(random: () => number) {
     }
 }
 
-function drawUnified(bars: readonly (PlaceholderBar | null)[]) {
-    return wrapSvg(drawBars(bars, UNIFIED_CODE_X));
+function drawUnified(bars: readonly (PlaceholderBar | null)[], metrics: BarMetrics) {
+    return wrapSvg(drawBars(bars, UNIFIED_CODE_X, metrics));
 }
 
 /** Each half its own viewport, so a long bar ends at its column's edge. */
-function drawSplit(rows: readonly PlaceholderSplitRow[]) {
+function drawSplit(rows: readonly PlaceholderSplitRow[], metrics: BarMetrics) {
     const before = drawBars(
         rows.map(row => row.before),
         SPLIT_CODE_X,
+        metrics,
     );
     const after = drawBars(
         rows.map(row => row.after),
         SPLIT_AFTER_CODE_X,
+        metrics,
     );
     return wrapSvg(
         `<svg width='50%' height='100%'>${before}</svg><svg x='50%' width='50%' height='100%'>${after}</svg>`,
     );
 }
 
-function drawBars(bars: readonly (PlaceholderBar | null)[], codeX: number) {
+function drawBars(bars: readonly (PlaceholderBar | null)[], codeX: number, { charWidth, lineHeight }: BarMetrics) {
     let result = '';
-    const top = (LINE_HEIGHT - BAR_HEIGHT) / 2;
+    const top = (lineHeight - BAR_HEIGHT) / 2;
     for (const [index, bar] of bars.entries()) {
         if (bar) {
-            const x = codeX + bar.indent * INDENT_CHARS * CHAR_WIDTH;
-            result += `<rect x='${round(x)}' y='${index * LINE_HEIGHT + top}' width='${round(bar.length * CHAR_WIDTH)}' height='${BAR_HEIGHT}' rx='2'/>`;
+            const x = codeX + bar.indent * INDENT_CHARS * charWidth;
+            result += `<rect x='${round(x)}' y='${index * lineHeight + top}' width='${round(bar.length * charWidth)}' height='${BAR_HEIGHT}' rx='2'/>`;
         }
     }
     return result;

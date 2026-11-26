@@ -6590,9 +6590,9 @@
                                   "textGrowth": "fixed-width",
                                   "width": "fill_container",
                                   "content": "Recurring classes created before the DST change render one hour late in the week view. One-off classes are fine. Repro: weekly class on Oct 20, switch to Nov 3.",
-                                  "lineHeight": 1.6,
+                                  "lineHeight": 1.5,
                                   "fontFamily": "$font",
-                                  "fontSize": 13.5,
+                                  "fontSize": 14,
                                   "fontWeight": "normal"
                                 },
                                 {
@@ -6604,9 +6604,9 @@
                                   "enabled": false,
                                   "fill": "$fg",
                                   "content": "What changes",
-                                  "lineHeight": 1.6,
+                                  "lineHeight": 1.5,
                                   "fontFamily": "$font",
-                                  "fontSize": 14,
+                                  "fontSize": 15,
                                   "fontWeight": "600"
                                 },
                                 {
@@ -6639,9 +6639,9 @@
                                           "name": "Bullet",
                                           "fill": "$fg-3",
                                           "content": "•",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         },
                                         {
@@ -6652,9 +6652,9 @@
                                           "textGrowth": "fixed-width",
                                           "width": "fill_container",
                                           "content": "Issues and pull requests are read from one IndexedDB store before the network answers.",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         }
                                       ]
@@ -6678,9 +6678,9 @@
                                           "name": "Bullet",
                                           "fill": "$fg-3",
                                           "content": "•",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         },
                                         {
@@ -6691,9 +6691,9 @@
                                           "textGrowth": "fixed-width",
                                           "width": "fill_container",
                                           "content": "The store upgrades in place: pull requests are migrated, not cleared.",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         }
                                       ]
@@ -6717,9 +6717,9 @@
                                           "name": "Bullet",
                                           "fill": "$fg-3",
                                           "content": "•",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         },
                                         {
@@ -6730,9 +6730,9 @@
                                           "textGrowth": "fixed-width",
                                           "width": "fill_container",
                                           "content": "A blocked upgrade in another tab is retried instead of failing.",
-                                          "lineHeight": 1.6,
+                                          "lineHeight": 1.5,
                                           "fontFamily": "$font",
-                                          "fontSize": 13.5,
+                                          "fontSize": 14,
                                           "fontWeight": "normal"
                                         }
                                       ]
@@ -6755,9 +6755,9 @@
                                       "name": "Label",
                                       "fill": "$fg-2",
                                       "content": "Closes",
-                                      "lineHeight": 1.6,
+                                      "lineHeight": 1.5,
                                       "fontFamily": "$font",
-                                      "fontSize": 13.5,
+                                      "fontSize": 14,
                                       "fontWeight": "normal"
                                     },
                                     {
@@ -6766,9 +6766,9 @@
                                       "name": "Ref",
                                       "fill": "$accent",
                                       "content": "#1188",
-                                      "lineHeight": 1.6,
+                                      "lineHeight": 1.5,
                                       "fontFamily": "$font",
-                                      "fontSize": 13.5,
+                                      "fontSize": 14,
                                       "fontWeight": "normal"
                                     },
                                     {
@@ -6777,9 +6777,9 @@
                                       "name": "Rest",
                                       "fill": "$fg-2",
                                       "content": "· tested on Chrome and Safari",
-                                      "lineHeight": 1.6,
+                                      "lineHeight": 1.5,
                                       "fontFamily": "$font",
-                                      "fontSize": 13.5,
+                                      "fontSize": 14,
                                       "fontWeight": "normal"
                                     }
                                   ]
@@ -47308,9 +47308,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "Good catch. I'd also add a retry around the upgrade so a blocked tab doesn't leave the store half-migrated.",
-                              "lineHeight": 1.6,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13.5,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             }
                           ]
@@ -47760,9 +47760,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "The upgrade path loses data in one case, see the thread. The rest reads well.",
-                              "lineHeight": 1.6,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13.5,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             },
                             {
@@ -48299,9 +48299,9 @@
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
                           "content": "Leave a comment",
-                          "lineHeight": 1.55,
+                          "lineHeight": 1.5,
                           "fontFamily": "$font",
-                          "fontSize": 13,
+                          "fontSize": 14,
                           "fontWeight": "normal"
                         },
                         {
@@ -48323,9 +48323,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "Thanks both. The cross-repository case is fixed in 3f2a9b1 and the e2e is green again.",
-                              "lineHeight": 1.55,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             },
                             {
@@ -48340,9 +48340,9 @@
                                   "name": "Mention",
                                   "fill": "$accent",
                                   "content": "@sofiab",
-                                  "lineHeight": 1.55,
+                                  "lineHeight": 1.5,
                                   "fontFamily": "$font",
-                                  "fontSize": 13,
+                                  "fontSize": 14,
                                   "fontWeight": "600"
                                 },
                                 {
@@ -48351,9 +48351,9 @@
                                   "name": "Text",
                                   "fill": "$fg",
                                   "content": "could you take another look?",
-                                  "lineHeight": 1.55,
+                                  "lineHeight": 1.5,
                                   "fontFamily": "$font",
-                                  "fontSize": 13,
+                                  "fontSize": 14,
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -48366,9 +48366,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "The migration is the only part that changed since your review.",
-                              "lineHeight": 1.55,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             }
                           ]
@@ -50242,9 +50242,9 @@
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
                           "content": "Good catch. I'd also add a retry around the upgrade so a blocked tab doesn't leave the store half-migrated.",
-                          "lineHeight": 1.6,
+                          "lineHeight": 1.5,
                           "fontFamily": "$font",
-                          "fontSize": 13.5,
+                          "fontSize": 14,
                           "fontWeight": "normal"
                         }
                       ]
@@ -114985,7 +114985,7 @@
     {
       "type": "frame",
       "id": "epLfx",
-      "x": 18672,
+      "x": 22720,
       "y": 80452,
       "name": "App · States",
       "fill": "#08090B",
@@ -124073,7 +124073,7 @@
     {
       "type": "frame",
       "id": "iZkBN",
-      "x": 23712,
+      "x": 27760,
       "y": 80452,
       "name": "App · Freshness",
       "fill": "#08090B",
@@ -246491,7 +246491,7 @@
           "type": "frame",
           "id": "q9BSr",
           "name": "Components · Settings",
-          "width": 6999,
+          "width": 7607,
           "gap": 48,
           "children": [
             {
@@ -249148,6 +249148,737 @@
                         },
                         "lMIxY": {
                           "enabled": true
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "a2tIu",
+              "name": "Typography",
+              "width": 560,
+              "layout": "vertical",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "k5SSra",
+                  "name": "Settings / Stepper",
+                  "reusable": true,
+                  "height": 25,
+                  "fill": "$bg-2",
+                  "cornerRadius": 6,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "WKnWJ",
+                      "type": "ref",
+                      "ref": "GRpic",
+                      "name": "Decrease",
+                      "descendants": {
+                        "AfFM0": {
+                          "icon": "minus"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dhlKJ",
+                      "name": "Value",
+                      "width": 52,
+                      "gap": 3,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BrSod",
+                          "name": "Number",
+                          "fill": "$fg",
+                          "content": "14",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "c1svE6",
+                          "name": "Unit",
+                          "fill": "$fg-dim",
+                          "content": "px",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "sC7cC",
+                      "type": "ref",
+                      "ref": "GRpic",
+                      "name": "Increase",
+                      "descendants": {
+                        "AfFM0": {
+                          "icon": "plus"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "G1JHSp",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "S7NcJg",
+                  "name": "Settings / Preset control",
+                  "descendants": {
+                    "lBrrI": {
+                      "id": "Tzw80",
+                      "type": "ref",
+                      "ref": "OAxbv",
+                      "name": "Compact",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Compact"
+                        }
+                      }
+                    },
+                    "UIgL9": {
+                      "id": "W4j72U",
+                      "type": "ref",
+                      "ref": "rrBZ7",
+                      "name": "Default",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Default"
+                        }
+                      }
+                    },
+                    "U8Jsk3": {
+                      "id": "XJP5x",
+                      "type": "ref",
+                      "ref": "OAxbv",
+                      "name": "Spaced",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Spaced"
+                        }
+                      }
+                    },
+                    "r5Hms": {
+                      "id": "dU5Jo",
+                      "type": "ref",
+                      "ref": "OAxbv",
+                      "name": "Custom",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Custom",
+                          "fill": "$fg-dim"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "O92kT",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "G1JHSp",
+                  "name": "Settings / Preset control · Custom",
+                  "descendants": {
+                    "W4j72U": {
+                      "id": "C2EHZI",
+                      "type": "ref",
+                      "ref": "OAxbv",
+                      "name": "Default",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Default"
+                        }
+                      }
+                    },
+                    "dU5Jo": {
+                      "id": "P8oqx0",
+                      "type": "ref",
+                      "ref": "rrBZ7",
+                      "name": "Custom",
+                      "descendants": {
+                        "xWB44": {
+                          "content": "Custom"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "KxkxV",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "uy4u8",
+                  "name": "Settings / Font select",
+                  "width": 200,
+                  "descendants": {
+                    "NiMVj": {
+                      "content": "Inter",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container"
+                    }
+                  }
+                },
+                {
+                  "id": "z2Llia",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "KxkxV",
+                  "name": "Settings / Font select · open",
+                  "fill": "#7B87F71A",
+                  "stroke": "$accent",
+                  "descendants": {
+                    "k3Bbw": {
+                      "fill": "$accent"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "wUXgp",
+                  "name": "Settings / Typography card",
+                  "reusable": true,
+                  "width": 560,
+                  "cornerRadius": 8,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "padding": [
+                    12,
+                    14,
+                    14,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Qgj1H",
+                      "name": "Text",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cW7ol",
+                          "name": "Title",
+                          "fill": "$fg",
+                          "content": "Role",
+                          "fontFamily": "$font",
+                          "fontSize": 13.5,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "D8nW2",
+                          "name": "Explanation",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "What it sets.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t7Ntc",
+                      "name": "Controls",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "i2utw",
+                          "name": "Field font",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "D9qMIN",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Font",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "ZErqM",
+                              "type": "ref",
+                              "ref": "KxkxV",
+                              "name": "Font"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YwSQL",
+                          "name": "Field size",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "WzDxG",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Size",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "wf22G",
+                              "type": "ref",
+                              "ref": "k5SSra",
+                              "name": "Size"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FlPhd",
+                          "name": "Field line height",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "sOk06",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Line height",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "Oll6K",
+                              "type": "ref",
+                              "ref": "k5SSra",
+                              "name": "Line height",
+                              "descendants": {
+                                "BrSod": {
+                                  "content": "1.5"
+                                },
+                                "c1svE6": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k9PDt",
+                      "name": "Sample",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "layout": "vertical",
+                      "padding": [
+                        12,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cRnXF",
+                          "name": "Sample text",
+                          "fill": "$fg",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Sample",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "F2DpGb",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "wUXgp",
+                  "name": "Settings / Typography card · Reading",
+                  "descendants": {
+                    "cW7ol": {
+                      "content": "Reading"
+                    },
+                    "D8nW2": {
+                      "content": "What people wrote: descriptions, comments, review threads."
+                    },
+                    "cRnXF": {
+                      "content": "Good catch. I'd also retry the upgrade once before showing the error: a second tab often holds the old version open for a moment, and it lets go on its own."
+                    }
+                  }
+                },
+                {
+                  "id": "Cxb1u",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "wUXgp",
+                  "name": "Settings / Typography card · Code",
+                  "descendants": {
+                    "cW7ol": {
+                      "content": "Code"
+                    },
+                    "D8nW2": {
+                      "content": "Diffs, code in comments, logs."
+                    },
+                    "ZErqM/NiMVj": {
+                      "content": "JetBrains Mono"
+                    },
+                    "wf22G/BrSod": {
+                      "content": "12"
+                    },
+                    "Oll6K/BrSod": {
+                      "content": "20"
+                    },
+                    "Oll6K/c1svE6": {
+                      "enabled": true
+                    },
+                    "k9PDt": {
+                      "type": "frame",
+                      "id": "YguRx",
+                      "name": "Sample",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "layout": "vertical",
+                      "padding": [
+                        12,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "id": "C7a5O",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Context",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "41"
+                            },
+                            "AIddd": {
+                              "content": "41"
+                            },
+                            "txzt7": {
+                              "content": "  const items = await this.pending.all()"
+                            }
+                          }
+                        },
+                        {
+                          "id": "qBLvQ",
+                          "type": "ref",
+                          "ref": "D8ZJtP",
+                          "name": "Removed",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "42"
+                            },
+                            "txzt7": {
+                              "content": "  for (const item of items) await this.send(item)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "yo31s",
+                          "type": "ref",
+                          "ref": "qDLAj",
+                          "name": "Added",
+                          "descendants": {
+                            "AIddd": {
+                              "content": "42"
+                            },
+                            "txzt7": {
+                              "content": "  await this.sendInBatches(items, { size: 50 })"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "Rk95R",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "wUXgp",
+                  "name": "Settings / Typography card · Interface",
+                  "descendants": {
+                    "cW7ol": {
+                      "content": "Interface"
+                    },
+                    "D8nW2": {
+                      "content": "Lists, menus and everything else. Its sizes stay as they are."
+                    },
+                    "YwSQL": {
+                      "enabled": false
+                    },
+                    "FlPhd": {
+                      "enabled": false
+                    },
+                    "k9PDt": {
+                      "type": "frame",
+                      "id": "pr18u",
+                      "name": "Sample",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 8,
+                      "padding": [
+                        12,
+                        0,
+                        0,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "O52AHO",
+                          "name": "Title",
+                          "fill": "$fg",
+                          "content": "Calendar shows wrong timezone for recurring events",
+                          "fontFamily": "$font",
+                          "fontSize": 13.5,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Dqd92",
+                          "name": "Number",
+                          "fill": "$fg-2",
+                          "content": "#1187",
+                          "fontFamily": "$font",
+                          "fontSize": 13.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "REQc7",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "KxlZs",
+                  "name": "Settings / Font option",
+                  "descendants": {
+                    "mZlKp": {
+                      "enabled": false
+                    },
+                    "MM9yB": {
+                      "content": "JetBrains Mono"
+                    }
+                  }
+                },
+                {
+                  "id": "YixDI",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "REQc7",
+                  "name": "Settings / Font option · selected",
+                  "fill": "$sel",
+                  "descendants": {
+                    "Y6MhC": {
+                      "enabled": true
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "N75Fw",
+                  "name": "Settings / Font menu · code",
+                  "reusable": true,
+                  "clip": true,
+                  "width": 240,
+                  "fill": "$bg-2",
+                  "cornerRadius": 10,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#000000B8",
+                    "offset": {
+                      "x": 0,
+                      "y": 18
+                    },
+                    "blur": 48
+                  },
+                  "layout": "vertical",
+                  "padding": [
+                    6,
+                    6,
+                    8,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "id": "H4LNlC",
+                      "type": "ref",
+                      "ref": "n8kYNM",
+                      "name": "Section Code font",
+                      "width": "fill_container",
+                      "descendants": {
+                        "CcUdj": {
+                          "content": "Code font"
+                        }
+                      }
+                    },
+                    {
+                      "id": "h7zuM6",
+                      "type": "ref",
+                      "ref": "YixDI",
+                      "name": "Option JetBrains Mono",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "JetBrains Mono",
+                          "fontFamily": "JetBrains Mono"
+                        }
+                      }
+                    },
+                    {
+                      "id": "ROT9a",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option System",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "System",
+                          "fontFamily": "$mono"
+                        },
+                        "AeQgs": {
+                          "enabled": true,
+                          "content": "SF Mono, Cascadia, Menlo"
+                        }
+                      }
+                    },
+                    {
+                      "id": "PZBaM",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Monaspace Neon",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Monaspace Neon",
+                          "fontFamily": "DM Mono"
+                        }
+                      }
+                    },
+                    {
+                      "id": "Q6MoGw",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Monaspace Argon",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Monaspace Argon",
+                          "fontFamily": "Red Hat Mono"
+                        }
+                      }
+                    },
+                    {
+                      "id": "tIdBj",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Monaspace Xenon",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Monaspace Xenon",
+                          "fontFamily": "Courier Prime"
+                        }
+                      }
+                    },
+                    {
+                      "id": "A9O9c",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option IBM Plex Mono",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "IBM Plex Mono",
+                          "fontFamily": "IBM Plex Mono"
+                        }
+                      }
+                    },
+                    {
+                      "id": "bt7zD",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Fira Code",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Fira Code",
+                          "fontFamily": "Fira Code"
+                        }
+                      }
+                    },
+                    {
+                      "id": "K3oKDD",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Geist Mono",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Geist Mono",
+                          "fontFamily": "Geist Mono"
+                        }
+                      }
+                    },
+                    {
+                      "id": "B0Vg9",
+                      "type": "ref",
+                      "ref": "REQc7",
+                      "name": "Option Commit Mono",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MM9yB": {
+                          "content": "Commit Mono",
+                          "fontFamily": "Roboto Mono"
                         }
                       }
                     }
@@ -254158,6 +254889,892 @@
                           "fill": "$fg-dim"
                         }
                       }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iC43i",
+              "name": "Slot · T28 · Settings · Display · Typography",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QIGUc",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Nge90",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "T28 · Settings · Display · Typography",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "F2nSv",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Display gains a Typography section above Animations, at the Default preset. Presets set the sizes and line heights of Reading and Code at once; fonts are chosen apart. Custom is shown but only becomes selected when a size or line height is changed by hand. Each card's sample is set in its role's font, size and line height. Interface sets the font only: its sizes stay as they are.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sZ5aR",
+                  "name": "T28 · Settings · Display · Typography",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 1000,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Z3Ua5R",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "KFf8L",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "id": "vcKW4",
+                          "type": "ref",
+                          "ref": "Hx88c",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "gyIe7": {
+                              "fill": "$bg-3"
+                            },
+                            "gyIe7/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "gyIe7/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FJsuZ",
+                          "name": "Page pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "NioMo",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "gxKR3",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Display",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A6Fw56",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 32,
+                              "padding": [
+                                28,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "hRjj9",
+                                  "name": "Typography",
+                                  "width": 560,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I50VV",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "Typography",
+                                      "fontFamily": "$font",
+                                      "fontSize": 13.5,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "eE0zE",
+                                      "name": "Explanation",
+                                      "fill": "$fg-2",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "How text reads. A preset sets the sizes and line heights of Reading and Code at once; fonts are chosen apart.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "id": "H7ypIE",
+                                      "type": "ref",
+                                      "ref": "G1JHSp",
+                                      "name": "Preset"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "x1JAm",
+                                      "name": "Cards",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "id": "c0wfA",
+                                          "type": "ref",
+                                          "ref": "F2DpGb",
+                                          "name": "Reading",
+                                          "width": "fill_container"
+                                        },
+                                        {
+                                          "id": "rRkBL",
+                                          "type": "ref",
+                                          "ref": "Cxb1u",
+                                          "name": "Code",
+                                          "width": "fill_container"
+                                        },
+                                        {
+                                          "id": "QUQ8T",
+                                          "type": "ref",
+                                          "ref": "Rk95R",
+                                          "name": "Interface",
+                                          "width": "fill_container"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "UIbK9",
+                                  "type": "ref",
+                                  "ref": "AQNxV",
+                                  "name": "Animations",
+                                  "width": 560,
+                                  "descendants": {
+                                    "rPvpU": {
+                                      "content": "Animations"
+                                    },
+                                    "SScER": {
+                                      "content": "Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once."
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "WzNuO",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "cloud",
+                          "fill": "$fg-3"
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Up to date · settings saved in mlaine/githq-settings",
+                          "fill": "$fg-dim"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fxSzb",
+              "name": "Slot · T29 · Settings · Display · Typography · Custom, other fonts",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kXQ5d",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oi9sh",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "T29 · Settings · Display · Typography · Custom, other fonts",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "gA854",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Spaced chosen, then Reading changed by hand to 16 px / 1.6: Custom is selected, Code keeps Spaced's 13 px / 22 px. Reading is set in Literata, Code in Monaspace Neon, and each sample follows its font. Pen has no Monaspace, so the Code sample and menu use DM Mono as the closest stand-in.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "N02u7S",
+                  "name": "T29 · Settings · Display · Typography · Custom, other fonts",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 1020,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "M6oie",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "YfLkd",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "id": "P4wFP7",
+                          "type": "ref",
+                          "ref": "Hx88c",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "gyIe7": {
+                              "fill": "$bg-3"
+                            },
+                            "gyIe7/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "gyIe7/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bP7XN",
+                          "name": "Page pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Kcm56",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "SX8dS",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Display",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Si5a2",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 32,
+                              "padding": [
+                                28,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FQ6SU",
+                                  "name": "Typography",
+                                  "width": 560,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "xR9TS",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "Typography",
+                                      "fontFamily": "$font",
+                                      "fontSize": 13.5,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "puR3s",
+                                      "name": "Explanation",
+                                      "fill": "$fg-2",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "How text reads. A preset sets the sizes and line heights of Reading and Code at once; fonts are chosen apart.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "id": "JY1Py",
+                                      "type": "ref",
+                                      "ref": "O92kT",
+                                      "name": "Preset"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "E88G13",
+                                      "name": "Cards",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "id": "rWdH3",
+                                          "type": "ref",
+                                          "ref": "F2DpGb",
+                                          "name": "Reading",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "ZErqM/NiMVj": {
+                                              "content": "Literata"
+                                            },
+                                            "wf22G/BrSod": {
+                                              "content": "16"
+                                            },
+                                            "Oll6K/BrSod": {
+                                              "content": "1.6"
+                                            },
+                                            "cRnXF": {
+                                              "fontFamily": "Literata",
+                                              "fontSize": 16,
+                                              "lineHeight": 1.6
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "GP5iU",
+                                          "type": "ref",
+                                          "ref": "Cxb1u",
+                                          "name": "Code",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "ZErqM/NiMVj": {
+                                              "content": "Monaspace Neon"
+                                            },
+                                            "wf22G/BrSod": {
+                                              "content": "13"
+                                            },
+                                            "Oll6K/BrSod": {
+                                              "content": "22"
+                                            },
+                                            "C7a5O": {
+                                              "height": 22
+                                            },
+                                            "C7a5O/GP2HC": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "C7a5O/AIddd": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "C7a5O/n249J": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            },
+                                            "C7a5O/txzt7": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            },
+                                            "qBLvQ": {
+                                              "height": 22
+                                            },
+                                            "qBLvQ/GP2HC": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "qBLvQ/AIddd": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "qBLvQ/n249J": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            },
+                                            "qBLvQ/txzt7": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            },
+                                            "yo31s": {
+                                              "height": 22
+                                            },
+                                            "yo31s/GP2HC": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "yo31s/AIddd": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 12
+                                            },
+                                            "yo31s/n249J": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            },
+                                            "yo31s/txzt7": {
+                                              "fontFamily": "DM Mono",
+                                              "fontSize": 13
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "FhDft",
+                                          "type": "ref",
+                                          "ref": "Rk95R",
+                                          "name": "Interface",
+                                          "width": "fill_container"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "IqINo",
+                                  "type": "ref",
+                                  "ref": "AQNxV",
+                                  "name": "Animations",
+                                  "width": 560,
+                                  "descendants": {
+                                    "rPvpU": {
+                                      "content": "Animations"
+                                    },
+                                    "SScER": {
+                                      "content": "Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once."
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "KpDMy",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "cloud",
+                          "fill": "$fg-3"
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Up to date · settings saved in mlaine/githq-settings",
+                          "fill": "$fg-dim"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eyIhQ",
+              "name": "Slot · T30 · Settings · Display · Typography · Font menu open",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TAXlG",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "urELC",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "T30 · Settings · Display · Typography · Font menu open",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PThYg",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The Code font select is open (T28's values): a menu of the nine code fonts, each name set in its own font, JetBrains Mono checked and under the cursor. System shows what it falls back to. Pen has no Monaspace or Commit Mono: DM Mono stands in for Neon, Red Hat Mono for Argon, Courier Prime for Xenon and Roboto Mono for Commit Mono.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o0RiDi",
+                  "name": "T30 · Settings · Display · Typography · Font menu open",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 1000,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MiGxr",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "B079up",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "id": "JG836",
+                          "type": "ref",
+                          "ref": "Hx88c",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "gyIe7": {
+                              "fill": "$bg-3"
+                            },
+                            "gyIe7/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "gyIe7/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "nKIQj",
+                          "name": "Page pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "M98do",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "EDb5g",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Display",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lcNJU",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 32,
+                              "padding": [
+                                28,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ZseRx",
+                                  "name": "Typography",
+                                  "width": 560,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "T5TLCd",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "Typography",
+                                      "fontFamily": "$font",
+                                      "fontSize": 13.5,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "brAcz",
+                                      "name": "Explanation",
+                                      "fill": "$fg-2",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "How text reads. A preset sets the sizes and line heights of Reading and Code at once; fonts are chosen apart.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "id": "DBFJ4",
+                                      "type": "ref",
+                                      "ref": "G1JHSp",
+                                      "name": "Preset"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "fZWF1",
+                                      "name": "Cards",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "id": "s25CNv",
+                                          "type": "ref",
+                                          "ref": "F2DpGb",
+                                          "name": "Reading",
+                                          "width": "fill_container"
+                                        },
+                                        {
+                                          "id": "yc1Ts",
+                                          "type": "ref",
+                                          "ref": "Cxb1u",
+                                          "name": "Code",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "ZErqM": {
+                                              "id": "H6KwA3",
+                                              "type": "ref",
+                                              "ref": "z2Llia",
+                                              "name": "Font",
+                                              "descendants": {
+                                                "NiMVj": {
+                                                  "content": "JetBrains Mono"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "tyGx9",
+                                          "type": "ref",
+                                          "ref": "Rk95R",
+                                          "name": "Interface",
+                                          "width": "fill_container"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "c5eMX",
+                                  "type": "ref",
+                                  "ref": "AQNxV",
+                                  "name": "Animations",
+                                  "width": 560,
+                                  "descendants": {
+                                    "rPvpU": {
+                                      "content": "Animations"
+                                    },
+                                    "SScER": {
+                                      "content": "Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once."
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "RhnoI",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "cloud",
+                          "fill": "$fg-3"
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Up to date · settings saved in mlaine/githq-settings",
+                          "fill": "$fg-dim"
+                        }
+                      }
+                    },
+                    {
+                      "id": "s63YQ",
+                      "type": "ref",
+                      "ref": "N75Fw",
+                      "name": "Code font menu",
+                      "layoutPosition": "absolute",
+                      "x": 502,
+                      "y": 521
                     }
                   ]
                 }
@@ -354669,9 +356286,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container(0)",
                               "content": "Does replayQueue stop at the first conflict?",
-                              "lineHeight": 1.5385,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "600"
                             },
                             {
@@ -354682,9 +356299,9 @@
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
                               "content": "What happens when the same workout is edited twice offline? Looks like we push both edits.",
-                              "lineHeight": 1.5385,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             }
                           ]
@@ -355384,7 +357001,7 @@
                               "content": "Two things in the queue, see the threads. The rest reads well.",
                               "lineHeight": 1.5,
                               "fontFamily": "$font",
-                              "fontSize": 12.5,
+                              "fontSize": 14,
                               "fontWeight": "normal"
                             },
                             {
@@ -450962,7 +452579,7 @@
     {
       "type": "text",
       "id": "BnN7r",
-      "x": 17870.178661448972,
+      "x": 22430.178661448972,
       "y": 81515.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
@@ -454746,7 +456363,7 @@
     {
       "type": "frame",
       "id": "O6Vuj8",
-      "x": 25712,
+      "x": 29760,
       "y": 80452,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
@@ -466201,7 +467818,7 @@
     {
       "type": "frame",
       "id": "Sz7Bf",
-      "x": 32964,
+      "x": 37012,
       "y": 80452,
       "name": "App · Toasts",
       "fill": "#08090B",

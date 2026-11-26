@@ -15,6 +15,8 @@ import Skeleton from '@/components/Skeleton.vue';
 import SkeletonBar from '@/components/SkeletonBar.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
+import type { TypographyRoleValues } from '@/typography/readTypography.js';
+import type { CodeFontId } from '@/typography/typographyCatalog.js';
 import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import type { WorkflowLogPane } from './buildWorkflowRun.js';
@@ -36,6 +38,8 @@ const props = defineProps<{
   runCreatedAt: string | null;
   /** Epoch ms the ages are counted to. */
   now: number;
+  /** The Code role as drawn, which the log is in. */
+  codeTypography: TypographyRoleValues<CodeFontId>;
 }>();
 
 /** What is searched for in the log; `null` with the search closed. It outlives one job's log, as the pane does. */
@@ -278,6 +282,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       :run-id="runId"
       :size="size"
       :address="lineAddress"
+      :code-typography="codeTypography"
       @matches="matches = $event"
       @search-field-focus="searchFieldFocused = $event"
     />

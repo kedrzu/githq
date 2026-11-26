@@ -23,8 +23,6 @@ const KEY_SEPARATOR = '\0';
 /** A guessed placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
 const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
-/** A line of code's height, which is also what ↓ and ↑ scroll by. */
-export const LINE_HEIGHT = 20;
 /** The background between one file's block and the next, which a header pushing the pinned one up keeps (D41). */
 export const FILE_GAP = 8;
 /** How many lines an arrow of a gap shows (D42); a gap with no more hidden has one arrow for all of it. */
@@ -907,16 +905,17 @@ export function getReviewRowPath(key: string) {
 }
 
 /**
- * The height of a row until it has been drawn.
+ * The height of a row until it has been drawn. A line of code is the Code role's line height (`TypographyStore`), exact,
+ * which is also what ↓ and ↑ scroll by; what is sized by the interface keeps its own.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function estimateReviewRowHeight(row: ReviewRow): number {
+export function estimateReviewRowHeight(row: ReviewRow, codeLineHeight: number): number {
     switch (row.kind) {
         case 'header':
             return 38;
         case 'line':
-            return LINE_HEIGHT;
+            return codeLineHeight;
         case 'gap':
             return getGapHeight(row.atFileEnd);
         case 'distance':
@@ -929,7 +928,7 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'comment':
             return COMMENT_BOX_HEIGHT;
         case 'placeholder':
-            return estimatePlaceholderHeight(row);
+            return estimatePlaceholderHeight(row, codeLineHeight);
         case 'notice':
         case 'failed':
         case 'paused':
@@ -951,14 +950,14 @@ function getGapHeight(atFileEnd: boolean) {
     return GAP_ARROW_HEIGHT + (atFileEnd ? 1 : 2);
 }
 
-function estimatePlaceholderHeight({ file, part }: ReviewPlaceholderRow) {
+function estimatePlaceholderHeight({ file, part }: ReviewPlaceholderRow, codeLineHeight: number) {
     switch (part.kind) {
         case 'fetchingFirst':
             return FETCHING_FIRST_HEIGHT;
         case 'guess':
-            return getPlaceholderHeight(file);
+            return getPlaceholderLines(file) * codeLineHeight;
         case 'line':
-            return LINE_HEIGHT;
+            return codeLineHeight;
         case 'gap':
             return getGapHeight(part.gap.way === 'down');
         default:
@@ -986,13 +985,13 @@ function estimateThreadHeight({ placement, replies }: ReviewThreadRow) {
 }
 
 /**
- * How tall a file's guessed placeholder is, its real height too: about what its diff will take.
+ * How many lines a file's guessed placeholder is: about what its diff will take. Its height, the real one too, is that
+ * many lines of the Code role's line height.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getPlaceholderHeight(file: ReviewFile): number {
-    const lines = Math.min(Math.max(file.additions + file.deletions, PLACEHOLDER_MIN_LINES), PLACEHOLDER_MAX_LINES);
-    return lines * LINE_HEIGHT;
+export function getPlaceholderLines(file: ReviewFile): number {
+    return Math.min(Math.max(file.additions + file.deletions, PLACEHOLDER_MIN_LINES), PLACEHOLDER_MAX_LINES);
 }
 
 /**

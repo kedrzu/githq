@@ -102,7 +102,7 @@ function isCommented(side: DiffLineSide, cell: DiffCell | null) {
 .diffRowSplit {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 20px;
+  min-height: $line-height-code;
   background: $color-bg;
 }
 

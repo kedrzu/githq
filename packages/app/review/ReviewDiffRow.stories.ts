@@ -5,6 +5,7 @@ import { shallowRef } from 'vue';
 
 import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
 import { withSubmoduleHistory } from '@/testing/withSubmoduleHistory.js';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 
 import {
     buildFileLineRows,
@@ -107,11 +108,16 @@ const SUBMODULE = {
 /** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
 const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
 
+/** The Code size and line height the styles fall back to, which a story draws in: no shell sets the custom properties. */
+const CODE_PROPS = `:code-size="${PHONE_TYPOGRAPHY.code.size}" :code-line-height="${PHONE_TYPOGRAPHY.code.lineHeight}"`;
+
 const meta = {
     component: ReviewDiffRow,
     args: {
         row: { kind: 'end', key: 'end', collapsed: false },
         githubUrl: FILES_URL,
+        codeSize: PHONE_TYPOGRAPHY.code.size,
+        codeLineHeight: PHONE_TYPOGRAPHY.code.lineHeight,
         onRetry: fn(),
     },
 } satisfies Meta<typeof ReviewDiffRow>;
@@ -323,6 +329,34 @@ export const PatchPlaceholderWhitespaceHidden: Story = {
     render: () => renderRows(patchPlaceholderRows('split', true), { layout: 'split' }),
 };
 
+/**
+ * A taller Code line height and a larger size, as a preset or the user may choose them (Settings › Display): lines, files
+ * on their way guessed and from their patch, all in the Code role's line height, the bars in its characters.
+ */
+export const TallerCode: Story = {
+    parameters: {
+        code: { size: 14, lineHeight: 26 },
+        rows: [
+            ...fileRows(GAPS_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: GAPS_FILE.path, diff: GAPS_DIFF, layout: 'unified' }),
+            }),
+            ...placeholderRows(),
+            ...patchPlaceholderRows('unified', false),
+        ],
+    },
+    render: (_args, { parameters }) => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: parameters.rows,
+            githubUrl: FILES_URL,
+            code: parameters.code,
+        }),
+        // What the shell sets on the page, here on the rows' box. Short lines: none wraps in the larger characters.
+        template: `<div tid="taller-code" :style="{ width: '1000px', '--font-size-code': code.size + 'px', '--line-height-code': code.lineHeight + 'px' }"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :code-size="code.size" :code-line-height="code.lineHeight" layout="unified" /></div>`,
+    }),
+};
+
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
 
@@ -339,7 +373,7 @@ export const Gaps: Story = {
             githubUrl: FILES_URL,
             onExpand: args.onExpand,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" @expand="onExpand" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" ${CODE_PROPS} @expand="onExpand" /></div>`,
     }),
     play: async ({ canvas }) => {
         await expect(canvas.getByText('26 lines above')).toBeVisible();
@@ -365,6 +399,7 @@ export const ThreadReplying: Story = {
             :key="row.key"
             :row="row"
             :github-url="githubUrl"
+            ${CODE_PROPS}
             :thread-replies="getReplies(row)"
             :viewer="{ login: 'mlaine', avatarUrl: '' }"
           >
@@ -420,7 +455,7 @@ export const ExpansionResetNothingHidden: Story = {
             githubUrl: FILES_URL,
             onExpand: args.onExpand,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" layout="split" @expand="onExpand" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" ${CODE_PROPS} layout="split" @expand="onExpand" /></div>`,
     }),
     play: async ({ canvas }) => {
         await expect(
@@ -525,7 +560,7 @@ export const ChangedSince: Story = {
     render: () => ({
         components: { ReviewDiffRow },
         setup: () => ({ rows: fileRows(FILE, { kind: 'lines', rows: lines('split') }), url: FILES_URL }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="url" changed-since /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="url" ${CODE_PROPS} changed-since /></div>`,
     }),
     play: async ({ canvas }) => {
         await expect(canvas.getByText('Changed since your last visit')).toBeVisible();
@@ -700,7 +735,7 @@ export const Wide: Story = {
             ],
             githubUrl: FILES_URL,
         }),
-        template: `<div tid="frame" style="width: 1300px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
+        template: `<div tid="frame" style="width: 1300px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" ${CODE_PROPS} /></div>`,
     }),
 };
 
@@ -884,7 +919,7 @@ function renderRows(
             onGutter,
             getMarks,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :cursor="row.key === cursorKey" :toward-gap="towardGap" :submodule="row.kind === 'submodule' ? submodule : null" :marks="getMarks(row)" @gutter="onGutter" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" ${CODE_PROPS} :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :cursor="row.key === cursorKey" :toward-gap="towardGap" :submodule="row.kind === 'submodule' ? submodule : null" :marks="getMarks(row)" @gutter="onGutter" /></div>`,
     };
 
     function isCurrent(row: ReviewRow) {

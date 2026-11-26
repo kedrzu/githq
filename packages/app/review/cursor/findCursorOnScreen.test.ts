@@ -111,7 +111,7 @@ function layOut(rows: readonly ReviewRow[], scrolled: number, height: number) {
     const shown: AnchoredListShownRow<ReviewRow>[] = [];
     let top = -scrolled;
     for (const row of rows) {
-        const bottom = top + estimateReviewRowHeight(row);
+        const bottom = top + estimateReviewRowHeight(row, 20);
         if (bottom > 0 && top < height) {
             shown.push({ row, top, bottom });
         }

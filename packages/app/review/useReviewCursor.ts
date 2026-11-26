@@ -43,6 +43,8 @@ export interface UseReviewCursorOptions {
     isDragging: MaybeRefOrGetter<boolean>;
     /** Whether a thread shows whole, each of its comments then a stop (`isReviewThreadWhole`); reactive reads are tracked. */
     isThreadWhole: IsThreadWhole;
+    /** The Code role's line height in pixels (`TypographyStore`): a row not drawn yet is estimated by it. */
+    codeLineHeight: MaybeRefOrGetter<number>;
     /** The reader moved the cursor, by a key or the pointer: whatever they were landed on is behind them. */
     onMove: () => void;
 }
@@ -153,7 +155,7 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
         for (const { row, stop } of walkCursorStops({ rows, cursor: from, direction, isThreadWhole })) {
             for (; rows[index] !== row; index += direction) {
                 const passed = rows[direction === 1 ? index : index - 1];
-                rowTop += direction * (passed ? getRowHeight(list, passed) : 0);
+                rowTop += direction * (passed ? getRowHeight(list, passed, toValue(options.codeLineHeight)) : 0);
             }
 
             target = stop;
@@ -245,7 +247,7 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
         }
 
         const viewport = list.getViewport();
-        const height = estimateReviewRowHeight(row);
+        const height = estimateReviewRowHeight(row, toValue(options.codeLineHeight));
         const top = direction === 'down' ? viewport.height : viewport.covered - height;
         const unbounded = { ...viewport, scrolled: Infinity, remaining: Infinity };
         const distance = getCursorScroll({ top, bottom: top + height, viewport: unbounded, direction });
@@ -377,7 +379,7 @@ export function useReviewCursor(options: UseReviewCursorOptions): ReviewCursorAc
     }
 }
 
-function getRowHeight(list: ReviewCursorList, row: ReviewRow) {
+function getRowHeight(list: ReviewCursorList, row: ReviewRow, codeLineHeight: number) {
     const box = list.getRowBox(row.key);
-    return box ? box.bottom - box.top : estimateReviewRowHeight(row);
+    return box ? box.bottom - box.top : estimateReviewRowHeight(row, codeLineHeight);
 }

@@ -41,6 +41,8 @@ import { PhoneLayout } from '@/shell/PhoneLayout.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import type { MaxWidth } from '@/settings/sync/SettingsDocument.js';
+import type { TypographyRoleValues } from '@/typography/readTypography.js';
+import type { CodeFontId } from '@/typography/typographyCatalog.js';
 
 import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
@@ -88,6 +90,8 @@ const props = defineProps<{
   canChangeRuns?: boolean;
   /** Epoch ms the ages are counted to. */
   now: number;
+  /** The Code role as drawn (`TypographyStore.applied.code`), which the job's log is in. */
+  codeTypography: TypographyRoleValues<CodeFontId>;
 }>();
 
 const emit = defineEmits<{
@@ -612,6 +616,7 @@ function getInvalidFileMessage(): RunMessage {
             :line-address="lineAddress"
             :run-created-at="model.run?.createdAt ?? null"
             :now="now"
+            :code-typography="codeTypography"
             @retry="emit('retry')"
             @open-on-git-hub="emit('openOnGitHub', gitHubUrl)"
           />

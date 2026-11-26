@@ -2,9 +2,10 @@ import { composeStories } from '@storybook/vue3-vite';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { estimateReviewRowHeight, LINE_HEIGHT } from './buildReviewRows.js';
+import { estimateReviewRowHeight } from './buildReviewRows.js';
 import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 import { MAX_MATCHES_PER_LINE } from '@/workflows/utils/findLogMatches.js';
 
 const {
@@ -27,6 +28,7 @@ const {
     SplitColoured,
     SplitCommented,
     SplitMarked,
+    TallerCode,
     ThreadReplying,
     Unified,
     UnifiedColoured,
@@ -34,6 +36,8 @@ const {
     UnifiedMarked,
     Wide,
 } = composeStories(stories);
+/** The stories draw in the Code line height the styles fall back to. */
+const LINE_HEIGHT = PHONE_TYPOGRAPHY.code.lineHeight;
 
 test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
     await Collapsed.run();
@@ -43,8 +47,8 @@ test('the end of a file, open or collapsed to its header, is drawn as tall as es
     const open = heights('[class*="reviewDiffRow_end"]:not([class*="reviewDiffRow_endCollapsed"])');
     const collapsed = heights('[class*="reviewDiffRow_endCollapsed"]');
 
-    expect(open).toEqual([estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: false })]);
-    const collapsedEstimate = estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: true });
+    expect(open).toEqual([estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: false }, LINE_HEIGHT)]);
+    const collapsedEstimate = estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: true }, LINE_HEIGHT);
     expect(collapsed).toEqual([collapsedEstimate, collapsedEstimate, collapsedEstimate, collapsedEstimate]);
 });
 
@@ -54,19 +58,19 @@ test("a gap is drawn as tall as estimated: two arrows between hunks, one at a fi
         [...document.querySelectorAll('[tid="review-gap"]')].map(gap => gap.getBoundingClientRect().height);
 
     expect(gaps()).toEqual([
-        estimateReviewRowHeight(gapRow({ hidden: 26, afterStart: 0, afterEnd: 26 })),
-        estimateReviewRowHeight(gapRow({ hidden: 33, afterStart: 33, afterEnd: 66 })),
-        estimateReviewRowHeight(gapRow({ hidden: 8, afterStart: 73, afterEnd: 81 })),
-        estimateReviewRowHeight(gapRow({ hidden: 32, afterStart: 88, afterEnd: 120, atFileEnd: true })),
+        estimateReviewRowHeight(gapRow({ hidden: 26, afterStart: 0, afterEnd: 26 }), LINE_HEIGHT),
+        estimateReviewRowHeight(gapRow({ hidden: 33, afterStart: 33, afterEnd: 66 }), LINE_HEIGHT),
+        estimateReviewRowHeight(gapRow({ hidden: 8, afterStart: 73, afterEnd: 81 }), LINE_HEIGHT),
+        estimateReviewRowHeight(gapRow({ hidden: 32, afterStart: 88, afterEnd: 120, atFileEnd: true }), LINE_HEIGHT),
     ]);
 
     await ExpansionReset.run();
     // Between hunks, saying the push reset it.
-    expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 })));
+    expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 }), LINE_HEIGHT));
 
     await ExpansionResetNothingHidden.run();
     // No arrow at all.
-    expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 })));
+    expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 }), LINE_HEIGHT));
 });
 
 test('a resolved thread is drawn as the one line estimated, a reply on its way leaving it one; a reply is only estimated', async () => {
@@ -76,7 +80,7 @@ test('a resolved thread is drawn as the one line estimated, a reply on its way l
     const drawn = [...document.querySelectorAll('[role="group"][aria-label^="Thread by"]')].map(
         thread => thread.closest('[class*="reviewDiffRow"]')!.getBoundingClientRect().height,
     );
-    const estimated = rows.map(estimateReviewRowHeight);
+    const estimated = rows.map(row => estimateReviewRowHeight(row, LINE_HEIGHT));
 
     expect(drawn).toHaveLength(5);
     // Resolved: one line, as estimated, and still one with a reply on its way, though that is estimated open.
@@ -85,8 +89,11 @@ test('a resolved thread is drawn as the one line estimated, a reply on its way l
 });
 
 test("a placeholder from the patch is drawn as tall as estimated, which is the diff's: its lines a line each, its gaps a gap's height", async () => {
-    const gap = estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 }));
-    const lastGap = estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40, atFileEnd: true }));
+    const gap = estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 }), LINE_HEIGHT);
+    const lastGap = estimateReviewRowHeight(
+        gapRow({ hidden: 30, afterStart: 10, afterEnd: 40, atFileEnd: true }),
+        LINE_HEIGHT,
+    );
     for (const story of [PatchPlaceholderSplit, PatchPlaceholderUnified]) {
         await story.run();
         const rows = [...document.querySelectorAll('[class*="reviewDiffRow_block"]')];
@@ -100,6 +107,26 @@ test("a placeholder from the patch is drawn as tall as estimated, which is the d
         expect(lines.every(row => height(row) === LINE_HEIGHT)).toBe(true);
         expect(rows.filter(isGap).every(row => row.querySelector('button, [tabindex]') === null)).toBe(true);
     }
+});
+
+test("at another Code line height a line, a guessed file on its way and its patch's lines are drawn as tall as estimated", async () => {
+    await TallerCode.run();
+    const rows: ReviewRow[] = TallerCode.parameters.rows;
+    const { lineHeight } = TallerCode.parameters.code;
+    const drawn = [...document.querySelector('[tid="taller-code"]')!.children].map(
+        row => row.getBoundingClientRect().height,
+    );
+    const sizedByCode = (row: ReviewRow) =>
+        row.kind === 'line' || (row.kind === 'placeholder' && (row.part.kind === 'line' || row.part.kind === 'guess'));
+
+    expect(drawn).toHaveLength(rows.length);
+    const checked = rows.flatMap((row, index) => (sizedByCode(row) ? [{ row, height: drawn[index] }] : []));
+    expect(checked.length).toBeGreaterThan(20);
+    for (const { row, height } of checked) {
+        expect(height).toBe(estimateReviewRowHeight(row, lineHeight));
+    }
+    // A line is the line height asked for, not the default the estimates would match as well.
+    expect(checked[0]?.height).toBe(26);
 });
 
 test('with the keyboard on an arrow, the count says what ↵ does; a click leaves it the count', async () => {

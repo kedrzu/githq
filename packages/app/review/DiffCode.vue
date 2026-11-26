@@ -60,8 +60,8 @@ const stretches = computed(() =>
   min-width: 0;
   font-family: $font-family-mono;
   font-variant-ligatures: none;
-  font-size: $font-size-xs;
-  line-height: 20px;
+  font-size: $font-size-code;
+  line-height: $line-height-code;
   tab-size: 4;
   overflow-wrap: anywhere;
   white-space: pre-wrap;

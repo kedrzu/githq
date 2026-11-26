@@ -1,0 +1,50 @@
+title:
+  en: Typography
+description:
+  en: 'How text reads. A preset sets the sizes and line heights of Reading and Code at once; fonts are chosen apart.'
+preset:
+  en: Preset
+compact:
+  en: Compact
+default:
+  en: Default
+spaced:
+  en: Spaced
+custom:
+  en: Custom
+readingTitle:
+  en: Reading
+readingDescription:
+  en: 'What people wrote: descriptions, comments, review threads.'
+readingFont:
+  en: Reading font
+codeTitle:
+  en: Code
+codeDescription:
+  en: Diffs, code in comments, logs.
+codeFont:
+  en: Code font
+interfaceTitle:
+  en: Interface
+interfaceDescription:
+  en: Lists, menus and everything else. Its sizes stay as they are.
+interfaceFont:
+  en: Interface font
+font:
+  en: Font
+size:
+  en: Size
+lineHeight:
+  en: Line height
+pixels:
+  en: px
+systemSans:
+  en: SF Pro, Segoe UI
+systemMono:
+  en: SF Mono, Cascadia, Menlo
+readingSample:
+  en: "Good catch. I'd also retry the upgrade once before showing the error: a second tab often holds the old version open for a moment, and it lets go on its own."
+interfaceSample:
+  en: Calendar shows wrong timezone for recurring events
+interfaceSampleNumber:
+  en: '#1187'

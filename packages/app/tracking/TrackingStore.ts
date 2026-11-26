@@ -45,6 +45,9 @@ import type {
 import { readSettingsSaving, SETTINGS_SAVING_OFF } from '@/settings/sync/SettingsSaving.js';
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { readTypography, writeTypography } from '@/typography/readTypography.js';
+import type { TypographyChange, TypographyRoleChange } from '@/typography/readTypography.js';
+import type { TypographyPreset } from '@/typography/typographyCatalog.js';
 import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
@@ -202,6 +205,13 @@ export const TrackingStore = defineService({
             get animations() {
                 return readAnimations(keptRef.value.document);
             },
+            /**
+             * The typography the settings choose, whatever the layout: `TypographyStore.applied` is what is drawn.
+             * Reactive.
+             */
+            get typography() {
+                return readTypography(keptRef.value.document);
+            },
             /** Whether usage statistics are shared; reactive. */
             get usageStatistics() {
                 return readUsageStatistics(keptRef.value.document);
@@ -247,6 +257,8 @@ export const TrackingStore = defineService({
             replaceDocument,
             setWorkflowSettings,
             setAnimations,
+            setTypographyPreset,
+            setTypography,
             setUsageStatistics,
             setReviewCommentChoice,
             setRefSort,
@@ -449,6 +461,32 @@ export const TrackingStore = defineService({
                     ? null
                     : { ...kept, document: { ...kept.document, animations: on } },
             );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
+         * The user's typography preset, in the settings as the slot holds them now: drops every hand-made size and line
+         * height, keeps the fonts. Nothing when it reads as that preset already.
+         */
+        function setTypographyPreset(preset: TypographyPreset) {
+            writeTypographyChange({ preset });
+        }
+
+        /**
+         * The user's font, size or line height for a role, in the settings as the slot holds them now — every other field
+         * stays as it is. Nothing when each reads as that already.
+         */
+        function setTypography(change: TypographyRoleChange) {
+            writeTypographyChange(change);
+        }
+
+        function writeTypographyChange(change: TypographyChange) {
+            const written = write(kept => {
+                const document = writeTypography(kept.document, change);
+                return document && { ...kept, document };
+            });
             if (written) {
                 changedHere();
             }

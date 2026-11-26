@@ -90,7 +90,7 @@ const isCommented = computed(() => {
 <style lang="scss" module="css">
 .diffRowUnified {
   display: flex;
-  min-height: 20px;
+  min-height: $line-height-code;
   padding-right: $spacing-10;
   color: $color-fg;
   background: $color-bg;
@@ -145,8 +145,8 @@ const isCommented = computed(() => {
   flex: none;
   width: 28px;
   font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  line-height: 20px;
+  font-size: $font-size-code;
+  line-height: $line-height-code;
   color: $color-fg-dim;
   text-align: center;
   white-space: pre;

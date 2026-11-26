@@ -94,10 +94,8 @@ const threadsLabel = computed(() => {
 </template>
 
 <style lang="scss" module="css">
-// GitHub's rendering, at the thread's reading size, as every card's.
+// GitHub's rendering, in the card text colour, as every card's.
 .reviewSummary_text {
-  --github-html-font-size: #{$font-size-reading};
-  --github-html-line-height: #{$line-height-reading};
   --github-html-color: #{$color-fg};
 }
 

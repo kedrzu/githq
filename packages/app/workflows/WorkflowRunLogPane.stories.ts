@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import { SAMPLE_WORKFLOWS_NOW } from '@/testing/sampleWorkflows.js';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 
 import { parseJobLog } from './utils/parseJobLog.js';
 import WorkflowRunLogPane from './WorkflowRunLogPane.vue';
@@ -36,6 +37,8 @@ const meta = {
         lineAddress: null,
         runCreatedAt: ago(14 * MINUTE),
         now: SAMPLE_WORKFLOWS_NOW,
+        // What the styles fall back to, which a story draws in: no shell sets the custom properties.
+        codeTypography: PHONE_TYPOGRAPHY.code,
         onOpenOnGitHub: fn(),
         onRetry: fn(),
     },

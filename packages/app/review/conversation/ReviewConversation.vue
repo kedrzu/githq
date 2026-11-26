@@ -418,10 +418,8 @@ async function showOlder(load: () => Promise<void>) {
   padding: $spacing-8 $spacing-14 $spacing-14;
 }
 
-// GitHub's rendering, at the reading size of every card.
+// GitHub's rendering, in the card text colour.
 .reviewConversation_text {
-  --github-html-font-size: #{$font-size-reading};
-  --github-html-line-height: #{$line-height-reading};
   --github-html-color: #{$color-fg};
 }
 

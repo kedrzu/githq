@@ -199,10 +199,10 @@ const range = computed(() => {
 
 .itemThreadExcerpt_line {
   display: flex;
-  height: 20px;
+  height: $line-height-code;
   padding-right: $spacing-10;
   font-family: $font-family-mono;
-  line-height: 20px;
+  line-height: $line-height-code;
   color: $color-fg;
 }
 
@@ -229,7 +229,7 @@ const range = computed(() => {
 .itemThreadExcerpt_old,
 .itemThreadExcerpt_new {
   flex: none;
-  font-size: $font-size-3xs;
+  font-size: $font-size-code-small;
   color: $color-fg-dim;
   text-align: right;
   user-select: none;
@@ -246,7 +246,7 @@ const range = computed(() => {
 .itemThreadExcerpt_sign {
   flex: none;
   width: 28px;
-  font-size: $font-size-xs;
+  font-size: $font-size-code;
   color: $color-fg-dim;
   text-align: center;
   white-space: pre;
@@ -255,7 +255,7 @@ const range = computed(() => {
 
 .itemThreadExcerpt_text {
   font-family: inherit;
-  font-size: $font-size-xs;
+  font-size: $font-size-code;
   font-variant-ligatures: none;
   tab-size: 4;
   white-space: pre;

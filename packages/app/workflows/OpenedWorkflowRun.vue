@@ -18,6 +18,7 @@ import { useNow } from '@/services/useNow.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { getRepositoryPath, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { TypographyStore } from '@/typography/TypographyStore.js';
 import { goBack } from '@/utils/goBack.js';
 
 import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane, opensAtOverview } from './buildWorkflowRun.js';
@@ -51,6 +52,7 @@ const workflows = useService(WorkflowStore);
 const repositories = useService(RepositoryStore);
 const browser = useService(Browser);
 const tracking = useService(TrackingStore);
+const typography = useService(TypographyStore);
 const navigation = useService(ItemNavigation);
 const clock = useService(Clock);
 const now = useNow(REFRESH_MS);
@@ -361,6 +363,7 @@ function comesBackTo(behind: RouteLocation) {
     :can-change-runs="canChangeRuns"
     :page-width="arrangement === 'page' ? tracking.itemPageWidth : null"
     :now="now"
+    :code-typography="typography.applied.code"
     @select-job="selectJob"
     @rerun="store.rerun(nameWithOwner, runId)"
     @rerun-all="actOnRun(store.rerunAll)"

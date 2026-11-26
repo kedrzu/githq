@@ -23,7 +23,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import MarkdownEditor from './MarkdownEditor.vue';
 import * as stories from './MarkdownEditor.stories.js';
 
-const { Empty, Narrow, PreviewFailed, Typed } = composeStories(stories);
+const { Empty, Narrow, Preview, PreviewFailed, Typed } = composeStories(stories);
 
 test("Preview shows GitHub's rendering without the tools; Write brings back the text as typed", async () => {
     await Empty.run();
@@ -53,6 +53,25 @@ test('moved to another item on Preview, it shows that item’s text rendered in 
     item.text.value = 'Duplicate of #3';
     await expect.element(view.getByText('acme/api: Fixed in #12')).not.toBeInTheDocument();
     await expect.element(view.getByText('acme/api: Duplicate of #3')).toBeVisible();
+});
+
+test('its text and preview take the Reading size; docked on a phone they stay 16px, which iOS does not zoom into', async () => {
+    const root = document.documentElement.style;
+    root.setProperty('--font-size-reading', '19px');
+    try {
+        await Typed.run();
+        expect(getComputedStyle(page.getByRole('textbox', { name: 'Comment' }).element()).fontSize).toBe('19px');
+
+        await Typed.run({ args: { ...Typed.args, docked: true } });
+        expect(getComputedStyle(page.getByRole('textbox', { name: 'Comment' }).element()).fontSize).toBe('16px');
+
+        await Preview.run({ args: { ...Preview.args, docked: true } });
+        const rendered = page.getByRole('link', { name: '@sofiab' }).element().closest('p');
+        expect(rendered).toBeInstanceOf(HTMLElement);
+        expect(getComputedStyle(rendered!).fontSize).toBe('16px');
+    } finally {
+        root.removeProperty('--font-size-reading');
+    }
 });
 
 test('a preview GitHub could not render says so, and the text stays as typed', async () => {

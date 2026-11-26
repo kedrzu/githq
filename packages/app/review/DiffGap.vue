@@ -259,7 +259,7 @@ function expandFromRow() {
   min-width: 0;
   overflow: hidden;
   font-family: $font-family-mono;
-  font-size: $font-size-3xs;
+  font-size: $font-size-code-small;
   color: $color-fg-2;
   text-overflow: ellipsis;
   white-space: nowrap;

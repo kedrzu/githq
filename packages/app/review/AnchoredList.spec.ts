@@ -108,6 +108,35 @@ test('rows inserted above move nothing you see', async () => {
     expectWithin(topOf('row-5000'), before, ONE_PIXEL);
 });
 
+test('rows drawn taller and estimated so move nothing you see, and forget the heights measured off screen', async () => {
+    const rendered = new Set<string>();
+    await Default.run({ args: { ...Default.args, reportRender: key => rendered.add(key) } });
+    // The first rows are drawn and measured, then left behind by the jump.
+    await frames(3);
+    expect(rendered.has('row-0')).toBe(true);
+    await clickButton('Jump');
+    await frames(3);
+    const list = scroller();
+    const before = topOf('row-5000');
+    const heightBefore = heightOf('row-5000');
+
+    rendered.clear();
+    await clickButton('Scale rows');
+    await frames(3);
+
+    expect(heightOf('row-5000')).toBe(heightBefore * 2);
+    expectWithin(topOf('row-5000'), before, ONE_PIXEL);
+    expectWithin(topOf('row-5001'), bottomOf('row-5000'), ROUNDING);
+    // A row drawn since is its new height, every other one the new estimate: the first rows' old heights are gone.
+    expect(rendered.has('row-0')).toBe(false);
+    let expected = 0;
+    for (let index = 0; index < 10_000; index++) {
+        expected += rendered.has(`row-${index}`) ? (18 + ((index * 7919) % 7) * 6.25) * 2 : ESTIMATE * 2;
+    }
+
+    expectWithin(list.scrollHeight, expected, ONE_PIXEL);
+});
+
 test('a change of width that re-wraps the rows moves nothing you see', async () => {
     await Wrapping.run();
     await clickButton('Jump');

@@ -175,9 +175,17 @@ $color-focus: $color-accent;
 // Type
 // ---------------------------------------------------------------------------------------------------
 
-$font-family-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
-$font-family-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, monospace;
+// The type the user picks in Settings reaches the styles as custom properties on `<html>`, set by the shell
+// (`layouts/shell.vue`). Each fallback is the value drawn without them — the phone layout, Storybook, the landing page —
+// and equals the catalog's defaults (`typography/typographyCatalog.ts`, `PHONE_TYPOGRAPHY`).
+
+// The Interface role's font: the app's chrome, lists, labels.
+$font-family-sans: var(--font-family-interface, 'Inter', 'Inter Fallback', system-ui, sans-serif);
+// The Code role's font. Monospace text in the chrome (a SHA, a key) takes it too, at its own fixed size.
+$font-family-mono: var(--font-family-code, 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, monospace);
 $font-family-brand: 'Geist', 'Geist Fallback', $font-family-sans;
+// The Reading role's font: what people wrote, a description or a comment.
+$font-family-reading: var(--font-family-reading, 'Inter', 'Inter Fallback', system-ui, sans-serif);
 
 $font-size-3xs: 11px;
 // A keyboard hint's key, a tag beside a name.
@@ -192,9 +200,19 @@ $font-size-display: 30px;
 // The title of an item's row and of a stack's entry in a list.
 $font-size-row-title: 13.5px;
 
-// What people wrote in an item's thread: a description, a comment.
-$font-size-reading: 13.5px;
-$line-height-reading: 1.6;
+// What people wrote in an item's thread: a description, a comment (the Reading role).
+$font-size-reading: var(--font-size-reading, 13.5px);
+$line-height-reading: var(--line-height-reading, 1.6);
+// Headings in what people wrote, in proportion to its text: h2–h6, and h1 (14px and 15px at the 13px text they were
+// drawn against).
+$font-size-reading-heading: calc(#{$font-size-reading} * 14 / 13);
+$font-size-reading-title: calc(#{$font-size-reading} * 15 / 13);
+
+// Code: a diff, a job's log, a code block (the Code role). The line height is in pixels, so rows of code line up.
+$font-size-code: var(--font-size-code, 12px);
+$line-height-code: var(--line-height-code, 20px);
+// A line number, the label of a thread's excerpt of code.
+$font-size-code-small: calc(#{$font-size-code} * 11 / 12);
 
 $font-weight-normal: 400;
 $font-weight-medium: 500;

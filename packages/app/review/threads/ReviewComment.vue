@@ -307,8 +307,9 @@ watchPostEffect(() => {
 // As typed: GitHub has not rendered it. As GitHub's rendering of it will read.
 .reviewComment_typed {
   margin: 0;
-  font-size: $font-size-md;
-  line-height: 20px;
+  font-family: $font-family-reading;
+  font-size: $font-size-reading;
+  line-height: $line-height-reading;
   color: $color-fg;
   overflow-wrap: anywhere;
   white-space: pre-wrap;

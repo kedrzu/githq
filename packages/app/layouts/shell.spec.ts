@@ -27,6 +27,7 @@ import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+import { CODE_FONTS, INTERFACE_FONTS, READING_FONTS } from '@/typography/typographyCatalog.js';
 
 import Shell from './shell.vue';
 
@@ -56,6 +57,17 @@ const WebList = defineComponent({
             });
     },
 });
+
+/** The custom properties the shell sets for the type tokens (`styles/tokens.scss`). */
+const TYPOGRAPHY_PROPERTIES = [
+    '--font-family-interface',
+    '--font-family-reading',
+    '--font-family-code',
+    '--font-size-reading',
+    '--line-height-reading',
+    '--font-size-code',
+    '--line-height-code',
+];
 
 const toast = () => page.getByRole('region', { name: 'Notifications' }).getByRole('listitem');
 
@@ -368,6 +380,62 @@ test("on a phone, the places panel's repositories and projects with saved views 
     await expect.element(places.getByRole('link', { name: new RegExp(`^${ROADMAP}`, 'u') })).toBeVisible();
 });
 
+test('on a computer the typography the settings choose is on `<html>` as custom properties, follows a change, and leaves with the shell', async () => {
+    const { tracking, leave } = await open();
+    const style = document.documentElement.style;
+
+    expect(Object.fromEntries(TYPOGRAPHY_PROPERTIES.map(name => [name, style.getPropertyValue(name)]))).toEqual({
+        '--font-family-interface': INTERFACE_FONTS[0].stack,
+        '--font-family-reading': READING_FONTS[0].stack,
+        '--font-family-code': CODE_FONTS[0].stack,
+        '--font-size-reading': '14px',
+        '--line-height-reading': '1.5',
+        '--font-size-code': '12px',
+        '--line-height-code': '20px',
+    });
+
+    tracking.setTypography({ role: 'reading', font: 'literata', size: 16 });
+    tracking.setTypography({ role: 'code', lineHeight: 24 });
+    await nextTick();
+    expect(style.getPropertyValue('--font-family-reading')).toBe("'Literata', Georgia, serif");
+    expect(style.getPropertyValue('--font-size-reading')).toBe('16px');
+    expect(style.getPropertyValue('--line-height-code')).toBe('24px');
+
+    leave();
+    expect(TYPOGRAPHY_PROPERTIES.filter(name => style.getPropertyValue(name) !== '')).toEqual([]);
+});
+
+test("no file of a font the settings don't choose is fetched; picking one fetches it", async () => {
+    const { tracking } = await open();
+    await document.fonts.ready;
+    const defaults = ['Inter', 'JetBrains Mono', 'Geist'];
+    expect(fetchedFamilies().filter(family => !defaults.includes(family))).toEqual([]);
+
+    tracking.setTypography({ role: 'interface', font: 'ibm-plex-sans' });
+    await expect.poll(fetchedFamilies).toContain('IBM Plex Sans');
+    expect(fetchedFamilies().filter(family => ![...defaults, 'IBM Plex Sans'].includes(family))).toEqual([]);
+});
+
+test('on a phone the shell sets no typography: the styles draw with their fallbacks, whatever the settings choose', async () => {
+    const { tracking } = await open('phone');
+    tracking.setTypography({ role: 'reading', size: 18 });
+    await nextTick();
+
+    const style = document.documentElement.style;
+    expect(TYPOGRAPHY_PROPERTIES.filter(name => style.getPropertyValue(name) !== '')).toEqual([]);
+});
+
+/** The families of the font faces the page has fetched or is fetching, unquoted. */
+function fetchedFamilies() {
+    const families = new Set<string>();
+    for (const face of document.fonts) {
+        if (face.status !== 'unloaded') {
+            families.add(face.family.replaceAll(/["']/gu, ''));
+        }
+    }
+    return [...families];
+}
+
 function sidebarLink(name: string) {
     return page.getByRole('link', { name });
 }
@@ -421,10 +489,17 @@ async function open(device: 'computer' | 'phone' = 'computer') {
     app.use(IocPlugin, { container });
     app.use(router);
     app.mount(host);
-    onTestFinished(() => {
-        app.unmount();
-        host.remove();
-    });
+    let mounted = true;
+    onTestFinished(leave);
 
-    return { pending: container.resolve(PendingUntracks), tracking, router, container };
+    return { pending: container.resolve(PendingUntracks), tracking, router, container, leave };
+
+    /** Takes the shell away, as a screen of another layout does. */
+    function leave() {
+        if (mounted) {
+            mounted = false;
+            app.unmount();
+            host.remove();
+        }
+    }
 }

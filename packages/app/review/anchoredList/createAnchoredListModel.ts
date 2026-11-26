@@ -57,6 +57,12 @@ export interface AnchoredListModel<T> {
     setRows(rows: readonly T[]): void;
     /** Records a row's real height, in O(log n); `true` when that changes the current rows' layout. */
     setMeasuredHeight(key: string, height: number): boolean;
+    /**
+     * Sizes the rows again after what they are drawn in changed (code review's line height), in O(n): forgets every
+     * measured height but those of `kept`, the rows drawn now, which the browser reports anew if they change, and
+     * estimates the rest again. The anchor stays on its row.
+     */
+    resetHeights(kept: ReadonlySet<string>): void;
     /** Makes the first row whose bottom is below `scrollTop` the anchor, after a scroll by the user. */
     captureAnchor(scrollTop: number): void;
     /** Makes the row the anchor; `false` when no row has that key. */
@@ -102,6 +108,7 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         },
         setRows,
         setMeasuredHeight,
+        resetHeights,
         captureAnchor,
         jumpTo,
         rangeBetween,
@@ -158,6 +165,16 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
 
         heights.setHeight(index, height);
         return true;
+    }
+
+    function resetHeights(kept: ReadonlySet<string>) {
+        for (const key of measuredHeights.keys()) {
+            if (!kept.has(key)) {
+                measuredHeights.delete(key);
+            }
+        }
+
+        setRows(rows);
     }
 
     function captureAnchor(scrollTop: number) {

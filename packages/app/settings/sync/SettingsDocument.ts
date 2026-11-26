@@ -62,6 +62,12 @@ export interface SettingsDocument {
      * {@link writeWorkflowRunsGroupBy}.
      */
     readonly workflowRuns?: unknown;
+    /**
+     * The typography — a preset and each role's font, size and line height — as written in the file: each field is read
+     * on its own and one not understood is kept until the user changes it, so read it with `readTypography` and write it
+     * with `writeTypography` (`@/typography/readTypography.ts`).
+     */
+    readonly typography?: unknown;
     readonly [field: string]: unknown;
 }
 
@@ -187,6 +193,7 @@ export function serializeSettings(document: SettingsDocument): string {
         reviewDiffWidth,
         workflowRuns,
         animations,
+        typography,
         usageStatistics,
         ...rest
     } = document;
@@ -214,6 +221,7 @@ export function serializeSettings(document: SettingsDocument): string {
         reviewDiffWidth,
         workflowRuns,
         animations,
+        typography,
         usageStatistics,
         ...rest,
     };
