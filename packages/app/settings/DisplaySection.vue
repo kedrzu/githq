@@ -1,4 +1,4 @@
-<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps whether things animate with the rest of the settings; on a phone a switch row (mobile D30). -->
+<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps the typography and whether things animate with the rest of the settings; on a phone a switch row (mobile D30). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -24,5 +24,8 @@ const animations = computed({
   <DisplayView
     v-model:animations="animations"
     :phone="phone"
+    :typography="tracking.typography"
+    @typography-preset="tracking.setTypographyPreset($event)"
+    @typography-change="tracking.setTypography($event)"
   />
 </template>
