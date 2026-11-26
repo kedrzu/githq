@@ -131,6 +131,7 @@ const t = useTranslate();
 .reviewThreadBands_reply .reviewThreadBands_field {
   flex: 1;
   min-width: 0;
+  max-width: $review-text-width;
   border-color: $color-border-2;
 }
 

@@ -1,4 +1,4 @@
-<!-- What sits among a diff's lines, a thread or a comment box: on its own half in split with the line between the halves going on beside it, indented to the code in unified (D24), or from the file's left edge; never wider than reads well. -->
+<!-- What sits among a diff's lines, a thread or a comment box: on its own half in split with the line between the halves going on beside it, indented to the code in unified (D24), or from the file's left edge; filling the row, its text kept to a readable measure by the thread and the box themselves. -->
 <script lang="ts" setup>
 defineProps<{
   /** `null` for the file's width. */
@@ -24,8 +24,6 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: $spacing-8;
-  // A readable measure for the comments' text on a wide screen (D24).
-  max-width: 760px;
 }
 
 .reviewRowInset_left {

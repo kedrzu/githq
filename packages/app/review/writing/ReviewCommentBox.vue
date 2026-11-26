@@ -283,10 +283,12 @@ function getRangeStep(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
+// No wider than reads well, as a thread's text, alone among the lines or in a thread's reply band.
 .reviewCommentBox {
   display: flex;
   flex-direction: column;
   gap: $spacing-8;
+  max-width: $review-text-width;
 }
 
 .reviewCommentBox_where {
