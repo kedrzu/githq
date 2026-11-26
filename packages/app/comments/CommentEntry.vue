@@ -137,16 +137,15 @@ const readingStop = useReadingStop(() => stopKey.value ?? '');
 </template>
 
 <style lang="scss" module="css">
-// GitHub's rendering, at the thread's reading size.
+// GitHub's rendering, in the card text colour.
 .commentEntry_text {
-  --github-html-font-size: #{$font-size-reading};
-  --github-html-line-height: #{$line-height-reading};
   --github-html-color: #{$color-fg};
 }
 
 // As typed: GitHub has not rendered it. As GitHub's rendering of it will read.
 .commentEntry_typed {
   margin: 0;
+  font-family: $font-family-reading;
   font-size: $font-size-reading;
   line-height: $line-height-reading;
   color: $color-fg;

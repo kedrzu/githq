@@ -76,7 +76,7 @@ function getBarStyle(bar: PlaceholderBar) {
 .diffRowPlaceholder_split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  height: 20px;
+  height: $line-height-code;
 }
 
 .diffRowPlaceholder_cell {
@@ -93,7 +93,7 @@ function getBarStyle(bar: PlaceholderBar) {
 
 .diffRowPlaceholder_unified {
   display: flex;
-  height: 20px;
+  height: $line-height-code;
   padding-right: $spacing-10;
 }
 
@@ -120,7 +120,7 @@ function getBarStyle(bar: PlaceholderBar) {
   min-width: 0;
   overflow: hidden;
   font-family: $font-family-mono;
-  font-size: $font-size-xs;
+  font-size: $font-size-code;
 }
 
 .diffRowPlaceholder_bar {

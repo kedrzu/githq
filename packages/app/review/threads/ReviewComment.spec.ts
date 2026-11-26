@@ -60,6 +60,45 @@ test('what it says is in the card text colour; an edit on its way dimmed, "Sendi
     expect(page.getByRole('button', { name: 'Comment actions' }).query()).toBeNull();
 });
 
+test('what it says, rendered or as typed, takes the Reading size and font, its code the Code font; the header row keeps the interface ones', async () => {
+    await Comment.run({
+        args: {
+            ...Comment.args,
+            html: '<p>What happens when the same workout is saved by <code>saveWorkout</code>?</p>',
+        },
+    });
+    const author = page.getByText('sofiab', { exact: true }).element();
+    const interfaceStyle = {
+        fontSize: getComputedStyle(author).fontSize,
+        fontFamily: getComputedStyle(author).fontFamily,
+    };
+    const root = document.documentElement.style;
+    root.setProperty('--font-size-reading', '19px');
+    root.setProperty('--line-height-reading', '1.75');
+    root.setProperty('--font-family-reading', 'Georgia, serif');
+    root.setProperty('--font-family-code', 'Courier, monospace');
+    try {
+        const text = getComputedStyle(page.getByText(/^What happens when the same workout/u).element());
+        expect([text.fontSize, text.lineHeight, text.fontFamily]).toEqual(['19px', '33.25px', 'Georgia, serif']);
+        expect(getComputedStyle(page.getByText('saveWorkout').element()).fontFamily).toBe('Courier, monospace');
+        expect({
+            fontSize: getComputedStyle(author).fontSize,
+            fontFamily: getComputedStyle(author).fontFamily,
+        }).toEqual(interfaceStyle);
+
+        await EditSending.run();
+        const typed = getComputedStyle(
+            page.getByText('What happens when the same workout is edited twice offline?').element(),
+        );
+        expect([typed.fontSize, typed.lineHeight, typed.fontFamily]).toEqual(['19px', '33.25px', 'Georgia, serif']);
+    } finally {
+        root.removeProperty('--font-size-reading');
+        root.removeProperty('--line-height-reading');
+        root.removeProperty('--font-family-reading');
+        root.removeProperty('--font-family-code');
+    }
+});
+
 test("what it says sits under the header row at full width, from the avatar's left edge, not indented past it", async () => {
     await Comment.run();
     const avatar = page.getByText('sofiab', { exact: true }).element().closest('p')?.firstElementChild;

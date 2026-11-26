@@ -48,8 +48,8 @@ const t = useTranslate();
   // in system WebViews, which may be old.
   width: max(36px, calc(var(--diff-line-number-digits) * 1ch + #{$spacing-8} + 1px));
   font-family: $font-family-mono;
-  font-size: 11px;
-  line-height: 20px;
+  font-size: $font-size-code-small;
+  line-height: $line-height-code;
   text-align: right;
   user-select: none;
 }

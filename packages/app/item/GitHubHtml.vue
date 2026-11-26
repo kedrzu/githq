@@ -92,11 +92,12 @@ function isTracked(nameWithOwner: string) {
 </template>
 
 <style lang="scss" module="css">
-// A caller sets the text's size, line height and colour with `--github-html-font-size`, `--github-html-line-height` and
-// `--github-html-color` (a thread's reading size).
+// What people wrote, in the Reading role; a caller sets the colour with `--github-html-color`. A caller needing another
+// size (a phone's editor, at 16px) sets `--font-size-reading` on it: the headings follow.
 .gitHubHtml {
-  font-size: var(--github-html-font-size, #{$font-size-md});
-  line-height: var(--github-html-line-height, 20px);
+  font-family: $font-family-reading;
+  font-size: $font-size-reading;
+  line-height: $line-height-reading;
   color: var(--github-html-color, #{$color-fg-2});
   overflow-wrap: anywhere;
 
@@ -126,13 +127,13 @@ function isTracked(nameWithOwner: string) {
     h5,
     h6 {
       margin: $spacing-16 0 $spacing-8;
-      font-size: $font-size-lg;
+      font-size: $font-size-reading-heading;
       font-weight: $font-weight-semibold;
       color: $color-fg;
     }
 
     h1 {
-      font-size: $font-size-xl;
+      font-size: $font-size-reading-title;
     }
 
     ul,
@@ -171,7 +172,7 @@ function isTracked(nameWithOwner: string) {
     code {
       padding: 1px 4px;
       font-family: $font-family-mono;
-      font-size: 0.9em;
+      font-size: 0.85em;
       background: $color-bg-3;
       border-radius: $radius-sm;
     }

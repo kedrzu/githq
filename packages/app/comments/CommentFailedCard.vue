@@ -78,6 +78,7 @@ const editTexts = useEditTexts();
 // As typed: GitHub has not rendered it.
 .commentFailedCard_typed {
   margin: 0;
+  font-family: $font-family-reading;
   font-size: $font-size-reading;
   line-height: $line-height-reading;
   color: $color-fg;

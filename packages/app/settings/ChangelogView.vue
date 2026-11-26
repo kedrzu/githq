@@ -443,16 +443,14 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
   padding: 2px 14px 18px 36px;
 }
 
-// Twice the class: above what `GitHubHtml` sets for itself, whichever stylesheet comes first.
+// Release notes are Reading text, as `GitHubHtml` sets it. Twice the class: above what `GitHubHtml` sets for itself,
+// whichever stylesheet comes first.
 .changelogView_release.changelogView_release {
-  font-size: 13px;
   color: $color-fg;
 
   :global {
     p {
       margin-bottom: 14px;
-      font-size: 13.5px;
-      line-height: 1.55;
     }
 
     h1,

@@ -722,16 +722,15 @@ interface RenderedPreview {
     display: none;
   }
 
+  // iOS zooms into a text smaller than 16px: the Reading size gives way to it, the preview's headings with it.
   .markdownEditor_text,
   .markdownEditor_rendered,
   .markdownEditor_note {
+    --font-size-reading: #{$font-size-phone-input};
+
     min-height: $touch-target-size;
     padding: $spacing-12 $spacing-16;
     font-size: $font-size-phone-input;
-  }
-
-  .markdownEditor_rendered {
-    --github-html-font-size: #{$font-size-phone-input};
   }
 }
 
@@ -867,12 +866,12 @@ interface RenderedPreview {
   width: 100%;
   min-height: 70px;
   padding: $spacing-10 $spacing-12;
-  font-family: inherit;
-  font-size: $font-size-md;
+  font-family: $font-family-reading;
+  font-size: $font-size-reading;
   // Markdown as typed: Inter's contextual alternates would draw `-->` as an arrow and `<=` as one sign.
   font-feature-settings: 'calt' 0;
   font-variant-ligatures: none;
-  line-height: $line-height-normal;
+  line-height: $line-height-reading;
   color: $color-fg;
   resize: none;
   background: none;
@@ -892,7 +891,6 @@ interface RenderedPreview {
 }
 
 .markdownEditor_rendered {
-  --github-html-line-height: #{$line-height-normal};
   --github-html-color: #{$color-fg};
 }
 

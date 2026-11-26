@@ -1239,6 +1239,9 @@ function measureCharacterWidth() {
 </template>
 
 <style lang="scss" module="css">
+// A log line: the Code role's line height, 2px tighter than a diff's, so more of a long log fits.
+$job-log-line-height: calc(#{$line-height-code} - 2px);
+
 .workflowJobLog {
   display: flex;
   flex: 1;
@@ -1287,8 +1290,8 @@ function measureCharacterWidth() {
   min-width: 100%;
   margin: 0;
   font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  line-height: 18px;
+  font-size: $font-size-code;
+  line-height: $job-log-line-height;
   color: $color-fg-2;
   list-style: none;
   padding-inline: 0;
@@ -1304,7 +1307,7 @@ function measureCharacterWidth() {
 .workflowJobLog_line {
   display: flex;
   min-width: 100%;
-  height: 18px;
+  height: $job-log-line-height;
   background: $color-bg;
 }
 
@@ -1314,12 +1317,12 @@ function measureCharacterWidth() {
 
 .workflowJobLog_list_wrapped .workflowJobLog_line {
   height: auto;
-  min-height: 18px;
+  min-height: $job-log-line-height;
 }
 
 .workflowJobLog_line_whole {
   height: auto;
-  min-height: 18px;
+  min-height: $job-log-line-height;
 }
 
 .workflowJobLog_line_error {
@@ -1370,7 +1373,7 @@ function measureCharacterWidth() {
   left: 0;
   display: flex;
   flex: none;
-  font-size: $font-size-2xs;
+  font-size: $font-size-code-small;
   color: $color-fg-dim;
   user-select: none;
   background: inherit;
@@ -1482,7 +1485,7 @@ function measureCharacterWidth() {
   display: inline-flex;
   gap: $spacing-6;
   align-items: center;
-  height: 18px;
+  height: $job-log-line-height;
   padding: 0 $spacing-6;
   font: inherit;
   color: $color-fg-dim;
@@ -1500,7 +1503,7 @@ function measureCharacterWidth() {
 // `isolate`: what the character does to the direction of text ends at the end of this element, which it is alone in.
 .workflowJobLog_control {
   padding-inline: $spacing-2;
-  font-size: $font-size-2xs;
+  font-size: $font-size-code-small;
   color: $color-fg-dim;
   background: $color-bg-3;
   border-radius: $radius-sm;
