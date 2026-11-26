@@ -30,5 +30,5 @@ components in `Components · Settings`, the comment components' text.
 - [x] Review / Summary (`jHkgH`) `IUKRE`: 12.5 / 1.5 → 14 / 1.5.
 - [x] Item / Body (`bJhAe`): body, bullets and "Closes" 13.5 / 1.6 → 14 / 1.5; heading `VxGG5` 14 / 1.6 → 15 / 1.5.
 - [x] Activity / Editor (`OXAXr`): five texts 13 / 1.55 → 14 / 1.5.
-- [ ] App · States (`epLfx`), App · Freshness (`iZkBN`), App · Loading and empty states (`O6Vuj8`), App · Toasts
+- [x] App · States (`epLfx`), App · Freshness (`iZkBN`), App · Loading and empty states (`O6Vuj8`), App · Toasts
   (`Sz7Bf`) and the note `BnN7r`: moved 4048 px right, App · Settings having grown to 12240 px.

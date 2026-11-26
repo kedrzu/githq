@@ -37,6 +37,18 @@ export class SettingsScreenHarness {
         return this.root.getByRole('switch', { name: 'Animations' });
     }
 
+    /** A preset of the Display section's typography (`TypographyBlock.vue`), pressed while chosen. */
+    preset(name: 'Compact' | 'Custom' | 'Default' | 'Spaced'): Locator {
+        return this.root.getByRole('group', { name: 'Preset' }).getByRole('button', { name, exact: true });
+    }
+
+    /** The font select of a typography role's card, named by the font it shows now; it opens the role's fonts. */
+    font(role: 'Code' | 'Interface' | 'Reading', current: string): Locator {
+        return this.root
+            .getByRole('region', { name: role })
+            .getByRole('button', { name: `Font ${current}`, exact: true });
+    }
+
     /** The Privacy section's switch for usage statistics. */
     get usageStatisticsSwitch(): Locator {
         return this.root.getByRole('switch', { name: 'Share usage statistics' });
