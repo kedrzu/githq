@@ -5,6 +5,7 @@ import { matchText } from '@/testing/matchText.js';
 import { D1_ITEMS, SAMPLE_NOW, sampleUser } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import { withPhoneLayout } from '@/testing/withPhoneLayout.js';
+import { CODE_FONTS, INTERFACE_FONTS } from '@/typography/typographyCatalog.js';
 
 import { ITEM_PROPERTIES } from './ItemProperty.js';
 import ItemRow from './ItemRow.vue';
@@ -56,6 +57,42 @@ export const ChecksPassedWaiting: Story = {
     args: { item: { ...GREEN, reviewDecision: 'REVIEW_REQUIRED', mergeStateStatus: 'BLOCKED' } },
     play: async ({ canvasElement }) => {
         await expect(canvasElement).toHaveTextContent(/checks passed.*waiting for review/);
+    },
+};
+
+/**
+ * The row in every Interface font the settings offer (githq D49), the facts' monospace in a Code font beside it: each as
+ * tall as in Inter, its title on one line and nothing drawn outside the row.
+ */
+export const InEveryInterfaceFont: Story = {
+    render: args => ({
+        components: { ItemRow },
+        setup: () => ({ args, fonts: INTERFACE_FONTS, codeFonts: CODE_FONTS }),
+        template: `
+          <div
+            v-for="(font, index) in fonts"
+            :key="font.id"
+            data-font-row
+            :style="{
+              '--font-family-interface': font.stack,
+              '--font-family-code': codeFonts[index % codeFonts.length].stack,
+            }"
+          >
+            <ItemRow v-bind="args" />
+          </div>
+        `,
+    }),
+    play: async ({ canvasElement }) => {
+        await document.fonts.ready;
+        const rows = [...canvasElement.querySelectorAll<HTMLElement>('[data-font-row]')];
+        await expect(rows).toHaveLength(INTERFACE_FONTS.length);
+        const [inter] = rows;
+        for (const row of rows) {
+            await expect(row.offsetHeight).toBe(inter?.offsetHeight);
+            const title = row.querySelector<HTMLElement>('[class*="itemRow_title"]');
+            await expect(title).not.toBeNull();
+            await expect(title?.scrollHeight).toBeLessThanOrEqual((title?.clientHeight ?? 0) + 1);
+        }
     },
 };
 
