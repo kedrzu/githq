@@ -82,6 +82,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { TypographyStore } from '@/typography/TypographyStore.js';
 import { formatList } from '@/utils/formatList.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
@@ -233,6 +234,7 @@ const registry = useService(CommandRegistry);
 const browser = useService(Browser);
 const tracking = useService(TrackingStore);
 const submodules = useService(ReviewSubmodules);
+const typography = useService(TypographyStore);
 const router = useRouter();
 const route = useRoute();
 /** Merging, where the screen offers it (the shell's). */
@@ -264,6 +266,14 @@ const walkPosition = computed(() =>
 );
 const files = shallowRef<PullRequestFiles | null>(reviewFiles.open(props.reference));
 const list = useTemplateRef<AnchoredListExposed<ReviewRow>>('list');
+/** A line of code's height, which the diff's rows are estimated and stepped by; a number, so only its change counts. */
+const codeLineHeight = computed(() => typography.applied.code.lineHeight);
+const codeSize = computed(() => typography.applied.code.size);
+/** A new function as the line height changes, which has the list size its rows again, holding what is read. */
+const estimateRowHeight = computed(() => {
+  const lineHeight = codeLineHeight.value;
+  return (row: ReviewRow) => estimateReviewRowHeight(row, lineHeight);
+});
 const fileList = useTemplateRef<InstanceType<typeof ReviewFileList>>('fileList');
 const diffColumn = useTemplateRef<HTMLElement>('diffColumn');
 const findBox = useTemplateRef<HTMLElement>('findBox');
@@ -520,6 +530,7 @@ const reviewCursor = useReviewCursor({
   order: allPaths,
   isDragging: () => lineRange.value?.dragging === true,
   isThreadWhole,
+  codeLineHeight,
   onMove: stopLanding,
 });
 /** Find in the diff's shown lines (D47): a new query lands from the cursor, a step goes to its match's row. */
@@ -2459,7 +2470,7 @@ function readAgain() {
               v-if="files?.list.kind === 'ready' && (ordered.length > 0 || filterOn)"
               ref="list"
               :rows="rows"
-              :estimate-height="estimateReviewRowHeight"
+              :estimate-height="estimateRowHeight"
               :is-pinned="isPinned"
               :push-room="FILE_GAP"
               :top-room="FILE_GAP"
@@ -2483,6 +2494,8 @@ function readAgain() {
                   v-else
                   :row="row"
                   :github-url="githubUrl"
+                  :code-size="codeSize"
+                  :code-line-height="codeLineHeight"
                   :submodule="row.kind === 'submodule' ? getSubmoduleChange(row.file.path, row) : null"
                   :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
                   :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"

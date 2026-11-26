@@ -19,7 +19,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
-import { getPlaceholderHeight, getReviewHeaderKey, getReviewRowPath, LINE_HEIGHT } from './buildReviewRows.js';
+import { getPlaceholderLines, getReviewHeaderKey, getReviewRowPath } from './buildReviewRows.js';
 import type {
   ReviewDistanceRow as DistanceRow,
   ReviewFileEndRow,
@@ -58,6 +58,10 @@ const props = withDefaults(
     row: Exclude<ReviewRow, ReviewAllViewedRow>;
     /** Where the pull request's files are on github.com. */
     githubUrl: string;
+    /** The Code role's size in pixels (`TypographyStore`): a file still on its way draws its bars in it. */
+    codeSize: number;
+    /** The Code role's line height in pixels: a line's height, a file still on its way that many per line. */
+    codeLineHeight: number;
     /** A submodule's row's change, by which its history is read; `null` while the head isn't known. */
     submodule?: ReviewSubmoduleChange | null;
     /** GitHub took the file's viewed mark off since the last visit (D35). */
@@ -193,14 +197,16 @@ watch(
 );
 
 function getPlaceholderStyle(file: ReviewFile) {
-  const height = getPlaceholderHeight(file);
+  const rows = getPlaceholderLines(file);
   const mask = getPlaceholderMask({
     path: file.path,
     changeType: file.changeType,
-    rows: height / LINE_HEIGHT,
+    rows,
     layout: props.layout,
+    codeSize: props.codeSize,
+    codeLineHeight: props.codeLineHeight,
   });
-  return { height: `${height}px`, '--placeholder-mask': mask };
+  return { height: `${rows * props.codeLineHeight}px`, '--placeholder-mask': mask };
 }
 
 function getBinaryText(sizes: ReviewFileSizes, changeType: string) {

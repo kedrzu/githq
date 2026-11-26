@@ -1,4 +1,4 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it, and `topRoom` over the rows that they scroll through and that the overlay's own background covers once one is pinned; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. `inset` draws the rows and the overlay that far in from both sides, in a box narrower than the scroller, whose gaps still scroll the list and whose scrollbar stays at the edge; a change of it re-measures the rows as a change of width does, holding what you look at. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it, and `topRoom` over the rows that they scroll through and that the overlay's own background covers once one is pinned; the slot says which copy is the overlay's and when it is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A new `estimateHeight` says what the rows are drawn in changed (code review's line height): the rows are sized again, the heights measured off screen forgotten and those on it measured anew, holding what you look at. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. `inset` draws the rows and the overlay that far in from both sides, in a box narrower than the scroller, whose gaps still scroll the list and whose scrollbar stays at the edge; a change of it re-measures the rows as a change of width does, holding what you look at. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
@@ -96,7 +96,7 @@ import type {
 const props = withDefaults(
   defineProps<{
     rows: readonly T[];
-    /** A row's height until it has been drawn. */
+    /** A row's height until it has been drawn; a new function sizes the rows again. */
     estimateHeight: (row: T) => number;
     isPinned?: (row: T) => boolean;
     /** How far below the one it pushes up a pinned row stays, the background showing between them. */
@@ -184,6 +184,19 @@ watch(
   () => props.rows,
   rows => {
     model.setRows(rows);
+    anchor.value = model.anchor;
+    applyLayout();
+  },
+);
+watch(
+  () => props.estimateHeight,
+  () => {
+    const drawn = new Set(placedRows.value.map(({ row }) => row.key));
+    if (pinnedRow.value) {
+      drawn.add(pinnedRow.value.row.key);
+    }
+
+    model.resetHeights(drawn);
     anchor.value = model.anchor;
     applyLayout();
   },

@@ -5,6 +5,7 @@ import { fn } from 'storybook/test';
 
 import { SAMPLE_PASSED_JOBS, SAMPLE_PASSED_RUN } from '@/testing/samplePassedRun.js';
 import { SAMPLE_WORKFLOWS_NOW } from '@/testing/sampleWorkflows.js';
+import { PHONE_TYPOGRAPHY } from '@/typography/TypographyStore.js';
 
 import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
 import type { BuildWorkflowRunParams } from './buildWorkflowRun.js';
@@ -274,6 +275,8 @@ function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => Workflow
         workflowPath: null,
         stillBroken: false,
         now: SAMPLE_WORKFLOWS_NOW,
+        // What the styles fall back to, which a story draws in: no shell sets the custom properties.
+        codeTypography: PHONE_TYPOGRAPHY.code,
     };
 }
 

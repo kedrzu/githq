@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { defineComponent, reactive, ref, shallowRef } from 'vue';
+import { computed, defineComponent, reactive, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -17,6 +17,8 @@ interface StoryRowData {
 
 /** What the estimates say; the rows are really 18 to 55.5 px. */
 const ESTIMATE = 24;
+/** What "Scale rows" draws the rows and estimates them at, as a taller line height would. */
+const SCALE = 2;
 const WRAPPING_TEXT =
     'A line long enough to wrap when the list is narrow, and to take fewer lines when it is wide again. ';
 
@@ -42,6 +44,12 @@ const Demo = defineComponent({
         const grownBy = reactive(new Map<string, number>());
         const width = ref(600);
         const inset = ref(0);
+        const scale = ref(1);
+        // A new function when what the rows are drawn in changes, as the review's for its line height.
+        const estimateHeight = computed(() => {
+            const estimate = ESTIMATE * scale.value;
+            return () => estimate;
+        });
         let inserted = 0;
 
         return () => (
@@ -52,6 +60,7 @@ const Demo = defineComponent({
                     <Button onClick={insertRowsAbove}>Insert above</Button>
                     <Button onClick={() => (width.value = width.value === 600 ? 300 : 600)}>Change width</Button>
                     <Button onClick={() => (inset.value = inset.value === 0 ? 100 : 0)}>Change inset</Button>
+                    <Button onClick={() => (scale.value = scale.value === 1 ? SCALE : 1)}>Scale rows</Button>
                     <Button onClick={() => list.value?.focus()}>Focus</Button>
                 </div>
                 <div
@@ -64,7 +73,7 @@ const Demo = defineComponent({
                     <AnchoredList
                         ref={list}
                         rows={rows.value}
-                        estimateHeight={() => ESTIMATE}
+                        estimateHeight={estimateHeight.value}
                         isPinned={row => row.pinned}
                         pushRoom={props.pushRoom}
                         topRoom={props.topRoom}
@@ -82,7 +91,7 @@ const Demo = defineComponent({
                                             height:
                                                 row.height === undefined
                                                     ? undefined
-                                                    : `${row.height + (grownBy.get(row.key) ?? 0)}px`,
+                                                    : `${(row.height + (grownBy.get(row.key) ?? 0)) * scale.value}px`,
                                             background: row.pinned ? '#1c2128' : undefined,
                                             overflow: 'hidden',
                                         }}

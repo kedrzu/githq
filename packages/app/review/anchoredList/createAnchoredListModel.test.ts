@@ -160,6 +160,26 @@ test('a pinned row keeping room over itself starts the push that much earlier, t
     expect(model.pinnedAt(500)).toMatchObject({ index: 20, pushUp: 0 });
 });
 
+test('sizing the rows again forgets the heights measured but those kept, estimates the rest anew and holds the anchor', () => {
+    let estimate = 25;
+    const model = createAnchoredListModel<Row>({ estimateHeight: () => estimate, isPinned: () => false });
+    model.setRows(rows(100));
+    model.captureAnchor(255);
+    // r3 was drawn once and scrolled away; r10, the anchor, and r11 are drawn now.
+    model.setMeasuredHeight('r3', 40);
+    model.setMeasuredHeight('r10', 60);
+    model.setMeasuredHeight('r11', 60);
+
+    estimate = 30;
+    model.resetHeights(new Set(['r10', 'r11']));
+
+    // r3 is estimated again with the rest above the anchor, whose row and distance from the top stay.
+    expect(model.anchor).toEqual({ key: 'r10', offset: -5 });
+    expect(model.anchorScrollTop).toBe(10 * 30 + 5);
+    expect(model.total).toBe(98 * 30 + 2 * 60);
+    expect(model.setMeasuredHeight('r10', 60)).toBe(false);
+});
+
 function rows(count: number): Row[] {
     return Array.from({ length: count }, (_, index) => ({ key: `r${index}` }));
 }

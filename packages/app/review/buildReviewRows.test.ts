@@ -34,6 +34,8 @@ import type { ReviewFile } from './ReviewFiles.js';
 import { placeThreads } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 
+/** The default Code line height. */
+const LINE_HEIGHT = 20;
 const A = sampleFile('src/a.ts');
 const B = sampleFile('src/b.ts');
 const BEFORE = lines(40);
@@ -297,8 +299,25 @@ test('a placeholder is about as tall as the file, within limits', () => {
         getContent: () => ({ kind: 'placeholder' }),
     });
 
-    const heights = rows.filter(row => row.kind === 'placeholder').map(estimateReviewRowHeight);
-    expect(heights).toEqual([60, 800, 40_000]);
+    const placeholders = rows.filter(row => row.kind === 'placeholder');
+    expect(placeholders.map(row => estimateReviewRowHeight(row, 20))).toEqual([60, 800, 40_000]);
+    // That many lines of the Code line height asked for.
+    expect(placeholders.map(row => estimateReviewRowHeight(row, 26))).toEqual([78, 1040, 52_000]);
+});
+
+test("a line of code is estimated at the Code line height, exactly; what the interface sizes doesn't follow it", () => {
+    const rows = buildAll([A], 'unified');
+    const at = (lineHeight: number) => rows.map(row => estimateReviewRowHeight(row, lineHeight));
+
+    const lineRows = rows.flatMap((row, index) => (row.kind === 'line' ? [index] : []));
+    expect(lineRows.length).toBeGreaterThan(0);
+    for (const lineHeight of [15, 18, 20, 22, 28]) {
+        const heights = at(lineHeight);
+        expect(lineRows.map(index => heights[index])).toEqual(lineRows.map(() => lineHeight));
+        expect(heights.filter((_, index) => !lineRows.includes(index))).toEqual(
+            at(20).filter((_, index) => !lineRows.includes(index)),
+        );
+    }
 });
 
 /**
@@ -789,7 +808,7 @@ function describeRow(row: ReviewRow): string {
 function sumHeights(rows: readonly ReviewRow[]) {
     let total = 0;
     for (const row of rows) {
-        total += estimateReviewRowHeight(row);
+        total += estimateReviewRowHeight(row, LINE_HEIGHT);
     }
 
     return total;
@@ -857,7 +876,7 @@ test('each kind of gap has its arrows: up at the top of a file, down at its end,
         [8, 'all'],
         [32, 'down'],
     ]);
-    expect(gaps.map(estimateReviewRowHeight)).toEqual([26, 26, 26, 25]);
+    expect(gaps.map(gap => estimateReviewRowHeight(gap, LINE_HEIGHT))).toEqual([26, 26, 26, 25]);
 });
 
 test('an arrow shows 20 lines from its side of the gap: down below the hunk above, up above the hunk below', () => {

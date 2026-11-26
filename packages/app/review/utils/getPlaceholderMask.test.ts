@@ -1,9 +1,13 @@
 import { expect, test } from 'bun:test';
 
+import { assert } from '@nzyme/utils/assert.js';
+
 import { buildSplitPlaceholder, buildUnifiedPlaceholder, getPlaceholderMask } from './getPlaceholderMask.js';
 import type { PlaceholderBar } from './getPlaceholderMask.js';
 
 const MODIFIED = { path: 'src/sync/outbox.ts', changeType: 'MODIFIED', rows: 400 } as const;
+/** The default Code size and line height. */
+const CODE = { codeSize: 12, codeLineHeight: 20 } as const;
 
 test('a file always shows the same lines, and another file other ones', () => {
     expect(buildUnifiedPlaceholder(MODIFIED)).toEqual(buildUnifiedPlaceholder(MODIFIED));
@@ -87,11 +91,38 @@ test('split: the same lines as unified, context mirrored, deleted left beside ad
 });
 
 test('the mask is an SVG image the browser takes: namespaced, with nothing left unescaped', () => {
-    const mask = getPlaceholderMask({ ...MODIFIED, layout: 'split' });
+    const mask = getPlaceholderMask({ ...MODIFIED, ...CODE, layout: 'split' });
 
     expect(mask.startsWith('url("data:image/svg+xml,')).toBe(true);
     expect(decodeURIComponent(mask)).toContain("xmlns='http://www.w3.org/2000/svg'");
     expect(mask.slice('url("'.length, -'")'.length)).not.toMatch(/[<>#"]/u);
-    expect(getPlaceholderMask({ ...MODIFIED, layout: 'split' })).toBe(mask);
-    expect(getPlaceholderMask({ ...MODIFIED, layout: 'unified' })).not.toBe(mask);
+    expect(getPlaceholderMask({ ...MODIFIED, ...CODE, layout: 'split' })).toBe(mask);
+    expect(getPlaceholderMask({ ...MODIFIED, ...CODE, layout: 'unified' })).not.toBe(mask);
 });
+
+test("the bars sit on the Code role's lines, a character 0.6 of its size", () => {
+    const bars = buildUnifiedPlaceholder(MODIFIED);
+    const index = bars.findIndex(bar => bar !== null && bar.indent > 0);
+    const bar = bars[index];
+    assert(bar);
+
+    const rect = readRects(getPlaceholderMask({ ...MODIFIED, codeSize: 15, codeLineHeight: 25, layout: 'unified' }))[
+        bars.slice(0, index).filter(other => other !== null).length
+    ];
+
+    // Unified code starts at 132; an indent level is two characters; the 8 px bar centred in its line.
+    expect(rect).toEqual({
+        x: Math.round((132 + bar.indent * 2 * 9) * 10) / 10,
+        y: index * 25 + 8.5,
+        width: Math.round(bar.length * 9 * 10) / 10,
+    });
+});
+
+function readRects(mask: string) {
+    const svg = decodeURIComponent(mask);
+    return [...svg.matchAll(/<rect x='([\d.]+)' y='([\d.]+)' width='([\d.]+)'/gu)].map(([, x, y, width]) => ({
+        x: Number(x),
+        y: Number(y),
+        width: Number(width),
+    }));
+}
