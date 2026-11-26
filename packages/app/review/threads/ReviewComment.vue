@@ -168,6 +168,7 @@ watchPostEffect(() => {
       </p>
       <CommentEditor
         v-if="editing && acting"
+        :class="css.reviewComment_measure"
         inline
         :text="acting.actions.editors.get(acting.id)?.text ?? ''"
         :author="author"
@@ -186,12 +187,12 @@ watchPostEffect(() => {
       <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
       <p
         v-else-if="shownText !== undefined"
-        :class="[css.reviewComment_typed, onItsWay && css.reviewComment_typed_sending]"
+        :class="[css.reviewComment_measure, css.reviewComment_typed, onItsWay && css.reviewComment_typed_sending]"
         v-text="shownText"
       />
       <GitHubHtml
         v-else
-        :class="css.reviewComment_text"
+        :class="[css.reviewComment_measure, css.reviewComment_text]"
         :html="html ?? ''"
       />
     </div>
@@ -290,6 +291,12 @@ watchPostEffect(() => {
   @media (hover: none) {
     opacity: 1;
   }
+}
+
+// What it says, as typed, rendered or being edited: no wider than reads well, while the header row, its ⋯ at the
+// right, and the box fill the thread.
+.reviewComment_measure {
+  max-width: $review-text-width;
 }
 
 // What it says, in the card text colour.
